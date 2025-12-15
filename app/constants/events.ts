@@ -37,4 +37,5 @@ export default keyMirror({
     ACTIVE_SCREEN: null,
     ACTIVE_SERVER_CHANGED: null,
     FILE_ADD_REMOVED: null,
+    POST_DELETED_FOR_CHANNEL: null,
 });

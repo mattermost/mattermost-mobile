@@ -69,6 +69,14 @@ type PostImage = {
     frame_count?: number;
 };
 
+type PostTranslation = {
+    object: {
+        message: string;
+    };
+    state: 'ready' | 'skipped' | 'unavailable' | 'processing';
+    source_lang?: string;
+};
+
 type PostMetadata = {
     acknowledgements?: PostAcknowledgement[];
     embeds?: PostEmbed[];
@@ -77,7 +85,9 @@ type PostMetadata = {
     images?: Dictionary<PostImage | undefined>;
     reactions?: Reaction[];
     priority?: PostPriority;
+    original_language?: string;
     expire_at?: number;
+    translations?: Record<string, PostTranslation>;
 };
 
 type Post = {

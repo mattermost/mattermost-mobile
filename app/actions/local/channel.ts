@@ -24,6 +24,8 @@ import {isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo} from '@utils/log';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
+import {deletePostsForChannel} from './post';
+
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -296,9 +298,15 @@ export async function updateMyChannelFromWebsocket(serverUrl: string, channelMem
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const member = await getMyChannel(database, channelMember.channel_id);
+
+        if (member && member.autotranslation !== channelMember.autotranslation) {
+            await deletePostsForChannel(serverUrl, channelMember.channel_id);
+        }
+
         if (member) {
             member.prepareUpdate((m) => {
                 m.roles = channelMember.roles;
+                m.autotranslation = channelMember.autotranslation ?? false;
             });
             if (!prepareRecordsOnly) {
                 operator.batchRecords([member], 'updateMyChannelFromWebsocket');

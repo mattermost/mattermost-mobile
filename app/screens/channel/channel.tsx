@@ -2,16 +2,18 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
+import {fetchPostsForChannel} from '@actions/remote/post';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import ScheduledPostIndicator from '@components/scheduled_post_indicator';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
+import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
@@ -79,12 +81,22 @@ const Channel = ({
     const switchingChannels = useChannelSwitch();
     const defaultHeight = useDefaultHeaderHeight();
     const [containerHeight, setContainerHeight] = useState(0);
+    const serverUrl = useServerUrl();
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
     const handleBack = useCallback(() => {
         popTopScreen(componentId);
     }, [componentId]);
 
     useAndroidHardwareBackHandler(componentId, handleBack);
+
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.POST_DELETED_FOR_CHANNEL, ({serverUrl: url, channelId: id}) => {
+            if (serverUrl === url && channelId === id) {
+                fetchPostsForChannel(serverUrl, channelId, false, true);
+            }
+        });
+        return () => listener.remove();
+    }, [serverUrl, channelId]);
 
     const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
     useEffect(() => {

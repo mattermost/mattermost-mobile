@@ -335,7 +335,7 @@ describe('actions/remote/entry/deferred', () => {
                 );
             });
 
-            expect(processEntryModels).toHaveBeenCalledWith(
+            expect(processEntryModels).toHaveBeenCalledWith(serverUrl,
                 expect.objectContaining({
                     teamData: expect.objectContaining({
                         teams: expect.arrayContaining([
@@ -345,7 +345,7 @@ describe('actions/remote/entry/deferred', () => {
                 }),
             );
 
-            expect(processEntryModels).toHaveBeenCalledWith(
+            expect(processEntryModels).toHaveBeenCalledWith(serverUrl,
                 expect.objectContaining({
                     teamData: expect.objectContaining({
                         teams: expect.arrayContaining([

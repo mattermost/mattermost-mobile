@@ -15,6 +15,7 @@ import * as channel from './channel';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
 import * as posts from './posts';
+import {handlePostTranslationUpdatedEvent} from './posts';
 import * as preferences from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
@@ -313,6 +314,10 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         // Burn on Read Events
         case WebsocketEvents.BOR_POST_REVEALED:
             handleBoRPostRevealedEvent(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.POST_TRANSLATION_UPDATED:
+            handlePostTranslationUpdatedEvent(serverUrl, msg);
             break;
     }
     handlePlaybookEvents(serverUrl, msg);

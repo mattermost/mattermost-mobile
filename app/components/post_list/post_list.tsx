@@ -55,6 +55,7 @@ type Props = {
     testID: string;
     currentCallBarVisible?: boolean;
     savedPostIds: Set<string>;
+    isChannelAutotranslated: boolean;
 }
 
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
@@ -106,6 +107,7 @@ const PostList = ({
     showNewMessageLine = true,
     testID,
     savedPostIds,
+    isChannelAutotranslated,
 }: Props) => {
     const firstIdInPosts = posts[0]?.id;
 
@@ -118,6 +120,7 @@ const PostList = ({
     const [lastPostId, setLastPostId] = useState<string | undefined>(firstIdInPosts);
     const theme = useTheme();
     const serverUrl = useServerUrl();
+
     const orderedPosts = useMemo(() => {
         return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location === Screens.THREAD, savedPostIds);
     }, [posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location, savedPostIds]);
@@ -314,6 +317,7 @@ const PostList = ({
                     shouldRenderReplyButton,
                     skipSaveddHeader,
                     testID: `${testID}.post`,
+                    isChannelAutotranslated,
                 };
 
                 return (
@@ -324,7 +328,7 @@ const PostList = ({
                 );
             }
         }
-    }, [appsEnabled, currentTimezone, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
+    }, [appsEnabled, currentTimezone, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isChannelAutotranslated, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
 
     useEffect(() => {
         const t = setTimeout(() => {

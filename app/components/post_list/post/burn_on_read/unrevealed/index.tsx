@@ -9,12 +9,13 @@ import {revealBoRPost} from '@actions/remote/post';
 import Button from '@components/button';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {PostModel} from '@database/models/server';
 import {getFullErrorMessage, getServerError} from '@utils/errors';
 import {showBoRPostErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {BOR_ERROR_CODES} from './constants';
+
+import type PostModel from '@typings/database/models/servers/post';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     buttonBackgroundStyle: {

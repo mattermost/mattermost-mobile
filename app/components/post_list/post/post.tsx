@@ -76,6 +76,7 @@ type PostProps = {
     style?: StyleProp<ViewStyle>;
     testID?: string;
     thread?: ThreadModel;
+    isChannelAutotranslated: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -149,6 +150,7 @@ const Post = ({
     thread,
     previousPost,
     isLastPost,
+    isChannelAutotranslated,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -340,6 +342,7 @@ const Post = ({
                     post={post}
                     showPostPriority={showPostPriority}
                     shouldRenderReplyButton={shouldRenderReplyButton}
+                    isChannelAutotranslated={isChannelAutotranslated}
                 />
             );
         }
@@ -399,6 +402,7 @@ const Post = ({
                 searchPatterns={searchPatterns}
                 showAddReaction={showAddReaction}
                 theme={theme}
+                isChannelAutotranslated={isChannelAutotranslated}
             />
         );
     }

@@ -3,13 +3,14 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$, Observable} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatestWith, switchMap} from 'rxjs/operators';
 
 import {Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
+import {DEFAULT_LOCALE} from '@i18n';
 import AppsManager from '@managers/apps_manager';
-import {observeChannel, observeIsReadOnlyChannel} from '@queries/servers/channel';
+import {observeChannel, observeIsReadOnlyChannel, observeIsChannelAutotranslated} from '@queries/servers/channel';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observeReactionsForPost} from '@queries/servers/reaction';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
@@ -19,7 +20,7 @@ import {observeCurrentUser} from '@queries/servers/user';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {toMilliseconds} from '@utils/datetime';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {isFromWebhook, isSystemMessage} from '@utils/post';
+import {getPostTranslation, isFromWebhook, isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import PostOptions from './post_options';
@@ -154,6 +155,14 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         switchMap((enabled) => (enabled ? observeThreadById(database, post.id) : of$(undefined))),
     );
 
+    const canViewTranslation = observeIsChannelAutotranslated(database, post.channelId).pipe(
+        combineLatestWith(currentUser),
+        switchMap(([isAutotranslated, user]) => {
+            const translation = getPostTranslation(post, user?.locale || DEFAULT_LOCALE);
+            return of$(isAutotranslated && translation?.state === 'ready');
+        }),
+    );
+
     return {
         canMarkAsUnread,
         canAddReaction,
@@ -163,6 +172,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         combinedPost: of$(combinedPost),
         isSaved,
         canEdit,
+        canViewTranslation,
         post,
         thread,
         bindings,
