@@ -52,9 +52,8 @@ runs:
 
     - name: ci/build-e2ee-module
       shell: bash
-      env:
-        # Build both simulator architectures for universal XCFramework on iOS
-        IOS_TARGETS: ${{ inputs.platform == 'ios' && 'aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios' || '' }}
+      # Note: IOS_TARGETS is NOT set here - build.sh auto-detects based on host arch
+      # This ensures we only build targets that work on the runner (arm64 or x86_64)
       run: |
         echo "::group::build-e2ee-module (${{ inputs.platform }})"
         npm run e2ee:build
