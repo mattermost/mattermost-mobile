@@ -20,11 +20,9 @@ def reactNativeProvidedLibs = [
 // Helper closure to delete React Native provided libs from build intermediates
 def deleteReactNativeLibs = { taskName ->
   def jniDir = file("${buildDir}/intermediates/library_jni")
-  println "[e2ee] ${taskName}: Checking jniDir: ${jniDir} (exists: ${jniDir.exists()})"
   if (jniDir.exists()) {
     reactNativeProvidedLibs.each { libName ->
       fileTree(jniDir).matching { include "**/${libName}" }.each { f ->
-        println "[e2ee] ${taskName}: Deleting duplicate: ${f}"
         f.delete()
       }
     }
@@ -34,15 +32,11 @@ def deleteReactNativeLibs = { taskName ->
 // Hook into task graph to delete React Native provided libs before merge tasks run
 // ReactAndroid's prefab brings in these libs which conflict with RN's own copies
 gradle.taskGraph.whenReady { taskGraph ->
-  println "[e2ee] Task graph ready with ${taskGraph.allTasks.size()} tasks"
   taskGraph.allTasks.each { task ->
     if (task.name.contains('NativeLibs') && task.name.contains('merge')) {
       if (task.project == project) {
-        println "[e2ee] Adding doFirst to: ${task.path}"
         task.doFirst { deleteReactNativeLibs(task.name) }
       }
     }
   }
 }
-
-println "[e2ee] build.gradle loaded (with React Native prefab libs fix)"
