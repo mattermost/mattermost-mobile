@@ -10,14 +10,9 @@ fi
 
 ANDROID_TARGETS=(aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android)
 
-# iOS simulator target depends on host architecture
-# M1/M2 Macs build arm64 simulator, Intel Macs build x86_64 simulator
-if [[ "$(uname -m)" == "arm64" ]]; then
-    IOS_SIM_TARGET="aarch64-apple-ios-sim"
-else
-    IOS_SIM_TARGET="x86_64-apple-ios"
-fi
-IOS_TARGETS=(aarch64-apple-ios "${IOS_SIM_TARGET}")
+# iOS targets: device + both simulator architectures
+# Build both arm64 and x86_64 simulators so XCFramework works on all machines
+IOS_TARGETS=(aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios)
 
 # Use --release flag if E2EE_RELEASE=1 (set by CI)
 # Local dev builds use debug mode for faster builds and better debugging

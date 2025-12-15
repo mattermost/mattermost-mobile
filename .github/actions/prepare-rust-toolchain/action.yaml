@@ -13,7 +13,8 @@ runs:
       id: rust-toolchain
       uses: actions-rust-lang/setup-rust-toolchain@v1
       with:
-        # Install both simulator targets for iOS - build.sh will pick the right one based on host arch
+        # iOS: device + both simulator architectures for universal XCFramework
+        # Android: all four ABIs
         target: ${{ inputs.platform == 'ios' && 'aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios' || 'aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android' }}
         cache: false
 
