@@ -33,6 +33,23 @@ check_dir() {
     fi
 }
 
+# Check if a directory matching a glob pattern exists
+check_dir_pattern() {
+    local pattern="$1"
+    local description="$2"
+    local found
+    # Use find to locate directories matching the pattern
+    found=$(find "${PACKAGE_DIR}" -maxdepth 2 -type d -name "${pattern}" 2>/dev/null | head -1)
+    if [[ -n "${found}" ]]; then
+        local dirname
+        dirname=$(basename "${found}")
+        echo -e "${GREEN}✓${NC} ${description} (${dirname})"
+    else
+        echo -e "${RED}✗${NC} ${description} - No directory matching: ${pattern}"
+        ((errors++))
+    fi
+}
+
 echo "==> Verifying E2EE build artifacts..."
 echo ""
 
@@ -41,26 +58,17 @@ echo ""
 # - Linux runners build Android only
 # Locally, verify both platforms
 
-# On CI, we build all simulator architectures; locally, just host arch
 # Check iOS artifacts (only on macOS)
+# Note: When building multiple simulator architectures, they get combined via lipo
+# into a single fat library, and xcodebuild creates a combined directory like
+# "ios-arm64_x86_64-simulator" instead of separate directories
 if [[ "$(uname)" == "Darwin" ]]; then
     echo "iOS:"
     check_dir "MattermostE2eeFramework.xcframework" "xcframework directory"
-    check_dir "MattermostE2eeFramework.xcframework/ios-arm64" "iOS arm64 slice"
-
-    if [[ "${CI:-}" == "true" ]]; then
-        # CI builds all simulator architectures
-        check_dir "MattermostE2eeFramework.xcframework/ios-arm64-simulator" "iOS arm64 simulator slice"
-        check_dir "MattermostE2eeFramework.xcframework/ios-x86_64-simulator" "iOS x86_64 simulator slice"
-    else
-        # Local builds only build for host architecture
-        if [[ "$(uname -m)" == "arm64" ]]; then
-            check_dir "MattermostE2eeFramework.xcframework/ios-arm64-simulator" "iOS simulator slice (arm64)"
-        else
-            check_dir "MattermostE2eeFramework.xcframework/ios-x86_64-simulator" "iOS simulator slice (x86_64)"
-        fi
-    fi
-
+    check_dir "MattermostE2eeFramework.xcframework/ios-arm64" "iOS arm64 device slice"
+    # Check for any simulator slice (could be ios-arm64-simulator, ios-x86_64-simulator,
+    # or ios-arm64_x86_64-simulator depending on build config)
+    check_dir_pattern "ios-*-simulator" "iOS simulator slice"
     check_file "MattermostE2eeFramework.xcframework/ios-arm64/libmattermost_e2ee.a" "iOS arm64 static library"
     echo ""
 fi
