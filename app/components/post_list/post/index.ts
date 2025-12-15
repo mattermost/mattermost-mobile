@@ -13,6 +13,7 @@ import {queryReactionsForPost} from '@queries/servers/reaction';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
 import {observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
+import {isBoRPost} from '@utils/bor';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
 
 import Post from './post';
@@ -124,7 +125,9 @@ const withPost = withObservables(
 
         const hasReplies = observeHasReplies(database, post);//Need to review and understand
 
-        const isConsecutivePost = author.pipe(
+        // Don't combine consecutive Burn on Read posts as we want each BoR post
+        // to display its header to allow displaying the remaining time.
+        const isConsecutivePost = isBoRPost(post) ? of$(false) : author.pipe(
             switchMap((user) => of$(Boolean(post && previousPost && !user?.isBot && areConsecutivePosts(post, previousPost)))),
             distinctUntilChanged(),
         );
