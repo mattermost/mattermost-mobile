@@ -493,26 +493,20 @@ export const KeyboardAwarePostDraftContainer = ({
         updateValue: updateValueRef.current,
         updateCursorPosition: updateCursorPositionRef.current,
         registerPostInputCallbacks,
-    }), [keyboardCurrentHeight,
-        bottomInset,
-        scrollOffset,
-        keyboardHeight,
-        scrollPosition,
+
+        // Shared values don't need to be in dependencies - they're stable references
+        // Only include non-shared-value dependencies that can actually change
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }), [
         onScroll,
         postInputContainerHeight,
         inputRef,
         blurInput,
         focusInput,
         blurAndDismissKeyboard,
-        isKeyboardFullyOpen,
-        isKeyboardFullyClosed,
-        isKeyboardInTransition,
-        isInputAccessoryViewMode,
         showInputAccessoryView,
         setShowInputAccessoryView,
         lastKeyboardHeight,
-        inputAccessoryViewAnimatedHeight,
-        isTransitioningFromCustomView,
         closeInputAccessoryView,
         scrollToEnd,
         isEmojiSearchFocused,

@@ -76,7 +76,10 @@ export default function EmojiQuickAction({
         };
 
         checkKeyboard();
-    }, [keyboardHeight, lastKeyboardHeight, isKeyboardFullyClosed, isInputAccessoryViewMode, inputAccessoryViewAnimatedHeight, showEmojiPicker]);
+
+        // Shared values don't need to be in dependencies - they're stable references
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [lastKeyboardHeight, showEmojiPicker]);
 
     const handleButtonPress = usePreventDoubleTap(useCallback(() => {
         // Prevent opening if already showing or transitioning
@@ -122,7 +125,10 @@ export default function EmojiQuickAction({
             // Dismiss keyboard
             runOnJS(dismissKeyboard)();
         })();
-    }, [disabled, showInputAccessoryView, isTransitioningFromCustomView.value, keyboardHeight.value, lastKeyboardHeight, isInputAccessoryViewMode, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, scheduleKeyboardCheck]));
+
+        // Shared values don't need to be in dependencies - they're stable references
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [disabled, showInputAccessoryView, lastKeyboardHeight, setShowInputAccessoryView, scheduleKeyboardCheck]));
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);

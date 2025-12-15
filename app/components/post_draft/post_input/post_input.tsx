@@ -278,7 +278,20 @@ export default function PostInput({
                 }
             }, 1000);
         }
-    }, [isDismissingEmojiPicker, focusTimeoutRef, isManuallyFocusingAfterEmojiDismiss, isEmojiSearchFocused, setIsFocused, setIsEmojiSearchFocused, setShowInputAccessoryView, showInputAccessoryView, keyboardTranslateY, inputAccessoryViewAnimatedHeight, isInputAccessoryViewMode, isTransitioningFromCustomView, bottomInset, scrollOffset, keyboardHeight.value, lastKeyboardHeight]);
+
+        // Shared values don't need to be in dependencies - they're stable references
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        isDismissingEmojiPicker,
+        focusTimeoutRef,
+        isManuallyFocusingAfterEmojiDismiss,
+        isEmojiSearchFocused,
+        setIsFocused,
+        setIsEmojiSearchFocused,
+        setShowInputAccessoryView,
+        showInputAccessoryView,
+        lastKeyboardHeight,
+    ]);
 
     const handleAndroidKeyboardHide = useCallback(() => {
         onBlur();
