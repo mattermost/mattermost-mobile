@@ -99,15 +99,13 @@ android {
     }
   }
 
-  // Handle duplicate native libraries from e2ee module + react-native prefab during androidTest builds
+  // Exclude duplicate native libraries - React Native will provide these
   // See: https://github.com/facebook/react-native/issues/35215
   packagingOptions {
-    pickFirst '**/libjsi.so'
-    pickFirst '**/libc++_shared.so'
-    pickFirst '**/libreactnative.so'
-    pickFirst '**/libfbjni.so'
-    pickFirst '**/libturbomodulejsijni.so'
-    pickFirst '**/libreact_nativemodule_core.so'
+    exclude 'lib/arm64-v8a/libc++_shared.so'
+    exclude 'lib/armeabi-v7a/libc++_shared.so'
+    exclude 'lib/x86_64/libc++_shared.so'
+    exclude 'lib/x86/libc++_shared.so'
   }
 
   lintOptions {
