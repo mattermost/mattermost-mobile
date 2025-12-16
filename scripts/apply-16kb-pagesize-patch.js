@@ -8,7 +8,6 @@
  * and regenerating package-lock.json for Android 16KB page size support.
  */
 
-const {execSync} = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -28,6 +27,7 @@ const colors = {
 };
 
 function log(message, color = 'reset') {
+    // eslint-disable-next-line no-console
     console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
@@ -160,20 +160,16 @@ function processSection(fileInfo, lines, result) {
     // Handle package.json changes
     if (newPath === 'package.json') {
         parsePackageJsonChanges(lines, result);
-    }
-
-    // Handle patch file renames
-    else if (oldPath.startsWith('patches/') && newPath.startsWith('patches/')) {
+    } else if (oldPath.startsWith('patches/') && newPath.startsWith('patches/')) {
+        // Handle patch file renames
         if (isRename) {
             result.patchFiles.renames.push({
                 old: oldPath,
                 new: newPath,
             });
         }
-    }
-
-    // Handle other files (app.json, TypeScript, Gradle, etc.)
-    else if (!oldPath.startsWith('patches/')) {
+    } else if (!oldPath.startsWith('patches/')) {
+        // Handle other files (app.json, TypeScript, Gradle, etc.)
         result.otherFiles[newPath] = {
             oldPath,
             changes: extractChanges(lines),
@@ -200,10 +196,8 @@ function parsePackageJsonChanges(lines, result) {
                 const oldVersion = removedMatch[2].replace(/[",]/g, '');
                 removedPackages.set(packageName, oldVersion);
             }
-        }
-
-        // Look for added dependencies (new version)
-        else if (line.startsWith('+    "') && line.includes('": "')) {
+        } else if (line.startsWith('+    "') && line.includes('": "')) {
+            // Look for added dependencies (new version)
             const addedMatch = line.match(/\+    "(.+?)": "(.+?)"/);
             if (addedMatch) {
                 const packageName = addedMatch[1];
@@ -274,7 +268,6 @@ function updatePackageJson(packageChanges, dryRun = false) {
     }
 
     let content = fs.readFileSync(packageJsonPath, 'utf8');
-    const originalContent = content;
     let changesMade = 0;
 
     for (const dep of packageChanges.dependencies) {
@@ -291,69 +284,64 @@ function updatePackageJson(packageChanges, dryRun = false) {
                     log(`  ✓ Updated: ${dep.name}: ${dep.oldVersion} → ${dep.newVersion}`, 'green');
                 }
                 changesMade++;
-            } else {
+            } else if (content.includes(newPattern)) {
                 // Check if the new version is already there
-                if (content.includes(newPattern)) {
-                    log(`  ⊘ Already updated: ${dep.name} is already at ${dep.newVersion}`, 'cyan');
-                } else {
-                    log(`  ⚠ Warning: Could not find ${dep.name} with version ${dep.oldVersion}`, 'yellow');
-                }
-            }
-        } else {
-            // Add new dependency
-            // We need to find the right place to insert it (alphabetically in dependencies section)
-            const newLine = `    "${dep.name}": "${dep.newVersion}",`;
-
-            if (content.includes(`"${dep.name}":`)) {
-                log(`  ⊘ Already exists: ${dep.name}`, 'cyan');
-            } else if (dryRun) {
-                log(`  [DRY RUN] Would add: ${dep.name}: ${dep.newVersion}`, 'yellow');
-                changesMade++;
+                log(`  ⊘ Already updated: ${dep.name} is already at ${dep.newVersion}`, 'cyan');
             } else {
-                // Find the dependencies section and add alphabetically
-                const lines = content.split('\n');
-                let inserted = false;
-                let inDependencies = false;
+                log(`  ⚠ Warning: Could not find ${dep.name} with version ${dep.oldVersion}`, 'yellow');
+            }
+        } else if (content.includes(`"${dep.name}":`)) {
+            // Add new dependency - check if it already exists
+            log(`  ⊘ Already exists: ${dep.name}`, 'cyan');
+        } else if (dryRun) {
+            // Add new dependency in dry-run mode
+            log(`  [DRY RUN] Would add: ${dep.name}: ${dep.newVersion}`, 'yellow');
+            changesMade++;
+        } else {
+            // Add new dependency - find the right place to insert it (alphabetically in dependencies section)
+            const newLine = `    "${dep.name}": "${dep.newVersion}",`;
+            const lines = content.split('\n');
+            let inserted = false;
+            let inDependencies = false;
 
-                for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i];
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
 
-                    // Detect when we enter the dependencies section
-                    if (line.includes('"dependencies"') || line.includes('"devDependencies"')) {
-                        inDependencies = true;
-                        continue;
-                    }
+                // Detect when we enter the dependencies section
+                if (line.includes('"dependencies"') || line.includes('"devDependencies"')) {
+                    inDependencies = true;
+                    continue;
+                }
 
-                    // Exit dependencies section when we hit a closing brace at the same level
-                    if (inDependencies && line.match(/^\s*\}/)) {
-                        inDependencies = false;
-                        continue;
-                    }
+                // Exit dependencies section when we hit a closing brace at the same level
+                if (inDependencies && line.match(/^\s*\}/)) {
+                    inDependencies = false;
+                    continue;
+                }
 
-                    // Only process lines within dependencies section
-                    if (inDependencies) {
-                        // Look for dependency lines in the format: "package-name": "version",
-                        const match = line.match(/^\s+"([^"]+)":\s+"[^"]+",?$/);
-                        if (match) {
-                            const existingPackage = match[1];
+                // Only process lines within dependencies section
+                if (inDependencies) {
+                    // Look for dependency lines in the format: "package-name": "version",
+                    const match = line.match(/^\s+"([^"]+)":\s+"[^"]+",?$/);
+                    if (match) {
+                        const existingPackage = match[1];
 
-                            // Insert alphabetically
-                            if (dep.name < existingPackage) {
-                                lines.splice(i, 0, newLine);
-                                inserted = true;
-                                break;
-                            }
+                        // Insert alphabetically
+                        if (dep.name < existingPackage) {
+                            lines.splice(i, 0, newLine);
+                            inserted = true;
+                            break;
                         }
                     }
                 }
+            }
 
-                if (inserted) {
-                    content = lines.join('\n');
-                    log(`  ✓ Added: ${dep.name}: ${dep.newVersion}`, 'green');
-                    changesMade++;
-                } else {
-                    log(`  ⚠ Warning: Could not find insertion point for ${dep.name}`, 'yellow');
-                }
+            if (inserted) {
+                content = lines.join('\n');
+                log(`  ✓ Added: ${dep.name}: ${dep.newVersion}`, 'green');
+                changesMade++;
+            } else {
+                log(`  ⚠ Warning: Could not find insertion point for ${dep.name}`, 'yellow');
             }
         }
     }
@@ -438,7 +426,7 @@ function updateTypeScriptFile(fileChanges, filePath, dryRun = false) {
     let changesMade = 0;
 
     // Apply the changes from the diff
-    const {added, removed} = fileChanges.changes;
+    // const {added, removed} = fileChanges.changes; // Not used currently
 
     // For expo_image/index.tsx, we need to:
     // 1. Add SharedRefType import
@@ -657,15 +645,13 @@ function updatePatchFiles(patchFileChanges, dryRun = false) {
         if (dryRun) {
             log(`  [DRY RUN] Would update content: ${patchFileName}`, 'yellow');
             changesMade++;
-        } else {
+        } else if (patchFileName === 'expo-image+2.4.1.patch') {
             // For expo-image patch, use the stored correct content
-            if (patchFileName === 'expo-image+2.4.1.patch') {
-                fs.writeFileSync(patchPath, EXPO_IMAGE_PATCH_CONTENT, 'utf8');
-                log(`  ✓ Updated content: ${patchFileName}`, 'green');
-                changesMade++;
-            } else {
-                log(`  ⚠ Warning: No content update logic for ${patchFileName}`, 'yellow');
-            }
+            fs.writeFileSync(patchPath, EXPO_IMAGE_PATCH_CONTENT, 'utf8');
+            log(`  ✓ Updated content: ${patchFileName}`, 'green');
+            changesMade++;
+        } else {
+            log(`  ⚠ Warning: No content update logic for ${patchFileName}`, 'yellow');
         }
     }
 
