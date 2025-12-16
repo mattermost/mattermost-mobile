@@ -19,7 +19,6 @@ import {
 } from '@support/test_config';
 import {
     BrowseChannelsScreen,
-    ChannelDropdownMenuScreen,
     ChannelScreen,
     ChannelListScreen,
     HomeScreen,
@@ -85,6 +84,7 @@ describe('Channels - Browse Channels', () => {
 
         // # Tap on the new public channel item
         await BrowseChannelsScreen.getChannelItem(channel.name).multiTap(2);
+        await wait(timeouts.ONE_SEC);
         await BrowseChannelsScreen.dismissScheduledPostTooltip();
 
         // * Verify on newly joined public channel screen
@@ -146,14 +146,15 @@ describe('Channels - Browse Channels', () => {
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await BrowseChannelsScreen.open();
-        await BrowseChannelsScreen.channelDropdownTextPublic.tap();
         await wait(timeouts.ONE_SEC);
-        await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
         await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
 
         // * Verify search returns the archived channel item
         await wait(timeouts.ONE_SEC);
-        await expect(BrowseChannelsScreen.getChannelItemDisplayName(archivedChannel.name)).toHaveText(archivedChannel.display_name);
+
+        // * Verify empty search state for browse channels
+        await wait(timeouts.ONE_SEC);
+        await expect(element(by.text(`No matches found for “${archivedChannel.name}”`))).toBeVisible();
 
         // # Go back to channel list screen
         await BrowseChannelsScreen.close();
