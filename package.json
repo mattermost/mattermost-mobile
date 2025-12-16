@@ -176,6 +176,7 @@
   },
   "scripts": {
     "android": "react-native run-android",
+    "apply-16kb-pagesize-patch": "node scripts/apply-16kb-pagesize-patch.js 9325.diff --apply",
     "build:android": "./scripts/build.sh apk",
     "build:android-unsigned": "./scripts/build.sh apk unsigned",
     "build:ios": "./scripts/build.sh ipa",

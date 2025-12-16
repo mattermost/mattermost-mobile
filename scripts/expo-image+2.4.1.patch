@@ -1,0 +1,678 @@
+diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageAppGlideModule.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageAppGlideModule.kt
+index 5735515..dbbb924 100644
+--- a/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageAppGlideModule.kt
++++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageAppGlideModule.kt
+@@ -22,5 +22,19 @@ class ExpoImageAppGlideModule : AppGlideModule() {
+         Log.ERROR
+       }
+     )
++
++    // Configure per-server disk cache to match iOS behavior
++    // Structure: {cacheDir}/{cachePath}/Images/
++    val maxSizeBytes = 200L * 1024L * 1024L // 200MB per server, matching typical iOS limits
++    val diskCache = PerServerDiskCache(context.cacheDir, maxSizeBytes)
++    builder.setDiskCache { diskCache }
++
++    // Store reference to access clearPath method
++    diskCacheInstance = diskCache
++  }
++
++  companion object {
++    // Store reference to access clearPath method from ExpoImageModule
++    internal var diskCacheInstance: PerServerDiskCache? = null
+   }
+ }
+diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageModule.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageModule.kt
+index 0170d9b..169425c 100644
+--- a/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageModule.kt
++++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageModule.kt
+@@ -148,13 +148,17 @@ class ExpoImageModule : Module() {
+       return@AsyncFunction true
+     }.runOnQueue(Queues.MAIN)
+ 
+-    AsyncFunction<Boolean>("clearDiskCache") {
+-      val activity = appContext.currentActivity ?: return@AsyncFunction false
+-      activity.let {
+-        Glide.get(activity).clearDiskCache()
++    AsyncFunction("clearDiskCache") Coroutine { cachePath: String? ->
++      val ctx = appContext.currentActivity ?: appContext.reactContext ?: return@Coroutine false
++
++      if (cachePath.isNullOrBlank()) {
++        Glide.get(ctx).clearDiskCache()
++      } else {
++        // Clear only this server's disk cache folder: <cacheDir>/<cachePath>/Images
++        ExpoImageAppGlideModule.diskCacheInstance?.clearPath(cachePath)
+       }
+ 
+-      return@AsyncFunction true
++      true
+     }
+ 
+     AsyncFunction("getCachePathAsync") { cacheKey: String ->
+diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/PerServerDiskCache.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/PerServerDiskCache.kt
+new file mode 100644
+index 0000000..7ccf912
+--- /dev/null
++++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/PerServerDiskCache.kt
+@@ -0,0 +1,96 @@
++package expo.modules.image
++
++import com.bumptech.glide.load.Key
++import com.bumptech.glide.load.engine.cache.DiskCache
++import com.bumptech.glide.load.engine.cache.DiskLruCacheWrapper
++import java.io.File
++
++/**
++ * A disk cache implementation that stores images in separate directories based on cachePath.
++ * Structure: {rootDir}/{cachePath}/Images/
++ * This matches the iOS implementation: Library/Caches/{cachePath}/Images/
++ */
++class PerServerDiskCache(
++    private val rootDir: File,
++    private val maxSizeBytes: Long
++) : DiskCache {
++
++    // Cache the DiskCache instances per cachePath
++    private val cacheInstances = mutableMapOf<String, DiskCache>()
++    private val lock = Any()
++
++    private fun extractServerKey(key: Key): ServerImageKey? {
++        return when (key) {
++            is ServerImageKey -> key
++            else -> {
++                try {
++                    val signatureField = key.javaClass.getDeclaredField("signature")
++                    signatureField.isAccessible = true
++                    val inner = signatureField.get(key) as? Key
++                    inner as? ServerImageKey
++                } catch (e: Exception) {
++                    null
++                }
++            }
++        }
++    }
++
++    private fun getCachePathFromKey(key: Key): String {
++        val serverKey = extractServerKey(key)
++        return serverKey?.getCachePath() ?: "default"
++    }
++
++    private fun getCacheForPath(cachePath: String): DiskCache {
++        return synchronized(lock) {
++            cacheInstances.getOrPut(cachePath) {
++                val dir = File(File(rootDir, cachePath), "Images")
++                dir.mkdirs()
++                DiskLruCacheWrapper.create(dir, maxSizeBytes)
++            }
++        }
++    }
++
++    override fun get(key: Key): File? {
++        val cachePath = getCachePathFromKey(key)
++        val cache = getCacheForPath(cachePath)
++        return cache.get(key)
++    }
++
++    override fun put(key: Key, writer: DiskCache.Writer) {
++        val cachePath = getCachePathFromKey(key)
++        val cache = getCacheForPath(cachePath)
++        cache.put(key, writer)
++    }
++
++    override fun delete(key: Key) {
++        val cachePath = getCachePathFromKey(key)
++        val cache = getCacheForPath(cachePath)
++        cache.delete(key)
++    }
++
++    override fun clear() {
++        synchronized(lock) {
++            cacheInstances.values.forEach { it.clear() }
++            cacheInstances.clear()
++        }
++
++        // Delete all directories under rootDir
++        rootDir.deleteRecursively()
++        rootDir.mkdirs()
++    }
++
++    /**
++     * Clear cache for a specific cachePath.
++     * This allows selective clearing of per-server caches.
++     */
++    fun clearPath(cachePath: String) {
++        synchronized(lock) {
++            cacheInstances.remove(cachePath)?.clear()
++        }
++
++        val cacheDir = File(File(rootDir, cachePath), "Images")
++        if (cacheDir.exists()) {
++            cacheDir.deleteRecursively()
++        }
++    }
++}
+diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/ServerImageKey.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/ServerImageKey.kt
+new file mode 100644
+index 0000000..3bb655b
+--- /dev/null
++++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/ServerImageKey.kt
+@@ -0,0 +1,45 @@
++package expo.modules.image
++
++import com.bumptech.glide.load.Key
++import java.security.MessageDigest
++
++/**
++ * A cache key that incorporates the server/cachePath, image URL/cacheKey, and optionally
++ * the app version signature for resource URIs.
++ * This allows Glide's disk cache to logically separate images by server.
++ */
++class ServerImageKey(
++    private val cachePath: String,           // Server identifier (e.g., base64-encoded server URL)
++    private val imageKey: String,            // Original cache key or URL
++    private val appVersionSignature: Key? = null  // Optional app version for resources
++) : Key {
++
++    override fun equals(other: Any?): Boolean {
++        if (this === other) return true
++        if (other !is ServerImageKey) return false
++        return cachePath == other.cachePath &&
++                imageKey == other.imageKey &&
++                appVersionSignature == other.appVersionSignature
++    }
++
++    override fun hashCode(): Int {
++        var result = cachePath.hashCode()
++        result = 31 * result + imageKey.hashCode()
++        result = 31 * result + (appVersionSignature?.hashCode() ?: 0)
++        return result
++    }
++
++    override fun updateDiskCacheKey(messageDigest: MessageDigest) {
++        // Include cachePath in the disk cache key
++        messageDigest.update(cachePath.toByteArray(Key.CHARSET))
++        messageDigest.update(0.toByte()) // separator
++
++        // Include app version signature if provided (for resource URIs)
++        appVersionSignature?.updateDiskCacheKey(messageDigest)
++
++        // Include the image key
++        messageDigest.update(imageKey.toByteArray(Key.CHARSET))
++    }
++
++    fun getCachePath(): String = cachePath
++}
+diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt
+index 071907c..edf10c1 100644
+--- a/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt
++++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt
+@@ -70,8 +70,15 @@ data class GlideUrlWrapper(val glideUrl: GlideUrl) {
+ 
+ @GlideModule
+ class ExpoImageOkHttpClientGlideModule : LibraryGlideModule() {
++  companion object {
++    var okHttpClient: OkHttpClient? = null
++  }
+   override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
+-    val client = OkHttpClient()
++    val client = if (okHttpClient != null) {
++      okHttpClient!!
++    } else {
++      OkHttpClient()
++    }
+     // We don't use the `GlideUrl` directly but we want to replace the default okhttp loader anyway
+     // to make sure that the app will use only one client.
+     registry.replace(GlideUrl::class.java, InputStream::class.java, OkHttpUrlLoader.Factory(client))
+diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/records/SourceMap.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/records/SourceMap.kt
+index 72ad8fa..60ceaac 100644
+--- a/node_modules/expo-image/android/src/main/java/expo/modules/image/records/SourceMap.kt
++++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/records/SourceMap.kt
+@@ -64,7 +64,8 @@ data class SourceMap(
+   @Field override val height: Int = 0,
+   @Field override val scale: Double = 1.0,
+   @Field val headers: Map<String, String>? = null,
+-  @Field val cacheKey: String? = null
++  @Field val cacheKey: String? = null,
++  @Field val cachePath: String? = null
+ ) : Source, Record {
+   private var parsedUri: Uri? = null
+ 
+@@ -142,18 +143,41 @@ data class SourceMap(
+ 
+   override fun createGlideOptions(context: Context): RequestOptions {
+     parseUri(context)
+-    return RequestOptions().customize(`when` = width != 0 && height != 0) {
+-      // Override the size for local assets (apart from SVGs). This ensures that
+-      // resizeMode "center" displays the image in the correct size.
+-      override((width * scale).toInt(), (height * scale).toInt())
+-    }.customize(`when` = isResourceUri()) {
++
++    var options = RequestOptions()
++      .customize(`when` = width != 0 && height != 0) {
++        // Override the size for local assets (apart from SVGs). This ensures that
++        // resizeMode "center" displays the image in the correct size.
++        override((width * scale).toInt(), (height * scale).toInt())
++      }
++
++    // Build a per-server key if we have a cachePath
++    val hasServerPath = !cachePath.isNullOrBlank()
++    val imageKey = cacheKey ?: uri ?: ""
++
++    if (hasServerPath) {
++      val appVersionSig =
++        if (isResourceUri()) ApplicationVersionSignature.obtain(context) else null
++
++      val serverKey = expo.modules.image.ServerImageKey(
++        cachePath = cachePath!!,
++        imageKey = imageKey,
++        appVersionSignature = appVersionSig
++      )
++
++      options = options.signature(serverKey)
++    } else if (isResourceUri()) {
+       // Every local resource (drawable) in Android has its own unique numeric id, which are
+       // generated at build time. Although these ids are unique, they are not guaranteed unique
+       // across builds. The underlying glide implementation caches these resources. To make
+       // sure the cache does not return the wrong image, we should clear the cache when the
+       // application version changes.
+-      apply(RequestOptions.signatureOf(ApplicationVersionSignature.obtain(context)))
++      options = options.apply(
++        RequestOptions.signatureOf(ApplicationVersionSignature.obtain(context))
++      )
+     }
++
++    return options
+   }
+ 
+   private fun getCustomHeaders(): Headers {
+diff --git a/node_modules/expo-image/build/Image.d.ts b/node_modules/expo-image/build/Image.d.ts
+index 765a3db..6982c6d 100644
+--- a/node_modules/expo-image/build/Image.d.ts
++++ b/node_modules/expo-image/build/Image.d.ts
+@@ -35,6 +35,16 @@ export declare class Image extends React.PureComponent<ImageProps> {
+      * finished prefetching.
+      */
+     static prefetch(urls: string | string[], options?: ImagePrefetchOptions): Promise<boolean>;
++    /**
++     * Preloads images with detailed source information including cache keys.
++     * @param sources - An array of ImageSource objects with uri, cacheKey, cachePath, etc.
++     * @param options - Options for prefetching images.
++     * @return A promise resolving to `true` as soon as all images have been
++     * successfully prefetched. If an image fails to be prefetched, the promise
++     * will immediately resolve to `false` regardless of whether other images have
++     * finished prefetching.
++     */
++    static prefetch(sources: ImageSource[], options?: ImagePrefetchOptions): Promise<boolean>;
+     /**
+      * Asynchronously clears all images stored in memory.
+      * @platform android
+@@ -48,11 +58,13 @@ export declare class Image extends React.PureComponent<ImageProps> {
+      * Asynchronously clears all images from the disk cache.
+      * @platform android
+      * @platform ios
++     * @param path Optional cache path to clear. If provided, only that specific cache is cleared.
++     *             If not provided, clears all caches.
+      * @return A promise resolving to `true` when the operation succeeds.
+      * It may resolve to `false` on Android when the activity is no longer available.
+      * Resolves to `false` on Web.
+      */
+-    static clearDiskCache(): Promise<boolean>;
++    static clearDiskCache(path?: string): Promise<boolean>;
+     /**
+      * Asynchronously checks if an image exists in the disk cache and resolves to
+      * the path of the cached image if it does.
+diff --git a/node_modules/expo-image/build/Image.types.d.ts b/node_modules/expo-image/build/Image.types.d.ts
+index f690040..af43e4a 100644
+--- a/node_modules/expo-image/build/Image.types.d.ts
++++ b/node_modules/expo-image/build/Image.types.d.ts
+@@ -45,6 +45,14 @@ export type ImageSource = {
+      * If not provided, the `uri` is used also as the cache key.
+      */
+     cacheKey?: string;
++    /**
++     * Custom cache subdirectory name for this image.
++     * Will be used as: Library/Caches/ImageCache/{cachePath}/
++     * If not provided, uses default cache location (SDImageCache.shared).
++     * @platform ios
++     * @example "server-abc123" or "external"
++     */
++    cachePath?: string;
+     /**
+      * The max width of the viewport for which this source should be selected.
+      * Has no effect if `source` prop is not an array or has only 1 element.
+diff --git a/node_modules/expo-image/ios/ExpoImage.podspec b/node_modules/expo-image/ios/ExpoImage.podspec
+index 40e2b49..695f137 100644
+--- a/node_modules/expo-image/ios/ExpoImage.podspec
++++ b/node_modules/expo-image/ios/ExpoImage.podspec
+@@ -20,10 +20,8 @@ Pod::Spec.new do |s|
+ 
+   s.dependency 'ExpoModulesCore'
+   s.dependency 'SDWebImage', '~> 5.21.0'
+-  s.dependency 'SDWebImageAVIFCoder', '~> 0.11.0'
+   s.dependency 'SDWebImageSVGCoder', '~> 1.7.0'
+   s.dependency 'SDWebImageWebPCoder', '~> 0.14.6'
+-  s.dependency 'libavif/libdav1d'
+ 
+   # Swift/Objective-C compatibility
+   s.pod_target_xcconfig = {
+diff --git a/node_modules/expo-image/ios/ImageLoader.swift b/node_modules/expo-image/ios/ImageLoader.swift
+index a0dacf9..36a2908 100644
+--- a/node_modules/expo-image/ios/ImageLoader.swift
++++ b/node_modules/expo-image/ios/ImageLoader.swift
+@@ -14,7 +14,10 @@ internal final class ImageLoader {
+   func load(_ source: ImageSource, maxSize: CGSize? = nil) async throws -> UIImage {
+     // This loader uses only the disk cache. We may want to give more control on this, but the memory cache
+     // doesn't make much sense for shared refs as they're kept in memory as long as their JS objects.
+-    var context = createSDWebImageContext(forSource: source, cachePolicy: .disk)
++
++    // Get custom cache if cachePath is specified
++    let customCache = CachePathManager.shared.getCacheForPath(source.cachePath)
++    var context = createSDWebImageContext(forSource: source, cachePolicy: .disk, customCache: customCache)
+ 
+     if let maxSize {
+       context[.imageThumbnailPixelSize] = maxSize
+diff --git a/node_modules/expo-image/ios/ImageModule.swift b/node_modules/expo-image/ios/ImageModule.swift
+index 1451696..3985a30 100644
+--- a/node_modules/expo-image/ios/ImageModule.swift
++++ b/node_modules/expo-image/ios/ImageModule.swift
+@@ -2,7 +2,6 @@
+ 
+ import ExpoModulesCore
+ import SDWebImage
+-import SDWebImageAVIFCoder
+ import SDWebImageSVGCoder
+ 
+ public final class ImageModule: Module {
+@@ -170,6 +169,36 @@ public final class ImageModule: Module {
+       }
+     }
+ 
++    AsyncFunction("prefetchWithSources") { (sources: [ImageSource], cachePolicy: ImageCachePolicy, promise: Promise) in
++      var imagesLoaded = 0
++      var failed = false
++
++      sources.forEach { source in
++        var context = createSDWebImageContext(forSource: source, cachePolicy: cachePolicy)
++
++        // Override cache if cachePath is provided
++        let customCache = CachePathManager.shared.getCacheForPath(source.cachePath)
++        context[.imageCache] = customCache
++        context[.originalImageCache] = customCache
++
++        guard let url = source.uri else {
++          return
++        }
++
++        SDWebImagePrefetcher.shared.prefetchURLs([url], context: context, progress: nil, completed: { _, skipped in
++          if skipped > 0 && !failed {
++            failed = true
++            promise.resolve(false)
++          } else {
++            imagesLoaded = imagesLoaded + 1
++            if imagesLoaded == sources.count {
++              promise.resolve(true)
++            }
++          }
++        })
++      }
++    }
++
+     AsyncFunction("generateBlurhashAsync") { (url: URL, numberOfComponents: CGSize, promise: Promise) in
+       let downloader = SDWebImageDownloader()
+       let parsedNumberOfComponents = (Int(numberOfComponents.width), Int(numberOfComponents.height))
+@@ -190,9 +219,22 @@ public final class ImageModule: Module {
+       return true
+     }
+ 
+-    AsyncFunction("clearDiskCache") { (promise: Promise) in
+-      SDImageCache.shared.clearDisk {
+-        promise.resolve(true)
++    AsyncFunction("clearDiskCache") { (cachePath: String?, promise: Promise) in
++      if let cachePath = cachePath, !cachePath.isEmpty {
++        // Clear specific cache path
++        if let cache = CachePathManager.shared.getCacheIfExists(cachePath) {
++          cache.clearDisk {
++            promise.resolve(true)
++          }
++        } else {
++          // Cache doesn't exist yet, nothing to clear
++          promise.resolve(true)
++        }
++      } else {
++        // Clear default shared cache
++        SDImageCache.shared.clearDisk {
++          promise.resolve(true)
++        }
+       }
+     }
+ 
+@@ -230,7 +272,6 @@ public final class ImageModule: Module {
+ 
+   static func registerCoders() {
+     SDImageCodersManager.shared.addCoder(WebPCoder.shared)
+-    SDImageCodersManager.shared.addCoder(SDImageAVIFCoder.shared)
+     SDImageCodersManager.shared.addCoder(SDImageSVGCoder.shared)
+     SDImageCodersManager.shared.addCoder(SDImageHEICCoder.shared)
+   }
+diff --git a/node_modules/expo-image/ios/ImageSource.swift b/node_modules/expo-image/ios/ImageSource.swift
+index 88082fd..5025f0e 100644
+--- a/node_modules/expo-image/ios/ImageSource.swift
++++ b/node_modules/expo-image/ios/ImageSource.swift
+@@ -21,6 +21,9 @@ struct ImageSource: Record {
+   @Field
+   var cacheKey: String?
+ 
++  @Field
++  var cachePath: String?
++
+   var pixelCount: Double {
+     return width * height * scale * scale
+   }
+diff --git a/node_modules/expo-image/ios/ImageUtils.swift b/node_modules/expo-image/ios/ImageUtils.swift
+index e24e776..fc32c79 100644
+--- a/node_modules/expo-image/ios/ImageUtils.swift
++++ b/node_modules/expo-image/ios/ImageUtils.swift
+@@ -158,7 +158,7 @@ func createCacheKeyFilter(_ cacheKey: String?) -> SDWebImageCacheKeyFilter? {
+ /**
+  Creates a default image context based on the source and the cache policy.
+  */
+-func createSDWebImageContext(forSource source: ImageSource, cachePolicy: ImageCachePolicy = .disk, useAppleWebpCodec: Bool = true) -> SDWebImageContext {
++func createSDWebImageContext(forSource source: ImageSource, cachePolicy: ImageCachePolicy = .disk, customCache: SDImageCache? = nil, useAppleWebpCodec: Bool = true) -> SDWebImageContext {
+   var context = SDWebImageContext()
+ 
+   // Modify URL request to add headers.
+@@ -202,6 +202,12 @@ func createSDWebImageContext(forSource source: ImageSource, cachePolicy: ImageCa
+   // Some loaders (e.g. blurhash) may need access to the source.
+   context[ImageView.contextSourceKey] = source
+ 
++  // Override cache instances if custom cache is provided
++  if let customCache = customCache {
++    context[.imageCache] = customCache
++    context[.originalImageCache] = customCache
++  }
++
+   return context
+ }
+ 
+diff --git a/node_modules/expo-image/ios/ImageView.swift b/node_modules/expo-image/ios/ImageView.swift
+index bb6f6a5..de3468b 100644
+--- a/node_modules/expo-image/ios/ImageView.swift
++++ b/node_modules/expo-image/ios/ImageView.swift
+@@ -8,6 +8,79 @@ import VisionKit
+ 
+ typealias SDWebImageContext = [SDWebImageContextOption: Any]
+ 
++// MARK: - Cache Path Management
++
++internal class CachePathManager {
++  static let shared = CachePathManager()
++
++  // Cache instances by path
++  private var caches: [String: SDImageCache] = [:]
++  private let lock = NSLock()
++
++  private init() {}
++
++  func getCacheForPath(_ cachePath: String?) -> SDImageCache {
++    // No cachePath provided -> use default singleton
++    guard let cachePath = cachePath, !cachePath.isEmpty else {
++      return SDImageCache.shared
++    }
++
++    lock.lock()
++    defer { lock.unlock() }
++
++    // Return existing cache for this path
++    if let existing = caches[cachePath] {
++      return existing
++    }
++
++    // Create base ImageCache directory
++    guard let cachesDir = FileManager.default.urls(
++      for: .cachesDirectory,
++      in: .userDomainMask
++    ).first else {
++      return SDImageCache.shared
++    }
++
++    // Build path: Library/Caches/{cachePath}/Images/
++    let imageCacheDir = cachesDir
++      .appendingPathComponent(cachePath)
++      .appendingPathComponent("Images")
++
++    // Create new cache instance for this path
++    let cache = SDImageCache(
++      namespace: "custom",
++      diskCacheDirectory: imageCacheDir.path
++    )
++    caches[cachePath] = cache
++
++    return cache
++  }
++
++  func getCacheIfExists(_ cachePath: String) -> SDImageCache? {
++    lock.lock()
++    defer { lock.unlock() }
++    return caches[cachePath]
++  }
++
++  func clearAllCaches(completion: @escaping () -> Void) {
++    lock.lock()
++    let allCaches = Array(caches.values)
++    lock.unlock()
++
++    let group = DispatchGroup()
++    for cache in allCaches {
++      group.enter()
++      cache.clearDisk {
++        group.leave()
++      }
++    }
++
++    group.notify(queue: .main) {
++      completion()
++    }
++  }
++}
++
+ // swiftlint:disable:next type_body_length
+ public final class ImageView: ExpoView {
+   static let contextSourceKey = SDWebImageContextOption(rawValue: "source")
+@@ -152,7 +225,10 @@ public final class ImageView: ExpoView {
+     if sdImageView.image == nil {
+       sdImageView.contentMode = contentFit.toContentMode()
+     }
+-    var context = createSDWebImageContext(forSource: source, cachePolicy: cachePolicy, useAppleWebpCodec: useAppleWebpCodec)
++
++    // Get custom cache if cachePath is specified
++    let customCache = CachePathManager.shared.getCacheForPath(source.cachePath)
++    var context = createSDWebImageContext(forSource: source, cachePolicy: cachePolicy, customCache: customCache, useAppleWebpCodec: useAppleWebpCodec)
+ 
+     // Cancel currently running load requests.
+     cancelPendingOperation()
+@@ -337,7 +413,8 @@ public final class ImageView: ExpoView {
+     // to cache them or apply the same policy as with the proper image?
+     // Basically they are also cached in memory as the `placeholderImage` property,
+     // so just `disk` policy sounds like a good idea.
+-    var context = createSDWebImageContext(forSource: placeholder, cachePolicy: .disk, useAppleWebpCodec: useAppleWebpCodec)
++    let customCache = CachePathManager.shared.getCacheForPath(placeholder.cachePath)
++    var context = createSDWebImageContext(forSource: placeholder, cachePolicy: .disk, customCache: customCache, useAppleWebpCodec: useAppleWebpCodec)
+ 
+     let isPlaceholderHash = placeholder.isBlurhash || placeholder.isThumbhash
+ 
+diff --git a/node_modules/expo-image/src/Image.tsx b/node_modules/expo-image/src/Image.tsx
+index c52e711..c392133 100644
+--- a/node_modules/expo-image/src/Image.tsx
++++ b/node_modules/expo-image/src/Image.tsx
+@@ -70,8 +70,18 @@ export class Image extends React.PureComponent<ImageProps> {
+    * finished prefetching.
+    */
+   static async prefetch(urls: string | string[], options?: ImagePrefetchOptions): Promise<boolean>;
++  /**
++   * Preloads images with detailed source information including cache keys.
++   * @param sources - An array of ImageSource objects with uri, cacheKey, cachePath, etc.
++   * @param options - Options for prefetching images.
++   * @return A promise resolving to `true` as soon as all images have been
++   * successfully prefetched. If an image fails to be prefetched, the promise
++   * will immediately resolve to `false` regardless of whether other images have
++   * finished prefetching.
++   */
++  static async prefetch(sources: ImageSource[], options?: ImagePrefetchOptions): Promise<boolean>;
+   static async prefetch(
+-    urls: string | string[],
++    urlsOrSources: string | string[] | ImageSource[],
+     options?: ImagePrefetchOptions['cachePolicy'] | ImagePrefetchOptions
+   ): Promise<boolean> {
+     let cachePolicy: ImagePrefetchOptions['cachePolicy'] = 'memory-disk';
+@@ -86,7 +96,18 @@ export class Image extends React.PureComponent<ImageProps> {
+         break;
+     }
+ 
+-    return ImageModule.prefetch(Array.isArray(urls) ? urls : [urls], cachePolicy, headers);
++    // Normalize input to array
++    const sources = Array.isArray(urlsOrSources) ? urlsOrSources : [urlsOrSources];
++
++    // Check if we have ImageSource objects or plain strings
++    const firstItem = sources[0];
++    if (typeof firstItem === 'string') {
++      // plain URL strings
++      return ImageModule.prefetch(sources as string[], cachePolicy, headers);
++    } else {
++      // ImageSource objects with cacheKey and cachePath per image
++      return ImageModule.prefetchWithSources(sources as ImageSource[], cachePolicy);
++    }
+   }
+ 
+   /**
+@@ -109,8 +130,8 @@ export class Image extends React.PureComponent<ImageProps> {
+    * It may resolve to `false` on Android when the activity is no longer available.
+    * Resolves to `false` on Web.
+    */
+-  static async clearDiskCache(): Promise<boolean> {
+-    return await ImageModule.clearDiskCache();
++  static async clearDiskCache(path?: string): Promise<boolean> {
++    return await ImageModule.clearDiskCache(path);
+   }
+ 
+   /**
+diff --git a/node_modules/expo-image/src/Image.types.ts b/node_modules/expo-image/src/Image.types.ts
+index 0b4e7a5..efbe5ee 100644
+--- a/node_modules/expo-image/src/Image.types.ts
++++ b/node_modules/expo-image/src/Image.types.ts
+@@ -50,6 +50,16 @@ export type ImageSource = {
+    * If not provided, the `uri` is used also as the cache key.
+    */
+   cacheKey?: string;
++  /**
++   * Custom cache subdirectory name for this image.
++   * - iOS: Library/Caches/{cachePath}/Images/
++   * - Android: {cacheDir}/{cachePath}/Images/
++   * If not provided, uses default cache location.
++   * @platform ios
++   * @platform android
++   * @example "server-abc123" or "external"
++   */
++  cachePath?: string;
+   /**
+    * The max width of the viewport for which this source should be selected.
+    * Has no effect if `source` prop is not an array or has only 1 element.
