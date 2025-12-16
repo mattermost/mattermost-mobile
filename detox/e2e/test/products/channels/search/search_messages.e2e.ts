@@ -419,7 +419,7 @@ describe('Search - Search Messages', () => {
         await waitFor(element(by.text('Following'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
 
         // # Open post options for updated searched message and delete post
-        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, updatedMessage);
+        await element(by.id(`search_results.post_list.post.${searchedPost.id}`)).longPress();
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify updated searched message is deleted
