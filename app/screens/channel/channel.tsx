@@ -44,8 +44,6 @@ type ChannelProps = {
     scheduledPostCount: number;
 };
 
-const edges: Edge[] = ['left', 'right', 'bottom'];
-
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
@@ -79,6 +77,9 @@ const Channel = ({
     const [containerHeight, setContainerHeight] = useState(0);
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
     const isVisible = useIsScreenVisible(componentId);
+
+    const safeAreaViewEdges: Edge[] = isTablet ? ['left', 'right'] : ['left', 'right', 'bottom'];
+
     const handleBack = useCallback(() => {
         popTopScreen(componentId);
     }, [componentId]);
@@ -119,7 +120,7 @@ const Channel = ({
             <SafeAreaView
                 style={styles.flex}
                 mode='margin'
-                edges={edges}
+                edges={safeAreaViewEdges}
                 testID='channel.screen'
                 onLayout={onLayout}
                 nativeID={componentId ? SecurityManager.getShieldScreenId(componentId) : undefined}
