@@ -44,7 +44,7 @@ type ChannelProps = {
     scheduledPostCount: number;
 };
 
-const edges: Edge[] = ['left', 'right'];
+const edges: Edge[] = ['left', 'right', 'bottom'];
 
 const styles = StyleSheet.create({
     flex: {

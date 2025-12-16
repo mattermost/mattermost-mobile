@@ -37,7 +37,7 @@ const keyExtractor = (item: SectionListItem) => {
 const getItemType = (item: SectionListItem) => item.type;
 
 const styles = StyleSheet.create({
-    container: {flex: 1, paddingBottom: 20},
+    container: {flex: 1},
     containerStyle: {paddingBottom: 50, paddingHorizontal: 12},
 });
 

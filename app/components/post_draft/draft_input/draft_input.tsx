@@ -60,6 +60,7 @@ export type Props = {
 }
 
 const SCHEDULED_POST_PICKER_BUTTON = 'close-scheduled-post-picker';
+const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -139,8 +140,6 @@ function DraftInput({
 
     const {inputRef, focusInput: focus} = useKeyboardAnimationContext();
 
-    const safeAreaViewEdges: Edge[] = isTablet ? ['left', 'right'] : ['left', 'right', 'bottom'];
-
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
     }, [updatePostInputTop]);
@@ -197,7 +196,7 @@ function DraftInput({
                 rootId={rootId}
             />
             <SafeAreaView
-                edges={safeAreaViewEdges}
+                edges={SAFE_AREA_VIEW_EDGES}
                 onLayout={handleLayout}
                 style={style.inputWrapper}
                 testID={testID}
