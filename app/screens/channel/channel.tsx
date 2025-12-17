@@ -151,7 +151,7 @@ const Channel = ({
                             marginTop={marginTop}
                             scheduledPostCount={scheduledPostCount}
                             containerHeight={containerHeight}
-                            enabled={isVisible}
+                            enabled={isVisible || shouldRender}
                             onEmojiSearchFocusChange={setIsEmojiSearchFocused}
                         />
                     </KeyboardProvider>
@@ -161,7 +161,7 @@ const Channel = ({
                         marginTop={marginTop}
                         scheduledPostCount={scheduledPostCount}
                         containerHeight={containerHeight}
-                        enabled={isVisible}
+                        enabled={isVisible || shouldRender}
                         onEmojiSearchFocusChange={setIsEmojiSearchFocused}
                     />
                 ))
