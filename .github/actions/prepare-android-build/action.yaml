@@ -30,7 +30,7 @@ runs:
       run: |
         echo "::group::Apply 16KB page size compatibility patch"
         npm run apply-16kb-pagesize-patch
-        npm install
+        npx patch-package
         echo "::endgroup::"
 
     - name: ci/checkout-private-repo
