@@ -8,15 +8,15 @@
  * and regenerating package-lock.json for Android 16KB page size support.
  */
 
+const {execSync} = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// Correct patch file content for expo-image+2.4.1.patch
-// This is the complete, correct content that should be in the patch file
-const EXPO_IMAGE_PATCH_CONTENT = fs.readFileSync(path.join(__dirname, 'expo-image+2.4.1.patch'), 'utf8');
+// ============================================================================
+// CONSTANTS
+// ============================================================================
 
-// ANSI color codes for pretty output
-const colors = {
+const COLORS = {
     reset: '\x1b[0m',
     bright: '\x1b[1m',
     green: '\x1b[32m',
@@ -26,16 +26,118 @@ const colors = {
     cyan: '\x1b[36m',
 };
 
+const GRADLE_DEPENDENCIES = [
+    'org.jetbrains.kotlin:kotlin-stdlib-common:2.0.21=classpath',
+    'org.jetbrains.kotlinx:kotlinx-serialization-bom:1.6.3=classpath',
+    'org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.6.3=classpath',
+    'org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3=classpath',
+    'org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.6.3=classpath',
+    'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3=classpath',
+];
+
+const TYPESCRIPT_UPDATES = [
+    {
+        old: 'const source: ImageSource = useMemo',
+        new: 'const source: ImageSource | string | number | ImageSource[] | string[] | SharedRefType<\'image\'> | null | undefined = useMemo',
+        description: 'source type definition',
+    },
+    {
+        old: 'if (typeof props.source === \'number\') {',
+        new: 'if (typeof props.source === \'number\' || typeof props.source === \'string\' || Array.isArray(props.source) || !props.source) {',
+        description: 'source type check',
+    },
+    {
+        old: 'if (id) {',
+        new: 'if (id && typeof props.source === \'object\' && \'uri\' in props.source) {',
+        description: 'source object check',
+    },
+    {
+        old: 'const placeholder: ImageSource | undefined = useMemo',
+        new: 'const placeholder: ImageSource | string | number | ImageSource[] | string[] | SharedRefType<\'image\'> | null | undefined = useMemo',
+        description: 'placeholder type definition',
+    },
+    {
+        old: 'if (!props.placeholder || typeof props.placeholder === \'number\' || typeof props.placeholder === \'string\') {',
+        new: 'if (!props.placeholder || typeof props.placeholder === \'number\' || typeof props.placeholder === \'string\' || Array.isArray(props.placeholder)) {',
+        description: 'placeholder type check',
+    },
+    {
+        old: 'if (props.placeholder.uri && id) {',
+        new: 'if (typeof props.placeholder === \'object\' && \'uri\' in props.placeholder && props.placeholder.uri && id) {',
+        description: 'placeholder object check',
+    },
+];
+
+// ============================================================================
+// UTILITIES
+// ============================================================================
+
 function log(message, color = 'reset') {
     // eslint-disable-next-line no-console
-    console.log(`${colors[color]}${message}${colors.reset}`);
+    console.log(`${COLORS[color]}${message}${COLORS.reset}`);
 }
 
-/**
- * Parse a unified diff file and extract structured change information
- * @param {string} diffPath - Path to the diff file
- * @returns {Object} Parsed diff data
- */
+class ChangeTracker {
+    constructor(dryRun) {
+        this.dryRun = dryRun;
+        this.changes = 0;
+    }
+
+    logChange(message, type = 'green') {
+        if (this.dryRun) {
+            log(`  [DRY RUN] Would ${message}`, 'yellow');
+        } else {
+            log(`  ✓ ${message}`, type);
+        }
+        this.changes++;
+    }
+
+    logSkip(message) {
+        log(`  ⊘ ${message}`, 'cyan');
+    }
+
+    logWarning(message) {
+        log(`  ⚠ ${message}`, 'yellow');
+    }
+
+    summary(fileName) {
+        if (this.changes > 0) {
+            if (this.dryRun) {
+                log(`\n[DRY RUN] Would make ${this.changes} changes to ${fileName}`, 'yellow');
+            } else {
+                log(`\n✅ Updated ${fileName} (${this.changes} changes)`, 'green');
+            }
+        } else {
+            log(`\n⊘ No changes needed for ${fileName}`, 'cyan');
+        }
+    }
+}
+
+function updateFile(filePath, displayName, applyFn, dryRun) {
+    log(`\n${displayName}...`, 'blue');
+
+    const fullPath = path.resolve(process.cwd(), filePath);
+    if (!fs.existsSync(fullPath)) {
+        log(`❌ Error: ${filePath} not found`, 'red');
+        return false;
+    }
+
+    const tracker = new ChangeTracker(dryRun);
+    const content = fs.readFileSync(fullPath, 'utf8');
+    const newContent = applyFn(content, tracker);
+
+    if (!dryRun && tracker.changes > 0) {
+        fs.writeFileSync(fullPath, newContent, 'utf8');
+    }
+
+    tracker.summary(filePath);
+    return true;
+}
+
+// ============================================================================
+// DIFF PARSING
+// ============================================================================
+
 function parseDiff(diffPath) {
     log('\n📖 Parsing diff file...', 'blue');
 
@@ -43,133 +145,57 @@ function parseDiff(diffPath) {
     const lines = diffContent.split('\n');
 
     const result = {
-        packageJson: {
-            dependencies: [],
-        },
-        patchFiles: {
-            renames: [],
-            contentChanges: [],
-        },
+        packageJson: {dependencies: []},
+        patchFiles: {renames: [], contentChanges: []},
         otherFiles: {},
     };
 
     let currentFile = null;
     let currentSection = [];
-    let inPatchContent = false;
-    let patchContentLines = [];
-    let currentPatchFile = null;
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
 
-        // Detect new file section
         if (line.startsWith('diff --git ')) {
-            // Process previous section if exists
             if (currentFile && currentSection.length > 0) {
                 processSection(currentFile, currentSection, result);
             }
 
-            // Save patch content if we were collecting it
-            if (inPatchContent && currentPatchFile) {
-                result.patchFiles.contentChanges.push({
-                    file: currentPatchFile,
-                    content: patchContentLines.join('\n'),
-                });
-                inPatchContent = false;
-                patchContentLines = [];
-            }
-
-            // Extract file paths from "diff --git a/path b/path"
             const match = line.match(/diff --git a\/(.+?) b\/(.+)/);
             if (match) {
-                const oldPath = match[1];
-                const newPath = match[2];
-
                 currentFile = {
-                    oldPath,
-                    newPath,
-                    isRename: oldPath !== newPath,
+                    oldPath: match[1],
+                    newPath: match[2],
+                    isRename: match[1] !== match[2],
                 };
                 currentSection = [line];
             }
         } else if (currentFile) {
             currentSection.push(line);
-
-            // Check if this is a patch file rename
-            if (line.startsWith('rename from ') || line.startsWith('rename to ')) {
-                // Will be processed in processSection
-            }
-
-            // Check if we're entering patch file content changes
-            if (currentFile.newPath.startsWith('patches/') &&
-                currentFile.newPath.endsWith('.patch') &&
-                line.startsWith('---')) {
-                inPatchContent = true;
-                currentPatchFile = currentFile.newPath;
-                patchContentLines = [
-                    `--- a/${currentFile.oldPath}`,
-                    `+++ b/${currentFile.newPath}`,
-                ];
-            }
-
-            // Collect patch content lines
-            if (inPatchContent) {
-                // Skip the original --- and +++ lines as we already added them
-                if (line.startsWith('--- ') || line.startsWith('+++ ')) {
-                    continue;
-                }
-
-                // Collect all diff lines
-                if (line.startsWith('+') || line.startsWith('-') || line.startsWith(' ') || line.startsWith('@@')) {
-                    patchContentLines.push(line);
-                }
-            }
         }
     }
 
-    // Process last section
     if (currentFile && currentSection.length > 0) {
         processSection(currentFile, currentSection, result);
     }
 
-    // Save last patch content if exists
-    if (inPatchContent && currentPatchFile) {
-        result.patchFiles.contentChanges.push({
-            file: currentPatchFile,
-            content: patchContentLines.join('\n'),
-        });
-    }
-
     log(`✓ Found ${result.packageJson.dependencies.length} package.json changes`, 'green');
     log(`✓ Found ${result.patchFiles.renames.length} patch file renames`, 'green');
-    log(`✓ Found ${result.patchFiles.contentChanges.length} patch content changes`, 'green');
     log(`✓ Found ${Object.keys(result.otherFiles).length} other file changes`, 'green');
 
     return result;
 }
 
-/**
- * Process a section of the diff for a specific file
- * @param {Object} fileInfo - Information about the current file
- * @param {Array} lines - Lines in this section
- * @param {Object} result - Result object to populate
- */
 function processSection(fileInfo, lines, result) {
     const {oldPath, newPath, isRename} = fileInfo;
 
-    // Handle package.json changes
     if (newPath === 'package.json') {
         parsePackageJsonChanges(lines, result);
     } else if (oldPath.startsWith('patches/') && newPath.startsWith('patches/')) {
-        // Handle patch file renames
         if (isRename) {
-            result.patchFiles.renames.push({
-                old: oldPath,
-                new: newPath,
-            });
+            result.patchFiles.renames.push({old: oldPath, new: newPath});
         }
     } else if (!oldPath.startsWith('patches/')) {
-        // Handle other files (app.json, TypeScript, Gradle, etc.)
         result.otherFiles[newPath] = {
             oldPath,
             changes: extractChanges(lines),
@@ -177,49 +203,33 @@ function processSection(fileInfo, lines, result) {
     }
 }
 
-/**
- * Parse package.json dependency changes from diff lines
- * @param {Array} lines - Diff lines for package.json
- * @param {Object} result - Result object to populate
- */
 function parsePackageJsonChanges(lines, result) {
-    const removedPackages = new Map(); // packageName -> oldVersion
-    const addedPackages = new Map(); // packageName -> newVersion
+    const removedPackages = new Map();
+    const addedPackages = new Map();
 
-    // First pass: collect all removed and added packages
     for (const line of lines) {
-        // Look for removed dependency lines (old version)
         if (line.startsWith('-    "') && line.includes('": "')) {
-            const removedMatch = line.match(/-    "(.+?)": "(.+?)"/);
-            if (removedMatch) {
-                const packageName = removedMatch[1];
-                const oldVersion = removedMatch[2].replace(/[",]/g, '');
-                removedPackages.set(packageName, oldVersion);
+            const match = line.match(/-    "(.+?)": "(.+?)"/);
+            if (match) {
+                removedPackages.set(match[1], match[2].replace(/[",]/g, ''));
             }
         } else if (line.startsWith('+    "') && line.includes('": "')) {
-            // Look for added dependencies (new version)
-            const addedMatch = line.match(/\+    "(.+?)": "(.+?)"/);
-            if (addedMatch) {
-                const packageName = addedMatch[1];
-                const newVersion = addedMatch[2].replace(/[",]/g, '');
-                addedPackages.set(packageName, newVersion);
+            const match = line.match(/\+    "(.+?)": "(.+?)"/);
+            if (match) {
+                addedPackages.set(match[1], match[2].replace(/[",]/g, ''));
             }
         }
     }
 
-    // Second pass: determine if packages are updates or new additions
     for (const [packageName, newVersion] of addedPackages) {
         if (removedPackages.has(packageName)) {
-            // This is an update
-            const oldVersion = removedPackages.get(packageName);
             result.packageJson.dependencies.push({
                 name: packageName,
-                oldVersion,
+                oldVersion: removedPackages.get(packageName),
                 newVersion,
             });
-            removedPackages.delete(packageName); // Mark as processed
+            removedPackages.delete(packageName);
         } else {
-            // This is a new package
             result.packageJson.dependencies.push({
                 name: packageName,
                 oldVersion: null,
@@ -229,17 +239,8 @@ function parsePackageJsonChanges(lines, result) {
     }
 }
 
-/**
- * Extract added and removed lines from a diff section
- * @param {Array} lines - Diff lines
- * @returns {Object} Added and removed lines
- */
 function extractChanges(lines) {
-    const changes = {
-        added: [],
-        removed: [],
-    };
-
+    const changes = {added: [], removed: []};
     for (const line of lines) {
         if (line.startsWith('+') && !line.startsWith('+++')) {
             changes.added.push(line.substring(1));
@@ -247,432 +248,221 @@ function extractChanges(lines) {
             changes.removed.push(line.substring(1));
         }
     }
-
     return changes;
 }
 
-/**
- * Update package.json with dependency changes
- * @param {Object} packageChanges - Parsed package.json changes
- * @param {boolean} dryRun - If true, only show what would be changed
- * @returns {boolean} Success status
- */
-function updatePackageJson(packageChanges, dryRun = false) {
-    log('\n📦 Updating package.json...', 'blue');
+// ============================================================================
+// UPDATE FUNCTIONS
+// ============================================================================
 
-    const packageJsonPath = path.resolve(process.cwd(), 'package.json');
+function updatePackageJson(packageChanges, dryRun) {
+    return updateFile('package.json', '📦 Updating package.json', (content, tracker) => {
+        let updatedContent = content;
+        for (const dep of packageChanges.dependencies) {
+            if (dep.oldVersion) {
+                updatedContent = updateDependency(updatedContent, dep, tracker);
+            } else {
+                updatedContent = addDependency(updatedContent, dep, tracker);
+            }
+        }
+        return updatedContent;
+    }, dryRun);
+}
 
-    if (!fs.existsSync(packageJsonPath)) {
-        log('❌ Error: package.json not found', 'red');
-        return false;
+function updateDependency(content, dep, tracker) {
+    const oldPattern = `"${dep.name}": "${dep.oldVersion}"`;
+    const newPattern = `"${dep.name}": "${dep.newVersion}"`;
+
+    if (content.includes(oldPattern)) {
+        tracker.logChange(`Updated: ${dep.name}: ${dep.oldVersion} → ${dep.newVersion}`);
+        return content.replace(oldPattern, newPattern);
     }
 
-    let content = fs.readFileSync(packageJsonPath, 'utf8');
-    let changesMade = 0;
+    if (content.includes(newPattern)) {
+        tracker.logSkip(`Already updated: ${dep.name} is already at ${dep.newVersion}`);
+    } else {
+        tracker.logWarning(`Could not find ${dep.name} with version ${dep.oldVersion}`);
+    }
+    return content;
+}
 
-    for (const dep of packageChanges.dependencies) {
-        if (dep.oldVersion) {
-            // Update existing dependency
-            const oldPattern = `"${dep.name}": "${dep.oldVersion}"`;
-            const newPattern = `"${dep.name}": "${dep.newVersion}"`;
+function addDependency(content, dep, tracker) {
+    if (content.includes(`"${dep.name}":`)) {
+        tracker.logSkip(`Already exists: ${dep.name}`);
+        return content;
+    }
 
-            if (content.includes(oldPattern)) {
-                if (dryRun) {
-                    log(`  [DRY RUN] Would update: ${dep.name}: ${dep.oldVersion} → ${dep.newVersion}`, 'yellow');
-                } else {
-                    content = content.replace(oldPattern, newPattern);
-                    log(`  ✓ Updated: ${dep.name}: ${dep.oldVersion} → ${dep.newVersion}`, 'green');
-                }
-                changesMade++;
-            } else if (content.includes(newPattern)) {
-                // Check if the new version is already there
-                log(`  ⊘ Already updated: ${dep.name} is already at ${dep.newVersion}`, 'cyan');
-            } else {
-                log(`  ⚠ Warning: Could not find ${dep.name} with version ${dep.oldVersion}`, 'yellow');
+    const newLine = `    "${dep.name}": "${dep.newVersion}",`;
+    const lines = content.split('\n');
+    let inDependencies = false;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (line.includes('"dependencies"') || line.includes('"devDependencies"')) {
+            inDependencies = true;
+            continue;
+        }
+
+        if (inDependencies && line.match(/^\s*\}/)) {
+            inDependencies = false;
+            continue;
+        }
+
+        if (inDependencies) {
+            const match = line.match(/^\s+"([^"]+)":\s+"[^"]+",?$/);
+            if (match && dep.name < match[1]) {
+                lines.splice(i, 0, newLine);
+                tracker.logChange(`Added: ${dep.name}: ${dep.newVersion}`);
+                return lines.join('\n');
             }
-        } else if (content.includes(`"${dep.name}":`)) {
-            // Add new dependency - check if it already exists
-            log(`  ⊘ Already exists: ${dep.name}`, 'cyan');
-        } else if (dryRun) {
-            // Add new dependency in dry-run mode
-            log(`  [DRY RUN] Would add: ${dep.name}: ${dep.newVersion}`, 'yellow');
-            changesMade++;
+        }
+    }
+
+    tracker.logWarning(`Could not find insertion point for ${dep.name}`);
+    return content;
+}
+
+function updateAppJson(fileChanges, dryRun) {
+    return updateFile('app.json', '📱 Updating app.json', (content, tracker) => {
+        if (content.includes('"plugins"')) {
+            tracker.logSkip('Already has plugins array');
+            return content;
+        }
+
+        const updatedContent = content.replace(
+            /"displayName":\s*"([^"]+)"/,
+            '"displayName": "$1",\n  "plugins": [\n    "expo-web-browser"\n  ]',
+        );
+        tracker.logChange('Added plugins array with expo-web-browser');
+        return updatedContent;
+    }, dryRun);
+}
+
+function updateExpoImageIndexTsx(fileChanges, filePath, dryRun) {
+    return updateFile(filePath, `📝 Updating ${filePath}`, (content, tracker) => {
+        let updatedContent = content;
+
+        if (updatedContent.includes('SharedRefType')) {
+            tracker.logSkip('SharedRefType import already exists');
         } else {
-            // Add new dependency - find the right place to insert it (alphabetically in dependencies section)
-            const newLine = `    "${dep.name}": "${dep.newVersion}",`;
-            const lines = content.split('\n');
-            let inserted = false;
-            let inDependencies = false;
+            updatedContent = updatedContent.replace(
+                /(import {urlSafeBase64Encode} from '@utils\/security';)/,
+                '$1\n\nimport type {SharedRefType} from \'expo\';',
+            );
+            tracker.logChange('Added SharedRefType import');
+        }
 
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
+        for (const update of TYPESCRIPT_UPDATES) {
+            if (updatedContent.includes(update.new)) {
+                tracker.logSkip(`Already updated: ${update.description}`);
+            } else if (updatedContent.includes(update.old)) {
+                updatedContent = updatedContent.replace(update.old, update.new);
+                tracker.logChange(`Updated: ${update.description}`);
+            }
+        }
 
-                // Detect when we enter the dependencies section
-                if (line.includes('"dependencies"') || line.includes('"devDependencies"')) {
-                    inDependencies = true;
-                    continue;
-                }
+        return updatedContent;
+    }, dryRun);
+}
 
-                // Exit dependencies section when we hit a closing brace at the same level
-                if (inDependencies && line.match(/^\s*\}/)) {
-                    inDependencies = false;
-                    continue;
-                }
+function updateGradleLockfile(fileChanges, dryRun) {
+    return updateFile('android/buildscript-gradle.lockfile', '🔧 Updating android/buildscript-gradle.lockfile', (content, tracker) => {
+        const lines = content.split('\n');
 
-                // Only process lines within dependencies section
-                if (inDependencies) {
-                    // Look for dependency lines in the format: "package-name": "version",
-                    const match = line.match(/^\s+"([^"]+)":\s+"[^"]+",?$/);
-                    if (match) {
-                        const existingPackage = match[1];
+        for (const dep of GRADLE_DEPENDENCIES) {
+            if (content.includes(dep)) {
+                tracker.logSkip(`Already exists: ${dep.split(':')[1]}`);
+            } else {
+                const depName = dep.split('=')[0];
+                let inserted = false;
 
-                        // Insert alphabetically
-                        if (dep.name < existingPackage) {
-                            lines.splice(i, 0, newLine);
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].includes('=classpath')) {
+                        const existingDepName = lines[i].split('=')[0];
+                        if (depName < existingDepName) {
+                            lines.splice(i, 0, dep);
+                            tracker.logChange(`Added: ${dep.split(':')[1]}`);
                             inserted = true;
                             break;
                         }
                     }
                 }
-            }
 
-            if (inserted) {
-                content = lines.join('\n');
-                log(`  ✓ Added: ${dep.name}: ${dep.newVersion}`, 'green');
-                changesMade++;
-            } else {
-                log(`  ⚠ Warning: Could not find insertion point for ${dep.name}`, 'yellow');
-            }
-        }
-    }
-
-    if (!dryRun && changesMade > 0) {
-        fs.writeFileSync(packageJsonPath, content, 'utf8');
-        log(`\n✅ Updated package.json (${changesMade} changes)`, 'green');
-    } else if (dryRun && changesMade > 0) {
-        log(`\n[DRY RUN] Would make ${changesMade} changes to package.json`, 'yellow');
-    } else {
-        log('\n⊘ No changes needed for package.json', 'cyan');
-    }
-
-    return true;
-}
-
-/**
- * Update app.json with changes from the diff
- * @param {Object} fileChanges - Parsed file changes
- * @param {boolean} dryRun - If true, only show what would be changed
- * @returns {boolean} Success status
- */
-function updateAppJson(fileChanges, dryRun = false) {
-    log('\n📱 Updating app.json...', 'blue');
-
-    const appJsonPath = path.resolve(process.cwd(), 'app.json');
-
-    if (!fs.existsSync(appJsonPath)) {
-        log('❌ Error: app.json not found', 'red');
-        return false;
-    }
-
-    let content = fs.readFileSync(appJsonPath, 'utf8');
-    let changesMade = 0;
-
-    // Check if plugins array needs to be added
-    if (content.includes('"plugins"')) {
-        log('  ⊘ Already has plugins array', 'cyan');
-    } else if (dryRun) {
-        log('  [DRY RUN] Would add plugins array with expo-web-browser', 'yellow');
-        changesMade++;
-    } else {
-        // Add plugins array after displayName
-        content = content.replace(
-            /"displayName":\s*"([^"]+)"/,
-            '"displayName": "$1",\n  "plugins": [\n    "expo-web-browser"\n  ]',
-        );
-        log('  ✓ Added plugins array with expo-web-browser', 'green');
-        changesMade++;
-    }
-
-    if (!dryRun && changesMade > 0) {
-        fs.writeFileSync(appJsonPath, content, 'utf8');
-        log(`\n✅ Updated app.json (${changesMade} changes)`, 'green');
-    } else if (dryRun && changesMade > 0) {
-        log(`\n[DRY RUN] Would make ${changesMade} changes to app.json`, 'yellow');
-    } else {
-        log('\n⊘ No changes needed for app.json', 'cyan');
-    }
-
-    return true;
-}
-
-/**
- * Update TypeScript files with changes from the diff
- * @param {Object} fileChanges - Parsed file changes for the TypeScript file
- * @param {string} filePath - Path to the TypeScript file
- * @param {boolean} dryRun - If true, only show what would be changed
- * @returns {boolean} Success status
- */
-function updateTypeScriptFile(fileChanges, filePath, dryRun = false) {
-    log(`\n📝 Updating ${filePath}...`, 'blue');
-
-    const fullPath = path.resolve(process.cwd(), filePath);
-
-    if (!fs.existsSync(fullPath)) {
-        log(`❌ Error: ${filePath} not found`, 'red');
-        return false;
-    }
-
-    let content = fs.readFileSync(fullPath, 'utf8');
-    let changesMade = 0;
-
-    // Apply the changes from the diff
-    // const {added, removed} = fileChanges.changes; // Not used currently
-
-    // For expo_image/index.tsx, we need to:
-    // 1. Add SharedRefType import
-    // 2. Update type definitions
-
-    if (filePath.includes('expo_image/index.tsx')) {
-        // Check if SharedRefType import exists
-        if (content.includes('SharedRefType')) {
-            log('  ⊘ SharedRefType import already exists', 'cyan');
-        } else if (dryRun) {
-            log('  [DRY RUN] Would add SharedRefType import', 'yellow');
-            changesMade++;
-        } else {
-            // Add import after the existing imports
-            content = content.replace(
-                /(import {urlSafeBase64Encode} from '@utils\/security';)/,
-                '$1\n\nimport type {SharedRefType} from \'expo\';',
-            );
-            log('  ✓ Added SharedRefType import', 'green');
-            changesMade++;
-        }
-
-        // Update type definitions
-        const typeUpdates = [
-            {
-                old: 'const source: ImageSource = useMemo',
-                new: 'const source: ImageSource | string | number | ImageSource[] | string[] | SharedRefType<\'image\'> | null | undefined = useMemo',
-                description: 'source type definition',
-            },
-            {
-                old: 'if (typeof props.source === \'number\') {',
-                new: 'if (typeof props.source === \'number\' || typeof props.source === \'string\' || Array.isArray(props.source) || !props.source) {',
-                description: 'source type check',
-            },
-            {
-                old: 'if (id) {',
-                new: 'if (id && typeof props.source === \'object\' && \'uri\' in props.source) {',
-                description: 'source object check',
-            },
-            {
-                old: 'const placeholder: ImageSource | undefined = useMemo',
-                new: 'const placeholder: ImageSource | string | number | ImageSource[] | string[] | SharedRefType<\'image\'> | null | undefined = useMemo',
-                description: 'placeholder type definition',
-            },
-            {
-                old: 'if (!props.placeholder || typeof props.placeholder === \'number\' || typeof props.placeholder === \'string\') {',
-                new: 'if (!props.placeholder || typeof props.placeholder === \'number\' || typeof props.placeholder === \'string\' || Array.isArray(props.placeholder)) {',
-                description: 'placeholder type check',
-            },
-            {
-                old: 'if (props.placeholder.uri && id) {',
-                new: 'if (typeof props.placeholder === \'object\' && \'uri\' in props.placeholder && props.placeholder.uri && id) {',
-                description: 'placeholder object check',
-            },
-        ];
-
-        for (const update of typeUpdates) {
-            if (content.includes(update.new)) {
-                log(`  ⊘ Already updated: ${update.description}`, 'cyan');
-            } else if (content.includes(update.old)) {
-                if (dryRun) {
-                    log(`  [DRY RUN] Would update: ${update.description}`, 'yellow');
-                    changesMade++;
-                } else {
-                    content = content.replace(update.old, update.new);
-                    log(`  ✓ Updated: ${update.description}`, 'green');
-                    changesMade++;
+                if (!inserted) {
+                    tracker.logWarning(`Could not find insertion point for ${dep}`);
                 }
             }
         }
-    }
 
-    if (!dryRun && changesMade > 0) {
-        fs.writeFileSync(fullPath, content, 'utf8');
-        log(`\n✅ Updated ${filePath} (${changesMade} changes)`, 'green');
-    } else if (dryRun && changesMade > 0) {
-        log(`\n[DRY RUN] Would make ${changesMade} changes to ${filePath}`, 'yellow');
-    } else {
-        log(`\n⊘ No changes needed for ${filePath}`, 'cyan');
-    }
-
-    return true;
+        return lines.join('\n');
+    }, dryRun);
 }
 
-/**
- * Update Gradle lockfile with new dependencies
- * @param {Object} fileChanges - Parsed file changes
- * @param {boolean} dryRun - If true, only show what would be changed
- * @returns {boolean} Success status
- */
-function updateGradleLockfile(fileChanges, dryRun = false) {
-    log('\n🔧 Updating android/buildscript-gradle.lockfile...', 'blue');
-
-    const lockfilePath = path.resolve(process.cwd(), 'android/buildscript-gradle.lockfile');
-
-    if (!fs.existsSync(lockfilePath)) {
-        log('❌ Error: android/buildscript-gradle.lockfile not found', 'red');
-        return false;
-    }
-
-    let content = fs.readFileSync(lockfilePath, 'utf8');
-    const lines = content.split('\n');
-    let changesMade = 0;
-
-    // Dependencies to add (from the diff)
-    const dependenciesToAdd = [
-        'org.jetbrains.kotlin:kotlin-stdlib-common:2.0.21=classpath',
-        'org.jetbrains.kotlinx:kotlinx-serialization-bom:1.6.3=classpath',
-        'org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.6.3=classpath',
-        'org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3=classpath',
-        'org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.6.3=classpath',
-        'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3=classpath',
-    ];
-
-    for (const dep of dependenciesToAdd) {
-        if (content.includes(dep)) {
-            log(`  ⊘ Already exists: ${dep.split(':')[1]}`, 'cyan');
-        } else if (dryRun) {
-            log(`  [DRY RUN] Would add: ${dep}`, 'yellow');
-            changesMade++;
-        } else {
-            // Find the correct alphabetical position to insert
-            const depName = dep.split('=')[0];
-            let inserted = false;
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                if (line.includes('=classpath')) {
-                    const existingDepName = line.split('=')[0];
-                    if (depName < existingDepName) {
-                        lines.splice(i, 0, dep);
-                        inserted = true;
-                        log(`  ✓ Added: ${dep.split(':')[1]}`, 'green');
-                        changesMade++;
-                        break;
-                    }
-                }
-            }
-
-            if (!inserted) {
-                log(`  ⚠ Warning: Could not find insertion point for ${dep}`, 'yellow');
-            }
-        }
-    }
-
-    if (!dryRun && changesMade > 0) {
-        content = lines.join('\n');
-        fs.writeFileSync(lockfilePath, content, 'utf8');
-        log(`\n✅ Updated android/buildscript-gradle.lockfile (${changesMade} changes)`, 'green');
-    } else if (dryRun && changesMade > 0) {
-        log(`\n[DRY RUN] Would make ${changesMade} changes to android/buildscript-gradle.lockfile`, 'yellow');
-    } else {
-        log('\n⊘ No changes needed for android/buildscript-gradle.lockfile', 'cyan');
-    }
-
-    return true;
-}
-
-/**
- * Rename and update patch files
- * @param {Object} patchFileChanges - Parsed patch file changes
- * @param {boolean} dryRun - If true, only show what would be changed
- * @returns {boolean} Success status
- */
-function updatePatchFiles(patchFileChanges, dryRun = false) {
+function updatePatchFiles(patchFileChanges, dryRun) {
     log('\n🔧 Managing patch files...', 'blue');
 
     const patchesDir = path.resolve(process.cwd(), 'patches');
-
     if (!fs.existsSync(patchesDir)) {
         log('❌ Error: patches directory not found', 'red');
         return false;
     }
 
-    let changesMade = 0;
+    const tracker = new ChangeTracker(dryRun);
 
-    // Handle patch file renames
+    // Handle renames
     for (const rename of patchFileChanges.renames) {
         const oldPath = path.resolve(process.cwd(), rename.old);
         const newPath = path.resolve(process.cwd(), rename.new);
-        const oldFileName = path.basename(rename.old);
         const newFileName = path.basename(rename.new);
 
         if (fs.existsSync(newPath)) {
-            log(`  ⊘ Already renamed: ${newFileName} exists`, 'cyan');
-        } else if (!fs.existsSync(oldPath)) {
-            log(`  ⚠ Warning: Source file not found: ${oldFileName}`, 'yellow');
-        } else if (dryRun) {
-            log(`  [DRY RUN] Would rename: ${oldFileName} → ${newFileName}`, 'yellow');
-            changesMade++;
+            tracker.logSkip(`Already renamed: ${newFileName} exists`);
+        } else if (fs.existsSync(oldPath)) {
+            if (!dryRun) {
+                fs.renameSync(oldPath, newPath);
+            }
+            tracker.logChange(`Renamed: ${path.basename(rename.old)} → ${newFileName}`);
         } else {
-            fs.renameSync(oldPath, newPath);
-            log(`  ✓ Renamed: ${oldFileName} → ${newFileName}`, 'green');
-            changesMade++;
+            tracker.logWarning(`Source file not found: ${path.basename(rename.old)}`);
         }
     }
 
-    // Handle patch file content changes
-    // Note: Content changes should be applied after renames
+    // Handle content updates
     for (const contentChange of patchFileChanges.contentChanges) {
         const patchPath = path.resolve(process.cwd(), contentChange.file);
         const patchFileName = path.basename(contentChange.file);
 
-        // In dry-run mode, the file might not exist yet (not renamed)
         if (!fs.existsSync(patchPath)) {
-            if (dryRun) {
-                log(`  [DRY RUN] Would update content: ${patchFileName} (after rename)`, 'yellow');
-                changesMade++;
-                continue;
-            } else {
-                log(`  ⚠ Warning: Patch file not found: ${patchFileName}`, 'yellow');
-                continue;
+            if (!dryRun) {
+                tracker.logWarning(`Patch file not found: ${patchFileName}`);
             }
+            continue;
         }
 
-        if (dryRun) {
-            log(`  [DRY RUN] Would update content: ${patchFileName}`, 'yellow');
-            changesMade++;
-        } else if (patchFileName === 'expo-image+2.4.1.patch') {
-            // For expo-image patch, use the stored correct content
-            fs.writeFileSync(patchPath, EXPO_IMAGE_PATCH_CONTENT, 'utf8');
-            log(`  ✓ Updated content: ${patchFileName}`, 'green');
-            changesMade++;
+        if (patchFileName === 'expo-image+2.4.1.patch') {
+            const sourceFile = path.join(__dirname, patchFileName);
+            if (fs.existsSync(sourceFile)) {
+                if (!dryRun) {
+                    fs.copyFileSync(sourceFile, patchPath);
+                }
+                tracker.logChange(`Updated content: ${patchFileName}`);
+            }
         } else {
-            log(`  ⚠ Warning: No content update logic for ${patchFileName}`, 'yellow');
+            tracker.logWarning(`No content update logic for ${patchFileName}`);
         }
     }
 
-    if (!dryRun && changesMade > 0) {
-        log(`\n✅ Updated patch files (${changesMade} changes)`, 'green');
-    } else if (dryRun && changesMade > 0) {
-        log(`\n[DRY RUN] Would make ${changesMade} changes to patch files`, 'yellow');
-    } else {
-        log('\n⊘ No changes needed for patch files', 'cyan');
-    }
-
+    tracker.summary('patch files');
     return true;
 }
 
-/**
- * Main function
- */
-function main() {
-    const args = process.argv.slice(2);
+// ============================================================================
+// MAIN
+// ============================================================================
 
-    // Parse command line arguments
+function parseArgs() {
+    const args = process.argv.slice(2);
     let diffFile = '9325.diff';
     let dryRun = false;
     let applyChanges = false;
@@ -688,29 +478,10 @@ function main() {
         }
     }
 
-    log('\n🚀 16KB Page Size Patch Application Tool', 'bright');
-    log('=========================================\n', 'bright');
+    return {diffFile, dryRun, applyChanges};
+}
 
-    // Check if diff file exists
-    const diffPath = path.resolve(process.cwd(), diffFile);
-    if (!fs.existsSync(diffPath)) {
-        log(`❌ Error: Diff file not found: ${diffPath}`, 'red');
-        process.exit(1);
-    }
-
-    log(`📄 Using diff file: ${diffFile}`, 'cyan');
-    if (dryRun) {
-        log('🔍 Mode: DRY RUN (no changes will be made)', 'yellow');
-    } else if (applyChanges) {
-        log('✏️  Mode: APPLY CHANGES', 'green');
-    } else {
-        log('📖 Mode: PARSE ONLY (use --dry-run or --apply to make changes)', 'cyan');
-    }
-
-    // Parse the diff
-    const parsedDiff = parseDiff(diffPath);
-
-    // Display what was found
+function displaySummary(parsedDiff) {
     log('\n📊 Parsed Changes Summary:', 'yellow');
     log('========================\n', 'yellow');
 
@@ -734,14 +505,6 @@ function main() {
         log('');
     }
 
-    if (parsedDiff.patchFiles.contentChanges.length > 0) {
-        log('✏️  Patch Content Changes:', 'cyan');
-        parsedDiff.patchFiles.contentChanges.forEach((change) => {
-            log(`  • ${change.file}`, 'reset');
-        });
-        log('');
-    }
-
     if (Object.keys(parsedDiff.otherFiles).length > 0) {
         log('📁 Other File Changes:', 'cyan');
         Object.keys(parsedDiff.otherFiles).forEach((file) => {
@@ -752,49 +515,101 @@ function main() {
     }
 
     log('✅ Diff parsing complete!\n', 'green');
+}
 
-    // Apply changes if requested
-    if (applyChanges) {
-        log('\n' + '='.repeat(50), 'bright');
-        log('APPLYING CHANGES', 'bright');
-        log('='.repeat(50) + '\n', 'bright');
+function installUpdatedPackages(dependencies, dryRun) {
+    if (dependencies.length === 0) {
+        return;
+    }
 
-        // Update package.json
-        if (parsedDiff.packageJson.dependencies.length > 0) {
-            updatePackageJson(parsedDiff.packageJson, dryRun);
-        }
+    log('\n📦 Installing updated packages...', 'blue');
 
-        // Update app.json
-        if (parsedDiff.otherFiles['app.json']) {
-            updateAppJson(parsedDiff.otherFiles['app.json'], dryRun);
-        }
+    const packages = dependencies.map((dep) => `${dep.name}@${dep.newVersion}`);
 
-        // Update TypeScript files
-        if (parsedDiff.otherFiles['app/components/expo_image/index.tsx']) {
-            updateTypeScriptFile(
-                parsedDiff.otherFiles['app/components/expo_image/index.tsx'],
-                'app/components/expo_image/index.tsx',
-                dryRun,
-            );
-        }
+    if (dryRun) {
+        log(`  [DRY RUN] Would install: ${packages.join(' ')}`, 'yellow');
+        return;
+    }
 
-        // Update Gradle lockfile
-        if (parsedDiff.otherFiles['android/buildscript-gradle.lockfile']) {
-            updateGradleLockfile(parsedDiff.otherFiles['android/buildscript-gradle.lockfile'], dryRun);
-        }
+    try {
+        log(`  Installing: ${packages.join(', ')}`, 'cyan');
+        execSync(`npm install --ignore-scripts ${packages.join(' ')}`, {
+            stdio: 'inherit',
+            cwd: process.cwd(),
+        });
+        log('  ✓ Packages installed successfully', 'green');
+    } catch (error) {
+        log(`  ⚠ Warning: npm install failed: ${error.message}`, 'yellow');
+    }
+}
 
-        // Update patch files
-        if (parsedDiff.patchFiles.renames.length > 0 || parsedDiff.patchFiles.contentChanges.length > 0) {
-            updatePatchFiles(parsedDiff.patchFiles, dryRun);
-        }
+function applyAllChanges(parsedDiff, dryRun) {
+    log('\n' + '='.repeat(50), 'bright');
+    log('APPLYING CHANGES', 'bright');
+    log('='.repeat(50) + '\n', 'bright');
 
-        // TODO: Add npm install execution
+    if (parsedDiff.packageJson.dependencies.length > 0) {
+        updatePackageJson(parsedDiff.packageJson, dryRun);
+    }
 
-        if (dryRun) {
-            log('\n✅ Dry run complete! No files were modified.\n', 'green');
-        } else {
-            log('\n✅ Changes applied successfully!\n', 'green');
-        }
+    if (parsedDiff.otherFiles['app.json']) {
+        updateAppJson(parsedDiff.otherFiles['app.json'], dryRun);
+    }
+
+    if (parsedDiff.otherFiles['app/components/expo_image/index.tsx']) {
+        updateExpoImageIndexTsx(
+            parsedDiff.otherFiles['app/components/expo_image/index.tsx'],
+            'app/components/expo_image/index.tsx',
+            dryRun,
+        );
+    }
+
+    if (parsedDiff.otherFiles['android/buildscript-gradle.lockfile']) {
+        updateGradleLockfile(parsedDiff.otherFiles['android/buildscript-gradle.lockfile'], dryRun);
+    }
+
+    if (parsedDiff.patchFiles.renames.length > 0 || parsedDiff.patchFiles.contentChanges.length > 0) {
+        updatePatchFiles(parsedDiff.patchFiles, dryRun);
+    }
+
+    // Install updated packages
+    if (parsedDiff.packageJson.dependencies.length > 0) {
+        installUpdatedPackages(parsedDiff.packageJson.dependencies, dryRun);
+    }
+
+    if (dryRun) {
+        log('\n✅ Dry run complete! No files were modified.\n', 'green');
+    } else {
+        log('\n✅ Changes applied successfully!\n', 'green');
+    }
+}
+
+function main() {
+    const {diffFile, dryRun, applyChanges: shouldApply} = parseArgs();
+
+    log('\n🚀 16KB Page Size Patch Application Tool', 'bright');
+    log('=========================================\n', 'bright');
+
+    const diffPath = path.resolve(process.cwd(), diffFile);
+    if (!fs.existsSync(diffPath)) {
+        log(`❌ Error: Diff file not found: ${diffPath}`, 'red');
+        process.exit(1);
+    }
+
+    log(`📄 Using diff file: ${diffFile}`, 'cyan');
+    if (dryRun) {
+        log('🔍 Mode: DRY RUN (no changes will be made)', 'yellow');
+    } else if (shouldApply) {
+        log('✏️  Mode: APPLY CHANGES', 'green');
+    } else {
+        log('📖 Mode: PARSE ONLY (use --dry-run or --apply to make changes)', 'cyan');
+    }
+
+    const parsedDiff = parseDiff(diffPath);
+    displaySummary(parsedDiff);
+
+    if (shouldApply) {
+        applyAllChanges(parsedDiff, dryRun);
     }
 }
 
@@ -804,4 +619,3 @@ if (require.main === module) {
 }
 
 module.exports = {parseDiff};
-
