@@ -314,10 +314,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
     });
 
     it('=> transformPlaybookRunRecord: should set default type to PlaybookType when playbookId is present', async () => {
-        expect.assertions(3);
-
         const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
 
         const preparedRecord = await transformPlaybookRunRecord({
             action: OperationType.CREATE,
@@ -337,10 +334,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
     });
 
     it('=> transformPlaybookRunRecord: should set default type to ChannelChecklistType when playbookId is absent', async () => {
-        expect.assertions(3);
-
         const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
 
         const preparedRecord = await transformPlaybookRunRecord({
             action: OperationType.CREATE,
@@ -359,10 +353,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
     });
 
     it('=> transformPlaybookRunRecord: should use updateAt fallback chain correctly', async () => {
-        expect.assertions(4);
-
         const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
 
         // Test: raw.update_at should be used first
         const preparedRecord1 = await transformPlaybookRunRecord({
@@ -421,10 +412,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
     });
 
     it('=> transformPlaybookRunRecord: should handle CREATE with missing raw.id', async () => {
-        expect.assertions(3);
-
         const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
 
         const preparedRecord = await transformPlaybookRunRecord({
             action: OperationType.CREATE,
@@ -538,7 +526,6 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
 
     it('=> transformPlaybookChecklistRecord: should keep most of the data if the partial checklist is empty', async () => {
         const database = await createTestConnection({databaseName: 'playbook_checklist_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
 
         // Create an existing record to simulate the UPDATE action
         let existingRecord: PlaybookChecklistModel | undefined;
@@ -583,10 +570,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
     });
 
     it('=> transformPlaybookChecklistRecord: should handle CREATE with missing raw.id', async () => {
-        expect.assertions(3);
-
         const database = await createTestConnection({databaseName: 'playbook_checklist_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
 
         const preparedRecord = await transformPlaybookChecklistRecord({
             action: OperationType.CREATE,
@@ -605,10 +589,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
     });
 
     it('=> transformPlaybookChecklistRecord: should handle missing runId', async () => {
-        expect.assertions(3);
-
         const database = await createTestConnection({databaseName: 'playbook_checklist_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
 
         const preparedRecord = await transformPlaybookChecklistRecord({
             action: OperationType.CREATE,
@@ -954,10 +935,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
     });
 
     it('=> transformPlaybookChecklistItemRecord: should handle CREATE with missing raw.id', async () => {
-        expect.assertions(3);
-
         const database = await createTestConnection({databaseName: 'playbook_checklist_item_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
 
         const preparedRecord = await transformPlaybookChecklistItemRecord({
             action: OperationType.CREATE,
@@ -976,10 +954,8 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
     });
 
     it('=> transformPlaybookChecklistItemRecord: should handle missing checklistId', async () => {
-        expect.assertions(3);
 
         const database = await createTestConnection({databaseName: 'playbook_checklist_item_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
 
         const preparedRecord = await transformPlaybookChecklistItemRecord({
             action: OperationType.CREATE,
@@ -1160,10 +1136,9 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
     });
 
     it('=> transformPlaybookRunAttributeRecord: should handle CREATE with missing raw.id', async () => {
-        expect.assertions(3);
 
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
+
 
         const preparedRecord = await transformPlaybookRunAttributeRecord({
             action: OperationType.CREATE,
@@ -1182,10 +1157,7 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
     });
 
     it('=> transformPlaybookRunAttributeRecord: should handle completely empty raw object', async () => {
-        expect.assertions(3);
-
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
 
         let existingRecord: PlaybookRunAttributeModel | undefined;
         await database!.write(async () => {
@@ -1346,10 +1318,7 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE_VALUE Prepare Records Test ***', () => {
     });
 
     it('=> transformPlaybookRunAttributeValueRecord: should handle CREATE with missing raw.id', async () => {
-        expect.assertions(3);
-
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_value_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
 
         const preparedRecord = await transformPlaybookRunAttributeValueRecord({
             action: OperationType.CREATE,
@@ -1369,8 +1338,6 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE_VALUE Prepare Records Test ***', () => {
     });
 
     it('=> transformPlaybookRunAttributeValueRecord: should handle completely empty raw object', async () => {
-        expect.assertions(3);
-
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_value_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
