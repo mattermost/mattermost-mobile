@@ -720,7 +720,6 @@
   "mobile.manage_members.remove_member": "Odstranit z kanálu",
   "mobile.manage_members.section_title_admins": "SPRÁVCI KANÁLU",
   "mobile.manage_members.section_title_members": "ČLENOVÉ",
-  "mobile.managed.OK": "OK",
   "mobile.managed.biometric_failed": "Biometrické ověření nebo zadání kódu se nezdařilo.",
   "mobile.managed.blocked_by": "Blokováno od {vendor}",
   "mobile.managed.exit": "Východ",

@@ -720,7 +720,6 @@
   "mobile.manage_members.remove_member": "Fjern fra kanal",
   "mobile.manage_members.section_title_admins": "KANALADMINISTRATORER",
   "mobile.manage_members.section_title_members": "MEDLEMMER",
-  "mobile.managed.OK": "Ok",
   "mobile.managed.biometric_failed": "Biometrisk autentisering eller godkjenning av adgangskode mislyktes.",
   "mobile.managed.blocked_by": "Blokkert av {vendor}",
   "mobile.managed.exit": "Avslutt",

@@ -14,12 +14,14 @@ import {expect} from 'detox';
 
 class RecentMentionsScreen {
     testID = {
+        recentMentionPostList: 'recent_mentions.post_list.post',
         recentMentionsScreenPrefix: 'recent_mentions.',
         recentMentionsScreen: 'recent_mentions.screen',
         emptyTitle: 'recent_mentions.empty.title',
         emptyParagraph: 'recent_mentions.empty.paragraph',
     };
 
+    recentMentionPostList = element(by.id(this.testID.recentMentionPostList));
     recentMentionsScreen = element(by.id(this.testID.recentMentionsScreen));
     emptyTitle = element(by.id(this.testID.emptyTitle));
     emptyParagraph = element(by.id(this.testID.emptyParagraph));
@@ -46,6 +48,10 @@ class RecentMentionsScreen {
         await waitFor(this.recentMentionsScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         return this.recentMentionsScreen;
+    };
+
+    recentMentionPostListToBeVisible = async () => {
+        await waitFor(this.recentMentionPostList).toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
     open = async () => {

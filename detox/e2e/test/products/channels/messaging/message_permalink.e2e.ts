@@ -35,6 +35,28 @@ describe('Messaging - Message Permalink Preview', () => {
     let testUser: any;
     let testOtherUser: any;
 
+    const copyLinkFromPost = async (postItem: any) => {
+        await postItem.longPress();
+        await PostOptionsScreen.toBeVisible();
+        await PostOptionsScreen.copyLinkOption.tap();
+        await wait(timeouts.ONE_SEC);
+        await expect(PostOptionsScreen.postOptionsScreen).not.toBeVisible();
+    };
+
+    const sendMessage = async (text: string) => {
+        await ChannelScreen.postInput.tap();
+        await ChannelScreen.postInput.replaceText(text);
+        await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await ChannelScreen.sendButton.tap();
+    };
+
+    const expectPermalinkPreviewVisible = async (message: string, channelName: string) => {
+        const container = element(by.id('permalink-preview-container'));
+        await waitFor(container).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await expect(element(by.text(message).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
+        await expect(element(by.text(`Originally posted in ~${channelName}`).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
+    };
+
     beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
@@ -67,29 +89,15 @@ describe('Messaging - Message Permalink Preview', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
-        await postListPostItem.longPress();
-
-        await PostOptionsScreen.toBeVisible();
-        await PostOptionsScreen.copyLinkOption.tap();
-        await wait(timeouts.ONE_SEC);
-
-        await expect(PostOptionsScreen.postOptionsScreen).not.toBeVisible();
+        await copyLinkFromPost(postListPostItem);
 
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
         const messageWithPastedLink = `Check this out ${copiedPermalink}`;
-        await ChannelScreen.postInput.tap();
-        await ChannelScreen.postInput.replaceText(messageWithPastedLink);
+        await sendMessage(messageWithPastedLink);
 
-        await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await ChannelScreen.sendButton.tap();
+        await wait(timeouts.FOUR_SEC); // Wait for preview to generate
 
-        await wait(timeouts.FOUR_SEC);
-
-        const permalinkPreview = element(by.id('permalink-preview-container'));
-        await waitFor(permalinkPreview).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        await expect(element(by.text(targetMessage).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
-        await expect(element(by.text(`Originally posted in ~${testChannel.display_name}`).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
+        await expectPermalinkPreviewVisible(targetMessage, testChannel.display_name);
 
         await ChannelScreen.back();
     });
@@ -107,39 +115,24 @@ describe('Messaging - Message Permalink Preview', () => {
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
-        await postListPostItem.longPress();
+        await copyLinkFromPost(postListPostItem);
 
-        await PostOptionsScreen.toBeVisible();
-        await PostOptionsScreen.copyLinkOption.tap();
-        await wait(timeouts.ONE_SEC);
-
-        await expect(PostOptionsScreen.postOptionsScreen).not.toBeVisible();
-
-        await wait(timeouts.FOUR_SEC);
+        await wait(timeouts.FOUR_SEC); // Wait for toast/animation if any
         await ChannelScreen.back();
         await ChannelScreen.open(channelsCategory, otherChannel.name);
 
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
         const messageWithPastedLink = `Check this out from the other channel ${copiedPermalink}`;
-        await ChannelScreen.postInput.tap();
-        await ChannelScreen.postInput.replaceText(messageWithPastedLink);
-
-        await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await ChannelScreen.sendButton.tap();
+        await sendMessage(messageWithPastedLink);
 
         await wait(timeouts.FOUR_SEC);
 
-        const permalinkPreview = element(by.id('permalink-preview-container'));
-        await waitFor(permalinkPreview).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        await expect(element(by.text(targetMessage).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
-        await expect(element(by.text(`Originally posted in ~${testChannel.display_name}`).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
+        await expectPermalinkPreviewVisible(targetMessage, testChannel.display_name);
 
         await ChannelScreen.back();
     });
 
     it('MM-T4877_3 - should navigate to original post when tapping on permalink preview', async () => {
-        // Create both channels at the beginning
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         await Channel.apiAddUserToChannel(siteOneUrl, testOtherUser.id, targetChannel.id);
@@ -156,13 +149,7 @@ describe('Messaging - Message Permalink Preview', () => {
 
         await ChannelScreen.open(channelsCategory, targetChannel.name);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
-        await postListPostItem.longPress();
-
-        await PostOptionsScreen.toBeVisible();
-        await PostOptionsScreen.copyLinkOption.tap();
-        await wait(timeouts.ONE_SEC);
-
-        await expect(PostOptionsScreen.postOptionsScreen).not.toBeVisible();
+        await copyLinkFromPost(postListPostItem);
 
         await wait(timeouts.FOUR_SEC);
         await ChannelScreen.back();
@@ -170,21 +157,13 @@ describe('Messaging - Message Permalink Preview', () => {
 
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
         const messageWithPastedLink = `Check this out ${copiedPermalink}`;
-        await ChannelScreen.postInput.tap();
-        await ChannelScreen.postInput.replaceText(messageWithPastedLink);
-
-        await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await ChannelScreen.sendButton.tap();
+        await sendMessage(messageWithPastedLink);
 
         await wait(timeouts.FOUR_SEC);
 
+        await expectPermalinkPreviewVisible(targetMessage, targetChannel.display_name);
+
         const permalinkPreview = element(by.id('permalink-preview-container'));
-        await waitFor(permalinkPreview).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        await expect(element(by.text(targetMessage).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
-
-        await expect(element(by.text(`Originally posted in ~${targetChannel.display_name}`).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
-
         await permalinkPreview.tap();
         await wait(timeouts.ONE_SEC);
 
@@ -201,7 +180,6 @@ describe('Messaging - Message Permalink Preview', () => {
     });
 
     it('MM-T4877_4 - should update permalink preview when original post is edited', async () => {
-        // Create the other channel at the beginning
         const {channel: otherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
 
@@ -214,13 +192,7 @@ describe('Messaging - Message Permalink Preview', () => {
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, originalMessage);
-        await postListPostItem.longPress();
-
-        await PostOptionsScreen.toBeVisible();
-        await PostOptionsScreen.copyLinkOption.tap();
-        await wait(timeouts.ONE_SEC);
-
-        await expect(PostOptionsScreen.postOptionsScreen).not.toBeVisible();
+        await copyLinkFromPost(postListPostItem);
 
         await wait(timeouts.FOUR_SEC);
 
@@ -229,18 +201,10 @@ describe('Messaging - Message Permalink Preview', () => {
 
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
         const messageWithPastedLink = `Check this out ${copiedPermalink}`;
-        await ChannelScreen.postInput.tap();
-        await ChannelScreen.postInput.replaceText(messageWithPastedLink);
-
-        await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await ChannelScreen.sendButton.tap();
+        await sendMessage(messageWithPastedLink);
         await wait(timeouts.FOUR_SEC);
 
-        const permalinkPreview = element(by.id('permalink-preview-container'));
-        await waitFor(permalinkPreview).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await expect(element(by.text(originalMessage).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
-
-        await expect(element(by.text(`Originally posted in ~${testChannel.display_name}`).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
+        await expectPermalinkPreviewVisible(originalMessage, testChannel.display_name);
 
         await wait(timeouts.FOUR_SEC);
 
@@ -255,15 +219,13 @@ describe('Messaging - Message Permalink Preview', () => {
 
         await wait(timeouts.FOUR_SEC);
 
-        await expect(element(by.text(editedMessage).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
+        await expectPermalinkPreviewVisible(editedMessage, testChannel.display_name);
         await expect(element(by.text(originalMessage).withAncestor(by.id('permalink-preview-container')))).not.toBeVisible();
-        await expect(element(by.text(`Originally posted in ~${testChannel.display_name}`).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
 
         await ChannelScreen.back();
     });
 
     it('MM-T4877_6 - should handle permalink preview with long message content', async () => {
-        // Create the other channel at the beginning
         const {channel: otherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
 
@@ -276,13 +238,7 @@ describe('Messaging - Message Permalink Preview', () => {
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, longMessage);
-        await postListPostItem.longPress();
-
-        await PostOptionsScreen.toBeVisible();
-        await PostOptionsScreen.copyLinkOption.tap();
-        await wait(timeouts.ONE_SEC);
-
-        await expect(PostOptionsScreen.postOptionsScreen).not.toBeVisible();
+        await copyLinkFromPost(postListPostItem);
 
         await wait(timeouts.FOUR_SEC);
         await ChannelScreen.back();
@@ -290,27 +246,18 @@ describe('Messaging - Message Permalink Preview', () => {
 
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
         const messageWithPastedLink = `Long message link ${copiedPermalink}`;
-        await ChannelScreen.postInput.tap();
-        await ChannelScreen.postInput.replaceText(messageWithPastedLink);
-
-        await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await ChannelScreen.sendButton.tap();
+        await sendMessage(messageWithPastedLink);
 
         await wait(timeouts.FOUR_SEC);
 
-        const permalinkPreview = element(by.id('permalink-preview-container'));
-        await waitFor(permalinkPreview).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
         const truncatedText = longMessage.substring(0, 150) + '...';
-        await expect(element(by.text(truncatedText).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
+        await expectPermalinkPreviewVisible(truncatedText, testChannel.display_name);
         await expect(element(by.text(longMessage).withAncestor(by.id('permalink-preview-container')))).not.toBeVisible();
-        await expect(element(by.text(`Originally posted in ~${testChannel.display_name}`).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
 
         await ChannelScreen.back();
     });
 
     it('MM-T4877_7 - should handle permalink preview when original post is deleted', async () => {
-        // Create the other channel at the beginning
         const {channel: otherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
 
@@ -325,13 +272,7 @@ describe('Messaging - Message Permalink Preview', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.id, targetMessage);
         await expect(postListPostItem).toBeVisible();
         await wait(timeouts.ONE_SEC);
-        await postListPostItem.longPress();
-
-        await PostOptionsScreen.toBeVisible();
-        await PostOptionsScreen.copyLinkOption.tap();
-        await wait(timeouts.ONE_SEC);
-
-        await expect(PostOptionsScreen.postOptionsScreen).not.toBeVisible();
+        await copyLinkFromPost(postListPostItem);
 
         await wait(timeouts.FOUR_SEC);
 
@@ -340,16 +281,10 @@ describe('Messaging - Message Permalink Preview', () => {
 
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.id}`;
         const messageWithPastedLink = `Check this post ${copiedPermalink}`;
-        await ChannelScreen.postInput.tap();
-        await ChannelScreen.postInput.replaceText(messageWithPastedLink);
-
-        await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await ChannelScreen.sendButton.tap();
+        await sendMessage(messageWithPastedLink);
         await wait(timeouts.FOUR_SEC);
 
-        const permalinkPreview = element(by.id('permalink-preview-container'));
-        await waitFor(permalinkPreview).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await expect(element(by.text(targetMessage).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
+        await expectPermalinkPreviewVisible(targetMessage, testChannel.display_name);
 
         await wait(timeouts.FOUR_SEC);
 
@@ -370,7 +305,7 @@ describe('Messaging - Message Permalink Preview', () => {
         await wait(timeouts.FOUR_SEC);
 
         await expect(element(by.text(targetMessage).withAncestor(by.id('permalink-preview-container')))).not.toBeVisible();
-        await expect(permalinkPreview).not.toBeVisible();
+        await expect(element(by.id('permalink-preview-container'))).not.toBeVisible();
 
         await ChannelScreen.back();
     });
