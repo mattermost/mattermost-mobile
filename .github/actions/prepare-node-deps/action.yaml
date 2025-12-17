@@ -11,6 +11,13 @@ runs:
         cache: "npm"
         cache-dependency-path: package-lock.json
 
+    - name: ci/apply-16kb-pagesize-patch
+      shell: bash
+      run: |
+        echo "::group::Apply 16KB page size compatibility patch"
+        npm run apply-16kb-pagesize-patch
+        echo "::endgroup::"
+
     - name: ci/install-npm-dependencies
       shell: bash
       env:
