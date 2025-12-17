@@ -36,6 +36,7 @@ export type Props = {
     // Post Props
     postPriority: PostPriority;
     updatePostPriority: (postPriority: PostPriority) => void;
+    updatePostBoRStatus: (config: PostBoRConfig) => void;
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
 
@@ -127,6 +128,7 @@ function DraftInput({
     updatePostInputTop,
     postPriority,
     updatePostPriority,
+    updatePostBoRStatus,
     persistentNotificationInterval,
     persistentNotificationMaxRecipients,
     setIsFocused,
@@ -249,6 +251,7 @@ function DraftInput({
                             postPriority={postPriority}
                             updatePostPriority={updatePostPriority}
                             canShowPostPriority={canShowPostPriority}
+                            updatePostBoRStatus={updatePostBoRStatus}
                             focus={focus}
                         />
                         <SendAction

@@ -78,6 +78,7 @@ type PostMetadata = {
     reactions?: Reaction[];
     priority?: PostPriority;
     expire_at?: number;
+    borConfig?: PostBoRConfig;
 };
 
 type Post = {
@@ -175,4 +176,10 @@ type FetchPaginatedThreadOptions = {
     perPage?: number;
     fromCreateAt?: number;
     fromPost?: string;
+}
+
+type PostBoRConfig = {
+    enabled: boolean;
+    borDurationSeconds: number;
+    borMaximumTimeToLiveSeconds: number;
 }

@@ -20,6 +20,7 @@ import {isParsableUrl} from '@utils/url';
 
 import type {DraftScreenTab} from '@constants/draft';
 import type {Model} from '@nozbe/watermelondb';
+import {PostTypes} from "@constants/post";
 
 type goToScreenParams = {
     initialTab?: DraftScreenTab;
@@ -261,6 +262,49 @@ export async function updateDraftPriority(serverUrl: string, channelId: string, 
         return {draft};
     } catch (error) {
         logError('Failed updateDraftPriority', error);
+        return {error};
+    }
+}
+
+export async function updateDraftBoRConfig(serverUrl: string, channelId: string, rootId: string, postBoRConfig: PostBoRConfig, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const draft = await getDraft(database, channelId, rootId);
+        if (!draft) {
+            const newDraft: Draft = {
+                channel_id: channelId,
+                root_id: rootId,
+                update_at: Date.now(),
+                metadata: {
+                    borConfig: postBoRConfig,
+                },
+            };
+
+            if (postBoRConfig.enabled) {
+                newDraft.type = PostTypes.BURN_ON_READ;
+            }
+
+            return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
+        }
+
+        draft?.prepareUpdate((d) => {
+            if (postBoRConfig.enabled) {
+                d.metadata = {
+                    ...d.metadata,
+                    borConfig: postBoRConfig,
+                };
+
+                d.type = PostTypes.BURN_ON_READ;
+            }
+        });
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([draft], 'updateDraftBoRConfig');
+        }
+
+        return {draft};
+    } catch (error) {
+        logError('Failed updateDraftBoRConfig', error);
         return {error};
     }
 }

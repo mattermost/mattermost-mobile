@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback, useState} from 'react';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -13,17 +13,28 @@ import {style} from '../post_priority_action';
 
 type Props = {
     testId?: string;
+    updatePostBoRStatus: (config: PostBoRConfig) => void;
+    postBoRConfig?: PostBoRConfig;
 }
 
-export default function BoRAction({testId}: Props) {
+export default function BoRAction({testId, postBoRConfig, updatePostBoRStatus}: Props) {
     const theme = useTheme();
     const iconColor = changeOpacity(theme.centerChannelColor, 0.64);
+
+    const [config, setConfig] = useState<PostBoRConfig>(postBoRConfig);
+
+    const toggleEnabled = useCallback(() => {
+        const newConfig = {enabled: !config.enabled};
+        setConfig(newConfig);
+        updatePostBoRStatus(newConfig);
+    }, [config, updatePostBoRStatus]);
 
     return (
         <TouchableWithFeedback
             testID={testId}
             style={style.icon}
             type='opacity'
+            onPress={toggleEnabled}
         >
             <CompassIcon
                 name={'fire'}

@@ -20,6 +20,9 @@ import type PostsInThreadModel from '@typings/database/models/servers/posts_in_t
 
 const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
 
+const DEFAULT_BURN_ON_READ_DURATION_SECONDS = '600';
+const DEFAULT_BURN_ON_READ_MAXIMUM_TTL_SECONDS = '604800';
+
 export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const preparedModels: Model[] = [post.prepareDestroyPermanently()];
     const relations: Array<Query<Model>> = [post.drafts, post.files, post.reactions];
@@ -256,6 +259,22 @@ export const observeIsPostPriorityEnabled = (database: Database) => {
 
 export const observeIsBoREnabled = (database: Database) => {
     return observeConfigBooleanValue(database, 'EnableBurnOnRead');
+};
+
+export const observeBoRConfig = async (database: Database) => {
+    const botDurationSecondsString = await getConfigValue(database, 'BurnOnReadDurationSeconds') || DEFAULT_BURN_ON_READ_DURATION_SECONDS;
+    const borDurationSeconds = parseInt(botDurationSecondsString, 10);
+
+    const maxBoRDurationSecondsString = await getConfigValue(database, 'BurnOnReadMaximumTimeToLiveSeconds') || DEFAULT_BURN_ON_READ_MAXIMUM_TTL_SECONDS;
+    const borMaximumTimeToLiveSeconds = parseInt(maxBoRDurationSecondsString, 10);
+
+    const borConfig: PostBoRConfig = {
+        enabled: false,
+        borDurationSeconds,
+        borMaximumTimeToLiveSeconds,
+    };
+
+    return borConfig;
 };
 
 export const observeIsPostAcknowledgementsEnabled = (database: Database) => {
