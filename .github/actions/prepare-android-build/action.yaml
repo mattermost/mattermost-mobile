@@ -12,6 +12,15 @@ runs:
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
 
+    - name: ci/apply-16kb-pagesize-patch
+      shell: bash
+      run: |
+        echo "::group::Apply 16KB page size compatibility patch"
+        npm run apply-16kb-pagesize-patch
+        npm install --ignore-scripts
+        npx patch-package
+        echo "::endgroup::"
+
     - name: ci/setup-java
       uses: actions/setup-java@v4
       with:
