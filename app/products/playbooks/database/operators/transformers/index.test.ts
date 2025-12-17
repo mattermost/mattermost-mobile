@@ -1139,7 +1139,6 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
 
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_prepare_records', setActive: true});
 
-
         const preparedRecord = await transformPlaybookRunAttributeRecord({
             action: OperationType.CREATE,
             database: database!,
