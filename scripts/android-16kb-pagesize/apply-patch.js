@@ -16,7 +16,6 @@
 
 const {execSync} = require('child_process');
 const fs = require('fs');
-const path = require('path');
 
 // ============================================================================
 // CONSTANTS
@@ -124,7 +123,7 @@ function installUpdatedPackages(diffPath, dryRun) {
             if (line.startsWith('+    "expo') || line.startsWith('-    "expo')) {
                 const match = line.match(/"([^"]+)":\s*"([^"]+)"/);
                 if (match && line.startsWith('+')) {
-                    const [, pkgName, version] = match;
+                    const [, pkgName] = match;
                     if (dependencies[pkgName] && !packageChanges.includes(pkgName)) {
                         packageChanges.push(pkgName);
                     }
