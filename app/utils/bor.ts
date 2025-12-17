@@ -15,8 +15,8 @@ export function isUnrevealedBoRPost(post: Post | PostModel): boolean {
     return isBoRPost(post) && Boolean(!post.metadata?.expire_at);
 }
 
-export function isOwnBoRPost(post: PostModel, currentUser?: UserModel): boolean {
-    return isBoRPost(post) && Boolean(currentUser && post.userId === currentUser.id);
+export function isOwnBoRPost(post: PostModel, currentUserId?: UserModel['id']): boolean {
+    return isBoRPost(post) && post.userId === currentUserId;
 }
 
 function isBoRPostExpiredForMe(post: PostModel): boolean {
