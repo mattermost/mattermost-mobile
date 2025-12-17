@@ -171,10 +171,12 @@ function showSummary(dryRun) {
         log('Run with --apply to actually apply the changes', 'yellow');
     } else {
         log('✓ ALL CHANGES APPLIED SUCCESSFULLY', 'green');
+        log('\n⚠️  IMPORTANT:', 'yellow');
+        log('These changes are for Android builds ONLY', 'yellow');
+        log('DO NOT commit these changes to the repository', 'yellow');
         log('\nNext steps:', 'bright');
-        log('1. Review the changes with: git diff', 'cyan');
-        log('2. Test the build to ensure everything works', 'cyan');
-        log('3. Commit the changes if satisfied', 'cyan');
+        log('1. Build your Android app', 'cyan');
+        log('2. After building, revert these changes with: git checkout .', 'cyan');
     }
 
     log('='.repeat(70), 'cyan');
