@@ -181,6 +181,7 @@ function parseDiff(diffPath) {
 
     log(`✓ Found ${result.packageJson.dependencies.length} package.json changes`, 'green');
     log(`✓ Found ${result.patchFiles.renames.length} patch file renames`, 'green');
+    log(`✓ Found ${result.patchFiles.contentChanges.length} patch content changes`, 'green');
     log(`✓ Found ${Object.keys(result.otherFiles).length} other file changes`, 'green');
 
     return result;
@@ -194,6 +195,15 @@ function processSection(fileInfo, lines, result) {
     } else if (oldPath.startsWith('patches/') && newPath.startsWith('patches/')) {
         if (isRename) {
             result.patchFiles.renames.push({old: oldPath, new: newPath});
+        }
+
+        // Check if there are content changes (not just a rename)
+        const hasContentChanges = lines.some((line) => line.startsWith('@@'));
+        if (hasContentChanges) {
+            result.patchFiles.contentChanges.push({
+                file: newPath,
+                content: lines.join('\n'),
+            });
         }
     } else if (!oldPath.startsWith('patches/')) {
         result.otherFiles[newPath] = {
@@ -428,15 +438,15 @@ function updatePatchFiles(patchFileChanges, dryRun) {
         }
     }
 
-    // Handle content updates
+    // Handle content updates (must happen after renames)
     for (const contentChange of patchFileChanges.contentChanges) {
         const patchPath = path.resolve(process.cwd(), contentChange.file);
         const patchFileName = path.basename(contentChange.file);
 
-        if (!fs.existsSync(patchPath)) {
-            if (!dryRun) {
-                tracker.logWarning(`Patch file not found: ${patchFileName}`);
-            }
+        // In dry-run mode, check if the file will exist after rename
+        const willExist = dryRun || fs.existsSync(patchPath);
+        if (!willExist) {
+            tracker.logWarning(`Patch file not found: ${patchFileName}`);
             continue;
         }
 
@@ -447,6 +457,8 @@ function updatePatchFiles(patchFileChanges, dryRun) {
                     fs.copyFileSync(sourceFile, patchPath);
                 }
                 tracker.logChange(`Updated content: ${patchFileName}`);
+            } else {
+                tracker.logWarning(`Source patch file not found: ${sourceFile}`);
             }
         } else {
             tracker.logWarning(`No content update logic for ${patchFileName}`);
