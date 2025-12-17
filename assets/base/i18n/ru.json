@@ -695,7 +695,6 @@
   "mobile.manage_members.remove_member": "Удалить из канала",
   "mobile.manage_members.section_title_admins": "АДМИНИСТРАТОРЫ КАНАЛА",
   "mobile.manage_members.section_title_members": "УЧАСТНИКИ",
-  "mobile.managed.OK": "ОК",
   "mobile.managed.biometric_failed": "Биометрическая аутентификация или аутентификация по пасскоду не удалась.",
   "mobile.managed.blocked_by": "Заблокирован {vendor}",
   "mobile.managed.exit": "Выход",

@@ -720,7 +720,6 @@
   "mobile.manage_members.remove_member": "从频道里删除",
   "mobile.manage_members.section_title_admins": "频道管理者",
   "mobile.manage_members.section_title_members": "管理者",
-  "mobile.managed.OK": "好的",
   "mobile.managed.biometric_failed": "生物识别或密码验证失败。",
   "mobile.managed.blocked_by": "被 {vendor} 封锁",
   "mobile.managed.exit": "退出",

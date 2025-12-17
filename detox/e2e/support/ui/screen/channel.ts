@@ -145,15 +145,16 @@ class ChannelScreen {
         return this.postList.getPostMessageAtIndex(index);
     };
 
-    toBeVisible = async () => {
+    toBeVisible = async (timeout = timeouts.TEN_SEC) => {
         await wait(timeouts.ONE_SEC);
-        await waitFor(this.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.channelScreen).toExist().withTimeout(timeout);
 
         return this.channelScreen;
     };
 
     open = async (categoryKey: string, channelName: string) => {
         // # Open channel screen
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName).tap();
         try {
             await this.scheduledPostTooltipCloseButton.tap();
@@ -310,6 +311,35 @@ class ChannelScreen {
             await wait(timeouts.TEN_SEC);
             await this.scheduleDraftInforMessage.tap();
         }
+    };
+
+    assertPostMessageEdited = async (
+        postId: string,
+        updatedMessage: string,
+        locator: 'channel_page' | 'pinned_page' | 'thread_page' | 'search_page' | 'saved_messages_page' | 'recent_mentions_page' = 'channel_page',
+    ) => {
+        const locatorTestIDs = {
+            channel_page: 'channel.post_list.post',
+            pinned_page: 'pinned_messages.post_list.post',
+            search_page: 'search_results.post_list.post',
+            thread_page: 'thread.post_list.post',
+            saved_messages_page: 'saved_messages.post_list.post',
+            recent_mentions_page: 'recent_mentions.post_list.post',
+        };
+
+        const postItemTestID = locatorTestIDs[locator];
+        const postItemElement = `${postItemTestID}.${postId}`;
+        const postItemMatcher = by.id(postItemElement);
+
+        // Escape special characters in the message for regex
+        const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        // Match text that contains the updated message followed by "Edited" (with possible spacing/icon)
+        const completeTextPattern = new RegExp(`${escapedMessage}.*Edited`, 'i');
+        const completeTextMatcher = by.text(completeTextPattern).withAncestor(postItemMatcher);
+
+        // Wait for the text containing both message and "Edited" to be visible
+        await waitFor(element(completeTextMatcher)).toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 
