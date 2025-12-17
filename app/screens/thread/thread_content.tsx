@@ -19,6 +19,7 @@ type ThreadContentProps = {
     scheduledPostCount: number;
     containerHeight: number;
     enabled?: boolean;
+    onEmojiSearchFocusChange?: (focused: boolean) => void;
 }
 
 const THREAD_POST_DRAFT_TESTID = 'thread.post_draft';
@@ -38,6 +39,7 @@ const ThreadContent = ({
     scheduledPostCount,
     containerHeight,
     enabled = true,
+    onEmojiSearchFocusChange,
 }: ThreadContentProps) => {
     return (
         <KeyboardAwarePostDraftContainer
@@ -45,6 +47,7 @@ const ThreadContent = ({
             containerStyle={styles.flex}
             isThreadView={true}
             enabled={enabled}
+            onEmojiSearchFocusChange={onEmojiSearchFocusChange}
             renderList={({listRef, onTouchMove, onTouchEnd}) => (
                 <ThreadPostList
                     rootPost={rootPost}
