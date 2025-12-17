@@ -404,4 +404,36 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
+
+    it('MM-T4976 should handle complete multiselect and dynamic fields dialog (Plugin)', async () => {
+        await ensureDialogClosed();
+        await ChannelScreen.postMessage('/dialog multiselectdynamic');
+        await ensureDialogOpen();
+        await expect(element(by.text('Multiselect & Dynamic Dialog Test'))).toExist();
+        await expect(element(by.text('Select Multiple Users'))).toExist();
+        const multiselectUsersButton = element(by.id('AppFormElement.multiselect_users.select.button'));
+        await expect(multiselectUsersButton).toExist();
+        await multiselectUsersButton.tap();
+        await wait(500);
+        await IntegrationSelectorScreen.toBeVisible();
+        await selectUser();
+        await wait(500);
+        const dynamicSelectButton = element(by.id('AppFormElement.dynamic_select.select.button'));
+        await expect(dynamicSelectButton).toExist();
+        await dynamicSelectButton.tap();
+        await wait(1000);
+        await IntegrationSelectorScreen.toBeVisible();
+        await wait(1500);
+        try {
+            await expect(element(by.text('Project Alpha'))).toExist();
+            await element(by.text('Project Alpha')).tap();
+        } catch {
+            await element(by.text('Project')).atIndex(0).tap();
+        }
+        await wait(500);
+        await InteractiveDialogScreen.submit();
+        await ensureDialogClosed();
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
+    });
 });
