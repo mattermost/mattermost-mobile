@@ -651,17 +651,16 @@ describe('PlaybookRun', () => {
             fireEvent.press(editIcon);
         });
         expect(goToRenamePlaybookRun).toHaveBeenCalledWith(
-            expect.anything(),
-            expect.anything(),
+            expect.anything(), // intl
+            expect.anything(), // theme
             'Test Playbook Run',
-            expect.any(Function),
+            props.playbookRun!.id,
         );
     });
 
     it('handles rename successfully', async () => {
         const props = getBaseProps();
         props.participants.push(TestHelper.fakeUserModel({id: props.currentUserId}));
-        jest.mocked(renamePlaybookRun).mockResolvedValue({data: true});
         const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
         const editIcon = getByTestId('playbook-run.edit-icon');
@@ -669,21 +668,17 @@ describe('PlaybookRun', () => {
             fireEvent.press(editIcon);
         });
 
-        const handleRename = jest.mocked(goToRenamePlaybookRun).mock.calls[0][3];
-        await handleRename('New Run Name');
-
-        expect(renamePlaybookRun).toHaveBeenCalledWith(
-            serverUrl,
+        expect(goToRenamePlaybookRun).toHaveBeenCalledWith(
+            expect.anything(), // intl
+            expect.anything(), // theme
+            props.playbookRun!.name,
             props.playbookRun!.id,
-            'New Run Name',
         );
-        expect(showPlaybookErrorSnackbar).not.toHaveBeenCalled();
     });
 
     it('handles rename error', async () => {
         const props = getBaseProps();
         props.participants.push(TestHelper.fakeUserModel({id: props.currentUserId}));
-        jest.mocked(renamePlaybookRun).mockResolvedValue({error: 'error'});
         const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
         const editIcon = getByTestId('playbook-run.edit-icon');
@@ -691,11 +686,11 @@ describe('PlaybookRun', () => {
             fireEvent.press(editIcon);
         });
 
-        const handleRename = jest.mocked(goToRenamePlaybookRun).mock.calls[0][3];
-        await handleRename('New Run Name');
-
-        await waitFor(() => {
-            expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
-        });
+        expect(goToRenamePlaybookRun).toHaveBeenCalledWith(
+            expect.anything(), // intl
+            expect.anything(), // theme
+            props.playbookRun!.name,
+            props.playbookRun!.id,
+        );
     });
 });

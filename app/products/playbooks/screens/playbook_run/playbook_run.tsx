@@ -15,7 +15,7 @@ import UserAvatarsStack from '@components/user_avatars_stack';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {finishRun, renamePlaybookRun, setOwner} from '@playbooks/actions/remote/runs';
+import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
 import {openUserProfileModal, popTopScreen} from '@screens/navigation';
@@ -259,24 +259,13 @@ export default function PlaybookRun({
         );
     }, [handleSelectOwner, intl, owner, participants, playbookRun?.name, theme]);
 
-    const handleRename = useCallback(async (newName: string) => {
-        if (!playbookRun) {
-            return;
-        }
-
-        const res = await renamePlaybookRun(serverUrl, playbookRun.id, newName);
-        if (res.error) {
-            showPlaybookErrorSnackbar();
-        }
-    }, [playbookRun, serverUrl]);
-
     const handleEditPress = useCallback(() => {
         if (!playbookRun) {
             return;
         }
 
-        goToRenamePlaybookRun(intl, theme, playbookRun.name, handleRename);
-    }, [intl, theme, playbookRun, handleRename]);
+        goToRenamePlaybookRun(intl, theme, playbookRun.name, playbookRun.id);
+    }, [intl, theme, playbookRun]);
 
     const handleFinishRun = useCallback(() => {
         if (!playbookRun) {
