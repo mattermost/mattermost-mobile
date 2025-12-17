@@ -49,6 +49,11 @@ export async function renamePlaybookRun(serverUrl: string, playbookRunId: string
             return {error: `Playbook run not found: ${playbookRunId}`};
         }
 
+        // Validate name is not empty or whitespace-only
+        if (!name || !name.trim()) {
+            return {error: 'Name cannot be empty or whitespace-only'};
+        }
+
         await database.write(async () => {
             run.update((r) => {
                 r.name = name;
