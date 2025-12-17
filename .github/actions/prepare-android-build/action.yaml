@@ -17,7 +17,6 @@ runs:
       run: |
         echo "::group::Apply 16KB page size compatibility patch"
         npm run apply-16kb-pagesize-patch
-        npx patch-package
         echo "::endgroup::"
 
     - name: ci/setup-java
