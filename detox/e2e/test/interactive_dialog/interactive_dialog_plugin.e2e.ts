@@ -17,7 +17,6 @@ import {
     User,
     Post,
 } from '@support/server_api';
-import {apiDisablePluginById} from '@support/server_api/plugin';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -171,9 +170,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
     });
 
-    afterAll(async () => {
-        await apiDisablePluginById(siteOneUrl, DemoPlugin.id);
-    });
+    // afterAll(async () => {
+    //     await apiDisablePluginById(siteOneUrl, DemoPlugin.id);
+    // });
 
     afterEach(async () => {
         await dismissErrorAlert();
@@ -405,132 +404,108 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    it('MM-T4976 should handle complete multiselect and dynamic fields dialog (Plugin)', async () => {
+    it('MM-T4980 should complete multistep dialog progression (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog multiselectdynamic');
+        await ChannelScreen.postMessage('/dialog multistep');
         await ensureDialogOpen();
-        await expect(element(by.text('Multiselect & Dynamic Dialog Test'))).toExist();
-        await expect(element(by.text('Select Multiple Users'))).toExist();
-        const multiselectUsersButton = element(by.id('AppFormElement.multiselect_users.select.button'));
-        await expect(multiselectUsersButton).toExist();
-        await multiselectUsersButton.tap();
+        const individualRadioButton = element(by.id('AppFormElement.user_type.radio.individual.button'));
+        await expect(individualRadioButton).toExist();
+        await individualRadioButton.tap();
+        const useCaseButton = element(by.id('AppFormElement.use_case.select.button'));
+        await expect(useCaseButton).toExist();
+        await useCaseButton.tap();
         await wait(500);
         await IntegrationSelectorScreen.toBeVisible();
-        await selectUser();
+        await expect(element(by.text('Software Development'))).toExist();
+        await element(by.text('Software Development')).tap();
         await wait(500);
-        const dynamicSelectButton = element(by.id('AppFormElement.dynamic_select.select.button'));
-        await expect(dynamicSelectButton).toExist();
-        await dynamicSelectButton.tap();
-        await wait(1000);
-        await IntegrationSelectorScreen.toBeVisible();
-        await wait(1500);
-        try {
-            await expect(element(by.text('Project Alpha'))).toExist();
-            await element(by.text('Project Alpha')).tap();
-        } catch {
-            await element(by.text('Project')).atIndex(0).tap();
-        }
-        await wait(500);
-        await InteractiveDialogScreen.submit();
-        await ensureDialogClosed();
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
-    });
-
-    it('MM-T4980 should complete 3-step multiform dialog progression (Plugin)', async () => {
-        await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog multiform');
-        await ensureDialogOpen();
-        await expect(element(by.text('Personal Information - Step 1 of 3'))).toExist();
         await InteractiveDialogScreen.fillTextElement('first_name', 'John');
-        await InteractiveDialogScreen.fillTextElement('email', 'john.doe@example.com');
+        await InteractiveDialogScreen.fillTextElement('last_name', 'Doe');
         await InteractiveDialogScreen.submit();
-        await wait(500);
+        await wait(1000);
         await ensureDialogOpen();
-        await expect(element(by.text('Work Information - Step 2 of 3'))).toExist();
-        const engineeringRadioButton = element(by.id('AppFormElement.department.radio.engineering.button'));
-        await expect(engineeringRadioButton).toExist();
-        await engineeringRadioButton.tap();
-        const experienceLevelButton = element(by.id('AppFormElement.experience_level.select.button'));
-        await expect(experienceLevelButton).toExist();
-        await experienceLevelButton.tap();
+        await InteractiveDialogScreen.fillTextElement('experience_years', '5');
+        const devEnvButton = element(by.id('AppFormElement.dev_environment.select.button'));
+        await expect(devEnvButton).toExist();
+        await devEnvButton.tap();
         await wait(500);
         await IntegrationSelectorScreen.toBeVisible();
-        await expect(element(by.text('Senior'))).toExist();
-        await element(by.text('Senior')).tap();
-        await InteractiveDialogScreen.submit();
+        await expect(element(by.text('VS Code'))).toExist();
+        await element(by.text('VS Code')).tap();
         await wait(500);
+        await InteractiveDialogScreen.submit();
+        await wait(1000);
         await ensureDialogOpen();
-        await expect(element(by.text('Final Details - Step 3 of 3'))).toExist();
-        await InteractiveDialogScreen.fillTextElement('comments', 'Looking forward to joining the team');
-        await InteractiveDialogScreen.toggleBooleanElement('terms_accepted');
+        await InteractiveDialogScreen.toggleBooleanElement('accept_terms');
+        await InteractiveDialogScreen.toggleBooleanElement('accept_privacy');
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
+        await wait(2000);
+        const {posts} = await Post.apiGetPostsInChannel(siteOneUrl, testChannel.id);
+        const successPost = posts.find((p: any) => p.message && p.message.includes('successfully completed the multi-step registration process!'));
+        const postElement = element(by.id(`channel.post_list.post.${successPost.id}`));
+        await waitFor(postElement).toBeVisible().whileElement(by.id('channel.post_list.flat_list')).scroll(500, 'down');
     });
 
-    it('MM-T4981 should handle multiform cancellation at different steps (Plugin)', async () => {
+    it('MM-T4981 should handle multistep dialog cancellation (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog multiform');
+        await ChannelScreen.postMessage('/dialog multistep');
         await ensureDialogOpen();
-        await expect(element(by.text('Personal Information - Step 1 of 3'))).toExist();
-        await InteractiveDialogScreen.fillTextElement('first_name', 'Jane');
-        await InteractiveDialogScreen.fillTextElement('email', 'jane@example.com');
-        await InteractiveDialogScreen.submit();
+        const individualRadioButton = element(by.id('AppFormElement.user_type.radio.individual.button'));
+        await expect(individualRadioButton).toExist();
+        await individualRadioButton.tap();
+        const useCaseButton = element(by.id('AppFormElement.use_case.select.button'));
+        await expect(useCaseButton).toExist();
+        await useCaseButton.tap();
         await wait(500);
+        await IntegrationSelectorScreen.toBeVisible();
+        await expect(element(by.text('Team Communication'))).toExist();
+        await element(by.text('Team Communication')).tap();
+        await wait(500);
+        await InteractiveDialogScreen.fillTextElement('first_name', 'Jane');
+        await InteractiveDialogScreen.fillTextElement('last_name', 'Smith');
+        await InteractiveDialogScreen.submit();
+        await wait(1000);
         await ensureDialogOpen();
-        await expect(element(by.text('Work Information - Step 2 of 3'))).toExist();
-        const marketingRadioButton = element(by.id('AppFormElement.department.radio.marketing.button'));
-        await expect(marketingRadioButton).toExist();
-        await marketingRadioButton.tap();
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
     });
 
     it('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog fieldrefresh');
+        await ChannelScreen.postMessage('/dialog field-refresh');
         await ensureDialogOpen();
-        await expect(element(by.text('Project Configuration'))).toExist();
-        await InteractiveDialogScreen.fillTextElement('project_name', 'My Web App');
-        await InteractiveDialogScreen.fillTextElement('description', 'A test web application');
-        await expect(element(by.id('AppFormElement.project_type.select.button'))).toExist();
         const projectTypeButton = element(by.id('AppFormElement.project_type.select.button'));
+        await expect(projectTypeButton).toExist();
         await projectTypeButton.tap();
         await wait(500);
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Web Application'))).toExist();
         await element(by.text('Web Application')).tap();
         await wait(1000);
-        await expect(element(by.id('AppFormElement.frontend_framework.select.button'))).toExist();
-        await expect(element(by.id('AppFormElement.backend_language.select.button'))).toExist();
         const frontendButton = element(by.id('AppFormElement.frontend_framework.select.button'));
+        await expect(frontendButton).toExist();
         await frontendButton.tap();
         await wait(500);
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('React'))).toExist();
         await element(by.text('React')).tap();
         await wait(500);
-        const backendButton = element(by.id('AppFormElement.backend_language.select.button'));
-        await backendButton.tap();
-        await wait(500);
-        await IntegrationSelectorScreen.toBeVisible();
-        await expect(element(by.text('Node.js'))).toExist();
-        await element(by.text('Node.js')).tap();
-        await wait(500);
+        await InteractiveDialogScreen.fillTextElement('project_name', 'My Web App');
+        await InteractiveDialogScreen.fillTextElement('description', 'A test web application');
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
+        await wait(2000);
+        const {posts} = await Post.apiGetPostsInChannel(siteOneUrl, testChannel.id);
+        const successPost = posts.find((p: any) => p.message && p.message.includes('created a new') && p.message.includes('My Web App'));
+        const postElement = element(by.id(`channel.post_list.post.${successPost.id}`));
+        await waitFor(postElement).toBeVisible().whileElement(by.id('channel.post_list.flat_list')).scroll(500, 'down');
     });
 
     it('MM-T4986 should handle field refresh changes and cancellation (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog fieldrefresh');
+        await ChannelScreen.postMessage('/dialog field-refresh');
         await ensureDialogOpen();
-        await InteractiveDialogScreen.fillTextElement('project_name', 'Test Project');
-        await InteractiveDialogScreen.fillTextElement('description', 'Test description');
         const projectTypeButton = element(by.id('AppFormElement.project_type.select.button'));
         await projectTypeButton.tap();
         await wait(500);
@@ -539,15 +514,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await element(by.text('Web Application')).tap();
         await wait(1000);
         await expect(element(by.id('AppFormElement.frontend_framework.select.button'))).toExist();
-        await expect(element(by.id('AppFormElement.backend_language.select.button'))).toExist();
+        await expect(element(by.id('AppFormElement.enable_pwa.toggled..button'))).toExist();
         await projectTypeButton.tap();
         await wait(500);
         await IntegrationSelectorScreen.toBeVisible();
-        await expect(element(by.text('Mobile App'))).toExist();
-        await element(by.text('Mobile App')).tap();
+        await expect(element(by.text('Mobile Application'))).toExist();
+        await element(by.text('Mobile Application')).tap();
         await wait(1000);
-        await expect(element(by.id('AppFormElement.platform.select.button'))).toExist();
-        await expect(element(by.id('AppFormElement.dev_framework.select.button'))).toExist();
+        await expect(element(by.id('AppFormElement.mobile_platform.select.button'))).toExist();
+        await expect(element(by.id('AppFormElement.min_os_version.input'))).toExist();
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
     });
