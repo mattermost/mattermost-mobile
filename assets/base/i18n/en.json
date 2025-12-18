@@ -1188,6 +1188,7 @@
   "post_priority.picker.label.standard": "Standard",
   "post_priority.picker.label.urgent": "Urgent",
   "post_priority.picker.title": "Message priority",
+  "post.error": "There has been an error rendering this post.",
   "post.options.title": "Options",
   "post.reactions.title": "Reactions",
   "postList.scrollToBottom.newMessages": "New messages",
