@@ -435,7 +435,8 @@ export default function Selection({
                             )}
                             {allowGuestMagicLink && (
                                 <OptionItem
-                                    label={intl.formatMessage({id: 'invite.guest_magic_link', defaultMessage: 'Allow newly created guests to login without password'})}
+                                    label={intl.formatMessage({id: 'invite.guest_magic_link', defaultMessage: 'Use magic link'})}
+                                    description={intl.formatMessage({id: 'invite.guest_magic_link_description', defaultMessage: 'Newly created guests will join and log in without a password, using a magic link sent to their email address'})}
                                     type='toggle'
                                     selected={guestMagicLink}
                                     action={handlePasswordlessInvitesChange}
