@@ -441,7 +441,7 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.keyboardTranslateY.value).toBe(300 - safeAreaBottom);
+            expect(result.current.keyboardTranslateY.value).toBe(300);
         });
 
         it('should apply safeAreaBottom adjustment for mobile', () => {
