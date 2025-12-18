@@ -38,12 +38,12 @@ on:
         description: "iPhone simulator name"
         required: false
         type: string
-        default: "iPhone 16 Pro"
+        default: "iPhone 17 Pro"
       ios_device_os_name:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 18.4"
+        default: "iOS 26.1"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
