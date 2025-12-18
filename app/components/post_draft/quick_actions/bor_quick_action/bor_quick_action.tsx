@@ -14,14 +14,14 @@ import {style} from '../post_priority_action';
 type Props = {
     testId?: string;
     updatePostBoRStatus: (config: PostBoRConfig) => void;
-    borConfig: PostBoRConfig;
+    borConfig?: PostBoRConfig;
 }
 
 export default function BoRAction({testId, borConfig, updatePostBoRStatus}: Props) {
     const theme = useTheme();
     const iconColor = changeOpacity(theme.centerChannelColor, 0.64);
 
-    const [config, setConfig] = useState<PostBoRConfig>(borConfig);
+    const [config, setConfig] = useState<PostBoRConfig>(borConfig || {enabled: false, borDurationSeconds: 0, borMaximumTimeToLiveSeconds: 0});
 
     const toggleEnabled = useCallback(() => {
         const newConfig = {
