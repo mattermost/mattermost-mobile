@@ -39,4 +39,5 @@ export default keyMirror({
     FILE_ADD_REMOVED: null,
     KEYBOARD_STATE_CHANGED: null,
     CLOSE_INPUT_ACCESSORY_VIEW: null,
+    EMOJI_PICKER_SEARCH_FOCUSED: null,
 });

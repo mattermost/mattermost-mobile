@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Platform, View, type LayoutChangeEvent} from 'react-native';
+import {DeviceEventEmitter, Platform, View, type LayoutChangeEvent} from 'react-native';
 import {useKeyboardState} from 'react-native-keyboard-controller';
 import {Easing, useAnimatedReaction, useSharedValue, withTiming, type SharedValue} from 'react-native-reanimated';
 
 import SearchBar, {type SearchProps, type SearchRef} from '@components/search';
+import {Events} from '@constants';
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {setEmojiSkinTone} from '@hooks/emoji_category_bar';
@@ -137,6 +138,8 @@ const EmojiPickerHeader: React.FC<Props> = ({
         isSearching.value = false;
         setShowKeyboard(false);
 
+        DeviceEventEmitter.emit(Events.EMOJI_PICKER_SEARCH_FOCUSED, false);
+
         // Clear any pending keyboard timeout
         if (keyboardTimeoutRef.current) {
             clearTimeout(keyboardTimeoutRef.current);
@@ -160,6 +163,8 @@ const EmojiPickerHeader: React.FC<Props> = ({
         }
 
         setIsEmojiSearchFocused(true);
+
+        DeviceEventEmitter.emit(Events.EMOJI_PICKER_SEARCH_FOCUSED, true);
 
         // Use last keyboard height from context if available, otherwise use default input accessory height
         // The useAnimatedReaction will handle real-time updates when keyboard actually opens
