@@ -1,27 +1,30 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image, type ImageSource} from 'expo-image';
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Image, type ImageSourcePropType, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import Button from '@components/button';
 import {Sso} from '@constants';
 
 type SsoInfo = {
     text: string;
-    imageSrc?: ImageSourcePropType;
+    imageSrc?: ImageSource;
     compassIcon?: string;
 };
 
 type Props = {
     goToSso: (ssoType: string) => void;
+    intuneAuthService?: string;
+    isIntuneEnabled?: boolean;
     ssoOnly: boolean;
     ssoOptions: SsoWithOptions;
     theme: Theme;
 }
 
-const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
+const SsoOptions = ({goToSso, intuneAuthService, isIntuneEnabled, ssoOnly, ssoOptions, theme}: Props) => {
     const {formatMessage} = useIntl();
 
     const getSsoButtonOptions = ((ssoType: string): SsoInfo => {
@@ -30,7 +33,11 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
         switch (ssoType) {
             case Sso.SAML:
                 sso.text = options.text || formatMessage({id: 'mobile.login_options.saml', defaultMessage: 'SAML'});
-                sso.compassIcon = 'lock';
+                if (isIntuneEnabled && intuneAuthService?.toLocaleLowerCase() === ssoType.toLocaleLowerCase()) {
+                    sso.imageSrc = require('@assets/images/Icon_EntraID.png');
+                } else {
+                    sso.compassIcon = 'lock';
+                }
                 break;
             case Sso.GITLAB:
                 sso.text = formatMessage({id: 'mobile.login_options.gitlab', defaultMessage: 'GitLab'});
@@ -54,10 +61,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
         return sso;
     });
 
-    const enabledSSOs = Object.keys(ssoOptions).filter(
-        (ssoType: string) => ssoOptions[ssoType].enabled,
-    );
-
+    const enabledSSOs = Object.keys(ssoOptions).filter((ssoType: string) => ssoOptions[ssoType].enabled);
     const styleViewContainer = enabledSSOs.length === 2 && !ssoOnly ? styles.containerAsRow : undefined;
     const styleButtonWrapper = enabledSSOs.length === 2 && !ssoOnly ? styles.buttonWrapper : undefined;
 
@@ -86,6 +90,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
                             key={'image' + ssoType}
                             source={imageSrc}
                             style={styles.logoStyle}
+                            cachePolicy='memory'
                         />
                     ) : undefined}
                     text={text}

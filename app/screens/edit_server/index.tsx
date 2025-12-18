@@ -110,7 +110,12 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
             }
 
             // Then try ping request - use doPing without client to avoid client pollution
-            const result = await doPing(headRequest.url, true, undefined, secretForValidation);
+            const result = await doPing(
+                headRequest.url, // serverUrl
+                true, // verifyPushProxy
+                undefined, // timeoutInterval
+                secretForValidation, // preauthSecret
+            );
             if (result.error) {
                 if (result.isPreauthError) {
                     setPreauthSecretError(formatMessage({
@@ -130,7 +135,7 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
             // Handle any unexpected errors during validation
             setPreauthSecretError(formatMessage({
                 id: 'mobile.server.validation.error',
-                defaultMessage: 'Unable to validate server. Please check your connection and try again.',
+                defaultMessage: 'Unable to validate server. Please try again.',
             }));
             setShowAdvancedOptions(true);
             return false;

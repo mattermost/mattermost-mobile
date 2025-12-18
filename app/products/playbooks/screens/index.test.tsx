@@ -7,6 +7,7 @@ import {withServerDatabase} from '@database/components';
 import Screens from '@playbooks/constants/screens';
 import {render} from '@test/intl-test-helper';
 
+import CreateQuickChecklist from './create_quick_checklist';
 import EditCommand from './edit_command';
 import ParticipantPlaybooks from './participant_playbooks';
 import PlaybookRun from './playbook_run';
@@ -64,6 +65,12 @@ jest.mock('@playbooks/screens/start_a_run', () => ({
     default: jest.fn(),
 }));
 jest.mocked(StartARun).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOKS_START_A_RUN}</Text>);
+
+jest.mock('@playbooks/screens/create_quick_checklist', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(CreateQuickChecklist).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOKS_CREATE_QUICK_CHECKLIST}</Text>);
 
 jest.mock('@playbooks/screens/select_playbook', () => ({
     __esModule: true,
