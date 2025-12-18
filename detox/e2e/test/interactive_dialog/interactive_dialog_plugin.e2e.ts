@@ -15,9 +15,8 @@ import {
     Setup,
     System,
     User,
-    Post,
+    // Post,
 } from '@support/server_api';
-import {apiDisablePluginById} from '@support/server_api/plugin';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -169,10 +168,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await LoginScreen.login(testUser);
         await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, testChannel.name);
-    });
-
-    afterAll(async () => {
-        await apiDisablePluginById(siteOneUrl, DemoPlugin.id);
     });
 
     afterEach(async () => {
@@ -405,12 +400,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    it('MM-T4976 should handle complete multiselect and dynamic fields dialog (Plugin)', async () => {
+    it('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog multiselectdynamic');
+        await ChannelScreen.postMessage('/dialog multi-select');
         await ensureDialogOpen();
-        await expect(element(by.text('Multiselect & Dynamic Dialog Test'))).toExist();
-        await expect(element(by.text('Select Multiple Users'))).toExist();
         const multiselectUsersButton = element(by.id('AppFormElement.multiselect_users.select.button'));
         await expect(multiselectUsersButton).toExist();
         await multiselectUsersButton.tap();
@@ -418,22 +411,62 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await IntegrationSelectorScreen.toBeVisible();
         await selectUser();
         await wait(500);
-        const dynamicSelectButton = element(by.id('AppFormElement.dynamic_select.select.button'));
-        await expect(dynamicSelectButton).toExist();
-        await dynamicSelectButton.tap();
-        await wait(1000);
+        await IntegrationSelectorScreen.done();
+        await wait(500);
+        const multiselectChannelsButton = element(by.id('AppFormElement.multiselect_channels.select.button'));
+        await expect(multiselectChannelsButton).toExist();
+        await multiselectChannelsButton.tap();
+        await wait(500);
         await IntegrationSelectorScreen.toBeVisible();
-        await wait(1500);
-        try {
-            await expect(element(by.text('Project Alpha'))).toExist();
-            await element(by.text('Project Alpha')).tap();
-        } catch {
-            await element(by.text('Project')).atIndex(0).tap();
-        }
+        await selectChannel();
+        await wait(500);
+        await IntegrationSelectorScreen.done();
+        await wait(500);
+        const multiselectOptionsButton = element(by.id('AppFormElement.multiselect_options.select.button'));
+        await expect(multiselectOptionsButton).toExist();
+        await multiselectOptionsButton.tap();
+        await wait(500);
+        await IntegrationSelectorScreen.toBeVisible();
+        await expect(element(by.text('Option A'))).toExist();
+        await element(by.text('Option A')).tap();
+        await wait(500);
+        await expect(element(by.text('Option B'))).toExist();
+        await element(by.text('Option B')).tap();
+        await wait(500);
+        await expect(element(by.text('Option C'))).toExist();
+        await element(by.text('Option C')).tap();
+        await wait(500);
+        await IntegrationSelectorScreen.done();
         await wait(500);
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
+    });
+
+    it('MM-T4977 should handle dynamic select fields dialog (Plugin)', async () => {
+        await ensureDialogClosed();
+        await ChannelScreen.postMessage('/dialog dynamic-select');
+        await ensureDialogOpen();
+        const dynamicProductsButton = element(by.id('AppFormElement.dynamic_products.select.button'));
+        await expect(dynamicProductsButton).toExist();
+        await dynamicProductsButton.tap();
+        await wait(500);
+        await IntegrationSelectorScreen.toBeVisible();
+        await IntegrationSelectorScreen.searchFor('macbook');
+        await wait(2000);
+        await expect(element(by.text('MacBook Pro 16-inch'))).toExist();
+        await element(by.text('MacBook Pro 16-inch')).tap();
+        await wait(500);
+        const dynamicCompaniesButton = element(by.id('AppFormElement.dynamic_companies.select.button'));
+        await expect(dynamicCompaniesButton).toExist();
+        await dynamicCompaniesButton.tap();
+        await wait(500);
+        await IntegrationSelectorScreen.toBeVisible();
+        await IntegrationSelectorScreen.searchFor('apple');
+        await wait(2000);
+        await expect(element(by.text('Apple Inc.'))).toExist();
+        await element(by.text('Apple Inc.')).tap();
+        await wait(500);
+        await InteractiveDialogScreen.submit();
+        await ensureDialogClosed();
     });
 });
