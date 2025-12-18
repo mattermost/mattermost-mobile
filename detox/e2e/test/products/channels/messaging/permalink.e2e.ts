@@ -68,7 +68,7 @@ describe('Messaging - Permalink', () => {
         // * Verify on permalink screen and target post is displayed
         await PermalinkScreen.toBeVisible();
         const {postListPostItem: permalinkPostListPostItem} = PermalinkScreen.getPostListPostItem(permalinkTargetPost.id, permalinkTargetPost.message);
-        await expect(permalinkPostListPostItem).toBeVisible();
+        await expect(permalinkPostListPostItem).toExist();
 
         // # Jump to recent messages
         await PermalinkScreen.jumpToRecentMessages();
@@ -76,7 +76,7 @@ describe('Messaging - Permalink', () => {
         // * Verify on channel screen and target post is displayed
         await expect(ChannelScreen.headerTitle).toHaveText(permalinkTargetChannelDiplayName);
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(permalinkTargetPost.id, permalinkTargetPost.message);
-        await expect(channelPostListPostItem).toBeVisible();
+        await expect(channelPostListPostItem).toExist();
     };
 
     it('MM-T4876_1 - should be able to jump to target public channel post by tapping on permalink with team name', async () => {

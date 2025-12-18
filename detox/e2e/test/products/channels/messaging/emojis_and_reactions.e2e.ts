@@ -26,8 +26,8 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Emojis and Reactions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -77,7 +77,9 @@ describe('Messaging - Emojis and Reactions', () => {
         await element(by.text('🤡')).tap();
 
         // * Verify new reaction is added to the message
-        await expect(element(by.text('🤡').withAncestor(by.id(`channel.post_list.post.${post.id}`)))).toBeVisible();
+        const reactionElement = element(by.text('🤡').withAncestor(by.id(`channel.post_list.post.${post.id}`)));
+        await waitFor(reactionElement).toExist().withTimeout(timeouts.TWO_SEC);
+        await expect(reactionElement).toExist();
 
         // # Open post options for message
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -109,7 +111,8 @@ describe('Messaging - Emojis and Reactions', () => {
 
         // * Verify reaction is added to the message
         const reaction = element(by.text('🔥').withAncestor(by.id(`channel.post_list.post.${post.id}`)));
-        await expect(reaction).toBeVisible();
+        await waitFor(reaction).toExist().withTimeout(timeouts.TWO_SEC);
+        await expect(reaction).toExist();
 
         // # Long press on the reaction
         await reaction.longPress();

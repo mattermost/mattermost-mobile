@@ -146,7 +146,7 @@ describe('Channels - Find Channels', () => {
 
         // * Verify search returns the target archived channel item
         await wait(timeouts.FOUR_SEC);
-        await FindChannelsScreen.getFilteredChannelItem(archivedChannel.name).tap();
+        await FindChannelsScreen.getFilteredArchivedChannelItem(archivedChannel.name).tap();
         await wait(timeouts.FOUR_SEC);
 
         // * Verify on archievd channel name
