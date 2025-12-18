@@ -720,7 +720,6 @@
   "mobile.manage_members.remove_member": "채널에서 제거",
   "mobile.manage_members.section_title_admins": "채널 관리자",
   "mobile.manage_members.section_title_members": "멤버",
-  "mobile.managed.OK": "확인",
   "mobile.managed.biometric_failed": "생체 인식 또는 암호 인증에 실패했습니다.",
   "mobile.managed.blocked_by": "{vendor}에 의해 차단됨",
   "mobile.managed.exit": "종료",

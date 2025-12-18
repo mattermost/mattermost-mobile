@@ -34,7 +34,10 @@ const InputAccessoryViewContainer = ({
         return {
             height: animatedHeight.value,
         };
-    }, [animatedHeight]);
+
+        // Shared values don't need to be in dependencies - they're stable references
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <Animated.View

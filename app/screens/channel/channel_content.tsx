@@ -17,6 +17,7 @@ type ChannelContentProps = {
     scheduledPostCount: number;
     containerHeight: number;
     enabled?: boolean;
+    onEmojiSearchFocusChange?: (focused: boolean) => void;
 }
 
 const CHANNEL_POST_DRAFT_TESTID = 'channel.post_draft';
@@ -36,12 +37,14 @@ const ChannelContent = ({
     scheduledPostCount,
     containerHeight,
     enabled = true,
+    onEmojiSearchFocusChange,
 }: ChannelContentProps) => {
     return (
         <KeyboardAwarePostDraftContainer
             textInputNativeID={CHANNEL_POST_INPUT_NATIVE_ID}
             containerStyle={[styles.flex, {marginTop}]}
             enabled={enabled}
+            onEmojiSearchFocusChange={onEmojiSearchFocusChange}
             renderList={({listRef, onTouchMove, onTouchEnd}) => (
                 <ChannelPostList
                     channelId={channelId}

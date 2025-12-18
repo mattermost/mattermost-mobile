@@ -5,11 +5,12 @@ import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useStat
 import {BackHandler, DeviceEventEmitter, Keyboard, Platform, type StyleProp, StyleSheet, type ViewStyle, View, type LayoutChangeEvent, type GestureResponderEvent} from 'react-native';
 import {KeyboardGestureArea} from 'react-native-keyboard-controller';
 import Animated, {runOnJS, useAnimatedReaction, useSharedValue, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {InputAccessoryViewContainer, InputAccessoryViewContent} from '@components/input_accessory_view';
 import {Events} from '@constants';
 import {KeyboardAnimationProvider} from '@context/keyboard_animation';
-import {useWindowDimensions} from '@hooks/device';
+import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {useInputAccessoryView} from '@hooks/useInputAccessoryView';
 import {useKeyboardAwarePostDraft} from '@hooks/useKeyboardAwarePostDraft';
 
@@ -33,6 +34,7 @@ type Props = {
     containerStyle?: StyleProp<ViewStyle>;
     isThreadView?: boolean;
     enabled?: boolean;
+    onEmojiSearchFocusChange?: (focused: boolean) => void;
 };
 
 const styles = StyleSheet.create({
@@ -59,8 +61,13 @@ export const KeyboardAwarePostDraftContainer = ({
     containerStyle,
     isThreadView = false,
     enabled = true,
+    onEmojiSearchFocusChange,
 }: Props) => {
     const {height: windowHeight} = useWindowDimensions();
+    const insets = useSafeAreaInsets();
+    const isTablet = useIsTablet();
+
+    const effectiveWindowHeight = isTablet ? windowHeight : windowHeight - insets.bottom;
 
     const {
         keyboardTranslateY: keyboardCurrentHeight,
@@ -95,6 +102,10 @@ export const KeyboardAwarePostDraftContainer = ({
     });
 
     const [isEmojiSearchFocused, setIsEmojiSearchFocused] = useState(false);
+
+    useEffect(() => {
+        onEmojiSearchFocusChange?.(isEmojiSearchFocused);
+    }, [isEmojiSearchFocused, onEmojiSearchFocusChange]);
 
     // Ref to store cursor position from PostInput
     const cursorPositionRef = useRef<number>(0);
@@ -213,8 +224,8 @@ export const KeyboardAwarePostDraftContainer = ({
         // On first touch, check if gesture started within emoji picker bounds
         if (!isGestureActiveRef.current) {
             const currentEmojiPickerHeight = inputAccessoryViewAnimatedHeight.value;
-            const emojiPickerTopEdge = windowHeight - postInputContainerHeight - currentEmojiPickerHeight;
-            const emojiPickerBottomEdge = windowHeight - postInputContainerHeight;
+            const emojiPickerTopEdge = effectiveWindowHeight - postInputContainerHeight - currentEmojiPickerHeight;
+            const emojiPickerBottomEdge = effectiveWindowHeight - postInputContainerHeight;
 
             // Check if touch is within emoji picker area
             const isTouchInEmojiPicker = fingerY >= emojiPickerTopEdge && fingerY <= emojiPickerBottomEdge;
@@ -232,8 +243,7 @@ export const KeyboardAwarePostDraftContainer = ({
             return;
         }
 
-        // Calculate distance from bottom of screen
-        const distanceFromBottom = windowHeight - fingerY;
+        const distanceFromBottom = effectiveWindowHeight - fingerY;
 
         // Subtract input container height to get emoji picker height
         const emojiPickerHeight = distanceFromBottom - postInputContainerHeight;
@@ -245,7 +255,7 @@ export const KeyboardAwarePostDraftContainer = ({
         lastDistanceFromBottomRef.current = clampedHeight;
         lastIsSwipingDownRef.current = previousTouchYRef.current !== null && fingerY > previousTouchYRef.current;
         previousTouchYRef.current = fingerY;
-    }, [showInputAccessoryView, postInputContainerHeight, inputAccessoryViewAnimatedHeight, bottomInset, windowHeight]);
+    }, [showInputAccessoryView, postInputContainerHeight, inputAccessoryViewAnimatedHeight, bottomInset, effectiveWindowHeight]);
 
     // Callback to dismiss emoji picker after animation completes
     const dismissEmojiPicker = useCallback(() => {
@@ -493,26 +503,20 @@ export const KeyboardAwarePostDraftContainer = ({
         updateValue: updateValueRef.current,
         updateCursorPosition: updateCursorPositionRef.current,
         registerPostInputCallbacks,
-    }), [keyboardCurrentHeight,
-        bottomInset,
-        scrollOffset,
-        keyboardHeight,
-        scrollPosition,
+
+        // Shared values don't need to be in dependencies - they're stable references
+        // Only include non-shared-value dependencies that can actually change
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }), [
         onScroll,
         postInputContainerHeight,
         inputRef,
         blurInput,
         focusInput,
         blurAndDismissKeyboard,
-        isKeyboardFullyOpen,
-        isKeyboardFullyClosed,
-        isKeyboardInTransition,
-        isInputAccessoryViewMode,
         showInputAccessoryView,
         setShowInputAccessoryView,
         lastKeyboardHeight,
-        inputAccessoryViewAnimatedHeight,
-        isTransitioningFromCustomView,
         closeInputAccessoryView,
         scrollToEnd,
         isEmojiSearchFocused,

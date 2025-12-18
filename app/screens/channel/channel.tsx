@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Platform, type LayoutChangeEvent, StyleSheet} from 'react-native';
 import {KeyboardProvider} from 'react-native-keyboard-controller';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -44,8 +44,6 @@ type ChannelProps = {
     scheduledPostCount: number;
 };
 
-const edges: Edge[] = ['left', 'right'];
-
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
@@ -79,6 +77,18 @@ const Channel = ({
     const [containerHeight, setContainerHeight] = useState(0);
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
     const isVisible = useIsScreenVisible(componentId);
+    const [isEmojiSearchFocused, setIsEmojiSearchFocused] = useState(false);
+
+    const safeAreaViewEdges: Edge[] = useMemo(() => {
+        if (isTablet) {
+            return ['left', 'right'];
+        }
+        if (isEmojiSearchFocused) {
+            return ['left', 'right'];
+        }
+        return ['left', 'right', 'bottom'];
+    }, [isTablet, isEmojiSearchFocused]);
+
     const handleBack = useCallback(() => {
         popTopScreen(componentId);
     }, [componentId]);
@@ -119,7 +129,7 @@ const Channel = ({
             <SafeAreaView
                 style={styles.flex}
                 mode='margin'
-                edges={edges}
+                edges={safeAreaViewEdges}
                 testID='channel.screen'
                 onLayout={onLayout}
                 nativeID={componentId ? SecurityManager.getShieldScreenId(componentId) : undefined}
@@ -142,6 +152,7 @@ const Channel = ({
                             scheduledPostCount={scheduledPostCount}
                             containerHeight={containerHeight}
                             enabled={isVisible}
+                            onEmojiSearchFocusChange={setIsEmojiSearchFocused}
                         />
                     </KeyboardProvider>
                 ) : (
@@ -151,6 +162,7 @@ const Channel = ({
                         scheduledPostCount={scheduledPostCount}
                         containerHeight={containerHeight}
                         enabled={isVisible}
+                        onEmojiSearchFocusChange={setIsEmojiSearchFocused}
                     />
                 ))
                 }

@@ -145,24 +145,16 @@ export const useKeyboardAnimationContext = () => {
         updateValue: defaultUpdateValue.current,
         updateCursorPosition: defaultUpdateCursorPosition.current,
         registerPostInputCallbacks: defaultRegisterPostInputCallbacks,
+
+        // Shared values don't need to be in dependencies - they're stable references
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }), [
-        defaultKeyboardTranslateY,
-        defaultBottomInset,
-        defaultScrollOffset,
-        defaultKeyboardHeight,
-        defaultScrollPosition,
         defaultOnScroll,
         defaultInputRef,
         defaultBlurInput,
         defaultFocusInput,
         defaultBlurAndDismissKeyboard,
-        defaultIsKeyboardFullyOpen,
-        defaultIsKeyboardFullyClosed,
-        defaultIsKeyboardInTransition,
         defaultSetShowInputAccessoryView,
-        defaultIsInputAccessoryViewMode,
-        defaultInputAccessoryViewAnimatedHeight,
-        defaultIsTransitioningFromCustomView,
         defaultCloseInputAccessoryView,
         defaultScrollToEnd,
         defaultSetIsEmojiSearchFocused,

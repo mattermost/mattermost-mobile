@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {uniqueId} from 'lodash';
-import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, StyleSheet} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {Platform, type LayoutChangeEvent, StyleSheet} from 'react-native';
 import {KeyboardProvider} from 'react-native-keyboard-controller';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -13,6 +13,7 @@ import FreezeScreen from '@components/freeze_screen';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useIsScreenVisible} from '@hooks/use_screen_visibility';
 import SecurityManager from '@managers/security_manager';
@@ -36,8 +37,6 @@ type ThreadProps = {
     scheduledPostCount: number;
 };
 
-const edges: Edge[] = ['left', 'right'];
-
 const styles = StyleSheet.create({
     flex: {flex: 1},
 });
@@ -54,6 +53,19 @@ const Thread = ({
 }: ThreadProps) => {
     const [containerHeight, setContainerHeight] = useState(0);
     const isVisible = useIsScreenVisible(componentId);
+    const isTablet = useIsTablet();
+    const [isEmojiSearchFocused, setIsEmojiSearchFocused] = useState(false);
+
+    // Remove bottom safe area when emoji search is focused to eliminate gap between emoji picker and keyboard
+    const safeAreaViewEdges: Edge[] = useMemo(() => {
+        if (isTablet) {
+            return ['left', 'right'];
+        }
+        if (isEmojiSearchFocused) {
+            return ['left', 'right'];
+        }
+        return ['left', 'right', 'bottom'];
+    }, [isTablet, isEmojiSearchFocused]);
 
     const close = useCallback(() => {
         popTopScreen(componentId);
@@ -115,22 +127,34 @@ const Thread = ({
             <SafeAreaView
                 style={styles.flex}
                 mode='margin'
-                edges={edges}
+                edges={safeAreaViewEdges}
                 testID='thread.screen'
                 onLayout={onLayout}
                 nativeID={SecurityManager.getShieldScreenId(componentId)}
             >
                 <RoundedHeaderContext/>
                 {Boolean(rootPost) &&
-                <KeyboardProvider>
+                (Platform.OS === 'ios' ? (
+                    <KeyboardProvider>
+                        <ThreadContent
+                            rootId={rootId}
+                            rootPost={rootPost!}
+                            scheduledPostCount={scheduledPostCount}
+                            containerHeight={containerHeight}
+                            enabled={isVisible}
+                            onEmojiSearchFocusChange={setIsEmojiSearchFocused}
+                        />
+                    </KeyboardProvider>
+                ) : (
                     <ThreadContent
                         rootId={rootId}
                         rootPost={rootPost!}
                         scheduledPostCount={scheduledPostCount}
                         containerHeight={containerHeight}
                         enabled={isVisible}
+                        onEmojiSearchFocusChange={setIsEmojiSearchFocused}
                     />
-                </KeyboardProvider>
+                ))
                 }
                 {showFloatingCallContainer &&
                     <FloatingCallContainer
