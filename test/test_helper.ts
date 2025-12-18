@@ -652,6 +652,7 @@ class TestHelperSingleton {
             files: [],
             metadata: {},
             updateAt: 0,
+            type: '',
             ...overwrite,
         };
     };
@@ -880,6 +881,7 @@ class TestHelperSingleton {
             scheduledAt: 0,
             processedAt: 0,
             errorCode: '',
+            type: '',
             toApi: jest.fn(),
             ...overwrite,
         };
