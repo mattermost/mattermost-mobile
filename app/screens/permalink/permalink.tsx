@@ -3,7 +3,8 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, Platform, Text, TouchableOpacity, View} from 'react-native';
+import {KeyboardProvider} from 'react-native-keyboard-controller';
 import Animated from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -17,7 +18,6 @@ import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import PostList from '@components/post_list';
 import {Screens} from '@constants';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
@@ -320,8 +320,8 @@ function Permalink({
             />
         );
     } else {
-        content = (
-            <ExtraKeyboardProvider>
+        const postListContent = (
+            <>
                 <View style={style.postList}>
                     <PostList
                         highlightedId={postId}
@@ -345,7 +345,15 @@ function Permalink({
                         testID='permalink.jump_to_recent_messages.button'
                     />
                 </View>
-            </ExtraKeyboardProvider>
+            </>
+        );
+
+        content = Platform.OS === 'ios' ? (
+            <KeyboardProvider>
+                {postListContent}
+            </KeyboardProvider>
+        ) : (
+            postListContent
         );
     }
 
