@@ -143,9 +143,21 @@ const Channel = ({
                     shouldRenderBookmarks={shouldRender}
                     shouldRenderChannelBanner={includeChannelBanner}
                 />
-                {shouldRender &&
-                (Platform.OS === 'ios' ? (
+                {Platform.OS === 'ios' ? (
                     <KeyboardProvider>
+                        {shouldRender && (
+                            <ChannelContent
+                                channelId={channelId}
+                                marginTop={marginTop}
+                                scheduledPostCount={scheduledPostCount}
+                                containerHeight={containerHeight}
+                                enabled={isVisible || shouldRender}
+                                onEmojiSearchFocusChange={setIsEmojiSearchFocused}
+                            />
+                        )}
+                    </KeyboardProvider>
+                ) : (
+                    shouldRender && (
                         <ChannelContent
                             channelId={channelId}
                             marginTop={marginTop}
@@ -154,18 +166,8 @@ const Channel = ({
                             enabled={isVisible || shouldRender}
                             onEmojiSearchFocusChange={setIsEmojiSearchFocused}
                         />
-                    </KeyboardProvider>
-                ) : (
-                    <ChannelContent
-                        channelId={channelId}
-                        marginTop={marginTop}
-                        scheduledPostCount={scheduledPostCount}
-                        containerHeight={containerHeight}
-                        enabled={isVisible || shouldRender}
-                        onEmojiSearchFocusChange={setIsEmojiSearchFocused}
-                    />
-                ))
-                }
+                    )
+                )}
                 {showFloatingCallContainer && shouldRender &&
                     <FloatingCallContainer
                         channelId={channelId}
