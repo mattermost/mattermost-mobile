@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query} from '@nozbe/watermelondb';
-import {of as of$, combineLatestWith} from 'rxjs';
+import {of as of$, combineLatestWith, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
@@ -11,7 +11,7 @@ import {updatePermalinkMetadata} from '@utils/permalink_sync';
 
 import {queryGroupsByNames} from './group';
 import {querySavedPostsPreferences} from './preference';
-import {getConfigValue, observeConfigBooleanValue} from './system';
+import {getConfigValue, observeConfigBooleanValue, observeConfigIntValue} from './system';
 import {queryUsersByUsername, observeUser, observeCurrentUser} from './user';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -261,20 +261,35 @@ export const observeIsBoREnabled = (database: Database) => {
     return observeConfigBooleanValue(database, 'EnableBurnOnRead');
 };
 
-export const observeBoRConfig = async (database: Database) => {
-    const botDurationSecondsString = await getConfigValue(database, 'BurnOnReadDurationSeconds') || DEFAULT_BURN_ON_READ_DURATION_SECONDS;
-    const borDurationSeconds = parseInt(botDurationSecondsString, 10);
+export const observeBoRConfig = (database: Database) => {
+    // const botDurationSecondsString = await getConfigValue(database, 'BurnOnReadDurationSeconds') || DEFAULT_BURN_ON_READ_DURATION_SECONDS;
+    // const borDurationSeconds = parseInt(botDurationSecondsString, 10);
+    //
+    // const maxBoRDurationSecondsString = await getConfigValue(database, 'BurnOnReadMaximumTimeToLiveSeconds') || DEFAULT_BURN_ON_READ_MAXIMUM_TTL_SECONDS;
+    // const borMaximumTimeToLiveSeconds = parseInt(maxBoRDurationSecondsString, 10);
+    //
+    // const borConfig: PostBoRConfig = {
+    //     enabled: false,
+    //     borDurationSeconds,
+    //     borMaximumTimeToLiveSeconds,
+    // };
+    //
+    // return borConfig;
 
-    const maxBoRDurationSecondsString = await getConfigValue(database, 'BurnOnReadMaximumTimeToLiveSeconds') || DEFAULT_BURN_ON_READ_MAXIMUM_TTL_SECONDS;
-    const borMaximumTimeToLiveSeconds = parseInt(maxBoRDurationSecondsString, 10);
+    const borDurationSecondsObservable = observeConfigIntValue(database, 'BurnOnReadDurationSeconds');
+    const maxBoRDurationSecondsStringObservable = observeConfigIntValue(database, 'BurnOnReadMaximumTimeToLiveSeconds');
 
-    const borConfig: PostBoRConfig = {
-        enabled: false,
-        borDurationSeconds,
-        borMaximumTimeToLiveSeconds,
-    };
-
-    return borConfig;
+    // merge all observables and return single observable of object with both values
+    return combineLatest([borDurationSecondsObservable, maxBoRDurationSecondsStringObservable]).pipe(
+        switchMap(([borDurationSeconds, borMaximumTimeToLiveSeconds]) => {
+            const borConfig = {
+                enabled: false,
+                borDurationSeconds: borDurationSeconds || parseInt(DEFAULT_BURN_ON_READ_DURATION_SECONDS, 10),
+                borMaximumTimeToLiveSeconds: borMaximumTimeToLiveSeconds || parseInt(DEFAULT_BURN_ON_READ_MAXIMUM_TTL_SECONDS, 10),
+            };
+            return of$(borConfig);
+        }),
+    );
 };
 
 export const observeIsPostAcknowledgementsEnabled = (database: Database) => {

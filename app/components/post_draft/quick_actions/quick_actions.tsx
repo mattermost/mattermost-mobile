@@ -4,12 +4,12 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import BoRAction from '@components/post_draft/quick_actions/bor_quick_action';
 
 import AttachmentAction from './attachment_quick_action';
 import EmojiAction from './emoji_quick_action';
 import InputAction from './input_quick_action';
 import PostPriorityAction from './post_priority_action';
+import BoRAction from "@components/post_draft/quick_actions/bor_quick_action";
 
 type Props = {
     testID?: string;

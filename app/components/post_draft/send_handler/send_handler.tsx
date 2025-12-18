@@ -45,7 +45,6 @@ type Props = {
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
     postPriority: PostPriority;
-    postType?: string; // TODO use user creatable post type here
 
     draftType?: DraftType;
     postId?: string;
@@ -94,7 +93,6 @@ export default function SendHandler({
     isFromDraftView,
     draftType,
     postId,
-    postType,
 }: Props) {
     const serverUrl = useServerUrl();
 
