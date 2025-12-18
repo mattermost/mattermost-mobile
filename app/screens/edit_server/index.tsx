@@ -169,7 +169,7 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
         }
 
         // Only validate server connection if preauth secret has changed
-        const preauthSecretChanged = preauthSecret.trim() !== initialPreauthSecret;
+        const preauthSecretChanged = preauthSecret.trim() !== initialPreauthSecret.trim();
         if (preauthSecretChanged) {
             const isValidServer = await validateServer();
             if (!isValidServer) {
