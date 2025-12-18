@@ -358,18 +358,6 @@ function onSelectFieldsDialogRequest(req, res) {
     return res.json({text: 'Select fields dialog triggered via slash command!'});
 }
 
-function onDialogSubmitError(req, res) {
-    console.log('[POST] /dialog_error');
-
-    // Return error response that should keep dialog open and show error
-    res.status(400).json({
-        error: 'Server error: Unable to process dialog submission',
-        errors: {
-            'optional_text': 'This is a simulated server error for testing',
-        },
-    });
-}
-
 function onDialogSubmit(req, res) {
     const {body} = req;
 
