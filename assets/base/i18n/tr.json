@@ -720,7 +720,6 @@
   "mobile.manage_members.remove_member": "Kanaldan çıkar",
   "mobile.manage_members.section_title_admins": "KANAL YÖNETİCİLERİ",
   "mobile.manage_members.section_title_members": "ÜYELER",
-  "mobile.managed.OK": "Tamam",
   "mobile.managed.biometric_failed": "Biyometri veya parola ile doğrulanamadı.",
   "mobile.managed.blocked_by": "{vendor} tarafından engellenmiş",
   "mobile.managed.exit": "Çık",

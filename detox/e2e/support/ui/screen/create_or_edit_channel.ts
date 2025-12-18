@@ -6,7 +6,7 @@ import {
     ChannelScreen,
     ChannelListScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 class CreateOrEditChannelScreen {
@@ -51,7 +51,6 @@ class CreateOrEditChannelScreen {
     openCreateChannel = async () => {
         // # Open create channel screen
         await ChannelListScreen.headerPlusButton.tap();
-        await wait(timeouts.ONE_SEC);
         await ChannelListScreen.createNewChannelItem.tap();
 
         return this.toBeVisible();
