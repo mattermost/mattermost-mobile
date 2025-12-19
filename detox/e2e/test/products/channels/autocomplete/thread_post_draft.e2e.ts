@@ -7,7 +7,10 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup} from '@support/server_api';
+import {
+    Post,
+    Setup,
+} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -27,9 +30,11 @@ import {expect} from 'detox';
 describe('Autocomplete - Thread Post Draft', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
+    let testChannel: any;
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
+        testChannel = channel;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -38,11 +43,12 @@ describe('Autocomplete - Thread Post Draft', () => {
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
 
-        // # Open a channel screen, post a message, and tap on post to open reply thread
+        // # Open a channel screen, post a message, and open reply thread
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, channel.name);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await element(by.text(message)).tap();
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await ChannelScreen.openReplyThreadFor(post.id, message);
     });
 
     beforeEach(async () => {

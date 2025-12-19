@@ -156,12 +156,15 @@ class ChannelScreen {
         // # Open channel screen
         await waitFor(ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName).tap();
+
+        // Try to close scheduled post tooltip if it exists
         try {
+            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
             await this.scheduledPostTooltipCloseButton.tap();
         } catch (error) {
-            // eslint-disable-next-line no-console
-            console.log('Element not visible, skipping click');
+            // Tooltip not visible, continue
         }
+
         return this.toBeVisible();
     };
 
