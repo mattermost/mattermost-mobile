@@ -26,7 +26,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Permalink', () => {
     const serverOneDisplayName = 'Server 1';
@@ -62,8 +62,14 @@ describe('Messaging - Permalink', () => {
         const permalinkLabel = `permalink-${getRandomId()}`;
         const permalinkMessage = `[${permalinkLabel}](/${teamName}/pl/${permalinkTargetPost.id})`;
         await ChannelScreen.postMessage(permalinkMessage);
-        await element(by.text(permalinkLabel)).tap({x: 5, y: 10});
-        await wait(timeouts.ONE_SEC);
+
+        // # Wait for the message to be posted and element to become visible (keyboard should dismiss)
+        const permalinkElement = element(by.text(permalinkLabel));
+        await waitFor(permalinkElement).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+
+        // # Tap on permalink
+        await permalinkElement.tap({x: 5, y: 10});
+        await wait(timeouts.TWO_SEC);
 
         // * Verify on permalink screen and target post is displayed
         await PermalinkScreen.toBeVisible();

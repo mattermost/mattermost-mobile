@@ -62,6 +62,9 @@ describe('Messaging - Message Delete', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItem).toBeVisible();
 
+        // # Scroll to post to dismiss keyboard and ensure post is visible
+        await postListPostItem.scrollTo('top');
+
         // # Open post options for the message that was just posted, tap delete option and confirm
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.deletePost({confirm: true});
@@ -84,6 +87,9 @@ describe('Messaging - Message Delete', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItem).toBeVisible();
 
+        // # Scroll to post to dismiss keyboard and ensure post is visible
+        await postListPostItem.scrollTo('top');
+
         // # Open post options for the message that was just posted, tap delete option and cancel
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.deletePost({confirm: false});
@@ -102,6 +108,9 @@ describe('Messaging - Message Delete', () => {
         await ChannelScreen.postMessage(message);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);
+
+        // # Scroll to post to dismiss keyboard before tapping
+        await parentPostListPostItem.scrollTo('top');
         await parentPostListPostItem.tap();
 
         // * Verify on thread screen
@@ -111,7 +120,10 @@ describe('Messaging - Message Delete', () => {
         const replyMessage = `${message} reply`;
         await ThreadScreen.postMessage(replyMessage);
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem: replyPostListPostItem} = ChannelScreen.getPostListPostItem(replyPost.id, replyMessage);
+        const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
+
+        // # Scroll to reply post to dismiss keyboard before long press
+        await replyPostListPostItem.scrollTo('top');
         await ThreadScreen.openPostOptionsFor(replyPost.id, replyMessage);
         await PostOptionsScreen.deletePost({confirm: true});
 

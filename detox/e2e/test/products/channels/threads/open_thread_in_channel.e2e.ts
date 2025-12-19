@@ -58,6 +58,7 @@ describe('Threads - Open Thread in Channel', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
+        await ChannelScreen.dismissScheduledPostTooltip();
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
@@ -81,6 +82,7 @@ describe('Threads - Open Thread in Channel', () => {
 
         // * Verify on channel screen and thread is displayed
         await ChannelScreen.toBeVisible();
+        await ChannelScreen.dismissScheduledPostTooltip();
         const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
         await expect(postListPostItem).toBeVisible();
 
@@ -94,6 +96,7 @@ describe('Threads - Open Thread in Channel', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
+        await ChannelScreen.dismissScheduledPostTooltip();
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
@@ -122,6 +125,7 @@ describe('Threads - Open Thread in Channel', () => {
 
         // * Verify on channel screen and thread is displayed
         await ChannelScreen.toBeVisible();
+        await ChannelScreen.dismissScheduledPostTooltip();
         const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
         await expect(postListPostItem).toBeVisible();
 

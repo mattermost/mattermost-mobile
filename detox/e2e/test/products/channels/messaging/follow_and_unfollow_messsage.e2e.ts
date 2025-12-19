@@ -9,6 +9,7 @@
 
 import {
     Post,
+    Preference,
     Setup,
 } from '@support/server_api';
 import {
@@ -34,6 +35,16 @@ describe('Messaging - Follow and Unfollow Message', () => {
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+
+        // # Enable CRT (Collapsed Reply Threads) for the user
+        await Preference.apiSaveUserPreferences(siteOneUrl, user.id, [
+            {
+                user_id: user.id,
+                category: 'display_settings',
+                name: 'collapsed_reply_threads',
+                value: 'on',
+            },
+        ]);
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -61,8 +72,12 @@ describe('Messaging - Follow and Unfollow Message', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItem).toBeVisible();
 
+        // # Wait for thread to be created in DB (CRT creates threads asynchronously)
+        await wait(timeouts.TWO_SEC);
+
         // # Open post options for message and tap on follow message option
         await postListPostItem.longPress(timeouts.ONE_SEC);
+        await waitFor(PostOptionsScreen.followThreadOption).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await PostOptionsScreen.followThreadOption.tap();
 
         // * Verify message is followed by user via post footer
@@ -88,7 +103,12 @@ describe('Messaging - Follow and Unfollow Message', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        // # Wait for thread to be created in DB (CRT creates threads asynchronously)
+        await wait(timeouts.TWO_SEC);
+
         await ChannelScreen.openPostOptionsFor(post.id, message);
+        await waitFor(PostOptionsScreen.followThreadOption).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await PostOptionsScreen.followThreadOption.tap();
 
         // * Verify message is followed by user via post footer

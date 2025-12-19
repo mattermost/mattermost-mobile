@@ -22,7 +22,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {expect} from 'detox';
+import {timeouts} from '@support/utils';
 
 describe('Messaging - Markdown Image', () => {
     const serverOneDisplayName = 'Server 1';
@@ -57,7 +57,9 @@ describe('Messaging - Markdown Image', () => {
         // * Verify markdown image is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemImage} = ChannelScreen.getPostListPostItem(post.id);
-        await expect(postListPostItemImage).toBeVisible();
+
+        // Wait for image to load and have dimensions (not 0x0)
+        await waitFor(postListPostItemImage).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -72,7 +74,9 @@ describe('Messaging - Markdown Image', () => {
         // * Verify markdown image with link is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemImage} = ChannelScreen.getPostListPostItem(post.id);
-        await expect(postListPostItemImage).toBeVisible();
+
+        // Wait for image to load and have dimensions (not 0x0)
+        await waitFor(postListPostItemImage).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();

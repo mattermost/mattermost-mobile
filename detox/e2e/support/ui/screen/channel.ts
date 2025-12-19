@@ -152,18 +152,28 @@ class ChannelScreen {
         return this.channelScreen;
     };
 
+    dismissScheduledPostTooltip = async () => {
+        // Try to close scheduled post tooltip if it exists (try both regular and admin account versions)
+        try {
+            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await this.scheduledPostTooltipCloseButton.tap();
+        } catch {
+            // Try admin account version
+            try {
+                await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
+            } catch {
+                // Tooltip not visible, continue
+            }
+        }
+    };
+
     open = async (categoryKey: string, channelName: string) => {
         // # Open channel screen
         await waitFor(ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName).tap();
 
-        // Try to close scheduled post tooltip if it exists
-        try {
-            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-            await this.scheduledPostTooltipCloseButton.tap();
-        } catch (error) {
-            // Tooltip not visible, continue
-        }
+        await this.dismissScheduledPostTooltip();
 
         return this.toBeVisible();
     };
