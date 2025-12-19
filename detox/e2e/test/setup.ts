@@ -28,12 +28,16 @@ export async function launchAppWithRetry(): Promise<void> {
                 await device.launchApp({
                     newInstance: true,
                     delete: true,
-                    permissions: {
-                        notifications: 'YES',
-                        camera: 'NO',
-                        medialibrary: 'NO',
-                        photos: 'NO',
-                    },
+                    // Permissions are pre-configured in CI workflow to avoid slow SpringBoard restarts
+                    // Only set permissions when running locally (not in CI)
+                    ...(process.env.CI ? {} : {
+                        permissions: {
+                            notifications: 'YES',
+                            camera: 'NO',
+                            medialibrary: 'NO',
+                            photos: 'NO',
+                        },
+                    }),
                     launchArgs: {
                         detoxPrintBusyIdleResources: 'YES',
                         detoxDebugVisibility: 'YES',
@@ -56,8 +60,6 @@ export async function launchAppWithRetry(): Promise<void> {
                 });
             }
 
-            // Verify app is connected by executing a simple command
-            await device.reloadReactNative();
             console.info(`✅ App launched successfully on attempt ${attempt}`);
             return; // Success, exit the function
 

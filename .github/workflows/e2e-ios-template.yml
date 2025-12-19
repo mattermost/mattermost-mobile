@@ -173,6 +173,40 @@ jobs:
       - name: Install Detox Dependencies
         run: cd detox && npm i
 
+      - name: Pre-boot iOS Simulator
+        run: |
+          # Find or create the simulator
+          SIMULATOR_ID=$(xcrun simctl list devices | grep "${{ env.DEVICE_NAME }}" | grep "${{ env.DEVICE_OS_VERSION }}" | head -1 | grep -oE '([0-9A-F-]{36})')
+
+          if [ -z "$SIMULATOR_ID" ]; then
+            echo "Creating simulator ${{ env.DEVICE_NAME }} with ${{ env.DEVICE_OS_VERSION }}"
+            DEVICE_TYPE=$(xcrun simctl list devicetypes | grep "${{ env.DEVICE_NAME }}" | awk -F'[()]' '{print $(NF-1)}')
+            RUNTIME=$(xcrun simctl list runtimes | grep "${{ env.DEVICE_OS_VERSION }}" | awk -F'[()]' '{print $(NF-1)}')
+            SIMULATOR_ID=$(xcrun simctl create "CI-${{ env.DEVICE_NAME }}" "$DEVICE_TYPE" "$RUNTIME")
+          fi
+
+          echo "Booting simulator: $SIMULATOR_ID"
+          xcrun simctl boot "$SIMULATOR_ID" || echo "Simulator already booted"
+
+          # Wait for boot to complete
+          xcrun simctl bootstatus "$SIMULATOR_ID"
+
+          # Open Simulator.app in background to speed up UI rendering
+          open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID"
+
+          # Pre-install the app to avoid reinstall per test file
+          echo "Installing app to simulator"
+          xcrun simctl install "$SIMULATOR_ID" "$(pwd)/mobile-artifacts/Mattermost.app"
+
+          # Set permissions upfront
+          echo "Setting app permissions"
+          xcrun simctl privacy "$SIMULATOR_ID" grant notifications com.mattermost.rnbeta
+          xcrun simctl privacy "$SIMULATOR_ID" revoke camera com.mattermost.rnbeta
+          xcrun simctl privacy "$SIMULATOR_ID" revoke photos com.mattermost.rnbeta
+          xcrun simctl privacy "$SIMULATOR_ID" revoke media-library com.mattermost.rnbeta
+
+          echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
+
       - name: Start Proxy
         if: ${{ inputs.low_bandwidth_mode }}
         id: start-proxy
@@ -185,12 +219,30 @@ jobs:
           cat > .env <<EOF
           echo "RUNNING_E2E=true" >> .env
 
-      - name: Run Detox E2E Tests
+      - name: Start Metro Bundler and Run Detox E2E Tests
         continue-on-error: true # We want to run all the tests
         run: |
-          # Start the server
-          npm run start &
-          sleep 120 # Wait for watchman to finish querying the files
+          # Start Metro bundler in background
+          npm run start > metro.log 2>&1 &
+          METRO_PID=$!
+          echo "METRO_PID=$METRO_PID" >> $GITHUB_ENV
+
+          # Wait for Metro to be ready (look for "Fast - Scalable - Integrated" in logs)
+          timeout=60
+          elapsed=0
+          while [ $elapsed -lt $timeout ]; do
+            if grep -q "Fast - Scalable - Integrated" metro.log 2>/dev/null; then
+              echo "Metro bundler is ready after ${elapsed}s"
+              break
+            fi
+            sleep 2
+            elapsed=$((elapsed + 2))
+          done
+
+          if [ $elapsed -ge $timeout ]; then
+            echo "Warning: Metro bundler may not be fully ready, proceeding anyway"
+          fi
+
           cd detox
           npm run clean-detox
           npm run detox:config-gen
