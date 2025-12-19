@@ -11,7 +11,7 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {finishRun, renamePlaybookRun,setOwner} from '@playbooks/actions/remote/runs';
+import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {openUserProfileModal, popTopScreen} from '@screens/navigation';
 import {fireEvent, renderWithEverything, waitFor} from '@test/intl-test-helper';
