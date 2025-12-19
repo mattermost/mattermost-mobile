@@ -657,40 +657,4 @@ describe('PlaybookRun', () => {
             props.playbookRun!.id,
         );
     });
-
-    it('handles rename successfully', async () => {
-        const props = getBaseProps();
-        props.participants.push(TestHelper.fakeUserModel({id: props.currentUserId}));
-        const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
-
-        const editIcon = getByTestId('playbook-run.edit-icon');
-        act(() => {
-            fireEvent.press(editIcon);
-        });
-
-        expect(goToRenamePlaybookRun).toHaveBeenCalledWith(
-            expect.anything(), // intl
-            expect.anything(), // theme
-            props.playbookRun!.name,
-            props.playbookRun!.id,
-        );
-    });
-
-    it('handles rename error', async () => {
-        const props = getBaseProps();
-        props.participants.push(TestHelper.fakeUserModel({id: props.currentUserId}));
-        const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
-
-        const editIcon = getByTestId('playbook-run.edit-icon');
-        act(() => {
-            fireEvent.press(editIcon);
-        });
-
-        expect(goToRenamePlaybookRun).toHaveBeenCalledWith(
-            expect.anything(), // intl
-            expect.anything(), // theme
-            props.playbookRun!.name,
-            props.playbookRun!.id,
-        );
-    });
 });
