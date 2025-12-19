@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 /* eslint-disable no-await-in-loop, no-console */
 
+import {cleanupAdbReversePorts, resetAdbServer} from '@support/adb_utils';
 import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {Plugin, System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
@@ -67,6 +68,25 @@ export async function launchAppWithRetry(): Promise<void> {
 
             // If this is the last attempt, don't wait
             if (attempt < MAX_RETRY_ATTEMPTS) {
+                // Check if this is an ADB port binding issue (Android-specific, common in CI)
+                const errorMessage = (error as Error).message;
+                const isAdbPortError = errorMessage.includes('cannot bind listener') ||
+                                      errorMessage.includes('Address already in use') ||
+                                      errorMessage.includes('adb');
+
+                // Only attempt ADB cleanup if we detect an ADB-related error
+                // These functions are safe no-ops on iOS
+                if (isAdbPortError) {
+                    console.warn('Detected ADB-related error, attempting cleanup...');
+                    await cleanupAdbReversePorts();
+
+                    // On second retry with port issues, also reset ADB server
+                    if (attempt >= 2) {
+                        console.warn('Multiple failures detected, attempting ADB server reset...');
+                        await resetAdbServer();
+                    }
+                }
+
                 console.warn(`Waiting ${RETRY_DELAY}ms before retrying...`);
                 await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
 
@@ -99,6 +119,10 @@ async function initializeClaudePromptHandler(): Promise<void> {
 beforeAll(async () => {
     await initializeClaudePromptHandler();
 
+    // Clean up any stale ADB reverse port mappings from previous runs
+    // This is crucial in CI where crashed tests may leave stale connections
+    await cleanupAdbReversePorts();
+
     // Login as sysadmin and reset server configuration
     await System.apiCheckSystemHealth(siteOneUrl);
     await User.apiAdminLogin(siteOneUrl);
@@ -111,6 +135,13 @@ afterAll(async () => {
     try {
         await device.terminateApp();
     } catch (error) {
-        console.error('Error terminating app:', error);
+        console.error('[Teardown] Error terminating app:', error);
+    }
+
+    // Clean up ADB connections after tests complete
+    try {
+        await cleanupAdbReversePorts();
+    } catch (error) {
+        console.error('[Teardown] Error cleaning up ADB ports:', error);
     }
 });

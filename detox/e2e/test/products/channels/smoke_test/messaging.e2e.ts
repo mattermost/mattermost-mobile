@@ -64,6 +64,7 @@ describe('Smoke Test - Messaging', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.dismissScheduledPostTooltip();
         await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
@@ -146,6 +147,7 @@ describe('Smoke Test - Messaging', () => {
         await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
         await EmojiPickerScreen.open(true);
         await EmojiPickerScreen.searchInput.replaceText('clown_face');
+        await EmojiPickerScreen.searchInput.tapReturnKey();
         await element(by.text('🤡')).tap();
 
         // * Verify reaction is added to the message
@@ -161,6 +163,7 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await wait(timeouts.ONE_SEC);
         await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
         await PostOptionsScreen.followThreadOption.tap();
 
@@ -176,6 +179,7 @@ describe('Smoke Test - Messaging', () => {
         await expect(postListPostItemFooterFollowingButton).not.toExist();
 
         // # Open post options for message and tap on save option
+        await wait(timeouts.ONE_SEC);
         await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
         await PostOptionsScreen.savePostOption.tap();
 
@@ -203,6 +207,7 @@ describe('Smoke Test - Messaging', () => {
 
         // # Go back to channel, open post options for message, and tap on unpin from channel option
         await ThreadScreen.back();
+        await wait(timeouts.ONE_SEC);
         await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
         await PostOptionsScreen.unpinPostOption.tap();
 

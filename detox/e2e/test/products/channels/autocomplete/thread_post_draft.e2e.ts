@@ -60,6 +60,10 @@ describe('Autocomplete - Thread Post Draft', () => {
     });
 
     afterAll(async () => {
+        // # Tap on thread screen to dismiss keyboard
+        await ThreadScreen.threadScreen.tap();
+        await wait(timeouts.ONE_SEC);
+
         // # Log out
         await ThreadScreen.back();
         await ChannelScreen.back();
