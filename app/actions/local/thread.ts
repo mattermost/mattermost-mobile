@@ -4,7 +4,7 @@
 import {defineMessages} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
-import {ActionType, General, Navigation, Screens} from '@constants';
+import {ActionType, Events, General, Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTranslations} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
@@ -134,6 +134,8 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             subtitle = translations[threadMessages.threadIn.id] || 'in {channelName}';
             subtitle = subtitle.replace('{channelName}', channel.displayName);
         }
+
+        DeviceEventEmitter.emit(Events.CLOSE_INPUT_ACCESSORY_VIEW);
 
         goToScreen(Screens.THREAD, '', {rootId}, {
             topBar: {
