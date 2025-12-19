@@ -225,16 +225,22 @@ jobs:
           # Open Simulator.app in background to speed up UI rendering
           open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID"
 
+          # Give Simulator.app time to fully initialize UI
+          sleep 3
+
           # Pre-install the app to avoid reinstall per test file
           echo "Installing app to simulator"
           xcrun simctl install "$SIMULATOR_ID" "$(pwd)/mobile-artifacts/Mattermost.app"
 
-          # Set permissions upfront
+          # Let CoreServices settle after app installation
+          sleep 2
+
+          # Set permissions upfront (non-fatal, as Detox can handle them at runtime)
           echo "Setting app permissions"
-          xcrun simctl privacy "$SIMULATOR_ID" grant notifications com.mattermost.rnbeta
-          xcrun simctl privacy "$SIMULATOR_ID" revoke camera com.mattermost.rnbeta
-          xcrun simctl privacy "$SIMULATOR_ID" revoke photos com.mattermost.rnbeta
-          xcrun simctl privacy "$SIMULATOR_ID" revoke media-library com.mattermost.rnbeta
+          xcrun simctl privacy "$SIMULATOR_ID" grant notifications com.mattermost.rnbeta || echo "Could not grant notification permission (will be handled at runtime)"
+          xcrun simctl privacy "$SIMULATOR_ID" revoke camera com.mattermost.rnbeta || echo "Could not revoke camera permission (will be handled at runtime)"
+          xcrun simctl privacy "$SIMULATOR_ID" revoke photos com.mattermost.rnbeta || echo "Could not revoke photos permission (will be handled at runtime)"
+          xcrun simctl privacy "$SIMULATOR_ID" revoke media-library com.mattermost.rnbeta || echo "Could not revoke media-library permission (will be handled at runtime)"
 
           echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
 
@@ -258,12 +264,18 @@ jobs:
           METRO_PID=$!
           echo "METRO_PID=$METRO_PID" >> $GITHUB_ENV
 
-          # Wait for Metro to be ready (look for "Fast - Scalable - Integrated" in logs)
-          timeout=60
+          # Wait for Metro to be ready with health check endpoint polling
+          timeout=120
           elapsed=0
+          echo "Waiting for Metro bundler to be ready..."
           while [ $elapsed -lt $timeout ]; do
-            if grep -q "Fast - Scalable - Integrated" metro.log 2>/dev/null; then
-              echo "Metro bundler is ready after ${elapsed}s"
+            # Try health check endpoint first (more reliable)
+            if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+              echo "Metro bundler is ready after ${elapsed}s (verified via health check)"
+              break
+            # Fallback to log checking
+            elif grep -q "Fast - Scalable - Integrated" metro.log 2>/dev/null; then
+              echo "Metro bundler is ready after ${elapsed}s (verified via logs)"
               break
             fi
             sleep 2
@@ -272,6 +284,8 @@ jobs:
 
           if [ $elapsed -ge $timeout ]; then
             echo "Warning: Metro bundler may not be fully ready, proceeding anyway"
+            echo "Last 20 lines of metro.log:"
+            tail -20 metro.log
           fi
 
           cd detox

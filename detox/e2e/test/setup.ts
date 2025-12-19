@@ -28,6 +28,7 @@ export async function launchAppWithRetry(): Promise<void> {
                 await device.launchApp({
                     newInstance: true,
                     delete: true,
+
                     // Permissions are pre-configured in CI workflow to avoid slow SpringBoard restarts
                     // Only set permissions when running locally (not in CI)
                     ...(process.env.CI ? {} : {

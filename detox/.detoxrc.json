@@ -76,7 +76,7 @@
   },
   "behavior": {
     "init": {
-      "reinstallApp": false,
+      "reinstallApp": true,
       "launchApp": false
     },
     "cleanup": {
