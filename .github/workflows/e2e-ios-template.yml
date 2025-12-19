@@ -253,8 +253,7 @@ jobs:
 
       - name: Set .env with RUNNING_E2E=true
         run: |
-          cat > .env <<EOF
-          echo "RUNNING_E2E=true" >> .env
+          echo "RUNNING_E2E=true" > .env
 
       - name: Start Metro Bundler and Run Detox E2E Tests
         continue-on-error: true # We want to run all the tests
@@ -262,6 +261,7 @@ jobs:
           # Start Metro bundler in background
           npm run start > metro.log 2>&1 &
           METRO_PID=$!
+          echo "Metro PID: $METRO_PID"
           echo "METRO_PID=$METRO_PID" >> $GITHUB_ENV
 
           # Wait for Metro to be ready with health check endpoint polling
@@ -271,21 +271,32 @@ jobs:
           while [ $elapsed -lt $timeout ]; do
             # Try health check endpoint first (more reliable)
             if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
-              echo "Metro bundler is ready after ${elapsed}s (verified via health check)"
+              echo "✅ Metro bundler is ready after ${elapsed}s (verified via health check)"
               break
             # Fallback to log checking
             elif grep -q "Fast - Scalable - Integrated" metro.log 2>/dev/null; then
-              echo "Metro bundler is ready after ${elapsed}s (verified via logs)"
+              echo "✅ Metro bundler is ready after ${elapsed}s (verified via logs)"
               break
             fi
+
+            # Show progress every 10 seconds
+            if [ $((elapsed % 10)) -eq 0 ] && [ $elapsed -gt 0 ]; then
+              echo "Still waiting for Metro... (${elapsed}s elapsed)"
+            fi
+
             sleep 2
             elapsed=$((elapsed + 2))
           done
 
           if [ $elapsed -ge $timeout ]; then
-            echo "Warning: Metro bundler may not be fully ready, proceeding anyway"
-            echo "Last 20 lines of metro.log:"
-            tail -20 metro.log
+            echo "⚠️ Warning: Metro bundler may not be fully ready after ${timeout}s, proceeding anyway"
+            echo "Metro process status:"
+            ps aux | grep -E "metro|node.*start" | grep -v grep || echo "Metro process not found"
+            echo ""
+            echo "Last 30 lines of metro.log:"
+            tail -30 metro.log
+          else
+            echo "Metro is serving on http://localhost:8081"
           fi
 
           cd detox

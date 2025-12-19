@@ -108,12 +108,3 @@ beforeAll(async () => {
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
     await launchAppWithRetry();
 });
-
-// Add this to speed up test cleanup
-afterAll(async () => {
-    try {
-        await device.terminateApp();
-    } catch (error) {
-        console.error('Error terminating app:', error);
-    }
-});
