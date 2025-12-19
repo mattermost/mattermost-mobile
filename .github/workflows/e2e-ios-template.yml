@@ -71,8 +71,8 @@ env:
   TYPE: ${{ inputs.run-type }}
   PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
   SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
-  SITE_2_URL: "https://mobile-e2e-site-2.test.mattermost.cloud"
-  SITE_3_URL: "https://mobile-e2e-site-3.test.mattermost.cloud"
+  SITE_2_URL: "https://test-windows.test.mattermost.cloud"
+  SITE_3_URL: "https://test-macos.test.mattermost.cloud"
   ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
   JIRA_PROJECT_KEY: "MM"
   ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
@@ -122,7 +122,7 @@ jobs:
 
   e2e-ios:
     name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
-    runs-on: macos-15
+    runs-on: macos-26
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
     env:
@@ -175,14 +175,45 @@ jobs:
 
       - name: Pre-boot iOS Simulator
         run: |
+          set -e
+
+          echo "Looking for simulator: ${{ env.DEVICE_NAME }} with ${{ env.DEVICE_OS_VERSION }}"
+
           # Find or create the simulator
-          SIMULATOR_ID=$(xcrun simctl list devices | grep "${{ env.DEVICE_NAME }}" | grep "${{ env.DEVICE_OS_VERSION }}" | head -1 | grep -oE '([0-9A-F-]{36})')
+          SIMULATOR_ID=$(xcrun simctl list devices | grep "${{ env.DEVICE_NAME }}" | grep "${{ env.DEVICE_OS_VERSION }}" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
 
           if [ -z "$SIMULATOR_ID" ]; then
-            echo "Creating simulator ${{ env.DEVICE_NAME }} with ${{ env.DEVICE_OS_VERSION }}"
+            echo "Simulator not found. Creating simulator ${{ env.DEVICE_NAME }} with ${{ env.DEVICE_OS_VERSION }}"
+
+            # List available device types for debugging
+            echo "Available device types:"
+            xcrun simctl list devicetypes | grep -i "iphone"
+
+            # Get device type
             DEVICE_TYPE=$(xcrun simctl list devicetypes | grep "${{ env.DEVICE_NAME }}" | awk -F'[()]' '{print $(NF-1)}')
+            if [ -z "$DEVICE_TYPE" ]; then
+              echo "Error: Could not find device type for ${{ env.DEVICE_NAME }}"
+              exit 1
+            fi
+            echo "Found device type: $DEVICE_TYPE"
+
+            # List available runtimes for debugging
+            echo "Available runtimes:"
+            xcrun simctl list runtimes | grep -i "ios"
+
+            # Get runtime
             RUNTIME=$(xcrun simctl list runtimes | grep "${{ env.DEVICE_OS_VERSION }}" | awk -F'[()]' '{print $(NF-1)}')
+            if [ -z "$RUNTIME" ]; then
+              echo "Error: Could not find runtime for ${{ env.DEVICE_OS_VERSION }}"
+              exit 1
+            fi
+            echo "Found runtime: $RUNTIME"
+
+            # Create simulator
             SIMULATOR_ID=$(xcrun simctl create "CI-${{ env.DEVICE_NAME }}" "$DEVICE_TYPE" "$RUNTIME")
+            echo "Created simulator with ID: $SIMULATOR_ID"
+          else
+            echo "Found existing simulator: $SIMULATOR_ID"
           fi
 
           echo "Booting simulator: $SIMULATOR_ID"
