@@ -189,8 +189,8 @@ jobs:
             echo "Available device types:"
             xcrun simctl list devicetypes | grep -i "iphone"
 
-            # Get device type
-            DEVICE_TYPE=$(xcrun simctl list devicetypes | grep "${{ env.DEVICE_NAME }}" | awk -F'[()]' '{print $(NF-1)}')
+            # Get device type (use exact match with parentheses to avoid partial matches)
+            DEVICE_TYPE=$(xcrun simctl list devicetypes | grep "${{ env.DEVICE_NAME }} (" | head -1 | awk -F'[()]' '{print $(NF-1)}')
             if [ -z "$DEVICE_TYPE" ]; then
               echo "Error: Could not find device type for ${{ env.DEVICE_NAME }}"
               exit 1
@@ -201,8 +201,8 @@ jobs:
             echo "Available runtimes:"
             xcrun simctl list runtimes | grep -i "ios"
 
-            # Get runtime
-            RUNTIME=$(xcrun simctl list runtimes | grep "${{ env.DEVICE_OS_VERSION }}" | awk -F'[()]' '{print $(NF-1)}')
+            # Get runtime (extract the identifier after the last " - ")
+            RUNTIME=$(xcrun simctl list runtimes | grep "${{ env.DEVICE_OS_VERSION }}" | head -1 | sed 's/.* - \(.*\)/\1/')
             if [ -z "$RUNTIME" ]; then
               echo "Error: Could not find runtime for ${{ env.DEVICE_OS_VERSION }}"
               exit 1
