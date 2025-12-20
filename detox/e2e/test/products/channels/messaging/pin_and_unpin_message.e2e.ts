@@ -25,7 +25,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Pin and Unpin Message', () => {
     const serverOneDisplayName = 'Server 1';
@@ -89,8 +89,14 @@ describe('Messaging - Pin and Unpin Message', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+
+        // # Wait for keyboard to dismiss and message to be visible
+        await wait(timeouts.TWO_SEC);
+
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+
         await postListPostItem.tap();
         await ThreadScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.pinPostOption.tap();

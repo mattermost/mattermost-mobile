@@ -232,6 +232,16 @@ class ChannelScreen {
         await this.postInput.clearText();
         await this.postInput.replaceText(message);
         await this.tapSendButton();
+        if (isIos()) {
+            // On iOS, wait for the keyboard to dismiss to avoid issues with subsequent taps
+            await wait(timeouts.ONE_SEC);
+            await this.postInput.tapReturnKey();
+        } else {
+            // On Android, press back to dismiss the keyboard
+            await device.pressBack();
+
+        }
+        await wait(timeouts.TWO_SEC);
     };
 
     enterMessageToSchedule = async (message: string) => {

@@ -25,7 +25,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {waitFor} from 'detox';
 
 describe('Messaging - Follow and Unfollow Message', () => {
     const serverOneDisplayName = 'Server 1';
@@ -67,10 +67,13 @@ describe('Messaging - Follow and Unfollow Message', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
+        // # Wait for keyboard to dismiss and message to be visible
+        await wait(timeouts.TWO_SEC);
+
         // * Verify message is posted
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Wait for thread to be created in DB (CRT creates threads asynchronously)
         await wait(timeouts.TWO_SEC);
@@ -102,7 +105,13 @@ describe('Messaging - Follow and Unfollow Message', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+
+        // # Wait for keyboard to dismiss and message to be visible
+        await wait(timeouts.TWO_SEC);
+
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Wait for thread to be created in DB (CRT creates threads asynchronously)
         await wait(timeouts.TWO_SEC);

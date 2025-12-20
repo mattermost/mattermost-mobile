@@ -56,8 +56,13 @@ describe('Autocomplete - Edit Post', () => {
     });
 
     afterAll(async () => {
-        // # Log out
-        await EditPostScreen.close();
+        // # Close edit post screen if still open, then log out
+        try {
+            await waitFor(EditPostScreen.editPostScreen).toBeVisible().withTimeout(1000);
+            await EditPostScreen.close();
+        } catch {
+            // Edit post screen already closed, continue with logout
+        }
         await ChannelScreen.back();
         await HomeScreen.logout();
     });

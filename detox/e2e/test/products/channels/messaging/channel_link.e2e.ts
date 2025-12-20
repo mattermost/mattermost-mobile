@@ -24,7 +24,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Channel Link', () => {
     const serverOneDisplayName = 'Server 1';
@@ -80,8 +80,14 @@ describe('Messaging - Channel Link', () => {
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         const channelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name}`;
         await ChannelScreen.postMessage(channelLink);
+
+        // # Wait for keyboard to dismiss and message to be visible
+        await wait(timeouts.TWO_SEC);
+
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id);
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+
         await postListPostItem.tap({x: 1, y: 1});
         await element(by.text(channelLink)).tap({x: 5, y: 10});
         await wait(timeouts.ONE_SEC);

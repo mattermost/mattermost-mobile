@@ -27,7 +27,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Threads - Open Thread in Channel', () => {
     const serverOneDisplayName = 'Server 1';
@@ -58,8 +58,15 @@ describe('Threads - Open Thread in Channel', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
+
+        // # Wait for keyboard to dismiss and message to be visible
+        await wait(timeouts.TWO_SEC);
+
         await ChannelScreen.dismissScheduledPostTooltip();
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
@@ -83,8 +90,8 @@ describe('Threads - Open Thread in Channel', () => {
         // * Verify on channel screen and thread is displayed
         await ChannelScreen.toBeVisible();
         await ChannelScreen.dismissScheduledPostTooltip();
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
-        await expect(postListPostItem).toBeVisible();
+        const {postListPostItem: channelPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
+        await expect(channelPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -126,8 +133,8 @@ describe('Threads - Open Thread in Channel', () => {
         // * Verify on channel screen and thread is displayed
         await ChannelScreen.toBeVisible();
         await ChannelScreen.dismissScheduledPostTooltip();
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
-        await expect(postListPostItem).toBeVisible();
+        const {postListPostItem: channelPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
+        await expect(channelPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();
