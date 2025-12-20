@@ -85,7 +85,7 @@
   },
   "session": {
     "sessionId": "mobile-test-session",
-    "debugSynchronization": 5000,
+    "debugSynchronization": 20000,
     "autoStart": true
   },
   "visibility": {

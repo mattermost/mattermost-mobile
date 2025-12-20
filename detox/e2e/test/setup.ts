@@ -62,6 +62,12 @@ export async function launchAppWithRetry(): Promise<void> {
             }
 
             console.info(`✅ App launched successfully on attempt ${attempt}`);
+
+            // iOS 26.x: Wait for WebSocket connection to establish and React Native to initialize
+            // The app process starts quickly but RN bridge takes time to initialize
+            console.info('Waiting for React Native bridge to initialize...');
+            await new Promise((resolve) => setTimeout(resolve, 15000));
+
             return; // Success, exit the function
 
         } catch (error) {
@@ -107,8 +113,4 @@ beforeAll(async () => {
     await User.apiAdminLogin(siteOneUrl);
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
     await launchAppWithRetry();
-
-    // Give iOS 26.1 extra time to fully stabilize after launch before tests begin
-    // This helps prevent "multiple interactions" errors and main thread blocking
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-}, 240000); // Increase timeout to 4 minutes for iOS 26.1
+}, 300000); // Increase timeout to 5 minutes for iOS 26.x

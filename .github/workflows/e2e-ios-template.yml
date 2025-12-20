@@ -43,7 +43,7 @@ on:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 26.1"
+        default: "iOS 26.2"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
@@ -233,9 +233,9 @@ jobs:
           xcrun simctl install "$SIMULATOR_ID" "$(pwd)/mobile-artifacts/Mattermost.app"
 
           # Let CoreServices and SpringBoard fully settle after app installation
-          # iOS 26.1 requires more time for app registration to complete
+          # iOS 26.x requires more time for app registration to complete
           echo "Waiting for app registration to complete..."
-          sleep 120
+          sleep 60
 
           # Set permissions upfront (non-fatal, as Detox can handle them at runtime)
           echo "Setting app permissions"
@@ -299,7 +299,7 @@ jobs:
             tail -30 metro.log
           else
             echo "Metro is serving on http://localhost:8081"
-            # Give Metro extra time to fully initialize for iOS 26.1
+            # Give Metro extra time to fully initialize for iOS 26.2
             echo "Allowing Metro to fully stabilize..."
             sleep 3
           fi
