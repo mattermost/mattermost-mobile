@@ -232,8 +232,10 @@ jobs:
           echo "Installing app to simulator"
           xcrun simctl install "$SIMULATOR_ID" "$(pwd)/mobile-artifacts/Mattermost.app"
 
-          # Let CoreServices settle after app installation
-          sleep 2
+          # Let CoreServices and SpringBoard fully settle after app installation
+          # iOS 26.1 requires more time for app registration to complete
+          echo "Waiting for app registration to complete..."
+          sleep 120
 
           # Set permissions upfront (non-fatal, as Detox can handle them at runtime)
           echo "Setting app permissions"
@@ -297,6 +299,9 @@ jobs:
             tail -30 metro.log
           else
             echo "Metro is serving on http://localhost:8081"
+            # Give Metro extra time to fully initialize for iOS 26.1
+            echo "Allowing Metro to fully stabilize..."
+            sleep 3
           fi
 
           cd detox

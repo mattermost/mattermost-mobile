@@ -107,4 +107,8 @@ beforeAll(async () => {
     await User.apiAdminLogin(siteOneUrl);
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
     await launchAppWithRetry();
-});
+
+    // Give iOS 26.1 extra time to fully stabilize after launch before tests begin
+    // This helps prevent "multiple interactions" errors and main thread blocking
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+}, 240000); // Increase timeout to 4 minutes for iOS 26.1
