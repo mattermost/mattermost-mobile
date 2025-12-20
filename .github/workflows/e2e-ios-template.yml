@@ -235,7 +235,7 @@ jobs:
           # Let CoreServices and SpringBoard fully settle after app installation
           # iOS 26.x requires more time for app registration to complete
           echo "Waiting for app registration to complete..."
-          sleep 60
+          sleep 10
 
           # Set permissions upfront (non-fatal, as Detox can handle them at runtime)
           echo "Setting app permissions"
