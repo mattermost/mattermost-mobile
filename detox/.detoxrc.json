@@ -77,10 +77,10 @@
   "behavior": {
     "init": {
       "reinstallApp": false,
-      "launchApp": false
+      "launchApp": true
     },
     "cleanup": {
-      "shutdownDevice": false
+      "shutdownDevice": true
     }
   },
   "session": {

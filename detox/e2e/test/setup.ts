@@ -45,7 +45,7 @@ export async function launchAppWithRetry(): Promise<void> {
                         detoxPrintBusyIdleResources: 'YES',
                         detoxDebugVisibility: 'YES',
 
-                        // detoxDisableSynchronization: 'YES',
+                        detoxDisableSynchronization: 'YES',
                         detoxDisableHierarchyDump: 'YES',
                         reduceMotion: 'YES',
                     },
@@ -59,7 +59,7 @@ export async function launchAppWithRetry(): Promise<void> {
                         detoxPrintBusyIdleResources: 'YES',
                         detoxDebugVisibility: 'YES',
 
-                        // detoxDisableSynchronization: 'YES',
+                        detoxDisableSynchronization: 'YES',
                         detoxURLBlacklistRegex: '.*localhost.*',
                     },
                 });
