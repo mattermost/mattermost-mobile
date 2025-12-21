@@ -55,6 +55,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Show Xcode and iOS SDK versions
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks
+
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
         with:

@@ -7,10 +7,10 @@ import {Plugin, System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
 
 // Number of retry attempts
-const MAX_RETRY_ATTEMPTS = 3;
+const MAX_RETRY_ATTEMPTS = 5;
 
 // Delay between retries (in milliseconds)
-const RETRY_DELAY = 5000;
+const RETRY_DELAY = 10000;
 
 // Track if this is the first launch in the current test file
 // Reset to true for each test file in case we need a clean install
@@ -44,7 +44,8 @@ export async function launchAppWithRetry(): Promise<void> {
                     launchArgs: {
                         detoxPrintBusyIdleResources: 'YES',
                         detoxDebugVisibility: 'YES',
-                        detoxDisableSynchronization: 'YES',
+
+                        // detoxDisableSynchronization: 'YES',
                         detoxDisableHierarchyDump: 'YES',
                         reduceMotion: 'YES',
                     },
@@ -57,7 +58,8 @@ export async function launchAppWithRetry(): Promise<void> {
                     launchArgs: {
                         detoxPrintBusyIdleResources: 'YES',
                         detoxDebugVisibility: 'YES',
-                        detoxDisableSynchronization: 'YES',
+
+                        // detoxDisableSynchronization: 'YES',
                         detoxURLBlacklistRegex: '.*localhost.*',
                     },
                 });
@@ -69,7 +71,7 @@ export async function launchAppWithRetry(): Promise<void> {
             // The app process starts quickly but RN bridge takes time to initialize
             console.info('Waiting for React Native bridge to initialize...');
             await new Promise((resolve) => {
-                setTimeout(resolve, 10000);
+                setTimeout(resolve, 30000);
             });
 
             return; // Success, exit the function
