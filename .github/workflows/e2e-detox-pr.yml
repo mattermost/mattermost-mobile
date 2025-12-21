@@ -46,40 +46,35 @@ jobs:
           description: Detox Android tests for mattermost mobile app have started ...
           status: pending
 
-  build-ios-simulator:
-    if: contains(github.event.label.name, 'E2E iOS tests for PR')
-    runs-on: macos-26
-    needs:
-      - update-initial-status-ios
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  # build-ios-simulator:
+  #   if: contains(github.event.label.name, 'E2E iOS tests for PR')
+  #   runs-on: macos-26
+  #   needs:
+  #     - update-initial-status-ios
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Show Xcode and iOS SDK versions
-        run: |
-          xcodebuild -version
-          xcodebuild -showsdks
+  #     - name: Prepare iOS Build
+  #       uses: ./.github/actions/prepare-ios-build
+  #       with:
+  #         intune-enabled: 'true'
+  #         intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
-      - name: Prepare iOS Build
-        uses: ./.github/actions/prepare-ios-build
-        with:
-          intune-enabled: 'true'
-          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+  #     - name: Build iOS Simulator
+  #       env:
+  #         TAG: "${{ github.event.pull_request.head.sha }}"
+  #         AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+  #         AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+  #         GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+  #       run: bundle exec fastlane ios simulator --env ios.simulator
+  #       working-directory: ./fastlane
 
-      - name: Build iOS Simulator
-        env:
-          TAG: "${{ github.event.pull_request.head.sha }}"
-          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
-          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
-          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-        run: bundle exec fastlane ios simulator --env ios.simulator
-        working-directory: ./fastlane
-
-      - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: ios-build-simulator-${{ github.run_id }}
-          path: Mattermost-simulator-*.app.zip
+  #     - name: Upload iOS Simulator Build
+  #       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #       with:
+  #         name: ios-build-simulator-${{ github.run_id }}
+  #         path: Mattermost-simulator-*.app.zip
 
   build-android-apk:
     runs-on: ubuntu-latest-8-cores
@@ -128,8 +123,8 @@ jobs:
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
     name: iOS Mobile Tests on PR
     uses: ./.github/workflows/e2e-ios-template.yml
-    needs:
-      - build-ios-simulator
+    # needs:
+    #   - build-ios-simulator
     with:
       run-type: "PR"
       MOBILE_VERSION: ${{ github.event.pull_request.head.sha }}
