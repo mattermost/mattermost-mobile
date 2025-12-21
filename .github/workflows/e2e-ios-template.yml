@@ -123,7 +123,7 @@ jobs:
   e2e-ios:
     # name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     name: ios-test
-    runs-on: macos-26
+    runs-on: macos-latest
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
     env:
