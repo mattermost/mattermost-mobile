@@ -110,6 +110,7 @@ class ThreadScreen {
         await this.postInput.tap();
         await this.postInput.replaceText(message);
         await this.tapSendButton();
+        await wait(timeouts.FOUR_SEC);
     };
 
     enterMessageToSchedule = async (message: string) => {

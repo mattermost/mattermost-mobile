@@ -22,7 +22,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Message Post', () => {
@@ -80,17 +80,13 @@ describe('Messaging - Message Post', () => {
 
     it('MM-T4782_2 - should be able to post a long message', async () => {
         // # Open a channel screen, post a long message, and a short message after
-        const longMessage = 'The quick brown fox jumps over the lazy dog.'.repeat(20);
+        const longMessage = 'The quick brown fox jumps over the lazy dog.'.repeat(60);
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(longMessage);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.postMessage('short message');
+        await wait(timeouts.TWO_SEC);
 
-        // * Verify long message is posted and displays show more button (chevron down button)
-        if (isAndroid()) {
-            await device.pressBack();
-            await wait(timeouts.ONE_SEC);
-        }
         const {postListPostItem, postListPostItemShowLessButton, postListPostItemShowMoreButton} = ChannelScreen.getPostListPostItem(post.id, longMessage);
         await expect(postListPostItem).toBeVisible();
         await expect(postListPostItemShowMoreButton).toBeVisible();

@@ -62,14 +62,15 @@ describe('Messaging - Permalink', () => {
         const permalinkLabel = `permalink-${getRandomId()}`;
         const permalinkMessage = `[${permalinkLabel}](/${teamName}/pl/${permalinkTargetPost.id})`;
         await ChannelScreen.postMessage(permalinkMessage);
+        await wait(timeouts.TWO_SEC);
 
         // # Wait for the message to be posted and element to become visible (keyboard should dismiss)
         const permalinkElement = element(by.text(permalinkLabel));
         await waitFor(permalinkElement).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Tap on permalink
-        await permalinkElement.tap({x: 5, y: 10});
-        await wait(timeouts.TWO_SEC);
+        await permalinkElement.tap();
+        await wait(timeouts.FOUR_SEC);
 
         // * Verify on permalink screen and target post is displayed
         await PermalinkScreen.toBeVisible();

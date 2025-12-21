@@ -61,10 +61,11 @@ describe('Messaging - Channel Link', () => {
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         const channelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name}`;
         await ChannelScreen.postMessage(channelLink);
+        await wait(timeouts.FOUR_SEC);
 
         // # Tap on channel link
-        await element(by.text(channelLink)).tap({x: 5, y: 10});
-        await wait(timeouts.ONE_SEC);
+        await element(by.text(channelLink)).tap();
+        await wait(timeouts.FOUR_SEC);
 
         // * Verify redirected to target channel
         await expect(ChannelScreen.headerTitle).toHaveText(targetChannel.display_name);

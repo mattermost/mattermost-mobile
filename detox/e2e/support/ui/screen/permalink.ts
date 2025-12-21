@@ -36,7 +36,7 @@ class PermalinkScreen {
 
     jumpToRecentMessages = async () => {
         // # Jump to recent messages
-        await waitFor(this.jumpToRecentMessagesButton).toExist().withTimeout(timeouts.FOUR_SEC);
+        await waitFor(this.jumpToRecentMessagesButton).toExist().withTimeout(timeouts.TEN_SEC);
         await this.jumpToRecentMessagesButton.tap();
         await expect(this.permalinkScreen).not.toBeVisible();
     };

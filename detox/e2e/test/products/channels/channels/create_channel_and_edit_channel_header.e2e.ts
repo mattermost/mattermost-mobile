@@ -20,7 +20,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts} from '@support/utils';
+import {getRandomId, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Create Channel and Edit Channel Header', () => {
@@ -96,6 +96,7 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         // # Edit the channel header, save, and re-open edit channel header screen
         await CreateOrEditChannelScreen.headerInput.replaceText(`${header} edit`);
         await CreateOrEditChannelScreen.saveButton.tap();
+        await wait(timeouts.TWO_SEC);
         await CreateOrEditChannelScreen.openEditChannelHeader();
 
         // * Verify channel header has new value
@@ -141,6 +142,7 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         // # Edit the channel header, save, and re-open edit channel header screen
         await CreateOrEditChannelScreen.headerInput.replaceText(`${header} edit`);
         await CreateOrEditChannelScreen.saveButton.tap();
+        await wait(timeouts.TWO_SEC);
         await CreateOrEditChannelScreen.openEditChannelHeader();
 
         // * Verify channel header has new value

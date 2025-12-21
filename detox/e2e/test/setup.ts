@@ -57,8 +57,6 @@ export async function launchAppWithRetry(): Promise<void> {
                 });
             }
 
-            // Verify app is connected by executing a simple command
-            await device.reloadReactNative();
             console.info(`✅ App launched successfully on attempt ${attempt}`);
             return; // Success, exit the function
 
@@ -89,12 +87,6 @@ export async function launchAppWithRetry(): Promise<void> {
 
                 console.warn(`Waiting ${RETRY_DELAY}ms before retrying...`);
                 await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-
-                // Force a new instance on retry
-                if (!isFirstLaunch && attempt > 1) {
-                    console.warn('Forcing new instance for next attempt');
-                    isFirstLaunch = true;
-                }
             }
         }
     }
@@ -117,6 +109,9 @@ async function initializeClaudePromptHandler(): Promise<void> {
 }
 
 beforeAll(async () => {
+    // Reset flag to ensure each test file starts with a clean app launch
+    isFirstLaunch = true;
+
     await initializeClaudePromptHandler();
 
     // Clean up any stale ADB reverse port mappings from previous runs

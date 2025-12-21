@@ -239,9 +239,8 @@ class ChannelScreen {
         } else {
             // On Android, press back to dismiss the keyboard
             await device.pressBack();
-
         }
-        await wait(timeouts.TWO_SEC);
+        await wait(timeouts.FOUR_SEC);
     };
 
     enterMessageToSchedule = async (message: string) => {

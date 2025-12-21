@@ -80,7 +80,7 @@ describe('Search - Saved Messages', () => {
         await ChannelScreen.postMessage(message);
 
         // # Wait for keyboard to dismiss
-        await wait(timeouts.TWO_SEC);
+        await wait(timeouts.FOUR_SEC);
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
