@@ -68,6 +68,7 @@ export function HomeScreen(props: HomeProps) {
     const intl = useIntl();
     const appState = useAppState();
     const keyboardState = useKeyboardState();
+    const [isEmojiSearchFocused, setIsEmojiSearchFocused] = React.useState(false);
 
     useEffect(() => {
         SecurityManager.start();
@@ -154,7 +155,19 @@ export function HomeScreen(props: HomeProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.EMOJI_PICKER_SEARCH_FOCUSED, (focused: boolean) => {
+            setIsEmojiSearchFocused(focused);
+        });
+
+        return () => listener.remove();
+    }, []);
+
     const TabBarComponent = (tabProps: BottomTabBarProps) => {
+        if (isEmojiSearchFocused) {
+            return null;
+        }
+
         return (
             <TabBar
                 {...tabProps}

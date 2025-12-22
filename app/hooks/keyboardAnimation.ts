@@ -92,7 +92,19 @@ export const useKeyboardAnimation = (
     // Calculate tab bar adjustment (only for tablets, not in thread view)
     // This accounts for the tab bar height + safe area bottom that gets hidden when keyboard opens
     // Thread views don't have a tab bar, so no adjustment is needed
-    const tabBarAdjustment = isTablet && !isThreadView ? BOTTOM_TAB_HEIGHT + safeAreaBottom : safeAreaBottom;
+    // For tablets in thread view, also don't subtract safeAreaBottom since the input container
+    // should move up by the full keyboard height to clear the keyboard completely
+    let tabBarAdjustment: number;
+    if (isTablet && !isThreadView) {
+        // Channel view on tablet: account for tab bar + safe area
+        tabBarAdjustment = BOTTOM_TAB_HEIGHT + safeAreaBottom;
+    } else if (isTablet && isThreadView) {
+        // Thread view on tablet: no adjustment needed (no tab bar, full keyboard height)
+        tabBarAdjustment = 0;
+    } else {
+        // Mobile devices: account for safe area only
+        tabBarAdjustment = safeAreaBottom;
+    }
 
     /**
    * isInputAccessoryViewMode: Whether we're showing input accessory view (emoji picker) instead of keyboard

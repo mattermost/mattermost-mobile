@@ -236,7 +236,11 @@ const PostList = ({
     }, [disablePullToRefresh, location, channelId, rootId, posts, serverUrl]);
 
     const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
-        listRef?.current?.scrollToIndex({
+        if (index < 0 || !listRef?.current) {
+            return;
+        }
+
+        listRef.current.scrollToIndex({
             animated,
             index,
             viewOffset: applyOffset ? Platform.select({ios: -45, default: 0}) : 0,
