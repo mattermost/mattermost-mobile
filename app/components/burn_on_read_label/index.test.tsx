@@ -20,7 +20,7 @@ describe('BoRLabel', () => {
             />,
         );
 
-        const tag = getByTestId('test-post-id_bor_tabel');
+        const tag = getByTestId('test-post-id_bor_label');
         expect(tag).toBeVisible();
         expect(tag).toHaveTextContent(/BURN ON READ \(.+\)/);
     });
@@ -30,7 +30,7 @@ describe('BoRLabel', () => {
             <BoRLabel durationSeconds={60}/>,
         );
 
-        const tag = getByTestId('bor_tabel');
+        const tag = getByTestId('bor_label');
         expect(tag).toBeVisible();
         expect(tag).toHaveTextContent(/BURN ON READ \(.+\)/);
     });
@@ -43,7 +43,7 @@ describe('BoRLabel', () => {
             />,
         );
 
-        const tag = getByTestId('test_bor_tabel');
+        const tag = getByTestId('test_bor_label');
         expect(tag).toHaveTextContent(/BURN ON READ \(.+\)/);
     });
 
@@ -55,7 +55,7 @@ describe('BoRLabel', () => {
             />,
         );
 
-        const tag = getByTestId('test_bor_tabel');
+        const tag = getByTestId('test_bor_label');
         expect(tag).toHaveTextContent(/BURN ON READ \(.+\)/);
     });
 
@@ -67,7 +67,7 @@ describe('BoRLabel', () => {
             />,
         );
 
-        expect(getByTestId('test-post_bor_tabel')).toBeVisible();
+        expect(getByTestId('test-post_bor_label')).toBeVisible();
     });
 
     it('should generate correct testID without postId', () => {
@@ -75,6 +75,6 @@ describe('BoRLabel', () => {
             <BoRLabel durationSeconds={120}/>,
         );
 
-        expect(getByTestId('bor_tabel')).toBeVisible();
+        expect(getByTestId('bor_label')).toBeVisible();
     });
 });

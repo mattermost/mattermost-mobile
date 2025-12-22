@@ -223,6 +223,7 @@ describe('DraftAndScheduledPost', () => {
             ...baseProps,
             draftType: DRAFT_TYPE_SCHEDULED,
             post: TestHelper.fakeScheduledPostModel({
+                id: 'post_id_1',
                 rootId: '',
                 updateAt: 1234567890,
                 metadata: {},
@@ -231,10 +232,10 @@ describe('DraftAndScheduledPost', () => {
                 errorCode: '',
                 type: 'burn_on_read',
             }),
+            borUserTimeLimit: 100000,
         };
         renderWithIntlAndTheme(<DraftAndScheduledPost {...props}/>);
-
-        expect(screen.getByTestId('draft_post.bor_indicator')).toBeVisible();
+        expect(screen.getByTestId('post_id_1_bor_label')).toBeVisible();
     });
 
     it('renders BoR indicator with post priority if set', () => {
@@ -243,6 +244,7 @@ describe('DraftAndScheduledPost', () => {
             draftType: DRAFT_TYPE_SCHEDULED,
             isPostPriorityEnabled: true,
             post: TestHelper.fakeScheduledPostModel({
+                id: 'post_id_1',
                 rootId: '',
                 updateAt: 1234567890,
                 metadata: {
@@ -257,10 +259,11 @@ describe('DraftAndScheduledPost', () => {
                 errorCode: '',
                 type: 'burn_on_read',
             }),
+            borUserTimeLimit: 100000,
         };
         renderWithIntlAndTheme(<DraftAndScheduledPost {...props}/>);
 
-        expect(screen.getByTestId('draft_post.bor_indicator')).toBeVisible();
+        expect(screen.getByTestId('post_id_1_bor_label')).toBeVisible();
 
         expect(screen.getByTestId('draft_post.priority')).toBeVisible();
         expect(screen.getByTestId('urgent_post_priority_label')).toBeVisible();

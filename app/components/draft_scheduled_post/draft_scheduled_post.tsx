@@ -170,7 +170,10 @@ const DraftAndScheduledPost: React.FC<Props> = ({
                                 style={style.indicatorItem}
                                 testID='draft_post.bor_indicator'
                             >
-                                <BoRLabel durationSeconds={borUserTimeLimit}/>
+                                <BoRLabel
+                                    id={post.id}
+                                    durationSeconds={borUserTimeLimit}
+                                />
                             </View>
                         }
                     </View>

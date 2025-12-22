@@ -25,7 +25,7 @@ export default function BoRLabel({durationSeconds, id}: Props) {
             message={message}
             icon='fire'
             type='dangerDim'
-            testID={`${id ? id + '_' : ''}bor_tabel`}
+            testID={`${id ? id + '_' : ''}bor_label`}
         />
     );
 }
