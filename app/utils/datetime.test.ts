@@ -124,4 +124,48 @@ describe('formatTime', () => {
         expect(formatTime(65)).toBe('1:05');
         expect(formatTime(605)).toBe('10:05');
     });
+
+    describe('humanReadable format', () => {
+        it('should format seconds only in human readable format', () => {
+            expect(formatTime(30, true)).toBe('30s');
+            expect(formatTime(5, true)).toBe('5s');
+            expect(formatTime(59, true)).toBe('59s');
+        });
+
+        it('should format minutes and seconds in human readable format', () => {
+            expect(formatTime(90, true)).toBe('1m 30s');
+            expect(formatTime(125, true)).toBe('2m 5s');
+            expect(formatTime(3599, true)).toBe('59m 59s');
+        });
+
+        it('should format hours, minutes, and seconds in human readable format', () => {
+            expect(formatTime(3600, true)).toBe('1h');
+            expect(formatTime(3661, true)).toBe('1h 1m 1s');
+            expect(formatTime(7325, true)).toBe('2h 2m 5s');
+            expect(formatTime(36000, true)).toBe('10h');
+        });
+
+        it('should format hours and minutes only in human readable format', () => {
+            expect(formatTime(3660, true)).toBe('1h 1m');
+            expect(formatTime(7200, true)).toBe('2h');
+        });
+
+        it('should format hours and seconds only in human readable format', () => {
+            expect(formatTime(3605, true)).toBe('1h 5s');
+        });
+
+        it('should format minutes only in human readable format', () => {
+            expect(formatTime(60, true)).toBe('1m');
+            expect(formatTime(120, true)).toBe('2m');
+        });
+
+        it('should handle zero seconds in human readable format', () => {
+            expect(formatTime(0, true)).toBe('0s');
+        });
+
+        it('should handle negative values in human readable format', () => {
+            expect(formatTime(-30, true)).toBe('0s');
+            expect(formatTime(-3600, true)).toBe('0s');
+        });
+    });
 });
