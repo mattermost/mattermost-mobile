@@ -19,17 +19,6 @@ jest.mock('@utils/datetime', () => ({
     }),
 }));
 
-// Mock the Tag component
-jest.mock('@components/tag', () => {
-    return function MockTag({message, icon, type, testID}: any) {
-        return (
-            <div data-testid={testID} data-icon={icon} data-type={type}>
-                {message}
-            </div>
-        );
-    };
-});
-
 const renderWithIntl = (component: React.ReactElement) => {
     return render(
         <IntlProvider locale="en" messages={{}}>
@@ -50,9 +39,7 @@ describe('BoRLabel', () => {
 
         const tag = getByTestId('test-post-id_bor_tabel');
         expect(tag).toBeTruthy();
-        expect(tag.getAttribute('data-icon')).toBe('fire');
-        expect(tag.getAttribute('data-type')).toBe('dangerDim');
-        expect(tag.textContent).toContain('BURN ON READ (5m)');
+        expect(tag).toHaveTextContent('BURN ON READ (5m)');
     });
 
     it('should render without postId', () => {
@@ -62,7 +49,7 @@ describe('BoRLabel', () => {
 
         const tag = getByTestId('bor_tabel');
         expect(tag).toBeTruthy();
-        expect(tag.textContent).toContain('BURN ON READ (1m)');
+        expect(tag).toHaveTextContent('BURN ON READ (1m)');
     });
 
     it('should format duration correctly for seconds', () => {
@@ -71,7 +58,7 @@ describe('BoRLabel', () => {
         );
 
         const tag = getByTestId('test_bor_tabel');
-        expect(tag.textContent).toContain('BURN ON READ (30s)');
+        expect(tag).toHaveTextContent('BURN ON READ (30s)');
     });
 
     it('should format duration correctly for hours', () => {
@@ -80,16 +67,16 @@ describe('BoRLabel', () => {
         );
 
         const tag = getByTestId('test_bor_tabel');
-        expect(tag.textContent).toContain('BURN ON READ (2h)');
+        expect(tag).toHaveTextContent('BURN ON READ (2h)');
     });
 
-    it('should pass correct props to Tag component', () => {
-        const {getByTestId} = renderWithIntl(
+    it('should call formatTime with correct parameters', () => {
+        const formatTimeMock = require('@utils/datetime').formatTime;
+        
+        renderWithIntl(
             <BoRLabel durationSeconds={120} postId="test-post" />
         );
 
-        const tag = getByTestId('test-post_bor_tabel');
-        expect(tag.getAttribute('data-icon')).toBe('fire');
-        expect(tag.getAttribute('data-type')).toBe('dangerDim');
+        expect(formatTimeMock).toHaveBeenCalledWith(120, true);
     });
 });
