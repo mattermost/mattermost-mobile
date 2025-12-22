@@ -98,9 +98,14 @@ export async function renameChecklist(serverUrl: string, checklistId: string, ti
             return {error: `Checklist not found: ${checklistId}`};
         }
 
+        // Validate title is not empty or whitespace-only
+        if (!title || !title.trim()) {
+            return {error: 'Title cannot be empty or whitespace-only'};
+        }
+
         await database.write(async () => {
             checklist.update((c) => {
-                c.title = title;
+                c.title = title.trim();
             });
         });
 

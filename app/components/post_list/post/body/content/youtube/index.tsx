@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ImageBackground} from 'expo-image';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, TouchableOpacity} from 'react-native';
 
+import {ExpoImageBackground} from '@components/expo_image';
 import {useIsTablet} from '@hooks/device';
 import {calculateDimensions, getViewPortWidth} from '@utils/images';
 import {changeOpacity} from '@utils/theme';
@@ -88,13 +88,14 @@ const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
             style={[styles.imageContainer, {height: dimensions.height, width: dimensions.width}]}
             onPress={playYouTubeVideo}
         >
-            <ImageBackground
+            <ExpoImageBackground
+                id={`youtube-${videoId}`}
                 contentFit='cover'
                 style={[styles.image, dimensions]}
                 source={{uri: imgUrl}}
             >
                 <YouTubeLogo style={styles.shadow}/>
-            </ImageBackground>
+            </ExpoImageBackground>
         </TouchableOpacity>
     );
 };

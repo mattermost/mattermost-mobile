@@ -3,7 +3,7 @@
 
 import {showOverlay} from '@screens/navigation';
 
-import {showPlaybookErrorSnackbar} from '.';
+import {showBoRPostErrorSnackbar, showPlaybookErrorSnackbar} from '.';
 
 describe('snack bar', () => {
     describe('showPlaybookErrorSnackbar', () => {
@@ -12,6 +12,25 @@ describe('snack bar', () => {
 
             expect(showOverlay).toHaveBeenCalledWith('SnackBar', {
                 barType: 'PLAYBOOK_ERROR',
+            });
+        });
+    });
+
+    describe('showBoRPostErrorSnackbar', () => {
+        it('should show snackbar', () => {
+            showBoRPostErrorSnackbar();
+
+            expect(showOverlay).toHaveBeenCalledWith('SnackBar', {
+                barType: 'BOR_POST_EXPIRED',
+            });
+        });
+
+        it('should show custom message when provided', () => {
+            showBoRPostErrorSnackbar('custom message');
+
+            expect(showOverlay).toHaveBeenCalledWith('SnackBar', {
+                barType: 'BOR_POST_EXPIRED',
+                customMessage: 'custom message',
             });
         });
     });

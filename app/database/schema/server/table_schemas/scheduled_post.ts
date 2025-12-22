@@ -20,5 +20,6 @@ export default tableSchema({
         {name: 'scheduled_at', type: 'number'},
         {name: 'processed_at', type: 'number'},
         {name: 'error_code', type: 'string'},
+        {name: 'type', type: 'string', isOptional: true},
     ],
 });

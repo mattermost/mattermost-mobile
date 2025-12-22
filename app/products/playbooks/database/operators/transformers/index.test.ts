@@ -6,6 +6,7 @@
 import {OperationType} from '@constants/database';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {PlaybookRunModel} from '@playbooks/database/models';
 
 import {transformPlaybookChecklistItemRecord, transformPlaybookChecklistRecord, transformPlaybookRunRecord, transformPlaybookRunPropertyFieldRecord, transformPlaybookRunPropertyValueRecord} from '.';
@@ -311,6 +312,123 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
         expect(preparedRecord.updateAt).toBe(1620000004000);
         expect(preparedRecord.lastSyncAt).toBeGreaterThan(lastSyncAt);
     });
+
+    it('=> transformPlaybookRunRecord: should set default type to PlaybookType when playbookId is present', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
+
+        const preparedRecord = await transformPlaybookRunRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'playbook_run_type_test',
+                    playbook_id: 'playbook_1',
+                    create_at: 1620000000000,
+                },
+            },
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord.type).toBe(PLAYBOOK_RUN_TYPES.PlaybookType);
+    });
+
+    it('=> transformPlaybookRunRecord: should set default type to ChannelChecklistType when playbookId is absent', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
+
+        const preparedRecord = await transformPlaybookRunRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'playbook_run_type_test_2',
+                    create_at: 1620000000000,
+                },
+            },
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord.type).toBe(PLAYBOOK_RUN_TYPES.ChannelChecklistType);
+    });
+
+    it('=> transformPlaybookRunRecord: should use updateAt fallback chain correctly', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
+
+        // Test: raw.update_at should be used first
+        const preparedRecord1 = await transformPlaybookRunRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'playbook_run_update_at_1',
+                    create_at: 1620000000000,
+                    update_at: 1620000001000,
+                },
+            },
+        });
+        expect(preparedRecord1.updateAt).toBe(1620000001000);
+
+        // Test: when update_at is missing, should fallback to create_at
+        const preparedRecord2 = await transformPlaybookRunRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'playbook_run_update_at_2',
+                    create_at: 1620000002000,
+                },
+            },
+        });
+        expect(preparedRecord2.updateAt).toBe(1620000002000);
+
+        // Test: UPDATE action should use record.updateAt if raw.update_at is missing
+        let existingRecord: PlaybookRunModel | undefined;
+        await database!.write(async () => {
+            existingRecord = await database!.get<PlaybookRunModel>(PLAYBOOK_RUN).create((record) => {
+                record._raw.id = 'playbook_run_update_at_3';
+                record.createAt = 1620000003000;
+                record.updateAt = 1620000004000;
+            });
+        });
+
+        const preparedRecord3 = await transformPlaybookRunRecord({
+            action: OperationType.UPDATE,
+            database: database!,
+            value: {
+                record: existingRecord,
+                raw: {
+                    id: 'playbook_run_update_at_3',
+                },
+            },
+        });
+
+        await database?.write(async () => {
+            await database?.batch(preparedRecord3);
+        });
+        expect(preparedRecord3.updateAt).toBe(1620000004000);
+    });
+
+    it('=> transformPlaybookRunRecord: should handle CREATE with missing raw.id', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
+
+        const preparedRecord = await transformPlaybookRunRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    playbook_id: 'playbook_1',
+                    create_at: 1620000000000,
+                } as any,
+            },
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord.id).toBeTruthy();
+    });
 });
 describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
     it('=> transformPlaybookChecklistRecord: should return a record of type PlaybookChecklist for CREATE action', async () => {
@@ -408,7 +526,6 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
 
     it('=> transformPlaybookChecklistRecord: should keep most of the data if the partial checklist is empty', async () => {
         const database = await createTestConnection({databaseName: 'playbook_checklist_prepare_records', setActive: true});
-        expect(database).toBeTruthy();
 
         // Create an existing record to simulate the UPDATE action
         let existingRecord: PlaybookChecklistModel | undefined;
@@ -450,6 +567,47 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
         // Changing values
         expect(preparedRecord!.updateAt).toBe(1620000004000);
         expect(preparedRecord!.lastSyncAt).toBeGreaterThan(lastSyncAt);
+    });
+
+    it('=> transformPlaybookChecklistRecord: should handle CREATE with missing raw.id', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_checklist_prepare_records', setActive: true});
+
+        const preparedRecord = await transformPlaybookChecklistRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    run_id: 'playbook_run_1',
+                    title: 'Test Checklist',
+                } as any,
+            },
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord.id).toBeTruthy();
+    });
+
+    it('=> transformPlaybookChecklistRecord: should handle missing runId', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_checklist_prepare_records', setActive: true});
+
+        const preparedRecord = await transformPlaybookChecklistRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'checklist_undefined_run_id',
+                    title: 'Test Checklist',
+                } as any,
+            },
+        });
+
+        expect(preparedRecord).toBeTruthy();
+
+        // When run_id is missing and record is undefined, the transformer sets runId to undefined
+        // WatermelonDB converts undefined to empty string for non-nullable string fields
+        expect(preparedRecord.runId).toBe('');
     });
 });
 
@@ -775,6 +933,48 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
 
         expect(preparedRecordDefault!.conditionReason).toBe('');
     });
+
+    it('=> transformPlaybookChecklistItemRecord: should handle CREATE with missing raw.id', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_checklist_item_prepare_records', setActive: true});
+
+        const preparedRecord = await transformPlaybookChecklistItemRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    checklist_id: 'checklist_1',
+                    title: 'Test Item',
+                } as any,
+            },
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord.id).toBeTruthy();
+    });
+
+    it('=> transformPlaybookChecklistItemRecord: should handle missing checklistId', async () => {
+
+        const database = await createTestConnection({databaseName: 'playbook_checklist_item_prepare_records', setActive: true});
+
+        const preparedRecord = await transformPlaybookChecklistItemRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'checklist_item_undefined_checklist_id',
+                    title: 'Test Item',
+                } as any,
+            },
+        });
+
+        expect(preparedRecord).toBeTruthy();
+
+        // When checklist_id is missing and record is undefined, the transformer sets checklistId to undefined
+        // WatermelonDB converts undefined to empty string for non-nullable string fields
+        expect(preparedRecord.checklistId).toBe('');
+    });
 });
 
 describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
@@ -980,6 +1180,61 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
 
         // Verify attrs was serialized to string
         expect(preparedRecord!.attrs).toBe(JSON.stringify(attrsObject));
+    });
+    it('=> transformPlaybookRunAttributeRecord: should handle CREATE with missing raw.id', async () => {
+
+        const database = await createTestConnection({databaseName: 'playbook_run_attribute_prepare_records', setActive: true});
+
+        const preparedRecord = await transformPlaybookRunAttributeRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    group_id: 'group_1',
+                    name: 'Test Attribute',
+                } as any,
+            },
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord.id).toBeTruthy();
+    });
+
+    it('=> transformPlaybookRunAttributeRecord: should handle completely empty raw object', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_run_attribute_prepare_records', setActive: true});
+
+        let existingRecord: PlaybookRunAttributeModel | undefined;
+        await database!.write(async () => {
+            existingRecord = await database!.get<PlaybookRunAttributeModel>(PLAYBOOK_RUN_ATTRIBUTE).create((record) => {
+                record._raw.id = 'attribute_empty_raw';
+                record.groupId = 'group_1';
+                record.name = 'Existing Attribute';
+                record.type = 'text';
+                record.targetId = 'target_1';
+                record.targetType = 'playbook_run';
+                record.createAt = 1620000000000;
+                record.updateAt = 1620000001000;
+                record.deleteAt = 0;
+                record.attrs = '{"key": "value"}';
+            });
+        });
+
+        const preparedRecord = await transformPlaybookRunAttributeRecord({
+            action: OperationType.UPDATE,
+            database: database!,
+            value: {
+                record: existingRecord,
+                raw: {} as any,
+            },
+        });
+
+        await database?.write(async () => {
+            await database?.batch(preparedRecord);
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord.name).toBe('Existing Attribute');
     });
 });
 
@@ -1195,5 +1450,56 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE_VALUE Prepare Records Test ***', () => {
         expect(preparedRecord.runId).toBe('playbook_run_4');
         expect(preparedRecord.value).toBe('');
         expect(preparedRecord.updateAt).toBe(1620000001000);
+    });
+
+    it('=> transformPlaybookRunAttributeValueRecord: should handle CREATE with missing raw.id', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_run_attribute_value_prepare_records', setActive: true});
+
+        const preparedRecord = await transformPlaybookRunAttributeValueRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    attribute_id: 'attribute_1',
+                    run_id: 'playbook_run_1',
+                    value: 'Test Value',
+                } as any,
+            },
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord.id).toBeTruthy();
+    });
+
+    it('=> transformPlaybookRunAttributeValueRecord: should handle completely empty raw object', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_run_attribute_value_prepare_records', setActive: true});
+        expect(database).toBeTruthy();
+
+        let existingRecord: PlaybookRunAttributeValueModel | undefined;
+        await database!.write(async () => {
+            existingRecord = await database!.get<PlaybookRunAttributeValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((record) => {
+                record._raw.id = 'attribute_value_empty_raw';
+                record.attributeId = 'attribute_1';
+                record.runId = 'playbook_run_1';
+                record.value = 'Existing Value';
+            });
+        });
+
+        const preparedRecord = await transformPlaybookRunAttributeValueRecord({
+            action: OperationType.UPDATE,
+            database: database!,
+            value: {
+                record: existingRecord,
+                raw: {} as any,
+            },
+        });
+
+        await database?.write(async () => {
+            await database?.batch(preparedRecord);
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord.value).toBe('Existing Value');
     });
 });

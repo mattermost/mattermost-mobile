@@ -720,7 +720,6 @@
   "mobile.manage_members.remove_member": "Видалити з каналу",
   "mobile.manage_members.section_title_admins": "АДМІНІСТРАТОРИ КАНАЛУ",
   "mobile.manage_members.section_title_members": "УЧАСНИКИ",
-  "mobile.managed.OK": "ДОБРЕ",
   "mobile.managed.biometric_failed": "Помилка біометричної автентифікації або автентифікації за паролем.",
   "mobile.managed.blocked_by": "Заблоковано {vendor}",
   "mobile.managed.exit": "Вихід",

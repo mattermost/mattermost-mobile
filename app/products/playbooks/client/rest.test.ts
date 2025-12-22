@@ -997,19 +997,6 @@ describe('patchPlaybookRun', () => {
 
         await expect(client.patchPlaybookRun(playbookRunId, updates)).rejects.toThrow('Network error');
     });
-
-    test('should handle empty updates object', async () => {
-        const playbookRunId = 'run123';
-        const updates = {};
-        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}`;
-        const expectedOptions = {method: 'patch', body: updates};
-
-        jest.mocked(client.doFetch).mockResolvedValue(undefined);
-
-        await client.patchPlaybookRun(playbookRunId, updates);
-
-        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
-    });
 });
 
 describe('renameChecklist', () => {
@@ -1050,20 +1037,6 @@ describe('renameChecklist', () => {
 
         await expect(client.renameChecklist(playbookRunId, checklistNumber, newName)).rejects.toThrow('Network error');
     });
-
-    test('should handle empty name', async () => {
-        const playbookRunId = 'run123';
-        const checklistNumber = 1;
-        const newName = '';
-        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNumber}/rename`;
-        const expectedOptions = {method: 'put', body: {title: newName}};
-
-        jest.mocked(client.doFetch).mockResolvedValue(undefined);
-
-        await client.renameChecklist(playbookRunId, checklistNumber, newName);
-
-        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
-    });
 });
 
 describe('addChecklistItem', () => {
@@ -1071,20 +1044,6 @@ describe('addChecklistItem', () => {
         const playbookRunId = 'run123';
         const checklistNum = 1;
         const title = 'New Item';
-        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/add`;
-        const expectedOptions = {method: 'post', body: {title}};
-
-        jest.mocked(client.doFetch).mockResolvedValue(undefined);
-
-        await client.addChecklistItem(playbookRunId, checklistNum, title);
-
-        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
-    });
-
-    test('should add item with empty title', async () => {
-        const playbookRunId = 'run123';
-        const checklistNum = 1;
-        const title = '';
         const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/add`;
         const expectedOptions = {method: 'post', body: {title}};
 

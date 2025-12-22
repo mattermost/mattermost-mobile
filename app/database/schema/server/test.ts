@@ -317,6 +317,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         root_id: {name: 'root_id', type: 'string', isIndexed: true},
                         metadata: {name: 'metadata', type: 'string', isOptional: true},
                         update_at: {name: 'update_at', type: 'number'},
+                        type: {name: 'type', type: 'string', isOptional: true},
                     },
                     columnArray: [
                         {name: 'channel_id', type: 'string', isIndexed: true},
@@ -325,6 +326,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'root_id', type: 'string', isIndexed: true},
                         {name: 'metadata', type: 'string', isOptional: true},
                         {name: 'update_at', type: 'number'},
+                        {name: 'type', type: 'string', isOptional: true},
                     ],
                 },
                 [FILE]: {
@@ -719,6 +721,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         scheduled_at: {name: 'scheduled_at', type: 'number'},
                         processed_at: {name: 'processed_at', type: 'number'},
                         error_code: {name: 'error_code', type: 'string'},
+                        type: {name: 'type', type: 'string', isOptional: true},
                     },
                     columnArray: [
                         {name: 'channel_id', type: 'string', isIndexed: true},
@@ -731,6 +734,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'scheduled_at', type: 'number'},
                         {name: 'processed_at', type: 'number'},
                         {name: 'error_code', type: 'string'},
+                        {name: 'type', type: 'string', isOptional: true},
                     ],
                 },
                 [SYSTEM]: {

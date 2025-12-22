@@ -75,6 +75,22 @@ class PinnedMessagesScreen {
             this.getPostMessageAtIndex(index),
         ).toHaveText(postMessage);
     };
+
+    verifyReplyCount = async (postId: string, replyCount: number) => {
+        const replyCountElement = element(
+            by.id(`pinned_messages.post_list.post.${postId}`).
+                withDescendant(by.text(`${replyCount} repl${replyCount === 1 ? 'y' : 'ies'}`)),
+        );
+        await expect(replyCountElement).toBeVisible();
+    };
+
+    verifyFollowingLabel = async (postId: string, following: boolean = false) => {
+        const followingLabelElement = element(
+            by.id(`pinned_messages.post_list.post.${postId}`).
+                withDescendant(by.text(following? 'Following' : 'Follow')),
+        );
+        await expect(followingLabelElement).toBeVisible();
+    };
 }
 
 const pinnedMessagesScreen = new PinnedMessagesScreen();

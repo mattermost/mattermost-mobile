@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {siteOneUrl} from '@support/test_config';
+import {siteTwoUrl} from '@support/test_config';
 import {
     ChannelScreen,
     ChannelListScreen,
@@ -26,7 +26,7 @@ describe('Channels - Convert to Private Channel', () => {
     beforeAll(async () => {
 
         // # Log in to server as admin
-        await ServerScreen.connectToServer(siteOneUrl, siteOneDisplayName);
+        await ServerScreen.connectToServer(siteTwoUrl, siteOneDisplayName);
         await LoginScreen.loginAsAdmin(getAdminAccount());
         await wait(timeouts.TWO_SEC);
     });
