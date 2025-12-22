@@ -19,14 +19,6 @@ jest.mock('@utils/datetime', () => ({
     }),
 }));
 
-const renderWithIntl = (component: React.ReactElement) => {
-    return render(
-        <IntlProvider locale="en" messages={{}}>
-            {component}
-        </IntlProvider>
-    );
-};
-
 describe('BoRLabel', () => {
     beforeEach(() => {
         jest.clearAllMocks();
@@ -72,7 +64,7 @@ describe('BoRLabel', () => {
 
     it('should call formatTime with correct parameters', () => {
         const formatTimeMock = require('@utils/datetime').formatTime;
-        
+
         renderWithIntl(
             <BoRLabel durationSeconds={120} postId="test-post" />
         );
