@@ -2,22 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {render} from '@testing-library/react-native';
-import {IntlProvider} from 'react-intl';
+
+import {renderWithIntl} from '@test/intl-test-helper';
 
 import BoRLabel from './index';
-
-// Mock the formatTime utility
-jest.mock('@utils/datetime', () => ({
-    formatTime: jest.fn((seconds: number, short: boolean) => {
-        if (short) {
-            if (seconds < 60) return `${seconds}s`;
-            if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-            return `${Math.floor(seconds / 3600)}h`;
-        }
-        return `${seconds} seconds`;
-    }),
-}));
 
 describe('BoRLabel', () => {
     beforeEach(() => {
