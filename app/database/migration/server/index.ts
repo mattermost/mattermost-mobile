@@ -25,7 +25,7 @@ const {
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 
 export default schemaMigrations({migrations: [
-      {
+    {
         toVersion: 17,
         steps: [
             addColumns({

@@ -1185,7 +1185,7 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
 
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_prepare_records', setActive: true});
 
-        const preparedRecord = await transformPlaybookRunAttributeRecord({
+        const preparedRecord = await transformPlaybookRunPropertyFieldRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -1204,9 +1204,9 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
     it('=> transformPlaybookRunAttributeRecord: should handle completely empty raw object', async () => {
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_prepare_records', setActive: true});
 
-        let existingRecord: PlaybookRunAttributeModel | undefined;
+        let existingRecord: PlaybookRunPropertyFieldModel | undefined;
         await database!.write(async () => {
-            existingRecord = await database!.get<PlaybookRunAttributeModel>(PLAYBOOK_RUN_ATTRIBUTE).create((record) => {
+            existingRecord = await database!.get<PlaybookRunPropertyFieldModel>(PLAYBOOK_RUN_ATTRIBUTE).create((record) => {
                 record._raw.id = 'attribute_empty_raw';
                 record.groupId = 'group_1';
                 record.name = 'Existing Attribute';
@@ -1220,7 +1220,7 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
             });
         });
 
-        const preparedRecord = await transformPlaybookRunAttributeRecord({
+        const preparedRecord = await transformPlaybookRunPropertyFieldRecord({
             action: OperationType.UPDATE,
             database: database!,
             value: {
@@ -1455,7 +1455,7 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE_VALUE Prepare Records Test ***', () => {
     it('=> transformPlaybookRunAttributeValueRecord: should handle CREATE with missing raw.id', async () => {
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_value_prepare_records', setActive: true});
 
-        const preparedRecord = await transformPlaybookRunAttributeValueRecord({
+        const preparedRecord = await transformPlaybookRunPropertyValueRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -1476,9 +1476,9 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE_VALUE Prepare Records Test ***', () => {
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_value_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
-        let existingRecord: PlaybookRunAttributeValueModel | undefined;
+        let existingRecord: PlaybookRunPropertyValueModel | undefined;
         await database!.write(async () => {
-            existingRecord = await database!.get<PlaybookRunAttributeValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((record) => {
+            existingRecord = await database!.get<PlaybookRunPropertyValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((record) => {
                 record._raw.id = 'attribute_value_empty_raw';
                 record.attributeId = 'attribute_1';
                 record.runId = 'playbook_run_1';
@@ -1486,7 +1486,7 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE_VALUE Prepare Records Test ***', () => {
             });
         });
 
-        const preparedRecord = await transformPlaybookRunAttributeValueRecord({
+        const preparedRecord = await transformPlaybookRunPropertyValueRecord({
             action: OperationType.UPDATE,
             database: database!,
             value: {
