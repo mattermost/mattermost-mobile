@@ -387,7 +387,7 @@ describe('Account - Custom Status', () => {
         // # Tap display name to open user profile (more reliable than avatar tap)
         await expect(postListPostItemHeaderDisplayName).toBeVisible();
         await postListPostItemHeaderDisplayName.tap();
-        await wait(timeouts.TWO_SEC);
+        await wait(timeouts.FOUR_SEC);
         await UserProfileScreen.toBeVisible();
         await UserProfileScreen.close();
         await ChannelScreen.back();
@@ -410,7 +410,7 @@ describe('Account - Custom Status', () => {
         // # Open channel info and verify status
         await ChannelScreen.toBeVisible();
         await ChannelScreen.headerTitle.tap();
-        await wait(timeouts.TWO_SEC);
+        await wait(timeouts.FOUR_SEC);
         await ChannelInfoScreen.toBeVisible();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();

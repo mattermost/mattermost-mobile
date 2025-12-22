@@ -212,10 +212,13 @@ class ChannelScreen {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
         await expect(postListPostItem).toBeVisible();
 
+        // Dismiss any tooltips that might be blocking the long press
+        await this.dismissScheduledPostTooltip();
+
         // # Open post options
         await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.toBeVisible();
-        await wait(timeouts.TWO_SEC);
+        await wait(timeouts.FOUR_SEC);
     };
 
     openReplyThreadFor = async (postId: string, text: string) => {
@@ -239,6 +242,9 @@ class ChannelScreen {
         } else {
             // On Android, press back to dismiss the keyboard
             await device.pressBack();
+
+            // Wait for keyboard dismissal animation to complete before continuing
+            await wait(timeouts.ONE_SEC);
         }
         await wait(timeouts.FOUR_SEC);
     };

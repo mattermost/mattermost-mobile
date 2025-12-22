@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Delete', () => {
@@ -57,9 +57,6 @@ describe('Messaging - Message Delete', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
-        // # Wait for keyboard to dismiss and message to be visible
-        await wait(timeouts.TWO_SEC);
-
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
@@ -70,7 +67,7 @@ describe('Messaging - Message Delete', () => {
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify post message is deleted
-        await expect(postListPostItem).not.toExist();
+        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -81,9 +78,6 @@ describe('Messaging - Message Delete', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-
-        // # Wait for keyboard to dismiss and message to be visible
-        await wait(timeouts.TWO_SEC);
 
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -107,9 +101,6 @@ describe('Messaging - Message Delete', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
-        // # Wait for keyboard to dismiss and message to be visible
-        await wait(timeouts.TWO_SEC);
-
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);
         await waitFor(parentPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
@@ -123,9 +114,6 @@ describe('Messaging - Message Delete', () => {
         const replyMessage = `${message} reply`;
         await ThreadScreen.postMessage(replyMessage);
 
-        // # Wait for keyboard to dismiss and reply to be visible
-        await wait(timeouts.TWO_SEC);
-
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
         await waitFor(replyPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
@@ -134,7 +122,7 @@ describe('Messaging - Message Delete', () => {
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify reply message is deleted
-        await expect(replyPostListPostItem).not.toExist();
+        await waitFor(replyPostListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ThreadScreen.back();

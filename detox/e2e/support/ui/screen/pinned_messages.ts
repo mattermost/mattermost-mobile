@@ -60,7 +60,7 @@ class PinnedMessagesScreen {
         await expect(postListPostItem).toBeVisible();
 
         // # Open post options
-        await postListPostItem.longPress();
+        await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     };

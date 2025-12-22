@@ -72,13 +72,14 @@ describe('Smoke Test - Threads', () => {
 
         // # Unfollow thread via thread navigation
         await ThreadScreen.followingButton.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify thread is not followed by user via thread navigation
         await expect(ThreadScreen.followButton).toBeVisible();
 
         // # Follow thread via thread navigation
-        await wait(timeouts.TWO_SEC);
         await ThreadScreen.followButton.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify thread is followed by user via thread navigation
         await expect(ThreadScreen.followingButton).toBeVisible();

@@ -11,7 +11,7 @@ import {
     SendButton,
 } from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ThreadScreen {
@@ -100,7 +100,7 @@ class ThreadScreen {
         await expect(postListPostItem).toBeVisible();
 
         // # Open post options
-        await postListPostItem.longPress();
+        await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     };
@@ -110,6 +110,17 @@ class ThreadScreen {
         await this.postInput.tap();
         await this.postInput.replaceText(message);
         await this.tapSendButton();
+        if (isIos()) {
+            // On iOS, wait for the keyboard to dismiss to avoid issues with subsequent taps
+            await this.postInput.tapReturnKey();
+            await wait(timeouts.ONE_SEC);
+        } else {
+            // On Android, press back to dismiss the keyboard
+            await device.pressBack();
+
+            // Wait for keyboard dismissal animation to complete before continuing
+            await wait(timeouts.ONE_SEC);
+        }
         await wait(timeouts.FOUR_SEC);
     };
 
