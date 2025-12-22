@@ -538,6 +538,7 @@
   "mobile.android.photos_permission_denied_title": "{applicationName} would like to access your photos",
   "mobile.announcement_banner.title": "Announcement",
   "mobile.burn_on_read.placeholder": "View message",
+  "burn_on_read.label.title": "BURN ON READ ({duration})",
   "mobile.calls_audio_device": "Select audio device",
   "mobile.calls_bluetooth": "Bluetooth",
   "mobile.calls_call_ended": "Call ended",

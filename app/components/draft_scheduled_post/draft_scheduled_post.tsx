@@ -7,7 +7,7 @@ import {Keyboard, TouchableHighlight, View} from 'react-native';
 
 import {switchToThread} from '@actions/local/thread';
 import {switchToChannelById} from '@actions/remote/channel';
-import CompassIcon from '@components/compass_icon';
+import BoRLabel from '@components/burn_on_read_label';
 import DraftAndScheduledPostHeader from '@components/draft_scheduled_post_header';
 import Header from '@components/post_draft/draft_input/header';
 import {Screens} from '@constants';
@@ -36,6 +36,7 @@ type Props = {
     isPostPriorityEnabled: boolean;
     draftType: DraftType;
     firstItem?: boolean;
+    borUserTimeLimit?: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -90,6 +91,7 @@ const DraftAndScheduledPost: React.FC<Props> = ({
     isPostPriorityEnabled,
     draftType,
     firstItem,
+    borUserTimeLimit,
 }) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -163,17 +165,12 @@ const DraftAndScheduledPost: React.FC<Props> = ({
                                 />
                             </View>
                         }
-                        {borPost &&
+                        {borPost && borUserTimeLimit &&
                             <View
                                 style={style.indicatorItem}
                                 testID='draft_post.bor_indicator'
                             >
-                                <CompassIcon
-                                    style={style.borIndicator}
-                                    name='fire'
-                                    size={16}
-                                    color={theme.dndIndicator}
-                                />
+                                <BoRLabel durationSeconds={borUserTimeLimit}/>
                             </View>
                         }
                     </View>
