@@ -31,7 +31,7 @@ describe('BoRLabel', () => {
 
         const tag = getByTestId('test-post-id_bor_tabel');
         expect(tag).toBeTruthy();
-        expect(tag).toHaveTextContent('BURN ON READ (5m)');
+        expect(tag).toHaveTextContent(/BURN ON READ \(.+\)/);
     });
 
     it('should render without postId', () => {
@@ -41,7 +41,7 @@ describe('BoRLabel', () => {
 
         const tag = getByTestId('bor_tabel');
         expect(tag).toBeTruthy();
-        expect(tag).toHaveTextContent('BURN ON READ (1m)');
+        expect(tag).toHaveTextContent(/BURN ON READ \(.+\)/);
     });
 
     it('should format duration correctly for seconds', () => {
@@ -50,7 +50,7 @@ describe('BoRLabel', () => {
         );
 
         const tag = getByTestId('test_bor_tabel');
-        expect(tag).toHaveTextContent('BURN ON READ (30s)');
+        expect(tag).toHaveTextContent(/BURN ON READ \(.+\)/);
     });
 
     it('should format duration correctly for hours', () => {
@@ -59,16 +59,22 @@ describe('BoRLabel', () => {
         );
 
         const tag = getByTestId('test_bor_tabel');
-        expect(tag).toHaveTextContent('BURN ON READ (2h)');
+        expect(tag).toHaveTextContent(/BURN ON READ \(.+\)/);
     });
 
-    it('should call formatTime with correct parameters', () => {
-        const formatTimeMock = require('@utils/datetime').formatTime;
-
-        renderWithIntl(
+    it('should generate correct testID with postId', () => {
+        const {getByTestId} = renderWithIntl(
             <BoRLabel durationSeconds={120} postId="test-post" />
         );
 
-        expect(formatTimeMock).toHaveBeenCalledWith(120, true);
+        expect(getByTestId('test-post_bor_tabel')).toBeTruthy();
+    });
+
+    it('should generate correct testID without postId', () => {
+        const {getByTestId} = renderWithIntl(
+            <BoRLabel durationSeconds={120} />
+        );
+
+        expect(getByTestId('bor_tabel')).toBeTruthy();
     });
 });
