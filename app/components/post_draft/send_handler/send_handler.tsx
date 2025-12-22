@@ -45,6 +45,7 @@ type Props = {
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
     postPriority: PostPriority;
+    postBoRConfig?: PostBoRConfig;
 
     draftType?: DraftType;
     postId?: string;
@@ -93,6 +94,7 @@ export default function SendHandler({
     isFromDraftView,
     draftType,
     postId,
+    postBoRConfig,
 }: Props) {
     const serverUrl = useServerUrl();
 
@@ -170,6 +172,7 @@ export default function SendHandler({
             maxMessageLength={maxMessageLength}
             updatePostInputTop={updatePostInputTop}
             postPriority={postPriority}
+            postBoRConfig={postBoRConfig}
             updatePostPriority={handlePostPriority}
             updatePostBoRStatus={handlePostBoRStatus}
             persistentNotificationInterval={persistentNotificationInterval}

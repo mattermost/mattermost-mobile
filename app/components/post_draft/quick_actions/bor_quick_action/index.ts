@@ -10,9 +10,9 @@ import BoRAction from './bor_quick_action';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const borConfig = observeBoRConfig(database);
+    const defaultBorConfig = observeBoRConfig(database);
     return {
-        borConfig,
+        defaultBorConfig,
     };
 });
 

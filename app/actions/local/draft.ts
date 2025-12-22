@@ -5,6 +5,7 @@ import {Image} from 'expo-image';
 import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation, Screens} from '@constants';
+import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
 import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
@@ -20,7 +21,6 @@ import {isParsableUrl} from '@utils/url';
 
 import type {DraftScreenTab} from '@constants/draft';
 import type {Model} from '@nozbe/watermelondb';
-import {PostTypes} from "@constants/post";
 
 type goToScreenParams = {
     initialTab?: DraftScreenTab;
@@ -282,19 +282,23 @@ export async function updateDraftBoRConfig(serverUrl: string, channelId: string,
 
             if (postBoRConfig.enabled) {
                 newDraft.type = PostTypes.BURN_ON_READ;
+            } else {
+                newDraft.type = '';
             }
 
             return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
         }
 
         draft?.prepareUpdate((d) => {
-            if (postBoRConfig.enabled) {
-                d.metadata = {
-                    ...d.metadata,
-                    borConfig: postBoRConfig,
-                };
+            d.metadata = {
+                ...d.metadata,
+                borConfig: postBoRConfig,
+            };
 
+            if (postBoRConfig.enabled) {
                 d.type = PostTypes.BURN_ON_READ;
+            } else {
+                d.type = '';
             }
         });
 

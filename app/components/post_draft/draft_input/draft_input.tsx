@@ -35,6 +35,7 @@ export type Props = {
 
     // Post Props
     postPriority: PostPriority;
+    postBoRConfig?: PostBoRConfig;
     updatePostPriority: (postPriority: PostPriority) => void;
     updatePostBoRStatus: (config: PostBoRConfig) => void;
     persistentNotificationInterval: number;
@@ -134,6 +135,7 @@ function DraftInput({
     persistentNotificationMaxRecipients,
     setIsFocused,
     scheduledPostsEnabled,
+    postBoRConfig,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -250,6 +252,7 @@ function DraftInput({
                             postPriority={postPriority}
                             updatePostPriority={updatePostPriority}
                             canShowPostPriority={canShowPostPriority}
+                            postBoRConfig={postBoRConfig}
                             updatePostBoRStatus={updatePostBoRStatus}
                             focus={focus}
                         />

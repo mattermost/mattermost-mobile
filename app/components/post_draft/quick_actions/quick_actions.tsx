@@ -4,12 +4,12 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
+import BoRQuickAction from '@components/post_draft/quick_actions/bor_quick_action';
 
 import AttachmentAction from './attachment_quick_action';
 import EmojiAction from './emoji_quick_action';
 import InputAction from './input_quick_action';
 import PostPriorityAction from './post_priority_action';
-import BoRAction from "@components/post_draft/quick_actions/bor_quick_action";
 
 type Props = {
     testID?: string;
@@ -28,6 +28,7 @@ type Props = {
     addFiles: (file: FileInfo[]) => void;
     postPriority: PostPriority;
     updatePostPriority: (postPriority: PostPriority) => void;
+    postBoRConfig?: PostBoRConfig;
     updatePostBoRStatus: (config: PostBoRConfig) => void;
     focus: () => void;
 }
@@ -60,6 +61,7 @@ export default function QuickActions({
     updatePostPriority,
     focus,
     updatePostBoRStatus,
+    postBoRConfig,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
     const slashDisabled = value.length > 0;
@@ -117,8 +119,9 @@ export default function QuickActions({
                 />
             )}
             {isBoREnabled &&
-                <BoRAction
+                <BoRQuickAction
                     testId={borPriorityActionTestID}
+                    postBoRConfig={postBoRConfig}
                     updatePostBoRStatus={updatePostBoRStatus}
                 />
             }

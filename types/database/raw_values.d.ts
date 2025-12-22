@@ -24,7 +24,7 @@ type Draft = {
     root_id: string;
     metadata?: PostMetadata;
     update_at: number;
-    type?: string; // TODO - change this to UserCreatablePostTypes later
+    type?: PostTypesUserCreatable;
 };
 
 type MyTeam = {
