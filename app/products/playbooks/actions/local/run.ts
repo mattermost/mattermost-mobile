@@ -56,7 +56,7 @@ export async function renamePlaybookRun(serverUrl: string, playbookRunId: string
 
         await database.write(async () => {
             run.update((r) => {
-                r.name = name;
+                r.name = name.trim();
             });
         });
 

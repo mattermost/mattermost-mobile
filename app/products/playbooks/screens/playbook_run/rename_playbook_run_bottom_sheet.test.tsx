@@ -8,6 +8,7 @@ import {Keyboard} from 'react-native';
 import {Preferences} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {renamePlaybookRun} from '@playbooks/actions/remote/runs';
 import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
@@ -32,11 +33,20 @@ jest.mock('@hooks/android_back_handler', () => jest.fn());
 jest.mock('@managers/security_manager', () => ({
     getShieldScreenId: jest.fn((id) => `shield-${id}`),
 }));
+jest.mock('@playbooks/actions/remote/runs', () => ({
+    renamePlaybookRun: jest.fn(),
+}));
+jest.mock('@utils/snack_bar', () => ({
+    showPlaybookErrorSnackbar: jest.fn(),
+}));
+jest.mock('@context/server', () => ({
+    useServerUrl: jest.fn(() => 'some.server.url'),
+}));
 
 describe('RenamePlaybookRunBottomSheet', () => {
     const componentId = 'test-component-id' as any;
     const currentTitle = 'Original Playbook Run';
-    const mockOnSave = jest.fn();
+    const playbookRunId = 'run-id-123';
 
     const mockRightButton = {
         id: 'save-playbook-run-name',
@@ -47,6 +57,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         jest.mocked(buildNavigationButton).mockReturnValue(mockRightButton as any);
+        jest.mocked(renamePlaybookRun).mockResolvedValue({data: true});
         jest.mocked(useNavButtonPressed).mockImplementation((buttonId, compId, callback) => {
             // Simulate button press when buttonId matches
             if (buttonId === 'save-playbook-run-name' && compId === componentId) {
@@ -64,7 +75,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
         return {
             componentId,
             currentTitle,
-            onSave: mockOnSave,
+            playbookRunId,
         };
     }
 
@@ -248,7 +259,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
         });
     });
 
-    it('should call onSave and close when save button is pressed with valid title', () => {
+    it('should call renamePlaybookRun and close when save button is pressed with valid title', async () => {
         const props = getBaseProps();
         const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
 
@@ -262,16 +273,16 @@ describe('RenamePlaybookRunBottomSheet', () => {
 
         // Trigger save button press
         const saveCallback = (useNavButtonPressed as any).lastCallback;
-        act(() => {
-            saveCallback();
+        await act(async () => {
+            await saveCallback();
         });
 
-        expect(mockOnSave).toHaveBeenCalledWith(newTitle);
+        expect(renamePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle);
         expect(Keyboard.dismiss).toHaveBeenCalled();
         expect(popTopScreen).toHaveBeenCalledWith(componentId);
     });
 
-    it('should trim title when saving', () => {
+    it('should trim title when saving', async () => {
         const props = getBaseProps();
         const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
 
@@ -285,12 +296,12 @@ describe('RenamePlaybookRunBottomSheet', () => {
 
         // Trigger save button press
         const saveCallback = (useNavButtonPressed as any).lastCallback;
-        act(() => {
-            saveCallback();
+        await act(async () => {
+            await saveCallback();
         });
 
-        expect(mockOnSave).toHaveBeenCalledWith('New Playbook Run Name');
-        expect(mockOnSave).not.toHaveBeenCalledWith(titleWithSpaces);
+        expect(renamePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, 'New Playbook Run Name');
+        expect(renamePlaybookRun).not.toHaveBeenCalledWith('some.server.url', playbookRunId, titleWithSpaces);
     });
 
     it('should close when Android back button is pressed', () => {
@@ -305,7 +316,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
 
         expect(Keyboard.dismiss).toHaveBeenCalled();
         expect(popTopScreen).toHaveBeenCalledWith(componentId);
-        expect(mockOnSave).not.toHaveBeenCalled();
+        expect(renamePlaybookRun).not.toHaveBeenCalled();
     });
 
     it('should update navigation button when canSave changes', () => {
