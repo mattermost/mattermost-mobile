@@ -9,10 +9,10 @@ import {formatTime} from '@utils/datetime';
 
 type Props = {
     durationSeconds: number;
-    postId?: string;
+    id?: string;
 }
 
-export default function BoRLabel({durationSeconds, postId}: Props) {
+export default function BoRLabel({durationSeconds, id}: Props) {
     const {formatMessage} = useIntl();
 
     const message = formatMessage({
@@ -25,7 +25,7 @@ export default function BoRLabel({durationSeconds, postId}: Props) {
             message={message}
             icon='fire'
             type='dangerDim'
-            testID={`${postId ? postId + '_' : ''}bor_tabel`}
+            testID={`${id ? id + '_' : ''}bor_tabel`}
         />
     );
 }
