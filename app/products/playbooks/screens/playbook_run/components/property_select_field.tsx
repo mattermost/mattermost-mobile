@@ -31,6 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         viewContainer: {
             marginVertical: 8,
+            alignItems: 'center',
             width: '100%',
             flexDirection: 'row',
         },
@@ -40,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         labelContainer: {
             flexDirection: 'row',
             flexWrap: 'wrap',
-            alignItems: 'flex-start',
+            alignItems: 'center',
         },
         label: {
             fontSize: 14,
