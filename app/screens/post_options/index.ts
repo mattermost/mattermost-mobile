@@ -148,7 +148,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
     );
 
     const canDelete = combineLatest([canDeletePostPermission, channelIsArchived, channelIsReadOnly, canPostPermission, currentUserId]).pipe(switchMap(([permission, isArchived, isReadOnly, canPost, userId]) => {
-        const canDeleteBoRPost = borPost ? post.userId === userId : false;
+        const canDeleteBoRPost = borPost ? post.userId === userId : true;
         return of$(permission && !isArchived && !isReadOnly && canPost && canDeleteBoRPost);
     }));
 
