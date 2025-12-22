@@ -220,6 +220,7 @@ function DraftInput({
                     <Header
                         noMentionsError={noMentionsError}
                         postPriority={postPriority}
+                        postBoRConfig={postBoRConfig}
                     />
                     <PostInput
                         testID={postInputTestID}

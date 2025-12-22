@@ -10,10 +10,12 @@ import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {PostPriorityColors} from '@constants/post';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import BoRLabel from "@components/burn_on_read_label";
 
 type Props = {
     postPriority: PostPriority;
     noMentionsError: boolean;
+    postBoRConfig?: PostBoRConfig;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -37,6 +39,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 export default function DraftInputHeader({
     postPriority,
     noMentionsError,
+    postBoRConfig,
 }: Props) {
     const theme = useTheme();
     const hasLabels = postPriority.priority !== '' || postPriority.requested_ack;
@@ -83,6 +86,11 @@ export default function DraftInputHeader({
                     )}
                 </>
             )}
+            {postBoRConfig && postBoRConfig.enabled &&
+                <BoRLabel
+                    durationSeconds={postBoRConfig.borDurationSeconds}
+                />
+            }
         </View>
     );
 }
