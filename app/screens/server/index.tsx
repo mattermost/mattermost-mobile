@@ -146,8 +146,8 @@ const Server = ({
             handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
         }
 
-    // functions do not need memoization
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // We only want to handle connect when a smaller set of variables change
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl]);
 
     useEffect(() => {
@@ -189,8 +189,8 @@ const Server = ({
 
         return () => backHandler.remove();
 
-    // only needed on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // We register the back handler and the push notifications only on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
@@ -329,7 +329,12 @@ const Server = ({
             }
             return;
         }
-        const result = await doPing(headRequest.url, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined, preauthSecret.trim() || undefined);
+        const result = await doPing(
+            headRequest.url,
+            true, // verifyPushProxy
+            managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined, // timeoutInterval
+            preauthSecret.trim() || undefined, // preauthSecret
+        );
 
         if (canceled) {
             return;
