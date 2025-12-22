@@ -121,6 +121,7 @@ export default function SendHandler({
         channelType,
         postPriority,
         clearDraft,
+        postBoRConfig,
     });
 
     if (isFromDraftView) {
