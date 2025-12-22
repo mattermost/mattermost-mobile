@@ -16,6 +16,7 @@ concurrency:
 
 env:
   INTUNE_ENABLED: 1
+  E2EE_RELEASE: 1
 
 jobs:
   update-initial-status-ios:

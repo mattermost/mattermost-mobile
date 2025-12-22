@@ -22,6 +22,9 @@ export default defineConfig([
     "ios/",
     ".github/",
     "detox/artifacts/",
+    // E2EE library - generated UniFFI bindings and build scripts
+    "libraries/@mattermost/e2ee/src/generated/",
+    "libraries/@mattermost/e2ee/scripts/",
   ]),
   eslintMattermost,
   jestConfig,
