@@ -30,21 +30,16 @@ export async function launchAppWithRetry(): Promise<void> {
                 await device.launchApp({
                     newInstance: true,
                     delete: true,
-
-                    // Permissions are pre-configured in CI workflow to avoid slow SpringBoard restarts
-                    // Only set permissions when running locally (not in CI)
-                    ...(process.env.CI ? {} : {
-                        permissions: {
-                            notifications: 'YES',
-                            camera: 'NO',
-                            medialibrary: 'NO',
-                            photos: 'NO',
-                        },
-                    }),
+                    permissions: {
+                        notifications: 'NO',
+                        camera: 'NO',
+                        medialibrary: 'NO',
+                        photos: 'NO',
+                    },
                     launchArgs: {
                         detoxPrintBusyIdleResources: 'YES',
                         detoxDebugVisibility: 'YES',
-
+                        disablePasswordAutofill: 'YES',
                         detoxDisableSynchronization: 'YES',
                         detoxDisableHierarchyDump: 'YES',
                         reduceMotion: 'YES',
@@ -58,7 +53,7 @@ export async function launchAppWithRetry(): Promise<void> {
                     launchArgs: {
                         detoxPrintBusyIdleResources: 'YES',
                         detoxDebugVisibility: 'YES',
-
+                        disablePasswordAutofill: 'YES',
                         detoxDisableSynchronization: 'YES',
                         detoxURLBlacklistRegex: '.*localhost.*',
                     },
@@ -66,13 +61,6 @@ export async function launchAppWithRetry(): Promise<void> {
             }
 
             console.info(`✅ App launched successfully on attempt ${attempt}`);
-
-            // iOS 26.x: Wait for WebSocket connection to establish and React Native to initialize
-            // The app process starts quickly but RN bridge takes time to initialize
-            console.info('Waiting for React Native bridge to initialize...');
-            await new Promise((resolve) => {
-                setTimeout(resolve, 30000);
-            });
 
             return; // Success, exit the function
 
@@ -125,7 +113,7 @@ beforeAll(async () => {
     isFirstLaunch = true;
 
     await launchAppWithRetry();
-}, 300000); // Increase timeout to 5 minutes for iOS 26.x
+});
 
 afterAll(async () => {
     // Reset the launch flag so next test file starts fresh

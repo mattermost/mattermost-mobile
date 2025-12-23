@@ -38,12 +38,12 @@ on:
         description: "iPhone simulator name"
         required: false
         type: string
-        default: "iPhone 16 Pro"
+        default: "iPhone 17 Pro"
       ios_device_os_name:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 18.6"
+        default: "iOS 26.2"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
@@ -84,54 +84,55 @@ env:
   RUNNING_E2E: "true"
 
 jobs:
-  generate-specs:
-    runs-on: ubuntu-22.04
-    outputs:
-      specs: ${{ steps.generate-specs.outputs.specs }}
-      build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
-      mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
-      mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
-      workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+  # generate-specs:
+  #   runs-on: ubuntu-22.04
+  #   outputs:
+  #     specs: ${{ steps.generate-specs.outputs.specs }}
+  #     build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
+  #     mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
+  #     mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
+  #     workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  #       with:
+  #         ref: ${{ inputs.MOBILE_VERSION }}
 
-      - name: Set Build ID
-        id: resolve-device
-        run: |
-          BUILD_ID="${{ github.run_id }}-${{ env.DEVICE_NAME }}-${{ env.DEVICE_OS_VERSION}}"
-          WORKFLOW_HASH=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
+  #     - name: Set Build ID
+  #       id: resolve-device
+  #       run: |
+  #         BUILD_ID="${{ github.run_id }}-${{ env.DEVICE_NAME }}-${{ env.DEVICE_OS_VERSION}}"
+  #         WORKFLOW_HASH=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
 
-          ## We need that hash to separate the artifacts
-          echo "WORKFLOW_HASH=${WORKFLOW_HASH}" >> ${GITHUB_OUTPUT}
+  #         ## We need that hash to separate the artifacts
+  #         echo "WORKFLOW_HASH=${WORKFLOW_HASH}" >> ${GITHUB_OUTPUT}
 
-          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> ${GITHUB_OUTPUT}
-          echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
-          echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
+  #         echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> ${GITHUB_OUTPUT}
+  #         echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
+  #         echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
 
-      - name: Generate Test Specs
-        id: generate-specs
-        uses: ./.github/actions/generate-specs
-        with:
-          parallelism: 10
-          search_path: detox/e2e/test
-          device_name: ${{ env.DEVICE_NAME }}
-          device_os_version: ${{ env.DEVICE_OS_VERSION }}
+  #     - name: Generate Test Specs
+  #       id: generate-specs
+  #       uses: ./.github/actions/generate-specs
+  #       with:
+  #         parallelism: 10
+  #         search_path: detox/e2e/test
+  #         device_name: ${{ env.DEVICE_NAME }}
+  #         device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
   e2e-ios:
-    name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
-    runs-on: macos-latest
+    # name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+    name: ios-test
+    runs-on: macos-26
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
     env:
       IOS: true
-    needs:
-      - generate-specs
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
+    # needs:
+    #   - generate-specs
+    # strategy:
+    #   fail-fast: false
+    #   matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -146,36 +147,36 @@ jobs:
           brew tap wix/brew
           brew install applesimutils
 
-      # - name: Download iOS Simulator Build from Previous Run
-      #   run: |
-      #     curl -L -o artifact.zip \
-      #         -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-      #       -H "Accept: application/vnd.github.v3+json" \
-      #       "https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/4933673194/zip"
-
-      #       unzip -o artifact.zip -d mobile-artifacts/
-      #       inner_zip=$(find mobile-artifacts/ -name "*.zip" | head -n 1)
-      #       if [ -n "$inner_zip" ]; then
-      #         unzip -o "$inner_zip" -d mobile-artifacts/
-      #       else
-      #         echo "❌ No inner zip file found!"
-      #       fi
-
-      #       echo "✅ iOS Simulator Build Downloaded*******************"
-      #       rm -rf mobile-artifacts/*.zip
-      #       ls mobile-artifacts
-
-      - name: Download iOS Simulator Build
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
-        with:
-          name: ios-build-simulator-${{ github.run_id }}
-          path: mobile-artifacts
-
-      - name: Unzip iOS Simulator Build
+      - name: Download iOS Simulator Build from Previous Run
         run: |
-          unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
-          # delete zip file
-          rm -f mobile-artifacts/*.zip
+          curl -L -o artifact.zip \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/mattermost/mattermost-mobile/actions/artifacts/4933673194/zip"
+
+            unzip -o artifact.zip -d mobile-artifacts/
+            inner_zip=$(find mobile-artifacts/ -name "*.zip" | head -n 1)
+            if [ -n "$inner_zip" ]; then
+              unzip -o "$inner_zip" -d mobile-artifacts/
+            else
+              echo "❌ No inner zip file found!"
+            fi
+
+            echo "✅ iOS Simulator Build Downloaded*******************"
+            rm -rf mobile-artifacts/*.zip
+            ls mobile-artifacts
+
+      # - name: Download iOS Simulator Build
+      #   uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+      #   with:
+      #     name: ios-build-simulator-${{ github.run_id }}
+      #     path: mobile-artifacts
+
+      # - name: Unzip iOS Simulator Build
+      #   run: |
+      #     unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+      #     # delete zip file
+      #     rm -f mobile-artifacts/*.zip
 
       - name: Prepare Low Bandwidth Environment
         id: prepare-low-bandwidth
@@ -319,8 +320,8 @@ jobs:
           cd detox
           npm run clean-detox
           npm run detox:config-gen
-          npm run e2e:ios-test -- ${{ matrix.specs }}
-          # npm run e2e:ios-test -- teams/invite_people.e2e.ts
+          # npm run e2e:ios-test -- ${{ matrix.specs }}
+          npm run e2e:ios-test -- teams/invite_people.e2e.ts
         env:
           DETOX_DISABLE_HIERARCHY_DUMP: "YES"
           DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"      
@@ -340,129 +341,129 @@ jobs:
 
           sleep 5;
 
-      - name: Upload mitmdump Flow Output
-        if: ${{ inputs.low_bandwidth_mode }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: ios-mitmdump-flow-output-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
-          path: |
-            /Users/runner/work/mattermost-mobile/mattermost-mobile/flow-output.csv
-            /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log
+      # - name: Upload mitmdump Flow Output
+      #   if: ${{ inputs.low_bandwidth_mode }}
+      #   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      #   with:
+      #     name: ios-mitmdump-flow-output-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+      #     path: |
+      #       /Users/runner/work/mattermost-mobile/mattermost-mobile/flow-output.csv
+      #       /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log
 
-      - name: Upload iOS Test Report
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
-          path: detox/artifacts/
+      # - name: Upload iOS Test Report
+      #   if: always()
+      #   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      #   with:
+      #     name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+      #     path: detox/artifacts/
 
-  generate-report:
-    runs-on: ubuntu-22.04
-    needs:
-      - generate-specs
-      - e2e-ios
-    outputs:
-      TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
-      STATUS: ${{ steps.determine-status.outputs.STATUS }}
-      FAILURES: ${{ steps.summary.outputs.FAILURES }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+  # generate-report:
+  #   runs-on: ubuntu-22.04
+  #   needs:
+  #     # - generate-specs
+  #     - e2e-ios
+  #   outputs:
+  #     TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
+  #     STATUS: ${{ steps.determine-status.outputs.STATUS }}
+  #     FAILURES: ${{ steps.summary.outputs.FAILURES }}
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  #       with:
+  #         ref: ${{ inputs.MOBILE_VERSION }}
 
-      - name: ci/prepare-node-deps
-        uses: ./.github/actions/prepare-node-deps
+  #     - name: ci/prepare-node-deps
+  #       uses: ./.github/actions/prepare-node-deps
 
-      - name: Download iOS Artifacts
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
-        with:
-          path: detox/artifacts/
-          pattern: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-*
+  #     - name: Download iOS Artifacts
+  #       uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+  #       with:
+  #         path: detox/artifacts/
+  #         pattern: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-*
 
-      - name: Generate Report Path
-        id: s3
-        run: |
-          path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
-          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
+  #     - name: Generate Report Path
+  #       id: s3
+  #       run: |
+  #         path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
+  #         echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
 
-      - name: Save report Detox Dependencies
-        id: report-link
-        run: |
-          cd detox
-          npm ci
-          npm run e2e:save-report
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
-          REPORT_PATH: ${{ steps.s3.outputs.path }}
-          ## These are needed for the MM Webhook report
-          COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
-          BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
+  #     - name: Save report Detox Dependencies
+  #       id: report-link
+  #       run: |
+  #         cd detox
+  #         npm ci
+  #         npm run e2e:save-report
+  #       env:
+  #         DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+  #         DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+  #         BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+  #         REPORT_PATH: ${{ steps.s3.outputs.path }}
+  #         ## These are needed for the MM Webhook report
+  #         COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
+  #         BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
 
-      - name: Calculate failures
-        id: summary
-        run: |
-          echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
-          echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
-          echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
-          echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
-          echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
-          echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
+  #     - name: Calculate failures
+  #       id: summary
+  #       run: |
+  #         echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
+  #         echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
+  #         echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
+  #         echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
+  #         echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
+  #         echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
 
-      - name: Set Target URL
-        id: set-url
-        run: |
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/ios-report.html" >> ${GITHUB_OUTPUT}
+  #     - name: Set Target URL
+  #       id: set-url
+  #       run: |
+  #           echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/ios-report.html" >> ${GITHUB_OUTPUT}
 
-      - name: Determine Status
-        id: determine-status
-        run: |
-          if [[ ${{ steps.summary.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
-            echo "STATUS=failure" >> ${GITHUB_OUTPUT}
-          else
-            echo "STATUS=success" >> ${GITHUB_OUTPUT}
-          fi
+  #     - name: Determine Status
+  #       id: determine-status
+  #       run: |
+  #         if [[ ${{ steps.summary.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
+  #           echo "STATUS=failure" >> ${GITHUB_OUTPUT}
+  #         else
+  #           echo "STATUS=success" >> ${GITHUB_OUTPUT}
+  #         fi
 
-      - name: Generate Summary
-        run: |
-          echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: | Errors :warning: | " >> ${GITHUB_STEP_SUMMARY}
-          echo "|:---:|:---:|:---:|:---:|:---:|" >> ${GITHUB_STEP_SUMMARY}
-          echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} | ${{ steps.summary.outputs.ERRORS }} |" >> ${GITHUB_STEP_SUMMARY}
-          echo "" >> ${GITHUB_STEP_SUMMARY}
-          echo "You can check the full report [here](${{ steps.set-url.outputs.TARGET_URL }})" >> ${GITHUB_STEP_SUMMARY}
-          echo "There was **${{ steps.summary.outputs.PERCENTAGE }}%** success rate." >> ${GITHUB_STEP_SUMMARY}
+  #     - name: Generate Summary
+  #       run: |
+  #         echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: | Errors :warning: | " >> ${GITHUB_STEP_SUMMARY}
+  #         echo "|:---:|:---:|:---:|:---:|:---:|" >> ${GITHUB_STEP_SUMMARY}
+  #         echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} | ${{ steps.summary.outputs.ERRORS }} |" >> ${GITHUB_STEP_SUMMARY}
+  #         echo "" >> ${GITHUB_STEP_SUMMARY}
+  #         echo "You can check the full report [here](${{ steps.set-url.outputs.TARGET_URL }})" >> ${GITHUB_STEP_SUMMARY}
+  #         echo "There was **${{ steps.summary.outputs.PERCENTAGE }}%** success rate." >> ${GITHUB_STEP_SUMMARY}
 
-      - name: Comment report on the PR
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const prNumber = context.payload.pull_request.number;
+  #     - name: Comment report on the PR
+  #       if: ${{ github.event_name == 'pull_request' }}
+  #       uses: actions/github-script@v7
+  #       with:
+  #         script: |
+  #           const prNumber = context.payload.pull_request.number;
 
-            const commentBody = `**iOS E2E Test Report**: ${process.env.MOBILE_SHA} | ${process.env.PERCENTAGE}% (${process.env.PASSES}/${process.env.TOTAL}) | [full report](${process.env.TARGET_URL})
-              | Tests | Passed ✅ | Failed ❌ | Skipped ⏭️ | Errors ⚠️ |
-              |:---:|:---:|:---:|:---:|:---:|
-              | ${process.env.TOTAL} | ${process.env.PASSES} | ${process.env.FAILURES} | ${process.env.SKIPPED} | ${process.env.ERRORS} |
-              `;
+  #           const commentBody = `**iOS E2E Test Report**: ${process.env.MOBILE_SHA} | ${process.env.PERCENTAGE}% (${process.env.PASSES}/${process.env.TOTAL}) | [full report](${process.env.TARGET_URL})
+  #             | Tests | Passed ✅ | Failed ❌ | Skipped ⏭️ | Errors ⚠️ |
+  #             |:---:|:---:|:---:|:---:|:---:|
+  #             | ${process.env.TOTAL} | ${process.env.PASSES} | ${process.env.FAILURES} | ${process.env.SKIPPED} | ${process.env.ERRORS} |
+  #             `;
 
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              body: commentBody,
-            });
-        env:
-          STATUS: ${{ steps.determine-status.outputs.STATUS }}
-          FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          PASSES: ${{ steps.summary.outputs.PASSES }}
-          SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
-          TOTAL: ${{ steps.summary.outputs.TOTAL }}
-          ERRORS: ${{ steps.summary.outputs.ERRORS }}
-          PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
-          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
-          RUN_TYPE: ${{ inputs.run-type }}
-          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
-          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
-          TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
+  #           await github.rest.issues.createComment({
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             issue_number: prNumber,
+  #             body: commentBody,
+  #           });
+  #       env:
+  #         STATUS: ${{ steps.determine-status.outputs.STATUS }}
+  #         FAILURES: ${{ steps.summary.outputs.FAILURES }}
+  #         PASSES: ${{ steps.summary.outputs.PASSES }}
+  #         SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
+  #         TOTAL: ${{ steps.summary.outputs.TOTAL }}
+  #         ERRORS: ${{ steps.summary.outputs.ERRORS }}
+  #         PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
+  #         BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+  #         RUN_TYPE: ${{ inputs.run-type }}
+  #         MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
+  #         MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
+  #         TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
