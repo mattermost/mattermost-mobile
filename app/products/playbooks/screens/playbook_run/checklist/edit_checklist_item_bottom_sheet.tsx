@@ -80,10 +80,11 @@ const EditChecklistItemBottomSheet = ({
     }, [componentId]);
 
     const handleSave = useCallback(() => {
-        if (title.trim().length > 0) {
+        const saveTitle = title.trim();
+        if (saveTitle.length > 0) {
             onSave({
-                title: title.trim(),
-                ...(description.trim() && {description: description.trim()}),
+                title: saveTitle,
+                description: description ? description.trim() : '',
             });
             close(componentId);
         }
