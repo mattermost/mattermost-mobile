@@ -299,8 +299,7 @@ jobs:
 
           cd detox
           npm run detox:config-gen
-          # npm run e2e:ios-test -- ${{ matrix.specs }}
-          npm run e2e:ios-test -- teams/invite_people.e2e.ts
+          npm run e2e:ios-test -- ${{ matrix.specs }}
         env:
           DETOX_DISABLE_HIERARCHY_DUMP: "YES"
           DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"
@@ -339,7 +338,7 @@ jobs:
   generate-report:
     runs-on: ubuntu-22.04
     needs:
-      # - generate-specs
+      - generate-specs
       - e2e-ios
     outputs:
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
