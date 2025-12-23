@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
@@ -16,10 +16,12 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     componentId: AvailableScreens;
+    currentTitle: string;
+    currentDescription?: string;
     onSave: (item: ChecklistItemInput) => void;
 }
 
-const SAVE_BUTTON_ID = 'add-checklist-item';
+const SAVE_BUTTON_ID = 'save-checklist-item';
 
 const close = (componentId: AvailableScreens): void => {
     Keyboard.dismiss();
@@ -35,27 +37,26 @@ const styles = StyleSheet.create({
     },
 });
 
-const AddChecklistItemBottomSheet = ({
+const EditChecklistItemBottomSheet = ({
     componentId,
+    currentTitle,
+    currentDescription,
     onSave,
 }: Props) => {
     const intl = useIntl();
     const {formatMessage} = intl;
     const theme = useTheme();
 
-    const [title, setTitle] = useState<string>('');
-    const [description, setDescription] = useState<string>('');
-
-    const canSave = useMemo(() => {
-        return Boolean(title.trim().length);
-    }, [title]);
+    const [title, setTitle] = useState<string>(currentTitle);
+    const [description, setDescription] = useState<string>(currentDescription || '');
+    const [canSave, setCanSave] = useState(false);
 
     const rightButton = React.useMemo(() => {
         const base = buildNavigationButton(
             SAVE_BUTTON_ID,
-            'playbooks.checklist_item.add.save',
+            'playbooks.checklist_item.edit.button',
             undefined,
-            formatMessage({id: 'playbooks.checklist_item.add.save', defaultMessage: 'Add'}),
+            formatMessage({id: 'playbooks.checklist_item.edit.button', defaultMessage: 'Save'}),
         );
         base.enabled = canSave;
         base.color = theme.sidebarHeaderTextColor;
@@ -68,25 +69,31 @@ const AddChecklistItemBottomSheet = ({
         });
     }, [rightButton, componentId]);
 
+    useEffect(() => {
+        const titleChanged = title.trim() !== currentTitle.trim();
+        const descriptionChanged = (description.trim() || '') !== (currentDescription?.trim() || '');
+        setCanSave(title.trim().length > 0 && (titleChanged || descriptionChanged));
+    }, [title, description, currentTitle, currentDescription]);
+
     const handleClose = useCallback(() => {
         close(componentId);
     }, [componentId]);
 
     const handleSave = useCallback(() => {
-        if (canSave) {
+        if (title.trim().length > 0) {
             onSave({
                 title: title.trim(),
                 ...(description.trim() && {description: description.trim()}),
             });
             close(componentId);
         }
-    }, [canSave, title, description, componentId, onSave]);
+    }, [title, description, componentId, onSave]);
 
     useNavButtonPressed(SAVE_BUTTON_ID, componentId, handleSave, [handleSave]);
     useAndroidHardwareBackHandler(componentId, handleClose);
 
-    const titleLabel = formatMessage({id: 'playbooks.checklist_item.add.label', defaultMessage: 'Task name'});
-    const descriptionLabel = formatMessage({id: 'playbooks.checklist_item.add.description_label', defaultMessage: 'Description'});
+    const titleLabel = formatMessage({id: 'playbooks.checklist_item.edit.title_label', defaultMessage: 'Task name'});
+    const descriptionLabel = formatMessage({id: 'playbooks.checklist_item.edit.description_label', defaultMessage: 'Description'});
 
     return (
         <View
@@ -96,7 +103,7 @@ const AddChecklistItemBottomSheet = ({
             <FloatingTextInput
                 label={titleLabel}
                 onChangeText={setTitle}
-                testID='playbooks.checklist_item.add.input'
+                testID='playbooks.checklist_item.edit.title_input'
                 value={title}
                 theme={theme}
                 autoFocus={true}
@@ -104,7 +111,7 @@ const AddChecklistItemBottomSheet = ({
             <FloatingTextInput
                 label={descriptionLabel}
                 onChangeText={setDescription}
-                testID='playbooks.checklist_item.add.description_input'
+                testID='playbooks.checklist_item.edit.description_input'
                 value={description}
                 theme={theme}
                 multiline={true}
@@ -114,4 +121,5 @@ const AddChecklistItemBottomSheet = ({
     );
 };
 
-export default AddChecklistItemBottomSheet;
+export default EditChecklistItemBottomSheet;
+

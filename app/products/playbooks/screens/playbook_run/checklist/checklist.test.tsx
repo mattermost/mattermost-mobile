@@ -386,7 +386,7 @@ describe('Checklist', () => {
 
         const onAdd = jest.mocked(goToAddChecklistItem).mock.calls[0][3];
         await act(async () => {
-            await onAdd('New Item');
+            await onAdd({title: 'New Item'});
         });
 
         await waitFor(() => {
@@ -404,7 +404,7 @@ describe('Checklist', () => {
     it('handles successful add item without errors', async () => {
         jest.mocked(addChecklistItem).mockResolvedValueOnce({data: true} as {data: boolean});
         jest.mocked(goToAddChecklistItem).mockImplementation(async (intl, theme, playbookRunName, onAdd) => {
-            onAdd('New Item');
+            onAdd({title: 'New Item'});
         });
 
         const props = getBaseProps();
