@@ -4,13 +4,13 @@
 import React from 'react';
 import {Platform, View} from 'react-native';
 
+import BoRLabel from '@components/burn_on_read_label';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {PostPriorityColors} from '@constants/post';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import BoRLabel from "@components/burn_on_read_label";
 
 type Props = {
     postPriority: PostPriority;
@@ -24,6 +24,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         marginLeft: 12,
         gap: 7,
+        flexWrap: 'wrap',
     },
     error: {
         color: PostPriorityColors.URGENT,
