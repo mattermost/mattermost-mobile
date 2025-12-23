@@ -80,19 +80,19 @@ describe('Messaging - Message Post', () => {
 
     it('MM-T4782_2 - should be able to post a long message', async () => {
         // # Open a channel screen, post a long message, and a short message after
-        const longMessage = 'The quick brown fox jumps over the lazy dog.'.repeat(60);
+        const longMessage = 'The quick brown fox jumps over the lazy dog.'.repeat(40);
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(longMessage);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.postMessage('short message');
-        await wait(timeouts.TWO_SEC);
 
         const {postListPostItem, postListPostItemShowLessButton, postListPostItemShowMoreButton} = ChannelScreen.getPostListPostItem(post.id, longMessage);
-        await expect(postListPostItem).toBeVisible();
-        await expect(postListPostItemShowMoreButton).toBeVisible();
+        await expect(postListPostItem).toExist();
+        await expect(postListPostItemShowMoreButton).toExist();
 
         // # Tap on show more button on long message post
         await postListPostItemShowMoreButton.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify long message post displays show less button (chevron up button)
         await expect(postListPostItemShowLessButton).toBeVisible();

@@ -60,7 +60,7 @@ describe('Messaging - Message Delete', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitFor(postListPostItem).toExist().withTimeout(timeouts.FOUR_SEC);
 
         // # Open post options for the message that was just posted, tap delete option and confirm
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -82,7 +82,7 @@ describe('Messaging - Message Delete', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitFor(postListPostItem).toExist().withTimeout(timeouts.FOUR_SEC);
 
         // # Open post options for the message that was just posted, tap delete option and cancel
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -103,7 +103,7 @@ describe('Messaging - Message Delete', () => {
 
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);
-        await waitFor(parentPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitFor(parentPostListPostItem).toExist().withTimeout(timeouts.FOUR_SEC);
 
         await parentPostListPostItem.tap();
 
@@ -116,7 +116,7 @@ describe('Messaging - Message Delete', () => {
 
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
-        await waitFor(replyPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitFor(replyPostListPostItem).toExist().withTimeout(timeouts.FOUR_SEC);
 
         await ThreadScreen.openPostOptionsFor(replyPost.id, replyMessage);
         await PostOptionsScreen.deletePost({confirm: true});

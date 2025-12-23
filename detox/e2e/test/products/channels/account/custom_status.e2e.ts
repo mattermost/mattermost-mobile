@@ -128,6 +128,7 @@ describe('Account - Custom Status', () => {
         // # Pick emoji and type custom status
         await CustomStatusScreen.openEmojiPicker('default', true);
         await EmojiPickerScreen.searchInput.replaceText(customEmojiName);
+        await EmojiPickerScreen.searchInput.tapReturnKey();
         await element(by.text('🤡')).tap();
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
@@ -309,6 +310,7 @@ describe('Account - Custom Status', () => {
         // # Create custom status with emoji picker
         await CustomStatusScreen.openEmojiPicker('default', true);
         await EmojiPickerScreen.searchInput.replaceText(customEmojiName);
+        await EmojiPickerScreen.searchInput.tapReturnKey();
         await element(by.text('🤡')).tap();
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
@@ -386,7 +388,7 @@ describe('Account - Custom Status', () => {
 
         // # Tap display name to open user profile (more reliable than avatar tap)
         await expect(postListPostItemHeaderDisplayName).toBeVisible();
-        await postListPostItemHeaderDisplayName.tap();
+        await postListPostItemHeaderDisplayName.longPress(timeouts.FOUR_SEC);
         await wait(timeouts.FOUR_SEC);
         await UserProfileScreen.toBeVisible();
         await UserProfileScreen.close();

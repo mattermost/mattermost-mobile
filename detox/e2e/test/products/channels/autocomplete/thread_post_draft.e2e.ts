@@ -48,6 +48,7 @@ describe('Autocomplete - Thread Post Draft', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await wait(timeouts.ONE_SEC);
         await ChannelScreen.openReplyThreadFor(post.id, message);
     });
 
@@ -76,6 +77,7 @@ describe('Autocomplete - Thread Post Draft', () => {
 
         // # Type in "@" to activate at-mention autocomplete
         await ThreadScreen.postInput.typeText('@');
+        await wait(timeouts.TWO_SEC);
 
         // * Verify at-mention list is displayed
         await expect(Autocomplete.sectionAtMentionList).toExist();
@@ -87,6 +89,7 @@ describe('Autocomplete - Thread Post Draft', () => {
 
         // # Type in "~" to activate channel mention autocomplete
         await ThreadScreen.postInput.typeText('~');
+        await wait(timeouts.TWO_SEC);
 
         // * Verify channel mention list is displayed
         await expect(Autocomplete.sectionChannelMentionList).toExist();
@@ -98,6 +101,7 @@ describe('Autocomplete - Thread Post Draft', () => {
 
         // # Type in ":" followed by 2 characters to activate emoji suggestion autocomplete
         await ThreadScreen.postInput.typeText(':sm');
+        await wait(timeouts.TWO_SEC);
 
         // * Verify emoji suggestion list is displayed
         await expect(Autocomplete.flatEmojiSuggestionList).toExist();
@@ -109,7 +113,7 @@ describe('Autocomplete - Thread Post Draft', () => {
 
         // # Type in "/" to activate slash suggestion autocomplete
         await ThreadScreen.postInput.typeText('/');
-        await wait(timeouts.ONE_SEC);
+        await wait(timeouts.TWO_SEC);
 
         // * Verify slash suggestion list is displayed
         await expect(Autocomplete.flatSlashSuggestionList).toExist();

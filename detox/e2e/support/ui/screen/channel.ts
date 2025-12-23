@@ -17,7 +17,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 class ChannelScreen {
@@ -210,15 +210,22 @@ class ChannelScreen {
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-        await expect(postListPostItem).toBeVisible();
+
+        // Poll for the post to become visible without waiting for idle bridge
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
         // Dismiss any tooltips that might be blocking the long press
         await this.dismissScheduledPostTooltip();
 
+        // Dismiss keyboard by tapping on the post list (needed after posting a message)
+        const flatList = this.postList.getFlatList();
+        await flatList.scroll(100, 'down');
+        await wait(timeouts.ONE_SEC);
+
         // # Open post options
-        await postListPostItem.longPress(timeouts.TWO_SEC);
+        await postListPostItem.longPress(timeouts.FOUR_SEC);
         await PostOptionsScreen.toBeVisible();
-        await wait(timeouts.FOUR_SEC);
+        await wait(timeouts.TWO_SEC);
     };
 
     openReplyThreadFor = async (postId: string, text: string) => {
@@ -235,17 +242,6 @@ class ChannelScreen {
         await this.postInput.clearText();
         await this.postInput.replaceText(message);
         await this.tapSendButton();
-        if (isIos()) {
-            // On iOS, wait for the keyboard to dismiss to avoid issues with subsequent taps
-            await wait(timeouts.ONE_SEC);
-            await this.postInput.tapReturnKey();
-        } else {
-            // On Android, press back to dismiss the keyboard
-            await device.pressBack();
-
-            // Wait for keyboard dismissal animation to complete before continuing
-            await wait(timeouts.ONE_SEC);
-        }
         await wait(timeouts.FOUR_SEC);
     };
 

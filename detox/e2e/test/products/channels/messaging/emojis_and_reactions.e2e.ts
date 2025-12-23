@@ -74,6 +74,7 @@ describe('Messaging - Emojis and Reactions', () => {
         // # Open emoji picker screen and add a new reaction
         await EmojiPickerScreen.open(true);
         await EmojiPickerScreen.searchInput.replaceText('clown_face');
+        await EmojiPickerScreen.searchInput.tapReturnKey();
         await element(by.text('🤡')).tap();
 
         // * Verify new reaction is added to the message
@@ -107,6 +108,7 @@ describe('Messaging - Emojis and Reactions', () => {
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EmojiPickerScreen.open();
         await EmojiPickerScreen.searchInput.replaceText('fire');
+        await EmojiPickerScreen.searchInput.tapReturnKey();
         await element(by.text('🔥')).tap();
 
         // * Verify reaction is added to the message
@@ -174,6 +176,7 @@ describe('Messaging - Emojis and Reactions', () => {
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EmojiPickerScreen.open();
         await EmojiPickerScreen.searchInput.replaceText(searchTerm);
+        await EmojiPickerScreen.searchInput.tapReturnKey();
 
         // * Verify empty search state for emoji picker
         await expect(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible();

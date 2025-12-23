@@ -83,7 +83,7 @@ class GlobalThreadsScreen {
         await expect(threadItem).toBeVisible();
 
         // # Open thread options
-        await threadItem.longPress();
+        await threadItem.longPress(timeouts.FOUR_SEC);
         await ThreadOptionsScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     };

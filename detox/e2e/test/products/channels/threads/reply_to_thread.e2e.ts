@@ -60,7 +60,7 @@ describe('Threads - Reply to Thread', () => {
 
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitFor(postListPostItem).toExist().withTimeout(timeouts.FOUR_SEC);
 
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;

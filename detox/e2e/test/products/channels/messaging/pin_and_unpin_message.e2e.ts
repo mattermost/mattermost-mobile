@@ -68,7 +68,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         await PostOptionsScreen.pinPostOption.tap();
 
         // * Verify pinned text is displayed on the post pre-header
-        await wait(timeouts.TEN_SEC);
+        await wait(timeouts.TWO_SEC);
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItemPreHeaderText).toHaveText(pinnedText);
 
@@ -77,7 +77,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         await PostOptionsScreen.unpinPostOption.tap();
 
         // * Verify pinned text is not displayed on the post pre-header
-        await wait(timeouts.TEN_SEC);
+        await wait(timeouts.TWO_SEC);
         await expect(postListPostItemPreHeaderText).not.toBeVisible();
 
         // # Go back to channel list screen
@@ -90,19 +90,17 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
-        // # Wait for keyboard to dismiss and message to be visible
-        await wait(timeouts.TWO_SEC);
-
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         await postListPostItem.tap();
+        await ThreadScreen.toBeVisible();
         await ThreadScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.pinPostOption.tap();
 
         // * Verify pinned text is displayed on the post pre-header
-        await wait(timeouts.TEN_SEC);
+        await wait(timeouts.TWO_SEC);
         const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItemPreHeaderText).toHaveText(pinnedText);
 
@@ -111,7 +109,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         await PostOptionsScreen.unpinPostOption.tap();
 
         // * Verify pinned text is not displayed on the post pre-header
-        await wait(timeouts.TEN_SEC);
+        await wait(timeouts.TWO_SEC);
         await expect(postListPostItemPreHeaderText).not.toBeVisible();
 
         // # Go back to channel list screen
