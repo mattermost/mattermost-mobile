@@ -16,7 +16,7 @@ import {observePermissionForChannel, observePermissionForPost} from '@queries/se
 import {observeConfigIntValue, observeConfigValue, observeLicense} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
-import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
+import {isBoRPost, isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {toMilliseconds} from '@utils/datetime';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isFromWebhook, isSystemMessage} from '@utils/post';
@@ -85,7 +85,6 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
     const postEditTimeLimit = observeConfigIntValue(database, 'PostEditTimeLimit', -1);
     const bindings = AppsManager.observeBindings(serverUrl, AppBindingLocations.POST_MENU_ITEM);
     const borPost = isBoRPost(post);
-    const unrevealedBoRPost = isUnrevealedBoRPost(post);
 
     const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => observePermissionForChannel(database, c, u, Permissions.CREATE_POST, false)));
     const hasAddReactionPermission = currentUser.pipe(switchMap((u) => observePermissionForPost(database, post, u, Permissions.ADD_REACTION, true)));
@@ -140,9 +139,11 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         )),
     );
 
-    const canAddReaction = unrevealedBoRPost ? of$(false) : combineLatest([hasAddReactionPermission, channelIsReadOnly, isUnderMaxAllowedReactions, channelIsArchived]).pipe(
-        switchMap(([permission, readOnly, maxAllowed, isArchived]) => {
-            return of$(!isSystemMessage(post) && permission && !readOnly && !isArchived && maxAllowed && showAddReaction);
+    const canAddReaction = combineLatest([hasAddReactionPermission, channelIsReadOnly, isUnderMaxAllowedReactions, channelIsArchived, currentUser]).pipe(
+        switchMap(([permission, readOnly, maxAllowed, isArchived, user]) => {
+            // Can't react on unrevealed BoR posts of other users
+            const preventBoRReaction = isUnrevealedBoRPost(post) && post.userId !== user?.id;
+            return of$(!isSystemMessage(post) && permission && !readOnly && !isArchived && maxAllowed && showAddReaction && !preventBoRReaction);
         }),
     );
 
@@ -152,6 +153,12 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
 
     const thread = observeIsCRTEnabled(database).pipe(
         switchMap((enabled) => (enabled ? observeThreadById(database, post.id) : of$(undefined))),
+    );
+
+    const showBoRReadReceipts = combineLatest([currentUser]).pipe(
+        switchMap(([user]) => {
+            return of$(isOwnBoRPost(post, user));
+        }),
     );
 
     return {
@@ -167,6 +174,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         thread,
         bindings,
         isBoRPost: of$(borPost),
+        showBoRReadReceipts,
     };
 });
 

@@ -29,6 +29,7 @@ import ReactionBar from './reaction_bar';
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type {AvailableScreens} from '@typings/screens/navigation';
+import BORReadReceipts from "@screens/post_options/bor_read_receipts";
 
 const POST_OPTIONS_BUTTON = 'close-post-options';
 
@@ -48,13 +49,14 @@ type PostOptionsProps = {
     bindings: AppBinding[];
     serverUrl: string;
     isBoRPost?: boolean;
+    showBoRReadReceipts?: boolean;
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply,
     combinedPost, componentId, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
-    isBoRPost,
+    isBoRPost, showBoRReadReceipts,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
     const isTablet = useIsTablet();
@@ -104,6 +106,12 @@ const PostOptions = ({
                 scrollEnabled={enabled}
                 {...panResponder.panHandlers}
             >
+                {showBoRReadReceipts &&
+                    <BORReadReceipts
+                        totalReceipts={100}
+                        readReceipts={42}
+                    />
+                }
                 {canAddReaction &&
                     <ReactionBar
                         bottomSheetId={Screens.POST_OPTIONS}
