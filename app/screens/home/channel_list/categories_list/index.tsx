@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {observeIsAgentsEnabled} from '@agents/database/queries/version';
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
@@ -28,6 +29,7 @@ const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap((scheduledPosts) => of(hasScheduledPostError(scheduledPosts))),
     );
     const scheduledPostsEnabled = observeScheduledPostEnabled(database);
+    const agentsEnabled = observeIsAgentsEnabled(database);
     const playbooksEnabled = observeIsPlaybooksEnabled(database);
 
     return {
@@ -36,6 +38,7 @@ const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
         scheduledPostCount,
         scheduledPostHasError,
         scheduledPostsEnabled,
+        agentsEnabled,
         playbooksEnabled,
     };
 });
