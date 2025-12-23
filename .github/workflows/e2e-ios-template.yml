@@ -185,10 +185,6 @@ jobs:
           if [ -z "$SIMULATOR_ID" ]; then
             echo "Simulator not found. Creating simulator ${{ env.DEVICE_NAME }} with ${{ env.DEVICE_OS_VERSION }}"
 
-            # List available device types for debugging
-            echo "Available device types:"
-            xcrun simctl list devicetypes | grep -i "iphone"
-
             # Get device type (use exact match with parentheses to avoid partial matches)
             DEVICE_TYPE=$(xcrun simctl list devicetypes | grep "${{ env.DEVICE_NAME }} (" | head -1 | awk -F'[()]' '{print $(NF-1)}')
             if [ -z "$DEVICE_TYPE" ]; then
@@ -196,10 +192,6 @@ jobs:
               exit 1
             fi
             echo "Found device type: $DEVICE_TYPE"
-
-            # List available runtimes for debugging
-            echo "Available runtimes:"
-            xcrun simctl list runtimes | grep -i "ios"
 
             # Get runtime (extract the identifier after the last " - ")
             RUNTIME=$(xcrun simctl list runtimes | grep "${{ env.DEVICE_OS_VERSION }}" | head -1 | sed 's/.* - \(.*\)/\1/')
@@ -227,15 +219,6 @@ jobs:
 
           # Give Simulator.app time to fully initialize UI
           sleep 3
-
-          # Pre-install the app to avoid reinstall per test file
-          echo "Installing app to simulator"
-          xcrun simctl install "$SIMULATOR_ID" "$(pwd)/mobile-artifacts/Mattermost.app"
-
-          # Let CoreServices and SpringBoard fully settle after app installation
-          # iOS 26.x requires more time for app registration to complete
-          echo "Waiting for app registration to complete..."
-          sleep 60
 
           echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
 

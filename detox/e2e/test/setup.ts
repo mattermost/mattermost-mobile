@@ -50,6 +50,12 @@ export async function launchAppWithRetry(): Promise<void> {
                 // For subsequent launches, reuse instance
                 await device.launchApp({
                     newInstance: false,
+                    permissions: {
+                        notifications: 'NO',
+                        camera: 'NO',
+                        medialibrary: 'NO',
+                        photos: 'NO',
+                    },
                     launchArgs: {
                         detoxPrintBusyIdleResources: 'YES',
                         detoxDebugVisibility: 'YES',
