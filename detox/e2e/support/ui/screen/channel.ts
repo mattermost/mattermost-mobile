@@ -17,7 +17,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 class ChannelScreen {
@@ -152,16 +152,31 @@ class ChannelScreen {
         return this.channelScreen;
     };
 
+    dismissScheduledPostTooltip = async () => {
+        // Try to close scheduled post tooltip if it exists (try both regular and admin account versions)
+        try {
+            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.ONE_SEC);
+            await this.scheduledPostTooltipCloseButton.tap();
+            await wait(timeouts.HALF_SEC);
+        } catch {
+            // Try admin account version
+            try {
+                await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.ONE_SEC);
+                await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
+                await wait(timeouts.HALF_SEC);
+            } catch {
+                // Tooltip not visible, continue
+            }
+        }
+    };
+
     open = async (categoryKey: string, channelName: string) => {
         // # Open channel screen
         await waitFor(ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName).tap();
-        try {
-            await this.scheduledPostTooltipCloseButton.tap();
-        } catch (error) {
-            // eslint-disable-next-line no-console
-            console.log('Element not visible, skipping click');
-        }
+
+        await this.dismissScheduledPostTooltip();
+
         return this.toBeVisible();
     };
 
@@ -195,10 +210,20 @@ class ChannelScreen {
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-        await expect(postListPostItem).toBeVisible();
+
+        // Poll for the post to become visible without waiting for idle bridge
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
+
+        // Dismiss any tooltips that might be blocking the long press
+        await this.dismissScheduledPostTooltip();
+
+        // Dismiss keyboard by tapping on the post list (needed after posting a message)
+        const flatList = this.postList.getFlatList();
+        await flatList.scroll(100, 'down');
+        await wait(timeouts.ONE_SEC);
 
         // # Open post options
-        await postListPostItem.longPress(timeouts.TWO_SEC);
+        await postListPostItem.longPress(timeouts.FOUR_SEC);
         await PostOptionsScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     };
@@ -217,6 +242,7 @@ class ChannelScreen {
         await this.postInput.clearText();
         await this.postInput.replaceText(message);
         await this.tapSendButton();
+        await wait(timeouts.FOUR_SEC);
     };
 
     enterMessageToSchedule = async (message: string) => {

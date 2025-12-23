@@ -24,8 +24,8 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Reply', () => {
     const serverOneDisplayName = 'Server 1';
@@ -60,7 +60,7 @@ describe('Messaging - Message Reply', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Open post options for the message that was just posted, tap reply option
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -94,7 +94,7 @@ describe('Messaging - Message Reply', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Tap on post to open thread
         await postListPostItem.tap();
@@ -112,8 +112,11 @@ describe('Messaging - Message Reply', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+
         await postListPostItem.tap();
 
         // * Verify on reply thread screen
