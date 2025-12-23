@@ -459,9 +459,9 @@ const ChecklistItemBottomSheet = ({
                         <Text style={styles.taskTitle}>
                             {item.title}
                         </Text>
-                        {Boolean('description' in item ? item.description : (item as any).description) && (
+                        {(item.description) && (
                             <Text style={styles.taskDescription}>
-                                {'description' in item ? item.description : (item as any).description}
+                                {item.description}
                             </Text>
                         )}
                     </View>
