@@ -1054,7 +1054,7 @@ describe('addChecklistItem', () => {
 
         jest.mocked(client.doFetch).mockResolvedValue(undefined);
 
-        await client.addChecklistItem(playbookRunId, checklistNum, title);
+        await client.addChecklistItem(playbookRunId, checklistNum, {title});
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
@@ -1066,7 +1066,7 @@ describe('addChecklistItem', () => {
 
         jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
 
-        await expect(client.addChecklistItem(playbookRunId, checklistNum, title)).rejects.toThrow('Network error');
+        await expect(client.addChecklistItem(playbookRunId, checklistNum, {title})).rejects.toThrow('Network error');
     });
 
     test('should handle invalid checklist number', async () => {
@@ -1078,7 +1078,7 @@ describe('addChecklistItem', () => {
 
         jest.mocked(client.doFetch).mockResolvedValue(undefined);
 
-        await client.addChecklistItem(playbookRunId, checklistNum, title);
+        await client.addChecklistItem(playbookRunId, checklistNum, {title});
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
