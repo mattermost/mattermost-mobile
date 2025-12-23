@@ -394,7 +394,7 @@ describe('Checklist', () => {
                 serverUrl,
                 props.playbookRunId,
                 props.checklistNumber,
-                'New Item',
+                {title: 'New Item'},
             );
             expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
             expect(logError).toHaveBeenCalledWith('error on addChecklistItem', expect.any(String));
@@ -423,7 +423,7 @@ describe('Checklist', () => {
                 serverUrl,
                 props.playbookRunId,
                 props.checklistNumber,
-                'New Item',
+                {title: 'New Item'},
             );
             expect(showPlaybookErrorSnackbar).not.toHaveBeenCalled();
             expect(logError).not.toHaveBeenCalled();
