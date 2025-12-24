@@ -20,7 +20,7 @@ jobs:
         run: echo '${{ inputs.CMT_MATRIX }}' > instance-details.json
 
       - name: cmt/upload-instance-details
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: instance-details.json
           path: instance-details.json
@@ -32,7 +32,7 @@ jobs:
       MOBILE_SHA: ${{ steps.repo.outputs.MOBILE_SHA }}
     steps:
       - name: cmt/checkout-mobile
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -74,7 +74,7 @@ jobs:
       - update-initial-status
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -91,7 +91,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip
