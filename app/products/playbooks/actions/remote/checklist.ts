@@ -10,6 +10,7 @@ import {
     setAssignee as localSetAssignee,
     setDueDate as localSetDueDate,
     renameChecklist as localRenameChecklist,
+    deleteChecklistItem as localDeleteChecklistItem,
 } from '@playbooks/actions/local/checklist';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 import {getFullErrorMessage} from '@utils/errors';
@@ -198,6 +199,26 @@ export const addChecklistItem = async (
         return result.error ? result : {data: true};
     } catch (error) {
         logDebug('error on addChecklistItem', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const deleteChecklistItem = async (
+    serverUrl: string,
+    playbookRunId: string,
+    itemId: string,
+    checklistNumber: number,
+    itemNumber: number,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.deleteChecklistItem(playbookRunId, checklistNumber, itemNumber);
+
+        await localDeleteChecklistItem(serverUrl, itemId);
+        return {data: true};
+    } catch (error) {
+        logDebug('error on deleteChecklistItem', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
