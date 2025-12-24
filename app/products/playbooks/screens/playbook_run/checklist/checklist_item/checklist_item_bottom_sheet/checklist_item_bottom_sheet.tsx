@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, type ComponentProps} from 'react';
+import React, {useCallback, useMemo, useState, type ComponentProps} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {View, Text, Platform} from 'react-native';
+import {View, Text, Platform, TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import MenuDivider from '@components/menu_divider';
@@ -74,6 +74,14 @@ const messages = defineMessages({
         id: 'playbooks.checklist_item.task_rendered_conditionally_explanation',
         defaultMessage: 'This task was rendered conditionally based on',
     },
+    showMore: {
+        id: 'playbooks.checklist_item.show_more',
+        defaultMessage: 'Show more',
+    },
+    showLess: {
+        id: 'playbooks.checklist_item.show_less',
+        defaultMessage: 'Show less',
+    },
 });
 
 const ACTION_BUTTON_HEIGHT = 62;
@@ -83,6 +91,7 @@ const SCROLL_CONTENT_GAP = 12;
 const TITLE_LINE_HEIGHT = 24; // From typography 300
 const BODY_LINE_HEIGHT = 24; // From typography 200
 const BODY_LINES_COUNT = 3;
+const DESCRIPTION_MAX_LINES = 3;
 
 export const BOTTOM_SHEET_HEIGHT = {
     base: (N_OPTIONS * ITEM_HEIGHT) + (OPTIONS_GAP * (N_OPTIONS - 1)) + (SCROLL_CONTENT_GAP * 2) + TITLE_LINE_HEIGHT + (BODY_LINE_HEIGHT * BODY_LINES_COUNT),
@@ -144,6 +153,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     conditionIcon: {
         transform: [{rotate: '90deg'}],
     },
+    showMoreButton: {
+        marginTop: 4,
+    },
+    showMoreText: {
+        ...typography('Body', 100, 'Regular'),
+        alignSelf: 'flex-end',
+        color: theme.linkColor,
+    },
 }));
 
 type Props = {
@@ -189,6 +206,7 @@ const ChecklistItemBottomSheet = ({
     const styles = getStyleSheet(theme);
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
     const timezone = getTimezone(currentUserTimezone);
 
@@ -367,6 +385,27 @@ const ChecklistItemBottomSheet = ({
         </>
     );
 
+    const toggleDescriptionExpanded = useCallback(() => {
+        setIsDescriptionExpanded((prev) => !prev);
+    }, []);
+
+    const needsTruncation = useMemo(() => {
+        if (!item.description) {
+            return false;
+        }
+
+        // Estimate if description exceeds max lines
+        // Count explicit newlines
+        const explicitNewlines = (item.description.match(/\n/g) || []).length;
+
+        // Estimate additional lines from text wrapping (assuming ~50 chars per line for body text)
+        const estimatedWrappedLines = Math.ceil(item.description.length / 50);
+
+        // Total estimated lines
+        const totalEstimatedLines = Math.max(explicitNewlines + 1, estimatedWrappedLines);
+        return totalEstimatedLines > DESCRIPTION_MAX_LINES;
+    }, [item.description]);
+
     return (
         <View
             style={styles.container}
@@ -381,9 +420,26 @@ const ChecklistItemBottomSheet = ({
                         {item.title}
                     </Text>
                     {Boolean(item.description) && (
-                        <Text style={styles.taskDescription}>
-                            {item.description}
-                        </Text>
+                        <>
+                            <Text
+                                style={styles.taskDescription}
+                                numberOfLines={needsTruncation && !isDescriptionExpanded ? DESCRIPTION_MAX_LINES : undefined}
+                                testID='checklist_item_bottom_sheet.description'
+                            >
+                                {item.description}
+                            </Text>
+                            {needsTruncation && (
+                                <TouchableOpacity
+                                    onPress={toggleDescriptionExpanded}
+                                    style={styles.showMoreButton}
+                                    testID='checklist_item_bottom_sheet.show_more_button'
+                                >
+                                    <Text style={styles.showMoreText}>
+                                        {isDescriptionExpanded ? intl.formatMessage(messages.showLess) : intl.formatMessage(messages.showMore)}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+                        </>
                     )}
                 </View>
             </View>
