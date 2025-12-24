@@ -17,12 +17,14 @@ type Props = {
     currentUserId: string;
     componentId: AvailableScreens;
     cachedPlaybookRuns: PlaybookRunModel[];
+    currentTeamId: string;
 };
 
 const ParticipantPlaybooks = ({
     currentUserId,
     componentId,
     cachedPlaybookRuns,
+    currentTeamId,
 }: Props) => {
     const serverUrl = useServerUrl();
 
@@ -51,7 +53,7 @@ const ParticipantPlaybooks = ({
             setLoading(true);
         }
 
-        const {runs = [], hasMore: hasMoreFromResult = false, error} = await fetchPlaybookRunsPageForParticipant(serverUrl, currentUserId, page);
+        const {runs = [], hasMore: hasMoreFromResult = false, error} = await fetchPlaybookRunsPageForParticipant(serverUrl, currentUserId, currentTeamId, page);
 
         if (error) {
             // Fallback to database cache only for the first page
@@ -76,7 +78,7 @@ const ParticipantPlaybooks = ({
         } else {
             setLoading(false);
         }
-    }, [currentUserId, serverUrl, cachedPlaybookRuns]);
+    }, [currentUserId, currentTeamId, serverUrl, cachedPlaybookRuns]);
 
     const loadMore = useCallback(() => {
         if (!loadingMore && hasMore) {
