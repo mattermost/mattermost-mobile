@@ -157,7 +157,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         marginTop: 4,
     },
     showMoreText: {
-        ...typography('Body', 200, 'SemiBold'),
+        ...typography('Body', 100, 'Regular'),
+        alignSelf: 'flex-end',
         color: theme.linkColor,
     },
 }));
@@ -392,11 +393,14 @@ const ChecklistItemBottomSheet = ({
         if (!item.description) {
             return false;
         }
+
         // Estimate if description exceeds max lines
         // Count explicit newlines
         const explicitNewlines = (item.description.match(/\n/g) || []).length;
+
         // Estimate additional lines from text wrapping (assuming ~50 chars per line for body text)
         const estimatedWrappedLines = Math.ceil(item.description.length / 50);
+
         // Total estimated lines
         const totalEstimatedLines = Math.max(explicitNewlines + 1, estimatedWrappedLines);
         return totalEstimatedLines > DESCRIPTION_MAX_LINES;
@@ -431,9 +435,7 @@ const ChecklistItemBottomSheet = ({
                                     testID='checklist_item_bottom_sheet.show_more_button'
                                 >
                                     <Text style={styles.showMoreText}>
-                                        {isDescriptionExpanded
-                                            ? intl.formatMessage(messages.showLess)
-                                            : intl.formatMessage(messages.showMore)}
+                                        {isDescriptionExpanded ? intl.formatMessage(messages.showLess) : intl.formatMessage(messages.showMore)}
                                     </Text>
                                 </TouchableOpacity>
                             )}
