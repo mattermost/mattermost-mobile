@@ -18,7 +18,9 @@ import useDidUpdate from '@hooks/did_update';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {filterEmptyOptions} from '@utils/apps';
+import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType} from '@utils/dialog_utils';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
+import {logDebug, logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
@@ -56,16 +58,33 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             paddingLeft: 50,
             paddingRight: 50,
         },
+        buttonsWrapper: {
+            marginHorizontal: 5,
+        },
     };
 });
 
 function fieldsAsElements(fields?: AppField[]): DialogElement[] {
-    return fields?.map((f) => ({
-        name: f.name,
-        type: f.type,
-        subtype: f.subtype,
-        optional: !f.is_required,
-    } as DialogElement)) || [];
+    return fields?.filter((f) => Boolean(f.name)).map((f) => {
+        return {
+            name: f.name || '',
+            display_name: f.label || '',
+            type: mapAppFieldTypeToDialogType(f.type || 'text'),
+            subtype: f.subtype,
+            default: f.value || '',
+            placeholder: f.hint || '',
+            help_text: f.description || '',
+            optional: !f.is_required,
+            min_length: f.min_length || 0,
+            max_length: f.max_length || 0,
+            data_source: getDataSourceForAppFieldType(f.type || 'text'),
+            options: f.options?.map((option) => ({
+                text: option.label || '',
+                value: option.value || '',
+            })),
+            multiselect: f.multiselect,
+        } as DialogElement;
+    }) || [];
 }
 
 const close = () => {
@@ -102,14 +121,20 @@ function valuesReducer(state: AppFormValues, action: ValuesAction) {
 
 function initValues(fields?: AppField[]) {
     const values: AppFormValues = {};
-    fields?.forEach((e) => {
-        if (!e.name) {
+    fields?.forEach((field) => {
+        if (!field.name) {
             return;
         }
-        if (e.type === 'bool') {
-            values[e.name] = (e.value === true || String(e.value).toLowerCase() === 'true');
-        } else if (e.value) {
-            values[e.name] = e.value;
+
+        if (field.type === 'bool') {
+            // For boolean fields, use explicit value or default to false
+            values[field.name] = field.value === true || String(field.value).toLowerCase() === 'true';
+        } else if (field.value !== undefined && field.value !== null) {
+            // Use provided value for non-boolean fields
+            values[field.name] = field.value;
+        } else {
+            // Initialize empty fields with empty string
+            values[field.name] = '';
         }
     });
     return values;
@@ -126,6 +151,7 @@ function AppsFormComponent({
     performLookupCall,
 }: Props) {
     const scrollView = useRef<ScrollView>(null);
+    const isMountedRef = useRef(true);
     const [submitting, setSubmitting] = useState(false);
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -147,30 +173,40 @@ function AppsFormComponent({
         if (submitButtons) {
             return undefined;
         }
-        const base = buildNavigationButton(
-            SUBMIT_BUTTON_ID,
-            'interactive_dialog.submit.button',
-            undefined,
-            intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'}),
-        );
-        base.enabled = !submitting;
-        base.showAsAction = 'always';
-        base.color = theme.sidebarHeaderTextColor;
-        return base;
-    }, [submitButtons, intl, submitting, theme.sidebarHeaderTextColor]);
+        const submitLabel = form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'});
+        return {
+            ...buildNavigationButton(
+                SUBMIT_BUTTON_ID,
+                'interactive_dialog.submit.button',
+                undefined,
+                submitLabel,
+            ),
+            enabled: !submitting,
+            showAsAction: 'always' as const,
+            color: theme.sidebarHeaderTextColor,
+        };
+    }, [theme.sidebarHeaderTextColor, submitButtons, submitting, intl, form.submit_label]);
 
-    useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: rightButton ? [rightButton] : [],
-        });
-    }, [componentId, rightButton]);
+    const rightButtons = useMemo(() => (rightButton ? [rightButton] : []), [rightButton]);
 
-    useEffect(() => {
+    const leftButton = useMemo(() => {
         const icon = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        return makeCloseButton(icon);
+    }, [theme.sidebarHeaderTextColor]);
+
+    const leftButtons = useMemo(() => [leftButton], [leftButton]);
+
+    useEffect(() => {
         setButtons(componentId, {
-            leftButtons: [makeCloseButton(icon)],
+            rightButtons,
         });
-    }, [componentId, theme]);
+    }, [componentId, rightButtons]);
+
+    useEffect(() => {
+        setButtons(componentId, {
+            leftButtons,
+        });
+    }, [componentId, leftButtons]);
 
     const updateErrors = useCallback((elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
         let hasErrors = false;
@@ -189,13 +225,11 @@ function AppsFormComponent({
                 setErrors(fieldErrors);
             } else if (!hasHeaderError) {
                 hasHeaderError = true;
-                const field = Object.keys(fieldErrors)[0];
+
+                // Don't expose field names or error details to prevent form structure enumeration
                 setError(intl.formatMessage({
                     id: 'apps.error.responses.unknown_field_error',
-                    defaultMessage: 'Received an error for an unknown field. Field name: `{field}`. Error: `{error}`.',
-                }, {
-                    field,
-                    error: fieldErrors[field],
+                    defaultMessage: 'An error occurred with a form field. Please contact the app developer.',
                 }));
             }
         }
@@ -211,13 +245,27 @@ function AppsFormComponent({
     const onChange = useCallback((name: string, value: AppFormValue) => {
         const field = form.fields?.find((f) => f.name === name);
         if (!field) {
+            logDebug('AppsFormComponent: Field not found for onChange', {name});
             return;
         }
+
+        logDebug('AppsFormComponent: Field changed', {
+            name,
+            value,
+            hasRefresh: Boolean(field.refresh),
+            fieldType: field.type,
+        });
 
         const newValues = {...values, [name]: value};
 
         if (field.refresh) {
+            logDebug('AppsFormComponent: Calling refreshOnSelect', {name, fieldType: field.type});
             refreshOnSelect(field, newValues, value).then((res) => {
+                // Check if component is still mounted before updating state
+                if (!isMountedRef.current) {
+                    return;
+                }
+
                 if (res.error) {
                     const errorResponse = res.error;
                     const errorMsg = errorResponse.text;
@@ -230,6 +278,9 @@ function AppsFormComponent({
                 const callResponse = res.data!;
                 switch (callResponse.type) {
                     case AppCallResponseTypes.FORM:
+                        logDebug('AppsFormComponent: Received new form from refresh - parent will handle update');
+
+                        // Form will be updated by parent (DialogRouter) which will trigger re-render
                         return;
                     case AppCallResponseTypes.OK:
                     case AppCallResponseTypes.NAVIGATE:
@@ -248,21 +299,32 @@ function AppsFormComponent({
                             type: callResponse.type,
                         }));
                 }
+            }).catch((err) => {
+                // Handle promise rejection gracefully
+                if (isMountedRef.current) {
+                    logWarning('RefreshOnSelect failed:', err);
+                }
             });
         }
 
         dispatchValues({name, value});
     }, [form, values, refreshOnSelect, updateErrors, intl]);
 
+    // Memoize elements conversion for performance
+    const elements = useMemo(() => fieldsAsElements(form.fields), [form.fields]);
+
+    // Memoize filtered fields to avoid recalculation on every render
+    const visibleFields = useMemo(() =>
+        form.fields?.filter((f) => f.name !== form.submit_buttons) || [],
+    [form.fields, form.submit_buttons],
+    );
+
     const handleSubmit = useCallback(async (button?: string) => {
         if (submitting) {
             return;
         }
 
-        const {fields} = form;
         const fieldErrors: {[name: string]: string} = {};
-
-        const elements = fieldsAsElements(fields);
         let hasErrors = false;
         elements?.forEach((element) => {
             const newError = checkDialogElementForError(
@@ -290,6 +352,11 @@ function AppsFormComponent({
 
         const res = await submit(submission);
 
+        // Check if component is still mounted before updating state
+        if (!isMountedRef.current) {
+            return;
+        }
+
         if (res.error) {
             const errorResponse = res.error;
             const errorMessage = errorResponse.text;
@@ -315,6 +382,9 @@ function AppsFormComponent({
                 handleGotoLocation(serverUrl, intl, callResponse.navigate_to_url!);
                 return;
             case AppCallResponseTypes.FORM:
+                logDebug('AppsFormComponent: Received new form from submit - parent will handle update');
+
+                // Form will be updated by parent (DialogRouter) which will trigger re-render
                 setSubmitting(false);
                 return;
             default:
@@ -326,7 +396,7 @@ function AppsFormComponent({
                 }));
                 setSubmitting(false);
         }
-    }, [form, values, submit, submitting, updateErrors, serverUrl, intl]);
+    }, [elements, form, values, submit, submitting, updateErrors, serverUrl, intl]);
 
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
         const field = form.fields?.find((f) => f.name === name);
@@ -335,6 +405,12 @@ function AppsFormComponent({
         }
 
         const res = await performLookupCall(field, values, userInput);
+
+        // Check if component is still mounted before updating state
+        if (!isMountedRef.current) {
+            return [];
+        }
+
         if (res.error) {
             const errorResponse = res.error;
             const errMsg = errorResponse.text || intl.formatMessage({
@@ -381,6 +457,13 @@ function AppsFormComponent({
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
     useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, handleSubmit, [handleSubmit]);
 
+    // Cleanup on unmount to prevent memory leaks
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
+
     return (
         <SafeAreaView
             testID='interactive_dialog.screen'
@@ -407,28 +490,25 @@ function AppsFormComponent({
                         value={form.header}
                     />
                 }
-                {form.fields && form.fields.filter((f) => f.name !== form.submit_buttons).map((field) => {
+                {visibleFields.map((field) => {
                     if (!field.name) {
                         return null;
                     }
                     const value = secureGetFromRecord(values, field.name);
-                    if (!value) {
-                        return null;
-                    }
                     return (
                         <AppsFormField
                             field={field}
                             key={field.name}
                             name={field.name}
                             errorText={secureGetFromRecord(errors, field.name)}
-                            value={value}
+                            value={value || ''}
                             performLookup={performLookup}
                             onChange={onChange}
                         />
                     );
                 })}
                 <View
-                    style={{marginHorizontal: 5}}
+                    style={style.buttonsWrapper}
                 >
                     {submitButtons?.options?.map((o) => (
                         <View
