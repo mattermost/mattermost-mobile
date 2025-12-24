@@ -16,6 +16,7 @@ import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet} from '@screens/navigation';
+import {isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 
@@ -48,13 +49,14 @@ type PostOptionsProps = {
     bindings: AppBinding[];
     serverUrl: string;
     isBoRPost?: boolean;
+    currentUserId?: string;
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply,
     combinedPost, componentId, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
-    isBoRPost,
+    isBoRPost, currentUserId,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
     const isTablet = useIsTablet();
@@ -69,8 +71,11 @@ const PostOptions = ({
 
     const isSystemPost = isSystemMessage(post);
 
-    const canCopyPermalink = !isSystemPost && managedConfig?.copyAndPasteProtection !== 'true';
+    const canCopyBoRPostPermalink = isBoRPost ? post.userId === currentUserId : true;
+    const canCopyPermalink = !isSystemPost && managedConfig?.copyAndPasteProtection !== 'true' && canCopyBoRPostPermalink;
     const canCopyText = canCopyPermalink && post.message && !isBoRPost;
+
+    const canSavePost = !isSystemPost && (!isUnrevealedBoRPost(post) || isOwnBoRPost(post, currentUserId));
 
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
     const shouldShowBindings = bindings.length > 0 && !isSystemPost;
@@ -79,7 +84,7 @@ const PostOptions = ({
         const items: Array<string | number> = [1];
         const optionsCount = [
             canCopyPermalink, canCopyText, canDelete, canEdit,
-            canMarkAsUnread, canPin, canReply, !isSystemPost, shouldRenderFollow,
+            canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow,
         ].reduce((acc, v) => {
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
@@ -94,7 +99,7 @@ const PostOptions = ({
     }, [
         canAddReaction, canCopyPermalink, canCopyText,
         canDelete, canEdit, shouldRenderFollow, shouldShowBindings,
-        canMarkAsUnread, canPin, canReply, isSystemPost,
+        canMarkAsUnread, canPin, canReply, canSavePost,
     ]);
 
     const renderContent = () => {
@@ -136,7 +141,7 @@ const PostOptions = ({
                     sourceScreen={sourceScreen}
                 />
                 }
-                {!isSystemPost &&
+                {canSavePost &&
                 <SaveOption
                     bottomSheetId={Screens.POST_OPTIONS}
                     isSaved={isSaved}
