@@ -215,7 +215,13 @@ export const deleteChecklistItem = async (
         const client = NetworkManager.getClient(serverUrl);
         await client.deleteChecklistItem(playbookRunId, checklistNumber, itemNumber);
 
-        await localDeleteChecklistItem(serverUrl, itemId);
+        // Only delete from local database if server operation succeeded
+        const localResult = await localDeleteChecklistItem(serverUrl, itemId);
+        if (localResult.error) {
+            logDebug('error on deleteChecklistItem local deletion', localResult.error);
+            return {error: localResult.error};
+        }
+
         return {data: true};
     } catch (error) {
         logDebug('error on deleteChecklistItem', getFullErrorMessage(error));
