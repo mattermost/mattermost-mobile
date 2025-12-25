@@ -14,9 +14,8 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {navigateToScreen} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
@@ -125,7 +124,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Thread = ({author, channel, location, post, teammateNameDisplay, testID, thread}: Props) => {
     const intl = useIntl();
-    const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -151,15 +149,9 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
     }, [serverUrl, channel?.id]);
 
     const showThreadOptions = useCallback(() => {
-        const passProps = {thread};
-        const title = isTablet ? intl.formatMessage({id: 'thread.options.title', defaultMessage: 'Thread Actions'}) : '';
-
-        if (isTablet) {
-            showModal(Screens.THREAD_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-thread-options'));
-        } else {
-            showModalOverCurrentContext(Screens.THREAD_OPTIONS, passProps);
-        }
-    }, [intl, isTablet, theme, thread]);
+        const passProps = {threadId: thread.id};
+        navigateToScreen(Screens.THREAD_OPTIONS, passProps);
+    }, [thread]);
 
     if (!post || !channel) {
         return null;

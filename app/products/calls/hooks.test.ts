@@ -25,7 +25,8 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
-import {openUserProfileModal, openAsBottomSheet} from '@screens/navigation';
+import {openAsBottomSheet} from '@screens/navigation';
+import {openUserProfileModal} from '@utils/navigation/adapter';
 
 import {useTryCallsFunction, usePermissionsChecker, useCallsAdjustment, useHostControlsAvailable, useHostMenus} from './hooks';
 
@@ -269,8 +270,6 @@ describe('Calls Hooks', () => {
             });
 
             expect(openUserProfileModal).toHaveBeenCalledWith(
-                expect.any(Object),
-                expect.any(Object),
                 expect.objectContaining({
                     userId: mockSession.userId,
                 }),

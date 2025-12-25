@@ -11,15 +11,13 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {dismissBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bottomSheetId: AvailableScreens;
     channel: ChannelModel;
     rootId: string;
 }
@@ -39,7 +37,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const EditDraft: React.FC<Props> = ({
-    bottomSheetId,
     channel,
     rootId,
 }) => {
@@ -48,7 +45,7 @@ const EditDraft: React.FC<Props> = ({
     const serverUrl = useServerUrl();
 
     const editHandler = async () => {
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         if (rootId) {
             switchToThread(serverUrl, rootId, false);
             return;

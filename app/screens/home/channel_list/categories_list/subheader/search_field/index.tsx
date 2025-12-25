@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
 import {TouchableHighlight} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {findChannels} from '@screens/navigation';
+import {navigateToScreen} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -39,15 +39,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const SearchField = () => {
     const theme = useTheme();
-    const intl = useIntl();
     const styles = getStyleSheet(theme);
 
     const onPress = usePreventDoubleTap(useCallback(() => {
-        findChannels(
-            intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
-            theme,
-        );
-    }, [intl, theme]));
+        navigateToScreen(Screens.FIND_CHANNELS, {theme});
+    }, [theme]));
 
     return (
         <TouchableHighlight

@@ -30,20 +30,23 @@ const ReactorsList = ({location, reactions, type = 'FlatList'}: Props) => {
             location={location}
             reaction={item}
         />
-    ), [reactions]);
+    ), [location]);
 
     const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (e.nativeEvent.contentOffset.y <= 0 && enabled && direction === 'down') {
             setEnabled(false);
             listRef.current?.scrollToOffset({animated: true, offset: 0});
         }
-    }, [enabled, direction]);
+    }, [enabled, direction, setEnabled]);
 
     useEffect(() => {
         const userIds = reactions.map((r) => r.userId);
 
         // Fetch any missing user
         fetchUsersByIds(serverUrl, userIds);
+
+    // Only needed on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (type === 'BottomSheetFlatList') {

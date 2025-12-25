@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
 import {Keyboard, TouchableOpacity} from 'react-native';
 
 import {addReaction, removeReaction, toggleReaction} from '@actions/remote/reactions';
@@ -10,11 +9,11 @@ import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
-import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {bottomSheetModalOptions, openAsBottomSheet, showModal, showModalOverCurrentContext} from '@screens/navigation';
+import EmojiPickerStore from '@store/emoji_picker_store';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
+import {navigateToScreen} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Reaction from './reaction';
@@ -54,9 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, location, postId, reactions, theme}: ReactionsProps) => {
-    const {formatMessage} = useIntl();
     const serverUrl = useServerUrl();
-    const isTablet = useIsTablet();
     const pressed = useRef(false);
     const [sortedReactions, setSortedReactions] = useState(new Set(reactions.map((r) => getEmojiFirstAlias(r.emojiName))));
     const styles = getStyleSheet(theme);
@@ -105,14 +102,9 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     }, [postId, serverUrl]);
 
     const handleAddReaction = usePreventDoubleTap(useCallback(() => {
-        openAsBottomSheet({
-            closeButtonId: 'close-add-reaction',
-            screen: Screens.EMOJI_PICKER,
-            theme,
-            title: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
-            props: {onEmojiPress: handleToggleReactionToPost},
-        });
-    }, [formatMessage, handleToggleReactionToPost, theme]));
+        EmojiPickerStore.setEmojiPickerCallback(handleToggleReactionToPost);
+        navigateToScreen(Screens.EMOJI_PICKER);
+    }, [handleToggleReactionToPost]));
 
     const handleReactionPress = useCallback(async (emoji: string, remove: boolean) => {
         pressed.current = true;
@@ -126,7 +118,6 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     }, [canRemoveReaction, disabled, canAddReaction, serverUrl, postId]);
 
     const showReactionList = useCallback((initialEmoji: string) => {
-        const screen = Screens.REACTIONS;
         const passProps = {
             initialEmoji,
             location,
@@ -134,16 +125,8 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
         };
 
         Keyboard.dismiss();
-        const title = isTablet ? formatMessage({id: 'post.reactions.title', defaultMessage: 'Reactions'}) : '';
-
-        if (!pressed.current) {
-            if (isTablet) {
-                showModal(screen, title, passProps, bottomSheetModalOptions(theme, 'close-post-reactions'));
-            } else {
-                showModalOverCurrentContext(screen, passProps, bottomSheetModalOptions(theme));
-            }
-        }
-    }, [formatMessage, isTablet, location, postId, theme]);
+        navigateToScreen(Screens.REACTIONS, passProps);
+    }, [location, postId]);
 
     let addMoreReactions = null;
     const {reactionsByName, highlightedReactions} = buildReactionsMap();

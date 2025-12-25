@@ -1,25 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Emm from '@mattermost/react-native-emm';
-import {Alert, AppState, DeviceEventEmitter, Linking, Platform} from 'react-native';
+import {AppState, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import {removePost} from '@actions/local/post';
 import {switchToChannelById} from '@actions/remote/channel';
-import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
+import {appEntry, pushNotificationEntry} from '@actions/remote/entry';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import LocalConfig from '@assets/config.json';
 import {DeepLink, Events, Launch, PushNotification} from '@constants';
 import {PostTypes} from '@constants/post';
+import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
+import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getLastViewedChannelIdAndServer, getOnboardingViewed, getLastViewedThreadIdAndServer} from '@queries/app/global';
 import {getAllServers} from '@queries/app/servers';
 import {queryPostsByType} from '@queries/servers/post';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
-import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {resetToHome, resetToSelectServer, resetToTeams, resetToOnboarding} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -129,39 +128,12 @@ export const launchApp = async (props: LaunchProps) => {
         const credentials = await getServerCredentials(serverUrl);
         if (credentials) {
             const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-            let hasCurrentUser = false;
             if (database) {
-                EphemeralStore.theme = await getThemeForCurrentTeam(database);
-                const currentUserId = await getCurrentUserId(database);
-                hasCurrentUser = Boolean(currentUserId);
+                const theme = await getThemeForCurrentTeam(database);
+                EphemeralStore.setTheme(theme || getDefaultThemeByAppearance());
             }
 
-            let launchType = props.launchType;
-            if (!hasCurrentUser) {
-                // migrating from v1
-                if (launchType === Launch.Normal) {
-                    launchType = Launch.Upgrade;
-                }
-
-                const result = await upgradeEntry(serverUrl);
-                if (result.error) {
-                    Alert.alert(
-                        'Error Upgrading',
-                        `An error occurred while upgrading the app to the new version.\n\nDetails: ${result.error}\n\nThe app will now quit.`,
-                        [{
-                            text: 'OK',
-                            onPress: async () => {
-                                await DatabaseManager.destroyServerDatabase(serverUrl!);
-                                await removeServerCredentials(serverUrl!);
-                                Emm.exitApp();
-                            },
-                        }],
-                    );
-                    return '';
-                }
-            }
-
-            return launchToHome({...props, launchType, serverUrl});
+            return launchToHome({...props, serverUrl});
         }
     }
 

@@ -13,7 +13,7 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
-import {openUserProfileModal} from '@screens/navigation';
+import {openUserProfileModal} from '@utils/navigation/adapter';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -241,12 +241,11 @@ export default function UserList({
             user = profile;
         }
 
-        openUserProfileModal(intl, theme, {
+        openUserProfileModal({
             userId: user.id,
             location,
         });
-    }, [intl, location, serverUrl, theme]);
-
+    }, [location, serverUrl]);
     const renderItem = useCallback(({item, index, section}: RenderItemType) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
         const selected = selectedIds.has(item.id);

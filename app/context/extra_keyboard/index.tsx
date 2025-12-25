@@ -9,6 +9,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Screens} from '@constants';
 import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {useCurrentScreen} from '@store/expo_navigation_store';
 import NavigationStore from '@store/navigation_store';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -169,8 +170,8 @@ const ExtraKeyboardComponent = () => {
     const keyb = useAnimatedKeyboard({isStatusBarTranslucentAndroid: true});
     const defaultKeyboardHeight = Platform.select({ios: 291, default: 240});
     const context = useExtraKeyboardContext();
-    const insets = useSafeAreaInsets();
     const offset = useOffetForCurrentScreen();
+    const {bottom} = useSafeAreaInsets();
 
     const maxKeyboardHeight = useDerivedValue(() => {
         if (keyb.state.value === KeyboardState.OPEN) {
@@ -182,7 +183,7 @@ const ExtraKeyboardComponent = () => {
     });
 
     const animatedStyle = useAnimatedStyle(() => {
-        let height = keyb.height.value + offset;
+        let height = keyb.height.value + (offset - bottom);
         if (context?.isExtraKeyboardVisible) {
             height = withTiming(maxKeyboardHeight.value, {duration: 250});
         } else if (keyb.state.value === KeyboardState.CLOSED || keyb.state.value === KeyboardState.UNKNOWN) {
@@ -191,9 +192,9 @@ const ExtraKeyboardComponent = () => {
 
         return {
             height,
-            marginBottom: withTiming((keyb.state.value === KeyboardState.CLOSED || keyb.state.value === KeyboardState.CLOSING || keyb.state.value === KeyboardState.UNKNOWN) ? insets.bottom : 0, {duration: 250}),
+            marginBottom: withTiming(0, {duration: 250}),
         };
-    }, [context, insets.bottom, offset]);
+    }, [context, offset]);
 
     return (
         <Animated.View style={animatedStyle}>
@@ -203,7 +204,14 @@ const ExtraKeyboardComponent = () => {
 };
 
 // Do not use ExtraKeyboard on Android versions below 11
-export const ExtraKeyboard = () => {
+export const ExtraKeyboard = ({location}: {location: AvailableScreens}) => {
+    const currentScreen = useCurrentScreen();
+
+    // ExtraKeyboard should only be shown on the screen that requested it
+    if (currentScreen !== location) {
+        return null;
+    }
+
     if (Platform.OS === 'android' && Platform.Version < 30) {
         return null;
     }

@@ -16,12 +16,12 @@ import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categorie
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, getLastTeam, getTeamById, removeTeamFromTeamHistory, queryMyTeams} from '@queries/servers/team';
-import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
+import {dismissAllModalsAndPopToRoot} from '@utils/navigation/adapter';
 
 import {fetchMyChannelsForTeam, switchToChannelById} from './channel';
 import {fetchGroupsForTeamIfConstrained} from './groups';

@@ -1,33 +1,29 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, StyleSheet, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {DRAFT_SCREEN_TAB_DRAFTS, type DraftScreenTab} from '@constants/draft';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
-import SecurityManager from '@managers/security_manager';
 import TabbedContents from '@screens/global_drafts/components/tabbed_contents';
-
-import {popTopScreen} from '../navigation';
+import {navigateBack} from '@utils/navigation/adapter';
 
 import GlobalDraftsList from './components/global_drafts_list';
 import GlobalScheduledPostList from './components/global_scheduled_post_list';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 const edges: Edge[] = ['left', 'right'];
 
 type Props = {
-    componentId?: AvailableScreens;
     scheduledPostsEnabled?: boolean;
     initialTab?: DraftScreenTab;
 };
@@ -38,12 +34,15 @@ const styles = StyleSheet.create({
     },
 });
 
-const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, initialTab}: Props) => {
+const GlobalDraftsAndScheduledPosts = ({scheduledPostsEnabled, initialTab}: Props) => {
     const intl = useIntl();
     const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();
-
     const defaultHeight = useDefaultHeaderHeight();
+
+    useEffect(() => {
+        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, Screens.GLOBAL_DRAFTS);
+    }, []);
 
     const headerLeftComponent = useMemo(() => {
         if (isTablet) {
@@ -65,9 +64,9 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();
         if (!isTablet) {
-            popTopScreen(componentId);
+            navigateBack();
         }
-    }, [componentId, isTablet]);
+    }, [isTablet]);
 
     const draftList = (
         <GlobalDraftsList
@@ -81,13 +80,14 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
         />
     ), []);
 
+    useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS, onBackPress);
+
     return (
         <SafeAreaView
             edges={edges}
             mode='margin'
             style={styles.flex}
             testID='global_drafts.screen'
-            nativeID={SecurityManager.getShieldScreenId(componentId || Screens.GLOBAL_DRAFTS)}
         >
             <NavigationHeader
                 showBackButton={!isTablet}

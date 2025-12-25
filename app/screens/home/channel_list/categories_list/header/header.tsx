@@ -8,23 +8,20 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 
 import {logout} from '@actions/remote/session';
 import CompassIcon from '@components/compass_icon';
-import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Screens} from '@constants';
 import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {HOME_PADDING} from '@constants/view';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {bottomSheet} from '@screens/navigation';
-import {bottomSheetSnapPoint} from '@utils/helpers';
+import {navigateToScreen} from '@utils/navigation/adapter';
 import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
 import {alertServerLogout} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import LoadingUnreads from './loading_unreads';
-import PlusMenu from './plus_menu';
-import {SEPARATOR_HEIGHT} from './plus_menu/separator';
 
 const PLUS_BUTTON_SIZE = 28;
 
@@ -121,44 +118,11 @@ const ChannelListHeader = ({
     const serverUrl = useServerUrl();
     useEffect(() => {
         marginLeft.value = iconPad ? 50 : 0;
-    }, [iconPad]);
+    }, [iconPad, marginLeft]);
 
     const onPress = usePreventDoubleTap(useCallback(() => {
-        const renderContent = () => {
-            return (
-                <PlusMenu
-                    canCreateChannels={canCreateChannels}
-                    canJoinChannels={canJoinChannels}
-                    canInvitePeople={canInvitePeople}
-                />
-            );
-        };
-
-        const closeButtonId = 'close-plus-menu';
-        let items = 1;
-        let separators = 0;
-
-        if (canCreateChannels) {
-            items += 1;
-        }
-
-        if (canJoinChannels) {
-            items += 1;
-        }
-
-        if (canInvitePeople) {
-            items += 1;
-            separators += 1;
-        }
-
-        bottomSheet({
-            closeButtonId,
-            renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT) + (separators * SEPARATOR_HEIGHT)],
-            theme,
-            title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
-        });
-    }, [intl, theme, canCreateChannels, canInvitePeople, canJoinChannels]));
+        navigateToScreen(Screens.TEAM_OPTIONS, {canCreateChannels, canJoinChannels, canInvitePeople});
+    }, [canCreateChannels, canInvitePeople, canJoinChannels]));
 
     const onPushAlertPress = useCallback(() => {
         if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {

@@ -4,67 +4,70 @@
 import PLAYBOOKS_SCREENS from '@playbooks/constants/screens';
 
 export const ABOUT = 'About';
-export const ACCOUNT = 'Account';
+export const ACCOUNT = 'account';
 export const APPS_FORM = 'AppForm';
-export const BOTTOM_SHEET = 'BottomSheet';
-export const BROWSE_CHANNELS = 'BrowseChannels';
+export const BOTTOM_SHEET = '(bottom_sheet)';
+export const BROWSE_CHANNELS = '(browse_channels)';
 export const CALL = 'Call';
 export const CALL_PARTICIPANTS = 'CallParticipants';
 export const CALL_HOST_CONTROLS = 'CallHostControls';
-export const CHANNEL = 'Channel';
+export const CHANNEL = 'channel';
 export const CHANNEL_ADD_MEMBERS = 'ChannelAddMembers';
 export const CHANNEL_BANNER = 'ChannelBanner';
 export const CHANNEL_BOOKMARK = 'ChannelBookmarkAddOrEdit';
 export const CHANNEL_FILES = 'ChannelFiles';
 export const CHANNEL_INFO = 'ChannelInfo';
+export const CHANNEL_LIST = 'channel_list';
 export const CHANNEL_NOTIFICATION_PREFERENCES = 'ChannelNotificationPreferences';
 export const CODE = 'Code';
 export const CONVERT_GM_TO_CHANNEL = 'ConvertGMToChannel';
-export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
-export const CREATE_OR_EDIT_CHANNEL = 'CreateOrEditChannel';
+export const CREATE_DIRECT_MESSAGE = 'create_direct_message';
+export const CREATE_OR_EDIT_CHANNEL = 'create_or_edit_channel';
 export const CREATE_TEAM = 'CreateTeam';
 export const COMPONENT_LIBRARY = 'ComponentLibrary';
-export const CUSTOM_STATUS = 'CustomStatus';
-export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
-export const DRAFT = 'Draft';
-export const DRAFT_SCHEDULED_POST_OPTIONS = 'DraftScheduledPostOptions';
-export const EDIT_POST = 'EditPost';
+export const CUSTOM_STATUS = '(custom_status)';
+export const CUSTOM_STATUS_CLEAR_AFTER = 'custom_status_clear_after';
+export const DRAFT_SCHEDULED_POST_OPTIONS = 'draft_scheduled_post_options';
+export const EDIT_POST = 'edit_post';
 export const EDIT_PROFILE = 'EditProfile';
-export const EDIT_SERVER = 'EditServer';
-export const EMOJI_PICKER = 'EmojiPicker';
-export const FIND_CHANNELS = 'FindChannels';
-export const FORGOT_PASSWORD = 'ForgotPassword';
-export const GALLERY = 'Gallery';
+export const EDIT_SERVER = 'edit_server';
+export const EMOJI_PICKER = 'emoji_picker';
+export const FIND_CHANNELS = 'find_channels';
+export const FORGOT_PASSWORD = 'forgot_password';
+export const GALLERY = 'gallery';
 export const GENERIC_OVERLAY = 'GenericOverlay';
-export const GLOBAL_DRAFTS = 'GlobalDrafts';
+export const GLOBAL_DRAFTS = 'global_drafts';
 export const GLOBAL_DRAFTS_AND_SCHEDULED_POSTS = 'GlobalDraftsAndScheduledPosts';
-export const GLOBAL_THREADS = 'GlobalThreads';
-export const HOME = 'Home';
+export const GLOBAL_THREADS = 'global_threads';
+export const HOME = '(home)';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const INTERACTIVE_DIALOG = 'InteractiveDialog';
-export const INVITE = 'Invite';
+export const INVITE = 'invite';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
-export const JOIN_TEAM = 'JoinTeam';
+export const JOIN_TEAM = 'join_team';
 export const LATEX = 'Latex';
-export const LOGIN = 'Login';
+export const LOGIN = 'login';
 export const MANAGE_CHANNEL_MEMBERS = 'ManageChannelMembers';
-export const MENTIONS = 'Mentions';
-export const MFA = 'MFA';
-export const ONBOARDING = 'Onboarding';
+export const MENTIONS = 'mentions';
+export const MFA = 'mfa';
+export const ONBOARDING = 'onboarding';
 export const PDF_VIEWER = 'PdfViewer';
-export const PERMALINK = 'Permalink';
+export const PERMALINK = 'permalink';
 export const PINNED_MESSAGES = 'PinnedMessages';
-export const POST_OPTIONS = 'PostOptions';
+export const POST_OPTIONS = 'post_options';
 export const POST_PRIORITY_PICKER = 'PostPriorityPicker';
-export const REACTIONS = 'Reactions';
+export const REACTIONS = 'reactions';
 export const REPORT_PROBLEM = 'ReportProblem';
-export const RESCHEDULE_DRAFT = 'RescheduleDraft';
+export const RESCHEDULE_DRAFT = 'reschedule_draft';
 export const REVIEW_APP = 'ReviewApp';
-export const SAVED_MESSAGES = 'SavedMessages';
+export const SAVED_MESSAGES = 'saved_messages';
 export const SCHEDULED_POST_OPTIONS = 'ScheduledPostOptions';
-export const SEARCH = 'Search';
+export const SEARCH = 'search';
+export const SEARCH_FILE_FILTER = 'search_file_filter';
+export const SEARCH_TEAM_LIST = 'search_team_list';
 export const SELECT_TEAM = 'SelectTeam';
-export const SERVER = 'Server';
+export const SERVER = 'server';
+export const SERVERS_LIST = 'servers_list';
 export const SETTINGS = 'Settings';
 export const SETTINGS_ADVANCED = 'SettingsAdvanced';
 export const SETTINGS_DISPLAY = 'SettingsDisplay';
@@ -81,14 +84,16 @@ export const SETTINGS_NOTIFICATION_PUSH = 'SettingsNotificationPush';
 export const SETTINGS_NOTIFICATION_CALL = 'SettingsNotificationCall';
 export const SHARE_FEEDBACK = 'ShareFeedback';
 export const SNACK_BAR = 'SnackBar';
-export const SSO = 'SSO';
+export const SSO = 'sso';
 export const TABLE = 'Table';
 export const TEAM_SELECTOR_LIST = 'TeamSelectorList';
 export const TERMS_OF_SERVICE = 'TermsOfService';
-export const THREAD = 'Thread';
+export const TEAM_OPTIONS = 'team_options';
+export const THREAD = 'thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
-export const THREAD_OPTIONS = 'ThreadOptions';
-export const USER_PROFILE = 'UserProfile';
+export const THREAD_OPTIONS = 'thread_options';
+export const USER_PROFILE = 'user_profile';
+export const USER_STATUS = 'user_status';
 
 export default {
     ABOUT,
@@ -105,6 +110,7 @@ export default {
     CHANNEL_BOOKMARK,
     CHANNEL_FILES,
     CHANNEL_INFO,
+    CHANNEL_LIST,
     CHANNEL_NOTIFICATION_PREFERENCES,
     CODE,
     CONVERT_GM_TO_CHANNEL,
@@ -150,8 +156,11 @@ export default {
     SAVED_MESSAGES,
     SCHEDULED_POST_OPTIONS,
     SEARCH,
+    SEARCH_FILE_FILTER,
+    SEARCH_TEAM_LIST,
     SELECT_TEAM,
     SERVER,
+    SERVERS_LIST,
     SETTINGS,
     SETTINGS_ADVANCED,
     SETTINGS_DISPLAY,
@@ -172,17 +181,20 @@ export default {
     TABLE,
     TEAM_SELECTOR_LIST,
     TERMS_OF_SERVICE,
+    TEAM_OPTIONS,
     THREAD,
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
+    USER_STATUS,
     ...PLAYBOOKS_SCREENS,
 } as const;
 
-export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
+export const MODAL_SCREENS = new Set<string>([
     BROWSE_CHANNELS,
     CHANNEL_INFO,
     CHANNEL_ADD_MEMBERS,
+    CREATE_OR_EDIT_CHANNEL,
     CREATE_DIRECT_MESSAGE,
     CREATE_TEAM,
     CUSTOM_STATUS,
@@ -190,12 +202,12 @@ export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     EDIT_PROFILE,
     EDIT_SERVER,
     FIND_CHANNELS,
-    GALLERY,
+
     INVITE,
     MANAGE_CHANNEL_MEMBERS,
     PDF_VIEWER,
-    PERMALINK,
     RESCHEDULE_DRAFT,
+    JOIN_TEAM,
 ]);
 
 export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
@@ -207,16 +219,24 @@ export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
 
 export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     BOTTOM_SHEET,
-    DRAFT_SCHEDULED_POST_OPTIONS,
-    EMOJI_PICKER,
-    POST_OPTIONS,
     POST_PRIORITY_PICKER,
-    THREAD_OPTIONS,
-    REACTIONS,
-    USER_PROFILE,
     CALL_PARTICIPANTS,
     CALL_HOST_CONTROLS,
     SCHEDULED_POST_OPTIONS,
+
+    // From this is related to ExpoRouter
+    DRAFT_SCHEDULED_POST_OPTIONS,
+    EMOJI_PICKER,
+    GALLERY,
+    POST_OPTIONS,
+    REACTIONS,
+    SEARCH_FILE_FILTER,
+    SEARCH_TEAM_LIST,
+    SERVERS_LIST,
+    TEAM_OPTIONS,
+    THREAD_OPTIONS,
+    USER_PROFILE,
+    USER_STATUS,
 ]);
 
 export const SCREENS_WITH_EXTRA_KEYBOARD = new Set<string>([CHANNEL, THREAD]);
@@ -224,3 +244,21 @@ export const SCREENS_WITH_EXTRA_KEYBOARD = new Set<string>([CHANNEL, THREAD]);
 export const NOT_READY = [
     CREATE_TEAM,
 ];
+
+// Screens that have been migrated to Expo Router
+export const UNAUTHENTICATED_SCREENS = new Set<string>([
+    ONBOARDING,
+    SERVER,
+    LOGIN,
+    SSO,
+    MFA,
+    FORGOT_PASSWORD,
+]);
+
+export const HOME_TAB_SCREENS = new Set<string>([
+    CHANNEL_LIST,
+    SEARCH,
+    MENTIONS,
+    SAVED_MESSAGES,
+    ACCOUNT,
+]);

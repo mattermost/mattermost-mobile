@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Pressable, View} from 'react-native';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import ReanimatedSwipeable, {type SwipeableMethods} from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Reanimated, {useAnimatedStyle, useSharedValue, type SharedValue} from 'react-native-reanimated';
 
@@ -156,32 +155,30 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
     }, [item.id]);
 
     return (
-        <GestureHandlerRootView>
-            <ReanimatedSwipeable
-                childrenContainerStyle={{flex: 1}}
-                rightThreshold={20}
-                renderRightActions={(_, drag) => (
-                    <RightAction
-                        deletePost={deletePost}
-                        drag={drag}
-                        draftType={draftType}
-                    />
-                )}
-                ref={swipeable}
-                onSwipeableOpenStartDrag={onSwipeableOpenStartDrag}
-                testID='draft_scheduled_post_swipeable'
-            >
-                <DraftAndSchedulePost
+        <ReanimatedSwipeable
+            childrenContainerStyle={{flex: 1}}
+            rightThreshold={20}
+            renderRightActions={(_, drag) => (
+                <RightAction
+                    deletePost={deletePost}
+                    drag={drag}
                     draftType={draftType}
-                    key={item.id}
-                    channelId={item.channelId}
-                    post={item}
-                    location={location}
-                    layoutWidth={layoutWidth}
-                    firstItem={firstItem}
                 />
-            </ReanimatedSwipeable>
-        </GestureHandlerRootView>
+            )}
+            ref={swipeable}
+            onSwipeableOpenStartDrag={onSwipeableOpenStartDrag}
+            testID='draft_scheduled_post_swipeable'
+        >
+            <DraftAndSchedulePost
+                draftType={draftType}
+                key={item.id}
+                channelId={item.channelId}
+                post={item}
+                location={location}
+                layoutWidth={layoutWidth}
+                firstItem={firstItem}
+            />
+        </ReanimatedSwipeable>
     );
 };
 

@@ -3,31 +3,28 @@
 
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
-import {FlatList, Keyboard, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, Keyboard, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {setGlobalThreadsTab} from '@actions/local/systems';
 import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import useTabs, {type TabDefinition} from '@hooks/use_tabs';
-import SecurityManager from '@managers/security_manager';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@utils/navigation/adapter';
 
 import ThreadsList from './threads_list';
 import Header from './threads_list/header';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    componentId?: AvailableScreens;
     globalThreadsTab: GlobalThreadsTab;
     hasUnreads: boolean;
     teamId: string;
@@ -43,15 +40,17 @@ const styles = StyleSheet.create({
 
 const testID = 'global_threads.threads_list';
 
-const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Props) => {
+const GlobalThreads = ({globalThreadsTab, hasUnreads, teamId}: Props) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();
-
     const flatListRef = useRef<FlatList<ThreadModel>>(null);
-
     const defaultHeight = useDefaultHeaderHeight();
+
+    useEffect(() => {
+        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, Screens.GLOBAL_THREADS);
+    }, []);
 
     const tabs = useMemo<Array<TabDefinition<GlobalThreadsTab>>>(() => [
         {
@@ -105,10 +104,10 @@ const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Prop
 
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();
-        popTopScreen(componentId);
-    }, [componentId]);
+        navigateBack();
+    }, []);
 
-    useAndroidHardwareBackHandler(componentId, onBackPress);
+    useAndroidHardwareBackHandler(Screens.GLOBAL_THREADS, onBackPress);
 
     return (
         <SafeAreaView
@@ -116,7 +115,6 @@ const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Prop
             mode='margin'
             style={styles.flex}
             testID='global_threads.screen'
-            nativeID={SecurityManager.getShieldScreenId(componentId || Screens.GLOBAL_THREADS)}
         >
             <NavigationHeader
                 showBackButton={!isTablet}

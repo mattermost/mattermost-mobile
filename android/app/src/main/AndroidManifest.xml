@@ -59,6 +59,7 @@
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
         android:windowSoftInputMode="adjustResize"
         android:launchMode="singleTask"
+        android:theme="@style/AppTheme"
         android:exported="true"
         android:taskAffinity=""
       >

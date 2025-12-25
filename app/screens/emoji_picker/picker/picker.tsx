@@ -3,12 +3,13 @@
 
 import React, {useCallback, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useDebounce} from '@hooks/utils';
-import SecurityManager from '@managers/security_manager';
 import {getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import EmojiFiltered from './filtered';
@@ -16,7 +17,6 @@ import PickerHeader from './header';
 import EmojiSections from './sections';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 export const SCROLLVIEW_NATIVE_ID = 'emojiSelector';
 
@@ -43,6 +43,7 @@ const Picker = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const [searchTerm, setSearchTerm] = useState<string|undefined>();
+    const insets = useSafeAreaInsets();
 
     const onCancelSearch = useCallback(() => setSearchTerm(undefined), []);
 
@@ -81,10 +82,11 @@ const Picker = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress
     }
 
     return (
-        <View
-            style={styles.flex}
+        <KeyboardAwareScrollView
+            contentContainerStyle={styles.flex}
             testID={`${testID}.screen`}
-            nativeID={SecurityManager.getShieldScreenId(testID as AvailableScreens)}
+            keyboardShouldPersistTaps='handled'
+            extraKeyboardSpace={-insets.bottom}
         >
             <View style={styles.searchBar}>
                 <PickerHeader
@@ -97,7 +99,7 @@ const Picker = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress
                 />
             </View>
             {EmojiList}
-        </View>
+        </KeyboardAwareScrollView>
     );
 };
 

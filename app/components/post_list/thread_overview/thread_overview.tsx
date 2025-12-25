@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
 import {Keyboard, Platform, type StyleProp, View, type ViewStyle} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 
@@ -12,9 +11,8 @@ import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {navigateToScreen} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -23,7 +21,6 @@ import type PostModel from '@typings/database/models/servers/post';
 type Props = {
     isSaved: boolean;
     repliesCount: number;
-    rootId: string;
     rootPost?: PostModel;
     testID: string;
     style?: StyleProp<ViewStyle>;
@@ -60,9 +57,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-
-    const intl = useIntl();
-    const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
 
     const onHandleSavePress = usePreventDoubleTap(useCallback(() => {
@@ -75,16 +69,10 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
     const showPostOptions = usePreventDoubleTap(useCallback(() => {
         Keyboard.dismiss();
         if (rootPost?.id) {
-            const passProps = {sourceScreen: Screens.THREAD, post: rootPost, showAddReaction: true};
-            const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
-
-            if (isTablet) {
-                showModal(Screens.POST_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-post-options'));
-            } else {
-                showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, bottomSheetModalOptions(theme));
-            }
+            const passProps = {sourceScreen: Screens.THREAD, postId: rootPost.id, showAddReaction: true};
+            navigateToScreen(Screens.POST_OPTIONS, passProps);
         }
-    }, [intl, isTablet, rootPost, theme]));
+    }, [rootPost]));
 
     const containerStyle = useMemo(() => {
         const container: StyleProp<ViewStyle> = [styles.container];

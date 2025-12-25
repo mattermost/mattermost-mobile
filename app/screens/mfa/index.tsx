@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -12,25 +12,26 @@ import {login} from '@actions/remote/session';
 import Button from '@components/button';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
+import {Screens} from '@constants';
+import {HOME} from '@constants/screens';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useAvoidKeyboard} from '@hooks/device';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {usePreventDoubleTap} from '@hooks/utils';
-import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
-import {popTopScreen} from '@screens/navigation';
 import {getErrorMessage} from '@utils/errors';
+import {navigateBack, navigateToScreen} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import Shield from './shield';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
+import type {DeepLinkWithData, LaunchType} from '@typings/launch';
 
-type MFAProps = {
-    componentId: AvailableScreens;
+export type MFAProps = {
     config: Partial<ClientConfig>;
-    goToHome: (error?: unknown) => void;
+    extra?: DeepLinkWithData | NotificationWithData;
+    launchError: boolean;
+    launchType: LaunchType;
     license: Partial<ClientLicense>;
     loginId: string;
     password: string;
@@ -84,8 +85,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
-const MFA = ({componentId, config, goToHome, license, loginId, password, serverDisplayName, serverUrl, theme}: MFAProps) => {
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
+const MFA = ({config, extra, launchError, launchType, license, loginId, password, serverDisplayName, serverUrl, theme}: MFAProps) => {
     const intl = useIntl();
     const [token, setToken] = useState<string>('');
     const [error, setError] = useState<string>('');
@@ -98,6 +98,11 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
         setToken(userToken);
         setError('');
     }, []);
+
+    const goToHome = useCallback((loginError?: unknown) => {
+        const hasError = launchError || Boolean(loginError);
+        navigateToScreen(HOME, {extra, launchError: hasError, launchType, serverUrl}, true);
+    }, [extra, launchError, launchType, serverUrl]);
 
     const submit = usePreventDoubleTap(useCallback(async () => {
         Keyboard.dismiss();
@@ -120,21 +125,12 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
         goToHome(result.error);
     }, [config, formatMessage, goToHome, intl, license, loginId, password, serverDisplayName, serverUrl, token]));
 
-    const animatedStyles = useScreenTransitionAnimation(componentId);
+    const animatedStyles = useScreenTransitionAnimation();
 
-    useAvoidKeyboard(keyboardAwareRef, 2);
-
-    const close = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.MFA, navigateBack);
 
     return (
-        <View
-            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
-            style={styles.flex}
-        >
+        <View style={styles.flex}>
             <Background theme={theme}/>
             <AnimatedSafeArea
                 testID='mfa.screen'
@@ -143,13 +139,9 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
                 <KeyboardAwareScrollView
                     bounces={false}
                     contentContainerStyle={styles.innerContainer}
-                    enableAutomaticScroll={false}
-                    enableOnAndroid={false}
-                    enableResetScrollToCoords={true}
-                    extraScrollHeight={0}
+                    bottomOffset={62}
                     keyboardDismissMode='on-drag'
                     keyboardShouldPersistTaps='handled'
-                    ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
                     style={styles.flex}
                 >

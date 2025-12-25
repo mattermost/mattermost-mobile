@@ -3,11 +3,10 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
-import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
-import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {Screens} from '@constants';
@@ -17,9 +16,8 @@ import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
-import SecurityManager from '@managers/security_manager';
-import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {navigateBack} from '@utils/navigation/adapter';
 
 import ChannelPostList from './channel_post_list';
 import ChannelHeader from './header';
@@ -45,8 +43,6 @@ type ChannelProps = {
     includeChannelBanner: boolean;
     scheduledPostCount: number;
 };
-
-const edges: Edge[] = ['left', 'right'];
 
 const styles = StyleSheet.create({
     flex: {
@@ -80,11 +76,8 @@ const Channel = ({
     const defaultHeight = useDefaultHeaderHeight();
     const [containerHeight, setContainerHeight] = useState(0);
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
-    const handleBack = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
 
-    useAndroidHardwareBackHandler(componentId, handleBack);
+    useAndroidHardwareBackHandler(componentId, navigateBack);
 
     const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
     useEffect(() => {
@@ -116,25 +109,20 @@ const Channel = ({
     const showFloatingCallContainer = showJoinCallBanner || isInACall || showIncomingCalls;
 
     return (
-        <FreezeScreen>
-            <SafeAreaView
-                style={styles.flex}
-                mode='margin'
-                edges={edges}
-                testID='channel.screen'
-                onLayout={onLayout}
-                nativeID={componentId ? SecurityManager.getShieldScreenId(componentId) : undefined}
-            >
-                <ChannelHeader
-                    channelId={channelId}
-                    componentId={componentId}
-                    callsEnabledInChannel={isCallsEnabledInChannel}
-                    groupCallsAllowed={groupCallsAllowed}
-                    isTabletView={isTabletView}
-                    shouldRenderBookmarks={shouldRender}
-                    shouldRenderChannelBanner={includeChannelBanner}
-                />
-                {shouldRender &&
+        <View
+            style={styles.flex}
+            testID='channel.screen'
+            onLayout={onLayout}
+        >
+            <ChannelHeader
+                channelId={channelId}
+                callsEnabledInChannel={isCallsEnabledInChannel}
+                groupCallsAllowed={groupCallsAllowed}
+                isTabletView={isTabletView}
+                shouldRenderBookmarks={shouldRender}
+                shouldRenderChannelBanner={includeChannelBanner}
+            />
+            {shouldRender &&
                 <ExtraKeyboardProvider>
                     <View style={[styles.flex, {marginTop}]}>
                         <ChannelPostList
@@ -156,19 +144,18 @@ const Channel = ({
                         location={Screens.CHANNEL}
                     />
                 </ExtraKeyboardProvider>
-                }
-                {showFloatingCallContainer && shouldRender &&
-                    <FloatingCallContainer
-                        channelId={channelId}
-                        showJoinCallBanner={showJoinCallBanner}
-                        showIncomingCalls={showIncomingCalls}
-                        isInACall={isInACall}
-                        includeBookmarkBar={includeBookmarkBar}
-                        includeChannelBanner={includeChannelBanner}
-                    />
-                }
-            </SafeAreaView>
-        </FreezeScreen>
+            }
+            {showFloatingCallContainer && shouldRender &&
+            <FloatingCallContainer
+                channelId={channelId}
+                showJoinCallBanner={showJoinCallBanner}
+                showIncomingCalls={showIncomingCalls}
+                isInACall={isInACall}
+                includeBookmarkBar={includeBookmarkBar}
+                includeChannelBanner={includeChannelBanner}
+            />
+            }
+        </View>
     );
 };
 

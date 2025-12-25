@@ -151,7 +151,7 @@ describe('buildSecurityAlertOptions', () => {
 
         buttons[0].onPress?.();
 
-        expect(switchToServer).toHaveBeenCalledWith(otherServerUrl, expect.anything(), expect.anything());
+        expect(switchToServer).toHaveBeenCalledWith(otherServerUrl);
         expect(mockCallback).toHaveBeenCalledWith(true);
     });
 

@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {uniqueId} from 'lodash';
+import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
-import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import ScheduledPostIndicator from '@components/scheduled_post_indicator';
@@ -16,18 +15,15 @@ import {Screens} from '@constants';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
-import SecurityManager from '@managers/security_manager';
-import {popTopScreen, setButtons} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 
+import ThreadFollowButton from './thread_follow_button';
 import ThreadPostList from './thread_post_list';
 
 import type PostModel from '@typings/database/models/servers/post';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type ThreadProps = {
-    componentId: AvailableScreens;
     isCRTEnabled: boolean;
     showJoinCallBanner: boolean;
     isInACall: boolean;
@@ -44,7 +40,6 @@ const styles = StyleSheet.create({
 });
 
 const Thread = ({
-    componentId,
     isCRTEnabled,
     rootId,
     rootPost,
@@ -54,30 +49,23 @@ const Thread = ({
     scheduledPostCount,
 }: ThreadProps) => {
     const [containerHeight, setContainerHeight] = useState(0);
+    const navigation = useNavigation();
 
-    const close = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.THREAD, navigation.goBack);
 
     useEffect(() => {
         if (isCRTEnabled && rootId) {
-            const id = `${componentId}-${rootId}-${uniqueId()}`;
-            const name = Screens.THREAD_FOLLOW_BUTTON;
-            setButtons(componentId, {rightButtons: [{
-                id,
-                component: {
-                    name,
-                    passProps: {
-                        threadId: rootId,
-                    },
-                },
-            }]});
+            navigation.setOptions({
+                headerRight: () => (
+                    <ThreadFollowButton threadId={rootId}/>
+                ),
+            });
         } else {
-            setButtons(componentId, {rightButtons: []});
+            navigation.setOptions({
+                headerRight: undefined,
+            });
         }
-    }, [componentId, rootId, isCRTEnabled]);
+    }, [rootId, isCRTEnabled, navigation]);
 
     useEffect(() => {
         // when opened from notification, first screen in stack is HOME
@@ -94,15 +82,17 @@ const Thread = ({
             if (rootId === EphemeralStore.getCurrentThreadId()) {
                 EphemeralStore.setCurrentThreadId('');
             }
-            setButtons(componentId, {rightButtons: []});
+            navigation.setOptions({
+                headerRight: undefined,
+            });
         };
-    }, [rootId]);
+    }, [isCRTEnabled, navigation, rootId]);
 
     useDidUpdate(() => {
         if (!rootPost) {
-            close();
+            navigation.goBack();
         }
-    }, [componentId, rootPost]);
+    }, [rootPost]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
@@ -111,17 +101,15 @@ const Thread = ({
     const showFloatingCallContainer = showJoinCallBanner || isInACall || showIncomingCalls;
 
     return (
-        <FreezeScreen>
-            <SafeAreaView
-                style={styles.flex}
-                mode='margin'
-                edges={edges}
-                testID='thread.screen'
-                onLayout={onLayout}
-                nativeID={SecurityManager.getShieldScreenId(componentId)}
-            >
-                <RoundedHeaderContext/>
-                {Boolean(rootPost) &&
+        <SafeAreaView
+            style={styles.flex}
+            mode='margin'
+            edges={edges}
+            testID='thread.screen'
+            onLayout={onLayout}
+        >
+            <RoundedHeaderContext/>
+            {Boolean(rootPost) &&
                 <ExtraKeyboardProvider>
                     <View style={styles.flex}>
                         <ThreadPostList
@@ -146,18 +134,17 @@ const Thread = ({
                         location={Screens.THREAD}
                     />
                 </ExtraKeyboardProvider>
-                }
-                {showFloatingCallContainer &&
-                    <FloatingCallContainer
-                        channelId={rootPost!.channelId}
-                        showJoinCallBanner={showJoinCallBanner}
-                        showIncomingCalls={showIncomingCalls}
-                        isInACall={isInACall}
-                        threadScreen={true}
-                    />
-                }
-            </SafeAreaView>
-        </FreezeScreen>
+            }
+            {showFloatingCallContainer &&
+            <FloatingCallContainer
+                channelId={rootPost!.channelId}
+                showJoinCallBanner={showJoinCallBanner}
+                showIncomingCalls={showIncomingCalls}
+                isInACall={isInACall}
+                threadScreen={true}
+            />
+            }
+        </SafeAreaView>
     );
 };
 

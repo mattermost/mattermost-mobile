@@ -69,7 +69,6 @@ import {
     popTopScreen,
     setScreensOrientation,
 } from '@screens/navigation';
-import {freezeOtherScreens} from '@utils/gallery';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -392,7 +391,6 @@ const CallScreen = ({
                 // We need both the navigation & the module
                 RNUtils.lockPortrait();
             }
-            freezeOtherScreens(false);
         };
 
         // Handle component disappearing (e.g. device is locked)

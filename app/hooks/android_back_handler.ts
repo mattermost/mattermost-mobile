@@ -4,14 +4,15 @@
 import {useEffect} from 'react';
 import {BackHandler} from 'react-native';
 
-import NavigationStore from '@store/navigation_store';
+import {useCurrentScreen} from '@store/expo_navigation_store';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const useAndroidHardwareBackHandler = (componentId: AvailableScreens | undefined, callback: () => void) => {
+    const currentScreen = useCurrentScreen();
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (NavigationStore.getVisibleScreen() === componentId) {
+            if (currentScreen === componentId) {
                 callback();
                 return true;
             }
@@ -22,7 +23,7 @@ const useAndroidHardwareBackHandler = (componentId: AvailableScreens | undefined
         return () => {
             backHandler.remove();
         };
-    }, [componentId, callback]);
+    }, [componentId, callback, currentScreen]);
 };
 
 export default useAndroidHardwareBackHandler;

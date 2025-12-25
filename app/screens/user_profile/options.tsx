@@ -8,10 +8,10 @@ import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
 import {createDirectChannel, switchToChannelById} from '@actions/remote/channel';
 import Button from '@components/button';
 import OptionBox, {OPTIONS_HEIGHT} from '@components/option_box';
-import {Events, Screens} from '@constants';
+import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {dismissBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet} from '@utils/navigation/adapter';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -53,12 +53,12 @@ const UserProfileOptions = ({location, type, userId, username}: Props) => {
     const serverUrl = useServerUrl();
 
     const mentionUser = useCallback(async () => {
-        await dismissBottomSheet(Screens.USER_PROFILE);
+        await dismissBottomSheet();
         DeviceEventEmitter.emit(Events.SEND_TO_POST_DRAFT, {location, text: `@${username}`});
     }, [location, username]);
 
     const openChannel = useCallback(async () => {
-        await dismissBottomSheet(Screens.USER_PROFILE);
+        await dismissBottomSheet();
         const {data} = await createDirectChannel(serverUrl, userId);
         if (data) {
             switchToChannelById(serverUrl, data.id);

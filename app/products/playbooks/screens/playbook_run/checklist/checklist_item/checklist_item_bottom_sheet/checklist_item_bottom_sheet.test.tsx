@@ -13,9 +13,10 @@ import {Preferences} from '@constants';
 import {useIsTablet} from '@hooks/device';
 import {setAssignee, setChecklistItemCommand, setDueDate} from '@playbooks/actions/remote/checklist';
 import {goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
-import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {openUserProfileModal} from '@utils/navigation/adapter';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import ChecklistItemBottomSheet from './checklist_item_bottom_sheet';
@@ -483,8 +484,6 @@ describe('ChecklistItemBottomSheet', () => {
         });
 
         expect(openUserProfileModal).toHaveBeenCalledWith(
-            expect.anything(), // intl
-            expect.anything(), // theme
             {
                 userId: 'user-1',
                 location: 'PlaybookRun',

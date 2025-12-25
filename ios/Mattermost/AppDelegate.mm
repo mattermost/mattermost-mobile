@@ -85,18 +85,24 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   [RNNotifications startMonitorNotifications];
 
   os_log(OS_LOG_DEFAULT, "Mattermost started!!");
-  [ReactNativeNavigation bootstrapWithDelegate:self launchOptions:launchOptions];
+
+  // Initialize Expo modules and React Native (replacing RNN bootstrap for Expo Router)
+  [super application:application didFinishLaunchingWithOptions:launchOptions];
 
 #if INTUNE_AVAILABLE
   // Restore enrollments if needed (silent, non-blocking)
   [IntuneAccess checkAndRestoreEnrollmentOnLaunch];
 #endif
-  
+
   return YES;
 }
 
 -(BOOL)bridgelessEnabled {
   return NO;
+}
+
+- (NSString *)moduleName {
+  return @"Mattermost";
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken

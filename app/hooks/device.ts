@@ -123,21 +123,17 @@ export function useKeyboardOverlap(viewRef: RefObject<View>, containerHeight: nu
     const bottomSpace = (dimensions.height - containerHeight - viewPosition);
     const tabletOverlap = Math.max(0, keyboardHeight - bottomSpace);
     const phoneOverlap = keyboardHeight || insets.bottom;
-    const overlap = Platform.select({
-        ios: isTablet ? tabletOverlap : phoneOverlap,
-        default: 0,
-    });
 
-    return overlap;
+    return isTablet ? tabletOverlap : phoneOverlap;
 }
 
 export function useAvoidKeyboard(ref: RefObject<KeyboardAwareScrollView>, dimisher = 3) {
     const height = useKeyboardHeight();
 
     useEffect(() => {
-        let offsetY = height / dimisher;
+        const offsetY = height / dimisher;
         if (offsetY < 80) {
-            offsetY = 0;
+            return;
         }
 
         ref.current?.scrollToPosition(0, offsetY);

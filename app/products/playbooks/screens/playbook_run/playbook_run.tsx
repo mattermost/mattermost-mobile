@@ -18,7 +18,8 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
-import {openUserProfileModal, popTopScreen} from '@screens/navigation';
+import {popTopScreen} from '@screens/navigation';
+import {openUserProfileModal} from '@utils/navigation/adapter';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -226,12 +227,12 @@ export default function PlaybookRun({
             return;
         }
 
-        openUserProfileModal(intl, theme, {
+        openUserProfileModal({
             userId: owner.id,
             channelId,
             location: componentId,
         });
-    }, [owner, intl, theme, channelId, componentId]);
+    }, [owner, channelId, componentId]);
 
     const handleSelectOwner = useCallback(async (selected: UserProfile) => {
         if (!playbookRun) {

@@ -4,15 +4,15 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.core.view.WindowCompat
+import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.mattermost.hardware.keyboard.MattermostHardwareKeyboardImpl
 import com.mattermost.rnutils.helpers.FoldableObserver
-import com.reactnativenavigation.NavigationActivity
 import expo.modules.ReactActivityDelegateWrapper
 
-class MainActivity : NavigationActivity() {
+class MainActivity : ReactActivity() {
     private var HWKeyboardConnected = false
     private val foldableObserver = FoldableObserver.getInstance(this)
     private var lastOrientation: Int = Configuration.ORIENTATION_UNDEFINED
@@ -33,8 +33,8 @@ class MainActivity : NavigationActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(null)
-        setContentView(R.layout.launch_screen)
+        super.onCreate(savedInstanceState)
+
         setHWKeyboardConnected()
         lastOrientation = this.resources.configuration.orientation
         foldableObserver.onCreate()
@@ -72,7 +72,6 @@ class MainActivity : NavigationActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        reactGateway.onWindowFocusChanged(hasFocus)
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {

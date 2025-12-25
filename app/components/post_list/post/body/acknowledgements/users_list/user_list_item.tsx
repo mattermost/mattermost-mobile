@@ -2,13 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
 
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import UserItem from '@components/user_item';
-import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {openUserProfileModal as openUserProfileBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet, openUserProfileModal as openUserProfileBottomSheet} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -47,19 +45,19 @@ const UserListItem = ({
     user,
     userAcknowledgement,
 }: Props) => {
-    const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
     const handleUserPress = useCallback(async (userProfile: UserProfile) => {
         if (userProfile) {
-            await openUserProfileBottomSheet(intl, theme, {
+            await dismissBottomSheet();
+            await openUserProfileBottomSheet({
                 userId: userProfile.id,
                 channelId,
                 location,
-            }, Screens.BOTTOM_SHEET);
+            });
         }
-    }, [channelId, intl, location, theme]);
+    }, [channelId, location]);
 
     return (
         <UserItem

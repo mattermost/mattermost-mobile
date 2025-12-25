@@ -3,15 +3,12 @@
 
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useRef} from 'react';
-import {useIntl} from 'react-intl';
 import {type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import UserItem from '@components/user_item';
-import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
 import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
-import {openUserProfileModal} from '@screens/navigation';
+import {dismissBottomSheet, openUserProfileModal} from '@utils/navigation/adapter';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -30,16 +27,14 @@ type ItemProps = {
 }
 
 const Item = ({channelId, location, user}: ItemProps) => {
-    const intl = useIntl();
-    const theme = useTheme();
-
     const openUserProfile = useCallback(async (u: UserModel | UserProfile) => {
-        openUserProfileModal(intl, theme, {
+        await dismissBottomSheet();
+        openUserProfileModal({
             userId: u.id,
             channelId,
             location,
-        }, Screens.BOTTOM_SHEET);
-    }, [location, channelId, theme, intl]);
+        });
+    }, [location, channelId]);
 
     return (
         <UserItem

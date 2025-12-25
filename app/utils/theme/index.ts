@@ -7,7 +7,7 @@ import {StatusBar, StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import {Preferences} from '@constants';
-import {MODAL_SCREENS_WITHOUT_BACK, SCREENS_AS_BOTTOM_SHEET, SCREENS_WITH_TRANSPARENT_BACKGROUND} from '@constants/screens';
+import {MODAL_SCREENS, SCREENS_AS_BOTTOM_SHEET, SCREENS_WITH_TRANSPARENT_BACKGROUND} from '@constants/screens';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
@@ -114,7 +114,7 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
         };
     }
 
-    if (!MODAL_SCREENS_WITHOUT_BACK.has(componentId) && !SCREENS_AS_BOTTOM_SHEET.has(componentId) && options.topBar) {
+    if (!MODAL_SCREENS.has(componentId) && !SCREENS_AS_BOTTOM_SHEET.has(componentId) && options.topBar) {
         options.topBar.backButton = {
             color: theme.sidebarHeaderTextColor,
         };
@@ -272,9 +272,9 @@ export function setThemeDefaults(theme: ExtendedTheme): Theme {
 }
 
 export const updateThemeIfNeeded = (theme: Theme, force = false) => {
-    const storedTheme = EphemeralStore.theme;
+    const storedTheme = EphemeralStore.getTheme();
     if (!deepEqual(theme, storedTheme) || force) {
-        EphemeralStore.theme = theme;
+        EphemeralStore.setTheme(theme);
         requestAnimationFrame(() => {
             setNavigationStackStyles(theme);
         });

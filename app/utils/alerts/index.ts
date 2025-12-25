@@ -2,12 +2,11 @@
 // See LICENSE.txt for license information.
 
 import Emm from '@mattermost/react-native-emm';
-import {createIntl, defineMessages} from 'react-intl';
+import {defineMessages} from 'react-intl';
 import {Alert, Platform, type AlertButton} from 'react-native';
 
 import {switchToServer} from '@actions/app/server';
 import {logout} from '@actions/remote/session';
-import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
@@ -157,15 +156,7 @@ export const messages = defineMessages({
 const goToPreviousServer = async (lastAccessedServer: string) => {
     // Switch to last accessed server
     if (lastAccessedServer) {
-        const theme = Preferences.THEMES.denim;
-        const locale = DEFAULT_LOCALE;
-
-        const intl = createIntl({
-            locale,
-            defaultLocale: DEFAULT_LOCALE,
-            messages: getTranslations(locale),
-        });
-        await switchToServer(lastAccessedServer, theme, intl);
+        await switchToServer(lastAccessedServer);
     }
 };
 

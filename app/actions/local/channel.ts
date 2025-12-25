@@ -18,10 +18,11 @@ import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {prepareCommonSystemValues, type PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId, getConfig, getLicense} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser, queryUsersById} from '@queries/servers/user';
-import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {NavigationStoreV2} from '@store/expo_navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo} from '@utils/log';
+import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@utils/navigation/adapter';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -91,7 +92,8 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     await dismissAllModalsAndPopToRoot();
                     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
                 } else {
-                    await dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
+                    await NavigationStoreV2.waitUntilScreenHasLoaded('(home)');
+                    await dismissAllModalsAndPopToScreen(Screens.CHANNEL);
                 }
 
                 logInfo('channel switch to', channel?.displayName, channelId, (Date.now() - dt), 'ms');

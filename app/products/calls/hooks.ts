@@ -35,8 +35,9 @@ import {useAppState} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
-import {openAsBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {openAsBottomSheet} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
+import {openUserProfileModal} from '@utils/navigation/adapter';
 import {isSystemAdmin} from '@utils/user';
 
 import type {Client} from '@client/rest';
@@ -211,10 +212,10 @@ export const useHostMenus = () => {
     }, [intl, theme]);
 
     const openUserProfile = useCallback(async (session: CallSession) => {
-        openUserProfileModal(intl, theme, {
+        openUserProfileModal({
             userId: session.userId,
         });
-    }, [intl, theme]);
+    }, []);
 
     const onPress = useCallback((session: CallSession) => () => {
         // Show host controls when allowed and I'm host or admin,

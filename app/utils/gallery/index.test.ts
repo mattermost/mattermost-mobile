@@ -8,7 +8,7 @@ import {measure, type AnimatedRef} from 'react-native-reanimated';
 
 import {waitFor} from '@test/intl-test-helper';
 
-import {clamp, clampVelocity, fileToGalleryItem, freezeOtherScreens, friction, galleryItemToFileInfo, getImageSize, getShouldRender, measureItem, measureViewInWindow, openGalleryAtIndex, typedMemo} from '.';
+import {clamp, clampVelocity, fileToGalleryItem, friction, galleryItemToFileInfo, getImageSize, getShouldRender, measureItem, measureViewInWindow, openGalleryAtIndex, typedMemo} from '.';
 
 import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
 
@@ -103,14 +103,6 @@ describe('Gallery utils', () => {
             } as FileInfo;
             const result = fileToGalleryItem(file);
             expect(result.id.startsWith('uid')).toBeTruthy();
-        });
-    });
-
-    describe('freezeOtherScreens', () => {
-        it('should emit freeze screen event', () => {
-            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
-            freezeOtherScreens(true);
-            expect(emitSpy).toHaveBeenCalledWith('FREEZE_SCREEN', true);
         });
     });
 

@@ -11,7 +11,7 @@ import {DRAFT_SCHEDULED_POST_LAYOUT_PADDING, DRAFT_TYPE_DRAFT} from '@constants/
 import {staticStyles} from '@constants/tooltip';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import DraftTooltip from '@screens/global_drafts/draft_scheduled_post_tooltip';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@utils/navigation/adapter';
 
 import DraftAndScheduledPostSwipeActions from '../draft_and_scheduled_post_swipe_actions';
 import DraftEmptyComponent from '../draft_empty_component';
@@ -77,11 +77,7 @@ const GlobalDraftsList: React.FC<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const collapse = useCallback(() => {
-        popTopScreen(Screens.GLOBAL_DRAFTS);
-    }, []);
-
-    useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS, collapse);
+    useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS, navigateBack);
 
     const close = useCallback(() => {
         setTooltipVisible(false);

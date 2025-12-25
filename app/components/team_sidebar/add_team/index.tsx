@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -10,7 +9,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {showModal} from '@screens/navigation';
+import {navigateToScreen} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -38,23 +37,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 export default function AddTeam() {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const intl = useIntl();
 
     const onPress = usePreventDoubleTap(useCallback(() => {
-        const title = intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'});
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const closeButtonId = 'close-join-team';
-        const options = {
-            topBar: {
-                leftButtons: [{
-                    id: closeButtonId,
-                    icon: closeButton,
-                    testID: 'close.join_team.button',
-                }],
-            },
-        };
-        showModal(Screens.JOIN_TEAM, title, {closeButtonId}, options);
-    }, [intl, theme.sidebarHeaderTextColor]));
+        navigateToScreen(Screens.JOIN_TEAM);
+    }, []));
 
     return (
         <View style={styles.container}>

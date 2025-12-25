@@ -154,8 +154,7 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
     return (
         <BottomSheet
             renderContent={renderContent}
-            componentId={Screens.SCHEDULED_POST_OPTIONS}
-            closeButtonId={SCHEDULED_POST_OPTIONS_BUTTON}
+            screen={Screens.SCHEDULED_POST_OPTIONS}
             snapPoints={snapPoints}
             testID='scheduled_post_options_bottom_sheet'
             footerComponent={renderFooter}

@@ -29,7 +29,6 @@ const HEADER_HEIGHT = 62;
 const MIN_ROWS = 5;
 
 type Props = {
-    closeButtonId: string;
     sessionsDict: Dictionary<CallSession>;
     teammateNameDisplay: string;
     callServerUrl?: string;
@@ -67,7 +66,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 export const ParticipantsList = ({
-    closeButtonId,
     sessionsDict,
     teammateNameDisplay,
     callServerUrl,
@@ -146,8 +144,7 @@ export const ParticipantsList = ({
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId={closeButtonId}
-            componentId={Screens.CALL_PARTICIPANTS}
+            screen={Screens.CALL_PARTICIPANTS}
             snapPoints={snapPoints}
         />
     );

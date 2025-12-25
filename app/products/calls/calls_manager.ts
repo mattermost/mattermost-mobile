@@ -1,23 +1,34 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, Platform} from 'react-native';
+import {AppState, Platform, type NativeEventSubscription} from 'react-native';
 
 import {callsOnAppStateChange} from '@calls/state';
 
+let appStateChangeListener: NativeEventSubscription | undefined;
+let appStateBlurListener: NativeEventSubscription | undefined;
+let appStateFocusListener: NativeEventSubscription | undefined;
+
 const initialize = () => {
     if (Platform.OS === 'android') {
-        AppState.addEventListener('blur', () => {
+        appStateBlurListener = AppState.addEventListener('blur', () => {
             callsOnAppStateChange('inactive');
         });
-        AppState.addEventListener('focus', () => {
+        appStateFocusListener = AppState.addEventListener('focus', () => {
             callsOnAppStateChange('active');
         });
     } else {
-        AppState.addEventListener('change', callsOnAppStateChange);
+        appStateChangeListener = AppState.addEventListener('change', callsOnAppStateChange);
     }
+};
+
+const cleanup = () => {
+    appStateChangeListener?.remove();
+    appStateBlurListener?.remove();
+    appStateFocusListener?.remove();
 };
 
 export const CallsManager = {
     initialize,
+    cleanup,
 };

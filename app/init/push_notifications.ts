@@ -71,6 +71,11 @@ class PushNotificationsSingleton {
         }
     }
 
+    cleanup() {
+        this.subscriptions?.forEach((v) => v.remove());
+        this.subscriptions = [];
+    }
+
     async registerIfNeeded() {
         const isRegistered = await Notifications.isRegisteredForRemoteNotifications();
         if (!isRegistered) {

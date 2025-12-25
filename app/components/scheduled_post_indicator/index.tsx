@@ -7,9 +7,8 @@ import {DeviceEventEmitter, Text, View} from 'react-native';
 
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import CompassIcon from '@components/compass_icon';
-import {Events} from '@constants';
+import {Events, Screens} from '@constants';
 import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@constants/draft';
-import {DRAFT} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -54,7 +53,7 @@ function ScheduledPostIndicator({
     const handleSeeAllScheduledPosts = useCallback(async () => {
         const {error} = await switchToGlobalDrafts(serverUrl, undefined, DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
         if (!error) {
-            DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
+            DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, Screens.GLOBAL_DRAFTS);
         }
     }, [serverUrl]);
 

@@ -65,6 +65,17 @@ class WebsocketManagerSingleton {
         this.netStateSubscription = NetInfo.addEventListener(this.onNetStateChange);
     };
 
+    public cleanup = () => {
+        this.appStateSubscription?.remove();
+        this.netStateSubscription?.();
+        this.closeAll();
+        this.cancelConnectTimers();
+        for (const serverUrl of Object.keys(this.statusUpdatesIntervalIDs)) {
+            this.stopPeriodicStatusUpdates(serverUrl);
+        }
+        this.statusUpdatesIntervalIDs = {};
+    };
+
     public invalidateClient = (serverUrl: string) => {
         this.clients[serverUrl]?.close(true);
         this.clients[serverUrl]?.invalidate();

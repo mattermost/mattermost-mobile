@@ -6,8 +6,7 @@ import React, {act} from 'react';
 import {DeviceEventEmitter} from 'react-native';
 
 import {switchToGlobalDrafts} from '@actions/local/draft';
-import {Events} from '@constants';
-import {DRAFT} from '@constants/screens';
+import {Events, Screens} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -96,7 +95,7 @@ describe('ScheduledPostIndicator', () => {
             await TestHelper.wait(0);
         });
 
-        expect(emitSpy).toHaveBeenCalledWith(Events.ACTIVE_SCREEN, DRAFT);
+        expect(emitSpy).toHaveBeenCalledWith(Events.ACTIVE_SCREEN, Screens.GLOBAL_DRAFTS);
         expect(emitSpy).toHaveBeenCalledTimes(1);
     });
 });

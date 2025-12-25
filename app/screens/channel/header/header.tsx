@@ -23,10 +23,11 @@ import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToCreateQuickChecklist, goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import ChannelBanner from '@screens/channel/header/channel_banner';
-import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
+import {bottomSheet, showModal} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTypeDMorGM} from '@utils/channel';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {navigateBack} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -34,7 +35,6 @@ import ChannelHeaderBookmarks from './bookmarks';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 
 import type {HeaderRightButton} from '@components/navigation_header/header';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type ChannelProps = {
     canAddBookmarks: boolean;
@@ -46,7 +46,6 @@ type ChannelProps = {
     isCustomStatusEnabled: boolean;
     isCustomStatusExpired: boolean;
     hasBookmarks: boolean;
-    componentId?: AvailableScreens;
     displayName: string;
     isOwnDirectMessage: boolean;
     memberCount?: number;
@@ -93,7 +92,6 @@ const ChannelHeader = ({
     canAddBookmarks,
     channelId,
     channelType,
-    componentId,
     currentUserId,
     customStatus,
     displayName,
@@ -145,8 +143,8 @@ const ChannelHeader = ({
 
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();
-        popTopScreen(componentId);
-    }, [componentId]);
+        navigateBack();
+    }, []);
 
     const onTitlePress = usePreventDoubleTap(useCallback((() => {
         let title;

@@ -1,20 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback, useMemo, type ComponentProps} from 'react';
-import {useIntl} from 'react-intl';
+
+import React, {useCallback, type ComponentProps} from 'react';
 import {View} from 'react-native';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
-import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from '@components/files/file_filter';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import Tabs from '@hooks/use_tabs/tabs';
-import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import TeamPicker from '@screens/home/search/team_picker';
-import {bottomSheet} from '@screens/navigation';
+import SearchStore from '@store/search_store';
 import {type FileFilter, FileFilters} from '@utils/file';
-import {bottomSheetSnapPoint} from '@utils/helpers';
+import {navigateToScreen} from '@utils/navigation/adapter';
 import {TabTypes, type TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -79,42 +77,20 @@ const Header = ({
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
-    const intl = useIntl();
-    const isTablet = useIsTablet();
-
-    const title = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
     const showFilterIcon = selectedTab === TabTypes.FILES;
     const hasFilters = selectedFilter !== FileFilters.ALL;
 
-    const snapPoints = useMemo(() => {
-        return [
-            1,
-            bottomSheetSnapPoint(
-                NUMBER_FILTER_ITEMS,
-                FILTER_ITEM_HEIGHT,
-            ) + TITLE_HEIGHT + DIVIDERS_HEIGHT + (isTablet ? TITLE_SEPARATOR_MARGIN_TABLET : TITLE_SEPARATOR_MARGIN),
-        ];
-    }, [isTablet]);
-
     const handleFilterPress = useCallback(() => {
-        const renderContent = () => {
-            return (
-                <Filter
-                    initialFilter={selectedFilter}
-                    setFilter={onFilterChanged}
-                    title={title}
-                />
-            );
-        };
-        bottomSheet({
-            closeButtonId: 'close-search-filters',
-            renderContent,
-            snapPoints,
-            theme,
-            title,
+        // Store data and callback in SearchStore
+        SearchStore.setFileFilterData({
+            initialFilter: selectedFilter,
+            callback: onFilterChanged,
         });
-    }, [onFilterChanged, selectedFilter, snapPoints, title, theme]);
+
+        // Navigate to bottom sheet route
+        navigateToScreen(Screens.SEARCH_FILE_FILTER);
+    }, [selectedFilter, onFilterChanged]);
 
     return (
         <View style={styles.container}>
@@ -158,4 +134,4 @@ const Header = ({
     );
 };
 
-export default Header;
+export default React.memo(Header);

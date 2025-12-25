@@ -5,25 +5,17 @@ import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {Keyboard, type LayoutChangeEvent, View} from 'react-native';
 
 import SearchBar from '@components/search';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useKeyboardOverlap} from '@hooks/device';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {dismissModal} from '@screens/navigation';
+import {navigateBack} from '@utils/navigation/adapter';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import FilteredList from './filtered_list';
 import QuickOptions from './quick_options';
 import UnfilteredList from './unfiltered_list';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
-
-type Props = {
-    closeButtonId: string;
-    componentId: AvailableScreens;
-}
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -43,7 +35,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const FindChannels = ({closeButtonId, componentId}: Props) => {
+const FindChannels = () => {
     const theme = useTheme();
     const [term, setTerm] = useState('');
     const [loading, setLoading] = useState(false);
@@ -65,14 +57,15 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const close = useCallback(() => {
+    const close = useCallback(async () => {
         Keyboard.dismiss();
-        return dismissModal({componentId});
+        navigateBack();
+        await new Promise((resolve) => setTimeout(resolve, 250));
     }, []);
 
     const onCancel = useCallback(() => {
-        dismissModal({componentId});
-    }, []);
+        close();
+    }, [close]);
 
     const onChangeText = useCallback((text: string) => {
         setTerm(text);
@@ -81,14 +74,12 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
         }
     }, []);
 
-    useNavButtonPressed(closeButtonId, componentId, close, []);
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.FIND_CHANNELS, close);
 
     return (
         <View
             style={styles.container}
             testID='find_channels.screen'
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             <SearchBar
                 autoCapitalize='none'

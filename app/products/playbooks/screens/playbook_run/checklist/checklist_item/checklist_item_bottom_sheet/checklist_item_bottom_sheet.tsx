@@ -14,7 +14,8 @@ import {useTheme} from '@context/theme';
 import {setAssignee, setChecklistItemCommand, setDueDate} from '@playbooks/actions/remote/checklist';
 import {goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
 import {getDueDateString} from '@playbooks/utils/time';
-import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
+import {openUserProfileModal} from '@utils/navigation/adapter';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -244,12 +245,11 @@ const ChecklistItemBottomSheet = ({
     );
 
     const onUserChipPress = useCallback((userId: string) => {
-        openUserProfileModal(intl, theme, {
+        openUserProfileModal({
             userId,
             location: 'PlaybookRun',
         });
-    }, [intl, theme]);
-
+    }, []);
     const updateCommand = useCallback(async (command: string) => {
         await setChecklistItemCommand(serverUrl, runId, item.id, checklistNumber, itemNumber, command);
     }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);

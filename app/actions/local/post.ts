@@ -15,7 +15,7 @@ import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {updateLastPostAt, updateMyChannelLastFetchedAt} from './channel';
 
-import type {Model, Q} from '@nozbe/watermelondb';
+import type {Database, Model, Q} from '@nozbe/watermelondb';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -113,36 +113,67 @@ export const sendEphemeralPost = async (serverUrl: string, message: string, chan
     }
 };
 
+/**
+ * Helper function to prepare deletion models for a single post
+ */
+async function preparePostDeletion(database: Database, post: PostModel | Post) {
+    const removeModels: Model[] = [];
+
+    if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
+        const systemPostIds = getPostIdsForCombinedUserActivityPost(post.id);
+        for await (const id of systemPostIds) {
+            const postModel = await getPostById(database, id);
+            if (postModel) {
+                const preparedPost = await prepareDeletePost(postModel);
+                removeModels.push(...preparedPost);
+            }
+        }
+    } else {
+        const postModel = await getPostById(database, post.id);
+        if (postModel) {
+            const preparedPost = await prepareDeletePost(postModel);
+            removeModels.push(...preparedPost);
+        }
+    }
+
+    return removeModels;
+}
+
 export async function removePost(serverUrl: string, post: PostModel | Post) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
-            const systemPostIds = getPostIdsForCombinedUserActivityPost(post.id);
-            const removeModels = [];
-            for await (const id of systemPostIds) {
-                const postModel = await getPostById(database, id);
-                if (postModel) {
-                    const preparedPost = await prepareDeletePost(postModel);
-                    removeModels.push(...preparedPost);
-                }
-            }
+        const removeModels = await preparePostDeletion(database, post);
 
-            if (removeModels.length) {
-                await operator.batchRecords(removeModels, 'removePost (combined user activity)');
-            }
-        } else {
-            const postModel = await getPostById(database, post.id);
-            if (postModel) {
-                const preparedPost = await prepareDeletePost(postModel);
-                if (preparedPost.length) {
-                    await operator.batchRecords(preparedPost, 'removePost');
-                }
-            }
+        if (removeModels.length) {
+            await operator.batchRecords(removeModels, 'removePost');
         }
 
         return {post};
     } catch (error) {
         logError('Failed removePost', error);
+        return {error};
+    }
+}
+
+export async function removePosts(serverUrl: string, posts: Array<PostModel | Post>) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        // Prepare all post deletions in parallel
+        const allModels = await Promise.all(
+            posts.map((post) => preparePostDeletion(database, post)),
+        );
+
+        // Flatten the array of arrays into a single array
+        const removeModels = allModels.flat();
+
+        if (removeModels.length) {
+            await operator.batchRecords(removeModels, 'removePosts');
+        }
+
+        return {posts};
+    } catch (error) {
+        logError('Failed removePosts', error);
         return {error};
     }
 }

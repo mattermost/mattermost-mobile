@@ -93,7 +93,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         ...Platform.select({
             ios: {
-                paddingLeft: 16,
+                paddingLeft: 4,
                 zIndex: 5,
                 position: 'absolute',
                 bottom: 0,
@@ -107,7 +107,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'flex-end',
         ...Platform.select({
             ios: {
-                right: 16,
+                right: 4,
                 bottom: 0,
                 position: 'absolute',
                 zIndex: 2,

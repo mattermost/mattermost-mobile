@@ -4,7 +4,6 @@
 import {match} from 'path-to-regexp';
 import {defineMessage, type IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import urlParse from 'url-parse';
 
 import {joinIfNeededAndSwitchToChannel, makeDirectChannel} from '@actions/remote/channel';
@@ -25,11 +24,12 @@ import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStoreV2} from '@store/expo_navigation_store';
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/draft';
 import {getIntlShape} from '@utils/general';
 import {logError} from '@utils/log';
 import {escapeRegex} from '@utils/markdown';
+import {updateParams} from '@utils/navigation/adapter';
 import {addNewServer} from '@utils/server';
 import {removeProtocol, stripTrailingSlashes} from '@utils/url';
 import {
@@ -55,7 +55,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
 
         // After checking the server for http & https then we add it
         if (!existingServerUrl) {
-            const theme = EphemeralStore.theme || getDefaultThemeByAppearance();
+            const theme = EphemeralStore.getTheme() || getDefaultThemeByAppearance();
 
             if (deepLink.type === DeepLink.MagicLink && 'token' in deepLink.data) {
                 const result = await magicLinkLogin(deepLink.data.serverUrl, deepLink.data.token);
@@ -65,19 +65,19 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                 }
                 return {error: false};
             }
-            if (NavigationStore.getVisibleScreen() === Screens.SERVER) {
-                Navigation.updateProps(Screens.SERVER, {serverUrl: deepLink.data.serverUrl});
-            } else if (!NavigationStore.getScreensInStack().includes(Screens.SERVER)) {
+            if (NavigationStoreV2.getVisibleScreen() === Screens.SERVER) {
+                updateParams({serverUrl: deepLink.data.serverUrl});
+            } else if (!NavigationStoreV2.getScreensInStack().includes(Screens.SERVER)) {
                 addNewServer(theme, deepLink.data.serverUrl, undefined, deepLink);
             }
             return {error: false};
         }
 
-        if (existingServerUrl !== currentServerUrl && NavigationStore.getVisibleScreen()) {
+        if (existingServerUrl !== currentServerUrl && NavigationStoreV2.getVisibleScreen()) {
             await dismissAllModalsAndPopToRoot();
             DatabaseManager.setActiveServerDatabase(existingServerUrl);
             WebsocketManager.initializeClient(existingServerUrl, 'DeepLink');
-            await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
+            await NavigationStoreV2.waitUntilScreenHasLoaded(Screens.HOME);
         }
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(existingServerUrl);
@@ -117,8 +117,8 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
             case DeepLink.Permalink: {
                 const deepLinkData = deepLink.data as DeepLinkPermalink;
                 if (
-                    NavigationStore.hasModalsOpened() ||
-                    !deepLinkScreens.includes(NavigationStore.getVisibleScreen())
+                    NavigationStoreV2.hasModalsOpened() ||
+                    !deepLinkScreens.includes(NavigationStoreV2.getVisibleScreen())
                 ) {
                     await dismissAllModalsAndPopToRoot();
                 }

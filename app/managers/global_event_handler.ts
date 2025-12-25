@@ -3,7 +3,7 @@
 
 import RNUtils, {type SplitViewResult} from '@mattermost/rnutils';
 import {defineMessages} from 'react-intl';
-import {Alert, DeviceEventEmitter, Linking, NativeEventEmitter} from 'react-native';
+import {Alert, DeviceEventEmitter, Linking, NativeEventEmitter, type EventSubscription} from 'react-native';
 import semver from 'semver';
 
 import {switchToChannelById} from '@actions/remote/channel';
@@ -41,16 +41,25 @@ const messages = defineMessages({
 
 class GlobalEventHandlerSingleton {
     JavascriptAndNativeErrorHandler: jsAndNativeErrorHandler | undefined;
+    private serverVersionChangedListener: EventSubscription | undefined;
+    private splitViewChangedListener: EventSubscription | undefined;
+    private deepLinkListener: EventSubscription | undefined;
 
     constructor() {
-        DeviceEventEmitter.addListener(Events.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
-        splitViewEmitter.addListener('SplitViewChanged', this.onSplitViewChanged);
-        Linking.addEventListener('url', this.onDeepLink);
+        this.serverVersionChangedListener = DeviceEventEmitter.addListener(Events.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
+        this.splitViewChangedListener = splitViewEmitter.addListener('SplitViewChanged', this.onSplitViewChanged);
+        this.deepLinkListener = Linking.addEventListener('url', this.onDeepLink);
     }
 
     init = () => {
         this.JavascriptAndNativeErrorHandler = require('@utils/error_handling').default;
         this.JavascriptAndNativeErrorHandler?.initializeErrorHandling();
+    };
+
+    cleanup = () => {
+        this.serverVersionChangedListener?.remove();
+        this.splitViewChangedListener?.remove();
+        this.deepLinkListener?.remove();
     };
 
     onDeepLink = async (event: LinkingCallbackArg) => {

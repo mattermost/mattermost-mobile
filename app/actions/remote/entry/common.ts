@@ -23,7 +23,7 @@ import {prepareEntryModels, truncateCrtRelatedTables} from '@queries/servers/ent
 import {getHasCRTChanged} from '@queries/servers/preference';
 import {getCurrentChannelId, getCurrentTeamId, getIsDataRetentionEnabled, getPushVerificationStatus, getLastFullSync, setCurrentTeamAndChannelId, getConfigValue} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStoreV2} from '@store/expo_navigation_store';
 import {isDefaultChannel, isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion, isTablet} from '@utils/helpers';
@@ -302,7 +302,7 @@ export async function handleEntryAfterLoadNavigation(
 
         const currentTeamIdAfterLoad = await getCurrentTeamId(database);
         const currentChannelIdAfterLoad = await getCurrentChannelId(database);
-        const mountedScreens = NavigationStore.getScreensInStack();
+        const mountedScreens = NavigationStoreV2.getScreensInStack();
         const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
         const isThreadsMounted = mountedScreens.includes(Screens.THREAD);
         const tabletDevice = isTablet();

@@ -7,12 +7,9 @@ import {defineMessages} from 'react-intl';
 import {togglePinPost} from '@actions/remote/post';
 import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet} from '@screens/navigation';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
+import {dismissBottomSheet} from '@utils/navigation/adapter';
 
 type PinChannelProps = {
-    bottomSheetId: AvailableScreens;
     isPostPinned: boolean;
     postId: string;
 }
@@ -28,13 +25,13 @@ const messages = defineMessages({
     },
 });
 
-const PinChannelOption = ({bottomSheetId, isPostPinned, postId}: PinChannelProps) => {
+const PinChannelOption = ({isPostPinned, postId}: PinChannelProps) => {
     const serverUrl = useServerUrl();
 
     const onPress = useCallback(async () => {
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         togglePinPost(serverUrl, postId);
-    }, [bottomSheetId, postId, serverUrl]);
+    }, [postId, serverUrl]);
 
     let message;
     let key;

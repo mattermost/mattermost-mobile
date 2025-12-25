@@ -27,7 +27,6 @@ const ANDROID_BUMP_HEIGHT = 20;
 
 type Props = {
     currentCall: CurrentCall;
-    closeButtonId: string;
     session: CallSession;
     teammateNameDisplay: string;
     hideGuestTags: boolean;
@@ -48,7 +47,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
 
 export const HostControls = ({
     currentCall,
-    closeButtonId,
     session,
     teammateNameDisplay,
     hideGuestTags,
@@ -176,8 +174,7 @@ export const HostControls = ({
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId={closeButtonId}
-            componentId={Screens.CALL_HOST_CONTROLS}
+            screen={Screens.CALL_HOST_CONTROLS}
             initialSnapIndex={1}
             snapPoints={snapPoints}
         />

@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useRef} from 'react';
 import {
     View,
-    useWindowDimensions,
     SafeAreaView,
     ScrollView,
     StyleSheet,
@@ -16,10 +15,10 @@ import Animated, {useDerivedValue, useSharedValue} from 'react-native-reanimated
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
 import {Screens} from '@constants';
+import {useWindowDimensions} from '@hooks/device';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
-import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
-import {goToScreen, loginAnimationOptions} from '@screens/navigation';
+import {navigateToScreen} from '@utils/navigation/adapter';
 
 import FooterButtons from './footer_buttons';
 import Paginator from './paginator';
@@ -27,10 +26,8 @@ import SlideItem from './slide';
 import useSlidesData from './slides_data';
 
 import type {LaunchProps} from '@typings/launch';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 interface OnboardingProps extends LaunchProps {
-    componentId: AvailableScreens;
     theme: Theme;
 }
 
@@ -51,7 +48,6 @@ const styles = StyleSheet.create({
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
 const Onboarding = ({
-    componentId,
     theme,
     ...props
 }: OnboardingProps) => {
@@ -75,7 +71,7 @@ const Onboarding = ({
         // mark the onboarding as already viewed
         storeOnboardingViewedValue();
 
-        goToScreen(Screens.SERVER, '', {animated: true, theme, ...props}, loginAnimationOptions());
+        navigateToScreen(Screens.SERVER, {theme, ...props});
     }, []);
 
     const nextSlide = useCallback(() => {
@@ -85,13 +81,13 @@ const Onboarding = ({
         } else if (slidesRef.current && currentIndex.value === LAST_SLIDE_INDEX) {
             signInHandler();
         }
-    }, [currentIndex, moveToSlide, signInHandler]);
+    }, [LAST_SLIDE_INDEX, currentIndex.value, moveToSlide, signInHandler]);
 
     const scrollHandler = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         scrollX.value = event.nativeEvent.contentOffset.x;
     }, []);
 
-    const animatedStyles = useScreenTransitionAnimation(Screens.ONBOARDING);
+    const animatedStyles = useScreenTransitionAnimation();
 
     useEffect(() => {
         const listener = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -110,7 +106,6 @@ const Onboarding = ({
         <View
             style={styles.onBoardingContainer}
             testID='onboarding.screen'
-            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
         >
             <Background theme={theme}/>
             <AnimatedSafeArea

@@ -11,26 +11,21 @@ import {nativeEntraLogin, ssoLogin, ssoLoginWithCodeExchange} from '@actions/rem
 import {Screens, Sso} from '@constants';
 import License from '@constants/license';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
-import NetworkManager from '@managers/network_manager';
-import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
-import {dismissModal, popTopScreen, resetToHome} from '@screens/navigation';
 import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
 import {isMinimumLicenseTier} from '@utils/helpers';
 import {getIntuneErrorMessage} from '@utils/intune_errors';
+import {dismissModalScreen, navigateBack, navigateToScreen} from '@utils/navigation/adapter';
 
 import SSOAuthentication from './sso_authentication';
 import SSOAuthenticationWithExternalBrowser from './sso_authentication_with_external_browser';
 import SSOIntune from './sso_intune';
 
 import type {LaunchProps} from '@typings/launch';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
-interface SSOProps extends LaunchProps {
-    closeButtonId?: string;
-    componentId: AvailableScreens;
+export interface SSOProps extends LaunchProps {
+    isModal?: boolean;
     config: Partial<ClientConfig>;
     license: Partial<ClientLicense>;
     ssoType: string;
@@ -48,7 +43,7 @@ const styles = StyleSheet.create({
 });
 
 const SSO = ({
-    closeButtonId, componentId, config, extra,
+    isModal, config, extra,
     launchError, launchType, license, serverDisplayName,
     serverPreauthSecret, serverUrl, ssoType, theme,
 }: SSOProps) => {
@@ -128,7 +123,7 @@ const SSO = ({
 
     const goToHome = useCallback((error?: unknown) => {
         const hasError = launchError || Boolean(error);
-        resetToHome({extra, launchError: hasError, launchType, serverUrl});
+        navigateToScreen(Screens.HOME, {extra, launchError: hasError, launchType, serverUrl}, true);
     }, [extra, launchError, launchType, serverUrl]);
 
     const doEntraLogin = useCallback(async () => {
@@ -147,26 +142,17 @@ const SSO = ({
         return true;
     }, [serverUrl, serverDisplayName, config.DiagnosticId, config.IntuneScope, goToHome, onLoadEndError]);
 
-    const dismiss = useCallback(() => {
-        if (serverUrl) {
-            NetworkManager.invalidateClient(serverUrl);
-        }
-        dismissModal({componentId});
-    }, [componentId, serverUrl]);
-
-    const animatedStyles = useScreenTransitionAnimation(Screens.SSO);
-
-    useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
+    const animatedStyles = useScreenTransitionAnimation(!isModal);
 
     const onBackPressed = useCallback(() => {
-        if (closeButtonId) {
-            dismiss();
+        if (isModal) {
+            dismissModalScreen();
             return;
         }
 
-        popTopScreen(componentId);
-    }, [closeButtonId, dismiss, componentId]);
-    useAndroidHardwareBackHandler(componentId, onBackPressed);
+        navigateBack();
+    }, [isModal]);
+    useAndroidHardwareBackHandler(Screens.SSO, onBackPressed);
 
     const props = {
         doSSOLogin,
@@ -204,10 +190,7 @@ const SSO = ({
     }
 
     return (
-        <View
-            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
-            style={styles.flex}
-        >
+        <View style={styles.flex}>
             <Background theme={theme}/>
             <AnimatedSafeArea style={[styles.flex, animatedStyles]}>
                 {authentication}

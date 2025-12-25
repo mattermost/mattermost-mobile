@@ -8,7 +8,6 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import DraftsButton from '@components/drafts_buttton';
 import ThreadsButton from '@components/threads_button';
 import {Events, Screens} from '@constants';
-import {CHANNEL, DRAFT, THREAD} from '@constants/screens';
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -45,7 +44,7 @@ const getTabletWidth = (moreThanOneTeam: boolean) => {
     return TABLET_SIDEBAR_WIDTH - (moreThanOneTeam ? TEAM_SIDEBAR_WIDTH : 0);
 };
 
-type ScreenType = typeof DRAFT | typeof THREAD | typeof CHANNEL;
+type ScreenType = typeof Screens.GLOBAL_DRAFTS | typeof Screens.GLOBAL_THREADS | typeof Screens.CHANNEL;
 
 const CategoriesList = ({
     hasChannels,
@@ -64,7 +63,7 @@ const CategoriesList = ({
     const {width} = useWindowDimensions();
     const isTablet = useIsTablet();
     const tabletWidth = useSharedValue(isTablet ? getTabletWidth(moreThanOneTeam) : 0);
-    const [activeScreen, setActiveScreen] = useState<ScreenType>(isTablet && lastChannelId === Screens.GLOBAL_DRAFTS ? DRAFT : CHANNEL);
+    const [activeScreen, setActiveScreen] = useState<ScreenType>(isTablet && lastChannelId === Screens.GLOBAL_DRAFTS ? Screens.GLOBAL_DRAFTS : Screens.CHANNEL);
 
     useEffect(() => {
         if (isTablet) {
@@ -77,10 +76,10 @@ const CategoriesList = ({
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.ACTIVE_SCREEN, (screen: string) => {
-            if (screen === DRAFT || screen === THREAD) {
+            if (screen === Screens.GLOBAL_DRAFTS || screen === Screens.GLOBAL_THREADS) {
                 setActiveScreen(screen);
             } else {
-                setActiveScreen(CHANNEL);
+                setActiveScreen(Screens.CHANNEL);
             }
         });
 
@@ -107,17 +106,17 @@ const CategoriesList = ({
         return (
             <ThreadsButton
                 isOnHome={true}
-                shouldHighlightActive={activeScreen === THREAD}
+                shouldHighlightActive={activeScreen === Screens.GLOBAL_THREADS}
             />
         );
     }, [activeScreen, isCRTEnabled]);
 
     const draftsButtonComponent = useMemo(() => {
-        if (draftsCount > 0 || (scheduledPostCount > 0 && scheduledPostsEnabled) || (isTablet && activeScreen === DRAFT)) {
+        if (draftsCount > 0 || (scheduledPostCount > 0 && scheduledPostsEnabled) || (isTablet && activeScreen === Screens.GLOBAL_DRAFTS)) {
             return (
                 <DraftsButton
                     draftsCount={draftsCount}
-                    shouldHighlightActive={activeScreen === DRAFT}
+                    shouldHighlightActive={activeScreen === Screens.GLOBAL_DRAFTS}
                     scheduledPostCount={scheduledPostCount}
                     scheduledPostHasError={scheduledPostHasError}
                 />

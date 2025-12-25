@@ -5,12 +5,13 @@ import {DeviceEventEmitter} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 
 import {Events} from '@constants';
+import {getDefaultThemeByAppearance} from '@context/theme';
 import {toMilliseconds} from '@utils/datetime';
 
 const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
 
 class EphemeralStoreSingleton {
-    theme: Theme | undefined;
+    private themeSubject = new BehaviorSubject<Theme>(getDefaultThemeByAppearance());
     creatingChannel = false;
     creatingDMorGMTeammates: string[] = [];
 
@@ -302,6 +303,18 @@ class EphemeralStoreSingleton {
 
     clearChannelPlaybooksSynced = (serverUrl: string) => {
         delete this.channelPlaybooksSynced[serverUrl];
+    };
+
+    observeTheme = () => {
+        return this.themeSubject.asObservable();
+    };
+
+    setTheme = (theme: Theme) => {
+        this.themeSubject.next(theme);
+    };
+
+    getTheme = () => {
+        return this.themeSubject.value;
     };
 }
 

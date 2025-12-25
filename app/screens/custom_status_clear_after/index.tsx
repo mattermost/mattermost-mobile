@@ -2,48 +2,30 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import React from 'react';
-import {injectIntl, type IntlShape} from 'react-intl';
-import {BackHandler, type NativeEventSubscription, SafeAreaView, View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {
-    Navigation,
-    type NavigationButtonPressedEvent,
-    NavigationComponent,
-    type Options,
-} from 'react-native-navigation';
+import {useNavigation} from 'expo-router';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {Pressable, SafeAreaView, View} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 
+import FormattedText from '@components/formatted_text';
+import {Screens} from '@constants';
 import {CustomStatusDurationEnum} from '@constants/custom_status';
-import SecurityManager from '@managers/security_manager';
+import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {observeCurrentUser} from '@queries/servers/user';
-import {dismissModal, popTopScreen} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
-import {mergeNavigationOptions} from '@utils/navigation';
+import CustomStatusStore from '@store/custom_status_store';
+import {navigateBack} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ClearAfterMenuItem from './components/clear_after_menu_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
-interface Props {
-    componentId: AvailableScreens;
+export interface CustomStatusClearAfterProps {
     currentUser?: UserModel;
-    handleClearAfterClick: (duration: CustomStatusDuration, expiresAt: string) => void;
     initialDuration: CustomStatusDuration;
-    intl: IntlShape;
-    isModal?: boolean;
-    theme: Theme;
 }
-
-type State = {
-    duration: CustomStatusDuration;
-    expiresAt: string;
-    showExpiryTime: boolean;
-}
-
-const CLEAR_AFTER = 'update-custom-status-clear-after';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -51,7 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
         },
-        scrollView: {
+        mainView: {
             flex: 1,
             paddingTop: 32,
             paddingBottom: 32,
@@ -65,91 +47,43 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-class ClearAfterModal extends NavigationComponent<Props, State> {
-    private backListener: NativeEventSubscription | undefined;
-    constructor(props: Props) {
-        super({...props, componentName: 'ClearAfterModal'});
+function CustomStatusClearAfter({currentUser, initialDuration}: CustomStatusClearAfterProps) {
+    const navigation = useNavigation();
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
+    const [duration, setDuration] = useState<CustomStatusDuration>(initialDuration);
+    const [expiresAt, setExpiresAt] = useState('');
+    const [showExpiryTime, setShowExpiryTime] = useState(false);
 
-        const options: Options = {
-            topBar: {
-                rightButtons: [{
-                    color: props.theme.sidebarHeaderTextColor,
-                    enabled: true,
-                    id: CLEAR_AFTER,
-                    showAsAction: 'always',
-                    testID: 'custom_status_clear_after.done.button',
-                    text: props.intl.formatMessage({
-                        id: 'mobile.custom_status.modal_confirm',
-                        defaultMessage: 'Done',
-                    }),
-                }],
-            },
-        };
+    const onDone = useCallback(() => {
+        CustomStatusStore.getClearAfterCallback()?.(duration, expiresAt);
+        navigateBack();
+    }, [duration, expiresAt]);
 
-        mergeNavigationOptions(props.componentId, options);
+    const handleItemClick = useCallback((itemDuration: CustomStatusDuration, itemExpiresAt: string) => {
+        setDuration(itemDuration);
+        setExpiresAt(itemExpiresAt);
+        setShowExpiryTime(itemDuration === 'date_and_time' && itemExpiresAt !== '');
+    }, []);
 
-        this.state = {
-            duration: props.initialDuration,
-            expiresAt: '',
-            showExpiryTime: false,
-        };
-    }
-
-    componentDidMount() {
-        Navigation.events().bindComponent(this);
-        this.backListener = BackHandler.addEventListener('hardwareBackPress', this.onBackPress);
-    }
-
-    componentWillUnmount() {
-        this.backListener?.remove();
-    }
-
-    navigationButtonPressed({buttonId}: NavigationButtonPressedEvent) {
-        switch (buttonId) {
-            case CLEAR_AFTER:
-                this.onDone();
-                break;
-        }
-    }
-
-    onBackPress = () => {
-        const {componentId} = this.props;
-        if (NavigationStore.getVisibleScreen() === componentId) {
-            if (this.props.isModal) {
-                dismissModal({componentId});
-            } else {
-                popTopScreen(componentId);
-            }
-
-            return true;
-        }
-        return false;
-    };
-
-    onDone = () => {
-        const {componentId, handleClearAfterClick, isModal} = this.props;
-        handleClearAfterClick(this.state.duration, this.state.expiresAt);
-        if (isModal) {
-            dismissModal({componentId});
-            return;
-        }
-
-        popTopScreen(componentId);
-    };
-
-    handleItemClick = (duration: CustomStatusDuration, expiresAt: string) =>
-        this.setState({
-            duration,
-            expiresAt,
-            showExpiryTime: duration === 'date_and_time' && expiresAt !== '',
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <Pressable
+                    onPress={onDone}
+                    testID='custom_status_clear_after.done.button'
+                >
+                    <FormattedText
+                        id='mobile.custom_status.modal_confirm'
+                        defaultMessage='Done'
+                        style={{color: theme.sidebarHeaderTextColor, fontSize: 16}}
+                    />
+                </Pressable>
+            ),
         });
+    }, [navigation, onDone, theme.sidebarHeaderTextColor]);
 
-    renderClearAfterMenu = () => {
-        const {currentUser, theme} = this.props;
-        const style = getStyleSheet(theme);
-
-        const {duration} = this.state;
-
+    const clearAfterMenuComponent = useMemo(() => {
         const clearAfterMenu = Object.values(CustomStatusDurationEnum).map(
             (item, index, arr) => {
                 if (index === arr.length - 1) {
@@ -160,7 +94,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
                     <ClearAfterMenuItem
                         currentUser={currentUser}
                         duration={item}
-                        handleItemClick={this.handleItemClick}
+                        handleItemClick={handleItemClick}
                         isSelected={duration === item}
                         key={item}
                         separator={index !== arr.length - 2}
@@ -175,45 +109,41 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
 
         return (
             <View testID='custom_status_clear_after.menu'>
-                <View style={style.block}>{clearAfterMenu}</View>
+                <View style={styles.block}>{clearAfterMenu}</View>
             </View>
         );
-    };
+    }, [currentUser, duration, handleItemClick, styles.block]);
 
-    render() {
-        const {componentId, currentUser, theme} = this.props;
-        const style = getStyleSheet(theme);
-        const {duration, expiresAt, showExpiryTime} = this.state;
-        return (
-            <SafeAreaView
-                style={style.container}
-                testID='custom_status_clear_after.screen'
-                nativeID={SecurityManager.getShieldScreenId(componentId)}
-            >
-                <KeyboardAwareScrollView bounces={false}>
-                    <View style={style.scrollView}>
-                        {this.renderClearAfterMenu()}
-                    </View>
-                    <View style={style.block}>
-                        <ClearAfterMenuItem
-                            currentUser={currentUser}
-                            duration={'date_and_time'}
-                            expiryTime={expiresAt}
-                            handleItemClick={this.handleItemClick}
-                            isSelected={duration === 'date_and_time' && expiresAt === ''}
-                            separator={false}
-                            showDateTimePicker={duration === 'date_and_time'}
-                            showExpiryTime={showExpiryTime}
-                        />
-                    </View>
-                </KeyboardAwareScrollView>
-            </SafeAreaView>
-        );
-    }
+    useAndroidHardwareBackHandler(Screens.CUSTOM_STATUS_CLEAR_AFTER, navigateBack);
+
+    return (
+        <SafeAreaView
+            style={styles.container}
+            testID='custom_status_clear_after.screen'
+        >
+            <KeyboardAwareScrollView bounces={false}>
+                <View style={styles.mainView}>
+                    {clearAfterMenuComponent}
+                </View>
+                <View style={styles.block}>
+                    <ClearAfterMenuItem
+                        currentUser={currentUser}
+                        duration={'date_and_time'}
+                        expiryTime={expiresAt}
+                        handleItemClick={handleItemClick}
+                        isSelected={duration === 'date_and_time' && expiresAt === ''}
+                        separator={false}
+                        showDateTimePicker={duration === 'date_and_time'}
+                        showExpiryTime={showExpiryTime}
+                    />
+                </View>
+            </KeyboardAwareScrollView>
+        </SafeAreaView>
+    );
 }
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentUser: observeCurrentUser(database),
 }));
 
-export default withDatabase(enhanced(injectIntl(ClearAfterModal)));
+export default withDatabase(enhanced(CustomStatusClearAfter));

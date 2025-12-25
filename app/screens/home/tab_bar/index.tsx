@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, View, TouchableOpacity} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -9,7 +9,6 @@ import {Shadow} from 'react-native-shadow-2';
 
 import {Events, Navigation as NavigationConstants, Screens, View as ViewConstants} from '@constants';
 import {useWindowDimensions} from '@hooks/device';
-import NavigationStore from '@store/navigation_store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Account from './account';
@@ -60,17 +59,18 @@ const shadowSides = {top: true, bottom: false, end: false, start: false};
 const shadowOffset: [x: number | string, y: number | string] = [0, -0.5];
 
 const TabComponents: Record<string, any> = {
-    Account,
-    Home,
-    Mentions,
-    SavedMessages,
-    Search,
+    [Screens.ACCOUNT]: Account,
+    [Screens.CHANNEL_LIST]: Home,
+    [Screens.MENTIONS]: Mentions,
+    [Screens.SAVED_MESSAGES]: SavedMessages,
+    [Screens.SEARCH]: Search,
 };
 
 function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {theme: Theme}) {
     const [visible, setVisible] = useState<boolean|undefined>();
     const {width} = useWindowDimensions();
-    const tabWidth = width / state.routes.length;
+    const tabs = useMemo(() => state.routes.filter((route) => route.name !== 'index'), [state.routes]);
+    const tabWidth = width / tabs.length;
     const style = getStyleSheet(theme);
     const safeareaInsets = useSafeAreaInsets();
 
@@ -84,7 +84,6 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
 
     useEffect(() => {
         const listner = DeviceEventEmitter.addListener(NavigationConstants.NAVIGATION_HOME, () => {
-            NavigationStore.setVisibleTap(Screens.HOME);
             navigation.navigate(Screens.HOME);
         });
 
@@ -109,12 +108,11 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
             if (!event.defaultPrevented) {
                 // The `merge: true` option makes sure that the params inside the tab screen are preserved
                 navigation.navigate({params: {direction, ...params}, name: route.name, merge: false});
-                NavigationStore.setVisibleTap(route.name);
             }
         });
 
         return () => listner.remove();
-    }, [state]);
+    }, [navigation, state]);
 
     const transform = useAnimatedStyle(() => {
         const translateX = withTiming(state.index * tabWidth, {duration: 150});
@@ -125,92 +123,95 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
 
     const animatedStyle = useAnimatedStyle(() => {
         if (visible === undefined) {
-            return {transform: [{translateY: -safeareaInsets.bottom}]};
+            return {transform: [{translateY: 0}]};
         }
 
-        const height = visible ? withTiming(-safeareaInsets.bottom, {duration: 200}) : withTiming(52 + safeareaInsets.bottom, {duration: 150});
+        const height = visible ? withTiming(0, {duration: 200}) : withTiming(52, {duration: 150});
         return {
             transform: [{translateY: height}],
         };
     }, [visible, safeareaInsets.bottom]);
 
     return (
-        <Animated.View style={[style.container, style.separator, animatedStyle]}>
-            <Shadow
-                startColor='rgba(61, 60, 64, 0.08)'
-                distance={4}
-                offset={shadowOffset}
-                style={{
-                    position: 'absolute',
-                    borderRadius: 6,
-                    width,
-                }}
-                sides={shadowSides}
-            />
-            <Animated.View
-                style={[
-                    style.sliderContainer,
-                    {width: tabWidth - 20},
-                    transform,
-                ]}
-            >
-                <View style={style.slider}/>
+        <Animated.View style={{backgroundColor: theme.centerChannelBg}}>
+            <Animated.View style={[style.container, style.separator, animatedStyle]}>
+                <Shadow
+                    startColor='rgba(61, 60, 64, 0.08)'
+                    distance={4}
+                    offset={shadowOffset}
+                    style={{
+                        position: 'absolute',
+                        borderRadius: 6,
+                        width,
+                    }}
+                    sides={shadowSides}
+                />
+                <Animated.View
+                    style={[
+                        style.sliderContainer,
+                        {width: tabWidth - 20},
+                        transform,
+                    ]}
+                >
+                    <View style={style.slider}/>
+                </Animated.View>
+                {tabs.map((route, index) => {
+                    const {options} = descriptors[route.key];
+
+                    const isFocused = state.index === index;
+
+                    const onPress = () => {
+                        const lastTab = state.history[state.history.length - 1];
+                        const lastIndex = tabs.findIndex((r) => r.key === lastTab.key);
+                        const direction = lastIndex < index ? 'right' : 'left';
+                        const event = navigation.emit({
+                            type: 'tabPress',
+                            target: route.key,
+                            canPreventDefault: true,
+                        });
+                        DeviceEventEmitter.emit(NavigationConstants.TAB_PRESSED);
+                        if (!isFocused && !event.defaultPrevented) {
+                            // The `merge: true` option makes sure that the params inside the tab screen are preserved
+                            navigation.navigate({params: {direction}, name: route.name, merge: false});
+                        }
+                    };
+
+                    const onLongPress = () => {
+                        navigation.emit({
+                            type: 'tabLongPress',
+                            target: route.key,
+                        });
+                    };
+
+                    const renderOption = () => {
+                        // Route names now match screen constants directly
+                        const Component = TabComponents[route.name];
+                        const props = {isFocused, theme};
+                        if (Component) {
+                            return <Component {...props}/>;
+                        }
+
+                        return null;
+                    };
+
+                    return (
+                        <TouchableOpacity
+                            key={route.name}
+                            accessibilityRole='button'
+                            accessibilityState={isFocused ? {selected: true} : {}}
+                            accessibilityLabel={options.tabBarAccessibilityLabel}
+                            testID={options.tabBarButtonTestID}
+                            onPress={onPress}
+                            onLongPress={onLongPress}
+                            style={style.item}
+                        >
+                            {renderOption()}
+                        </TouchableOpacity>
+                    );
+                })}
             </Animated.View>
-            {state.routes.map((route, index) => {
-                const {options} = descriptors[route.key];
-
-                const isFocused = state.index === index;
-
-                const onPress = () => {
-                    const lastTab = state.history[state.history.length - 1];
-                    const lastIndex = state.routes.findIndex((r) => r.key === lastTab.key);
-                    const direction = lastIndex < index ? 'right' : 'left';
-                    const event = navigation.emit({
-                        type: 'tabPress',
-                        target: route.key,
-                        canPreventDefault: true,
-                    });
-                    DeviceEventEmitter.emit('tabPress');
-                    if (!isFocused && !event.defaultPrevented) {
-                        // The `merge: true` option makes sure that the params inside the tab screen are preserved
-                        navigation.navigate({params: {direction}, name: route.name, merge: false});
-                        NavigationStore.setVisibleTap(route.name);
-                    }
-                };
-
-                const onLongPress = () => {
-                    navigation.emit({
-                        type: 'tabLongPress',
-                        target: route.key,
-                    });
-                };
-
-                const renderOption = () => {
-                    const Component = TabComponents[route.name];
-                    const props = {isFocused, theme};
-                    if (Component) {
-                        return <Component {...props}/>;
-                    }
-
-                    return null;
-                };
-
-                return (
-                    <TouchableOpacity
-                        key={route.name}
-                        accessibilityRole='button'
-                        accessibilityState={isFocused ? {selected: true} : {}}
-                        accessibilityLabel={options.tabBarAccessibilityLabel}
-                        testID={options.tabBarButtonTestID}
-                        onPress={onPress}
-                        onLongPress={onLongPress}
-                        style={style.item}
-                    >
-                        {renderOption()}
-                    </TouchableOpacity>
-                );
-            })}
         </Animated.View>
+
     );
 }
 

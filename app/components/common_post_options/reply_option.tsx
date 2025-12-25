@@ -7,14 +7,12 @@ import {defineMessages} from 'react-intl';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet} from '@utils/navigation/adapter';
 
 import type PostModel from '@typings/database/models/servers/post';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     post: PostModel;
-    bottomSheetId: AvailableScreens;
 }
 
 const messages = defineMessages({
@@ -23,14 +21,14 @@ const messages = defineMessages({
         defaultMessage: 'Reply',
     },
 });
-const ReplyOption = ({post, bottomSheetId}: Props) => {
+const ReplyOption = ({post}: Props) => {
     const serverUrl = useServerUrl();
 
     const handleReply = useCallback(async () => {
         const rootId = post.rootId || post.id;
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         fetchAndSwitchToThread(serverUrl, rootId);
-    }, [bottomSheetId, post, serverUrl]);
+    }, [post, serverUrl]);
 
     return (
         <BaseOption

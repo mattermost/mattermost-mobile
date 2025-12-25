@@ -3,11 +3,9 @@
 
 /* eslint-disable max-lines */
 
-import RNUtils from '@mattermost/rnutils';
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, Platform, Alert, type EmitterSubscription, Keyboard, StatusBar} from 'react-native';
+import {Appearance, DeviceEventEmitter, Platform, Alert, type EmitterSubscription} from 'react-native';
 import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
-import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
 import {Events, Screens, Launch} from '@constants';
@@ -21,11 +19,8 @@ import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/naviga
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
-import type {default as UserProfileScreen} from '@screens/user_profile';
 import type {LaunchProps} from '@typings/launch';
 import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
-import type {ComponentProps} from 'react';
-import type {IntlShape} from 'react-intl';
 
 const alpha = {
     from: 0,
@@ -36,23 +31,6 @@ let subscriptions: Array<EmitterSubscription | EventSubscription> | undefined;
 
 export const allOrientations: LayoutOrientation[] = ['sensor', 'sensorLandscape', 'sensorPortrait', 'landscape', 'portrait'];
 export const portraitOrientation: LayoutOrientation[] = ['portrait'];
-
-const loginFlowScreens = new Set<AvailableScreens>([
-    Screens.ONBOARDING,
-    Screens.SERVER,
-    Screens.LOGIN,
-    Screens.SSO,
-    Screens.MFA,
-    Screens.FORGOT_PASSWORD,
-]);
-
-function setNavigationBarColor(screen: AvailableScreens, th?: Theme) {
-    if (Platform.OS === 'android' && Platform.Version >= 34) {
-        const theme = th || getThemeFromState();
-        const color = loginFlowScreens.has(screen) ? theme.sidebarBg : theme.centerChannelBg;
-        RNUtils.setNavigationBarColor(color, tinyColor(color).isLight());
-    }
-}
 
 function showBottomTabsIfNeeded(screen: AvailableScreens) {
     if (screen === Screens.HOME) {
@@ -104,7 +82,6 @@ function onCommandListener(name: string, params: any) {
 
     const screen = NavigationStore.getVisibleScreen();
     showBottomTabsIfNeeded(screen);
-    setNavigationBarColor(screen);
 }
 
 function onPoppedListener({componentId}: ScreenPoppedEvent) {
@@ -114,8 +91,6 @@ function onPoppedListener({componentId}: ScreenPoppedEvent) {
 
     // If we pop to home, we need to show the tab bar
     showBottomTabsIfNeeded(NavigationStore.getVisibleScreen());
-
-    setNavigationBarColor(screen);
 }
 
 function onScreenWillAppear(event: ComponentWillAppearEvent) {
@@ -278,7 +253,7 @@ export function setScreensOrientation(allowRotation: boolean) {
 }
 
 export function getThemeFromState(): Theme {
-    return EphemeralStore.theme || getDefaultThemeByAppearance();
+    return EphemeralStore.getTheme() || getDefaultThemeByAppearance();
 }
 
 // This is a temporary helper function to avoid
@@ -297,32 +272,6 @@ function isScreenRegistered(screen: AvailableScreens) {
     return true;
 }
 
-function edgeToEdgeHack(screen: AvailableScreens, theme: Theme) {
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-
-    if (Platform.OS === 'android') {
-        if (Platform.Version >= 34) {
-            const listener = Navigation.events().registerComponentDidAppearListener((event) => {
-                if (event.componentName === screen) {
-                    setNavigationBarColor(screen, theme);
-                    listener.remove();
-                }
-            });
-        }
-
-        if (Platform.Version >= 36) {
-            return {
-                drawBehind: true,
-                translucent: false,
-                isDark,
-            };
-        }
-    }
-
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
-    return {isDark};
-}
-
 export function openToS() {
     NavigationStore.setToSOpen(true);
     return showOverlay(Screens.TERMS_OF_SERVICE, {}, {overlay: {interceptTouchOutside: true}});
@@ -330,7 +279,6 @@ export function openToS() {
 
 export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}) {
     const theme = getThemeFromState();
-    const edgeToEdge = edgeToEdgeHack(Screens.HOME, theme);
 
     if (!passProps.coldStart && (passProps.launchType === Launch.AddServer || passProps.launchType === Launch.AddServerFromDeepLink)) {
         dismissModal({componentId: Screens.SERVER});
@@ -356,7 +304,6 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
                     statusBar: {
                         visible: true,
                         backgroundColor: theme.sidebarBg,
-                        ...edgeToEdge,
                     },
                     topBar: {
                         visible: false,
@@ -381,7 +328,6 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
-    const edgeToEdge = edgeToEdgeHack(Screens.SERVER, theme);
 
     const children = [{
         component: {
@@ -399,7 +345,6 @@ export function resetToSelectServer(passProps: LaunchProps) {
                 statusBar: {
                     visible: true,
                     backgroundColor: theme.sidebarBg,
-                    ...edgeToEdge,
                 },
                 topBar: {
                     backButton: {
@@ -427,7 +372,6 @@ export function resetToSelectServer(passProps: LaunchProps) {
 
 export function resetToOnboarding(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
-    const edgeToEdge = edgeToEdgeHack(Screens.ONBOARDING, theme);
 
     const children = [{
         component: {
@@ -445,7 +389,6 @@ export function resetToOnboarding(passProps: LaunchProps) {
                 statusBar: {
                     visible: true,
                     backgroundColor: theme.sidebarBg,
-                    ...edgeToEdge,
                 },
                 topBar: {
                     backButton: {
@@ -473,7 +416,6 @@ export function resetToOnboarding(passProps: LaunchProps) {
 
 export function resetToTeams() {
     const theme = getThemeFromState();
-    const edgeToEdge = edgeToEdgeHack(Screens.SELECT_TEAM, theme);
 
     return Navigation.setRoot({
         root: {
@@ -489,7 +431,6 @@ export function resetToTeams() {
                             statusBar: {
                                 visible: true,
                                 backgroundColor: theme.sidebarBg,
-                                ...edgeToEdge,
                             },
                             topBar: {
                                 visible: false,
@@ -516,7 +457,6 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
     }
 
     const theme = getThemeFromState();
-    const edgeToEdge = edgeToEdgeHack(name, theme);
     const componentId = NavigationStore.getVisibleScreen();
     if (!componentId) {
         logError('Trying to go to screen without any screen on the navigation store');
@@ -533,10 +473,7 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
             right: {enabled: false},
         },
         statusBar: {
-            style: edgeToEdge.isDark ? 'light' : 'dark',
             backgroundColor: theme.sidebarBg,
-            drawBehind: edgeToEdge.drawBehind ?? false,
-            translucent: edgeToEdge.translucent ?? false,
         },
         topBar: {
             animate: true,
@@ -654,7 +591,6 @@ export function showModal(name: AvailableScreens, title: string, passProps = {},
     }
 
     const theme = getThemeFromState();
-    const edgeToEdge = edgeToEdgeHack(name, theme);
     const modalPresentationStyle: OptionsModalPresentationStyle = Platform.OS === 'ios' ? OptionsModalPresentationStyle.pageSheet : OptionsModalPresentationStyle.none;
     const defaultOptions: Options = {
         modalPresentationStyle,
@@ -664,7 +600,6 @@ export function showModal(name: AvailableScreens, title: string, passProps = {},
         statusBar: {
             visible: true,
             backgroundColor: theme.sidebarBg,
-            ...edgeToEdge,
         },
         topBar: {
             animate: true,
@@ -952,21 +887,4 @@ export async function findChannels(title: string, theme: Theme) {
         {closeButtonId},
         options,
     );
-}
-
-export async function openUserProfileModal(
-    intl: IntlShape,
-    theme: Theme,
-    props: Omit<ComponentProps<typeof UserProfileScreen>, 'closeButtonId'>,
-    screenToDismiss?: AvailableScreens,
-) {
-    if (screenToDismiss) {
-        await dismissBottomSheet(screenToDismiss);
-    }
-    const screen = Screens.USER_PROFILE;
-    const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-    const closeButtonId = 'close-user-profile';
-
-    Keyboard.dismiss();
-    openAsBottomSheet({screen, title, theme, closeButtonId, props: {...props}});
 }

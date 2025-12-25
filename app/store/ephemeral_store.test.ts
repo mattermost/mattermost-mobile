@@ -6,6 +6,39 @@ describe('EphemeralStore', () => {
         jest.resetModules();
     });
 
+    it('theme observable', () => {
+        const EphemeralStore = require('./ephemeral_store').default;
+        const {Preferences} = require('@constants');
+
+        // Initial value should be undefined
+        expect(EphemeralStore.getTheme()).toBeUndefined();
+
+        // Set theme
+        const theme = Preferences.THEMES.denim;
+        EphemeralStore.setTheme(theme);
+        expect(EphemeralStore.getTheme()).toBe(theme);
+
+        // Observable should emit values
+        const mockCallback = jest.fn();
+        const subscription = EphemeralStore.observeTheme().subscribe(mockCallback);
+
+        // Should immediately get current value
+        expect(mockCallback).toHaveBeenCalledWith(theme);
+
+        // Should get new values when theme changes
+        const newTheme = Preferences.THEMES.sapphire;
+        EphemeralStore.setTheme(newTheme);
+        expect(mockCallback).toHaveBeenCalledWith(newTheme);
+        expect(mockCallback).toHaveBeenCalledTimes(2);
+
+        // Clean up
+        subscription.unsubscribe();
+
+        // After unsubscribe, callback should not be called
+        EphemeralStore.setTheme(theme);
+        expect(mockCallback).toHaveBeenCalledTimes(2);
+    });
+
     it('playbooks sync', () => {
         const EphemeralStore = require('./ephemeral_store').default;
 

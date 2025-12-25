@@ -251,4 +251,4 @@ const File = ({
     return fileComponent;
 };
 
-export default File;
+export default React.memo(File);

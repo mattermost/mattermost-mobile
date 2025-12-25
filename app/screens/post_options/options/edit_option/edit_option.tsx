@@ -2,19 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {defineMessages, useIntl} from 'react-intl';
+import {defineMessages} from 'react-intl';
 
 import {BaseOption} from '@components/common_post_options';
-import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
-import {dismissBottomSheet, showModal} from '@screens/navigation';
+import {dismissBottomSheet, navigateToScreen} from '@utils/navigation/adapter';
 
 import type PostModel from '@typings/database/models/servers/post';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bottomSheetId: AvailableScreens;
     post: PostModel;
     canDelete: boolean;
     files?: FileInfo[];
@@ -27,28 +23,13 @@ const messages = defineMessages({
     },
 });
 
-const EditOption = ({bottomSheetId, post, canDelete, files}: Props) => {
-    const intl = useIntl();
-    const theme = useTheme();
-
+const EditOption = ({post, canDelete, files}: Props) => {
     const onPress = useCallback(async () => {
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
 
-        const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const closeButtonId = 'close-edit-post';
-        const passProps = {post, closeButtonId, canDelete, files};
-        const options = {
-            topBar: {
-                leftButtons: [{
-                    id: closeButtonId,
-                    testID: 'close.edit_post.button',
-                    icon: closeButton,
-                }],
-            },
-        };
-        showModal(Screens.EDIT_POST, title, passProps, options);
-    }, [bottomSheetId, canDelete, files, intl, post, theme.sidebarHeaderTextColor]);
+        const passProps = {postId: post.id, canDelete, files};
+        navigateToScreen(Screens.EDIT_POST, passProps);
+    }, [canDelete, files, post]);
 
     return (
         <BaseOption

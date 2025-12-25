@@ -11,12 +11,14 @@ import UserChip from '@components/chips/user_chip';
 import CompassIcon from '@components/compass_icon';
 import {getFriendlyDate} from '@components/friendly_date';
 import PressableOpacity from '@components/pressable_opacity';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {restoreChecklistItem, runChecklistItem, skipChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
 import {isDueSoon, isOverdue} from '@playbooks/utils/run';
-import {bottomSheet, openUserProfileModal, popTo} from '@screens/navigation';
+import {bottomSheet} from '@screens/navigation';
 import {logDebug} from '@utils/log';
+import {dismissAllModalsAndPopToScreen, openUserProfileModal} from '@utils/navigation/adapter';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -130,12 +132,12 @@ const ChecklistItem = ({
     const dueSoon = isDueSoon(item);
 
     const onUserChipPress = useCallback((userId: string) => {
-        openUserProfileModal(intl, theme, {
+        openUserProfileModal({
             userId,
             channelId,
             location: 'PlaybookRun',
         });
-    }, [channelId, intl, theme]);
+    }, [channelId]);
 
     const executeCommand = useCallback(async () => {
         if (isExecuting) {
@@ -149,7 +151,7 @@ const ChecklistItem = ({
             return;
         }
 
-        popTo('Channel');
+        dismissAllModalsAndPopToScreen(Screens.CHANNEL);
         if (item.command?.startsWith('/call')) {
             await handleCallsSlashCommand(item.command, serverUrl, channelId, channelType, '', currentUserId, intl);
         }

@@ -20,11 +20,16 @@ import UserProfile from './user_profile';
 
 import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
-type EnhancedProps = WithDatabaseArgs & {
+export type UserProfileProps = {
     userId: string;
     channelId?: string;
+    location?: AvailableScreens;
+    userIconOverride?: string;
+    usernameOverride?: string;
 }
+type EnhancedProps = UserProfileProps & WithDatabaseArgs
 
 const enhanced = withObservables([], ({channelId, database, userId}: EnhancedProps) => {
     const currentUser = observeCurrentUser(database);

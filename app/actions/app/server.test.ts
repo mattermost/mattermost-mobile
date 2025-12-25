@@ -7,7 +7,7 @@ import {Navigation} from 'react-native-navigation';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {Events, Preferences, Screens} from '@constants';
+import {Events, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import SecurityManager from '@managers/security_manager';
@@ -16,7 +16,7 @@ import {getServer, getServerByIdentifier} from '@queries/app/servers';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 import {canReceiveNotifications} from '@utils/push_proxy';
-import {alertServerAlreadyConnected, alertServerError, loginToServer} from '@utils/server';
+import {alertServerAlreadyConnected, alertServerError} from '@utils/server';
 
 import * as Actions from './server';
 
@@ -64,7 +64,7 @@ describe('switchToServer', () => {
 
     it('should log error when server is not found', async () => {
         jest.mocked(getServer).mockResolvedValueOnce(undefined);
-        await Actions.switchToServer('serverUrl', theme, intl, jest.fn());
+        await Actions.switchToServer('serverUrl');
         expect(logError).toHaveBeenCalledWith('Switch to Server with url serverUrl not found');
     });
 
@@ -75,7 +75,7 @@ describe('switchToServer', () => {
         jest.mocked(SecurityManager).isDeviceJailbroken.mockResolvedValueOnce(false);
         jest.mocked(SecurityManager).authenticateWithBiometricsIfNeeded.mockResolvedValueOnce(true);
 
-        await Actions.switchToServer('serverUrl', theme, intl, jest.fn());
+        await Actions.switchToServer('serverUrl');
 
         // Wait for the async database operation to complete (setActiveServerDatabase is called without await)
         await TestHelper.wait(10);
@@ -86,7 +86,6 @@ describe('switchToServer', () => {
             forceSwitch: false,
         };
 
-        expect(Navigation.updateProps).toHaveBeenCalledWith(Screens.HOME, {extra: undefined});
         expect(setActiveSpy).toHaveBeenCalledWith('serverUrl', options);
         expect(emitSpy).toHaveBeenCalledWith(Events.ACTIVE_SERVER_CHANGED, {serverUrl: 'serverUrl', options});
         expect(SecurityManager.setActiveServer).toHaveBeenCalledWith({serverUrl: 'serverUrl', options});
@@ -99,7 +98,7 @@ describe('switchToServer', () => {
         jest.mocked(SecurityManager.isDeviceJailbroken).mockResolvedValueOnce(true);
         jest.mocked(SecurityManager.authenticateWithBiometricsIfNeeded).mockResolvedValueOnce(true);
 
-        await Actions.switchToServer('serverUrl', theme, intl, jest.fn());
+        await Actions.switchToServer('serverUrl');
 
         expect(Navigation.updateProps).not.toHaveBeenCalled();
         expect(DatabaseManager.setActiveServerDatabase).not.toHaveBeenCalled();
@@ -161,10 +160,12 @@ describe('switchToServerAndLogin', () => {
         jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
         jest.mocked(SecurityManager.authenticateWithBiometrics).mockResolvedValueOnce(true);
 
+        const callback = jest.fn();
+        await Actions.switchToServerAndLogin('serverUrl', theme, intl, callback);
         await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
 
         expect(canReceiveNotifications).toHaveBeenCalledWith('serverUrl', undefined, intl);
-        expect(loginToServer).toHaveBeenCalledWith(theme, 'serverUrl', 'Server', config, license);
+        expect(callback).toHaveBeenCalledWith({config, license});
     });
 
     it('should not proceed if device is jailbroken', async () => {

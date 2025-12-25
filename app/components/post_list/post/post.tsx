@@ -22,9 +22,9 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
-import {openAsBottomSheet} from '@screens/navigation';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
+import {navigateBack, navigateToScreen} from '@utils/navigation/adapter';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -185,7 +185,7 @@ const Post = ({
         return false;
     }, [customEmojiNames, post.message]);
 
-    const handlePostPress = useCallback(() => {
+    const handlePostPress = useCallback(async () => {
         if ([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {
             showPermalink(serverUrl, '', post.id);
             return;
@@ -197,6 +197,9 @@ const Post = ({
         } else if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
             // BoR posts cannot have replies, so don't open threads screen for them
             if (!borPost && [Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
+                if (location === Screens.PERMALINK) {
+                    await navigateBack();
+                }
                 const postRootId = post.rootId || post.id;
                 fetchAndSwitchToThread(serverUrl, postRootId);
             }
@@ -229,20 +232,12 @@ const Post = ({
         }
 
         Keyboard.dismiss();
-        const passProps = {sourceScreen: location, post, showAddReaction, serverUrl};
-        const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
-
-        openAsBottomSheet({
-            closeButtonId: 'close-post-options',
-            screen: Screens.POST_OPTIONS,
-            theme,
-            title,
-            props: passProps,
-        });
+        const passProps = {sourceScreen: location, postId: post.id, showAddReaction};
+        navigateToScreen(Screens.POST_OPTIONS, passProps);
     }, [
         canDelete, hasBeenDeleted, intl,
         isEphemeral, isPendingOrFailed, isTablet, isSystemPost,
-        location, post, serverUrl, showAddReaction, theme,
+        location, post, showAddReaction, theme,
     ]);
 
     const [, rerender] = useState(false);
@@ -266,11 +261,11 @@ const Post = ({
             return;
         }
 
-        if (location !== 'Channel' && location !== 'Thread') {
+        if (location !== Screens.CHANNEL && location !== Screens.THREAD) {
             return;
         }
 
-        PerformanceMetricsManager.finishLoad(location === 'Thread' ? 'THREAD' : 'CHANNEL', serverUrl);
+        PerformanceMetricsManager.finishLoad(location === Screens.THREAD ? 'THREAD' : 'CHANNEL', serverUrl);
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Performance metrics should only run once on mount

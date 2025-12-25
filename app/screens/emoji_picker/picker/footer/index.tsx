@@ -4,7 +4,8 @@
 import {BottomSheetFooter, type BottomSheetFooterProps, SHEET_STATE, useBottomSheet, useBottomSheetInternal} from '@gorhom/bottom-sheet';
 import React, {useCallback} from 'react';
 import {Platform} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming, type SharedValue} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, type SharedValue} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
@@ -23,6 +24,7 @@ function waitForSheetExtended(animatedSheetState: SharedValue<number>, callback:
 const PickerFooter = (props: BottomSheetFooterProps) => {
     const theme = useTheme();
     const keyboardHeight = useKeyboardHeight();
+    const insets = useSafeAreaInsets();
     const {animatedSheetState} = useBottomSheetInternal();
     const {expand} = useBottomSheet();
 
@@ -39,12 +41,8 @@ const PickerFooter = (props: BottomSheetFooterProps) => {
     }, []);
 
     const animatedStyle = useAnimatedStyle(() => {
-        const paddingBottom = withTiming(
-            Platform.OS === 'ios' ? 32 : 0,
-            {duration: 250},
-        );
-        return {backgroundColor: theme.centerChannelBg, paddingBottom};
-    }, [theme]);
+        return {top: 0, backgroundColor: theme.centerChannelBg, height: 55 + insets.bottom};
+    }, [theme, insets.bottom]);
 
     const heightAnimatedStyle = useAnimatedStyle(() => {
         let height = 55;
@@ -64,7 +62,7 @@ const PickerFooter = (props: BottomSheetFooterProps) => {
             style={heightAnimatedStyle}
             {...props}
         >
-            <Animated.View style={[animatedStyle]}>
+            <Animated.View style={animatedStyle}>
                 <EmojiCategoryBar onSelect={scrollToIndex}/>
             </Animated.View>
         </BottomSheetFooter>

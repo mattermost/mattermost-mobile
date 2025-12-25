@@ -207,15 +207,15 @@ describe('setThemeDefaults', () => {
 describe('updateThemeIfNeeded', () => {
     it('should update the theme if it is different from the stored theme', () => {
         const theme = {sidebarBg: '#000000'} as Theme;
-        EphemeralStore.theme = {sidebarBg: '#ffffff'} as Theme;
+        EphemeralStore.setTheme({sidebarBg: '#ffffff'} as Theme);
         updateThemeIfNeeded(theme);
-        expect(EphemeralStore.theme).toBe(theme);
+        expect(EphemeralStore.getTheme()).toBe(theme);
     });
 
     it('should not update the theme if it is the same as the stored theme', () => {
         const theme = {sidebarBg: '#000000'} as Theme;
-        EphemeralStore.theme = theme;
+        EphemeralStore.setTheme(theme);
         updateThemeIfNeeded(theme);
-        expect(EphemeralStore.theme).toBe(theme);
+        expect(EphemeralStore.getTheme()).toBe(theme);
     });
 });

@@ -9,12 +9,12 @@ import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
 import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory} from '@queries/servers/team';
-import {goToScreen, popTo} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStoreV2} from '@store/expo_navigation_store';
 import {getExtensionFromMime} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {removeImageProxyForKey} from '@utils/markdown';
+import {dismissAllModalsAndPopToScreen, navigateToScreen} from '@utils/navigation/adapter';
 import {urlSafeBase64Encode} from '@utils/security';
 import {isParsableUrl} from '@utils/url';
 
@@ -49,9 +49,9 @@ export const switchToGlobalDrafts = async (serverUrl: string, teamId?: string, i
         }
         const params: goToScreenParams = {};
 
-        const isDraftAlreadyInNavigationStack = NavigationStore.getScreensInStack().includes(Screens.GLOBAL_DRAFTS);
+        const isDraftAlreadyInNavigationStack = NavigationStoreV2.getScreensInStack().includes(Screens.GLOBAL_DRAFTS);
         if (isDraftAlreadyInNavigationStack) {
-            popTo(Screens.GLOBAL_DRAFTS);
+            dismissAllModalsAndPopToScreen(Screens.GLOBAL_DRAFTS);
             return {models};
         }
 
@@ -61,7 +61,8 @@ export const switchToGlobalDrafts = async (serverUrl: string, teamId?: string, i
         if (isTabletDevice) {
             DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, params);
         } else {
-            goToScreen(Screens.GLOBAL_DRAFTS, '', params, {topBar: {visible: false}});
+            await NavigationStoreV2.waitUntilScreenHasLoaded(Screens.HOME);
+            navigateToScreen(Screens.GLOBAL_DRAFTS, params);
         }
 
         return {models};

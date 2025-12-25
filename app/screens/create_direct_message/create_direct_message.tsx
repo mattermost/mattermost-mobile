@@ -4,11 +4,9 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
 import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remote/user';
-import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import SelectedUsers from '@components/selected_users';
@@ -18,14 +16,10 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useKeyboardOverlap} from '@hooks/device';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
+import {navigateBack} from '@utils/navigation/adapter';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const messages = defineMessages({
     dm: {
@@ -46,10 +40,7 @@ const messages = defineMessages({
     },
 });
 
-const CLOSE_BUTTON = 'close-dms';
-
 type Props = {
-    componentId: AvailableScreens;
     currentTeamId: string;
     currentUserId: string;
     restrictDirectMessage: boolean;
@@ -59,7 +50,7 @@ type Props = {
 
 const close = () => {
     Keyboard.dismiss();
-    dismissModal();
+    navigateBack();
 };
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -101,7 +92,6 @@ function removeProfileFromList(list: Set<string>, id: string) {
 }
 
 export default function CreateDirectMessage({
-    componentId,
     currentTeamId,
     currentUserId,
     restrictDirectMessage,
@@ -203,17 +193,6 @@ export default function CreateDirectMessage({
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const updateNavigationButtons = useCallback(async () => {
-        const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
-        setButtons(componentId, {
-            leftButtons: [{
-                id: CLOSE_BUTTON,
-                icon: closeIcon,
-                testID: 'close.create_direct_message.button',
-            }],
-        });
-    }, [componentId, theme.sidebarHeaderTextColor]);
-
     const onChangeText = useCallback((searchTerm: string) => {
         setTerm(searchTerm);
     }, []);
@@ -264,12 +243,7 @@ export default function CreateDirectMessage({
         };
     }, [currentUserId, selectedCount]);
 
-    useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
-    useAndroidHardwareBackHandler(componentId, close);
-
-    useEffect(() => {
-        updateNavigationButtons();
-    }, [updateNavigationButtons]);
+    useAndroidHardwareBackHandler(Screens.CREATE_DIRECT_MESSAGE, close);
 
     useEffect(() => {
         setShowToast(selectedCount >= General.MAX_USERS_IN_GM);
@@ -284,10 +258,9 @@ export default function CreateDirectMessage({
     }
 
     return (
-        <SafeAreaView
+        <View
             style={style.container}
             testID='create_direct_message.screen'
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
             onLayout={onLayout}
             ref={mainView}
         >
@@ -330,7 +303,7 @@ export default function CreateDirectMessage({
                 testID='create_direct_message'
                 maxUsers={General.MAX_USERS_IN_GM}
             />
-        </SafeAreaView>
+        </View>
     );
 }
 

@@ -8,9 +8,9 @@ import UserChip from '@components/chips/user_chip';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import ProgressBar from '@playbooks/components/progress_bar';
 import {goToPlaybookRun, goToPlaybookRunWithChannelSwitch} from '@playbooks/screens/navigation';
-import {openUserProfileModal} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {openUserProfileModal} from '@utils/navigation/adapter';
 
 import PlaybookCard from './playbook_card';
 
@@ -108,8 +108,6 @@ describe('PlaybookCard', () => {
         userChip.props.onPress(props.owner?.id);
 
         expect(openUserProfileModal).toHaveBeenCalledWith(
-            expect.anything(),
-            expect.anything(),
             expect.objectContaining({userId: props.owner?.id, channelId: (props.run as PlaybookRunModel).channelId, location: props.location}),
         );
     });

@@ -45,8 +45,6 @@ target 'Mattermost' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  pod 'React-jsi', :path => '../node_modules/react-native/ReactCommon/jsi', :modular_headers => true
-  pod 'React-jsc', :path => '../node_modules/react-native/ReactCommon/jsc', :modular_headers => true
   pod 'simdjson', path: '../node_modules/@nozbe/simdjson', :modular_headers => true
   pod 'Gekidou', :path => './Gekidou'
   pod 'CocoaLumberjack', :modular_headers => true

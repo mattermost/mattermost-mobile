@@ -12,10 +12,9 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {useIsTablet} from '@hooks/device';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
-import {dismissModal} from '@screens/navigation';
 import {hapticFeedback} from '@utils/general';
+import {navigateBack} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Indicator from './indicator';
@@ -28,8 +27,7 @@ export {default as BottomSheetContent, TITLE_HEIGHT} from './content';
 export const BOTTOM_SHEET_ANDROID_OFFSET = 12;
 
 type Props = {
-    closeButtonId?: string;
-    componentId: AvailableScreens;
+    screen: AvailableScreens;
     contentStyle?: StyleProp<ViewStyle>;
     initialSnapIndex?: number;
     footerComponent?: React.FC<unknown>;
@@ -91,8 +89,7 @@ export const animatedConfig: Omit<WithSpringConfig, 'velocity'> = {
 };
 
 const BottomSheet = ({
-    closeButtonId,
-    componentId,
+    screen,
     contentStyle,
     initialSnapIndex = 1,
     footerComponent,
@@ -102,6 +99,7 @@ const BottomSheet = ({
     enableDynamicSizing = false,
     scrollable = false,
 }: Props) => {
+    const isClosing = useRef(false);
     const reducedMotion = useReducedMotion();
     const sheetRef = useRef<BottomSheetM>(null);
     const isTablet = useIsTablet();
@@ -128,14 +126,15 @@ const BottomSheet = ({
     ], [isTablet, styles]);
 
     const close = useCallback(() => {
-        dismissModal({componentId});
-    }, [componentId]);
+        isClosing.current = true;
+        navigateBack();
+    }, []);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.CLOSE_BOTTOM_SHEET, () => {
             if (sheetRef.current) {
                 sheetRef.current.close();
-            } else {
+            } else if (!isClosing.current) {
                 close();
             }
         });
@@ -152,7 +151,7 @@ const BottomSheet = ({
     const handleClose = useCallback(() => {
         if (sheetRef.current) {
             sheetRef.current.close();
-        } else {
+        } else if (!isClosing.current) {
             close();
         }
     }, [close]);
@@ -165,13 +164,18 @@ const BottomSheet = ({
             }
         });
 
-        if (index <= 0) {
+        if (index <= 0 && !isClosing.current) {
             close();
         }
     }, [close]);
 
-    useAndroidHardwareBackHandler(componentId, handleClose);
-    useNavButtonPressed(closeButtonId || '', componentId, close, [close]);
+    const onBottomSheetClose = useCallback(() => {
+        if (!isClosing.current) {
+            close();
+        }
+    }, [close]);
+
+    useAndroidHardwareBackHandler(screen, handleClose);
 
     useEffect(() => {
         hapticFeedback();
@@ -228,7 +232,7 @@ const BottomSheet = ({
         return (
             <View
                 style={styles.view}
-                nativeID={SecurityManager.getShieldScreenId(componentId)}
+                nativeID={SecurityManager.getShieldScreenId(screen)}
             >
                 <View style={styles.separator}/>
                 {content}
@@ -268,7 +272,7 @@ const BottomSheet = ({
             footerComponent={footerComponent}
             keyboardBehavior='extend'
             keyboardBlurBehavior='restore'
-            onClose={close}
+            onClose={onBottomSheetClose}
             bottomInset={insets.bottom}
             enableDynamicSizing={enableDynamicSizing}
         >

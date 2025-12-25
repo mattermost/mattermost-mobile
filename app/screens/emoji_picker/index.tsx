@@ -4,21 +4,17 @@
 import React, {useCallback} from 'react';
 import {DeviceEventEmitter, StyleSheet} from 'react-native';
 
-import {Events} from '@constants';
+import {Events, Screens} from '@constants';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
+import EmojiPickerStore from '@store/emoji_picker_store';
 
 import Picker from './picker';
 import PickerFooter from './picker/footer';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
-type Props = {
-    componentId: AvailableScreens;
-    onEmojiPress: (emoji: string) => void;
+export type EmojiPickerProps = {
     imageUrl?: string;
     file?: ExtractedFileInfo;
-    closeButtonId: string;
 };
 
 const style = StyleSheet.create({
@@ -27,12 +23,16 @@ const style = StyleSheet.create({
     },
 });
 
-const EmojiPickerScreen = ({closeButtonId, componentId, file, imageUrl, onEmojiPress}: Props) => {
+const EmojiPickerScreen = ({file, imageUrl}: EmojiPickerProps) => {
     const isTablet = useIsTablet();
 
     const handleEmojiPress = useCallback((emoji: string) => {
-        onEmojiPress(emoji);
+        const callback = EmojiPickerStore.getEmojiPickerCallback();
+        if (callback) {
+            callback(emoji);
+        }
         DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
+        EmojiPickerStore.clearEmojiPickerCallback();
     }, []);
 
     const renderContent = useCallback(() => {
@@ -44,13 +44,12 @@ const EmojiPickerScreen = ({closeButtonId, componentId, file, imageUrl, onEmojiP
                 testID='emoji_picker'
             />
         );
-    }, []);
+    }, [file, handleEmojiPress, imageUrl]);
 
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId={closeButtonId}
-            componentId={componentId}
+            screen={Screens.EMOJI_PICKER}
             contentStyle={style.contentStyle}
             initialSnapIndex={1}
             footerComponent={isTablet ? undefined : PickerFooter}

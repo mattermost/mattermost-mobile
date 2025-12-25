@@ -8,13 +8,12 @@ import {Platform} from 'react-native';
 
 import {BaseOption} from '@components/common_post_options';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
-import {dismissBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet} from '@utils/navigation/adapter';
 import {showSnackBar} from '@utils/snack_bar';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bottomSheetId: AvailableScreens;
     sourceScreen: AvailableScreens;
     postMessage: string;
 }
@@ -26,14 +25,14 @@ const messages = defineMessages({
     },
 });
 
-const CopyTextOption = ({bottomSheetId, postMessage, sourceScreen}: Props) => {
+const CopyTextOption = ({postMessage, sourceScreen}: Props) => {
     const handleCopyText = useCallback(async () => {
         Clipboard.setString(postMessage);
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         if ((Platform.OS === 'android' && Platform.Version < 33) || Platform.OS === 'ios') {
             showSnackBar({barType: SNACK_BAR_TYPE.MESSAGE_COPIED, sourceScreen});
         }
-    }, [bottomSheetId, postMessage, sourceScreen]);
+    }, [postMessage, sourceScreen]);
 
     return (
         <BaseOption

@@ -6,22 +6,18 @@ import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Screens} from '@constants';
 import {ALL_TEAMS_ID} from '@constants/team';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {TITLE_HEIGHT} from '@screens/bottom_sheet';
-import {bottomSheet} from '@screens/navigation';
-import {bottomSheetSnapPoint} from '@utils/helpers';
+import SearchStore from '@store/search_store';
+import {navigateToScreen} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import BottomSheetTeamList from './bottom_sheet_team_list';
 
 import type TeamModel from '@typings/database/models/servers/team';
 
 const MENU_DOWN_ICON_SIZE = 24;
-const NO_TEAMS_HEIGHT = 392;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -64,40 +60,18 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
 
     const selectedTeam = teamList.find((t) => t.id === teamId);
 
-    const title = intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team to search'});
-
     const handleTeamChange = usePreventDoubleTap(useCallback(() => {
-        const renderContent = () => {
-            return (
-                <BottomSheetTeamList
-                    setTeamId={setTeamId}
-                    teams={teamList}
-                    teamId={teamId}
-                    title={title}
-                    crossTeamSearchEnabled={crossTeamSearchEnabled}
-                />
-            );
-        };
-
-        const snapPoints: Array<string | number> = [
-            1,
-
-            // use teams to check if teams is empty
-            teams.length ? bottomSheetSnapPoint(Math.min(3, teamList.length), ITEM_HEIGHT) + (2 * TITLE_HEIGHT) : NO_TEAMS_HEIGHT,
-        ];
-
-        if (teamList.length > 3) {
-            snapPoints.push('80%');
-        }
-
-        bottomSheet({
-            closeButtonId: 'close-team_list',
-            renderContent,
-            snapPoints,
-            theme,
-            title,
+        // Store data and callback in SearchStore
+        SearchStore.setTeamPickerData({
+            teamId,
+            teams: teamList,
+            crossTeamSearchEnabled,
+            callback: setTeamId,
         });
-    }, [teams, teamList, theme, title, setTeamId, teamId, crossTeamSearchEnabled]));
+
+        // Navigate to bottom sheet route
+        navigateToScreen(Screens.SEARCH_TEAM_LIST);
+    }, [teamId, teamList, crossTeamSearchEnabled, setTeamId]));
 
     return (
         <>

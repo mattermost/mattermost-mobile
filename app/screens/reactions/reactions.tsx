@@ -67,7 +67,7 @@ const Reactions = ({initialEmoji, location, reactions}: Props) => {
                 />
             </>
         );
-    }, [index, location, reactions, sortedReactions]);
+    }, [index, isTablet, location, reactionsByName, sortedReactions]);
 
     useEffect(() => {
         // This helps keep the reactions in the same position at all times until unmounted
@@ -78,13 +78,16 @@ const Reactions = ({initialEmoji, location, reactions}: Props) => {
         const removed = [...sorted].filter((s) => !rs?.includes(s));
         removed.forEach(sorted.delete, sorted);
         setSortedReactions(Array.from(sorted));
+
+    // we dont want to add sortedReactions to the dependencies array
+    // as it will create an infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [reactions]);
 
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId='close-post-reactions'
-            componentId={Screens.REACTIONS}
+            screen={Screens.REACTIONS}
             initialSnapIndex={1}
             snapPoints={[1, '50%', '80%']}
             testID='reactions'

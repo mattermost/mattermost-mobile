@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState} from 'react';
-import {Platform} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import {ExtraKeyboard} from '@context/extra_keyboard';
@@ -56,9 +56,9 @@ function PostDraft({
     const [postInputTop, setPostInputTop] = useState(0);
     const [isFocused, setIsFocused] = useState(false);
     const keyboardHeight = useKeyboardHeight();
-    const kbHeight = Platform.OS === 'ios' ? keyboardHeight : 0; // useKeyboardHeight is already deducting the keyboard height on Android
     const headerHeight = useDefaultHeaderHeight();
     const serverUrl = useServerUrl();
+    const {bottom} = useSafeAreaInsets();
 
     // Update draft in case we switch channels or threads
     useEffect(() => {
@@ -66,7 +66,7 @@ function PostDraft({
         setCursorPosition(message.length);
     }, [channelId, rootId]);
 
-    const autocompletePosition = AUTOCOMPLETE_ADJUST + kbHeight + postInputTop;
+    const autocompletePosition = AUTOCOMPLETE_ADJUST + keyboardHeight + (postInputTop - bottom);
     const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
@@ -127,7 +127,7 @@ function PostDraft({
         <>
             {draftHandler}
             {autoComplete}
-            {Platform.OS !== 'android' && <ExtraKeyboard/>}
+            <ExtraKeyboard location={location}/>
         </>
     );
 }

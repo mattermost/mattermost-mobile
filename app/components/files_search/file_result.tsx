@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useRef, useState} from 'react';
-import {Dimensions, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import File from '@components/files/file';
-import {useIsTablet} from '@hooks/device';
+import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {getViewPortWidth} from '@utils/images';
 
-import TabletOptions from './file_options/tablet_options';
+import Options from './file_options/file_options';
 
 import type {GalleryAction} from '@typings/screens/gallery';
 
@@ -25,9 +25,9 @@ type Props = {
     canDownloadFiles: boolean;
     channelName?: string;
     enableSecureFilePreview: boolean;
+    publicLinkEnabled: boolean;
     fileInfo: FileInfo;
     index: number;
-    numOptions: number;
     onOptionsPress: (finfo: FileInfo) => void;
     onPress: (idx: number) => void;
     setAction: (action: GalleryAction) => void;
@@ -42,7 +42,7 @@ const FileResult = ({
     enableSecureFilePreview,
     fileInfo,
     index,
-    numOptions,
+    publicLinkEnabled,
     onOptionsPress,
     onPress,
     setAction,
@@ -55,16 +55,18 @@ const FileResult = ({
     const [showOptions, setShowOptions] = useState<boolean>(false);
     const [openUp, setOpenUp] = useState<boolean>(false);
     const [xyOffset, setXYoffset] = useState<XyOffset>(undefined);
-    const {height} = Dimensions.get('window');
+    const {height} = useWindowDimensions();
 
     const handleOptionsPress = useCallback((fInfo: FileInfo) => {
-        elementsRef.current?.measureInWindow((x, y) => {
-            setOpenUp((y > height / 2));
-            setXYoffset({x, y});
+        elementsRef.current?.measureInWindow((x, y, _, h) => {
+            const openUpwards = (y > height / 2);
+            const offsetY = openUpwards ? (y + (h / 2)) : (y - (h / 2));
+            setOpenUp(openUpwards);
+            setXYoffset({x, y: offsetY});
             setShowOptions(true);
             onOptionsPress(fInfo);
         });
-    }, []);
+    }, [height, onOptionsPress]);
 
     const handleSetAction = useCallback((action: GalleryAction) => {
         setAction(action);
@@ -92,16 +94,18 @@ const FileResult = ({
                     nonVisibleImagesCount={0}
                     onOptionsPress={handleOptionsPress}
                     onPress={onPress}
-                    optionSelected={isTablet && showOptions}
+                    optionSelected={showOptions}
                     showDate={true}
                     updateFileForGallery={updateFileForGallery}
                     wrapperWidth={(getViewPortWidth(isReplyPost, isTablet) - 6)}
                 />
             </View>
-            {isTablet && showOptions && xyOffset &&
-                <TabletOptions
+            {showOptions && Boolean(xyOffset) &&
+                <Options
                     fileInfo={fileInfo}
-                    numOptions={numOptions}
+                    canDownloadFiles={canDownloadFiles}
+                    enableSecureFilePreview={enableSecureFilePreview}
+                    publicLinkEnabled={publicLinkEnabled}
                     openUp={openUp}
                     setAction={handleSetAction}
                     setShowOptions={setShowOptions}
@@ -112,4 +116,4 @@ const FileResult = ({
     );
 };
 
-export default FileResult;
+export default React.memo(FileResult);

@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
 import {type StyleProp, StyleSheet, type ViewStyle} from 'react-native';
 
 import ProfilePicture from '@components/profile_picture';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
-import {openUserProfileModal} from '@screens/navigation';
+import {openUserProfileModal} from '@utils/navigation/adapter';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -17,7 +16,6 @@ type Props = {
     containerStyle?: StyleProp<ViewStyle>;
     size?: number;
     showStatus?: boolean;
-    theme: Theme;
     user: UserModel;
 }
 
@@ -29,15 +27,14 @@ const styles = StyleSheet.create({
     },
 });
 
-const Member = ({channelId, containerStyle, size = 72, showStatus = true, theme, user}: Props) => {
-    const intl = useIntl();
+const Member = ({channelId, containerStyle, size = 72, showStatus = true, user}: Props) => {
     const onPress = useCallback(() => {
-        openUserProfileModal(intl, theme, {
+        openUserProfileModal({
             userId: user.id,
             channelId,
             location: Screens.CHANNEL,
         });
-    }, [intl, user.id, channelId, theme]);
+    }, [user.id, channelId]);
 
     return (
         <TouchableWithFeedback

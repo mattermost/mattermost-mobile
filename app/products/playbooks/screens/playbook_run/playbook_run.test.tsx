@@ -13,9 +13,10 @@ import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
-import {openUserProfileModal, popTopScreen} from '@screens/navigation';
+import {popTopScreen} from '@screens/navigation';
 import {fireEvent, renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {openUserProfileModal} from '@utils/navigation/adapter';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import {goToRenamePlaybookRun, goToSelectUser} from '../navigation';
@@ -195,7 +196,7 @@ describe('PlaybookRun', () => {
         expect(ownerChip.props.action).toBe(undefined);
 
         ownerChip.props.onPress();
-        expect(openUserProfileModal).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
+        expect(openUserProfileModal).toHaveBeenCalledWith({
             userId: props.owner!.id,
             channelId: (props.playbookRun as PlaybookRunModel).channelId,
             location: 'PlaybookRun',

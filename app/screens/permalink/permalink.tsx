@@ -26,7 +26,7 @@ import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import SecurityManager from '@managers/security_manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
-import {dismissModal} from '@screens/navigation';
+import {navigateBack} from '@utils/navigation/adapter';
 import {closePermalink} from '@utils/permalink';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
@@ -263,20 +263,21 @@ function Permalink({
             });
             setLoading(false);
         })();
-    }, [channelId, rootId, isCRTEnabled, teamName]);
+    }, [channelId, rootId, isCRTEnabled, teamName, serverUrl, isTeamMember, postId, currentTeamId]);
 
     const handleClose = useCallback(() => {
         if (error?.joinedTeam && error.teamId) {
             removeCurrentUserFromTeam(serverUrl, error.teamId);
         }
-        dismissModal({componentId: Screens.PERMALINK});
+        navigateBack();
         closePermalink();
     }, [error?.joinedTeam, error?.teamId, serverUrl]);
 
     useAndroidHardwareBackHandler(Screens.PERMALINK, handleClose);
 
-    const handlePress = usePreventDoubleTap(useCallback(() => {
+    const handlePress = usePreventDoubleTap(useCallback(async() => {
         if (channel) {
+            await navigateBack();
             switchToChannelById(serverUrl, channel.id, channel.teamId);
         }
     }, [channel, serverUrl]));

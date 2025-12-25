@@ -8,13 +8,11 @@ import {Alert} from 'react-native';
 import {deletePost} from '@actions/remote/post';
 import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet} from '@utils/navigation/adapter';
 
 import type PostModel from '@typings/database/models/servers/post';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bottomSheetId: AvailableScreens;
     combinedPost?: Post | PostModel;
     post: PostModel;
 }
@@ -26,7 +24,7 @@ const messages = defineMessages({
     },
 });
 
-const DeletePostOption = ({bottomSheetId, combinedPost, post}: Props) => {
+const DeletePostOption = ({combinedPost, post}: Props) => {
     const serverUrl = useServerUrl();
     const {formatMessage} = useIntl();
 
@@ -44,12 +42,12 @@ const DeletePostOption = ({bottomSheetId, combinedPost, post}: Props) => {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
                 onPress: async () => {
-                    await dismissBottomSheet(bottomSheetId);
+                    await dismissBottomSheet();
                     deletePost(serverUrl, combinedPost || post);
                 },
             }],
         );
-    }, [formatMessage, bottomSheetId, serverUrl, combinedPost, post]);
+    }, [formatMessage, serverUrl, combinedPost, post]);
 
     return (
         <BaseOption

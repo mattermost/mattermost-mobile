@@ -10,9 +10,10 @@ import UserChip from '@components/chips/user_chip';
 import {General, Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import {runChecklistItem, skipChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
-import {bottomSheet, openUserProfileModal, popTo} from '@screens/navigation';
+import {bottomSheet, popTo} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {openUserProfileModal} from '@utils/navigation/adapter';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import Checkbox from './checkbox';
@@ -203,7 +204,7 @@ describe('ChecklistItem', () => {
         expect(userChip.props.teammateNameDisplay).toBe(props.teammateNameDisplay);
 
         userChip.props.onPress(props.assignee.id);
-        expect(openUserProfileModal).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
+        expect(openUserProfileModal).toHaveBeenCalledWith({
             userId: props.assignee.id,
             channelId: props.channelId,
             location: 'PlaybookRun',
@@ -226,7 +227,7 @@ describe('ChecklistItem', () => {
         expect(differentUserChip.props.teammateNameDisplay).toBe(props.teammateNameDisplay);
 
         differentUserChip.props.onPress(props.assignee.id);
-        expect(openUserProfileModal).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
+        expect(openUserProfileModal).toHaveBeenCalledWith({
             userId: props.assignee.id,
             channelId: props.channelId,
             location: 'PlaybookRun',

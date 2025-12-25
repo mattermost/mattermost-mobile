@@ -1,0 +1,8 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import GlobalThreadsScreen from '@screens/global_threads';
+
+export default function GlobalThreadsRoute() {
+    return <GlobalThreadsScreen/>;
+}
