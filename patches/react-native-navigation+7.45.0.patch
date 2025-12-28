@@ -383,18 +383,18 @@ index 551f72b..f275c18 100644
  
 -    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
 -        mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher())
-+    override fun onInterceptTouchEvent(event: MotionEvent?): Boolean {
-+        event?.let {
-+            mJSTouchDispatcher.handleTouchEvent(it, getEventDispatcher()!!)
++    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
++        getEventDispatcher()?.let {
++            mJSTouchDispatcher.handleTouchEvent(event, it)
 +        }
          return super.onInterceptTouchEvent(event)
      }
- 
+
 -    override fun onTouchEvent(event: MotionEvent): Boolean {
 -        mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher())
-+    override fun onTouchEvent(event: MotionEvent?): Boolean {
-+        event?.let {
-+            mJSTouchDispatcher.handleTouchEvent(it, getEventDispatcher()!!)
++    override fun onTouchEvent(event: MotionEvent): Boolean {
++        getEventDispatcher()?.let {
++            mJSTouchDispatcher.handleTouchEvent(event, it)
 +        }
          super.onTouchEvent(event)
          return true
