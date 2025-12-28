@@ -105,6 +105,7 @@ const EmojiFiltered: React.FC<Props> = ({
                 onEmojiPress={onEmojiPress}
                 name={item}
                 hideName={hideEmojiNames}
+                shouldDismissKeyboard={false}
             />
         );
     }, [

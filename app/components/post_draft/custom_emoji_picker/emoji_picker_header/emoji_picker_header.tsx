@@ -23,6 +23,7 @@ type Props = SearchProps & {
     skinTone: string;
     setIsEmojiSearchFocused: React.Dispatch<React.SetStateAction<boolean>>;
     emojiPickerHeight: SharedValue<number>;
+    isSelectingEmojiRef?: React.MutableRefObject<boolean>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -44,6 +45,7 @@ const EmojiPickerHeader: React.FC<Props> = ({
     skinTone,
     emojiPickerHeight,
     setIsEmojiSearchFocused,
+    isSelectingEmojiRef,
     ...props
 }) => {
     const theme = useTheme();
@@ -134,6 +136,11 @@ const EmojiPickerHeader: React.FC<Props> = ({
             return;
         }
 
+        if (isSelectingEmojiRef?.current) {
+            isSelectingEmojiRef.current = false;
+            return;
+        }
+
         setIsEmojiSearchFocused(false);
         isSearching.value = false;
         setShowKeyboard(false);
@@ -154,7 +161,7 @@ const EmojiPickerHeader: React.FC<Props> = ({
             const originalHeight = contextLastKeyboardHeight > 0 ? contextLastKeyboardHeight : DEFAULT_INPUT_ACCESSORY_HEIGHT;
             emojiPickerHeight.value = withTiming(originalHeight, {duration: 250});
         }
-    }, [emojiPickerHeight, isSearching, setIsEmojiSearchFocused, contextLastKeyboardHeight, showInputAccessoryView]);
+    }, [emojiPickerHeight, isSearching, setIsEmojiSearchFocused, contextLastKeyboardHeight, showInputAccessoryView, isSelectingEmojiRef]);
 
     const onFocus = useCallback(() => {
         if (Platform.OS === 'android' && showKeyboard) {
