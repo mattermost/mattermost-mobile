@@ -7,6 +7,7 @@ import {DeviceEventEmitter, Platform, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
+import {ANDROID_NAV_BAR_HEIGHT} from '@constants/gallery';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
@@ -36,8 +37,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     const [localIndex, setLocalIndex] = useState(initialIndex);
 
     // Fallback for Android when SafeAreaContext returns 0 in overlays
-    // Typical Android navigation bar height is 48-63dp
-    const bottom = bottomInset || Platform.select({android: 63, default: 0});
+    const bottom = bottomInset || Platform.select({android: ANDROID_NAV_BAR_HEIGHT, default: 0});
 
     const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls(bottom);
     const galleryRef = useRef<GalleryRef>(null);

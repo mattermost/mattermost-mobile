@@ -64,7 +64,7 @@ export function useGalleryControls(bottomInset = 0) {
         bottom: bottomInset,
         width: '100%',
         zIndex: 1,
-    }));
+    }), [bottomInset]);
 
     const hideHeaderAndFooter = useCallback((hidden?: boolean) => {
         'worklet';

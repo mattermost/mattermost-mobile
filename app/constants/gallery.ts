@@ -5,6 +5,10 @@ export const GALLERY_FOOTER_HEIGHT = 75;
 export const VIDEO_INSET = 100;
 export const ANDROID_VIDEO_INSET = 20;
 
+// Fallback for Android navigation bar height when SafeAreaContext returns 0 in overlays
+// Typical Android 3-button navigation bar height is 48-63dp
+export const ANDROID_NAV_BAR_HEIGHT = 63;
+
 export const DOUBLE_TAP_SCALE = 4;
 export const MAX_SCALE = 7;
 export const MIN_SCALE = 0.7;
