@@ -1042,6 +1042,8 @@
   "playbooks.checklist_item.none": "None",
   "playbooks.checklist_item.rerun_command": "Rerun command",
   "playbooks.checklist_item.run_command": "Run command",
+  "playbooks.checklist_item.show_less": "Show less",
+  "playbooks.checklist_item.show_more": "Show more",
   "playbooks.checklist_item.skip": "Skip",
   "playbooks.checklist_item.skipped": "Skipped",
   "playbooks.checklist_item.task_rendered_conditionally": "Task rendered conditionally",
