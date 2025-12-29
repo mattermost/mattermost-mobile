@@ -4,6 +4,7 @@
 import RNUtils from '@mattermost/rnutils';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {DeviceEventEmitter, Platform, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -31,8 +32,14 @@ type Props = {
 const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialIndex, items}: Props) => {
     const dim = useWindowDimensions();
     const isTablet = useIsTablet();
+    const {bottom: bottomInset} = useSafeAreaInsets();
     const [localIndex, setLocalIndex] = useState(initialIndex);
-    const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls();
+
+    // Fallback for Android when SafeAreaContext returns 0 in overlays
+    // Typical Android navigation bar height is 48-63dp
+    const bottom = bottomInset || Platform.select({android: 63, default: 0});
+
+    const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls(bottom);
     const galleryRef = useRef<GalleryRef>(null);
 
     const containerStyle = dim;
