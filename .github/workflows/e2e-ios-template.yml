@@ -38,12 +38,12 @@ on:
         description: "iPhone simulator name"
         required: false
         type: string
-        default: "iPhone 15 Pro"
+        default: "iPhone 17 Pro"
       ios_device_os_name:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 17.2"
+        default: "iOS 26.2"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
@@ -71,8 +71,8 @@ env:
   TYPE: ${{ inputs.run-type }}
   PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
   SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
-  SITE_2_URL: "https://mobile-e2e-site-2.test.mattermost.cloud"
-  SITE_3_URL: "https://mobile-e2e-site-3.test.mattermost.cloud"
+  SITE_2_URL: "https://test-windows.test.mattermost.cloud"
+  SITE_3_URL: "https://test-macos.test.mattermost.cloud"
   ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
   JIRA_PROJECT_KEY: "MM"
   ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
@@ -122,7 +122,7 @@ jobs:
 
   e2e-ios:
     name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
-    runs-on: macos-15
+    runs-on: macos-26
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
     env:
@@ -173,6 +173,55 @@ jobs:
       - name: Install Detox Dependencies
         run: cd detox && npm i
 
+      - name: Pre-boot iOS Simulator
+        run: |
+          set -e
+
+          echo "Looking for simulator: ${{ env.DEVICE_NAME }} with ${{ env.DEVICE_OS_VERSION }}"
+
+          # Find or create the simulator
+          SIMULATOR_ID=$(xcrun simctl list devices | grep "${{ env.DEVICE_NAME }}" | grep "${{ env.DEVICE_OS_VERSION }}" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
+
+          if [ -z "$SIMULATOR_ID" ]; then
+            echo "Simulator not found. Creating simulator ${{ env.DEVICE_NAME }} with ${{ env.DEVICE_OS_VERSION }}"
+
+            # Get device type (use exact match with parentheses to avoid partial matches)
+            DEVICE_TYPE=$(xcrun simctl list devicetypes | grep "${{ env.DEVICE_NAME }} (" | head -1 | awk -F'[()]' '{print $(NF-1)}')
+            if [ -z "$DEVICE_TYPE" ]; then
+              echo "Error: Could not find device type for ${{ env.DEVICE_NAME }}"
+              exit 1
+            fi
+            echo "Found device type: $DEVICE_TYPE"
+
+            # Get runtime (extract the identifier after the last " - ")
+            RUNTIME=$(xcrun simctl list runtimes | grep "${{ env.DEVICE_OS_VERSION }}" | head -1 | sed 's/.* - \(.*\)/\1/')
+            if [ -z "$RUNTIME" ]; then
+              echo "Error: Could not find runtime for ${{ env.DEVICE_OS_VERSION }}"
+              exit 1
+            fi
+            echo "Found runtime: $RUNTIME"
+
+            # Create simulator
+            SIMULATOR_ID=$(xcrun simctl create "CI-${{ env.DEVICE_NAME }}" "$DEVICE_TYPE" "$RUNTIME")
+            echo "Created simulator with ID: $SIMULATOR_ID"
+          else
+            echo "Found existing simulator: $SIMULATOR_ID"
+          fi
+
+          echo "Booting simulator: $SIMULATOR_ID"
+          xcrun simctl boot "$SIMULATOR_ID" || echo "Simulator already booted"
+
+          # Wait for boot to complete
+          xcrun simctl bootstatus "$SIMULATOR_ID"
+
+          # Open Simulator.app in background to speed up UI rendering
+          open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID"
+
+          # Give Simulator.app time to fully initialize UI
+          sleep 3
+
+          echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
+
       - name: Start Proxy
         if: ${{ inputs.low_bandwidth_mode }}
         id: start-proxy
@@ -182,22 +231,61 @@ jobs:
 
       - name: Set .env with RUNNING_E2E=true
         run: |
-          cat > .env <<EOF
-          echo "RUNNING_E2E=true" >> .env
+          echo "RUNNING_E2E=true" > .env
 
-      - name: Run Detox E2E Tests
+      - name: Start Metro Bundler and Run Detox E2E Tests
         continue-on-error: true # We want to run all the tests
         run: |
-          # Start the server
-          npm run start &
-          sleep 120 # Wait for watchman to finish querying the files
+          # Start Metro bundler in background
+          npm run start > metro.log 2>&1 &
+          METRO_PID=$!
+          echo "Metro PID: $METRO_PID"
+          echo "METRO_PID=$METRO_PID" >> $GITHUB_ENV
+
+          # Wait for Metro to be ready with health check endpoint polling
+          timeout=120
+          elapsed=0
+          echo "Waiting for Metro bundler to be ready..."
+          while [ $elapsed -lt $timeout ]; do
+            # Try health check endpoint first (more reliable)
+            if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+              echo "✅ Metro bundler is ready after ${elapsed}s (verified via health check)"
+              break
+            # Fallback to log checking
+            elif grep -q "Fast - Scalable - Integrated" metro.log 2>/dev/null; then
+              echo "✅ Metro bundler is ready after ${elapsed}s (verified via logs)"
+              break
+            fi
+
+            # Show progress every 10 seconds
+            if [ $((elapsed % 10)) -eq 0 ] && [ $elapsed -gt 0 ]; then
+              echo "Still waiting for Metro... (${elapsed}s elapsed)"
+            fi
+
+            sleep 2
+            elapsed=$((elapsed + 2))
+          done
+
+          if [ $elapsed -ge $timeout ]; then
+            echo "⚠️ Warning: Metro bundler may not be fully ready after ${timeout}s, proceeding anyway"
+            echo "Metro process status:"
+            ps aux | grep -E "metro|node.*start" | grep -v grep || echo "Metro process not found"
+            echo ""
+            echo "Last 30 lines of metro.log:"
+            tail -30 metro.log
+          else
+            echo "Metro is serving on http://localhost:8081"
+            # Give Metro extra time to fully initialize for iOS 26.2
+            echo "Allowing Metro to fully stabilize..."
+            sleep 3
+          fi
+
           cd detox
-          npm run clean-detox
           npm run detox:config-gen
           npm run e2e:ios-test -- ${{ matrix.specs }}
         env:
           DETOX_DISABLE_HIERARCHY_DUMP: "YES"
-          DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"      
+          DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"
           DETOX_LOGLEVEL: "debug"
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
