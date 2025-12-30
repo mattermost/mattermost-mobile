@@ -14,6 +14,7 @@ import ErrorText from '@components/error_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
@@ -64,8 +65,8 @@ const SUBMIT_BUTTON_ID = 'submit-interactive-dialog';
 type Errors = {[name: string]: string}
 const emptyErrorsState: Errors = {};
 
-type Values = {[name: string]: string|number|boolean}
-type ValuesAction = {name: string; value: string|number|boolean}
+type Values = {[name: string]: string|number|boolean|string[]}
+type ValuesAction = {name: string; value: string|number|boolean|string[]}
 function valuesReducer(state: Values, action: ValuesAction) {
     if (state[action.name] === action.value) {
         return state;
@@ -77,6 +78,19 @@ function initValues(elements?: DialogElement[]) {
     elements?.forEach((e) => {
         if (e.type === 'bool') {
             values[e.name] = (e.default === true || String(e.default).toLowerCase() === 'true');
+        } else if (e.type === 'select' && e.multiselect && e.default) {
+            // For multiselect, default might be comma-separated string - convert to array
+            if (typeof e.default === 'string') {
+                values[e.name] = e.default.split(',').map((v) => v.trim()).filter((v) => v !== '');
+            } else {
+                values[e.name] = e.default;
+            }
+        } else if (e.type === 'date') {
+            // Set default to current date in YYYY-MM-DD format
+            values[e.name] = e.default || new Date().toISOString().split('T')[0];
+        } else if (e.type === 'datetime') {
+            // Set default to current datetime in ISO format
+            values[e.name] = e.default || new Date().toISOString();
         } else if (e.default) {
             values[e.name] = e.default;
         }
@@ -110,9 +124,37 @@ function InteractiveDialog({
 
     const scrollView = useRef<KeyboardAwareScrollView>(null);
 
-    const onChange = useCallback((name: string, value: string | number | boolean) => {
+    const onChange = useCallback((name: string, value: string | number | boolean | string[]) => {
         dispatchValues({name, value});
     }, []);
+
+    const getDynamicOptions = useCallback(async (element: DialogElement, userInput = ''): Promise<DialogOption[]> => {
+        if (!element.data_source_url) {
+            return [];
+        }
+
+        try {
+            const client = NetworkManager.getClient(serverUrl);
+            const response = await client.doFetch(element.data_source_url, {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: element.name,
+                    user_input: userInput,
+                    element,
+                }),
+            });
+
+            if (response && typeof response === 'object' && 'options' in response) {
+                const options = (response as any).options || [];
+                return options;
+            }
+        } catch (err) {
+            // eslint-disable-next-line no-console
+            console.warn('Failed to fetch dynamic options:', err);
+        }
+
+        return [];
+    }, [serverUrl]);
 
     const rightButton = useMemo(() => {
         const base = buildNavigationButton(
@@ -151,10 +193,17 @@ function InteractiveDialog({
                     delete submission[elem.name];
                 }
 
-                const newError = checkDialogElementForError(elem, secureGetFromRecord(submission, elem.name));
+                // Validate field BEFORE converting multiselect arrays
+                const fieldValue = secureGetFromRecord(submission, elem.name);
+                const newError = checkDialogElementForError(elem, fieldValue);
                 if (newError) {
                     newErrors[elem.name] = intl.formatMessage({id: newError.id, defaultMessage: newError.defaultMessage}, newError.values);
                     hasErrors = true;
+                }
+
+                // Convert multiselect arrays to comma-separated strings for server AFTER validation
+                if (elem.type === 'select' && elem.multiselect && Array.isArray(submission[elem.name])) {
+                    submission[elem.name] = (submission[elem.name] as string[]).join(',');
                 }
             });
         }
@@ -265,6 +314,10 @@ function InteractiveDialog({
                 }
                 {Boolean(elements) && elements.map((e) => {
                     const value = secureGetFromRecord(values, e.name);
+                    const elementGetDynamicOptions = e.data_source === 'dynamic' && e.data_source_url ?
+                        (userInput: string) => getDynamicOptions(e, userInput) :
+                        undefined;
+
                     return (
                         <DialogElement
                             key={'dialogelement' + e.name}
@@ -279,8 +332,11 @@ function InteractiveDialog({
                             dataSource={e.data_source}
                             optional={e.optional}
                             options={e.options}
+                            multiselect={e.multiselect}
                             value={value}
                             onChange={onChange}
+                            getDynamicOptions={elementGetDynamicOptions}
+                            theme={theme}
                         />
                     );
                 })}
