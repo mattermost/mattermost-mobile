@@ -103,11 +103,28 @@ export async function goToAddChecklistItem(
     intl: IntlShape,
     theme: Theme,
     runName: string,
-    onSave: (title: string) => void,
+    onSave: (item: ChecklistItemInput) => void,
 ) {
     const title = intl.formatMessage({id: 'playbooks.checklist_item.add.title', defaultMessage: 'New Task'});
     const options = getSubtitleOptions(theme, runName);
     goToScreen(Screens.PLAYBOOK_ADD_CHECKLIST_ITEM, title, {
+        onSave,
+    }, options);
+}
+
+export async function goToEditChecklistItem(
+    intl: IntlShape,
+    theme: Theme,
+    runName: string,
+    currentTitle: string,
+    currentDescription: string | undefined,
+    onSave: (item: ChecklistItemInput) => void,
+) {
+    const title = intl.formatMessage({id: 'playbooks.checklist_item.edit.title', defaultMessage: 'Edit Task'});
+    const options = getSubtitleOptions(theme, runName);
+    goToScreen(Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM, title, {
+        currentTitle,
+        currentDescription,
         onSave,
     }, options);
 }
