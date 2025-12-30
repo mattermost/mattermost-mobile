@@ -37,4 +37,7 @@ export default keyMirror({
     ACTIVE_SCREEN: null,
     ACTIVE_SERVER_CHANGED: null,
     FILE_ADD_REMOVED: null,
+    KEYBOARD_STATE_CHANGED: null,
+    CLOSE_INPUT_ACCESSORY_VIEW: null,
+    EMOJI_PICKER_SEARCH_FOCUSED: null,
 });
