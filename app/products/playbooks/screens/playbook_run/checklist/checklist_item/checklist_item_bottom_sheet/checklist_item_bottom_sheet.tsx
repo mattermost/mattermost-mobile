@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo, type ComponentProps} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {View, Text, Platform} from 'react-native';
+import {View, Text, Platform, TouchableOpacity, Alert} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import MenuDivider from '@components/menu_divider';
@@ -11,7 +11,7 @@ import OptionBox from '@components/option_box';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {setAssignee, setChecklistItemCommand, setDueDate} from '@playbooks/actions/remote/checklist';
+import {setAssignee, setChecklistItemCommand, setDueDate, deleteChecklistItem} from '@playbooks/actions/remote/checklist';
 import {goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
 import {getDueDateString} from '@playbooks/utils/time';
 import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
@@ -73,6 +73,26 @@ const messages = defineMessages({
     taskRenderedConditionallyExplanation: {
         id: 'playbooks.checklist_item.task_rendered_conditionally_explanation',
         defaultMessage: 'This task was rendered conditionally based on',
+    },
+    deleteTask: {
+        id: 'playbooks.checklist_item.delete_task',
+        defaultMessage: 'Delete task',
+    },
+    deleteTaskTitle: {
+        id: 'playbooks.checklist_item.delete_task_title',
+        defaultMessage: 'Delete task',
+    },
+    deleteTaskConfirmation: {
+        id: 'playbooks.checklist_item.delete_task_confirmation',
+        defaultMessage: 'Are you sure you want to delete this task? This action cannot be undone.',
+    },
+    cancel: {
+        id: 'mobile.post.cancel',
+        defaultMessage: 'Cancel',
+    },
+    delete: {
+        id: 'post_info.del',
+        defaultMessage: 'Delete',
     },
 });
 
@@ -143,6 +163,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
     conditionIcon: {
         transform: [{rotate: '90deg'}],
+    },
+    deleteButton: {
+        marginTop: 8,
+        alignItems: 'center',
+    },
+    deleteButtonText: {
+        ...typography('Body', 200, 'SemiBold'),
+        color: theme.dndIndicator,
     },
 }));
 
@@ -367,6 +395,30 @@ const ChecklistItemBottomSheet = ({
         </>
     );
 
+    const handleDelete = useCallback(() => {
+        Alert.alert(
+            intl.formatMessage(messages.deleteTaskTitle),
+            intl.formatMessage(messages.deleteTaskConfirmation),
+            [
+                {
+                    text: intl.formatMessage(messages.cancel),
+                    style: 'cancel',
+                },
+                {
+                    text: intl.formatMessage(messages.delete),
+                    style: 'destructive',
+                    onPress: async () => {
+                        await dismissBottomSheet();
+                        const res = await deleteChecklistItem(serverUrl, runId, item.id, checklistNumber, itemNumber);
+                        if (res.error) {
+                            showPlaybookErrorSnackbar();
+                        }
+                    },
+                },
+            ],
+        );
+    }, [intl, serverUrl, runId, item.id, checklistNumber, itemNumber]);
+
     return (
         <View
             style={styles.container}
@@ -391,6 +443,20 @@ const ChecklistItemBottomSheet = ({
             {!isDisabled && renderActionButtons()}
             {renderTaskDetails()}
             {showConditionIcon && renderConditionSection()}
+            {!isDisabled && (
+                <>
+                    <MenuDivider/>
+                    <TouchableOpacity
+                        onPress={handleDelete}
+                        style={styles.deleteButton}
+                        testID='checklist_item_bottom_sheet.delete_button'
+                    >
+                        <Text style={styles.deleteButtonText}>
+                            {intl.formatMessage(messages.deleteTask)}
+                        </Text>
+                    </TouchableOpacity>
+                </>
+            )}
         </View>
     );
 };
