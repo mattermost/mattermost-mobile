@@ -44,7 +44,6 @@ class LoginScreen {
         await wait(timeouts.FOUR_SEC);
         await waitFor(this.loginScreen).toExist().withTimeout(timeouts.TEN_SEC);
         await waitFor(this.usernameInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
         return this.loginScreen;
     };
 
