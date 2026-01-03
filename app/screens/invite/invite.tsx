@@ -4,19 +4,19 @@
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useState, useRef, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, Pressable, View, type LayoutChangeEvent} from 'react-native';
+import {Keyboard, View, type LayoutChangeEvent} from 'react-native';
 
 import {searchProfiles} from '@actions/remote/user';
-import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
+import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useKeyboardOverlap} from '@hooks/device';
+import {navigateBack} from '@screens/navigation';
 import {isEmail} from '@utils/helpers';
-import {navigateBack} from '@utils/navigation/adapter';
-import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
 import {sendGuestInvites, sendMembersInvites} from './actions';
@@ -212,25 +212,13 @@ export default function Invite({
     }, [handleSend]);
 
     const sendButton = useMemo(() => (
-        <Pressable
+        <NavigationButton
             onPress={handleSend}
-            style={({pressed}) => ({
-                opacity: Platform.OS === 'ios' && pressed ? 0.6 : 1,
-                width: 44,
-                height: 44,
-                justifyContent: 'center',
-            })}
-            disabled={!hasSelection}
-            android_ripple={{color: theme.buttonBg, borderless: true, radius: 20}}
             testID='invite.send.button'
-        >
-            <FormattedText
-                id='invite.send_invite'
-                defaultMessage='Send'
-                style={{color: hasSelection ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.4)}}
-            />
-        </Pressable>
-    ), [handleSend, hasSelection, theme.buttonBg, theme.sidebarHeaderTextColor]);
+            text={formatMessage({id: 'invite.send_invite', defaultMessage: 'Send'})}
+            disabled={!hasSelection}
+        />
+    ), [handleSend, hasSelection, formatMessage]);
 
     useEffect(() => {
         navigation.setOptions({

@@ -7,9 +7,9 @@ import {Keyboard, View} from 'react-native';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
 import {Screens} from '@constants';
+import {navigateToScreen} from '@screens/navigation';
 import {isImage, isVideo} from '@utils/file';
 import {generateId} from '@utils/general';
-import {navigateToScreen} from '@utils/navigation/adapter';
 import {urlSafeBase64Encode} from '@utils/security';
 
 import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';

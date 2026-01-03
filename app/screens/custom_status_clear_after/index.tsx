@@ -4,17 +4,18 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Pressable, SafeAreaView, View} from 'react-native';
+import {useIntl} from 'react-intl';
+import {SafeAreaView, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 
-import FormattedText from '@components/formatted_text';
+import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {observeCurrentUser} from '@queries/servers/user';
-import CustomStatusStore from '@store/custom_status_store';
-import {navigateBack} from '@utils/navigation/adapter';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ClearAfterMenuItem from './components/clear_after_menu_item';
@@ -49,6 +50,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 function CustomStatusClearAfter({currentUser, initialDuration}: CustomStatusClearAfterProps) {
     const navigation = useNavigation();
+    const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const [duration, setDuration] = useState<CustomStatusDuration>(initialDuration);
@@ -56,7 +58,8 @@ function CustomStatusClearAfter({currentUser, initialDuration}: CustomStatusClea
     const [showExpiryTime, setShowExpiryTime] = useState(false);
 
     const onDone = useCallback(() => {
-        CustomStatusStore.getClearAfterCallback()?.(duration, expiresAt);
+        const callback = CallbackStore.getCallback<((duration: CustomStatusDuration, expiresAt: string) => void)>();
+        callback?.(duration, expiresAt);
         navigateBack();
     }, [duration, expiresAt]);
 
@@ -69,19 +72,14 @@ function CustomStatusClearAfter({currentUser, initialDuration}: CustomStatusClea
     useEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <Pressable
+                <NavigationButton
                     onPress={onDone}
                     testID='custom_status_clear_after.done.button'
-                >
-                    <FormattedText
-                        id='mobile.custom_status.modal_confirm'
-                        defaultMessage='Done'
-                        style={{color: theme.sidebarHeaderTextColor, fontSize: 16}}
-                    />
-                </Pressable>
+                    text={intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'})}
+                />
             ),
         });
-    }, [navigation, onDone, theme.sidebarHeaderTextColor]);
+    }, [intl, navigation, onDone, theme.sidebarHeaderTextColor]);
 
     const clearAfterMenuComponent = useMemo(() => {
         const clearAfterMenu = Object.values(CustomStatusDurationEnum).map(

@@ -1,18 +1,837 @@
+diff --git a/node_modules/@mattermost/react-native-emm/ios/AnimatedBlurEffectView.swift b/node_modules/@mattermost/react-native-emm/ios/AnimatedBlurEffectView.swift
+new file mode 100644
+index 0000000..268b04a
+--- /dev/null
++++ b/node_modules/@mattermost/react-native-emm/ios/AnimatedBlurEffectView.swift
+@@ -0,0 +1,32 @@
++class AnimatedBlurEffectView: UIVisualEffectView {
++  private let blurIntensity: CGFloat
++  private let blurStyle: UIBlurEffect.Style
++  private var animator = UIViewPropertyAnimator(duration: 1, curve: .linear)
++
++  private lazy var blurEffect = UIBlurEffect(style: blurStyle)
++
++  init(style: UIBlurEffect.Style = .dark, intensity: CGFloat) {
++    self.blurStyle = style
++    self.blurIntensity = intensity
++    super.init(effect: nil)
++    self.backgroundColor = .clear
++  }
++
++  required init?(coder: NSCoder) {
++    self.blurStyle = .light
++    self.blurIntensity = 0.5
++    super.init(coder: coder)
++    self.backgroundColor = .clear
++  }
++
++  func setupBlur() {
++    animator.stopAnimation(true)
++    animator.addAnimations { [weak self] in
++      guard let self else {
++        return
++      }
++      self.effect = self.blurEffect
++    }
++    animator.fractionComplete = blurIntensity
++  }
++}
+diff --git a/node_modules/@mattermost/react-native-emm/android/src/main/java/com/mattermost/emm/EmmModuleImpl.kt b/node_modules/@mattermost/react-native-emm/android/src/main/java/com/mattermost/emm/EmmModuleImpl.kt
+index 140f28e..d6f1859 100644
+--- a/node_modules/@mattermost/react-native-emm/android/src/main/java/com/mattermost/emm/EmmModuleImpl.kt
++++ b/node_modules/@mattermost/react-native-emm/android/src/main/java/com/mattermost/emm/EmmModuleImpl.kt
+@@ -279,6 +279,11 @@ class EmmModuleImpl(reactApplicationContext: ReactApplicationContext) {
+             val decorView = activity.window.decorView as ViewGroup
+             val rootView = activity.findViewById<ViewGroup>(android.R.id.content)
+ 
++            if (radius <= 0) {
++                removeBlurEffect()
++                return@runOnUiThread
++            }
++
+             if (blurView == null) {
+                 val blurAlgorithm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                     RenderEffectBlur()
+@@ -293,7 +298,7 @@ class EmmModuleImpl(reactApplicationContext: ReactApplicationContext) {
+ 
+                     setupWith(rootView, blurAlgorithm)
+                         .setFrameClearDrawable(decorView.background)
+-                        .setBlurRadius(radius.toFloat())
++                        .setBlurRadius(radius.toFloat() * 10f)
+                         .setBlurAutoUpdate(true)
+                 }
+ 
+diff --git a/node_modules/@mattermost/react-native-emm/ios/Emm.mm b/node_modules/@mattermost/react-native-emm/ios/Emm.mm
+index 7733b49..0d1733e 100644
+--- a/node_modules/@mattermost/react-native-emm/ios/Emm.mm
++++ b/node_modules/@mattermost/react-native-emm/ios/Emm.mm
+@@ -159,11 +159,11 @@ RCT_REMAP_METHOD(removeBlurEffect, removeBlur) {
+ }
+ 
+ -(void)applyBlurEffect:(double)radius {
+-    [[ScreenCaptureManager shared] applyBlurEffectWithRadius:radius];
++    [[ScreenCaptureManager shared] applyBlurEffectWithIntensity:radius];
+ }
+ 
+ -(void)removeBlurEffect {
+-    [[ScreenCaptureManager shared] removeBlurEffectWithForced:true];
++    [[ScreenCaptureManager shared] removeBlurEffect];
+ }
+ 
+ @end
+diff --git a/node_modules/@mattermost/react-native-emm/ios/Emm.swift b/node_modules/@mattermost/react-native-emm/ios/Emm.swift
+index b343e64..c1d66d6 100644
+--- a/node_modules/@mattermost/react-native-emm/ios/Emm.swift
++++ b/node_modules/@mattermost/react-native-emm/ios/Emm.swift
+@@ -14,12 +14,12 @@ import React
+     
+     @objc public func captureEvents() {
+         NotificationCenter.default.addObserver(self, selector: #selector(managedConfigChaged(notification:)), name: UserDefaults.didChangeNotification, object: nil)
+-        NotificationCenter.default.addObserver(ScreenCaptureManager.shared, selector: #selector(ScreenCaptureManager.applyBlurEffect(notification:)), name: UIApplication.willResignActiveNotification, object: nil)
+-        NotificationCenter.default.addObserver(ScreenCaptureManager.shared, selector: #selector(ScreenCaptureManager.removeBlurEffect), name: UIApplication.didBecomeActiveNotification, object: nil)
++        NotificationCenter.default.addObserver(ScreenCaptureManager.shared, selector: #selector(ScreenCaptureManager.conditionalApplyBlurEffect), name: UIApplication.willResignActiveNotification, object: nil)
++        NotificationCenter.default.addObserver(ScreenCaptureManager.shared, selector: #selector(ScreenCaptureManager.conditionalRemoveBlurEffect), name: UIApplication.didBecomeActiveNotification, object: nil)
+     }
+     
+     @objc public func invalidate() {
+-        ScreenCaptureManager.shared.removeBlurEffect(forced: true)
++        ScreenCaptureManager.shared.conditionalRemoveBlurEffect(forced: true)
+         NotificationCenter.default.removeObserver(self)
+     }
+     
+@@ -34,7 +34,7 @@ import React
+             self.authenticateWithPolicy(policy: .deviceOwnerAuthenticationWithBiometrics, reason: reason, fallback: fallback, supressEnterPassword: supressEnterPassword, completionHandler: {(success: Bool, error: Error?) in
+                 if success && ScreenCaptureManager.shared.blurOnAuthenticate {
+                     ScreenCaptureManager.shared.isAuthenticating = false
+-                    ScreenCaptureManager.shared.removeBlurEffect(forced: true)
++                    ScreenCaptureManager.shared.conditionalRemoveBlurEffect(forced: true)
+                 } else {
+                     DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.5) {
+                         ScreenCaptureManager.shared.isAuthenticating = false
+diff --git a/node_modules/@mattermost/react-native-emm/ios/Extensions/UINavigationController+Swizzle.swift b/node_modules/@mattermost/react-native-emm/ios/Extensions/UINavigationController+Swizzle.swift
+deleted file mode 100644
+index b922b1c..0000000
+--- a/node_modules/@mattermost/react-native-emm/ios/Extensions/UINavigationController+Swizzle.swift
++++ /dev/null
+@@ -1,70 +0,0 @@
+-extension UINavigationController {
+-    private struct AssociatedKeys {
+-            static var didObserveLifecycle: UnsafeRawPointer = UnsafeRawPointer(bitPattern: "didObserveLifecycle".hashValue)!
+-    }
+-
+-    static var didSwizzle = false
+-    static func swizzleNavigationTracking() {
+-        guard self === UINavigationController.self, !didSwizzle else { return }
+-        didSwizzle = true
+-
+-        swizzleMethod(#selector(setter: viewControllers), with: #selector(swizzled_setViewControllers(_:animated:)))
+-        swizzleMethod(#selector(pushViewController(_:animated:)), with: #selector(swizzled_pushViewController(_:animated:)))
+-    }
+-    
+-    static func revertNavigationSwizzling() {
+-        guard self === UINavigationController.self else { return }
+-        
+-        swizzleMethod(#selector(swizzled_setViewControllers(_:animated:)), with: #selector(setter: viewControllers))
+-        swizzleMethod(#selector(swizzled_pushViewController(_:animated:)), with: #selector(pushViewController(_:animated:)))
+-    }
+-
+-    private static func swizzleMethod(_ originalSelector: Selector, with swizzledSelector: Selector) {
+-        guard let originalMethod = class_getInstanceMethod(self, originalSelector),
+-              let swizzledMethod = class_getInstanceMethod(self, swizzledSelector) else { return }
+-
+-        method_exchangeImplementations(originalMethod, swizzledMethod)
+-    }
+-
+-    @objc private func swizzled_setViewControllers(_ viewControllers: [UIViewController], animated: Bool) {
+-        self.swizzled_setViewControllers(viewControllers, animated: animated)
+-        trackViewControllerChanges()
+-    }
+-
+-    @objc private func swizzled_pushViewController(_ viewController: UIViewController, animated: Bool) {
+-        self.swizzled_pushViewController(viewController, animated: animated)
+-        observeLifecycleIfNeeded(viewController)
+-    }
+-
+-    /// Track ViewControllers in the stack
+-    private func trackViewControllerChanges() {
+-#if DEBUG
+-        print("Navigation Stack Updated: \(viewControllers.map { type(of: $0) })")
+-#endif
+-
+-        viewControllers.forEach {
+-            observeLifecycleIfNeeded($0)
+-        }
+-    }
+-
+-    /// Observe lifecycle events
+-    private func observeLifecycleIfNeeded(_ viewController: UIViewController) {
+-        if objc_getAssociatedObject(viewController, &AssociatedKeys.didObserveLifecycle) == nil {
+-            observeLifecycle(of: viewController)
+-            objc_setAssociatedObject(viewController, &AssociatedKeys.didObserveLifecycle, true, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+-        }
+-    }
+-    
+-    private func observeLifecycle(of viewController: UIViewController) {
+-        if viewController.viewDidAppearHandler == nil {
+-            viewController.viewDidAppearHandler = {[weak viewController] in
+-#if DEBUG
+-                print("ViewController \(type(of: viewController)) did appear")
+-#endif
+-                if ScreenCaptureManager.shared.preventScreenCapture {
+-                    viewController?.applyScreenCaptureProtection()
+-                }
+-            }
+-        }
+-    }
+-}
+diff --git a/node_modules/@mattermost/react-native-emm/ios/Extensions/UIView+Shield.swift b/node_modules/@mattermost/react-native-emm/ios/Extensions/UIView+Shield.swift
+deleted file mode 100644
+index f933468..0000000
+--- a/node_modules/@mattermost/react-native-emm/ios/Extensions/UIView+Shield.swift
++++ /dev/null
+@@ -1,73 +0,0 @@
+-extension UIView {
+-    private struct Constants {
+-        static var secureTextFieldTag: Int { 37125 }
+-        static var secureTextFieldKey = UnsafeRawPointer(bitPattern: "secureTextFieldKey".hashValue)!
+-        static var originalSuperlayerKey = UnsafeRawPointer(bitPattern: "originalSuperlayerKey".hashValue)!
+-    }
+-    
+-    func setScreenCaptureProtection(_ isModal: Bool) {
+-        guard let superview = superview else {
+-            return
+-        }
+-
+-        if let _ = objc_getAssociatedObject(self, &Constants.secureTextFieldKey) as? UITextField {
+-            return // Already protected
+-        }
+-        
+-        // Step 1: Create the secureTextField to obscure screenshots
+-        layer.name = "originalLayer"
+-        let secureTextField = UITextField()
+-        secureTextField.backgroundColor = .clear
+-        secureTextField.translatesAutoresizingMaskIntoConstraints = false
+-        secureTextField.tag = Constants.secureTextFieldTag
+-        secureTextField.isSecureTextEntry = true
+-        secureTextField.isUserInteractionEnabled = false
+-        secureTextField.layer.name = "secureTextFieldLayer"
+-        
+-        // Step 2: Store a reference of the original layout
+-        if let originalSuperlayer = layer.superlayer {
+-            objc_setAssociatedObject(self, &Constants.originalSuperlayerKey, originalSuperlayer, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+-        }
+-        
+-        // Step 3: Insert the secureTextField in the view hierarchy
+-        // and store its reference
+-        let isBottomSheet = self.nativeID != nil && self.nativeID == "BottomSheetComponent"
+-        let isPermalink = self.nativeID != nil && self.nativeID.lowercased().contains("permalink")
+-        if (isModal && !isBottomSheet && !isPermalink) {
+-            superview.insertSubview(secureTextField, at: 0)
+-        } else {
+-            insertSubview(secureTextField, at: 0)
+-        }
+-        objc_setAssociatedObject(self, &Constants.secureTextFieldKey, secureTextField, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+-        
+-        // Step 4: Modify the layout
+-        layer.superlayer?.addSublayer(secureTextField.layer)
+-        secureTextField.layer.sublayers?.last?.addSublayer(layer)
+-    }
+-    
+-    public func removeScreenCaptureProtection() {
+-        guard let secureTextField = objc_getAssociatedObject(self, &Constants.secureTextFieldKey) as? UITextField else {
+-            return // Not found, assume already removed
+-        }
+-        
+-        // Step 1: Restore the original superlayer before removing secureTextField
+-        if let originalSuperlayer = objc_getAssociatedObject(self, &Constants.originalSuperlayerKey) as? CALayer {
+-            if layer.superlayer !== originalSuperlayer {
+-                // Temporarily remove the layer
+-                let tempLayer = CALayer()
+-                originalSuperlayer.addSublayer(tempLayer)
+-
+-                layer.removeFromSuperlayer()
+-                secureTextField.removeFromSuperview()
+-                originalSuperlayer.addSublayer(layer)
+-
+-                // Remove temp layer after forcing an update
+-                tempLayer.removeFromSuperlayer()
+-            }
+-        }
+-        
+-        // Step 3: Remove stored references
+-        objc_setAssociatedObject(self, &Constants.secureTextFieldKey, nil, .OBJC_ASSOCIATION_ASSIGN)
+-        objc_setAssociatedObject(self, &Constants.originalSuperlayerKey, nil, .OBJC_ASSOCIATION_ASSIGN)
+-    }
+-}
+diff --git a/node_modules/@mattermost/react-native-emm/ios/Extensions/UIViewController+Shield.swift b/node_modules/@mattermost/react-native-emm/ios/Extensions/UIViewController+Shield.swift
+deleted file mode 100644
+index 213685a..0000000
+--- a/node_modules/@mattermost/react-native-emm/ios/Extensions/UIViewController+Shield.swift
++++ /dev/null
+@@ -1,125 +0,0 @@
+-extension UIViewController {
+-    private struct ProtectionKeys {
+-        static var protectedViewKey = UnsafeRawPointer(bitPattern: "protectedViewKey".hashValue)!
+-    }
+-    
+-    private func getViewPriority(_ view: UIView) -> Int {
+-        if let nativeID = view.nativeID {
+-            if nativeID == "BottomSheetComponent" { return 4 } // Highest priority
+-            if nativeID.contains("shielded") { return 3 } // Second priority
+-        }
+-        
+-        let className = NSStringFromClass(type(of: view))
+-        if className.contains("RNCSafeAreaView") || className.contains("RCTSafeAreaView") {
+-            return 2 // Third priority
+-        }
+-        if className.contains("RNCSafeAreaProvider") {
+-            return 1 // Lowest priority
+-        }
+-        
+-        return 0 // If nothing matches
+-    }
+-    
+-    func findProtectionTarget(in target: UIView) -> UIView? {
+-        var fallbackView: UIView?
+-        var safeAreaView: UIView?
+-        var shieldedView: UIView?
+-        var bottomSheetView: UIView?
+-
+-        func traverse(_ view: UIView) -> Bool {
+-            let priority = getViewPriority(view)
+-            
+-            switch priority {
+-            case 4: // ✅ BottomSheetComponent found, stop immediately
+-                print("✅ Found \(NSStringFromClass(type(of: view))) (BottomSheetComponent), prioritizing it for protection")
+-                bottomSheetView = view
+-                return true
+-            case 3: // ✅ Shielded view, but keep searching for BottomSheetComponent
+-                if shieldedView == nil {
+-                    print("✅ Found \(NSStringFromClass(type(of: view))) (Shielded), using as second priority")
+-                    shieldedView = view
+-                }
+-            case 2: // ✅ SafeAreaView, but keep searching for higher priorities
+-                if safeAreaView == nil && shieldedView == nil {
+-                    print("✅ Found \(NSStringFromClass(type(of: view))) (SafeAreaView), using as third priority")
+-                    safeAreaView = view
+-                }
+-            case 1: // ✅ SafeAreaProvider, but lowest priority
+-                if fallbackView == nil && safeAreaView == nil && shieldedView == nil {
+-                    fallbackView = view.subviews.first
+-                }
+-            default:
+-                break
+-            }
+-            
+-            // **Optimized DFS Traversal**
+-            let prioritizedSubviews = view.subviews.sorted { a, b in
+-                getViewPriority(a) > getViewPriority(b) // Higher priority first
+-            }
+-
+-            for subview in prioritizedSubviews {
+-                if traverse(subview) { return true } // Stop if `BottomSheetComponent` is found
+-            }
+-
+-            return false
+-        }
+-
+-        let _ = traverse(target)
+-
+-        return bottomSheetView ?? shieldedView ?? safeAreaView ?? fallbackView
+-    }
+-
+-    func applyScreenCaptureProtection() {
+-        if self.view.layer.name == "Protected Layer" {
+-            return // already protected
+-        }
+-        
+-        ScreenCaptureManager.shared.logLayerHierarchy(self)
+-        guard let targetView = findProtectionTarget(in: self.view) else {
+-            print("🛑 No valid view found to protect for \(self)")
+-            return
+-            
+-        }
+-        
+-        if let nativeId = targetView.nativeID,
+-           nativeId.contains("skip.shielded") {
+-            print("🛑 >>> Skipping protection for: \(nativeId)")
+-            return
+-        }
+-        
+-        print("✅ Applying screen capture protection to: \(targetView.nativeID ?? "Unknown View")")
+-        var isModalFullScreen = false
+-        if let parentVC = self.parent,
+-           parentVC.modalPresentationStyle == .overFullScreen || parentVC.modalPresentationStyle == .fullScreen
+-            || parentVC.modalPresentationStyle == .overCurrentContext || parentVC.modalPresentationStyle == .currentContext {
+-            // Full-screen modals (e.g., .overFullScreen, .fullScreen) should not be treated as modals
+-            // for screen capture protection but rather as regular screens.
+-            isModalFullScreen = true
+-        }
+-        var isModal = self.isModalInPresentation
+-        if let navigationController = self.navigationController,
+-           let rootViewController = navigationController.viewControllers.first,
+-           rootViewController.presentingViewController != nil {
+-            isModal = !isModalFullScreen
+-        }
+-        
+-        targetView.setScreenCaptureProtection(isModal)
+-        self.view.layer.name = "Protected Layer"
+-        
+-        // Store the protected view in the View Controller
+-        objc_setAssociatedObject(self, &ProtectionKeys.protectedViewKey, targetView, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+-    }
+-    
+-    func removeScreenCaptureProtection() {
+-        guard let protectedView = objc_getAssociatedObject(self, &ProtectionKeys.protectedViewKey) as? UIView else {
+-            print("⚠️ No stored protected view found, skipping removal")
+-            return
+-        }
+-
+-        print("✅ Removing screen capture protection from: \(protectedView)")
+-        protectedView.removeScreenCaptureProtection()
+-        objc_setAssociatedObject(self, &ProtectionKeys.protectedViewKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+-        self.view.layer.name = nil
+-        CATransaction.flush()
+-    }
+-}
+diff --git a/node_modules/@mattermost/react-native-emm/ios/Extensions/UIViewController+Swizzle.swift b/node_modules/@mattermost/react-native-emm/ios/Extensions/UIViewController+Swizzle.swift
+deleted file mode 100644
+index 6722130..0000000
+--- a/node_modules/@mattermost/react-native-emm/ios/Extensions/UIViewController+Swizzle.swift
++++ /dev/null
+@@ -1,53 +0,0 @@
+-extension UIViewController {
+-    private struct AssociatedKeys {
+-        static var viewDidAppearHandler: UnsafeRawPointer = UnsafeRawPointer(bitPattern: "viewDidAppearHandler".hashValue)!
+-    }
+-    
+-    var viewDidAppearHandler: (() -> Void)? {
+-        get { return objc_getAssociatedObject(self, AssociatedKeys.viewDidAppearHandler) as? (() -> Void) }
+-        set { objc_setAssociatedObject(self, AssociatedKeys.viewDidAppearHandler, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+-    }
+-    
+-    static let swizzleViewControllerLifecycleMethods: Void = {
+-        guard let targetClass = NSClassFromString("RNNComponentViewController") as? UIViewController.Type else {
+-            print("⚠️ RNNComponentViewController not found")
+-            return
+-        }
+-        
+-        let methodPairs: [(Selector, Selector)] = [
+-            (#selector(viewDidAppear(_:)), #selector(swizzled_viewDidAppear(_:))),
+-        ]
+-        
+-        for (originalSelector, swizzledSelector) in methodPairs {
+-            swizzleMethod(for: targetClass, original: originalSelector, swizzled: swizzledSelector)
+-        }
+-    }()
+-    
+-    private static func swizzleMethod(for targetClass: UIViewController.Type, original: Selector, swizzled: Selector) {
+-        guard let originalMethod = class_getInstanceMethod(targetClass, original),
+-              let swizzledMethod = class_getInstanceMethod(UIViewController.self, swizzled) else {
+-            return
+-        }
+-        
+-        let didAddMethod = class_addMethod(
+-            targetClass,
+-            swizzled,
+-            method_getImplementation(swizzledMethod),
+-            method_getTypeEncoding(swizzledMethod)
+-        )
+-        
+-        if didAddMethod {
+-            guard let newSwizzledMethod = class_getInstanceMethod(targetClass, swizzled) else { return }
+-            method_exchangeImplementations(originalMethod, newSwizzledMethod)
+-        } else {
+-            method_exchangeImplementations(originalMethod, swizzledMethod)
+-        }
+-    }
+-    
+-    @objc private func swizzled_viewDidAppear(_ animated: Bool) {
+-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: { // Check if needed again
+-            self.viewDidAppearHandler?()
+-            self.swizzled_viewDidAppear(animated)
+-        })
+-    }
+-}
+diff --git a/node_modules/@mattermost/react-native-emm/ios/Extensions/UIWindow+Swizzle.swift b/node_modules/@mattermost/react-native-emm/ios/Extensions/UIWindow+Swizzle.swift
+deleted file mode 100644
+index b2c3215..0000000
+--- a/node_modules/@mattermost/react-native-emm/ios/Extensions/UIWindow+Swizzle.swift
++++ /dev/null
+@@ -1,69 +0,0 @@
+-extension UIWindow {
+-    private static var originalSetWindowLevel: IMP?
+-
+-    static let swizzleRNNOverlayPresentation: Void = {
+-        guard let targetClass = NSClassFromString("RNNOverlayWindow") as? UIWindow.Type else {
+-            print("⚠️ RNNOverlayWindow not found")
+-            return
+-        }
+-        
+-        let originalSelector = #selector(setter: UIWindow.windowLevel)
+-        let swizzledSelector = #selector(swizzled_setWindowLevel(_:))
+-        
+-        swizzleMethod(for: targetClass, original: originalSelector, swizzled: swizzledSelector)
+-    }()
+-    
+-    private static func swizzleMethod(for targetClass: UIWindow.Type, original: Selector, swizzled: Selector) {
+-        guard let originalMethod = class_getInstanceMethod(targetClass, original),
+-              let swizzledMethod = class_getInstanceMethod(UIWindow.self, swizzled) else {
+-            return
+-        }
+-        
+-        originalSetWindowLevel = method_getImplementation(originalMethod)
+-        
+-        let didAddMethod = class_addMethod(
+-            targetClass,
+-            swizzled,
+-            method_getImplementation(swizzledMethod),
+-            method_getTypeEncoding(swizzledMethod)
+-        )
+-        
+-        if didAddMethod {
+-            guard let newSwizzledMethod = class_getInstanceMethod(targetClass, swizzled) else { return }
+-            method_exchangeImplementations(originalMethod, newSwizzledMethod)
+-        } else {
+-            method_exchangeImplementations(originalMethod, swizzledMethod)
+-        }
+-    }
+-    
+-    @objc private func swizzled_setWindowLevel(_ level: UIWindow.Level) {
+-        let windowClassName = String(describing: type(of: self))
+-        print("Window Class: \(windowClassName)")
+-        
+-        // Ensure the method only runs for RNNOverlayWindow
+-        if let windowClass = NSClassFromString("RNNOverlayWindow"), type(of: self) == windowClass {
+-            print("[RNN Overlay] Overlay visibility changed to: \(level.rawValue) - \(self)")
+-
+-            if level == .normal && ScreenCaptureManager.shared.preventScreenCapture,
+-               let rootVC = self.rootViewController {
+-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+-                    ScreenCaptureManager.shared.logLayerHierarchy(rootVC)
+-                    rootVC.applyScreenCaptureProtection()
+-                }
+-            }
+-        }
+-
+-        // Always call the original method at the end
+-        callOriginalSetWindowLevel(level)
+-    }
+-
+-    
+-    private func callOriginalSetWindowLevel(_ level: UIWindow.Level) {
+-        guard let originalIMP = UIWindow.originalSetWindowLevel else { return }
+-
+-        typealias Function = @convention(c) (AnyObject, Selector, UIWindow.Level) -> Void
+-        let function = unsafeBitCast(originalIMP, to: Function.self)
+-
+-        function(self, #selector(setter: UIWindow.windowLevel), level)
+-    }
+-}
 diff --git a/node_modules/@mattermost/react-native-emm/ios/ScreenCaptureManager.swift b/node_modules/@mattermost/react-native-emm/ios/ScreenCaptureManager.swift
-index 46ec43c..9227372 100644
+index 46ec43c..89d6074 100644
 --- a/node_modules/@mattermost/react-native-emm/ios/ScreenCaptureManager.swift
 +++ b/node_modules/@mattermost/react-native-emm/ios/ScreenCaptureManager.swift
-@@ -163,11 +163,11 @@
+@@ -2,31 +2,26 @@
+     @objc public static let shared = ScreenCaptureManager()
+     
+     // MARK: Properties
+-    internal var blurView: UIImageView? = nil
++    private var blurEffectView: AnimatedBlurEffectView?
+     var isAuthenticating: Bool = false
+     var blurOnAuthenticate: Bool = false
++    private var protectionTextField: UITextField?
++    private var originalParent: CALayer?
+     
+     var preventScreenCapture: Bool = false {
+         didSet {
+             // here we should traverse the viewControllers
+             // and apply or remove the protection
+-            self.applyScreenCapturePolicy()
++            self.setScreenCapturePolicy()
+         }
      }
      
-     @objc func applyBlurEffect(notification: Notification) {
+-    // MARK: Swizzle for RNN
+-    public static func startTrackingScreens() {
+-        UIWindow.swizzleRNNOverlayPresentation
+-        UIViewController.swizzleViewControllerLifecycleMethods
+-        UINavigationController.swizzleNavigationTracking()
+-    }
+-    
+     // MARK: Event listener
+     private func listenForScreenCapture() {
+         if self.preventScreenCapture {
+             NotificationCenter.default.addObserver(
+                 self,
+-                selector: #selector(applyBlurEffect(notification:)),
++                selector: #selector(conditionalApplyBlurEffect),
+                 name: UIScreen.capturedDidChangeNotification,
+                 object: nil
+             )
+@@ -42,24 +37,13 @@
+     
+     func screenCaptureStatusChange() {
+         if self.preventScreenCapture && UIScreen.main.isCaptured && !self.isAuthenticating {
+-            applyBlurEffect() // Prevent screen recording
++            conditionalApplyBlurEffect() // Prevent screen recording
+         } else {
+             removeBlurEffect()
+         }
+     }
+     
+     // MARK: Windows and ViewControllers
+-    func getKeyWindow() -> UIWindow? {
+-        if #available(iOS 15.0, *) {
+-            return UIApplication.shared.connectedScenes
+-                .compactMap { $0 as? UIWindowScene }
+-                .flatMap { $0.windows }
+-                .first { $0.isKeyWindow }
+-        } else {
+-            return UIApplication.shared.windows.first { $0.isKeyWindow }
+-        }
+-    }
+-    
+     func getLastKeyWindow() -> UIWindow? {
+         if #available(iOS 15.0, *) {
+             return UIApplication.shared.connectedScenes
+@@ -71,156 +55,116 @@
+         }
+     }
+     
+-    func getAllKeyWindows() -> [UIWindow] {
+-        if #available(iOS 15.0, *) {
+-            return UIApplication.shared.connectedScenes
+-                .compactMap { $0 as? UIWindowScene }
+-                .flatMap { $0.windows }
+-        } else {
+-            return UIApplication.shared.windows
++    // MARK: Screenshot protection functions
++    private func applyScreenCapturePolicy() {
++        guard let keyWindow = self.getLastKeyWindow(),
++        originalParent == nil,
++        protectionTextField == nil else {
++            return
+         }
+-    }
+         
+-    private func getAllRootViewControllers() -> [UIViewController] {
+-        return getAllKeyWindows().compactMap { $0.rootViewController }
+-    }
++        let textField = UITextField()
++        textField.isSecureTextEntry = true
++        textField.isUserInteractionEnabled = false
++        textField.backgroundColor = UIColor.clear
++        textField.frame = UIScreen.main.bounds
+         
+-    private func getAllPresentedViewControllers(from viewController: UIViewController) -> [UIViewController] {
+-        var presentedVCs: [UIViewController] = []
++        originalParent = keyWindow.layer.superlayer
+         
+-        var currentVC: UIViewController? = viewController
+-        while let vc = currentVC {
+-            presentedVCs.append(vc)
+-            currentVC = vc.presentedViewController
++        keyWindow.layer.superlayer?.addSublayer(textField.layer)
++        
++        if let firstTextFieldSublayer = textField.layer.sublayers?.first {
++            keyWindow.layer.removeFromSuperlayer()
++            firstTextFieldSublayer.addSublayer(keyWindow.layer)
+         }
+         
+-        return presentedVCs
++        protectionTextField = textField
+     }
+     
+-    // MARK: Screenshot protection functions
+-    private func applyPolicyToViewController(_ vc: UIViewController) {
+-        if self.preventScreenCapture {
+-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+-                vc.applyScreenCaptureProtection()
+-            }
++    private func removeScreenCapturePolicy() {
++        guard let textField = protectionTextField,
++              let window = self.getLastKeyWindow(),
++              let originalParentLayer = originalParent else {
+             return
+         }
+         
+-        vc.removeScreenCaptureProtection()
+-    }
+-    
+-    private func applyScreenCapturePolicy() {
+-        DispatchQueue.main.async {
+-            for rootVC in self.getAllRootViewControllers() {
+-                let c = NSStringFromClass(type(of: rootVC))
+-                if c.contains("RNNStackController"), let r = rootVC as? UINavigationController {
+-                    for vc in r.viewControllers {
+-                        print(String(describing: type(of: vc)))
+-                        self.applyPolicyToViewController(vc)
+-                    }
+-                }
+-                if let modalVC = rootVC.presentedViewController {
+-                    let c = NSStringFromClass(type(of: modalVC))
+-                    print(String(describing: type(of: modalVC)))
+-                    if c.contains("RNNStackController"), let r = modalVC as? UINavigationController {
+-                        for vc in r.viewControllers {
+-                            print(String(describing: type(of: vc)))
+-                            self.applyPolicyToViewController(vc)
+-                        }
+-                    }
+-                }
+-            }
+-        }
++        window.layer.removeFromSuperlayer()
++        originalParentLayer.addSublayer(window.layer)
++        textField.layer.removeFromSuperlayer()
++        protectionTextField = nil
++        originalParent = nil
+     }
+     
+-    // MARK: Blur effect functions
+-    func createBlurEffect(window: UIWindow, toImage image: inout UIImage, radius: Double) {
+-        let ciImage = CIImage(image: image)
+-        let filter = CIFilter(name: "CIGaussianBlur")
+-        filter?.setValue(ciImage, forKey: "inputImage")
+-        filter?.setValue(radius, forKey: "inputRadius")
+-        guard let blurredImage = filter?.outputImage else {
+-            image = UIImage()
++    private func setScreenCapturePolicy() {
++        if self.preventScreenCapture {
++            self.applyScreenCapturePolicy()
+             return
+         }
+-        let croppedFrame = CGRect(
+-            x: window.frame.origin.x,
+-            y: window.frame.origin.y,
+-            width: window.frame.width * UIScreen.main.scale,
+-            height: window.frame.height * UIScreen.main.scale
+-        )
+-        let cover = blurredImage.cropped(to: croppedFrame)
+-        image = UIImage.init(ciImage: cover)
+-    }
+         
+-    func screenShot(window: UIWindow) -> UIImage {
+-        let scale = UIScreen.main.scale
+-        UIGraphicsBeginImageContextWithOptions(window.frame.size, false, scale);
+-        window.layer.render(in: UIGraphicsGetCurrentContext()!)
+-        let screenshot = UIGraphicsGetImageFromCurrentImageContext()
+-        UIGraphicsEndImageContext()
+-        return screenshot ?? UIImage()
++        self.removeScreenCapturePolicy()
+     }
+     
+-    @objc func applyBlurEffect(notification: Notification) {
 -        self.applyBlurEffect(radius: 10.0)
-+        self.applyBlurEffect(radius: 20.0)
+-    }
+-
+-    
+-    @objc public func applyBlurEffect(radius: Double = 10.0) {
+-        if self.blurView == nil && (
+-                (self.preventScreenCapture && !self.isAuthenticating) ||
+-                (self.isAuthenticating && self.blurOnAuthenticate)
++    // MARK: Blur effect functions
++    @objc public func conditionalApplyBlurEffect(intensity: CGFloat = 0.5) {
++        if self.blurEffectView == nil && (
++            (self.preventScreenCapture && !self.isAuthenticating) ||
++            (self.isAuthenticating && self.blurOnAuthenticate)
+         ) {
+-            DispatchQueue.main.async {
+-                if let window = self.getKeyWindow() {
+-                    if self.blurView == nil {
+-                        self.blurView = UIImageView()
+-                    }
+-                    guard let blurView = self.blurView else { return }
+-                    var cover = self.screenShot(window: window)
+-                    blurView.frame = window.frame
+-                    blurView.contentMode = .scaleToFill
+-                    blurView.backgroundColor = UIColor.gray
+-                    window.addSubview(blurView)
+-                    self.createBlurEffect(window: window, toImage: &cover, radius: radius)
+-                    blurView.image = cover
+-                }
+-            }
++            self.applyBlurEffect(intensity: intensity)
+         }
+     }
+     
+-    @objc public func removeBlurEffect(forced: Bool = false) {
+-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+-            if self.blurView != nil && ((!UIScreen.main.isCaptured && !self.isAuthenticating) || forced) {
+-                self.blurView?.removeFromSuperview()
+-                self.blurView = nil
+-            }
++    @objc public func conditionalRemoveBlurEffect(forced: Bool = false) {
++        if ((!UIScreen.main.isCaptured && !self.isAuthenticating) || forced) {
++            self.removeBlurEffect()
+         }
      }
  
+-    // MARK: Print View hierarchy tree for debugging purposes
+-    func logLayerHierarchy(_ view: UIView?, prefix: String = "") {
+-#if DEBUG
+-        guard let view = view else { return }
+-        let viewClassName: String = String(describing: type(of: view))
+-        print("\(prefix)└── View: \(viewClassName), Layer: \(view.layer.name ?? "nil"), NativeID: \(String(describing: view.nativeID))")
+-
+-        if view is UITextField {
+-            print("\(prefix)    (FOUND TEXTFIELD)")
+-        }
+-
+-        let subviewCount = view.subviews.count
+-        for (index, subview) in view.subviews.enumerated() {
+-            let isLast = index == subviewCount - 1
+-            let newPrefix = prefix + (isLast ? "    " : "│   ")
+-            logLayerHierarchy(subview, prefix: newPrefix)
++    @objc public func applyBlurEffect(intensity: CGFloat = 0.5) {
++        DispatchQueue.main.async {
++            guard self.blurEffectView == nil,
++                  let keyWindow = self.getLastKeyWindow(),
++                  let rootView = keyWindow.subviews.first else { return }
++            
++            let blurEffectView = AnimatedBlurEffectView(style: .dark, intensity: intensity)
++            blurEffectView.frame = rootView.bounds
++            blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
++            blurEffectView.alpha = 0
++            
++            rootView.addSubview(blurEffectView)
++            self.blurEffectView = blurEffectView
++            
++            blurEffectView.setupBlur()
++            blurEffectView.isUserInteractionEnabled = false
++            
++            UIView.animate(
++                withDuration: 0.3,
++                delay: 0,
++                options: [.curveEaseOut],
++                animations: {
++                    blurEffectView.alpha = 1.0
++                }
++            )
+         }
+-#endif
+     }
      
--    @objc public func applyBlurEffect(radius: Double = 10.0) {
-+    @objc public func applyBlurEffect(radius: Double = 20.0) {
-         if self.blurView == nil && (
-                 (self.preventScreenCapture && !self.isAuthenticating) ||
-                 (self.isAuthenticating && self.blurOnAuthenticate)
+-    func logLayerHierarchy(_ vc: UIViewController?, prefix: String = "") {
+-        guard let vc = vc else { return }
+-        logLayerHierarchy(vc.view, prefix: prefix)
++    @objc public func removeBlurEffect() {
++        DispatchQueue.main.async {
++            guard let blurEffectView = self.blurEffectView else {
++                return
++            }
++            UIView.animate(
++                withDuration: 0.25,
++                delay: 0,
++                options: [.curveEaseIn],
++                animations: {
++                    blurEffectView.alpha = 0
++                },
++                completion: { _ in
++                    blurEffectView.removeFromSuperview()
++                    self.blurEffectView = nil
++                }
++            )
++        }
+     }
+ }

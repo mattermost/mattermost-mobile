@@ -6,6 +6,7 @@ import {Platform, Text, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     title: string;
@@ -20,16 +21,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
         },
         title: {
-            color: theme.centerChannelColor,
-            fontFamily: 'Metropolis-SemiBold',
-            fontSize: 18,
-            fontWeight: '600',
+            color: theme.sidebarHeaderTextColor,
+            ...typography('Heading', 300, 'SemiBold'),
         },
         subtitle: {
             color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
-            fontFamily: 'OpenSans',
-            fontSize: 12,
-            fontWeight: '400',
+            ...typography('Body', 75),
         },
     };
 });

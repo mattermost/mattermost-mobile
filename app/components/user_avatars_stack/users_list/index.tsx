@@ -8,7 +8,7 @@ import {FlatList} from 'react-native-gesture-handler';
 
 import UserItem from '@components/user_item';
 import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
-import {dismissBottomSheet, openUserProfileModal} from '@utils/navigation/adapter';
+import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';

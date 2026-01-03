@@ -32,8 +32,6 @@ describe('ParticipantPlaybooks Index', () => {
     let database: Database;
     let operator: ServerDataOperator;
 
-    const componentId = 'ParticipantPlaybooks' as const;
-
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
         const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -46,18 +44,13 @@ describe('ParticipantPlaybooks Index', () => {
     });
 
     it('renders ParticipantPlaybooks component with no data', () => {
-        const props = {
-            componentId,
-        };
-
         const {getByTestId} = renderWithEverything(
-            <ParticipantPlaybooksIndex {...props}/>,
+            <ParticipantPlaybooksIndex/>,
             {database},
         );
 
         const component = getByTestId('participant-playbooks');
         expect(component).toBeTruthy();
-        expect(component.props.componentId).toBe('ParticipantPlaybooks');
         expect(component.props.currentUserId).toBe('');
         expect(component.props.cachedPlaybookRuns).toEqual([]);
     });
@@ -82,18 +75,13 @@ describe('ParticipantPlaybooks Index', () => {
             runs,
         });
 
-        const props = {
-            componentId,
-        };
-
         const {getByTestId} = renderWithEverything(
-            <ParticipantPlaybooksIndex {...props}/>,
+            <ParticipantPlaybooksIndex/>,
             {database},
         );
 
         const component = getByTestId('participant-playbooks');
         expect(component).toBeTruthy();
-        expect(component.props.componentId).toBe('ParticipantPlaybooks');
         expect(component.props.currentUserId).toBe(currentUserId);
         expect(component.props.cachedPlaybookRuns).toHaveLength(2);
         const runIds = component.props.cachedPlaybookRuns.map((r: PlaybookRunModel) => r.id);
@@ -102,10 +90,6 @@ describe('ParticipantPlaybooks Index', () => {
     });
 
     it('reacts to current user changes', async () => {
-        const props = {
-            componentId,
-        };
-
         const otherUserId = 'other-user-id';
         const runs = TestHelper.createPlaybookRuns(4, 1, 1);
         runs[0].participant_ids = [currentUserId];
@@ -118,7 +102,7 @@ describe('ParticipantPlaybooks Index', () => {
         });
 
         const {getByTestId} = renderWithEverything(
-            <ParticipantPlaybooksIndex {...props}/>,
+            <ParticipantPlaybooksIndex/>,
             {database},
         );
 

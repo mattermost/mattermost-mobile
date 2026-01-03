@@ -13,20 +13,21 @@ import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {goToScreen, popTopScreen} from '@screens/navigation';
+import {navigateToSettingsScreen} from '@screens/navigation';
+import SettingsStore from '@store/settings_store';
 import {getDeviceTimezone} from '@utils/timezone';
 import {getTimezoneRegion, getUserTimezoneProps} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type DisplayTimezoneProps = {
     currentUser?: UserModel;
-    componentId: AvailableScreens;
 }
-const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
+const DisplayTimezone = ({currentUser}: DisplayTimezoneProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const initialTimezone = useMemo(() => getUserTimezoneProps(currentUser), [/* dependency array should remain empty */]);
     const [userTimezone, setUserTimezone] = useState(initialTimezone);
 
@@ -46,18 +47,13 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
                 automaticTimezone: '',
                 manualTimezone: mtz,
             });
+            SettingsStore.removeUpdateAutomaticTimezoneCallback();
         };
 
-        const screen = Screens.SETTINGS_DISPLAY_TIMEZONE_SELECT;
-        const title = intl.formatMessage({id: 'settings_display.timezone.select', defaultMessage: 'Select Timezone'});
+        SettingsStore.setUpdateAutomaticTimezoneCallback(updateManualTimezone);
 
-        const passProps = {
-            currentTimezone: userTimezone.manualTimezone || initialTimezone.manualTimezone || initialTimezone.automaticTimezone,
-            onBack: updateManualTimezone,
-        };
-
-        goToScreen(screen, title, passProps);
-    }, [initialTimezone.manualTimezone, initialTimezone.automaticTimezone, intl, userTimezone.manualTimezone]));
+        navigateToSettingsScreen(Screens.SETTINGS_DISPLAY_TIMEZONE_SELECT);
+    }, []));
 
     const saveTimezone = useCallback(() => {
         const canSave =
@@ -74,10 +70,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
 
             updateMe(serverUrl, {timezone: timeZone});
         }
-
-        popTopScreen(componentId);
     }, [
-        componentId,
         initialTimezone,
         userTimezone.useAutomaticTimezone,
         userTimezone.automaticTimezone,
@@ -87,7 +80,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
 
     useBackNavigation(saveTimezone);
 
-    useAndroidHardwareBackHandler(componentId, saveTimezone);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_DISPLAY_TIMEZONE, saveTimezone);
 
     const toggleDesc = useMemo(() => {
         if (userTimezone.useAutomaticTimezone) {

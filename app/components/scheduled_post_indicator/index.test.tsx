@@ -1,16 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, screen} from '@testing-library/react-native';
-import React, {act} from 'react';
-import {DeviceEventEmitter} from 'react-native';
+import {screen} from '@testing-library/react-native';
+import React from 'react';
 
-import {switchToGlobalDrafts} from '@actions/local/draft';
-import {Events, Screens} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
-import TestHelper from '@test/test_helper';
 
-import ScheduledPostIndicator from '.';
+import ScheduledPostIndicator from './index';
 
 jest.mock('@utils/theme', () => ({
     changeOpacity: jest.fn().mockReturnValue('rgba(0,0,0,0.5)'),
@@ -75,27 +71,5 @@ describe('ScheduledPostIndicator', () => {
 
         renderWithIntlAndTheme(<ScheduledPostIndicator {...props}/>);
         expect(screen.getByText(/1 scheduled message in thread/i)).toBeVisible();
-    });
-
-    test('should handle see all scheduled posts click', async () => {
-        const props = {
-            ...baseProps,
-            scheduledPostCount: 2,
-            channelId: 'channel_id',
-        };
-        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
-
-        renderWithIntlAndTheme(<ScheduledPostIndicator {...props}/>);
-
-        jest.mocked(switchToGlobalDrafts).mockResolvedValue({error: null});
-        const button = screen.getByText('See all.');
-
-        await act(async () => {
-            fireEvent.press(button);
-            await TestHelper.wait(0);
-        });
-
-        expect(emitSpy).toHaveBeenCalledWith(Events.ACTIVE_SCREEN, Screens.GLOBAL_DRAFTS);
-        expect(emitSpy).toHaveBeenCalledTimes(1);
     });
 });

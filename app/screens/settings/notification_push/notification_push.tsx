@@ -7,10 +7,10 @@ import {Platform} from 'react-native';
 import {updateMe} from '@actions/remote/user';
 import SettingContainer from '@components/settings/container';
 import SettingSeparator from '@components/settings/separator';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
-import {popTopScreen} from '@screens/navigation';
 import {getNotificationProps} from '@utils/user';
 
 import MobileSendPush from './push_send';
@@ -18,17 +18,17 @@ import MobilePushStatus from './push_status';
 import MobilePushThread from './push_thread';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type NotificationMobileProps = {
-    componentId: AvailableScreens;
     currentUser?: UserModel;
     isCRTEnabled: boolean;
     sendPushNotifications: boolean;
 };
-const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
+const NotificationPush = ({currentUser, isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
     const serverUrl = useServerUrl();
 
+    // We only want to recalculate notifyProps when currentUser.notifyProps changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
 
     const [pushSend, setPushSend] = useState<UserNotifyPropsPush>(notifyProps.push);
@@ -38,8 +38,6 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
     const onMobilePushThreadChanged = useCallback(() => {
         setPushThreadPref(pushThread === 'all' ? 'mention' : 'all');
     }, [pushThread]);
-
-    const close = () => popTopScreen(componentId);
 
     const canSaveSettings = useCallback(() => {
         const p = pushSend !== notifyProps.push;
@@ -59,12 +57,11 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
             };
             updateMe(serverUrl, {notify_props});
         }
-        close();
-    }, [canSaveSettings, close, notifyProps, pushSend, pushStatus, pushThread, serverUrl]);
+    }, [canSaveSettings, notifyProps, pushSend, pushStatus, pushThread, serverUrl]);
 
     useBackNavigation(saveNotificationSettings);
 
-    useAndroidHardwareBackHandler(componentId, saveNotificationSettings);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_PUSH, saveNotificationSettings);
 
     return (
         <SettingContainer testID='push_notification_settings'>

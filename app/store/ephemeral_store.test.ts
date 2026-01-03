@@ -1,17 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import EphemeralStore from './ephemeral_store';
+
 describe('EphemeralStore', () => {
     afterEach(() => {
         jest.resetModules();
     });
 
     it('theme observable', () => {
-        const EphemeralStore = require('./ephemeral_store').default;
         const {Preferences} = require('@constants');
 
-        // Initial value should be undefined
-        expect(EphemeralStore.getTheme()).toBeUndefined();
+        // Initial value should be the default theme
+        const initialTheme = EphemeralStore.getTheme();
+        expect(initialTheme).toBeDefined();
 
         // Set theme
         const theme = Preferences.THEMES.denim;
@@ -40,8 +42,6 @@ describe('EphemeralStore', () => {
     });
 
     it('playbooks sync', () => {
-        const EphemeralStore = require('./ephemeral_store').default;
-
         // Expect false if not yet set
         expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id')).toBe(false);
 

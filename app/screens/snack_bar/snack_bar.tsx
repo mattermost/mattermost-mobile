@@ -41,7 +41,7 @@ const SNACK_BAR_WIDTH = 96;
 const SNACK_BAR_HEIGHT = 56;
 const SNACK_BAR_BOTTOM_RATIO = 0.04;
 
-const caseScreens: AvailableScreens[] = [Screens.PERMALINK, Screens.MANAGE_CHANNEL_MEMBERS, Screens.MENTIONS, Screens.SAVED_MESSAGES];
+const caseScreens: AvailableScreens[] = [Screens.PERMALINK, Screens.MANAGE_CHANNEL_MEMBERS, Screens.MENTIONS, Screens.SAVED_MESSAGES, Screens.CODE];
 
 const DEFAULT_ICON = 'alert-outline';
 
@@ -149,8 +149,8 @@ const SnackBar = ({
             case Boolean(sourceScreen) && caseScreens.includes(sourceScreen!):
                 tabletStyle = {
                     marginBottom: 0,
-                    marginLeft: 0,
-                    width: (SNACK_BAR_WIDTH / 100) * windowWidth,
+                    marginHorizontal: TABLET_SIDEBAR_WIDTH,
+                    width: (SNACK_BAR_WIDTH / 100) * diffWidth,
                 };
                 break;
             default:
@@ -241,6 +241,9 @@ const SnackBar = ({
             stopTimers();
             mounted.current = false;
         };
+
+        // only run on mount/unmount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // This effect calls onDismiss after we have hidden the snack bar

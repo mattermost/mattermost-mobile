@@ -4,16 +4,17 @@
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useReducer, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Pressable, StyleSheet, Text, View} from 'react-native';
+import {Keyboard, StyleSheet, View} from 'react-native';
 
 import {createChannel, patchChannel as handlePatchChannel, switchToChannelById} from '@actions/remote/channel';
+import NavigationButton from '@components/navigation_button';
 import {General, Screens} from '@constants';
 import {MIN_CHANNEL_NAME_LENGTH} from '@constants/channel';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {navigateBack} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
-import {navigateBack} from '@utils/navigation/adapter';
 import {changeOpacity} from '@utils/theme';
 
 import ChannelInfoForm from './channel_info_form';
@@ -182,17 +183,13 @@ const CreateOrEditChannel = ({
         const buttonText = editing ? formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'}) : formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
         navigation.setOptions({
             headerRight: () => (
-                <Pressable
+                <NavigationButton
                     onPress={editing ? onUpdateChannel : onCreateChannel}
-                    disabled={!canSave}
+                    text={buttonText}
                     testID={editing ? 'create_or_edit_channel.save.button' : 'create_or_edit_channel.create.button'}
-                >
-                    <Text
-                        style={{color: canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5), fontSize: 16}}
-                    >
-                        {buttonText}
-                    </Text>
-                </Pressable>
+                    color={canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                    disabled={!canSave}
+                />
             ),
         });
     }, [editing, formatMessage, navigation, onUpdateChannel, onCreateChannel, canSave, theme.sidebarHeaderTextColor]);

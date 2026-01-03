@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 
 import {Screens} from '@constants';
-import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 
@@ -22,7 +21,6 @@ type Props = {
 }
 
 const Reactions = ({initialEmoji, location, reactions}: Props) => {
-    const isTablet = useIsTablet();
     const [sortedReactions, setSortedReactions] = useState(Array.from(new Set(reactions?.map((r) => getEmojiFirstAlias(r.emojiName)))));
     const [index, setIndex] = useState(sortedReactions.indexOf(initialEmoji));
 
@@ -63,11 +61,11 @@ const Reactions = ({initialEmoji, location, reactions}: Props) => {
                     key={emojiAlias}
                     location={location}
                     reactions={reactionsByName.get(emojiAlias)!}
-                    type={isTablet ? 'FlatList' : 'BottomSheetFlatList'}
+                    type={'BottomSheetFlatList'}
                 />
             </>
         );
-    }, [index, isTablet, location, reactionsByName, sortedReactions]);
+    }, [index, location, reactionsByName, sortedReactions]);
 
     useEffect(() => {
         // This helps keep the reactions in the same position at all times until unmounted

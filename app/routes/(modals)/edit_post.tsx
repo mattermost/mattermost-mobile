@@ -7,7 +7,7 @@ import {useTheme} from '@context/theme';
 import {getModalHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
 import EditPostScreen, {type EditPostProps} from '@screens/edit_post';
-import {navigateBack} from '@utils/navigation/adapter';
+import {navigateBack} from '@screens/navigation';
 
 export default function EditPostRoute() {
     const intl = useIntl();

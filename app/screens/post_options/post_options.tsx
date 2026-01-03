@@ -4,7 +4,7 @@
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
-import {ScrollView} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import CopyTextOption from '@components/copy_text_option';
@@ -12,7 +12,6 @@ import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {REACTION_PICKER_HEIGHT, REACTION_PICKER_MARGIN} from '@constants/reaction_picker';
 import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
-import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
@@ -52,10 +51,8 @@ const PostOptions = ({
     isBoRPost,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const isTablet = useIsTablet();
     const {enabled, panResponder} = useBottomSheetListsFix();
-    const Scroll = useMemo(() => (isTablet ? ScrollView : BottomSheetScrollView), [isTablet]);
-
+    const {bottom} = useSafeAreaInsets();
     const isSystemPost = isSystemMessage(post);
 
     const canCopyPermalink = !isSystemPost && managedConfig?.copyAndPasteProtection !== 'true';
@@ -73,22 +70,18 @@ const PostOptions = ({
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
 
-        items.push(bottomSheetSnapPoint(optionsCount, ITEM_HEIGHT) + (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0));
+        items.push(bottomSheetSnapPoint(optionsCount, ITEM_HEIGHT) + (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0) + bottom);
 
         if (shouldShowBindings) {
             items.push('80%');
         }
 
         return items;
-    }, [
-        canAddReaction, canCopyPermalink, canCopyText,
-        canDelete, canEdit, shouldRenderFollow, shouldShowBindings,
-        canMarkAsUnread, canPin, canReply, isSystemPost,
-    ]);
+    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, isSystemPost, shouldRenderFollow, shouldShowBindings, canAddReaction, bottom]);
 
     const renderContent = () => {
         return (
-            <Scroll
+            <BottomSheetScrollView
                 bounces={false}
                 scrollEnabled={enabled}
                 {...panResponder.panHandlers}
@@ -143,7 +136,7 @@ const PostOptions = ({
                     bindings={bindings}
                 />
                 }
-            </Scroll>
+            </BottomSheetScrollView>
         );
     };
 

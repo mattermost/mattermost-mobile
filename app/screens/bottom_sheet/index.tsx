@@ -3,7 +3,7 @@
 
 import BottomSheetM, {BottomSheetBackdrop, BottomSheetScrollView, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
-import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, ScrollView, type StyleProp, View, type ViewStyle} from 'react-native';
+import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
 import {ReduceMotion, useReducedMotion, type WithSpringConfig} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -11,20 +11,18 @@ import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
-import {useIsTablet} from '@hooks/device';
-import SecurityManager from '@managers/security_manager';
+import {navigateBack} from '@screens/navigation';
+import BottomSheetStore from '@store/bottom_sheet_store';
 import {hapticFeedback} from '@utils/general';
-import {navigateBack} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import Indicator from './indicator';
+import EmptyBottomSheetFooter from './footer';
+import {useBottomSheetStyle} from './hooks';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 export {default as BottomSheetButton, BUTTON_HEIGHT} from './button';
 export {default as BottomSheetContent, TITLE_HEIGHT} from './content';
-
-export const BOTTOM_SHEET_ANDROID_OFFSET = 12;
 
 type Props = {
     screen: AvailableScreens;
@@ -55,9 +53,10 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             shadowRadius: 24,
             shadowColor: '#000',
             elevation: 24,
+            flex: 1,
         },
         bottomSheetBackground: {
-            backgroundColor: theme.centerChannelBg,
+            backgroundColor: 'transparent',
             borderColor: changeOpacity(theme.centerChannelColor, 0.16),
         },
         content: {
@@ -75,6 +74,12 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         view: {
             flex: 1,
+        },
+        indicator: {
+            backgroundColor: 'white',
+        },
+        indicatorContainer: {
+            marginTop: 0,
         },
     };
 });
@@ -102,7 +107,6 @@ const BottomSheet = ({
     const isClosing = useRef(false);
     const reducedMotion = useReducedMotion();
     const sheetRef = useRef<BottomSheetM>(null);
-    const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -110,6 +114,7 @@ const BottomSheet = ({
     const timeoutRef = useRef<NodeJS.Timeout>();
 
     const {enabled, panResponder} = useBottomSheetListsFix();
+    const screenStyle = useBottomSheetStyle();
 
     const animationConfigs = useMemo(() => ({
         ...animatedConfig,
@@ -120,13 +125,9 @@ const BottomSheet = ({
         interaction.current = InteractionManager.createInteractionHandle();
     }, []);
 
-    const bottomSheetBackgroundStyle = useMemo(() => [
-        styles.bottomSheetBackground,
-        {borderWidth: isTablet ? 0 : 1},
-    ], [isTablet, styles]);
-
     const close = useCallback(() => {
         isClosing.current = true;
+        BottomSheetStore.reset();
         navigateBack();
     }, []);
 
@@ -205,7 +206,7 @@ const BottomSheet = ({
 
     const renderContainerContent = () => (
         <View
-            style={[styles.content, isTablet && styles.contentTablet, contentStyle]}
+            style={[styles.content, contentStyle]}
             testID={`${testID}.screen`}
         >
             {renderContent()}
@@ -218,28 +219,6 @@ const BottomSheet = ({
         scrollEnabled: enabled,
         ...panResponder.panHandlers,
     };
-
-    if (isTablet) {
-        const FooterComponent = footerComponent;
-        let content = renderContainerContent();
-        if (scrollable) {
-            content = (
-                <ScrollView {...scrollViewProps}>
-                    {content}
-                </ScrollView>
-            );
-        }
-        return (
-            <View
-                style={styles.view}
-                nativeID={SecurityManager.getShieldScreenId(screen)}
-            >
-                <View style={styles.separator}/>
-                {content}
-                {FooterComponent && (<FooterComponent/>)}
-            </View>
-        );
-    }
 
     let content;
     if (scrollable) {
@@ -266,17 +245,19 @@ const BottomSheet = ({
             onAnimate={handleAnimationStart}
             onChange={handleChange}
             animationConfigs={animationConfigs}
-            handleComponent={Indicator}
-            style={styles.bottomSheet}
-            backgroundStyle={bottomSheetBackgroundStyle}
-            footerComponent={footerComponent}
+            handleIndicatorStyle={styles.indicator}
+            handleStyle={styles.indicatorContainer}
+            backgroundStyle={styles.bottomSheetBackground}
+            footerComponent={footerComponent || EmptyBottomSheetFooter}
             keyboardBehavior='extend'
             keyboardBlurBehavior='restore'
             onClose={onBottomSheetClose}
             bottomInset={insets.bottom}
             enableDynamicSizing={enableDynamicSizing}
         >
-            {content}
+            <View style={[styles.bottomSheet, screenStyle]}>
+                {content}
+            </View>
         </BottomSheetM>
     );
 };

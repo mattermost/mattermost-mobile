@@ -6,7 +6,7 @@ import {defineMessages} from 'react-intl';
 
 import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
-import {dismissBottomSheet, navigateToScreen} from '@utils/navigation/adapter';
+import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
 

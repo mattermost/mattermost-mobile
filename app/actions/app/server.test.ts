@@ -3,7 +3,6 @@
 
 import {createIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -33,7 +32,6 @@ jest.mock('@utils/push_proxy');
 jest.mock('@utils/server');
 jest.mock('@actions/remote/general');
 jest.mock('@actions/remote/systems');
-jest.mock('react-native-navigation');
 
 const translations = getTranslations(DEFAULT_LOCALE);
 const intl = createIntl({locale: DEFAULT_LOCALE, messages: translations});
@@ -100,7 +98,6 @@ describe('switchToServer', () => {
 
         await Actions.switchToServer('serverUrl');
 
-        expect(Navigation.updateProps).not.toHaveBeenCalled();
         expect(DatabaseManager.setActiveServerDatabase).not.toHaveBeenCalled();
         expect(SecurityManager.setActiveServer).not.toHaveBeenCalled();
         expect(WebsocketManager.initializeClient).not.toHaveBeenCalled();

@@ -13,7 +13,7 @@ import {Screens} from '@constants';
 import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {navigateToScreen} from '@utils/navigation/adapter';
+import {navigateToScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import DraftAndScheduledPostContainer from './draft_scheduled_post_container';

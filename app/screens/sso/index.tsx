@@ -13,10 +13,10 @@ import License from '@constants/license';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import Background from '@screens/background';
+import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
 import {isMinimumLicenseTier} from '@utils/helpers';
 import {getIntuneErrorMessage} from '@utils/intune_errors';
-import {dismissModalScreen, navigateBack, navigateToScreen} from '@utils/navigation/adapter';
 
 import SSOAuthentication from './sso_authentication';
 import SSOAuthenticationWithExternalBrowser from './sso_authentication_with_external_browser';
@@ -146,7 +146,7 @@ const SSO = ({
 
     const onBackPressed = useCallback(() => {
         if (isModal) {
-            dismissModalScreen();
+            navigateBack();
             return;
         }
 

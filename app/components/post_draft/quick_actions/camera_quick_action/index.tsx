@@ -67,14 +67,8 @@ export default function CameraQuickAction({
             return;
         }
 
-        bottomSheet({
-            title: intl.formatMessage({id: 'mobile.camera_type.title', defaultMessage: 'Camera options'}),
-            renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT) + TITLE_HEIGHT],
-            theme,
-            closeButtonId: 'camera-close-id',
-        });
-    }, [intl, theme, renderContent, maxFilesReached, maxFileCount]);
+        bottomSheet(renderContent, [1, bottomSheetSnapPoint(2, ITEM_HEIGHT) + TITLE_HEIGHT]);
+    }, [intl, renderContent, maxFilesReached, maxFileCount]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);

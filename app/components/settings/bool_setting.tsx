@@ -33,7 +33,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             paddingHorizontal: 15,
-            height: 40,
+            paddingVertical: 10,
+            minHeight: 40,
         },
         disabled: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
@@ -41,6 +42,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         placeholderText: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 15,
+            width: '80%',
+            flexWrap: 'wrap',
         },
         inputSwitch: {
             position: 'absolute',
@@ -84,7 +87,7 @@ function BoolSetting({
                     <View style={style.separator}/>
                 </>
             )}
-            <View style={[inputContainerStyle]}>
+            <View style={inputContainerStyle}>
                 <Text style={style.placeholderText}>
                     {placeholder}
                 </Text>

@@ -6,7 +6,6 @@
 import Emm from '@mattermost/react-native-emm';
 import {isRootedExperimentalAsync} from 'expo-device';
 
-import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import IntuneManager from '@managers/intune_manager';
 import {
@@ -18,7 +17,7 @@ import * as alerts from '@utils/alerts';
 import {toMilliseconds} from '@utils/datetime';
 import {logError} from '@utils/log';
 
-import SecurityManager from '.';
+import SecurityManager from './index';
 
 import type {Query} from '@nozbe/watermelondb';
 import type {ServerDatabase} from '@typings/database/database';
@@ -612,36 +611,6 @@ describe('SecurityManager', () => {
 
             expect(result).toBe(false);
             expect(isRootedExperimentalAsync).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('getShieldScreenId', () => {
-        test('should return the name of the screen shielded if prevent screen capture is enabled', () => {
-            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'true'} as SecurityClientConfig);
-            SecurityManager.activeServer = 'server-2';
-            expect(SecurityManager.getShieldScreenId(Screens.CHANNEL)).toBe(`${Screens.CHANNEL}.screen.shielded`);
-        });
-
-        test('should return the name of the screen without shielded if active server is different', () => {
-            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'true'} as SecurityClientConfig);
-            SecurityManager.activeServer = 'server-1';
-            expect(SecurityManager.getShieldScreenId(Screens.CHANNEL)).toBe(`${Screens.CHANNEL}.screen`);
-        });
-
-        test('should return the name of the screen shielded if prevent screen capture is disabled', () => {
-            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'false'} as SecurityClientConfig);
-            expect(SecurityManager.getShieldScreenId(Screens.CHANNEL)).toBe(`${Screens.CHANNEL}.screen`);
-        });
-
-        test('should return the name of the screen shielded if prevent screen capture is disabled but forced', () => {
-            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'false'} as SecurityClientConfig);
-            expect(SecurityManager.getShieldScreenId(Screens.CHANNEL, true)).toBe(`${Screens.CHANNEL}.screen.shielded`);
-        });
-
-        test('should return the name of the screen as shielded but skip', () => {
-            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'true'} as SecurityClientConfig);
-            SecurityManager.activeServer = 'server-2';
-            expect(SecurityManager.getShieldScreenId(Screens.CHANNEL, false, true)).toBe(`${Screens.CHANNEL}.screen.skip.shielded`);
         });
     });
 });

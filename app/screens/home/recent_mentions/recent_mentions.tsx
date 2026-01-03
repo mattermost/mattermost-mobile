@@ -19,7 +19,7 @@ import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
-import {useCurrentScreen} from '@store/expo_navigation_store';
+import {useCurrentScreen} from '@store/navigation_store';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './components/empty';
@@ -89,7 +89,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<Animated.FlatList<string>>(true, onSnap);
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
-    const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, currentTimezone, false).reverse(), [mentions]);
+    const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, currentTimezone, false).reverse(), [currentTimezone, mentions]);
 
     const animated = useAnimatedStyle(() => {
         if (isBottomSheetOpen || isPemalinkScreen || isGalleryScreen) {

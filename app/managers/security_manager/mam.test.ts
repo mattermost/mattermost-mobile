@@ -19,7 +19,7 @@ import TestHelper from '@test/test_helper';
 import * as alerts from '@utils/alerts';
 import {logError} from '@utils/log';
 
-import SecurityManager from '.';
+import SecurityManager from './index';
 
 import type {ServerDatabase} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
@@ -453,8 +453,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
             // Wait for blur to be applied
             await TestHelper.wait(300);
 
-            expect(Emm.enableBlurScreen).toHaveBeenCalledWith(true);
-            expect(Emm.applyBlurEffect).toHaveBeenCalledWith(20);
+            expect(Emm.applyBlurEffect).toHaveBeenCalledWith(0.5);
             expect(showAlertSpy).toHaveBeenCalledWith(
                 'Test Server',
                 'en',

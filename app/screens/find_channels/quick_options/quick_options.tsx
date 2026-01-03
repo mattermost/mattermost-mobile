@@ -8,7 +8,7 @@ import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
 import OptionBox, {OPTIONS_HEIGHT} from '@components/option_box';
 import {Screens} from '@constants';
-import {navigateToScreen} from '@utils/navigation/adapter';
+import {navigateToScreen} from '@screens/navigation';
 
 type Props = {
     canCreateChannels: boolean;

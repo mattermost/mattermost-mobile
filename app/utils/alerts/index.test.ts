@@ -18,7 +18,7 @@ import {
     showNotSecuredAlert,
     showBiometricFailureAlert,
     messages,
-} from '.';
+} from './index';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database, Query} from '@nozbe/watermelondb';

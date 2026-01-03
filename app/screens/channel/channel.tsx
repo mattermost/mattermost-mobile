@@ -16,8 +16,8 @@ import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
+import {navigateBack} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {navigateBack} from '@utils/navigation/adapter';
 
 import ChannelPostList from './channel_post_list';
 import ChannelHeader from './header';
@@ -141,7 +141,7 @@ const Channel = ({
                         containerHeight={containerHeight}
                         isChannelScreen={true}
                         canShowPostPriority={true}
-                        location={Screens.CHANNEL}
+                        location={isTablet ? Screens.CHANNEL_LIST : Screens.CHANNEL}
                     />
                 </ExtraKeyboardProvider>
             }

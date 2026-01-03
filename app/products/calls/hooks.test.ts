@@ -16,17 +16,17 @@ import {
     useGlobalCallsState,
     useIncomingCalls,
 } from '@calls/state';
-import {Screens} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {
     CURRENT_CALL_BAR_HEIGHT,
     JOIN_CALL_BAR_HEIGHT,
 } from '@constants/view';
+import {getDefaultThemeByAppearance, useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
-import {openAsBottomSheet} from '@screens/navigation';
-import {openUserProfileModal} from '@utils/navigation/adapter';
+import {navigateToScreen, openUserProfileModal} from '@screens/navigation';
 
 import {useTryCallsFunction, usePermissionsChecker, useCallsAdjustment, useHostControlsAvailable, useHostMenus} from './hooks';
 
@@ -43,8 +43,11 @@ jest.mock('@context/server', () => ({
 }));
 
 jest.mock('@context/theme', () => ({
-    useTheme: jest.fn(() => ({})),
+    useTheme: jest.fn(),
+    getDefaultThemeByAppearance: jest.fn(),
 }));
+jest.mocked(useTheme).mockReturnValue(Preferences.THEMES.denim);
+jest.mocked(getDefaultThemeByAppearance).mockReturnValue(Preferences.THEMES.denim);
 
 jest.mock('@calls/actions/calls', () => ({
     initializeVoiceTrack: jest.fn(),
@@ -74,7 +77,7 @@ jest.mock('@queries/servers/user', () => ({
 }));
 
 jest.mock('@screens/navigation', () => ({
-    openAsBottomSheet: jest.fn(),
+    navigateToScreen: jest.fn(),
     openUserProfileModal: jest.fn(),
 }));
 
@@ -252,9 +255,7 @@ describe('Calls Hooks', () => {
                 await result.current.onPress(mockSession)();
             });
 
-            expect(openAsBottomSheet).toHaveBeenCalledWith(expect.objectContaining({
-                screen: Screens.CALL_HOST_CONTROLS,
-            }));
+            expect(navigateToScreen).toHaveBeenCalledWith(Screens.CALL_HOST_CONTROLS, {sessionId: 'session1'});
         });
 
         it('opens host controls when host and clicking another profile', async () => {

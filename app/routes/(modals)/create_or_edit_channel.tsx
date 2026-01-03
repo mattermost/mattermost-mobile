@@ -7,17 +7,17 @@ import {useTheme} from '@context/theme';
 import {getModalHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
 import CreateOrEditChannelScreen, {type CreateOrEditChannelProps} from '@screens/create_or_edit_channel';
-import {navigateBack} from '@utils/navigation/adapter';
+import {navigateBack} from '@screens/navigation';
 
 export default function CreateOrEditChannelRoute() {
     const intl = useIntl();
     const theme = useTheme();
-    const props = usePropsFromParams<CreateOrEditChannelProps>();
+    const {title, ...props} = usePropsFromParams<CreateOrEditChannelProps & {title?: string}>();
 
     useNavigationHeader({
         showWhenPushed: true,
         headerOptions: {
-            headerTitle: intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'}),
+            headerTitle: title ?? intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'}),
             ...getModalHeaderOptions(theme, navigateBack, 'close.create_or_edit_channel.button'),
         },
     });

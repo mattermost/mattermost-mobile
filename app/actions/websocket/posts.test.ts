@@ -19,7 +19,7 @@ import {getPostById, syncPermalinkPreviewsForEditedPost} from '@queries/servers/
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import TestHelper from '@test/test_helper';
 import {isTablet} from '@utils/helpers';
 import {shouldIgnorePost} from '@utils/post';

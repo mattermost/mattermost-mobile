@@ -7,7 +7,7 @@ const {Node} = CommonMark;
 import React from 'react';
 import {StyleSheet} from 'react-native';
 
-import {Preferences} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {typography} from '@utils/typography';
@@ -18,7 +18,7 @@ import * as Transforms from './transform';
 const Parser = jest.requireActual('commonmark').Parser;
 
 jest.mock('@screens/navigation', () => ({
-    dismissAllModalsAndPopToRoot: jest.fn(),
+    dismissAllRoutesAndResetToRootRoute: jest.fn(),
 }));
 
 describe('Markdown', () => {
@@ -26,7 +26,7 @@ describe('Markdown', () => {
         baseTextStyle: {},
         enableInlineLatex: true,
         enableLatex: true,
-        location: 'Channel',
+        location: Screens.CHANNEL,
         maxNodes: 2000,
         theme: Preferences.THEMES.denim,
     };

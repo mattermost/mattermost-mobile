@@ -1,11 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {StatusBar} from 'react-native';
-
-import {Preferences, Screens} from '@constants';
+import {Preferences} from '@constants';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
 
 import {
     blendColors,
@@ -14,8 +11,6 @@ import {
     getKeyboardAppearanceFromTheme,
     hexToHue,
     makeStyleSheetFromTheme,
-    setNavigationStackStyles,
-    setNavigatorStyles,
     setThemeDefaults,
     updateThemeIfNeeded,
 } from './';
@@ -112,36 +107,6 @@ describe('changeOpacity', () => {
         const opacity = 0.5;
         const result = changeOpacity(color, opacity);
         expect(result).toBe('rgba(255,0,0,0.5)');
-    });
-});
-
-describe('setNavigatorStyles', () => {
-    it('should set the navigator styles', () => {
-        const statusSpy = jest.spyOn(StatusBar, 'setBarStyle');
-        const componentId = 'component1';
-        const theme = {sidebarBg: '#000000', sidebarHeaderTextColor: '#ffffff', centerChannelBg: '#ffffff', centerChannelColor: '#000000'} as Theme;
-        const additionalOptions = {topBar: {title: {text: 'Test'}}};
-        setNavigatorStyles(componentId, theme, additionalOptions);
-        expect(statusSpy).toHaveBeenCalledWith('light-content');
-    });
-
-    it('should set the navigator styles - light', () => {
-        const statusSpy = jest.spyOn(StatusBar, 'setBarStyle');
-        const componentId = 'component1';
-        const theme = {sidebarBg: '#ffffff', sidebarHeaderTextColor: '#000000', centerChannelBg: '#000000', centerChannelColor: '#ffffff'} as Theme;
-        const additionalOptions = {topBar: {title: {text: 'Test'}}};
-        setNavigatorStyles(componentId, theme, additionalOptions, '#ffffff');
-        expect(statusSpy).toHaveBeenCalledWith('dark-content');
-    });
-});
-
-describe('setNavigationStackStyles', () => {
-    it('should set the navigation stack styles', () => {
-        const statusSpy = jest.spyOn(StatusBar, 'setBarStyle');
-        const theme = {sidebarBg: '#000000', sidebarHeaderTextColor: '#ffffff', centerChannelBg: '#ffffff', centerChannelColor: '#000000'} as Theme;
-        jest.spyOn(NavigationStore, 'getScreensInStack').mockReturnValue([Screens.ABOUT]);
-        setNavigationStackStyles(theme);
-        expect(statusSpy).toHaveBeenCalledWith('light-content');
     });
 });
 

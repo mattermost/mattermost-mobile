@@ -6,8 +6,8 @@ import React from 'react';
 import {useThemeByAppearanceWithDefault} from '@context/theme';
 import {useNavigationHeader, getLoginFlowHeaderOptions, getLoginModalHeaderOptions} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
+import {navigateBack} from '@screens/navigation';
 import ServerComponent from '@screens/server';
-import {dismissModalScreen} from '@utils/navigation/adapter';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -19,9 +19,7 @@ export default function ServerScreen() {
         showWhenPushed: true,
         showWhenRoot: false,
         animation: isModal ? 'slide_from_bottom' : 'none',
-        headerOptions: isStackRoot ? getLoginModalHeaderOptions(theme, () => {
-            dismissModalScreen();
-        }, 'close.server.button') : getLoginFlowHeaderOptions(theme),
+        headerOptions: isStackRoot ? getLoginModalHeaderOptions(theme, navigateBack, 'close.server.button') : getLoginFlowHeaderOptions(theme),
     });
 
     const screenProps = {

@@ -86,6 +86,7 @@ const Picker = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress
             contentContainerStyle={styles.flex}
             testID={`${testID}.screen`}
             keyboardShouldPersistTaps='handled'
+            scrollToOverflowEnabled={true}
             extraKeyboardSpace={-insets.bottom}
         >
             <View style={styles.searchBar}>

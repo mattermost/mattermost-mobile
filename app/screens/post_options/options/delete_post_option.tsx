@@ -8,7 +8,7 @@ import {Alert} from 'react-native';
 import {deletePost} from '@actions/remote/post';
 import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet} from '@utils/navigation/adapter';
+import {dismissBottomSheet} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
 

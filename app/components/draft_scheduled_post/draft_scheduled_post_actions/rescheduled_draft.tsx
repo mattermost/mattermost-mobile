@@ -9,7 +9,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
-import {dismissBottomSheet, navigateToScreen} from '@utils/navigation/adapter';
+import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

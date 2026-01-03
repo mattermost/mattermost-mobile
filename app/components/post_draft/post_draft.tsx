@@ -64,7 +64,7 @@ function PostDraft({
     useEffect(() => {
         setValue(message);
         setCursorPosition(message.length);
-    }, [channelId, rootId]);
+    }, [channelId, message, rootId]);
 
     const autocompletePosition = AUTOCOMPLETE_ADJUST + keyboardHeight + (postInputTop - bottom);
     const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);

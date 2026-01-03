@@ -9,7 +9,7 @@ import {useNavigationHeader, getLoginFlowHeaderOptions, getLoginModalHeaderOptio
 import {usePropsFromParams} from '@hooks/props_from_params';
 import NetworkManager from '@managers/network_manager';
 import LoginComponent, {type LoginOptionsProps} from '@screens/login';
-import {dismissModalScreen} from '@utils/navigation/adapter';
+import {navigateBack} from '@screens/navigation';
 
 export default function LoginScreen() {
     const navigation = useNavigation();
@@ -19,9 +19,8 @@ export default function LoginScreen() {
     useNavigationHeader({
         showWhenPushed: true,
         showWhenRoot: false,
-        headerOptions: isStackRoot ? getLoginModalHeaderOptions(theme, () => {
-            dismissModalScreen();
-        }, 'close.login.button') : getLoginFlowHeaderOptions(theme),
+        animation: isModal ? 'slide_from_bottom' : 'none',
+        headerOptions: isStackRoot ? getLoginModalHeaderOptions(theme, navigateBack, 'close.login.button') : getLoginFlowHeaderOptions(theme),
     });
 
     // Invalidate client when user navigates back (not when navigating forward)
@@ -38,6 +37,7 @@ export default function LoginScreen() {
     }, [navigation, serverUrl]);
 
     const screenProps = {
+        animated: !isModal,
         isModal,
         theme,
         serverUrl,

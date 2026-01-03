@@ -12,7 +12,7 @@ import {useAppBinding} from '@hooks/apps';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {observeChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
-import {dismissBottomSheet} from '@utils/navigation/adapter';
+import {dismissBottomSheet} from '@screens/navigation';
 import {isSystemMessage} from '@utils/post';
 
 import type {WithDatabaseArgs} from '@typings/database/database';

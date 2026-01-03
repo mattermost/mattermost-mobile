@@ -15,16 +15,16 @@ import {isCallsCustomMessage} from '@calls/utils';
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
+import {Screens} from '@constants';
 import {POST_TIME_TO_FAIL} from '@constants/post';
-import * as Screens from '@constants/screens';
 import {useHideExtraKeyboardIfNeeded} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
+import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
-import {navigateBack, navigateToScreen} from '@utils/navigation/adapter';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -186,7 +186,7 @@ const Post = ({
     }, [customEmojiNames, post.message]);
 
     const handlePostPress = useCallback(async () => {
-        if ([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {
+        if (([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES] as AvailableScreens[]).includes(location)) {
             showPermalink(serverUrl, '', post.id);
             return;
         }
@@ -196,7 +196,7 @@ const Post = ({
             removePost(serverUrl, post);
         } else if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
             // BoR posts cannot have replies, so don't open threads screen for them
-            if (!borPost && [Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
+            if (!borPost && ([Screens.CHANNEL, Screens.PERMALINK] as AvailableScreens[]).includes(location)) {
                 if (location === Screens.PERMALINK) {
                     await navigateBack();
                 }

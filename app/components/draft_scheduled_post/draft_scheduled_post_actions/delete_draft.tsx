@@ -11,8 +11,8 @@ import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants
 import {ICON_SIZE} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {dismissBottomSheet} from '@screens/navigation';
 import {deleteDraftConfirmation} from '@utils/draft';
-import {dismissBottomSheet} from '@utils/navigation/adapter';
 import {deleteScheduledPostConfirmation} from '@utils/scheduled_post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';

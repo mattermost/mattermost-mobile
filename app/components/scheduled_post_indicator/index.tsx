@@ -3,11 +3,10 @@
 
 import React, {useCallback} from 'react';
 import {FormattedMessage} from 'react-intl';
-import {DeviceEventEmitter, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import CompassIcon from '@components/compass_icon';
-import {Events, Screens} from '@constants';
 import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@constants/draft';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -50,11 +49,8 @@ function ScheduledPostIndicator({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const handleSeeAllScheduledPosts = useCallback(async () => {
-        const {error} = await switchToGlobalDrafts(serverUrl, undefined, DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
-        if (!error) {
-            DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, Screens.GLOBAL_DRAFTS);
-        }
+    const handleSeeAllScheduledPosts = useCallback(() => {
+        switchToGlobalDrafts(serverUrl, undefined, DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
     }, [serverUrl]);
 
     const scheduledPostText = isThread ? (

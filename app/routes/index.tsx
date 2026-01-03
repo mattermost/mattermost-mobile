@@ -4,7 +4,7 @@
 import {Redirect, type Href} from 'expo-router';
 import {useEffect, useState} from 'react';
 
-import {determineInitialExpoRoute, type ExpoRouterLaunchResult} from '@init/launch_expo';
+import {determineInitialExpoRoute, type ExpoRouterLaunchResult} from '@init/launch';
 
 export default function RootIndex() {
     const [launchResult, setLaunchResult] = useState<ExpoRouterLaunchResult | null>(null);

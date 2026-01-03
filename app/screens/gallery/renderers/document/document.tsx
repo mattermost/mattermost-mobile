@@ -114,7 +114,6 @@ const DocumentRenderer = ({canDownloadFiles, enableSecureFilePreview, item, hide
 
     const handlePdfPreview = useCallback(() => {
         if (enableSecureFilePreview && isPdf(file)) {
-            DeviceEventEmitter.emit(Events.CLOSE_GALLERY);
             return;
         }
 

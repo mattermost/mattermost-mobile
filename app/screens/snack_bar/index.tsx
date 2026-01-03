@@ -55,7 +55,7 @@ function SnackBarContainer() {
     }
 
     return (
-        <Portal>
+        <Portal hostName='snack_bar'>
             <FullWindowOverlay>
                 <SnackBar
                     {...state.config}

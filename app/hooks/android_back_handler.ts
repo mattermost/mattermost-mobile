@@ -4,7 +4,7 @@
 import {useEffect} from 'react';
 import {BackHandler} from 'react-native';
 
-import {useCurrentScreen} from '@store/expo_navigation_store';
+import {useCurrentScreen} from '@store/navigation_store';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 

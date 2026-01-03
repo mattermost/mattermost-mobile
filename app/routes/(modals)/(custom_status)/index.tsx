@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {useTheme} from '@context/theme';
 import {getModalHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import CustomStatusScreen from '@screens/custom_status';
-import {navigateBack} from '@utils/navigation/adapter';
+import {navigateBack} from '@screens/navigation';
 
 export default function CustomStatusRoute() {
     const intl = useIntl();

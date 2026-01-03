@@ -21,7 +21,7 @@ import {getConfig, getCurrentChannelId, getCurrentTeamId, setLastFullSync} from 
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import TestHelper from '@test/test_helper';
 
 import {handleFirstConnect, handleReconnect} from './index';

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {sanitizeLikeString} from '.';
+import {sanitizeLikeString} from './index';
 
 describe('Test SQLite Sanitize like string with latin and non-latin characters', () => {
     const disallowed = ',./;[]!@#$%^&*()_-=+~';

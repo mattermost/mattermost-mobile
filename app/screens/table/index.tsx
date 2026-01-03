@@ -1,20 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useEffect} from 'react';
 import {Platform, ScrollView, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import SecurityManager from '@managers/security_manager';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-type Props = {
+export type TableScreenProps = {
     componentId: AvailableScreens;
     renderAsFlex: boolean;
-    renderRows: (isFullView: boolean) => JSX.Element|null;
     width: number;
 }
 
@@ -24,6 +23,7 @@ const styles = StyleSheet.create({
     },
     fullHeight: {
         height: '100%',
+        paddingHorizontal: 5,
     },
     displayFlex: {
         ...Platform.select({
@@ -37,22 +37,22 @@ const styles = StyleSheet.create({
     },
 });
 
-const Table = ({componentId, renderAsFlex, renderRows, width}: Props) => {
-    const content = renderRows(true);
+const Table = ({componentId, renderAsFlex, width}: TableScreenProps) => {
+    const contentCallback = CallbackStore.getCallback<(isFullView: boolean) => JSX.Element|null>();
+    const content = contentCallback?.(true);
     const viewStyle = renderAsFlex ? styles.displayFlex : {width};
 
-    const close = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
+    useEffect(() => {
+        return () => {
+            CallbackStore.removeCallback();
+        };
+    }, []);
 
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(componentId, navigateBack);
 
     if (Platform.OS === 'android') {
         return (
-            <View
-                style={styles.container}
-                nativeID={SecurityManager.getShieldScreenId(componentId)}
-            >
+            <View style={styles.container}>
                 <ScrollView testID='table.screen'>
                     <ScrollView
                         contentContainerStyle={viewStyle}
@@ -70,7 +70,6 @@ const Table = ({componentId, renderAsFlex, renderRows, width}: Props) => {
         <SafeAreaView
             style={styles.container}
             testID='table.screen'
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             <ScrollView
                 style={styles.fullHeight}

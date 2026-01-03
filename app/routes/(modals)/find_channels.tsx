@@ -8,7 +8,7 @@ import {useIntl} from 'react-intl';
 import {useTheme} from '@context/theme';
 import {getModalHeaderOptions} from '@hooks/navigation_header';
 import FindChannelsScreen from '@screens/find_channels';
-import {navigateBack} from '@utils/navigation/adapter';
+import {navigateBack} from '@screens/navigation';
 
 export default function FindChannelsRoute() {
     const navigation = useNavigation();

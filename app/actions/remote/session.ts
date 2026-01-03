@@ -16,7 +16,6 @@ import {getDeviceToken} from '@queries/app/global';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
-import {resetToHome} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage, isErrorWithStatusCode, isErrorWithUrl} from '@utils/errors';
 import {getIntlShape} from '@utils/general';
@@ -492,7 +491,6 @@ export const magicLinkLogin = async (serverUrl: string, token: string): Promise<
         await addPushProxyVerificationStateFromLogin(serverUrlToUse);
         const {error} = await loginEntry({serverUrl: serverUrlToUse});
         await DatabaseManager.setActiveServerDatabase(serverUrlToUse);
-        await resetToHome();
         return {error, failed: false};
     } catch (error) {
         return {error, failed: false};

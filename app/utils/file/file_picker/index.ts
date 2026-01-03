@@ -100,7 +100,7 @@ export default class FilePickerUtil {
         const out = await extractFileInfo(files);
 
         if (out.length > 0) {
-            dismissBottomSheet();
+            await dismissBottomSheet();
             this.uploadFiles(out);
         }
     };

@@ -1,34 +1,31 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {type ComponentProps, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useNavigation} from 'expo-router';
+import {type ComponentProps, useCallback, useEffect, useMemo, useState} from 'react';
 import {FormattedMessage, useIntl} from 'react-intl';
 import {Alert, Keyboard, Text} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 
 import {getPosts} from '@actions/local/post';
 import FloatingAutocompleteSelector from '@components/floating_input/floating_autocomplete_selector';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import Loading from '@components/loading';
+import NavigationButton from '@components/navigation_button';
 import OptionItem from '@components/option_item';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useAvoidKeyboard} from '@hooks/device';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
 import {fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from '@playbooks/actions/remote/runs';
-import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {toSeconds} from '@utils/datetime';
 import {logDebug} from '@utils/log';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type Props = {
-    componentId: AvailableScreens;
     playbookRunId: string;
     runName: string;
     userId: string;
@@ -54,11 +51,9 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const SAVE_BUTTON_ID = 'save-post-update';
-
-const close = (componentId: AvailableScreens): void => {
+const close = (): void => {
     Keyboard.dismiss();
-    popTopScreen(componentId);
+    navigateBack();
 };
 
 const valueToTimeMap = {
@@ -73,7 +68,6 @@ const valueToTimeMap = {
 type NextUpdateValues = keyof typeof valueToTimeMap;
 
 const PostUpdate = ({
-    componentId,
     playbookRunId,
     runName,
     userId,
@@ -81,6 +75,7 @@ const PostUpdate = ({
     teamId,
     outstanding,
 }: Props) => {
+    const navigation = useNavigation();
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -89,9 +84,6 @@ const PostUpdate = ({
     const [nextUpdate, setNextUpdate] = useState<NextUpdateValues>('15_minutes');
     const [alsoMarkRunAsFinished, setAlsoMarkRunAsFinished] = useState(false);
     const [canSave, setCanSave] = useState(false);
-
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
-    useAvoidKeyboard(keyboardAwareRef);
 
     const [followersCount, setFollowersCount] = useState<number>(0);
     const [broadcastChannelCount, setBroadcastChannelCount] = useState<number>(0);
@@ -102,24 +94,6 @@ const PostUpdate = ({
         setUpdateMessage(text);
         setCanSave(text.trim().length > 0);
     }, []);
-
-    const rightButton = useMemo(() => {
-        const base = buildNavigationButton(
-            SAVE_BUTTON_ID,
-            'playbooks.edit_command.save.button',
-            undefined,
-            intl.formatMessage({id: 'playbooks.post_update.post.button', defaultMessage: 'Post'}),
-        );
-        base.enabled = canSave;
-        base.color = theme.sidebarHeaderTextColor;
-        return base;
-    }, [intl, canSave, theme.sidebarHeaderTextColor]);
-
-    useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [rightButton],
-        });
-    }, [rightButton, componentId]);
 
     useEffect(() => {
         async function initialLoad() {
@@ -207,12 +181,8 @@ const PostUpdate = ({
         ];
     }, [intl]);
 
-    const handleClose = useCallback(() => {
-        close(componentId);
-    }, [componentId]);
-
     const onConfirm = useCallback(async () => {
-        close(componentId);
+        close();
         if (!channelId) {
             // This should never happen, but this keeps typescript happy
             logDebug('cannot post status update without a channel id');
@@ -222,7 +192,7 @@ const PostUpdate = ({
         if (error) {
             showPlaybookErrorSnackbar();
         }
-    }, [alsoMarkRunAsFinished, channelId, componentId, nextUpdate, playbookRunId, serverUrl, teamId, updateMessage, userId]);
+    }, [alsoMarkRunAsFinished, channelId, nextUpdate, playbookRunId, serverUrl, teamId, updateMessage, userId]);
 
     const onPostUpdate = useCallback(() => {
         if (alsoMarkRunAsFinished) {
@@ -249,8 +219,20 @@ const PostUpdate = ({
         }
     }, [alsoMarkRunAsFinished, intl, onConfirm, outstanding, runName]);
 
-    useNavButtonPressed(SAVE_BUTTON_ID, componentId, onPostUpdate, [onPostUpdate]);
-    useAndroidHardwareBackHandler(componentId, handleClose);
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <NavigationButton
+                    onPress={onPostUpdate}
+                    testID='playbooks.post_update.button'
+                    text={intl.formatMessage({id: 'playbooks.post_update.post.button', defaultMessage: 'Post'})}
+                    disabled={!canSave}
+                />
+            ),
+        });
+    }, [canSave, intl, navigation, onPostUpdate]);
+
+    useAndroidHardwareBackHandler(Screens.PLAYBOOK_POST_UPDATE, close);
 
     const introMessageValues = useMemo<ComponentProps<typeof FormattedMessage>['values']>(() => {
         return {
@@ -288,8 +270,8 @@ const PostUpdate = ({
     return (
         <KeyboardAwareScrollView
             contentContainerStyle={styles.container}
-            ref={keyboardAwareRef}
-            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
+            keyboardDismissMode='interactive'
+            keyboardShouldPersistTaps='handled'
             style={styles.flex}
         >
             <Text style={styles.introMessage}>{introMessage}</Text>

@@ -24,9 +24,8 @@ import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import SecurityManager from '@managers/security_manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
-import {navigateBack} from '@utils/navigation/adapter';
+import {navigateBack} from '@screens/navigation';
 import {closePermalink} from '@utils/permalink';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
@@ -350,7 +349,6 @@ function Permalink({
         <SafeAreaView
             style={containerStyle}
             testID='permalink.screen'
-            nativeID={SecurityManager.getShieldScreenId(Screens.PERMALINK)}
             edges={edges}
         >
             <Animated.View style={style.wrapper}>

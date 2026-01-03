@@ -33,15 +33,21 @@ afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
-jest.mock('@store/expo_navigation_store', () => {
-    const original = jest.requireActual('@store/expo_navigation_store');
+jest.mock('@store/navigation_store', () => {
+    const original = jest.requireActual('@store/navigation_store');
     return {
         ...original,
-        NavigationStoreV2: {
-            ...original.NavigationStoreV2,
+        NavigationStore: {
+            ...original.NavigationStore,
             waitUntilScreenIsTop: jest.fn(() => Promise.resolve()),
             waitUntilScreenHasLoaded: jest.fn(() => Promise.resolve()),
             getScreensInStack: jest.fn(() => []),
+            getRootRouteInfo: jest.fn(() => {
+                return {
+                    pathname: '/(authenticated)/(home)/channel',
+                    params: {team: 'team1', channel: 'channel1'},
+                };
+            }),
         },
     };
 });

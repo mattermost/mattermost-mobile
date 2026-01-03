@@ -9,7 +9,7 @@ import {markThreadAsUnread} from '@actions/remote/thread';
 import {BaseOption} from '@components/common_post_options';
 import Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet} from '@utils/navigation/adapter';
+import {dismissBottomSheet} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';

@@ -8,8 +8,8 @@ import {useThemeByAppearanceWithDefault} from '@context/theme';
 import {useNavigationHeader, getLoginFlowHeaderOptions, getLoginModalHeaderOptions} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
 import NetworkManager from '@managers/network_manager';
+import {navigateBack} from '@screens/navigation';
 import SsoComponent, {type SSOProps} from '@screens/sso';
-import {dismissModalScreen} from '@utils/navigation/adapter';
 
 export default function SsoScreen() {
     const navigation = useNavigation();
@@ -19,9 +19,8 @@ export default function SsoScreen() {
     useNavigationHeader({
         showWhenPushed: true,
         showWhenRoot: false,
-        headerOptions: isStackRoot ? getLoginModalHeaderOptions(theme, () => {
-            dismissModalScreen();
-        }, 'close.sso.button') : getLoginFlowHeaderOptions(theme),
+        animation: isStackRoot ? 'slide_from_bottom' : 'none',
+        headerOptions: isStackRoot ? getLoginModalHeaderOptions(theme, navigateBack, 'close.sso.button') : getLoginFlowHeaderOptions(theme),
     });
 
     useEffect(() => {

@@ -84,8 +84,6 @@ describe('Edit Post', () => {
     let database: Database;
 
     const baseProps: Parameters<typeof EditPost>[0] = {
-        componentId: 'EditPost',
-        closeButtonId: 'edit-post',
         post: {
             id: '1',
             channelId: '1',

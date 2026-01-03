@@ -18,7 +18,7 @@ import {Screens} from '@constants';
 import {useWindowDimensions} from '@hooks/device';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import Background from '@screens/background';
-import {navigateToScreen} from '@utils/navigation/adapter';
+import {navigateToScreen} from '@screens/navigation';
 
 import FooterButtons from './footer_buttons';
 import Paginator from './paginator';
@@ -72,7 +72,7 @@ const Onboarding = ({
         storeOnboardingViewedValue();
 
         navigateToScreen(Screens.SERVER, {theme, ...props});
-    }, []);
+    }, [props, theme]);
 
     const nextSlide = useCallback(() => {
         const nextSlideIndex = currentIndex.value + 1;
@@ -85,6 +85,8 @@ const Onboarding = ({
 
     const scrollHandler = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         scrollX.value = event.nativeEvent.contentOffset.x;
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const animatedStyles = useScreenTransitionAnimation();
@@ -100,6 +102,7 @@ const Onboarding = ({
         });
 
         return () => listener.remove();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

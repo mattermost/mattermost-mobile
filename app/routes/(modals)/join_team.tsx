@@ -8,7 +8,7 @@ import {useIntl} from 'react-intl';
 import {useTheme} from '@context/theme';
 import {getModalHeaderOptions} from '@hooks/navigation_header';
 import JoinTeamScreen from '@screens/join_team';
-import {navigateBack} from '@utils/navigation/adapter';
+import {navigateBack} from '@screens/navigation';
 
 export default function JoinTeamRoute() {
     const navigation = useNavigation();

@@ -65,17 +65,6 @@ class WebsocketManagerSingleton {
         this.netStateSubscription = NetInfo.addEventListener(this.onNetStateChange);
     };
 
-    public cleanup = () => {
-        this.appStateSubscription?.remove();
-        this.netStateSubscription?.();
-        this.closeAll();
-        this.cancelConnectTimers();
-        for (const serverUrl of Object.keys(this.statusUpdatesIntervalIDs)) {
-            this.stopPeriodicStatusUpdates(serverUrl);
-        }
-        this.statusUpdatesIntervalIDs = {};
-    };
-
     public invalidateClient = (serverUrl: string) => {
         this.clients[serverUrl]?.close(true);
         this.clients[serverUrl]?.invalidate();
@@ -92,10 +81,6 @@ class WebsocketManagerSingleton {
     };
 
     public createClient = (serverUrl: string, bearerToken: string, preauthSecret?: string) => {
-        if (this.clients[serverUrl]) {
-            this.invalidateClient(serverUrl);
-        }
-
         const client = new WebSocketClient(serverUrl, bearerToken, preauthSecret);
 
         client.setFirstConnectCallback(() => this.onFirstConnect(serverUrl));

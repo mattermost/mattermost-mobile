@@ -16,7 +16,7 @@ import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {usePreventDoubleTap} from '@hooks/utils';
 import IntuneManager from '@managers/intune_manager';
 import Background from '@screens/background';
-import {navigateBack, navigateToScreen} from '@utils/navigation/adapter';
+import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

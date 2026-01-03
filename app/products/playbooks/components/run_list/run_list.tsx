@@ -25,7 +25,7 @@ import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    componentId: AvailableScreens;
+    location: AvailableScreens;
     inProgressRuns: Array<PlaybookRunModel | PlaybookRun>;
     finishedRuns: Array<PlaybookRunModel | PlaybookRun>;
     fetchMoreRuns: (tab: 'in-progress' | 'finished') => void;
@@ -34,6 +34,7 @@ type Props = {
     fetching: boolean;
     showCachedWarning?: boolean;
     channelId?: string;
+    isTabletView?: boolean;
 };
 
 const itemSeparatorStyle = StyleSheet.create({
@@ -97,7 +98,7 @@ const tabs: Array<TabDefinition<RunListTabsNames>> = [
 ];
 
 const RunList = ({
-    componentId,
+    location,
     inProgressRuns,
     finishedRuns,
     fetchMoreRuns,
@@ -141,14 +142,14 @@ const RunList = ({
         return (
             <PlaybookCard
                 run={item}
-                location={componentId}
+                location={location}
             />
         );
-    }, [componentId]);
+    }, [location]);
 
     const startANewRun = useCallback(() => {
-        goToSelectPlaybook(intl, theme, channelId);
-    }, [intl, theme, channelId]);
+        goToSelectPlaybook(intl, channelId);
+    }, [intl, channelId]);
 
     let content;
     if (loading) {
@@ -180,7 +181,7 @@ const RunList = ({
                 <View style={styles.warningContainer}>
                     <SectionNotice
                         title={intl.formatMessage(messages.cachedWarningTitle)}
-                        location={componentId}
+                        location={location}
                         text={intl.formatMessage(messages.cachedWarningMessage)}
                         type='warning'
                     />

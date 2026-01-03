@@ -8,7 +8,7 @@ import {Events, Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useWindowDimensions} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
-import {navigateBack} from '@utils/navigation/adapter';
+import {navigateBack} from '@screens/navigation';
 
 import Footer from './footer';
 import Gallery, {type GalleryRef} from './gallery';

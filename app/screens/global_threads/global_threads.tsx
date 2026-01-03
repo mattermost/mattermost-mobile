@@ -6,6 +6,7 @@ import {defineMessage, useIntl} from 'react-intl';
 import {DeviceEventEmitter, FlatList, Keyboard, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {removeLastViewedChannelIdAndServer, storeLastViewedChannelIdAndServer} from '@actions/app/global';
 import {setGlobalThreadsTab} from '@actions/local/systems';
 import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
@@ -17,7 +18,7 @@ import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import useTabs, {type TabDefinition} from '@hooks/use_tabs';
-import {navigateBack} from '@utils/navigation/adapter';
+import {navigateBack} from '@screens/navigation';
 
 import ThreadsList from './threads_list';
 import Header from './threads_list/header';
@@ -50,6 +51,14 @@ const GlobalThreads = ({globalThreadsTab, hasUnreads, teamId}: Props) => {
 
     useEffect(() => {
         DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, Screens.GLOBAL_THREADS);
+
+        // This is done so that the header renders
+        // and the screen does not look totally blank
+        storeLastViewedChannelIdAndServer(Screens.GLOBAL_THREADS);
+
+        return () => {
+            removeLastViewedChannelIdAndServer();
+        };
     }, []);
 
     const tabs = useMemo<Array<TabDefinition<GlobalThreadsTab>>>(() => [

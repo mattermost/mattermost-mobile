@@ -5,6 +5,7 @@ import {Alert} from 'react-native';
 
 import {doAppSubmit, postEphemeralCallResponseForCommandArgs} from '@actions/remote/apps';
 import {AppCommandParser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser';
+import {Screens} from '@constants';
 import {AppCallResponseTypes} from '@constants/apps';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
@@ -12,7 +13,7 @@ import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getConfig, getCurrentTeamId} from '@queries/servers/system';
-import {showAppForm} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -75,7 +76,7 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
         return {error};
     }
 
-    if (data?.trigger_id) { //eslint-disable-line camelcase
+    if (data?.trigger_id) {
         IntegrationsManager.getManager(serverUrl)?.setTriggerId(data.trigger_id);
     }
 
@@ -110,7 +111,7 @@ export const executeAppCommand = async (serverUrl: string, intl: IntlShape, pars
             return {data: {}};
         case AppCallResponseTypes.FORM:
             if (callResp.form) {
-                showAppForm(callResp.form, creq.context);
+                navigateToScreen(Screens.APPS_FORM, {form: callResp.form, context: creq.context});
             }
             return {data: {}};
         case AppCallResponseTypes.NAVIGATE:

@@ -11,12 +11,11 @@ import {getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, type Prep
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
 import {getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissAllOverlays} from '@screens/navigation';
+import {navigateToScreen, dismissToStackRoot, dismissAllRoutesAndResetToRootRoute} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {NavigationStoreV2} from '@store/expo_navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
-import {navigateToScreen, dismissAllModals, dismissAllModalsAndPopToRoot} from '@utils/navigation/adapter';
 
 import type Model from '@nozbe/watermelondb/Model';
 
@@ -46,7 +45,7 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
         if (isTabletDevice) {
             DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
         } else {
-            await NavigationStoreV2.waitUntilScreenHasLoaded(Screens.HOME);
+            await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
             navigateToScreen(Screens.GLOBAL_THREADS);
         }
 
@@ -81,14 +80,13 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
 
         EphemeralStore.setCurrentThreadId(rootId);
         if (isFromNotification) {
-            if (currentThreadId && currentThreadId === rootId && NavigationStoreV2.getScreensInStack().includes(Screens.THREAD)) {
-                await dismissAllModals();
-                dismissAllOverlays();
+            if (currentThreadId && currentThreadId === rootId && NavigationStore.getScreensInStack().includes(Screens.THREAD)) {
+                await dismissToStackRoot();
                 return {};
             }
 
-            await dismissAllModalsAndPopToRoot();
-            await NavigationStoreV2.waitUntilScreenIsTop(Screens.HOME);
+            await dismissAllRoutesAndResetToRootRoute();
+            await NavigationStore.waitUntilScreenIsTop(Screens.HOME);
             if (currentTeamId !== teamId && isTabletDevice) {
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
             }
@@ -108,6 +106,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             }
         }
 
+        await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
         navigateToScreen(Screens.THREAD, {rootId, channelName: channel.displayName});
 
         return {};

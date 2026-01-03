@@ -12,14 +12,14 @@ import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
 import Tag from '@components/tag';
 import UserAvatarsStack from '@components/user_avatars_stack';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
-import {popTopScreen} from '@screens/navigation';
-import {openUserProfileModal} from '@utils/navigation/adapter';
+import {navigateBack, openUserProfileModal} from '@screens/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -34,7 +34,6 @@ import StatusUpdateIndicator from './status_update_indicator';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type UserModel from '@typings/database/models/servers/user';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const messages = defineMessages({
     owner: {
@@ -167,7 +166,6 @@ type Props = {
     playbookRun?: PlaybookRunModel | PlaybookRun;
     owner?: UserModel;
     participants: UserModel[];
-    componentId: AvailableScreens;
     checklists: Array<PlaybookChecklistModel | PlaybookChecklist>;
     overdueCount: number;
     pendingCount: number;
@@ -182,7 +180,6 @@ export default function PlaybookRun({
     checklists,
     overdueCount,
     pendingCount,
-    componentId,
     currentUserId,
     teammateNameDisplay,
 }: Props) {
@@ -195,9 +192,7 @@ export default function PlaybookRun({
 
     const channelId = playbookRun && 'channelId' in playbookRun ? playbookRun.channelId : (playbookRun?.channel_id || '');
 
-    useAndroidHardwareBackHandler(componentId, () => {
-        popTopScreen();
-    });
+    useAndroidHardwareBackHandler(Screens.PLAYBOOK_RUN, navigateBack);
 
     const isParticipant = participants.some((p) => p.id === currentUserId) || owner?.id === currentUserId;
 
@@ -230,9 +225,9 @@ export default function PlaybookRun({
         openUserProfileModal({
             userId: owner.id,
             channelId,
-            location: componentId,
+            location: Screens.PLAYBOOK_RUN,
         });
-    }, [owner, channelId, componentId]);
+    }, [owner, channelId]);
 
     const handleSelectOwner = useCallback(async (selected: UserProfile) => {
         if (!playbookRun) {
@@ -251,22 +246,21 @@ export default function PlaybookRun({
         }
 
         goToSelectUser(
-            theme,
             playbookRun?.name || '',
             intl.formatMessage(messages.owner),
             [...participants.map((p) => p.id), owner?.id || ''],
             owner?.id,
             handleSelectOwner,
         );
-    }, [handleSelectOwner, intl, owner, participants, playbookRun?.name, theme]);
+    }, [handleSelectOwner, intl, owner, participants, playbookRun?.name]);
 
     const handleEditPress = useCallback(() => {
         if (!playbookRun) {
             return;
         }
 
-        goToRenamePlaybookRun(intl, theme, playbookRun.name, playbookRun.id);
-    }, [intl, theme, playbookRun]);
+        goToRenamePlaybookRun(playbookRun.name, playbookRun.id);
+    }, [playbookRun]);
 
     const handleFinishRun = useCallback(() => {
         if (!playbookRun) {
@@ -346,7 +340,7 @@ export default function PlaybookRun({
                                 <Markdown
                                     value={playbookRun.summary}
                                     theme={theme}
-                                    location={componentId}
+                                    location={Screens.PLAYBOOK_RUN}
                                     baseTextStyle={styles.infoText}
                                 />
                             </View>
@@ -378,7 +372,7 @@ export default function PlaybookRun({
                                         </Text>
                                         <UserAvatarsStack
                                             users={participants}
-                                            location={componentId}
+                                            location={Screens.PLAYBOOK_RUN}
                                             bottomSheetTitle={messages.participantsTitle}
                                         />
                                     </View>

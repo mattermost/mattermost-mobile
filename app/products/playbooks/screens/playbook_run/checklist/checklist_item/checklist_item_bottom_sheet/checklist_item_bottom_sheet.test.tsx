@@ -9,14 +9,13 @@ import {ScrollView} from 'react-native';
 
 import OptionBox from '@components/option_box';
 import OptionItem from '@components/option_item';
-import {Preferences} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {useIsTablet} from '@hooks/device';
 import {setAssignee, setChecklistItemCommand, setDueDate} from '@playbooks/actions/remote/checklist';
 import {goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
-import {dismissBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
-import {openUserProfileModal} from '@utils/navigation/adapter';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import ChecklistItemBottomSheet from './checklist_item_bottom_sheet';
@@ -45,6 +44,7 @@ jest.mock('@context/server', () => ({
 
 jest.mock('@playbooks/screens/navigation');
 jest.mock('@utils/snack_bar');
+jest.mock('@screens/navigation');
 
 describe('ChecklistItemBottomSheet', () => {
     const mockOnCheck = jest.fn();
@@ -406,15 +406,13 @@ describe('ChecklistItemBottomSheet', () => {
         });
 
         expect(goToEditCommand).toHaveBeenCalledWith(
-            expect.anything(),
-            expect.anything(),
             'Run 1',
             'test command',
             'channel-1',
             expect.any(Function),
         );
 
-        const updateCommand = jest.mocked(goToEditCommand).mock.calls[0][5];
+        const updateCommand = jest.mocked(goToEditCommand).mock.calls[0][3];
         await act(async () => {
             updateCommand('new command');
         });
@@ -443,14 +441,12 @@ describe('ChecklistItemBottomSheet', () => {
             dueDateItem.props.action();
         });
         expect(goToSelectDate).toHaveBeenCalledWith(
-            expect.anything(),
-            expect.anything(),
             'Run 1',
             expect.any(Function),
             1640995200000,
         );
 
-        const setDate = jest.mocked(goToSelectDate).mock.calls[0][3];
+        const setDate = jest.mocked(goToSelectDate).mock.calls[0][1];
         await act(async () => {
             setDate(1672531200000);
         });
@@ -486,7 +482,7 @@ describe('ChecklistItemBottomSheet', () => {
         expect(openUserProfileModal).toHaveBeenCalledWith(
             {
                 userId: 'user-1',
-                location: 'PlaybookRun',
+                location: Screens.PLAYBOOK_RUN,
             },
         );
     });
@@ -505,7 +501,6 @@ describe('ChecklistItemBottomSheet', () => {
         });
 
         expect(goToSelectUser).toHaveBeenCalledWith(
-            expect.anything(),
             'Run 1',
             'Assignee',
             ['user-1', 'user-2'],
@@ -514,8 +509,8 @@ describe('ChecklistItemBottomSheet', () => {
             expect.any(Function),
         );
 
-        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][5];
-        const handleRemove = jest.mocked(goToSelectUser).mock.calls[0][6];
+        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][4];
+        const handleRemove = jest.mocked(goToSelectUser).mock.calls[0][5];
 
         await act(async () => {
             handleSelect(TestHelper.fakeUser({id: 'user-1'}));
@@ -558,8 +553,8 @@ describe('ChecklistItemBottomSheet', () => {
             onPress('user-1');
         });
 
-        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][5];
-        const handleRemove = jest.mocked(goToSelectUser).mock.calls[0][6];
+        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][4];
+        const handleRemove = jest.mocked(goToSelectUser).mock.calls[0][5];
 
         await act(async () => {
             handleSelect(TestHelper.fakeUser({id: 'user-1'}));

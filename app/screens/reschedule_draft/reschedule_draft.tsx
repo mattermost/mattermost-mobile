@@ -5,22 +5,21 @@ import {useNavigation} from 'expo-router';
 import moment, {type Moment} from 'moment-timezone';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Pressable, SafeAreaView, StyleSheet, View} from 'react-native';
+import {Keyboard, SafeAreaView, StyleSheet, View} from 'react-native';
 
 import {updateScheduledPost} from '@actions/remote/scheduled_post';
 import DateTimeSelector from '@components/data_time_selector';
-import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
+import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {MESSAGE_TYPE, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {navigateBack} from '@screens/navigation';
 import {logDebug} from '@utils/log';
-import {navigateBack} from '@utils/navigation/adapter';
 import {showSnackBar} from '@utils/snack_bar';
-import {changeOpacity} from '@utils/theme';
 import {getTimezone} from '@utils/user';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
@@ -98,20 +97,15 @@ const RescheduledDraft: React.FC<Props> = ({
     useEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <Pressable
-                    onPress={onSavePostMessage}
+                <NavigationButton
                     disabled={!canSave}
-                    testID={'reschedule_draft.save.button'}
-                >
-                    <FormattedText
-                        id='edit_post.save'
-                        defaultMessage='Save'
-                        style={{color: canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.32), fontSize: 16}}
-                    />
-                </Pressable>
+                    onPress={onSavePostMessage}
+                    testID='reschedule_draft.save.button'
+                    text={intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'})}
+                />
             ),
         });
-    }, [canSave, navigation, onSavePostMessage, theme.sidebarHeaderTextColor]);
+    }, [canSave, intl, navigation, onSavePostMessage, theme.sidebarHeaderTextColor]);
 
     useAndroidHardwareBackHandler(Screens.RESCHEDULE_DRAFT, onClose);
 

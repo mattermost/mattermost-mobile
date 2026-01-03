@@ -14,9 +14,9 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {navigateBack} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 import {alertTeamAddError} from '@utils/navigation';
-import {navigateBack} from '@utils/navigation/adapter';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -103,6 +103,7 @@ export default function JoinTeam({
         return () => {
             mounted.current = false;
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onClosePressed = useCallback(() => {

@@ -9,15 +9,12 @@ import {General} from '@constants';
 import Archive from './archive';
 import ConvertPrivate from './convert_private';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type Props = {
     channelId: string;
-    componentId: AvailableScreens;
     type?: ChannelType;
 }
 
-const DestructiveOptions = ({channelId, componentId, type}: Props) => {
+const DestructiveOptions = ({channelId, type}: Props) => {
     return (
         <>
             {type === General.OPEN_CHANNEL &&
@@ -31,7 +28,6 @@ const DestructiveOptions = ({channelId, componentId, type}: Props) => {
             {type !== General.DM_CHANNEL && type !== General.GM_CHANNEL &&
             <Archive
                 channelId={channelId}
-                componentId={componentId}
                 type={type}
             />
             }

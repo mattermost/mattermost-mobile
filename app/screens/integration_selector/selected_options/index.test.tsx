@@ -8,7 +8,7 @@ import {Ringtone} from '@constants/calls';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import SelectedOptions from '.';
+import SelectedOptions from './index';
 
 import type Database from '@nozbe/watermelondb/Database';
 

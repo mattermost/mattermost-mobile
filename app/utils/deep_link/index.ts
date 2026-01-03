@@ -22,14 +22,13 @@ import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
-import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
+import {dismissAllRoutesAndResetToRootRoute, updateParams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {NavigationStoreV2} from '@store/expo_navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/draft';
 import {getIntlShape} from '@utils/general';
 import {logError} from '@utils/log';
 import {escapeRegex} from '@utils/markdown';
-import {updateParams} from '@utils/navigation/adapter';
 import {addNewServer} from '@utils/server';
 import {removeProtocol, stripTrailingSlashes} from '@utils/url';
 import {
@@ -65,19 +64,19 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                 }
                 return {error: false};
             }
-            if (NavigationStoreV2.getVisibleScreen() === Screens.SERVER) {
+            if (NavigationStore.getVisibleScreen() === Screens.SERVER) {
                 updateParams({serverUrl: deepLink.data.serverUrl});
-            } else if (!NavigationStoreV2.getScreensInStack().includes(Screens.SERVER)) {
+            } else if (!NavigationStore.getScreensInStack().includes(Screens.SERVER)) {
                 addNewServer(theme, deepLink.data.serverUrl, undefined, deepLink);
             }
             return {error: false};
         }
 
-        if (existingServerUrl !== currentServerUrl && NavigationStoreV2.getVisibleScreen()) {
-            await dismissAllModalsAndPopToRoot();
+        if (existingServerUrl !== currentServerUrl && NavigationStore.getVisibleScreen()) {
+            await dismissAllRoutesAndResetToRootRoute();
             DatabaseManager.setActiveServerDatabase(existingServerUrl);
             WebsocketManager.initializeClient(existingServerUrl, 'DeepLink');
-            await NavigationStoreV2.waitUntilScreenHasLoaded(Screens.HOME);
+            await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
         }
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(existingServerUrl);
@@ -116,11 +115,8 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
             }
             case DeepLink.Permalink: {
                 const deepLinkData = deepLink.data as DeepLinkPermalink;
-                if (
-                    NavigationStoreV2.hasModalsOpened() ||
-                    !deepLinkScreens.includes(NavigationStoreV2.getVisibleScreen())
-                ) {
-                    await dismissAllModalsAndPopToRoot();
+                if (!deepLinkScreens.includes(NavigationStore.getVisibleScreen())) {
+                    await dismissAllRoutesAndResetToRootRoute();
                 }
                 showPermalink(existingServerUrl, deepLinkData.teamName, deepLinkData.postId);
                 break;
@@ -165,7 +161,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                             break;
                         }
                     }
-                    goToPlaybookRun(intl, deepLinkData.playbookRunId);
+                    goToPlaybookRun(deepLinkData.playbookRunId);
                 } else {
                     // Alert playbooks not enabled or version not supported
                     Alert.alert(

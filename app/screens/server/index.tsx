@@ -21,8 +21,8 @@ import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
+import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {getErrorMessage} from '@utils/errors';
-import {dismissModalScreen, navigateBack, navigateToScreen} from '@utils/navigation/adapter';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {loginOptions} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -164,7 +164,7 @@ const Server = ({
             }
 
             if (isModal) {
-                dismissModalScreen();
+                navigateBack();
                 return true;
             }
 

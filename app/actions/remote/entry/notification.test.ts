@@ -6,7 +6,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import {mockApiClient} from '@test/mock_api_client';
 import TestHelper from '@test/test_helper';
 

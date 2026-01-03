@@ -4,7 +4,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, View, TouchableOpacity} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Shadow} from 'react-native-shadow-2';
 
 import {Events, Navigation as NavigationConstants, Screens, View as ViewConstants} from '@constants';
@@ -133,84 +133,86 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
     }, [visible, safeareaInsets.bottom]);
 
     return (
-        <Animated.View style={{backgroundColor: theme.centerChannelBg}}>
-            <Animated.View style={[style.container, style.separator, animatedStyle]}>
-                <Shadow
-                    startColor='rgba(61, 60, 64, 0.08)'
-                    distance={4}
-                    offset={shadowOffset}
-                    style={{
-                        position: 'absolute',
-                        borderRadius: 6,
-                        width,
-                    }}
-                    sides={shadowSides}
-                />
-                <Animated.View
-                    style={[
-                        style.sliderContainer,
-                        {width: tabWidth - 20},
-                        transform,
-                    ]}
-                >
-                    <View style={style.slider}/>
-                </Animated.View>
-                {tabs.map((route, index) => {
-                    const {options} = descriptors[route.key];
+        <SafeAreaView edges={['bottom']}>
+            <Animated.View style={{backgroundColor: theme.centerChannelBg}}>
+                <Animated.View style={[style.container, style.separator, animatedStyle]}>
+                    <Shadow
+                        startColor='rgba(61, 60, 64, 0.08)'
+                        distance={4}
+                        offset={shadowOffset}
+                        style={{
+                            position: 'absolute',
+                            borderRadius: 6,
+                            width,
+                        }}
+                        sides={shadowSides}
+                    />
+                    <Animated.View
+                        style={[
+                            style.sliderContainer,
+                            {width: tabWidth - 20},
+                            transform,
+                        ]}
+                    >
+                        <View style={style.slider}/>
+                    </Animated.View>
+                    {tabs.map((route, index) => {
+                        const {options} = descriptors[route.key];
 
-                    const isFocused = state.index === index;
+                        const isFocused = state.index === index;
 
-                    const onPress = () => {
-                        const lastTab = state.history[state.history.length - 1];
-                        const lastIndex = tabs.findIndex((r) => r.key === lastTab.key);
-                        const direction = lastIndex < index ? 'right' : 'left';
-                        const event = navigation.emit({
-                            type: 'tabPress',
-                            target: route.key,
-                            canPreventDefault: true,
-                        });
-                        DeviceEventEmitter.emit(NavigationConstants.TAB_PRESSED);
-                        if (!isFocused && !event.defaultPrevented) {
+                        const onPress = () => {
+                            const lastTab = state.history[state.history.length - 1];
+                            const lastIndex = tabs.findIndex((r) => r.key === lastTab.key);
+                            const direction = lastIndex < index ? 'right' : 'left';
+                            const event = navigation.emit({
+                                type: 'tabPress',
+                                target: route.key,
+                                canPreventDefault: true,
+                            });
+                            DeviceEventEmitter.emit(NavigationConstants.TAB_PRESSED);
+                            if (!isFocused && !event.defaultPrevented) {
                             // The `merge: true` option makes sure that the params inside the tab screen are preserved
-                            navigation.navigate({params: {direction}, name: route.name, merge: false});
-                        }
-                    };
+                                navigation.navigate({params: {direction}, name: route.name, merge: false});
+                            }
+                        };
 
-                    const onLongPress = () => {
-                        navigation.emit({
-                            type: 'tabLongPress',
-                            target: route.key,
-                        });
-                    };
+                        const onLongPress = () => {
+                            navigation.emit({
+                                type: 'tabLongPress',
+                                target: route.key,
+                            });
+                        };
 
-                    const renderOption = () => {
+                        const renderOption = () => {
                         // Route names now match screen constants directly
-                        const Component = TabComponents[route.name];
-                        const props = {isFocused, theme};
-                        if (Component) {
-                            return <Component {...props}/>;
-                        }
+                            const Component = TabComponents[route.name];
+                            const props = {isFocused, theme};
+                            if (Component) {
+                                return <Component {...props}/>;
+                            }
 
-                        return null;
-                    };
+                            return null;
+                        };
 
-                    return (
-                        <TouchableOpacity
-                            key={route.name}
-                            accessibilityRole='button'
-                            accessibilityState={isFocused ? {selected: true} : {}}
-                            accessibilityLabel={options.tabBarAccessibilityLabel}
-                            testID={options.tabBarButtonTestID}
-                            onPress={onPress}
-                            onLongPress={onLongPress}
-                            style={style.item}
-                        >
-                            {renderOption()}
-                        </TouchableOpacity>
-                    );
-                })}
+                        return (
+                            <TouchableOpacity
+                                key={route.name}
+                                accessibilityRole='button'
+                                accessibilityState={isFocused ? {selected: true} : {}}
+                                accessibilityLabel={options.tabBarAccessibilityLabel}
+                                testID={options.tabBarButtonTestID}
+                                onPress={onPress}
+                                onLongPress={onLongPress}
+                                style={style.item}
+                            >
+                                {renderOption()}
+                            </TouchableOpacity>
+                        );
+                    })}
+                </Animated.View>
             </Animated.View>
-        </Animated.View>
+        </SafeAreaView>
 
     );
 }

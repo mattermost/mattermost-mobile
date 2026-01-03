@@ -10,25 +10,22 @@ import {searchFiles} from '@actions/remote/search';
 import FileResults from '@components/files_search/file_results';
 import Loading from '@components/loading';
 import Search from '@components/search';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import SecurityManager from '@managers/security_manager';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import Header from './header';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const TEST_ID = 'channel_files';
 
 type Props = {
     channel: ChannelModel;
-    componentId: AvailableScreens;
     canDownloadFiles: boolean;
     enableSecureFilePreview: boolean;
     publicLinkEnabled: boolean;
@@ -75,7 +72,6 @@ const emptyFileResults: FileInfo[] = [];
 
 function ChannelFiles({
     channel,
-    componentId,
     canDownloadFiles,
     enableSecureFilePreview,
     publicLinkEnabled,
@@ -91,11 +87,7 @@ function ChannelFiles({
 
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
 
-    const close = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.CHANNEL_FILES, navigateBack);
 
     const handleSearch = useCallback(async (searchTerm: string, ftr: FileFilter) => {
         const t = Date.now();
@@ -138,10 +130,7 @@ function ChannelFiles({
     const fileChannels = useMemo(() => [channel], [channel]);
 
     return (
-        <View
-            style={styles.flex}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-        >
+        <View style={styles.flex}>
             <SafeAreaView
                 edges={edges}
                 style={styles.flex}

@@ -4,15 +4,12 @@
 import {Stack} from 'expo-router';
 
 import {withServerDatabase} from '@database/components';
-import {useIsTablet} from '@hooks/device';
 
 function BottomSheetLayout() {
-    const isTablet = useIsTablet();
-
     return (
         <Stack
             screenOptions={{
-                presentation: isTablet ? 'formSheet' : 'transparentModal',
+                presentation: 'transparentModal',
                 contentStyle: {backgroundColor: 'transparent'},
                 gestureEnabled: false,
                 animation: 'none',

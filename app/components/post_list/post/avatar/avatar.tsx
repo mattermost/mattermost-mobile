@@ -11,7 +11,7 @@ import ProfilePicture from '@components/profile_picture';
 import {View as ViewConstant} from '@constants';
 import {useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {openUserProfileModal} from '@utils/navigation/adapter';
+import {openUserProfileModal} from '@screens/navigation';
 import {ensureString} from '@utils/types';
 
 import type PostModel from '@typings/database/models/servers/post';

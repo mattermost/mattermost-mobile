@@ -8,7 +8,7 @@ import {defineMessages} from 'react-intl';
 import {BaseOption} from '@components/common_post_options';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet} from '@utils/navigation/adapter';
+import {dismissBottomSheet} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
 
 import type PostModel from '@typings/database/models/servers/post';

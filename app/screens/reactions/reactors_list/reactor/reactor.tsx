@@ -6,7 +6,7 @@ import React, {useEffect} from 'react';
 import {fetchUsersByIds} from '@actions/remote/user';
 import UserItem from '@components/user_item';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet, openUserProfileModal} from '@utils/navigation/adapter';
+import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
 
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';

@@ -17,8 +17,8 @@ import {
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import emojiPickerStore from '@store/emoji_picker_store';
-import {dismissBottomSheet, navigateToScreen} from '@utils/navigation/adapter';
+import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import PickReaction from './pick_reaction';
@@ -58,7 +58,7 @@ const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
 
     const openEmojiPicker = useCallback(async () => {
         await dismissBottomSheet();
-        emojiPickerStore.setEmojiPickerCallback(handleEmojiPress);
+        CallbackStore.setCallback(handleEmojiPress);
         navigateToScreen(Screens.EMOJI_PICKER);
     }, [handleEmojiPress]);
 

@@ -115,15 +115,6 @@ jest.mock('@calls/alerts', () => {
 
 jest.mock('@calls/utils');
 
-jest.mock('react-native-navigation', () => ({
-    Navigation: {
-        pop: jest.fn(() => Promise.resolve({
-            catch: jest.fn(),
-        })),
-        setDefaultOptions: jest.fn(),
-    },
-}));
-
 jest.mock('@actions/remote/session', () => ({
     forceLogoutIfNecessary: jest.fn(),
 }));

@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
 import {observeCurrentUserId, observeCurrentTeamId} from '@queries/servers/system';
 
-import StartARun from './start_a_run';
+import StartARun, {type Props} from './start_a_run';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -15,5 +15,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         currentTeamId: observeCurrentTeamId(database),
     };
 });
+
+export {type Props};
 
 export default withDatabase(enhanced(StartARun));

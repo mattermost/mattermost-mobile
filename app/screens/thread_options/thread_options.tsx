@@ -4,13 +4,13 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
 import {View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import FormattedText from '@components/formatted_text';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -51,8 +51,8 @@ const ThreadOptions = ({
     thread,
 }: ThreadOptionsProps) => {
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const style = getStyleSheet(theme);
+    const {bottom} = useSafeAreaInsets();
 
     const options = [
         <ReplyOption
@@ -91,19 +91,17 @@ const ThreadOptions = ({
         );
     }
 
-    const snapPoint = useMemo(() => TITLE_HEIGHT + bottomSheetSnapPoint(options.length, ITEM_HEIGHT), [options.length]);
+    const snapPoint = useMemo(() => bottom + TITLE_HEIGHT + bottomSheetSnapPoint(options.length, ITEM_HEIGHT), [options.length, bottom]);
 
     const renderContent = () => (
         <>
-            {!isTablet && (
-                <View style={style.listHeader}>
-                    <FormattedText
-                        id='global_threads.options.title'
-                        defaultMessage={'Thread Actions'}
-                        style={style.listHeaderText}
-                    />
-                </View>
-            )}
+            <View style={style.listHeader}>
+                <FormattedText
+                    id='global_threads.options.title'
+                    defaultMessage={'Thread Actions'}
+                    style={style.listHeaderText}
+                />
+            </View>
             {options}
         </>
     );

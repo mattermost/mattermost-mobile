@@ -74,9 +74,57 @@ jest.mock('expo-web-browser', () => ({
     })),
 }));
 
+jest.mock('expo-router', () => ({
+    router: {
+        push: jest.fn(),
+        replace: jest.fn(),
+        back: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        canDismiss: jest.fn(() => true),
+        dismiss: jest.fn(),
+        dismissAll: jest.fn(),
+        dismissTo: jest.fn(),
+        setParams: jest.fn(),
+        navigate: jest.fn(),
+    },
+    useRouter: () => ({
+        push: jest.fn(),
+        replace: jest.fn(),
+        back: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        navigate: jest.fn(),
+    }),
+    useNavigation: () => ({
+        navigate: jest.fn(),
+        goBack: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        setOptions: jest.fn(),
+        setParams: jest.fn(),
+        getState: jest.fn(() => ({})),
+        addListener: jest.fn(() => jest.fn()),
+    }),
+    useSegments: () => [],
+    usePathname: () => '/',
+    useLocalSearchParams: () => ({}),
+    useGlobalSearchParams: () => ({}),
+    Link: 'Link',
+    Redirect: 'Redirect',
+    Stack: {
+        Screen: 'Screen',
+    },
+    Tabs: {
+        Screen: 'Screen',
+    },
+}));
+
 jest.mock('@react-native-camera-roll/camera-roll', () => ({}));
 
 jest.mock('@mattermost/react-native-turbo-log', () => ({
+    configure: jest.fn(),
+    logDebug: jest.fn(),
+    logInfo: jest.fn(),
+    logWarning: jest.fn(),
+    logError: jest.fn(),
     getLogPaths: jest.fn(),
 }));
 
@@ -332,6 +380,11 @@ jest.doMock('react-native', () => {
                 start: jest.fn((callback) => callback?.({finished: true})),
             })),
         },
+        LogBox: {
+            ...ReactNative.LogBox,
+            ignoreLogs: jest.fn(),
+            ignoreAllLogs: jest.fn(),
+        },
     }, ReactNative);
 });
 
@@ -442,42 +495,6 @@ jest.mock('@react-native-cookies/cookies', () => ({
     })),
 }));
 
-jest.mock('react-native-navigation', () => {
-    const RNN = jest.requireActual('react-native-navigation');
-    RNN.Navigation.setLazyComponentRegistrator = jest.fn();
-    RNN.Navigation.setDefaultOptions = jest.fn();
-    RNN.Navigation.registerComponent = jest.fn();
-    return {
-        ...RNN,
-        Navigation: {
-            ...RNN.Navigation,
-            events: () => ({
-                registerAppLaunchedListener: jest.fn(),
-                registerComponentListener: jest.fn(() => {
-                    return {remove: jest.fn()};
-                }),
-                bindComponent: jest.fn(() => {
-                    return {remove: jest.fn()};
-                }),
-                registerNavigationButtonPressedListener: jest.fn(() => {
-                    return {remove: jest.fn()};
-                }),
-            }),
-            setRoot: jest.fn(),
-            pop: jest.fn(),
-            push: jest.fn(),
-            showModal: jest.fn(),
-            dismissModal: jest.fn(),
-            dismissAllModals: jest.fn(),
-            popToRoot: jest.fn(),
-            mergeOptions: jest.fn(),
-            showOverlay: jest.fn(),
-            dismissOverlay: jest.fn(),
-            updateProps: jest.fn(),
-        },
-    };
-});
-
 jest.mock('react-native-notifications', () => {
     let deliveredNotifications: ReactNative.PushNotification[] = [];
 
@@ -513,30 +530,6 @@ jest.mock('react-native-notifications', () => {
 
 jest.mock('react-native-share', () => ({
     default: jest.fn(),
-}));
-
-jest.mock('@screens/navigation', () => ({
-    ...jest.requireActual('@screens/navigation'),
-    resetToChannel: jest.fn(),
-    resetToSelectServer: jest.fn(),
-    resetToTeams: jest.fn(),
-    goToScreen: jest.fn(),
-    popTopScreen: jest.fn(),
-    showModal: jest.fn(),
-    showModalOverCurrentContext: jest.fn(),
-    setButtons: jest.fn(),
-    showOverlay: jest.fn(),
-    mergeNavigationOptions: jest.fn(),
-    popToRoot: jest.fn(() => Promise.resolve()),
-    dismissModal: jest.fn(() => Promise.resolve()),
-    dismissAllModals: jest.fn(() => Promise.resolve()),
-    dismissAllModalsAndPopToScreen: jest.fn(),
-    dismissAllModalsAndPopToRoot: jest.fn(),
-    dismissOverlay: jest.fn(() => Promise.resolve()),
-    dismissAllOverlays: jest.fn(() => Promise.resolve()),
-    dismissBottomSheet: jest.fn(),
-    popTo: jest.fn(),
-    bottomSheet: jest.fn(),
 }));
 
 jest.mock('@mattermost/react-native-emm', () => ({
@@ -585,6 +578,21 @@ jest.mock('react-native-haptic-feedback', () => {
         trigger: () => '',
     };
 });
+
+jest.mock('react-native-keyboard-controller', () => ({
+    useAnimatedKeyboard: jest.fn(() => ({
+        height: {value: 0},
+        progress: {value: 0},
+        state: {value: 0},
+    })),
+    KeyboardController: {
+        setInputMode: jest.fn(),
+        setDefaultMode: jest.fn(),
+        isVisible: jest.fn(() => false),
+        dismiss: jest.fn(() => Promise.resolve()),
+    },
+    KeyboardAwareScrollView: 'KeyboardAwareScrollView',
+}));
 
 jest.mock('@utils/log', () => ({
     logError: jest.fn(),

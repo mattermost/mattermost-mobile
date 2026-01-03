@@ -9,7 +9,7 @@ import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {PlaybookRunModel} from '@playbooks/database/models';
 
-import {transformPlaybookChecklistItemRecord, transformPlaybookChecklistRecord, transformPlaybookRunRecord, transformPlaybookRunAttributeRecord, transformPlaybookRunAttributeValueRecord} from '.';
+import {transformPlaybookChecklistItemRecord, transformPlaybookChecklistRecord, transformPlaybookRunRecord, transformPlaybookRunAttributeRecord, transformPlaybookRunAttributeValueRecord} from './index';
 
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
@@ -430,6 +430,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
         expect(preparedRecord.id).toBeTruthy();
     });
 });
+
 describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
     it('=> transformPlaybookChecklistRecord: should return a record of type PlaybookChecklist for CREATE action', async () => {
         expect.assertions(3);

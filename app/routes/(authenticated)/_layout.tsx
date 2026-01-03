@@ -3,16 +3,14 @@
 
 import {Stack, Redirect} from 'expo-router';
 import {useEffect, useMemo, useState} from 'react';
-import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
 import {withServerDatabase} from '@database/components';
 import {getAllServerCredentials} from '@init/credentials';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type {NativeStackNavigationOptions} from '@react-navigation/native-stack';
-
-const edges: Edge[] = ['bottom', 'left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     safeAreaView: {
@@ -43,7 +41,11 @@ function AuthenticatedLayout() {
         contentStyle: styles.card,
         headerBackButtonDisplayMode: 'minimal',
         headerBackButtonMenuEnabled: false,
-    }), [styles]);
+        headerTitleStyle: {
+            ...typography('Body', 300, 'SemiBold'),
+        },
+        headerTintColor: theme.sidebarHeaderTextColor,
+    }), [styles, theme.sidebarHeaderTextColor]);
 
     if (hasCredentials === null) {
         return null; // Loading
@@ -55,14 +57,9 @@ function AuthenticatedLayout() {
     }
 
     return (
-        <SafeAreaView
-            style={styles.safeAreaView}
-            edges={edges}
-        >
-            <Stack screenOptions={stackScreenOptions}>
-                <Stack.Screen name='(home)'/>
-            </Stack>
-        </SafeAreaView>
+        <Stack screenOptions={stackScreenOptions}>
+            <Stack.Screen name='(home)'/>
+        </Stack>
     );
 }
 

@@ -12,13 +12,11 @@ import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getAllServerCredentials} from '@init/credentials';
-import {relaunchApp} from '@init/launch';
-import {determineRouteFromLaunchProps} from '@init/launch_expo';
+import {determineRouteFromLaunchProps} from '@init/launch';
 import IntuneManager from '@managers/intune_manager';
 import SecurityManager from '@managers/security_manager';
 import {queryGlobalValue} from '@queries/app/global';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
-import {getThemeFromState} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
@@ -175,9 +173,10 @@ export class SessionManagerSingleton {
             const activeServerUrl = await DatabaseManager.getActiveServerUrl();
             const serverDisplayName = await getServerDisplayName(serverUrl);
 
-            await relaunchApp({launchType: Launch.Normal, serverUrl, displayName: serverDisplayName});
+            const launchRoute = await determineRouteFromLaunchProps({launchType: Launch.Normal, serverUrl, displayName: serverDisplayName});
+            router.replace({pathname: launchRoute.route, params: launchRoute.params});
             if (activeServerUrl) {
-                addNewServer(getThemeFromState(), serverUrl, serverDisplayName);
+                addNewServer(EphemeralStore.getTheme(), serverUrl, serverDisplayName);
             } else {
                 EphemeralStore.setTheme(getDefaultThemeByAppearance());
             }

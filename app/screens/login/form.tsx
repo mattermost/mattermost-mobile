@@ -12,12 +12,12 @@ import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
-import {FORGOT_PASSWORD, HOME, MFA} from '@constants/screens';
+import {Screens} from '@constants';
 import {LOGIN_TYPE} from '@constants/sso';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {navigateToScreen} from '@screens/navigation';
 import {getFullErrorMessage, getServerError, isErrorWithMessage, isServerError} from '@utils/errors';
 import {logError} from '@utils/log';
-import {navigateToScreen} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
@@ -132,11 +132,11 @@ const LoginForm = ({
 
     const goToHome = useCallback((loginError?: unknown) => {
         const hasError = launchError || Boolean(loginError);
-        navigateToScreen(HOME, {extra, launchError: hasError, launchType, serverUrl}, true);
+        navigateToScreen(Screens.HOME, {extra, launchError: hasError, launchType, serverUrl}, true);
     }, [extra, launchError, launchType, serverUrl]);
 
     const goToMfa = useCallback(() => {
-        navigateToScreen(MFA, {loginId, extra, isModal, password, config, serverDisplayName, license, serverUrl, theme});
+        navigateToScreen(Screens.MFA, {loginId, extra, isModal, password, config, serverDisplayName, license, serverUrl, theme});
     }, [config, extra, isModal, license, loginId, password, serverDisplayName, serverUrl, theme]);
 
     const checkUserLoginType = useCallback(async () => {
@@ -289,7 +289,7 @@ const LoginForm = ({
             serverUrl,
         };
 
-        navigateToScreen(FORGOT_PASSWORD, passProps);
+        navigateToScreen(Screens.FORGOT_PASSWORD, passProps);
     }, [config.ForgotPasswordLink, isModal, serverUrl, theme]);
 
     const togglePasswordVisiblity = useCallback(() => {

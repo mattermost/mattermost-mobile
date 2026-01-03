@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {View} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {doPing} from '@actions/remote/general';
@@ -15,8 +15,8 @@ import {getServerCredentials, setServerCredentials} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
 import {getServerByDisplayName} from '@queries/app/servers';
 import Background from '@screens/background';
+import {navigateBack} from '@screens/navigation';
 import {getErrorMessage} from '@utils/errors';
-import {navigateBack} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect} from '@utils/url';
 
@@ -47,7 +47,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const EditServer = ({server, theme}: ServerProps) => {
     const intl = useIntl();
     const {formatMessage} = intl;
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [saving, setSaving] = useState(false);
     const [displayName, setDisplayName] = useState<string>(server.displayName);
     const [buttonDisabled, setButtonDisabled] = useState(Boolean(!server.displayName));
@@ -214,13 +213,8 @@ const EditServer = ({server, theme}: ServerProps) => {
                 <KeyboardAwareScrollView
                     bounces={false}
                     contentContainerStyle={styles.scrollContainer}
-                    enableAutomaticScroll={Platform.OS === 'android'}
-                    enableOnAndroid={false}
-                    enableResetScrollToCoords={true}
-                    extraScrollHeight={20}
                     keyboardDismissMode='on-drag'
                     keyboardShouldPersistTaps='handled'
-                    ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
                     style={styles.flex}
                 >
@@ -233,7 +227,6 @@ const EditServer = ({server, theme}: ServerProps) => {
                         handleUpdate={handleUpdate}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
                         handlePreauthSecretTextChanged={handlePreauthSecretTextChanged}
-                        keyboardAwareRef={keyboardAwareRef}
                         preauthSecret={preauthSecret}
                         preauthSecretError={preauthSecretError}
                         serverUrl={server.url}

@@ -17,7 +17,7 @@ export default function PermalinkRoute() {
             animation: 'fade',
             contentStyle: {backgroundColor: 'transparent'},
         });
-    }, []);
+    }, [navigation]);
 
     return (<PermalinkScreen {...props}/>);
 }

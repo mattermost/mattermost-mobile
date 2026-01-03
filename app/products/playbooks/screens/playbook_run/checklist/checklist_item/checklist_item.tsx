@@ -14,11 +14,11 @@ import PressableOpacity from '@components/pressable_opacity';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {restoreChecklistItem, runChecklistItem, skipChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
 import {isDueSoon, isOverdue} from '@playbooks/utils/run';
-import {bottomSheet} from '@screens/navigation';
+import {bottomSheet, dismissAllRoutesAndPopToScreen, openUserProfileModal} from '@screens/navigation';
 import {logDebug} from '@utils/log';
-import {dismissAllModalsAndPopToScreen, openUserProfileModal} from '@utils/navigation/adapter';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -109,6 +109,7 @@ const ChecklistItem = ({
     channelType,
 }: Props) => {
     const dueDate = 'dueDate' in item ? item.dueDate : item.due_date;
+    const isTable = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
@@ -135,7 +136,7 @@ const ChecklistItem = ({
         openUserProfileModal({
             userId,
             channelId,
-            location: 'PlaybookRun',
+            location: Screens.PLAYBOOK_RUN,
         });
     }, [channelId]);
 
@@ -151,11 +152,11 @@ const ChecklistItem = ({
             return;
         }
 
-        dismissAllModalsAndPopToScreen(Screens.CHANNEL);
+        dismissAllRoutesAndPopToScreen(isTable ? Screens.HOME : Screens.CHANNEL);
         if (item.command?.startsWith('/call')) {
             await handleCallsSlashCommand(item.command, serverUrl, channelId, channelType, '', currentUserId, intl);
         }
-    }, [channelId, channelType, checklistNumber, currentUserId, intl, isExecuting, item.command, itemNumber, playbookRunId, serverUrl]);
+    }, [channelId, channelType, checklistNumber, currentUserId, intl, isExecuting, isTable, item.command, itemNumber, playbookRunId, serverUrl]);
 
     const toggleChecked = useCallback(async () => {
         if (isChecking) {
@@ -256,15 +257,8 @@ const ChecklistItem = ({
 
     const onPress = useCallback(() => {
         const initialHeight = BOTTOM_SHEET_HEIGHT.base + (isDisabled ? 0 : BOTTOM_SHEET_HEIGHT.actionButtons) + (showConditionIcon ? BOTTOM_SHEET_HEIGHT.conditionSection : 0);
-        bottomSheet({
-            title: intl.formatMessage({id: 'playbook_run.checklist.taskDetails', defaultMessage: 'Task Details'}),
-            renderContent: renderBottomSheet,
-            snapPoints: [1, initialHeight, '80%'],
-            theme,
-            closeButtonId: 'close-checklist-item',
-            scrollable: true,
-        });
-    }, [intl, isDisabled, renderBottomSheet, theme, showConditionIcon]);
+        bottomSheet(renderBottomSheet, [1, initialHeight, '80%']);
+    }, [isDisabled, renderBottomSheet, showConditionIcon]);
 
     return (
         <View style={styles.checklistItem}>

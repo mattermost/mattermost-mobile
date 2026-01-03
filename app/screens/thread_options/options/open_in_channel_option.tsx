@@ -7,7 +7,7 @@ import {defineMessages} from 'react-intl';
 import {showPermalink} from '@actions/remote/permalink';
 import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet} from '@utils/navigation/adapter';
+import {dismissBottomSheet} from '@screens/navigation';
 
 type Props = {
     threadId: string;

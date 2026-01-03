@@ -4,14 +4,14 @@
 import {Keyboard} from 'react-native';
 
 import {Screens} from '@constants';
-import {dismissAllModals, navigateToScreen} from '@utils/navigation/adapter';
+import {dismissToStackRoot, navigateToScreen} from '@screens/navigation';
 
 let showingPermalink = false;
 
 export const displayPermalink = async (teamName: string, postId: string) => {
     Keyboard.dismiss();
     if (showingPermalink) {
-        await dismissAllModals();
+        await dismissToStackRoot();
     }
 
     const screen = Screens.PERMALINK;

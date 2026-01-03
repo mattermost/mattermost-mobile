@@ -2,18 +2,13 @@
 // See LICENSE.txt for license information.
 
 import deepEqual from 'deep-equal';
-import merge from 'deepmerge';
-import {StatusBar, StyleSheet} from 'react-native';
+import {StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import {Preferences} from '@constants';
-import {MODAL_SCREENS, SCREENS_AS_BOTTOM_SHEET, SCREENS_WITH_TRANSPARENT_BACKGROUND} from '@constants/screens';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
-import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 
 import type {NamedStyles} from '@typings/global/styles';
-import type {Options} from 'react-native-navigation';
 
 const rgbPattern = /^rgba?\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)$/;
 
@@ -75,63 +70,6 @@ export function changeOpacity(oldColor: string, opacity: number): string {
     } = getComponents(oldColor);
 
     return `rgba(${red},${green},${blue},${alpha * opacity})`;
-}
-
-export function setNavigatorStyles(componentId: string, theme: Theme, additionalOptions: Options = {}, statusBarColor?: string) {
-    const isDark = tinyColor(statusBarColor || theme.sidebarBg).isDark();
-    const options: Options = {
-        topBar: {
-            title: {
-                color: theme.sidebarHeaderTextColor,
-            },
-            background: {
-                color: theme.sidebarBg,
-            },
-            leftButtonColor: theme.sidebarHeaderTextColor,
-            rightButtonColor: theme.sidebarHeaderTextColor,
-        },
-        statusBar: {
-            backgroundColor: theme.sidebarBg,
-            style: isDark ? 'light' : 'dark',
-        },
-    };
-
-    if (SCREENS_AS_BOTTOM_SHEET.has(componentId)) {
-        options.topBar = {
-            leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
-            background: {
-                color: theme.centerChannelBg,
-            },
-            title: {
-                color: theme.centerChannelColor,
-            },
-        };
-    }
-
-    if (!SCREENS_WITH_TRANSPARENT_BACKGROUND.has(componentId) && !SCREENS_AS_BOTTOM_SHEET.has(componentId)) {
-        options.layout = {
-            componentBackgroundColor: theme.centerChannelBg,
-        };
-    }
-
-    if (!MODAL_SCREENS.has(componentId) && !SCREENS_AS_BOTTOM_SHEET.has(componentId) && options.topBar) {
-        options.topBar.backButton = {
-            color: theme.sidebarHeaderTextColor,
-        };
-    }
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
-
-    const mergeOptions = merge(options, additionalOptions);
-
-    mergeNavigationOptions(componentId, mergeOptions);
-}
-
-export function setNavigationStackStyles(theme: Theme) {
-    NavigationStore.getScreensInStack().forEach((componentId) => {
-        if (!appearanceControlledScreens.has(componentId)) {
-            setNavigatorStyles(componentId, theme);
-        }
-    });
 }
 
 export function getKeyboardAppearanceFromTheme(theme: Theme) {
@@ -275,8 +213,5 @@ export const updateThemeIfNeeded = (theme: Theme, force = false) => {
     const storedTheme = EphemeralStore.getTheme();
     if (!deepEqual(theme, storedTheme) || force) {
         EphemeralStore.setTheme(theme);
-        requestAnimationFrame(() => {
-            setNavigationStackStyles(theme);
-        });
     }
 };

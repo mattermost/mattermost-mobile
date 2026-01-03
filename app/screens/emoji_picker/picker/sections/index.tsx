@@ -16,8 +16,6 @@ import {setEmojiCategoryBarIcons, setEmojiCategoryBarSection, useEmojiCategoryBa
 import {CategoryNames, EmojiIndicesByCategory, CategoryTranslations, CategoryMessage} from '@utils/emoji';
 import {fillEmoji} from '@utils/emoji/helpers';
 
-import EmojiCategoryBar from '../emoji_category_bar';
-
 import EmojiRow, {type EmojiSectionRow} from './emoji_row';
 import SectionFooter from './section_footer';
 import SectionHeader, {type EmojiSection} from './section_header';
@@ -263,15 +261,13 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
                 onEndReachedThreshold={0.5}
                 onEndReached={loadMoreCustomEmojis}
                 onStickyHeaderIndexChanged={handleStickyHeaderIndexChanged}
+                keyboardShouldPersistTaps='handled'
 
                 //@ts-expect-error type definition for ref
                 ref={list}
                 renderItem={renderItem}
                 stickyHeaderIndices={stickyHeaderIndices}
             />
-            {isTablet &&
-            <EmojiCategoryBar/>
-            }
         </View>
     );
 }

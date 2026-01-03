@@ -11,12 +11,12 @@ import CreateOrEditChannelScreen, {type CreateOrEditChannelProps} from '@screens
 export default function CreateOrEditChannelFromBrowseChannelsRoute() {
     const intl = useIntl();
     const theme = useTheme();
-    const props = usePropsFromParams<CreateOrEditChannelProps>();
+    const {title, ...props} = usePropsFromParams<CreateOrEditChannelProps & {title?: string}>();
 
     useNavigationHeader({
         showWhenPushed: true,
         headerOptions: {
-            headerTitle: intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'}),
+            headerTitle: title ?? intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'}),
             ...getHeaderOptions(theme),
         },
     });

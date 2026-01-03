@@ -16,8 +16,8 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useKeyboardOverlap} from '@hooks/device';
+import {navigateBack} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
-import {navigateBack} from '@utils/navigation/adapter';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

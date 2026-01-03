@@ -12,7 +12,7 @@ import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
-import {dismissAllModalsAndPopToRoot, dismissBottomSheet} from '@screens/navigation';
+import {dismissAllRoutesAndResetToRootRoute, navigateBack} from '@screens/navigation';
 
 type Props = {
     isOptionItem?: boolean;
@@ -72,9 +72,9 @@ const LeaveChannelLabel = ({canLeave, channelId, displayName, isOptionItem, type
     const isTablet = useIsTablet();
 
     const close = async () => {
-        await dismissBottomSheet();
+        await navigateBack();
         if (!isTablet) {
-            await dismissAllModalsAndPopToRoot();
+            await dismissAllRoutesAndResetToRootRoute();
         }
     };
 

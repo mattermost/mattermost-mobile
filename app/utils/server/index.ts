@@ -4,9 +4,9 @@
 import {Alert, type AlertButton} from 'react-native';
 
 import {Screens, Sso, SupportedServer, Launch} from '@constants';
+import {navigateToScreen} from '@screens/navigation';
 import {getErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {navigateToScreen} from '@utils/navigation/adapter';
 import {tryOpenURL} from '@utils/url';
 
 import type ServersModel from '@typings/database/models/app/servers';

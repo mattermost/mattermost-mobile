@@ -21,20 +21,17 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToCreateQuickChecklist, goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
-import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import ChannelBanner from '@screens/channel/header/channel_banner';
-import {bottomSheet, showModal} from '@screens/navigation';
+import {bottomSheet, navigateBack, navigateToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTypeDMorGM} from '@utils/channel';
-import {bottomSheetSnapPoint} from '@utils/helpers';
-import {navigateBack} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import ChannelHeaderBookmarks from './bookmarks';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 
-import type {HeaderRightButton} from '@components/navigation_header/header';
+import type {NavigationButtonProps} from '@components/navigation_button';
 
 type ChannelProps = {
     canAddBookmarks: boolean;
@@ -160,27 +157,10 @@ const ChannelHeader = ({
                 break;
         }
 
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const closeButtonId = 'close-channel-info';
-
-        const options = {
-            topBar: {
-                leftButtons: [{
-                    id: closeButtonId,
-                    icon: closeButton,
-                    testID: 'close.channel_info.button',
-                }],
-            },
-        };
-        showModal(Screens.CHANNEL_INFO, title, {channelId, closeButtonId}, options);
-    }), [channelId, channelType, intl, theme]));
+        navigateToScreen(Screens.CHANNEL_INFO, {channelId, title});
+    }), [channelId, channelType, intl]));
 
     const onChannelQuickAction = useCallback(() => {
-        if (isTablet) {
-            onTitlePress();
-            return;
-        }
-
         // When calls is enabled, we need space to move the "Copy Link" from a button to an option
         let items = 2;
         if (callsAvailable && !isDMorGM) {
@@ -189,10 +169,7 @@ const ChannelHeader = ({
         if (hasPlaybookRuns && !isDMorGM) {
             items += 1;
         }
-        let height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + MARGIN + (items * ITEM_HEIGHT);
-        if (Platform.OS === 'android') {
-            height += BOTTOM_SHEET_ANDROID_OFFSET;
-        }
+        const height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + (2 * MARGIN) + (items * ITEM_HEIGHT);
 
         const renderContent = () => {
             return (
@@ -205,43 +182,35 @@ const ChannelHeader = ({
             );
         };
 
-        bottomSheet({
-            title: '',
-            renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(1, height)],
-            theme,
-            closeButtonId: 'close-channel-quick-actions',
-        });
-    }, [isTablet, callsAvailable, isDMorGM, hasPlaybookRuns, theme, onTitlePress, channelId]);
+        bottomSheet(renderContent, [1, height]);
+    }, [callsAvailable, isDMorGM, hasPlaybookRuns, channelId]);
 
     const openPlaybooksRuns = useCallback(() => {
         // If no active runs, create a new one instead
         if (playbooksActiveRuns === 0) {
             goToCreateQuickChecklist(
-                intl,
                 channelId,
                 displayName,
                 currentUserId,
                 teamId,
-                serverUrl,
             );
             return;
         }
 
         if (activeRunId) {
-            goToPlaybookRun(intl, activeRunId);
+            goToPlaybookRun(activeRunId);
             return;
         }
-        goToPlaybookRuns(intl, channelId, displayName);
-    }, [playbooksActiveRuns, activeRunId, channelId, displayName, intl, currentUserId, teamId, serverUrl]);
+
+        goToPlaybookRuns(channelId, displayName);
+    }, [playbooksActiveRuns, activeRunId, channelId, displayName, currentUserId, teamId]);
 
     const rightButtons = useMemo(() => {
-        const buttons: HeaderRightButton[] = [];
+        const buttons: NavigationButtonProps[] = [];
         if (isPlaybooksEnabled && !isDMorGM) {
             buttons.push({
                 iconName: 'product-playbooks',
                 onPress: openPlaybooksRuns,
-                buttonType: 'opacity',
                 count: playbooksActiveRuns || '+',
             });
         }
@@ -258,7 +227,6 @@ const ChannelHeader = ({
         buttons.push({
             iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
             onPress: onChannelQuickAction,
-            buttonType: 'opacity',
             testID: 'channel_header.channel_quick_actions.button',
         });
 

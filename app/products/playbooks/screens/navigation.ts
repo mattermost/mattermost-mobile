@@ -1,38 +1,42 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
+
 import {joinIfNeededAndSwitchToChannel} from '@actions/remote/channel';
-import {Screens} from '@constants';
-import {getThemeFromState, goToScreen} from '@screens/navigation';
+import {Navigation, Screens} from '@constants';
+import {navigateToChannelInfoScreen, navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
+import {NavigationStore} from '@store/navigation_store';
 import {errorBadChannel} from '@utils/draft';
 import {logDebug} from '@utils/log';
-import {changeOpacity} from '@utils/theme';
 
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type {IntlShape} from 'react-intl';
-import type {Options as RNNOptions} from 'react-native-navigation';
 
-export function goToPlaybookRuns(intl: IntlShape, channelId: string, channelName: string) {
-    const theme = getThemeFromState();
-    const title = intl.formatMessage({id: 'playbooks.playbooks_runs.title', defaultMessage: 'Playbook checklists'});
-    goToScreen(Screens.PLAYBOOKS_RUNS, title, {channelId}, {
-        topBar: {
-            subtitle: {
-                text: channelName,
-                color: changeOpacity(theme.sidebarText, 0.72),
-            },
-        },
-    });
+export function goToPlaybookRuns(channelId: string, channelName: string, inModal = false) {
+    if (inModal) {
+        navigateToChannelInfoScreen(Screens.PLAYBOOKS_RUNS, {channelId, channelName, inModal});
+        return;
+    }
+
+    navigateToScreen(Screens.PLAYBOOKS_RUNS, {channelId, channelName});
 }
 
-export function goToParticipantPlaybooks(intl: IntlShape) {
-    const title = intl.formatMessage({id: 'playbooks.participant_playbooks.title', defaultMessage: 'Playbook checklists'});
-    goToScreen(Screens.PARTICIPANT_PLAYBOOKS, title, {}, {});
+export function goToParticipantPlaybooks(isTablet = false) {
+    if (isTablet) {
+        DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.PARTICIPANT_PLAYBOOKS);
+        return;
+    }
+    navigateToScreen(Screens.PARTICIPANT_PLAYBOOKS);
 }
 
-export async function goToPlaybookRun(intl: IntlShape, playbookRunId: string, playbookRun?: PlaybookRun) {
-    const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook checklist'});
-    goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId, playbookRun}, {});
+export async function goToPlaybookRun(playbookRunId: string, playbookRun?: PlaybookRun) {
+    if (NavigationStore.isModalOpen()) {
+        navigateToChannelInfoScreen(Screens.PLAYBOOK_RUN, {playbookRunId, playbookRun});
+        return;
+    }
+    navigateToScreen(Screens.PLAYBOOK_RUN, {playbookRunId, playbookRun});
 }
 
 export async function goToPlaybookRunWithChannelSwitch(intl: IntlShape, serverUrl: string, playbookRun: PlaybookRun | PlaybookRunModel) {
@@ -47,86 +51,81 @@ export async function goToPlaybookRunWithChannelSwitch(intl: IntlShape, serverUr
     }
 
     // Then navigate to the playbook run
-    const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook checklist'});
-    goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId: playbookRun.id}, {});
+    goToPlaybookRun(playbookRun.id);
 }
 
-export async function goToPostUpdate(intl: IntlShape, playbookRunId: string) {
-    const title = intl.formatMessage({id: 'playbooks.post_update.title', defaultMessage: 'Post update'});
-    goToScreen(Screens.PLAYBOOK_POST_UPDATE, title, {playbookRunId}, {});
-}
+export async function goToPostUpdate(playbookRunId: string) {
+    if (NavigationStore.isModalOpen()) {
+        navigateToChannelInfoScreen(Screens.PLAYBOOK_POST_UPDATE, {playbookRunId});
+        return;
+    }
 
-function getSubtitleOptions(theme: Theme, runName: string): RNNOptions {
-    return {
-        topBar: {
-            subtitle: {
-                color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
-                text: runName,
-            },
-        },
-    };
+    navigateToScreen(Screens.PLAYBOOK_POST_UPDATE, {playbookRunId});
 }
 
 export async function goToEditCommand(
-    intl: IntlShape,
-    theme: Theme,
     runName: string,
     command: string | null,
     channelId: string,
     updateCommand: (command: string) => void,
 ) {
-    const title = intl.formatMessage({id: 'playbooks.edit_command.title', defaultMessage: 'Slash command'});
-    const options = getSubtitleOptions(theme, runName);
-    goToScreen(Screens.PLAYBOOK_EDIT_COMMAND, title, {
-        savedCommand: command,
-        updateCommand,
-        channelId,
-    }, options);
+    const props = {subtitle: runName, channelId, savedCommand: command};
+    CallbackStore.setCallback(updateCommand);
+
+    if (NavigationStore.isModalOpen()) {
+        navigateToChannelInfoScreen(Screens.PLAYBOOK_EDIT_COMMAND, props);
+        return;
+    }
+
+    navigateToScreen(Screens.PLAYBOOK_EDIT_COMMAND, props);
 }
 
 export async function goToRenameChecklist(
-    intl: IntlShape,
-    theme: Theme,
     runName: string,
     currentTitle: string,
     onSave: (newTitle: string) => void,
 ) {
-    const title = intl.formatMessage({id: 'playbooks.checklist.rename.title', defaultMessage: 'Rename checklist'});
-    const options = getSubtitleOptions(theme, runName);
-    goToScreen(Screens.PLAYBOOK_RENAME_CHECKLIST, title, {
-        currentTitle,
-        onSave,
-    }, options);
+    CallbackStore.setCallback(onSave);
+    const props = {subtitle: runName, currentTitle};
+
+    if (NavigationStore.isModalOpen()) {
+        navigateToChannelInfoScreen(Screens.PLAYBOOK_RENAME_CHECKLIST, props);
+        return;
+    }
+
+    navigateToScreen(Screens.PLAYBOOK_RENAME_CHECKLIST, props);
 }
 
 export async function goToAddChecklistItem(
-    intl: IntlShape,
-    theme: Theme,
     runName: string,
     onSave: (title: string) => void,
 ) {
-    const title = intl.formatMessage({id: 'playbooks.checklist_item.add.title', defaultMessage: 'New Task'});
-    const options = getSubtitleOptions(theme, runName);
-    goToScreen(Screens.PLAYBOOK_ADD_CHECKLIST_ITEM, title, {
-        onSave,
-    }, options);
+    const props = {subtitle: runName};
+    CallbackStore.setCallback(onSave);
+
+    if (NavigationStore.isModalOpen()) {
+        navigateToChannelInfoScreen(Screens.PLAYBOOK_ADD_CHECKLIST_ITEM, props);
+        return;
+    }
+
+    navigateToScreen(Screens.PLAYBOOK_ADD_CHECKLIST_ITEM, props);
 }
 
 export async function goToRenamePlaybookRun(
-    intl: IntlShape,
-    theme: Theme,
     currentTitle: string,
     playbookRunId: string,
 ) {
-    const title = intl.formatMessage({id: 'playbooks.playbook_run.rename.title', defaultMessage: 'Rename playbook run'});
-    goToScreen(Screens.PLAYBOOK_RENAME_RUN, title, {
-        currentTitle,
-        playbookRunId,
-    });
+    const props = {currentTitle, playbookRunId};
+
+    if (NavigationStore.isModalOpen()) {
+        navigateToChannelInfoScreen(Screens.PLAYBOOK_RENAME_RUN, props);
+        return;
+    }
+
+    navigateToScreen(Screens.PLAYBOOK_RENAME_RUN, props);
 }
 
 export async function goToSelectUser(
-    theme: Theme,
     runName: string,
     title: string,
     participantIds: string[],
@@ -134,76 +133,68 @@ export async function goToSelectUser(
     handleSelect: (user: UserProfile) => void,
     handleRemove?: () => void,
 ) {
-    const options = getSubtitleOptions(theme, runName);
-    goToScreen(Screens.PLAYBOOK_SELECT_USER, title, {
-        participantIds,
-        selected,
+    CallbackStore.setCallback({
         handleSelect,
         handleRemove,
-    }, options);
+    });
+
+    const props = {runName, title, participantIds, selected};
+    if (NavigationStore.isModalOpen()) {
+        navigateToChannelInfoScreen(Screens.PLAYBOOK_SELECT_USER, props);
+        return;
+    }
+
+    navigateToScreen(Screens.PLAYBOOK_SELECT_USER, props);
 }
 
 export async function goToSelectDate(
-    intl: IntlShape,
-    theme: Theme,
     runName: string,
     onSave: (date: number | undefined) => void,
     selectedDate: number | undefined,
 ) {
-    const options = getSubtitleOptions(theme, runName);
-    const title = intl.formatMessage({id: 'playbooks.select_date.title', defaultMessage: 'Due date'});
-    goToScreen(Screens.PLAYBOOKS_SELECT_DATE, title, {
-        onSave,
-        selectedDate,
-    }, options);
+    const props = {subtitle: runName, selectedDate};
+    CallbackStore.setCallback(onSave);
+
+    if (NavigationStore.isModalOpen()) {
+        navigateToChannelInfoScreen(Screens.PLAYBOOKS_SELECT_DATE, props);
+        return;
+    }
+
+    navigateToScreen(Screens.PLAYBOOKS_SELECT_DATE, props);
 }
 
 export async function goToSelectPlaybook(
     intl: IntlShape,
-    theme: Theme,
     channelId?: string,
 ) {
-
-    const title = intl.formatMessage({id: 'playbooks.select_playbook.title', defaultMessage: 'New'});
-    goToScreen(Screens.PLAYBOOKS_SELECT_PLAYBOOK, title, {channelId}, {
-        topBar: {
-            subtitle: {
-                text: intl.formatMessage({id: 'playbooks.select_playbook.subtitle', defaultMessage: 'Select a playbook'}),
-                color: changeOpacity(theme.sidebarText, 0.72),
-            },
-        },
-    });
+    const subtitle = intl.formatMessage({id: 'playbooks.select_playbook.subtitle', defaultMessage: 'Select a playbook'});
+    if (NavigationStore.isModalOpen()) {
+        navigateToChannelInfoScreen(Screens.PLAYBOOKS_SELECT_PLAYBOOK, {channelId, subtitle});
+        return;
+    }
+    navigateToScreen(Screens.PLAYBOOKS_SELECT_PLAYBOOK, {channelId, subtitle});
 }
 
-export async function goToStartARun(intl: IntlShape, theme: Theme, playbook: Playbook, onRunCreated: (run: PlaybookRun) => void, channelId?: string) {
-    const title = intl.formatMessage({id: 'playbooks.start_a_run.title', defaultMessage: 'New'});
+export async function goToStartARun(playbook: Playbook, onRunCreated: (run: PlaybookRun) => void, channelId?: string) {
     const subtitle = playbook.title;
-    goToScreen(Screens.PLAYBOOKS_START_A_RUN, title, {playbook, onRunCreated, channelId}, {
-        topBar: {
-            subtitle: {
-                text: subtitle,
-                color: changeOpacity(theme.sidebarText, 0.72),
-            },
-        },
-    });
+    const props = {playbook, channelId, subtitle};
+    CallbackStore.setCallback(onRunCreated);
+
+    if (NavigationStore.isModalOpen()) {
+        navigateToChannelInfoScreen(Screens.PLAYBOOKS_START_A_RUN, props);
+        return;
+    }
+
+    navigateToScreen(Screens.PLAYBOOKS_START_A_RUN, props);
 }
 
 export function goToCreateQuickChecklist(
-    intl: IntlShape,
     channelId: string,
     channelName: string,
     currentUserId: string,
     currentTeamId: string,
-    serverUrl: string,
 ) {
     const screen = Screens.PLAYBOOKS_CREATE_QUICK_CHECKLIST;
-    const title = intl.formatMessage({id: 'mobile.playbook.create_checklist', defaultMessage: 'Create Checklist'});
-
-    goToScreen(screen, title, {
-        channelId,
-        channelName,
-        currentUserId,
-        currentTeamId,
-        serverUrl,
-    }, {}); // Empty options, no subtitle needed
+    const props = {channelId, channelName, currentUserId, currentTeamId};
+    navigateToScreen(screen, props);
 }

@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, StyleSheet, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
+import {removeLastViewedChannelIdAndServer, storeLastViewedChannelIdAndServer} from '@actions/app/global';
 import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
@@ -16,7 +17,7 @@ import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import TabbedContents from '@screens/global_drafts/components/tabbed_contents';
-import {navigateBack} from '@utils/navigation/adapter';
+import {navigateBack} from '@screens/navigation';
 
 import GlobalDraftsList from './components/global_drafts_list';
 import GlobalScheduledPostList from './components/global_scheduled_post_list';
@@ -42,6 +43,14 @@ const GlobalDraftsAndScheduledPosts = ({scheduledPostsEnabled, initialTab}: Prop
 
     useEffect(() => {
         DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, Screens.GLOBAL_DRAFTS);
+
+        // This is done so that the header renders
+        // and the screen does not look totally blank
+        storeLastViewedChannelIdAndServer(Screens.GLOBAL_DRAFTS);
+
+        return () => {
+            removeLastViewedChannelIdAndServer();
+        };
     }, []);
 
     const headerLeftComponent = useMemo(() => {
@@ -75,9 +84,7 @@ const GlobalDraftsAndScheduledPosts = ({scheduledPostsEnabled, initialTab}: Prop
     );
 
     const scheduledPostList = useMemo(() => (
-        <GlobalScheduledPostList
-            location={Screens.GLOBAL_DRAFTS_AND_SCHEDULED_POSTS}
-        />
+        <GlobalScheduledPostList/>
     ), []);
 
     useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS, onBackPress);

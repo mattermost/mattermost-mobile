@@ -13,13 +13,12 @@ import Button from '@components/button';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
-import {HOME} from '@constants/screens';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {usePreventDoubleTap} from '@hooks/utils';
 import Background from '@screens/background';
+import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {getErrorMessage} from '@utils/errors';
-import {navigateBack, navigateToScreen} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -101,7 +100,7 @@ const MFA = ({config, extra, launchError, launchType, license, loginId, password
 
     const goToHome = useCallback((loginError?: unknown) => {
         const hasError = launchError || Boolean(loginError);
-        navigateToScreen(HOME, {extra, launchError: hasError, launchType, serverUrl}, true);
+        navigateToScreen(Screens.HOME, {extra, launchError: hasError, launchType, serverUrl}, true);
     }, [extra, launchError, launchType, serverUrl]);
 
     const submit = usePreventDoubleTap(useCallback(async () => {

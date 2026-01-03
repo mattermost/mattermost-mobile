@@ -18,7 +18,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useInputPropagation} from '@hooks/input';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -136,14 +136,6 @@ export default function PostInput({
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
 
-    const handleAndroidKeyboardHide = () => {
-        onBlur();
-    };
-
-    const handleAndroidKeyboardShow = () => {
-        onFocus();
-    };
-
     const onBlur = useCallback(() => {
         handleDraftUpdate({
             serverUrl,
@@ -157,6 +149,14 @@ export default function PostInput({
     const onFocus = useCallback(() => {
         setIsFocused(true);
     }, [setIsFocused]);
+
+    const handleAndroidKeyboardHide = useCallback(() => {
+        onBlur();
+    }, [onBlur]);
+
+    const handleAndroidKeyboardShow = useCallback(() => {
+        onFocus();
+    }, [onFocus]);
 
     const checkMessageLength = useCallback((newValue: string) => {
         const valueLength = newValue.trim().length;
@@ -282,7 +282,7 @@ export default function PostInput({
             keyboardShowListener?.remove();
             keyboardHideListener?.remove();
         });
-    }, []);
+    }, [handleAndroidKeyboardHide, handleAndroidKeyboardShow]);
 
     useEffect(() => {
         const listener = AppState.addEventListener('change', onAppStateChange);
@@ -307,14 +307,14 @@ export default function PostInput({
             listener.remove();
             updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
         };
-    }, [updateValue, channelId, rootId]);
+    }, [updateValue, channelId, rootId, value, updateCursorPosition, propagateValue, inputRef, serverUrl]);
 
     useEffect(() => {
         if (value !== lastNativeValue.current) {
             propagateValue(value);
             lastNativeValue.current = value;
         }
-    }, [value]);
+    }, [propagateValue, value]);
 
     const events = useMemo(() => ({
         onEnterPressed: handleHardwareEnterPress,

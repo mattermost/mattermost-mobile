@@ -8,7 +8,7 @@ import {Platform} from 'react-native';
 
 import {BaseOption} from '@components/common_post_options';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
-import {dismissBottomSheet} from '@utils/navigation/adapter';
+import {dismissBottomSheet} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
 
 import type {AvailableScreens} from '@typings/screens/navigation';

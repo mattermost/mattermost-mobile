@@ -11,9 +11,9 @@ import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
 import useDidUpdate from '@hooks/did_update';
 import {usePreventDoubleTap} from '@hooks/utils';
-import EmojiPickerStore from '@store/emoji_picker_store';
+import {navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
-import {navigateToScreen} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Reaction from './reaction';
@@ -102,7 +102,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     }, [postId, serverUrl]);
 
     const handleAddReaction = usePreventDoubleTap(useCallback(() => {
-        EmojiPickerStore.setEmojiPickerCallback(handleToggleReactionToPost);
+        CallbackStore.setCallback(handleToggleReactionToPost);
         navigateToScreen(Screens.EMOJI_PICKER);
     }, [handleToggleReactionToPost]));
 

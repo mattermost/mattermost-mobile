@@ -7,7 +7,7 @@ import {defineMessages} from 'react-intl';
 import {deleteSavedPost, savePostPreference} from '@actions/remote/preference';
 import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet} from '@utils/navigation/adapter';
+import {dismissBottomSheet} from '@screens/navigation';
 
 type CopyTextProps = {
     isSaved: boolean;

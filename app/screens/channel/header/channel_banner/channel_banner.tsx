@@ -8,7 +8,6 @@ import {Text, TouchableOpacity, View} from 'react-native';
 import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
 import RemoveMarkdown from '@components/remove_markdown';
 import {CHANNEL_BANNER_HEIGHT} from '@constants/view';
-import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet} from '@screens/navigation';
 import {getContrastingSimpleColor} from '@utils/general';
@@ -22,8 +21,6 @@ const SNAP_POINT = TITLE_HEIGHT + BUTTON_HEIGHT + MARGINS + BUTTON_HEIGHT + 10;
 
 const MAX_TEXT_CONTAINER_HEIGHT = 500;
 const MIN_TEXT_CONTAINER_HEIGHT = 40;
-
-const CLOSE_BUTTON_ID = 'channel-banner-close';
 
 const getStyleSheet = (bannerTextColor: string) => ({
     container: {
@@ -62,7 +59,6 @@ type Props = {
 
 export function ChannelBanner({bannerInfo, isTopItem}: Props) {
     const intl = useIntl();
-    const theme = useTheme();
     const bannerTextColor = getContrastingSimpleColor(bannerInfo?.background_color || '');
 
     const style = useMemo(() => {
@@ -96,14 +92,8 @@ export function ChannelBanner({bannerInfo, isTopItem}: Props) {
             />
         );
 
-        bottomSheet({
-            closeButtonId: CLOSE_BUTTON_ID,
-            title: expandedChannelBannerTitle,
-            snapPoints: [1, snapPoint],
-            renderContent,
-            theme,
-        });
-    }, [bannerInfo, intl, theme]);
+        bottomSheet(renderContent, [1, snapPoint]);
+    }, [bannerInfo, intl]);
 
     // banner info will be complete when this component renders,
     // but this check is still here to avoid having to use non-null assertion everywhere.

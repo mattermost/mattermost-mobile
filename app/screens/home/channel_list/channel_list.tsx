@@ -5,7 +5,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, StyleSheet, ToastAndroid, View} from 'react-native';
+import {BackHandler, StyleSheet, ToastAndroid, View} from 'react-native';
 import Animated, {FadeIn, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -14,15 +14,14 @@ import FloatingCallContainer from '@calls/components/floating_call_container';
 import AnnouncementBanner from '@components/announcement_banner';
 import ConnectionBanner from '@components/connection_banner';
 import TeamSidebar from '@components/team_sidebar';
-import {Navigation as NavigationConstants, Screens} from '@constants';
+import {Screens} from '@constants';
 import {HOME_TAB_SCREENS} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
-import {resetToTeams, openToS} from '@screens/navigation';
-import {useCurrentScreen} from '@store/expo_navigation_store';
-import NavigationStore from '@store/navigation_store';
+import {navigateToScreen} from '@screens/navigation';
+import {NavigationStore, useCurrentScreen} from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
 import {tryRunAppReview} from '@utils/reviews';
 import {addSentryContext} from '@utils/sentry';
@@ -85,9 +84,7 @@ const ChannelListScreen = (props: ChannelProps) => {
     const isTabScreen = currentScreen && HOME_TAB_SCREENS.has(currentScreen);
 
     const handleBackPress = useCallback(() => {
-        const isHomeScreen = NavigationStore.getVisibleScreen() === Screens.HOME;
-        const homeTab = NavigationStore.getVisibleTab() === Screens.HOME;
-        const focused = navigation.isFocused() && isHomeScreen && homeTab;
+        const focused = navigation.isFocused();
 
         if (isMainActivity()) {
             if (!backPressedCount && focused) {
@@ -105,10 +102,9 @@ const ChannelListScreen = (props: ChannelProps) => {
                     backPressedCount = 0;
                 }, 2000);
                 return true;
-            } else if (isHomeScreen && !homeTab) {
-                DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME);
-                return true;
             }
+            BackHandler.exitApp();
+            return true;
         }
         return false;
     }, [intl, navigation]);
@@ -140,7 +136,7 @@ const ChannelListScreen = (props: ChannelProps) => {
 
     useEffect(() => {
         if (!props.hasTeams) {
-            resetToTeams();
+            navigateToScreen(Screens.SELECT_TEAM, undefined, true);
         }
     }, [props.hasTeams]);
 
@@ -155,7 +151,7 @@ const ChannelListScreen = (props: ChannelProps) => {
 
     useEffect(() => {
         if (props.showToS && !NavigationStore.isToSOpen()) {
-            openToS();
+            navigateToScreen(Screens.TERMS_OF_SERVICE);
         }
     }, [props.showToS]);
 

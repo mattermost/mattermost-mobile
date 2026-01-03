@@ -6,13 +6,17 @@ import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 
 import ServerIcon from '@components/server_icon';
-import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer, type UnreadObserverArgs} from '@database/subscription/unreads';
-import {navigateToScreen} from '@utils/navigation/adapter';
+import {useWindowDimensions} from '@hooks/device';
+import {BUTTON_HEIGHT, TITLE_HEIGHT} from '@screens/bottom_sheet';
+import {bottomSheet} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {sortServersByDisplayName} from '@utils/server';
+
+import ServerList, {AddServerButton} from './servers_list';
 
 import type ServersModel from '@typings/database/models/app/servers';
 import type {UnreadMessages, UnreadSubscription} from '@typings/database/subscriptions';
@@ -43,6 +47,7 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
     const registeredServers = useRef<ServersModel[]|undefined>();
     const currentServerUrl = useServerUrl();
+    const dimensions = useWindowDimensions();
     const theme = useTheme();
 
     const updateTotal = () => {
@@ -104,9 +109,29 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
 
     const onPress = useCallback(() => {
         if (registeredServers.current?.length) {
-            navigateToScreen(Screens.SERVERS_LIST, {serverIds: registeredServers.current.map((server) => server.id)});
+            const renderContent = () => {
+                return (
+                    <ServerList servers={registeredServers.current!}/>
+                );
+            };
+            const maxScreenHeight = Math.ceil(0.6 * dimensions.height);
+            const maxSnapPoint = Math.min(
+                maxScreenHeight,
+                bottomSheetSnapPoint(registeredServers.current.length, SERVER_ITEM_HEIGHT) + TITLE_HEIGHT + BUTTON_HEIGHT +
+                    (registeredServers.current.filter((s: ServersModel) => s.lastActiveAt).length * PUSH_ALERT_TEXT_HEIGHT),
+            );
+
+            const snapPoints: Array<string | number> = [
+                1,
+                maxSnapPoint,
+            ];
+            if (maxSnapPoint === maxScreenHeight) {
+                snapPoints.push('80%');
+            }
+
+            bottomSheet(renderContent, snapPoints, AddServerButton);
         }
-    }, []);
+    }, [dimensions.height]);
 
     useImperativeHandle(ref, () => ({
         openServers: onPress,
@@ -122,6 +147,7 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
             });
             subscriptions.clear();
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

@@ -7,7 +7,7 @@ import {defineMessages} from 'react-intl';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet} from '@utils/navigation/adapter';
+import {dismissBottomSheet} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
 

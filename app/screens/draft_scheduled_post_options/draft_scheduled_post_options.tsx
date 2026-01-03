@@ -3,6 +3,7 @@
 
 import React, {useMemo} from 'react';
 import {View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CopyTextOption from '@components/copy_text_option';
 import DeleteDraft from '@components/draft_scheduled_post/draft_scheduled_post_actions/delete_draft';
@@ -13,7 +14,6 @@ import SendHandler from '@components/post_draft/send_handler/';
 import {Screens} from '@constants';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import {emptyFunction} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -45,7 +45,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const TITLE_HEIGHT = 54;
+const TITLE_HEIGHT = 64;
 const ITEM_HEIGHT = 48;
 
 const DraftScheduledPostOptions: React.FC<Props> = ({
@@ -55,18 +55,18 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
     draft,
     draftReceiverUserName,
 }) => {
-    const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const {bottom} = useSafeAreaInsets();
     const snapPoints = useMemo(() => {
         const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(4, ITEM_HEIGHT);
-        return [1, componentHeight];
-    }, []);
+        return [1, componentHeight + bottom];
+    }, [bottom]);
 
     const renderContent = () => {
         return (
             <View>
-                {!isTablet && (
+                {(
                     draftType === DRAFT_TYPE_DRAFT ? (
                         <FormattedText
                             id='draft.option.header'

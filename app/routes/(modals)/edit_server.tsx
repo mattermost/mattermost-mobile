@@ -8,7 +8,7 @@ import {useIsTablet} from '@hooks/device';
 import {getModalHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
 import EditServerScreen, {type EditServerProps} from '@screens/edit_server';
-import {navigateBack} from '@utils/navigation/adapter';
+import {navigateBack} from '@screens/navigation';
 
 export default function EditServerRoute() {
     const intl = useIntl();

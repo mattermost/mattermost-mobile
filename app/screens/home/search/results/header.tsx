@@ -1,18 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, type ComponentProps} from 'react';
+import React, {useCallback, useMemo, type ComponentProps} from 'react';
+import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
-import {Screens} from '@constants';
+import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from '@components/files/file_filter';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import Tabs from '@hooks/use_tabs/tabs';
+import {TITLE_HEIGHT, TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET} from '@screens/bottom_sheet/content';
 import TeamPicker from '@screens/home/search/team_picker';
-import SearchStore from '@store/search_store';
+import {bottomSheet} from '@screens/navigation';
 import {type FileFilter, FileFilters} from '@utils/file';
-import {navigateToScreen} from '@utils/navigation/adapter';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {TabTypes, type TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -52,9 +55,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
         },
         teamPickerContainer: {
-            flex: 1,
             flexDirection: 'row',
-            justifyContent: 'flex-end',
+            marginLeft: 20,
         },
         filterContainer: {
             flexDirection: 'row',
@@ -76,21 +78,35 @@ const Header = ({
     tabsProps,
 }: Props) => {
     const theme = useTheme();
+    const isTablet = useIsTablet();
+    const intl = useIntl();
     const styles = getStyleFromTheme(theme);
 
     const showFilterIcon = selectedTab === TabTypes.FILES;
     const hasFilters = selectedFilter !== FileFilters.ALL;
 
-    const handleFilterPress = useCallback(() => {
-        // Store data and callback in SearchStore
-        SearchStore.setFileFilterData({
-            initialFilter: selectedFilter,
-            callback: onFilterChanged,
-        });
+    const snapPoints = useMemo(() => {
+        return [
+            1,
+            bottomSheetSnapPoint(
+                NUMBER_FILTER_ITEMS,
+                FILTER_ITEM_HEIGHT,
+            ) + TITLE_HEIGHT + DIVIDERS_HEIGHT + (isTablet ? TITLE_SEPARATOR_MARGIN_TABLET : TITLE_SEPARATOR_MARGIN),
+        ];
+    }, [isTablet]);
 
-        // Navigate to bottom sheet route
-        navigateToScreen(Screens.SEARCH_FILE_FILTER);
-    }, [selectedFilter, onFilterChanged]);
+    const handleFilterPress = useCallback(() => {
+        const renderContent = () => {
+            return (
+                <Filter
+                    initialFilter={selectedFilter}
+                    setFilter={onFilterChanged}
+                    title={intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'})}
+                />
+            );
+        };
+        bottomSheet(renderContent, snapPoints);
+    }, [snapPoints, selectedFilter, onFilterChanged, intl]);
 
     return (
         <View style={styles.container}>

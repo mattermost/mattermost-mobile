@@ -1,22 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {joinIfNeededAndSwitchToChannel} from '@actions/remote/channel';
-import {Preferences, Screens} from '@constants';
-import {goToScreen} from '@screens/navigation';
-import TestHelper from '@test/test_helper';
-import {changeOpacity} from '@utils/theme';
+import {DeviceEventEmitter} from 'react-native';
 
-import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate, goToPostUpdate, goToSelectPlaybook, goToStartARun, goToRenameChecklist, goToAddChecklistItem, goToRenamePlaybookRun, goToCreateQuickChecklist} from './navigation';
+import {joinIfNeededAndSwitchToChannel} from '@actions/remote/channel';
+import {Navigation, Screens} from '@constants';
+import {navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
+import TestHelper from '@test/test_helper';
+
+import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate, goToPostUpdate, goToSelectPlaybook, goToStartARun, goToRenameChecklist, goToAddChecklistItem, goToCreateQuickChecklist, goToRenamePlaybookRun} from './navigation';
 
 jest.mock('@screens/navigation', () => ({
-    goToScreen: jest.fn(),
-    getThemeFromState: jest.fn(() => require('@constants').Preferences.THEMES.denim),
+    navigateToScreen: jest.fn(),
 }));
 
 jest.mock('@actions/remote/channel', () => ({
     joinIfNeededAndSwitchToChannel: jest.fn(),
 }));
+
+jest.mock('@store/callback_store');
 
 describe('Playbooks Navigation', () => {
     const mockIntl = TestHelper.fakeIntl();
@@ -29,24 +32,11 @@ describe('Playbooks Navigation', () => {
         it('should navigate to playbook runs screen with correct parameters', () => {
             const channelId = 'channel-id-1';
             const channelName = 'channel-name-1';
-            goToPlaybookRuns(mockIntl, channelId, channelName);
+            goToPlaybookRuns(channelId, channelName);
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.playbooks_runs.title',
-                defaultMessage: 'Playbook checklists',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOKS_RUNS,
-                'Playbook checklists',
-                {channelId},
-                expect.objectContaining({
-                    topBar: expect.objectContaining({
-                        subtitle: {
-                            text: channelName,
-                            color: changeOpacity(Preferences.THEMES.denim.sidebarText, 0.72),
-                        },
-                    }),
-                }),
+                {channelId, channelName},
             );
         });
     });
@@ -55,17 +45,11 @@ describe('Playbooks Navigation', () => {
         it('should navigate to single playbook run screen with correct parameters', async () => {
             const playbookRunId = 'playbook-run-id-1';
 
-            await goToPlaybookRun(mockIntl, playbookRunId);
+            await goToPlaybookRun(playbookRunId);
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.playbook_run.title',
-                defaultMessage: 'Playbook checklist',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_RUN,
-                'Playbook checklist',
                 {playbookRunId},
-                {},
             );
         });
 
@@ -75,17 +59,11 @@ describe('Playbooks Navigation', () => {
                 id: playbookRunId,
             });
 
-            await goToPlaybookRun(mockIntl, playbookRunId, playbookRun);
+            await goToPlaybookRun(playbookRunId, playbookRun);
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.playbook_run.title',
-                defaultMessage: 'Playbook checklist',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_RUN,
-                'Playbook checklist',
                 {playbookRunId, playbookRun},
-                {},
             );
         });
     });
@@ -96,27 +74,15 @@ describe('Playbooks Navigation', () => {
             const channelId = 'channel-id-1';
             const updateCommand = jest.fn();
 
-            await goToEditCommand(mockIntl, Preferences.THEMES.denim, 'Run 1', command, channelId, updateCommand);
+            await goToEditCommand('Run 1', command, channelId, updateCommand);
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.edit_command.title',
-                defaultMessage: 'Slash command',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(CallbackStore.setCallback).toHaveBeenCalledWith(updateCommand);
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_EDIT_COMMAND,
-                'Slash command',
                 {
                     savedCommand: command,
-                    updateCommand,
                     channelId,
-                },
-                {
-                    topBar: {
-                        subtitle: {
-                            text: 'Run 1',
-                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
-                        },
-                    },
+                    subtitle: 'Run 1',
                 },
             );
         });
@@ -125,27 +91,15 @@ describe('Playbooks Navigation', () => {
             const channelId = 'channel-id-1';
             const updateCommand = jest.fn();
 
-            await goToEditCommand(mockIntl, Preferences.THEMES.denim, 'Run 1', null, channelId, updateCommand);
+            await goToEditCommand('Run 1', null, channelId, updateCommand);
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.edit_command.title',
-                defaultMessage: 'Slash command',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(CallbackStore.setCallback).toHaveBeenCalledWith(updateCommand);
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_EDIT_COMMAND,
-                'Slash command',
                 {
                     savedCommand: null,
-                    updateCommand,
                     channelId,
-                },
-                {
-                    topBar: {
-                        subtitle: {
-                            text: 'Run 1',
-                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
-                        },
-                    },
+                    subtitle: 'Run 1',
                 },
             );
         });
@@ -159,24 +113,19 @@ describe('Playbooks Navigation', () => {
             const handleSelect = jest.fn();
             const handleRemove = jest.fn();
 
-            await goToSelectUser(Preferences.THEMES.denim, 'Run 1', title, participantIds, selected, handleSelect, handleRemove);
+            await goToSelectUser('Run 1', title, participantIds, selected, handleSelect, handleRemove);
 
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(CallbackStore.setCallback).toHaveBeenCalledWith({
+                handleSelect,
+                handleRemove,
+            });
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_SELECT_USER,
-                title,
                 {
                     participantIds,
                     selected,
-                    handleSelect,
-                    handleRemove,
-                },
-                {
-                    topBar: {
-                        subtitle: {
-                            text: 'Run 1',
-                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
-                        },
-                    },
+                    runName: 'Run 1',
+                    title,
                 },
             );
         });
@@ -187,24 +136,18 @@ describe('Playbooks Navigation', () => {
             const selected = 'user2';
             const handleSelect = jest.fn();
 
-            await goToSelectUser(Preferences.THEMES.denim, 'Run 1', title, participantIds, selected, handleSelect);
+            await goToSelectUser('Run 1', title, participantIds, selected, handleSelect);
 
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(CallbackStore.setCallback).toHaveBeenCalledWith({
+                handleSelect,
+            });
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_SELECT_USER,
-                title,
                 {
                     participantIds,
                     selected,
-                    handleSelect,
-                    handleRemove: undefined,
-                },
-                {
-                    topBar: {
-                        subtitle: {
-                            text: 'Run 1',
-                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
-                        },
-                    },
+                    runName: 'Run 1',
+                    title,
                 },
             );
         });
@@ -215,26 +158,14 @@ describe('Playbooks Navigation', () => {
             const onSave = jest.fn();
             const selectedDate = 1640995200000; // January 1, 2022
 
-            await goToSelectDate(mockIntl, Preferences.THEMES.denim, 'Run 1', onSave, selectedDate);
+            await goToSelectDate('Run 1', onSave, selectedDate);
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.select_date.title',
-                defaultMessage: 'Due date',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(CallbackStore.setCallback).toHaveBeenCalledWith(onSave);
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOKS_SELECT_DATE,
-                'Due date',
                 {
-                    onSave,
                     selectedDate,
-                },
-                {
-                    topBar: {
-                        subtitle: {
-                            text: 'Run 1',
-                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
-                        },
-                    },
+                    subtitle: 'Run 1',
                 },
             );
         });
@@ -242,44 +173,30 @@ describe('Playbooks Navigation', () => {
         it('should navigate to select date screen without selected date', async () => {
             const onSave = jest.fn();
 
-            await goToSelectDate(mockIntl, Preferences.THEMES.denim, 'Run 1', onSave, undefined);
+            await goToSelectDate('Run 1', onSave, undefined);
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.select_date.title',
-                defaultMessage: 'Due date',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(CallbackStore.setCallback).toHaveBeenCalledWith(onSave);
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOKS_SELECT_DATE,
-                'Due date',
-                {
-                    onSave,
-                    selectedDate: undefined,
-                },
-                {
-                    topBar: {
-                        subtitle: {
-                            text: 'Run 1',
-                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
-                        },
-                    },
-                },
+                {selectedDate: undefined, subtitle: 'Run 1'},
             );
         });
     });
 
     describe('goToParticipantPlaybooks', () => {
         it('should navigate to participant playbooks screen with correct parameters', () => {
-            goToParticipantPlaybooks(mockIntl);
+            goToParticipantPlaybooks();
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.participant_playbooks.title',
-                defaultMessage: 'Playbook checklists',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PARTICIPANT_PLAYBOOKS,
-                'Playbook checklists',
-                {},
-                {},
+            );
+        });
+
+        it('should navigate to participant playbooks in the home screen for tablets', () => {
+            goToParticipantPlaybooks(true);
+
+            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(
+                Navigation.NAVIGATION_HOME, Screens.PARTICIPANT_PLAYBOOKS,
             );
         });
     });
@@ -305,15 +222,9 @@ describe('Playbooks Navigation', () => {
                 mockIntl,
             );
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.playbook_run.title',
-                defaultMessage: 'Playbook checklist',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_RUN,
-                'Playbook checklist',
                 {playbookRunId: mockPlaybookRun.id},
-                {},
             );
         });
 
@@ -337,15 +248,9 @@ describe('Playbooks Navigation', () => {
                 mockIntl,
             );
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.playbook_run.title',
-                defaultMessage: 'Playbook checklist',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_RUN,
-                'Playbook checklist',
                 {playbookRunId: mockPlaybookRunModel.id},
-                {},
             );
         });
 
@@ -370,7 +275,7 @@ describe('Playbooks Navigation', () => {
             );
 
             expect(mockIntl.formatMessage).not.toHaveBeenCalled();
-            expect(goToScreen).not.toHaveBeenCalled();
+            expect(navigateToScreen).not.toHaveBeenCalled();
         });
     });
 
@@ -378,17 +283,11 @@ describe('Playbooks Navigation', () => {
         it('should navigate to post update screen with correct parameters', async () => {
             const playbookRunId = 'playbook-run-id-1';
 
-            await goToPostUpdate(mockIntl, playbookRunId);
+            await goToPostUpdate(playbookRunId);
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.post_update.title',
-                defaultMessage: 'Post update',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_POST_UPDATE,
-                'Post update',
                 {playbookRunId},
-                {},
             );
         });
     });
@@ -397,38 +296,20 @@ describe('Playbooks Navigation', () => {
         it('should navigate to select playbook screen with channelId', async () => {
             const channelId = 'channel-id-1';
 
-            await goToSelectPlaybook(mockIntl, Preferences.THEMES.denim, channelId);
+            await goToSelectPlaybook(mockIntl, channelId);
 
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOKS_SELECT_PLAYBOOK,
-                'New',
-                {channelId},
-                {
-                    topBar: {
-                        subtitle: {
-                            text: 'Select a playbook',
-                            color: changeOpacity(Preferences.THEMES.denim.sidebarText, 0.72),
-                        },
-                    },
-                },
+                {channelId, subtitle: 'Select a playbook'},
             );
         });
 
         it('should navigate to select playbook screen without channelId', async () => {
-            await goToSelectPlaybook(mockIntl, Preferences.THEMES.denim);
+            await goToSelectPlaybook(mockIntl);
 
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOKS_SELECT_PLAYBOOK,
-                'New',
-                {channelId: undefined},
-                {
-                    topBar: {
-                        subtitle: {
-                            text: 'Select a playbook',
-                            color: changeOpacity(Preferences.THEMES.denim.sidebarText, 0.72),
-                        },
-                    },
-                },
+                {channelId: undefined, subtitle: 'Select a playbook'},
             );
         });
     });
@@ -442,20 +323,12 @@ describe('Playbooks Navigation', () => {
             const onRunCreated = jest.fn();
             const channelId = 'channel-id-1';
 
-            await goToStartARun(mockIntl, Preferences.THEMES.denim, playbook, onRunCreated, channelId);
+            await goToStartARun(playbook, onRunCreated, channelId);
 
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(CallbackStore.setCallback).toHaveBeenCalledWith(onRunCreated);
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOKS_START_A_RUN,
-                'New',
-                {playbook, onRunCreated, channelId},
-                {
-                    topBar: {
-                        subtitle: {
-                            text: playbook.title,
-                            color: changeOpacity(Preferences.THEMES.denim.sidebarText, 0.72),
-                        },
-                    },
-                },
+                {playbook, channelId, subtitle: playbook.title},
             );
         });
 
@@ -466,20 +339,12 @@ describe('Playbooks Navigation', () => {
             });
             const onRunCreated = jest.fn();
 
-            await goToStartARun(mockIntl, Preferences.THEMES.denim, playbook, onRunCreated);
+            await goToStartARun(playbook, onRunCreated);
 
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(CallbackStore.setCallback).toHaveBeenCalledWith(onRunCreated);
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOKS_START_A_RUN,
-                'New',
-                {playbook, onRunCreated, channelId: undefined},
-                {
-                    topBar: {
-                        subtitle: {
-                            text: playbook.title,
-                            color: changeOpacity(Preferences.THEMES.denim.sidebarText, 0.72),
-                        },
-                    },
-                },
+                {playbook, channelId: undefined, subtitle: playbook.title},
             );
         });
     });
@@ -489,26 +354,14 @@ describe('Playbooks Navigation', () => {
             const currentTitle = 'Checklist Title';
             const onSave = jest.fn();
 
-            await goToRenameChecklist(mockIntl, Preferences.THEMES.denim, 'Run 1', currentTitle, onSave);
+            await goToRenameChecklist('Run 1', currentTitle, onSave);
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.checklist.rename.title',
-                defaultMessage: 'Rename checklist',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(CallbackStore.setCallback).toHaveBeenCalledWith(onSave);
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_RENAME_CHECKLIST,
-                'Rename checklist',
                 {
                     currentTitle,
-                    onSave,
-                },
-                {
-                    topBar: {
-                        subtitle: {
-                            text: 'Run 1',
-                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
-                        },
-                    },
+                    subtitle: 'Run 1',
                 },
             );
         });
@@ -518,26 +371,12 @@ describe('Playbooks Navigation', () => {
         it('should navigate to add checklist item screen with correct parameters', async () => {
             const onSave = jest.fn();
 
-            await goToAddChecklistItem(mockIntl, Preferences.THEMES.denim, 'Run 1', onSave);
+            await goToAddChecklistItem('Run 1', onSave);
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.checklist_item.add.title',
-                defaultMessage: 'New Task',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(CallbackStore.setCallback).toHaveBeenCalledWith(onSave);
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_ADD_CHECKLIST_ITEM,
-                'New Task',
-                {
-                    onSave,
-                },
-                {
-                    topBar: {
-                        subtitle: {
-                            text: 'Run 1',
-                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
-                        },
-                    },
-                },
+                {subtitle: 'Run 1'},
             );
         });
     });
@@ -547,15 +386,10 @@ describe('Playbooks Navigation', () => {
             const currentTitle = 'Playbook Run Title';
             const playbookRunId = 'run-id-123';
 
-            await goToRenamePlaybookRun(mockIntl, Preferences.THEMES.denim, currentTitle, playbookRunId);
+            await goToRenamePlaybookRun(currentTitle, playbookRunId);
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.playbook_run.rename.title',
-                defaultMessage: 'Rename playbook run',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_RENAME_RUN,
-                'Rename playbook run',
                 {
                     currentTitle,
                     playbookRunId,
@@ -570,25 +404,17 @@ describe('Playbooks Navigation', () => {
             const channelName = 'channel-name-1';
             const currentUserId = 'user-id-1';
             const currentTeamId = 'team-id-1';
-            const serverUrl = 'https://test.server.com';
 
-            goToCreateQuickChecklist(mockIntl, channelId, channelName, currentUserId, currentTeamId, serverUrl);
+            goToCreateQuickChecklist(channelId, channelName, currentUserId, currentTeamId);
 
-            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'mobile.playbook.create_checklist',
-                defaultMessage: 'Create Checklist',
-            });
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOKS_CREATE_QUICK_CHECKLIST,
-                'Create Checklist',
                 {
                     channelId,
                     channelName,
                     currentUserId,
                     currentTeamId,
-                    serverUrl,
                 },
-                {},
             );
         });
     });

@@ -13,15 +13,17 @@ import {alertServerAlreadyConnected, alertServerError} from '@utils/server';
 
 import type {IntlShape} from 'react-intl';
 
-export async function switchToServer(serverUrl: string) {
+export async function switchToServer(serverUrl: string, callback?: () => void) {
     const server = await getServer(serverUrl);
     if (!server) {
         logError(`Switch to Server with url ${serverUrl} not found`);
+        callback?.();
         return;
     }
     if (server.lastActiveAt) {
         const isJailbroken = await SecurityManager.isDeviceJailbroken(server.url);
         if (isJailbroken) {
+            callback?.();
             return;
         }
 
@@ -36,6 +38,7 @@ export async function switchToServer(serverUrl: string) {
             WebsocketManager.initializeClient(server.url, 'Server Switch');
         }
     }
+    callback?.();
 }
 
 export async function switchToServerAndLogin(serverUrl: string, theme: Theme, intl: IntlShape, callback: (data?: ConfigAndLicenseRequest) => void) {

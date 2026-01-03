@@ -6,8 +6,8 @@ import {useIntl} from 'react-intl';
 import {useTheme} from '@context/theme';
 import {getModalHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
+import {navigateBack} from '@screens/navigation';
 import RescheduleDraftScreen, {type RescheduleDraftProps} from '@screens/reschedule_draft';
-import {navigateBack} from '@utils/navigation/adapter';
 
 export default function RescheduleDraftRoute() {
     const intl = useIntl();

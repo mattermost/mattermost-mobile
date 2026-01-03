@@ -13,7 +13,7 @@ import {staticStyles} from '@constants/tooltip';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import DraftTooltip from '@screens/global_drafts/draft_scheduled_post_tooltip';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -21,11 +21,9 @@ import DraftAndScheduledPostSwipeActions from '../draft_and_scheduled_post_swipe
 import ScheduledPostEmptyComponent from '../scheduled_post_empty_component';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     allScheduledPosts: ScheduledPostModel[];
-    location: AvailableScreens;
     tutorialWatched: boolean;
 };
 
@@ -70,7 +68,6 @@ const keyExtractor = (item: ScheduledPostModel) => item.id;
 
 const GlobalScheduledPostList: React.FC<Props> = ({
     allScheduledPosts,
-    location,
     tutorialWatched,
 }) => {
     const theme = useTheme();
@@ -104,11 +101,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
         scheduledPostsInSequence.unshift(...allScheduledPosts.filter((post) => post.errorCode !== ''));
     }
 
-    const collapse = useCallback(() => {
-        popTopScreen(Screens.GLOBAL_DRAFTS);
-    }, []);
-
-    useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS, collapse);
+    useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS, navigateBack);
 
     const closeTooltip = useCallback(() => {
         setTooltipVisible(false);
@@ -138,7 +131,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                         <DraftAndScheduledPostSwipeActions
                             draftType={DRAFT_TYPE_SCHEDULED}
                             item={item}
-                            location={location}
+                            location={Screens.GLOBAL_DRAFTS}
                             layoutWidth={layoutWidth}
                             firstItem={item.id === firstScheduledPostId}
                         />
@@ -151,12 +144,12 @@ const GlobalScheduledPostList: React.FC<Props> = ({
             <DraftAndScheduledPostSwipeActions
                 draftType={DRAFT_TYPE_SCHEDULED}
                 item={item}
-                location={location}
+                location={Screens.GLOBAL_DRAFTS}
                 layoutWidth={layoutWidth}
                 firstItem={item.id === firstScheduledPostId}
             />
         );
-    }, [closeTooltip, firstScheduledPostId, layoutWidth, location, styles.swippeableContainer, styles.tooltipContentStyle, styles.tooltipStyle, tooltipVisible, tutorialWatched]);
+    }, [closeTooltip, firstScheduledPostId, layoutWidth, styles.swippeableContainer, styles.tooltipContentStyle, styles.tooltipStyle, tooltipVisible, tutorialWatched]);
 
     return (
         <View
@@ -179,7 +172,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                 keyExtractor={keyExtractor}
                 contentContainerStyle={!scheduledPostsInSequence.length && styles.empty}
                 maxToRenderPerBatch={10}
-                nativeID={location}
+                nativeID={Screens.GLOBAL_DRAFTS}
                 renderItem={renderItem}
                 ListEmptyComponent={ScheduledPostEmptyComponent}
             />

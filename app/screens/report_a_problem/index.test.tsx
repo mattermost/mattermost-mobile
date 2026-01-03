@@ -61,7 +61,7 @@ describe('screens/report_a_problem/index', () => {
 
     it('should handle default values', async () => {
         const Component = enhanced;
-        const {getByTestId} = renderWithEverything(<Component componentId={'ReportProblem'}/>, {database});
+        const {getByTestId} = renderWithEverything(<Component/>, {database});
 
         expect(getByTestId('currentUserId')).toHaveTextContent('');
         expect(getByTestId('currentTeamId')).toHaveTextContent('');
@@ -101,7 +101,7 @@ describe('screens/report_a_problem/index', () => {
         });
 
         const Component = enhanced;
-        const {getByTestId} = renderWithEverything(<Component componentId={'ReportProblem'}/>, {database});
+        const {getByTestId} = renderWithEverything(<Component/>, {database});
 
         expect(getByTestId('currentUserId')).toHaveTextContent('user1');
         expect(getByTestId('currentTeamId')).toHaveTextContent('team1');
@@ -141,7 +141,7 @@ describe('screens/report_a_problem/index', () => {
         });
 
         const Component = enhanced;
-        const {getByTestId} = renderWithEverything(<Component componentId={'ReportProblem'}/>, {database});
+        const {getByTestId} = renderWithEverything(<Component/>, {database});
 
         expect(getByTestId('currentUserId')).toHaveTextContent('user2');
         expect(getByTestId('currentTeamId')).toHaveTextContent('team2');

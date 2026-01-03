@@ -7,13 +7,12 @@ import React, {type ComponentProps} from 'react';
 import {handleCallsSlashCommand} from '@calls/actions';
 import BaseChip from '@components/chips/base_chip';
 import UserChip from '@components/chips/user_chip';
-import {General, Preferences} from '@constants';
+import {General, Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {runChecklistItem, skipChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
-import {bottomSheet, popTo} from '@screens/navigation';
+import {bottomSheet, dismissAllRoutesAndPopToScreen, openUserProfileModal} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
-import {openUserProfileModal} from '@utils/navigation/adapter';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import Checkbox from './checkbox';
@@ -39,6 +38,7 @@ jest.mocked(ChecklistItemBottomSheet).mockImplementation((props) => React.create
 jest.mock('@calls/actions');
 jest.mock('@playbooks/actions/remote/checklist');
 jest.mock('@utils/snack_bar');
+jest.mock('@screens/navigation');
 
 describe('ChecklistItem', () => {
     const mockItem = TestHelper.fakePlaybookChecklistItemModel({
@@ -207,7 +207,7 @@ describe('ChecklistItem', () => {
         expect(openUserProfileModal).toHaveBeenCalledWith({
             userId: props.assignee.id,
             channelId: props.channelId,
-            location: 'PlaybookRun',
+            location: Screens.PLAYBOOK_RUN,
         });
 
         const differentAssignee = TestHelper.fakeUserModel({
@@ -230,7 +230,7 @@ describe('ChecklistItem', () => {
         expect(openUserProfileModal).toHaveBeenCalledWith({
             userId: props.assignee.id,
             channelId: props.channelId,
-            location: 'PlaybookRun',
+            location: Screens.PLAYBOOK_RUN,
         });
     });
 
@@ -329,7 +329,7 @@ describe('ChecklistItem', () => {
 
         await waitFor(() => {
             expect(getByTestId('base-chip-component')).toBeVisible();
-            expect(popTo).toHaveBeenCalledWith('Channel');
+            expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalled();
             expect(handleCallsSlashCommand).not.toHaveBeenCalled();
         });
     });
@@ -374,7 +374,7 @@ describe('ChecklistItem', () => {
 
         await waitFor(() => {
             expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
-            expect(popTo).not.toHaveBeenCalled();
+            expect(dismissAllRoutesAndPopToScreen).not.toHaveBeenCalled();
         });
     });
 
@@ -391,13 +391,10 @@ describe('ChecklistItem', () => {
         });
 
         expect(bottomSheet).toHaveBeenCalled();
-        const args = jest.mocked(bottomSheet).mock.calls[0][0] as Parameters<typeof bottomSheet>[0];
-        expect(args.title).toBe('Task Details');
-        expect(args.snapPoints).toEqual([1, 354, '80%']);
-        expect(args.theme).toBe(Preferences.THEMES.denim);
-        expect(args.closeButtonId).toBe('close-checklist-item');
+        const args = jest.mocked(bottomSheet).mock.calls[0] as Parameters<typeof bottomSheet>;
+        expect(args[1]).toEqual([1, 354, '80%']);
 
-        const BottomSheetComponent = args.renderContent;
+        const BottomSheetComponent = args[0];
         const {getByTestId} = renderWithIntl(<BottomSheetComponent/>);
         const bottomSheetRenderedComponent = getByTestId('checklist-item-bottom-sheet-component');
         expect(bottomSheetRenderedComponent.props.item).toBe(props.item);

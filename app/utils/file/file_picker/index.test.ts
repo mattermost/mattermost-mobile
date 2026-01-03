@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable max-lines */
-
 import RNUtils from '@mattermost/rnutils';
 import {applicationName} from 'expo-application';
 import {Alert, Platform} from 'react-native';
@@ -16,7 +14,7 @@ import {extractFileInfo, lookupMimeType} from '@utils/file';
 import {getIntlShape} from '@utils/general';
 import {logWarning} from '@utils/log';
 
-import FilePickerUtil from '.';
+import FilePickerUtil from './index';
 
 jest.mock('expo-file-system');
 jest.mock('react-native-image-picker');

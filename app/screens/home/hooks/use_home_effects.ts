@@ -11,13 +11,28 @@ import {Events, Launch, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useAppState} from '@hooks/device';
 import SecurityManager from '@managers/security_manager';
-import {NavigationStoreV2} from '@store/expo_navigation_store';
+import {getAllServers} from '@queries/app/servers';
+import {navigateToScreen, resetToRootRoute} from '@screens/navigation';
+import {NavigationStore} from '@store/navigation_store';
 import {alertInvalidDeepLink, parseAndHandleDeepLink} from '@utils/deep_link';
+import {logError} from '@utils/log';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
-import {navigateToScreen, popToRoot} from '@utils/navigation/adapter';
 import {notificationError} from '@utils/notification';
 
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
+
+const updateTimezoneIfNeeded = async () => {
+    try {
+        const servers = await getAllServers();
+        for (const server of servers) {
+            if (server.url && server.lastActiveAt > 0) {
+                autoUpdateTimezone(server.url);
+            }
+        }
+    } catch (e) {
+        logError('Localize change', e);
+    }
+};
 
 export function useHomeScreenEffects(props: LaunchProps) {
     const intl = useIntl();
@@ -26,10 +41,11 @@ export function useHomeScreenEffects(props: LaunchProps) {
 
     useEffect(() => {
         SecurityManager.start();
+        updateTimezoneIfNeeded();
     }, []);
 
     const handleFindChannels = useCallback(() => {
-        if (!NavigationStoreV2.isScreenInStack(Screens.FIND_CHANNELS)) {
+        if (!NavigationStore.isScreenInStack(Screens.FIND_CHANNELS)) {
             navigateToScreen(Screens.FIND_CHANNELS);
         }
     }, []);
@@ -56,7 +72,7 @@ export function useHomeScreenEffects(props: LaunchProps) {
 
         const crtToggledListener = DeviceEventEmitter.addListener(Events.CRT_TOGGLED, (isSameServer: boolean) => {
             if (isSameServer) {
-                popToRoot();
+                resetToRootRoute();
             }
         });
 

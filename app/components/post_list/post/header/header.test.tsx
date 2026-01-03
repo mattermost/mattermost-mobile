@@ -6,6 +6,7 @@ import React from 'react';
 
 import CompassIcon from '@components/compass_icon';
 import ExpiryCountdown from '@components/post_list/post/header/expiry_timer';
+import {Screens} from '@constants';
 import {PostTypes} from '@constants/post';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -41,7 +42,7 @@ describe('Header', () => {
         isPendingOrFailed: false,
         isSystemPost: false,
         isWebHook: false,
-        location: 'About' as const,
+        location: Screens.ABOUT,
         showPostPriority: false,
         teammateNameDisplay: '',
         hideGuestTags: false,

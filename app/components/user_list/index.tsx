@@ -13,7 +13,7 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
-import {openUserProfileModal} from '@utils/navigation/adapter';
+import {openUserProfileModal} from '@screens/navigation';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -158,6 +158,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 16,
             justifyContent: 'center',
             height: 24,
+            marginHorizontal: 12,
         },
         sectionWrapper: {
             backgroundColor: theme.centerChannelBg,

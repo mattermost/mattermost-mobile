@@ -1,30 +1,32 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
+import NavigationButton from '@components/navigation_button';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
+import useBackNavigation from '@hooks/navigate_back';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 
 type Props = {
-    componentId: AvailableScreens;
     currentTitle: string;
-    onSave: (newTitle: string) => void;
 }
 
-const SAVE_BUTTON_ID = 'save-checklist-name';
+const removeCallbacks = () => {
+    CallbackStore.removeCallback();
+};
 
-const close = (componentId: AvailableScreens): void => {
+const close = (): void => {
     Keyboard.dismiss();
-    popTopScreen(componentId);
+    removeCallbacks();
+    navigateBack();
 };
 
 const styles = StyleSheet.create({
@@ -35,11 +37,8 @@ const styles = StyleSheet.create({
     },
 });
 
-const RenameChecklistBottomSheet = ({
-    componentId,
-    currentTitle,
-    onSave,
-}: Props) => {
+const RenameChecklistBottomSheet = ({currentTitle}: Props) => {
+    const navigation = useNavigation();
     const intl = useIntl();
     const {formatMessage} = intl;
     const theme = useTheme();
@@ -47,49 +46,38 @@ const RenameChecklistBottomSheet = ({
     const [title, setTitle] = useState<string>(currentTitle);
     const [canSave, setCanSave] = useState(false);
 
-    const rightButton = React.useMemo(() => {
-        const base = buildNavigationButton(
-            SAVE_BUTTON_ID,
-            'playbooks.checklist.rename.button',
-            undefined,
-            formatMessage({id: 'playbooks.checklist.rename.button', defaultMessage: 'Save'}),
-        );
-        base.enabled = canSave;
-        base.color = theme.sidebarHeaderTextColor;
-        return base;
-    }, [formatMessage, canSave, theme.sidebarHeaderTextColor]);
-
-    useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [rightButton],
-        });
-    }, [rightButton, componentId]);
-
     useEffect(() => {
         setCanSave(title.trim().length > 0 && title !== currentTitle);
     }, [title, currentTitle]);
 
-    const handleClose = useCallback(() => {
-        close(componentId);
-    }, [componentId]);
-
     const handleSave = useCallback(() => {
         if (title.trim().length > 0) {
-            onSave(title.trim());
-            close(componentId);
+            const onSave = CallbackStore.getCallback<((newTitle: string) => void)>();
+            onSave?.(title.trim());
+            close();
         }
-    }, [title, componentId, onSave]);
+    }, [title]);
 
-    useNavButtonPressed(SAVE_BUTTON_ID, componentId, handleSave, [handleSave]);
-    useAndroidHardwareBackHandler(componentId, handleClose);
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <NavigationButton
+                    onPress={handleSave}
+                    testID='playbooks.checklist.rename.button'
+                    text={formatMessage({id: 'playbooks.checklist.rename.button', defaultMessage: 'Save'})}
+                    disabled={!canSave}
+                />
+            ),
+        });
+    }, [navigation, handleSave, formatMessage, canSave]);
+
+    useBackNavigation(removeCallbacks);
+    useAndroidHardwareBackHandler(Screens.PLAYBOOK_RENAME_CHECKLIST, close);
 
     const label = formatMessage({id: 'playbooks.checklist.rename.label', defaultMessage: 'Section name'});
 
     return (
-        <View
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-            style={styles.container}
-        >
+        <View style={styles.container}>
             <FloatingTextInput
                 label={label}
                 onChangeText={setTitle}

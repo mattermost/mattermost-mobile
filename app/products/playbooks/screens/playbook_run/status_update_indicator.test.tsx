@@ -102,7 +102,7 @@ describe('StatusUpdateIndicator', () => {
             fireEvent.press(button);
         });
 
-        expect(goToPostUpdate).toHaveBeenCalledWith(expect.anything(), 'run-id');
+        expect(goToPostUpdate).toHaveBeenCalledWith('run-id');
     });
 
     it('does not navigate to post update if run is finished', () => {

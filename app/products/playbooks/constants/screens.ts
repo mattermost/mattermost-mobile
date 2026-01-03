@@ -1,19 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export const PLAYBOOKS_RUNS = 'PlaybookRuns';
-export const PARTICIPANT_PLAYBOOKS = 'ParticipantPlaybooks';
-export const PLAYBOOK_RUN = 'PlaybookRun';
-export const PLAYBOOK_EDIT_COMMAND = 'PlaybookEditCommand';
-export const PLAYBOOK_POST_UPDATE = 'PlaybookPostUpdate';
-export const PLAYBOOK_RENAME_CHECKLIST = 'PlaybookRenameChecklist';
-export const PLAYBOOK_ADD_CHECKLIST_ITEM = 'PlaybookAddChecklistItem';
-export const PLAYBOOK_RENAME_RUN = 'PlaybookRenameRun';
-export const PLAYBOOK_SELECT_USER = 'PlaybookSelectUser';
-export const PLAYBOOKS_SELECT_DATE = 'PlaybooksSelectDate';
-export const PLAYBOOKS_SELECT_PLAYBOOK = 'PlaybooksSelectPlaybook';
-export const PLAYBOOKS_START_A_RUN = 'PlaybooksStartARun';
-export const PLAYBOOKS_CREATE_QUICK_CHECKLIST = 'PlaybooksCreateQuickChecklist';
+const PLAYBOOKS_RUNS = 'playbook_runs';
+const PARTICIPANT_PLAYBOOKS = 'participant_playbooks';
+const PLAYBOOK_RUN = 'playbook_run';
+const PLAYBOOK_EDIT_COMMAND = 'playbook_edit_command';
+const PLAYBOOK_POST_UPDATE = 'playbook_post_update';
+const PLAYBOOK_RENAME_CHECKLIST = 'playbook_rename_checklist';
+const PLAYBOOK_ADD_CHECKLIST_ITEM = 'playbook_add_checklist_item';
+const PLAYBOOK_RENAME_RUN = 'playbook_rename_run';
+const PLAYBOOK_SELECT_USER = 'playbook_select_user';
+const PLAYBOOKS_SELECT_DATE = 'playbooks_select_date';
+const PLAYBOOKS_SELECT_PLAYBOOK = 'playbooks_select_playbook';
+const PLAYBOOKS_START_A_RUN = 'playbooks_start_a_run';
+const PLAYBOOKS_CREATE_QUICK_CHECKLIST = 'playbooks_create_quick_checklist';
 
 export default {
     PLAYBOOKS_RUNS,

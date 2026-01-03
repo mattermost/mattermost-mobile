@@ -5,13 +5,13 @@ import {useNavigation} from 'expo-router';
 import moment from 'moment-timezone';
 import React, {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Keyboard, Pressable, ScrollView, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, ScrollView, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
-import FormattedText from '@components/formatted_text';
+import NavigationButton from '@components/navigation_button';
 import TabletTitle from '@components/tablet_title';
 import {Events, Screens} from '@constants';
 import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES, CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
@@ -20,11 +20,10 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import CustomStatusStore from '@store/custom_status_store';
-import EmojiPickerStore from '@store/emoji_picker_store';
+import {navigateBack, navigateToScreen, navigateToScreenWithBaseRoute} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {getCurrentMomentForTimezone, getRoundedTime} from '@utils/helpers';
 import {logDebug} from '@utils/log';
-import {navigateBack, navigateToScreen, navigateToScreenWithBaseRoute} from '@utils/navigation/adapter';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {
     getTimezone,
@@ -214,7 +213,7 @@ const CustomStatus = ({
     }, []);
 
     const handleClearAfterClick = useCallback((duration: CustomStatusDuration, expiresAt: string) => {
-        CustomStatusStore.removeClearAfterCallback();
+        CallbackStore.removeCallback();
         dispatchStatus({type: 'duration', duration, expiresAt});
     }, []);
 
@@ -231,7 +230,7 @@ const CustomStatus = ({
 
     const openClearAfterModal = useCallback(() => {
         const screen = Screens.CUSTOM_STATUS_CLEAR_AFTER;
-        CustomStatusStore.setClearAfterCallback(handleClearAfterClick);
+        CallbackStore.setCallback(handleClearAfterClick);
         const passProps = {
             initialDuration: newStatus.duration,
             isModal: isTablet,
@@ -301,9 +300,9 @@ const CustomStatus = ({
     }, [currentUser, isStatusSet, storedStatus, isTablet, newStatus, customStatusExpirySupported, serverUrl]);
 
     const openEmojiPicker = usePreventDoubleTap(useCallback(() => {
-        EmojiPickerStore.setEmojiPickerCallback(handleEmojiClick);
-        navigateToScreen(Screens.EMOJI_PICKER, {title: intl.formatMessage({id: 'mobile.custom_status.choose_emoji', defaultMessage: 'Choose an emoji'})});
-    }, [intl, handleEmojiClick]));
+        CallbackStore.setCallback(handleEmojiClick);
+        navigateToScreen(Screens.EMOJI_PICKER);
+    }, [handleEmojiClick]));
 
     const handleBackButton = useCallback(() => {
         dismissModalAndKeyboard(isTablet);
@@ -314,20 +313,15 @@ const CustomStatus = ({
     useEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <Pressable
+                <NavigationButton
                     onPress={handleSetStatus}
-                    disabled={!isBtnEnabled}
+                    text={intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'})}
                     testID='custom_status.done.button'
-                >
-                    <FormattedText
-                        id='mobile.custom_status.modal_confirm'
-                        defaultMessage='Done'
-                        style={{color: isBtnEnabled ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5), fontSize: 16}}
-                    />
-                </Pressable>
+                    disabled={!isBtnEnabled}
+                />
             ),
         });
-    }, [handleSetStatus, isBtnEnabled, navigation, theme.sidebarHeaderTextColor]);
+    }, [handleSetStatus, intl, isBtnEnabled, navigation, theme.sidebarHeaderTextColor]);
 
     return (
         <View style={style.flex}>

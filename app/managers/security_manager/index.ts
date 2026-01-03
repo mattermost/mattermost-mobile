@@ -45,8 +45,6 @@ import {toMilliseconds} from '@utils/datetime';
 import {isMainActivity} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type SecurityManagerServerConfig = {
     Biometrics?: boolean;
     JailbreakProtection?: boolean;
@@ -812,20 +810,6 @@ class SecurityManagerSingleton {
         }
 
         Emm.enableBlurScreen(this.isScreenCapturePrevented(server));
-    };
-
-    /**
-     * Gets the shielded screen ID for the screen.
-     */
-    // REMOVE THIS
-    
-    getShieldScreenId = (screen: AvailableScreens, force = false, skip = false) => {
-        if ((this.activeServer && this.isScreenCapturePrevented(this.activeServer)) || force) {
-            const name = `${screen}.screen`;
-            return skip ? `${name}.skip.shielded` : `${name}.shielded`;
-        }
-
-        return `${screen}.screen`;
     };
 
     /**

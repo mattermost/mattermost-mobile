@@ -25,7 +25,7 @@ import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
 import {useCollapsibleHeader} from '@hooks/header';
 import useTabs from '@hooks/use_tabs';
-import {useCurrentScreen} from '@store/expo_navigation_store';
+import {useCurrentScreen} from '@store/navigation_store';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes} from '@utils/search';
 
@@ -104,6 +104,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const keyboardHeight = useKeyboardHeight();
     const currentScreen = useCurrentScreen();
     const isBottomSheetOpen = currentScreen && SCREENS_AS_BOTTOM_SHEET.has(currentScreen);
+
     const isPemalinkScreen = currentScreen === Screens.PERMALINK;
     const isGalleryScreen = currentScreen === Screens.GALLERY;
 

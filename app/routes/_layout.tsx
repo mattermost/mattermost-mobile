@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {PortalProvider} from '@gorhom/portal';
+import {PortalHost, PortalProvider} from '@gorhom/portal';
 import {Provider as EMMProvider} from '@mattermost/react-native-emm';
 import RNUtils from '@mattermost/rnutils';
 import {Stack, useNavigationContainerRef} from 'expo-router';
@@ -14,23 +14,16 @@ import {KeyboardProvider} from 'react-native-keyboard-controller';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import tinycolor from 'tinycolor2';
 
-import {CallsManager} from '@calls/calls_manager';
 import {Screens} from '@constants';
 import {useThemeByAppearanceWithDefault} from '@context/theme';
-import DatabaseManager from '@database/manager';
-import {useIsTablet} from '@hooks/device';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
-import {getAllServerCredentials} from '@init/credentials';
-import ManagedApp from '@init/managed_app';
-import PushNotifications from '@init/push_notifications';
-import GlobalEventHandler from '@managers/global_event_handler';
-import NetworkManager from '@managers/network_manager';
-import SecurityManager from '@managers/security_manager';
-import SessionManager from '@managers/session_manager';
-import WebsocketManager from '@managers/websocket_manager';
+import {cleanup, initialize} from '@init/app';
+import InAppNotificationContainer from '@screens/in_app_notification';
+import ReviewAppContainer from '@screens/review_app';
+import ShareFeedbackContainer from '@screens/share_feedback';
 import SnackBarContainer from '@screens/snack_bar';
 import EphemeralStore from '@store/ephemeral_store';
-import {NavigationStoreV2, useCurrentScreen} from '@store/expo_navigation_store';
+import {NavigationStore, useCurrentScreen} from '@store/navigation_store';
 
 import type {NativeStackNavigationOptions} from '@react-navigation/native-stack';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -60,7 +53,6 @@ export default function RootLayout() {
     const currentScreen = useCurrentScreen();
     const [theme, setTheme] = useState(EphemeralStore.getTheme());
     const appearanceTheme = useThemeByAppearanceWithDefault();
-    const isTablet = useIsTablet();
 
     const setAndroidNavigationBarColor = useCallback(() => {
         if (Platform.OS === 'android') {
@@ -84,25 +76,7 @@ export default function RootLayout() {
     useEffect(() => {
         async function initializeApp() {
             try {
-                NavigationStoreV2.reset();
-                EphemeralStore.setCurrentThreadId('');
-                EphemeralStore.setProcessingNotification('');
-
-                const serverCredentials = await getAllServerCredentials();
-                const serverUrls = serverCredentials.map((credential) => credential.serverUrl);
-
-                await DatabaseManager.init(serverUrls);
-                await NetworkManager.init(serverCredentials);
-                await SecurityManager.init();
-
-                GlobalEventHandler.init();
-                ManagedApp.init();
-                SessionManager.init();
-                CallsManager.initialize();
-
-                PushNotifications.init(serverCredentials.length > 0);
-
-                await WebsocketManager.init(serverCredentials);
+                await initialize();
 
                 setAppReady(true);
             } catch (error) {
@@ -114,13 +88,7 @@ export default function RootLayout() {
 
         return () => {
             // Cleanup on unmount
-            ManagedApp.cleanup();
-            GlobalEventHandler.cleanup();
-            SecurityManager.cleanup();
-            SessionManager.cleanup();
-            CallsManager.cleanup();
-            PushNotifications.cleanup();
-            WebsocketManager.cleanup();
+            cleanup();
         };
     }, []);
 
@@ -152,7 +120,7 @@ export default function RootLayout() {
     useEffect(() => {
         const handleStateChange = () => {
             const state = navigationRef.getRootState();
-            NavigationStoreV2.updateFromNavigationState(state);
+            NavigationStore.updateFromNavigationState(state);
         };
 
         // Wait for navigation to be ready, then set up listeners
@@ -190,12 +158,14 @@ export default function RootLayout() {
         return unsubscribe;
     }, [navigationRef]);
 
+    const isEdgeToEdge = (Platform.OS === 'android' && Platform.Version >= 35) || Platform.OS === 'ios';
+
     const stackScreenOptions = useMemo<NativeStackNavigationOptions>(() => ({
         headerShown: false,
         animation: 'none',
         contentStyle: {backgroundColor: theme.centerChannelBg},
-        ...Platform.select({android: {statusBarBackgroundColor: theme.centerChannelBg, statusBarTranslucent: true, statusBarStyle: tinycolor(theme.centerChannelBg).isLight() ? 'dark' : 'light'}}),
-    }), [theme]);
+        ...Platform.select({android: {statusBarBackgroundColor: theme.sidebarBg, statusBarTranslucent: isEdgeToEdge, statusBarStyle: tinycolor(theme.sidebarBg).isLight() ? 'dark' : 'light'}}),
+    }), [isEdgeToEdge, theme.centerChannelBg, theme.sidebarBg]);
 
     const modalScreenOptions = useMemo<NativeStackNavigationOptions>(() => ({
         presentation: 'modal',
@@ -204,12 +174,12 @@ export default function RootLayout() {
     }), []);
 
     const bottomSheetScreenOptions = useMemo<NativeStackNavigationOptions>(() => ({
-        presentation: isTablet ? 'formSheet' : 'transparentModal',
+        presentation: 'transparentModal',
         animation: 'none',
         headerShown: false,
         contentStyle: {backgroundColor: 'transparent'},
-        ...Platform.select({android: {statusBarBackgroundColor: theme.sidebarBg, statusBarTranslucent: true}}),
-    }), [isTablet, theme]);
+        ...Platform.select({android: {statusBarBackgroundColor: theme.sidebarBg, statusBarTranslucent: isEdgeToEdge}}),
+    }), [isEdgeToEdge, theme.sidebarBg]);
 
     if (!appReady) {
         return null;
@@ -224,7 +194,12 @@ export default function RootLayout() {
                         messages={getTranslations(DEFAULT_LOCALE)}
                     >
                         <PortalProvider>
-                            <KeyboardProvider>
+                            <KeyboardProvider
+                                enabled={isEdgeToEdge}
+                                statusBarTranslucent={isEdgeToEdge}
+                                navigationBarTranslucent={isEdgeToEdge}
+                                preserveEdgeToEdge={isEdgeToEdge}
+                            >
                                 <Stack screenOptions={stackScreenOptions}>
                                     <Stack.Screen name='(unauthenticated)'/>
                                     <Stack.Screen name='(authenticated)'/>
@@ -238,8 +213,15 @@ export default function RootLayout() {
                                         options={bottomSheetScreenOptions}
                                     />
                                 </Stack>
+                                <PortalHost name='snack_bar'/>
                                 <SnackBarContainer/>
                             </KeyboardProvider>
+                            <PortalHost name='notification'/>
+                            <InAppNotificationContainer/>
+                            <PortalHost name='review_app'/>
+                            <ReviewAppContainer/>
+                            <PortalHost name='share_feedback'/>
+                            <ShareFeedbackContainer/>
                         </PortalProvider>
                     </IntlProvider>
                 </EMMProvider>

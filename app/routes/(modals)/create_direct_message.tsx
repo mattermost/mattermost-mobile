@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {useTheme} from '@context/theme';
 import {getModalHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import CreateDirectMessageScreen from '@screens/create_direct_message';
-import {navigateBack} from '@utils/navigation/adapter';
+import {navigateBack} from '@screens/navigation';
 
 export default function CreateDirectMessageRoute() {
     const intl = useIntl();

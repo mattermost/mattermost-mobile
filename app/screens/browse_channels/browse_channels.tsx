@@ -4,18 +4,18 @@
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, Pressable, StyleSheet, View} from 'react-native';
+import {Keyboard, Platform, StyleSheet, View} from 'react-native';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
-import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
+import NavigationButton from '@components/navigation_button';
 import Search from '@components/search';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {navigateBack, navigateToScreenWithBaseRoute} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
-import {navigateBack, navigateToScreenWithBaseRoute} from '@utils/navigation/adapter';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import ChannelDropdown from './channel_dropdown';
@@ -97,17 +97,13 @@ export default function BrowseChannels(props: Props) {
         if (canCreateChannels) {
             navigation.setOptions({
                 headerRight: () => (
-                    <Pressable
+                    <NavigationButton
                         onPress={handleCreate}
-                        disabled={!createEnabled}
+                        text={intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'})}
                         testID='browse_channels.create.button'
-                    >
-                        <FormattedText
-                            id='mobile.create_channel'
-                            defaultMessage='Create'
-                            style={{color: createEnabled ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5), fontSize: 16}}
-                        />
-                    </Pressable>
+                        color={createEnabled ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                        disabled={!createEnabled}
+                    />
                 ),
             });
             return;
@@ -116,7 +112,7 @@ export default function BrowseChannels(props: Props) {
             headerRight: undefined,
         });
 
-    }, [canCreateChannels, handleCreate, navigation, theme.sidebarHeaderTextColor]);
+    }, [canCreateChannels, handleCreate, intl, navigation, theme.sidebarHeaderTextColor]);
 
     const onSelectChannel = useCallback(async (channel: Channel) => {
         setHeaderButtons(false);

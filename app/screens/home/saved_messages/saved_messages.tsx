@@ -20,7 +20,7 @@ import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
-import {useCurrentScreen} from '@store/expo_navigation_store';
+import {useCurrentScreen} from '@store/navigation_store';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './components/empty';
@@ -90,7 +90,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<Animated.FlatList<string>>(true, onSnap);
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
-    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [posts]);
+    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [currentTimezone, posts]);
 
     const animated = useAnimatedStyle(() => {
         if (isBottomSheetOpen || isPemalinkScreen || isGalleryScreen) {

@@ -26,16 +26,15 @@ export default function ThreadRoute() {
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const {channelName, rootId} = useLocalSearchParams<{channelName: string; rootId: string}>();
+    const {channelName, rootId, title: routeTitle} = useLocalSearchParams<{channelName: string; rootId: string; title?: string}>();
 
-    const title = intl.formatMessage(threadMessages.thread);
-    const subtitle = intl.formatMessage(threadMessages.threadIn, {channelName});
+    const title = routeTitle || intl.formatMessage(threadMessages.thread);
+    const subtitle = channelName ? intl.formatMessage(threadMessages.threadIn, {channelName}) : undefined;
 
     useEffect(() => {
         navigation.setOptions({
             headerShown: true,
             presentation: 'card',
-            headerTintColor: theme.centerChannelColor,
             headerStyle: {
                 backgroundColor: theme.sidebarBg,
             },

@@ -11,7 +11,7 @@ import OptionBox, {OPTIONS_HEIGHT} from '@components/option_box';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {dismissBottomSheet} from '@utils/navigation/adapter';
+import {dismissBottomSheet} from '@screens/navigation';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 

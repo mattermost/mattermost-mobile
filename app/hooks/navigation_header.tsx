@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {type NativeStackNavigationOptions} from '@react-navigation/native-stack/src/types';
 import {useNavigation, useRouter} from 'expo-router';
 import React, {useEffect} from 'react';
-import {Platform, Pressable} from 'react-native';
+import {Platform, View} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import NavigationButton from '@components/navigation_button';
+import {typography} from '@utils/typography';
 
+import type {NativeStackNavigationOptions} from '@react-navigation/native-stack';
 import type {ScreenProps} from 'react-native-screens';
 
 /**
@@ -57,6 +58,7 @@ export function getLoginFlowHeaderOptions(theme: Theme): NativeStackNavigationOp
         headerTintColor: theme.centerChannelColor,
         headerBackButtonMenuEnabled: false,
         headerBackVisible: true,
+        contentStyle: {backgroundColor: theme.centerChannelBg},
         headerStyle: {
             backgroundColor: 'transparent',
         },
@@ -73,27 +75,20 @@ export function getLoginModalHeaderOptions(theme: Theme, onClose?: () => void, t
         headerTransparent: true,
         headerTitle: '',
         headerLeft: onClose ? () => (
-            <Pressable
+            <NavigationButton
                 onPress={onClose}
-                style={({pressed}) => ({
-                    opacity: Platform.OS === 'ios' && pressed ? 0.6 : 1,
-                    width: 44,
-                    height: 44,
-                    justifyContent: 'center',
-                })}
-                android_ripple={{color: theme.buttonBg, borderless: true, radius: 20}}
+                iconName='close'
+                iconSize={24}
+                color={theme.centerChannelColor}
                 testID={testID}
-            >
-                <CompassIcon
-                    name='close'
-                    size={24}
-                    color={theme.centerChannelColor}
-                />
-            </Pressable>
+            />
         ) : undefined,
-        headerTintColor: theme.centerChannelColor,
+        contentStyle: {backgroundColor: theme.centerChannelBg},
         headerStyle: {
             backgroundColor: 'transparent',
+        },
+        headerTitleStyle: {
+            ...typography('Heading', 300, 'SemiBold'),
         },
     };
 }
@@ -108,12 +103,10 @@ export function getHeaderOptions(theme: Theme): NativeStackNavigationOptions {
             backgroundColor: theme.sidebarBg,
         },
         headerTitleStyle: {
-            fontFamily: 'Metropolis-SemiBold',
-            fontSize: 18,
-            fontWeight: '600',
+            ...typography('Heading', 300, 'SemiBold'),
             color: theme.sidebarHeaderTextColor,
         },
-        headerTintColor: theme.centerChannelColor,
+        headerTintColor: theme.sidebarHeaderTextColor,
         headerBackButtonDisplayMode: 'minimal',
         headerBackVisible: true,
     };
@@ -129,29 +122,27 @@ export function getModalHeaderOptions(theme: Theme, onClose: () => void, testID?
             backgroundColor: theme.sidebarBg,
         },
         headerTitleStyle: {
-            fontFamily: 'Metropolis-SemiBold',
-            fontSize: 18,
-            fontWeight: '600',
+            ...typography('Heading', 300, 'SemiBold'),
             color: theme.sidebarHeaderTextColor,
         },
         headerLeft: () => (
-            <Pressable
-                onPress={onClose}
-                style={({pressed}) => ({
-                    opacity: Platform.OS === 'ios' && pressed ? 0.6 : 1,
-                    width: 44,
-                    height: 44,
-                    justifyContent: 'center',
-                })}
-                android_ripple={{color: theme.buttonBg, borderless: true, radius: 20}}
-                testID={testID}
-            >
-                <CompassIcon
-                    name='close'
-                    size={24}
-                    color={theme.sidebarHeaderTextColor}
+            <View style={{marginRight: Platform.select({android: 20})}}>
+                <NavigationButton
+                    onPress={onClose}
+                    iconName='close'
+                    iconSize={24}
+                    testID={testID}
                 />
-            </Pressable>
+            </View>
         ),
+    };
+}
+
+export function getBottomSheetHeaderOptions(): NativeStackNavigationOptions {
+    return {
+        headerShown: false,
+        animation: 'none',
+        presentation: 'transparentModal',
+        contentStyle: {backgroundColor: 'transparent'},
     };
 }

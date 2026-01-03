@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {getInfoAsync, deleteAsync} from 'expo-file-system';
-import {Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
 import {getIntlShape} from '@utils/general';
@@ -12,7 +11,6 @@ import {urlSafeBase64Encode} from '@utils/security';
 import {
     deleteFileCache,
     deleteFileCacheByDir,
-    deleteV1Data,
     extractFileInfo,
     fileExists,
     fileMaxWarning,
@@ -33,7 +31,7 @@ import {
     lookupMimeType,
     pathWithPrefix,
     uploadDisabledWarning,
-} from '.';
+} from './index';
 
 jest.mock('expo-file-system');
 jest.mock('react-native', () => {
@@ -110,17 +108,6 @@ describe('Image utils', () => {
             expect(filterFileExtensions('SPREADSHEETS')).toEqual(['xls', 'xlsx', 'csv', 'ods'].map((e) => `ext:${e}`).join(' '));
             expect(filterFileExtensions('VIDEOS')).toEqual(['mp4', 'avi', 'webm', 'mkv', 'wmv', 'mpg', 'mov', 'flv', 'ogm', 'mpeg'].map((e) => `ext:${e}`).join(' '));
             expect(filterFileExtensions()).toBe('');
-        });
-    });
-
-    describe('deleteV1Data', () => {
-        it('should delete V1 data', async () => {
-            await deleteV1Data();
-            expect(deleteAsync).toHaveBeenCalled();
-            Platform.OS = 'android';
-            await deleteV1Data();
-            expect(deleteAsync).toHaveBeenCalled();
-            Platform.OS = 'ios';
         });
     });
 

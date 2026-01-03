@@ -4,14 +4,14 @@
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, type LayoutChangeEvent, Platform, View, StyleSheet, Pressable} from 'react-native';
+import {Alert, Keyboard, type LayoutChangeEvent, Platform, View, StyleSheet} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import {SafeAreaView, useSafeAreaInsets, type Edge} from 'react-native-safe-area-context';
 
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
-import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
+import NavigationButton from '@components/navigation_button';
 import {QUICK_ACTIONS_HEIGHT} from '@components/post_draft/quick_actions/quick_actions';
 import {Screens} from '@constants';
 import {EditPostProvider} from '@context/edit_post';
@@ -24,9 +24,8 @@ import useDidUpdate from '@hooks/did_update';
 import {useInputPropagation} from '@hooks/input';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import PostError from '@screens/edit_post/post_error';
+import {navigateBack} from '@screens/navigation';
 import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/file';
-import {navigateBack} from '@utils/navigation/adapter';
-import {changeOpacity} from '@utils/theme';
 
 import EditPostInput from './edit_post_input';
 
@@ -394,20 +393,15 @@ const EditPost = ({
     useEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <Pressable
+                <NavigationButton
                     onPress={onSavePostMessage}
                     disabled={!canSave}
                     testID={'edit_post.save.button'}
-                >
-                    <FormattedText
-                        id='edit_post.save'
-                        defaultMessage='Save'
-                        style={{color: canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.32), fontSize: 16}}
-                    />
-                </Pressable>
+                    text={intl.formatMessage({id: 'mobile.edit_post.save', defaultMessage: 'Save'})}
+                />
             ),
         });
-    }, [navigation, onSavePostMessage, theme.sidebarHeaderTextColor, canSave]);
+    }, [navigation, onSavePostMessage, theme.sidebarHeaderTextColor, canSave, intl]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);

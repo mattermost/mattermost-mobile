@@ -7,7 +7,7 @@ import {defineMessages} from 'react-intl';
 import {togglePinPost} from '@actions/remote/post';
 import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet} from '@utils/navigation/adapter';
+import {dismissBottomSheet} from '@screens/navigation';
 
 type PinChannelProps = {
     isPostPinned: boolean;
