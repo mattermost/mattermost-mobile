@@ -16,6 +16,7 @@ import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet} from '@screens/navigation';
+import BORReadReceipts from '@screens/post_options/bor_read_receipts';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 
@@ -29,7 +30,7 @@ import ReactionBar from './reaction_bar';
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type {AvailableScreens} from '@typings/screens/navigation';
-import BORReadReceipts from "@screens/post_options/bor_read_receipts";
+import type {BurnOnReadRecipientData} from "@typings/components/post_options";
 
 const POST_OPTIONS_BUTTON = 'close-post-options';
 
@@ -50,13 +51,14 @@ type PostOptionsProps = {
     serverUrl: string;
     isBoRPost?: boolean;
     showBoRReadReceipts?: boolean;
+    borReceiptData?: BurnOnReadRecipientData;
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply,
     combinedPost, componentId, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
-    isBoRPost, showBoRReadReceipts,
+    isBoRPost, showBoRReadReceipts, borReceiptData,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
     const isTablet = useIsTablet();
@@ -106,10 +108,10 @@ const PostOptions = ({
                 scrollEnabled={enabled}
                 {...panResponder.panHandlers}
             >
-                {showBoRReadReceipts &&
+                {showBoRReadReceipts && borReceiptData &&
                     <BORReadReceipts
-                        totalReceipts={100}
-                        readReceipts={42}
+                        totalReceipts={borReceiptData.totalRecipients}
+                        readReceipts={borReceiptData.revealedCount}
                     />
                 }
                 {canAddReaction &&

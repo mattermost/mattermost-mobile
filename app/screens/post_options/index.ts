@@ -9,7 +9,7 @@ import {Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import AppsManager from '@managers/apps_manager';
-import {observeChannel, observeIsReadOnlyChannel} from '@queries/servers/channel';
+import {observeChannel, observeChannelInfo, observeIsReadOnlyChannel} from '@queries/servers/channel';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observeReactionsForPost} from '@queries/servers/reaction';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
@@ -31,6 +31,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
+import type {BurnOnReadRecipientData} from "@typings/components/post_options";
 
 type EnhancedProps = WithDatabaseArgs & {
     combinedPost?: Post | PostModel;
@@ -77,6 +78,7 @@ const withPost = withObservables([], ({post, database}: {post: Post | PostModel}
 
 const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sourceScreen, database, serverUrl}: EnhancedProps) => {
     const channel = observeChannel(database, post.channelId);
+    const channelInfo = observeChannelInfo(database, post.channelId);
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
     const currentUser = observeCurrentUser(database);
     const isLicensed = observeLicense(database).pipe(switchMap((lcs) => of$(lcs?.IsLicensed === 'true')));
@@ -161,6 +163,18 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         }),
     );
 
+    const borReceiptData: BurnOnReadRecipientData = combineLatest([channelInfo]).pipe(
+        switchMap(([info]) => {
+            const revealedCount = post.metadata?.recipients?.length || 0;
+            const totalRecipients = info ? Math.max(0, info.memberCount - 1) : 0;
+
+            return of$({
+                revealedCount,
+                totalRecipients,
+            });
+        }),
+    );
+
     return {
         canMarkAsUnread,
         canAddReaction,
@@ -175,6 +189,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         bindings,
         isBoRPost: of$(borPost),
         showBoRReadReceipts,
+        borReceiptData,
     };
 });
 

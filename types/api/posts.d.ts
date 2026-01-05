@@ -81,6 +81,7 @@ type PostMetadata = {
     priority?: PostPriority;
     expire_at?: number;
     borConfig?: PostBoRConfig;
+    recipients?: string[];
 };
 
 type Post = {
