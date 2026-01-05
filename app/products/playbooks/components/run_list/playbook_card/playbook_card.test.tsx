@@ -67,7 +67,7 @@ describe('PlaybookCard', () => {
         expect(userAvatarsStack.props.users).toEqual(props.participants);
         expect(userAvatarsStack.props.channelId).toBe((props.run as PlaybookRunModel).channelId);
         expect(userAvatarsStack.props.location).toBe(props.location);
-        expect(userAvatarsStack.props.bottomSheetTitle.defaultMessage).toBe('Run Participants');
+        expect(userAvatarsStack.props.bottomSheetTitle.defaultMessage).toBe('Participants');
 
         const progressBar = getByTestId('progress-bar');
         expect(progressBar.props.progress).toBe(50);
@@ -93,7 +93,7 @@ describe('PlaybookCard', () => {
         expect(userAvatarsStack.props.users).toEqual(props.participants);
         expect(userAvatarsStack.props.channelId).toBe(props.run.channel_id);
         expect(userAvatarsStack.props.location).toBe(props.location);
-        expect(userAvatarsStack.props.bottomSheetTitle.defaultMessage).toBe('Run Participants');
+        expect(userAvatarsStack.props.bottomSheetTitle.defaultMessage).toBe('Participants');
 
         const progressBar = getByTestId('progress-bar');
         expect(progressBar.props.progress).toBe(50);

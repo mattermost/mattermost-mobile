@@ -7,6 +7,9 @@ import keyMirror from '@utils/key_mirror';
 
 export const SNACK_BAR_TYPE = keyMirror({
     ADD_CHANNEL_MEMBERS: null,
+    AGENT_STOP_ERROR: null,
+    AGENT_REGENERATE_ERROR: null,
+    AGENT_TOOL_APPROVAL_ERROR: null,
     CODE_COPIED: null,
     FAVORITE_CHANNEL: null,
     FOLLOW_THREAD: null,
@@ -26,6 +29,7 @@ export const SNACK_BAR_TYPE = keyMirror({
     RESCHEDULED_POST: null,
     DELETE_SCHEDULED_POST_ERROR: null,
     PLAYBOOK_ERROR: null,
+    BOR_POST_EXPIRED: null,
 });
 
 export const MESSAGE_TYPE = {
@@ -45,6 +49,18 @@ const messages = defineMessages({
     ADD_CHANNEL_MEMBERS: {
         id: 'snack.bar.channel.members.added',
         defaultMessage: '{numMembers, number} {numMembers, plural, one {member} other {members}} added',
+    },
+    AGENT_STOP_ERROR: {
+        id: 'snack.bar.agent.stop.error',
+        defaultMessage: 'Failed to stop generation',
+    },
+    AGENT_REGENERATE_ERROR: {
+        id: 'snack.bar.agent.regenerate.error',
+        defaultMessage: 'Failed to regenerate response',
+    },
+    AGENT_TOOL_APPROVAL_ERROR: {
+        id: 'snack.bar.agent.tool.approval.error',
+        defaultMessage: 'Failed to submit tool approval',
     },
     CODE_COPIED: {
         id: 'snack.bar.code.copied',
@@ -102,6 +118,10 @@ const messages = defineMessages({
         id: 'snack.bar.playbook.error',
         defaultMessage: 'Unable to perform action. Please try again later.',
     },
+    BOR_POST_EXPIRED: {
+        id: 'snack.bar.bor_post_expired.error',
+        defaultMessage: 'This burn-on-read post has expired and can no longer be revealed.',
+    },
 });
 
 export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
@@ -109,6 +129,24 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         message: messages.ADD_CHANNEL_MEMBERS,
         iconName: 'check',
         canUndo: false,
+    },
+    AGENT_STOP_ERROR: {
+        message: messages.AGENT_STOP_ERROR,
+        iconName: 'alert-outline',
+        canUndo: false,
+        type: MESSAGE_TYPE.ERROR,
+    },
+    AGENT_REGENERATE_ERROR: {
+        message: messages.AGENT_REGENERATE_ERROR,
+        iconName: 'alert-outline',
+        canUndo: false,
+        type: MESSAGE_TYPE.ERROR,
+    },
+    AGENT_TOOL_APPROVAL_ERROR: {
+        message: messages.AGENT_TOOL_APPROVAL_ERROR,
+        iconName: 'alert-outline',
+        canUndo: false,
+        type: MESSAGE_TYPE.ERROR,
     },
     CODE_COPIED: {
         message: messages.CODE_COPIED,
@@ -180,6 +218,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     },
     PLAYBOOK_ERROR: {
         message: messages.PLAYBOOK_ERROR,
+        iconName: 'alert-outline',
+        canUndo: false,
+        type: MESSAGE_TYPE.ERROR,
+    },
+    BOR_POST_EXPIRED: {
+        message: messages.BOR_POST_EXPIRED,
         iconName: 'alert-outline',
         canUndo: false,
         type: MESSAGE_TYPE.ERROR,

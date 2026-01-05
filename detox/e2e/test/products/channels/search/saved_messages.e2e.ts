@@ -29,7 +29,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Saved Messages', () => {
@@ -138,12 +138,10 @@ describe('Search - Saved Messages', () => {
         await EditPostScreen.saveButton.tap();
 
         // * Verify post message is updated and displays edited indicator '(edited)'
-        const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = SavedMessagesScreen.getPostListPostItem(savedPost.id, updatedMessage);
-        await expect(updatedPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
+        await ChannelScreen.assertPostMessageEdited(savedPost.id, updatedMessage, 'saved_messages_page');
 
         // # Open post options for updated saved message and tap on reply option
-        await SavedMessagesScreen.openPostOptionsFor(savedPost.id, updatedMessage);
+        await element(by.id(`saved_messages.post_list.post.${savedPost.id}`)).longPress();
         await PostOptionsScreen.replyPostOption.tap();
 
         // * Verify on thread screen
@@ -162,12 +160,12 @@ describe('Search - Saved Messages', () => {
         await ThreadScreen.back();
 
         // * Verify reply count and following button
-        const {postListPostItem, postListPostItemFooterReplyCount, postListPostItemFooterFollowingButton} = SavedMessagesScreen.getPostListPostItem(savedPost.id, updatedMessage);
-        await expect(postListPostItemFooterReplyCount).toHaveText('1 reply');
-        await expect(postListPostItemFooterFollowingButton).toBeVisible();
+        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, updatedMessage);
+        await waitFor(element(by.text('1 reply'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(element(by.text('Following'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
 
         // # Open post options for updated saved message and delete post
-        await SavedMessagesScreen.openPostOptionsFor(savedPost.id, updatedMessage);
+        await element(by.id(`saved_messages.post_list.post.${savedPost.id}`)).longPress();
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify updated saved message is deleted

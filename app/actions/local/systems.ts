@@ -3,13 +3,26 @@
 
 import {Q} from '@nozbe/watermelondb';
 import deepEqual from 'deep-equal';
+import {DeviceEventEmitter} from 'react-native';
 
+import {Events} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {PostTypes, BOR_POST_CLEANUP_MIN_RUN_INTERVAL} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
-import {getConfig, getLicense, getGlobalDataRetentionPolicy, getGranularDataRetentionPolicies, getLastGlobalDataRetentionRun, getIsDataRetentionEnabled} from '@queries/servers/system';
+import {queryPostsByType} from '@queries/servers/post';
+import {
+    getConfig,
+    getLicense,
+    getGlobalDataRetentionPolicy,
+    getGranularDataRetentionPolicies,
+    getLastGlobalDataRetentionRun,
+    getIsDataRetentionEnabled,
+    getLastBoRPostCleanupRun,
+} from '@queries/servers/system';
 import PostModel from '@typings/database/models/servers/post';
+import {isExpiredBoRPost} from '@utils/bor';
 import {logError} from '@utils/log';
 
 import {deletePosts} from './post';
@@ -36,6 +49,7 @@ export async function storeConfigAndLicense(serverUrl: string, config: ClientCon
 
             if (systems.length) {
                 await operator.handleSystem({systems, prepareRecordsOnly: false});
+                DeviceEventEmitter.emit(Events.LICENSE_CHANGED, {serverUrl, license});
             }
 
             return await storeConfig(serverUrl, config);
@@ -76,7 +90,9 @@ export async function storeConfig(serverUrl: string, config: ClientConfig | unde
         }
 
         if (configsToDelete.length || configsToUpdate.length) {
-            return operator.handleConfigs({configs: configsToUpdate, configsToDelete, prepareRecordsOnly});
+            const results = await operator.handleConfigs({configs: configsToUpdate, configsToDelete, prepareRecordsOnly});
+            DeviceEventEmitter.emit(Events.CONFIG_CHANGED, {serverUrl, config});
+            return results;
         }
     } catch (error) {
         logError('storeConfig', error);
@@ -234,7 +250,7 @@ async function dataRetentionWithoutPolicyCleanup(serverUrl: string) {
     }
 }
 
-async function dataRetentionCleanPosts(serverUrl: string, postIds: string[]) {
+export async function dataRetentionCleanPosts(serverUrl: string, postIds: string[]) {
     if (postIds.length) {
         const batchSize = 1000;
         const deletePromises = [];
@@ -306,6 +322,58 @@ export async function dismissAnnouncement(serverUrl: string, announcementText: s
         return {error: undefined};
     } catch (error) {
         logError('An error occurred while dismissing an announcement', error);
+        return {error};
+    }
+}
+
+export async function expiredBoRPostCleanup(serverUrl: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const lastRunAt = await getLastBoRPostCleanupRun(database);
+
+        const shouldRunNow = (Date.now() - lastRunAt) > BOR_POST_CLEANUP_MIN_RUN_INTERVAL;
+
+        if (!shouldRunNow) {
+            return;
+        }
+
+        const {error} = await removeExpiredBoRPosts(serverUrl);
+        if (!error) {
+            await updateLastBoRCleanupRun(serverUrl);
+        }
+    } catch (error) {
+        logError('An error occurred running the Burn on Read cleanup task', error);
+    }
+}
+
+async function removeExpiredBoRPosts(serverUrl: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const allBoRPosts = await queryPostsByType(database, PostTypes.BURN_ON_READ).fetch();
+        const expiredBoRPostIDs = allBoRPosts.
+            filter((post) => isExpiredBoRPost(post)).
+            map((post) => post.id);
+
+        await dataRetentionCleanPosts(serverUrl, expiredBoRPostIDs);
+        return {error: undefined};
+    } catch (error) {
+        logError('An error occurred while performing BoR post cleanup', error);
+        return {error};
+    }
+}
+
+async function updateLastBoRCleanupRun(serverUrl: string) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const systems: IdValue[] = [{
+            id: SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN,
+            value: Date.now(),
+        }];
+
+        return operator.handleSystem({systems, prepareRecordsOnly: false});
+    } catch (error) {
+        logError('Failed updateLastBoRCleanupRun', error);
         return {error};
     }
 }
