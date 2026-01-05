@@ -158,42 +158,6 @@ describe('actions/remote/entry/deferred', () => {
             expect(fetchRoles).toHaveBeenCalledWith(serverUrl, defaultTeamData.memberships, defaultChData.memberships, defaultMeData.user, false, true, undefined);
         });
 
-        it('should force-fetch roles to ensure permissions are up-to-date', async () => {
-            const preferences = [{
-                category: 'advanced_settings',
-                name: 'feature_enabled',
-                value: 'true',
-                user_id: 'user1',
-            }];
-
-            await restDeferredAppEntryActions(
-                serverUrl,
-                since,
-                currentUserId,
-                currentUserLocale,
-                preferences,
-                defaultConfig,
-                license,
-                defaultTeamData,
-                defaultChData,
-                defaultMeData,
-                initialTeamId,
-                initialChannelId,
-            );
-
-            // Verify that fetchRoles is called with force = true (6th parameter)
-            // This ensures role permissions are refreshed on app launch
-            expect(fetchRoles).toHaveBeenCalledWith(
-                serverUrl,
-                defaultTeamData.memberships,
-                defaultChData.memberships,
-                defaultMeData.user,
-                false, // fetchOnly
-                true, // force - this is the key parameter being tested
-                undefined, // groupLabel
-            );
-        });
-
         it('should handle missing data gracefully', async () => {
             const preferences = undefined;
             const config = {
