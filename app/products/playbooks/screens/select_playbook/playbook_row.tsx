@@ -72,12 +72,12 @@ const PlaybookRow = ({
         if (activeRuns === 0) {
             return intl.formatMessage({
                 id: 'playbooks.row.no_runs',
-                defaultMessage: 'No runs in progress',
+                defaultMessage: 'No checklists in progress',
             });
         }
         return intl.formatMessage({
             id: 'playbooks.row.runs',
-            defaultMessage: '{count} {count, plural, one {run} other {runs}} in progress',
+            defaultMessage: '{count} {count, plural, one {checklist} other {checklists}} in progress',
         }, {count: activeRuns});
     };
 

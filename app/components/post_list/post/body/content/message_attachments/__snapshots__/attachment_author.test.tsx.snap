@@ -29,6 +29,8 @@ exports[`AttachmentAuthor it matches snapshot when both name and icon are provid
     source={
       [
         {
+          "cacheKey": "attachment-author-icon-aHR0cHM6Ly9pbWFnZXMuY29tL2ltYWdlLnBuZw==",
+          "cachePath": "",
           "uri": "https://images.com/image.png",
         },
       ]
@@ -91,6 +93,8 @@ exports[`AttachmentAuthor it matches snapshot when only icon is provided 1`] = `
     source={
       [
         {
+          "cacheKey": "attachment-author-icon-aHR0cHM6Ly9pbWFnZXMuY29tL2ltYWdlLnBuZw==",
+          "cachePath": "",
           "uri": "https://images.com/image.png",
         },
       ]

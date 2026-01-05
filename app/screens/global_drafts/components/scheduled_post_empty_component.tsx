@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'expo-image';
 import React from 'react';
 import {View} from 'react-native';
 
+import ExpoImage from '@components/expo_image';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -45,9 +45,10 @@ const ScheduledPostEmptyComponent = () => {
             style={styles.container}
             testID='scheduled_post_empty_component'
         >
-            <Image
+            <ExpoImage
                 source={scheduled_message_image}
                 style={styles.image}
+                cachePolicy='memory'
             />
             <FormattedText
                 id='scheduled_post.empty.title'

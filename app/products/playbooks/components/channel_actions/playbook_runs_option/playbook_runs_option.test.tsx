@@ -36,7 +36,7 @@ describe('PlaybookRunsOption', () => {
 
         const optionItem = getByTestId('option-item');
         expect(optionItem).toBeTruthy();
-        expect(optionItem.props.label).toBe('Playbook runs');
+        expect(optionItem.props.label).toBe('Playbook checklists');
         expect(optionItem.props.info).toBe('3');
         expect(optionItem.props.icon).toBe('product-playbooks');
         expect(optionItem.props.type).toBe('arrow');
@@ -49,7 +49,7 @@ describe('PlaybookRunsOption', () => {
 
         const slideUpPanelItem = getByTestId('slide-up-panel-item');
         expect(slideUpPanelItem).toBeTruthy();
-        expect(slideUpPanelItem.props.text).toBe('Playbook runs');
+        expect(slideUpPanelItem.props.text).toBe('Playbook checklists');
         expect(slideUpPanelItem.props.leftIcon).toBe('product-playbooks');
         expect(slideUpPanelItem.props.rightIcon).toBe('chevron-right');
         expect(slideUpPanelItem.props.onPress).toBeDefined();

@@ -4,6 +4,7 @@
 import {OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
@@ -33,6 +34,7 @@ export const transformPlaybookRunRecord = ({action, database, value}: Transforme
     const fieldsMapper = (run: PlaybookRunModel) => {
         run._raw.id = isCreateAction ? (raw?.id ?? run.id) : run.id;
         run.playbookId = raw.playbook_id ?? record?.playbookId ?? '';
+        run.type = raw.type ?? record?.type ?? (run.playbookId ? PLAYBOOK_RUN_TYPES.PlaybookType : PLAYBOOK_RUN_TYPES.ChannelChecklistType);
         run.postId = raw.post_id ?? record?.postId ?? null;
         run.ownerUserId = raw.owner_user_id ?? record?.ownerUserId ?? '';
         run.teamId = raw.team_id ?? record?.teamId ?? '';

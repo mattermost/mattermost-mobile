@@ -77,7 +77,7 @@ const Files = ({
     };
 
     const handlePreviewPress = usePreventDoubleTap(useCallback((idx: number) => {
-        const items = filesForGallery.map((f) => fileToGalleryItem(f, f.user_id, postProps));
+        const items = filesForGallery.map((f) => fileToGalleryItem(f, f.user_id, postProps, 0, f.id));
         openGalleryAtIndex(galleryIdentifier, idx, items);
     }, [filesForGallery, galleryIdentifier, postProps]));
 

@@ -57,6 +57,9 @@ export default class ScheduledPostModel extends Model implements ScheduledPostMo
     /** error_code : The reason message if the schedule post failed */
     @field('error_code') errorCode!: string;
 
+    /** type : The type of the post being scheduled */
+    @field('type') type!: PostTypesUserCreatable | null;
+
     toApi = (user_id: string) => {
         const scheduledPost: ScheduledPost = {
             id: this.id,

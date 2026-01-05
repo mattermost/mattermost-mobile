@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'expo-image';
 import React from 'react';
 import {View} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
+import Image from '@components/expo_image';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useShareExtensionServerUrl} from '@share/state';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getLastPictureUpdate} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -52,10 +53,11 @@ const Avatar = ({author, theme}: Props) => {
     }
 
     let icon;
-    if (pictureUrl && serverUrl) {
+    if (author && pictureUrl && serverUrl) {
         const imgSource = {uri: buildAbsoluteUrl(serverUrl, pictureUrl)};
         icon = (
             <Image
+                id={`user-${author.id}-${getLastPictureUpdate(author)}`}
                 key={pictureUrl}
                 style={style.image}
                 source={imgSource}
