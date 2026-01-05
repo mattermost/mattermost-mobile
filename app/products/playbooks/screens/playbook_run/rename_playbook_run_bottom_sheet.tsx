@@ -6,18 +6,21 @@ import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
+import {renamePlaybookRun} from '@playbooks/actions/remote/runs';
 import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
+import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     componentId: AvailableScreens;
     currentTitle: string;
-    onSave: (newTitle: string) => void;
+    playbookRunId: string;
 }
 
 const SAVE_BUTTON_ID = 'save-playbook-run-name';
@@ -38,11 +41,12 @@ const styles = StyleSheet.create({
 const RenamePlaybookRunBottomSheet = ({
     componentId,
     currentTitle,
-    onSave,
+    playbookRunId,
 }: Props) => {
     const intl = useIntl();
     const {formatMessage} = intl;
     const theme = useTheme();
+    const serverUrl = useServerUrl();
 
     const [title, setTitle] = useState<string>(currentTitle);
 
@@ -72,12 +76,16 @@ const RenamePlaybookRunBottomSheet = ({
         close(componentId);
     }, [componentId]);
 
-    const handleSave = useCallback(() => {
+    const handleSave = useCallback(async () => {
         if (canSave) {
-            onSave(title.trim());
-            close(componentId);
+            const res = await renamePlaybookRun(serverUrl, playbookRunId, title.trim());
+            if (res.error) {
+                showPlaybookErrorSnackbar();
+            } else {
+                close(componentId);
+            }
         }
-    }, [canSave, title, componentId, onSave]);
+    }, [canSave, title, componentId, serverUrl, playbookRunId]);
 
     useNavButtonPressed(SAVE_BUTTON_ID, componentId, handleSave, [handleSave]);
     useAndroidHardwareBackHandler(componentId, handleClose);
