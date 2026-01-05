@@ -56,7 +56,7 @@ const AuthError = ({error, retry, theme}: AuthErrorProps) => {
                 style={style.infoTitle}
             />
             <Text style={style.errorText}>
-                {`${error}.`}
+                {`${error}${error.endsWith('.') ? '' : '.'}`}
             </Text>
             <View style={style.buttonContainer}>
                 <Button

@@ -5,7 +5,7 @@ import Model from '@nozbe/watermelondb/Model';
 import {applicationName} from 'expo-application';
 import {
     cacheDirectory, deleteAsync, documentDirectory, getInfoAsync,
-    type FileInfo as ExpoFileInfo, makeDirectoryAsync,
+    type FileInfo as ExpoFileInfo,
 } from 'expo-file-system';
 import mimeDB from 'mime-db';
 import {Alert, Linking, Platform} from 'react-native';
@@ -65,6 +65,8 @@ const SUPPORTED_DOCS_FORMAT = Platform.select({
         'application/vnd.apple.keynote',
     ],
 });
+
+const SUPPORTED_IMAGE_FORMAT = ['png', 'jpg', 'jpeg', 'bmp', 'tiff', 'svg', 'xcf', 'gif'];
 
 const SUPPORTED_VIDEO_FORMAT = Platform.select({
     ios: ['video/mp4', 'video/x-m4v', 'video/quicktime'],
@@ -193,7 +195,6 @@ async function deleteFilesInDir(directory: string) {
         const cacheDirInfo = await getInfoAsync(directory);
         if (cacheDirInfo.exists) {
             await deleteAsync(directory, {idempotent: true});
-            await makeDirectoryAsync(directory, {intermediates: true});
         }
     }
 }
@@ -266,6 +267,11 @@ export const isGif = (file?: FileInfo | FileModel) => {
     return mime === 'image/gif';
 };
 
+export function extractExtension(filename: string) {
+    const ext = filename.split('.').pop() || '';
+    return ext.startsWith('.') ? ext.slice(1).toLowerCase() : ext.toLowerCase();
+}
+
 export const isImage = (file?: FileInfo | FileModel) => {
     if (!file) {
         return false;
@@ -273,6 +279,12 @@ export const isImage = (file?: FileInfo | FileModel) => {
 
     if (isGif(file)) {
         return true;
+    }
+
+    const fileExt = extractExtension(file.extension || file.name);
+
+    if (!SUPPORTED_IMAGE_FORMAT.includes(fileExt)) {
+        return false;
     }
 
     let mimeType = 'mime_type' in file ? file.mime_type : file.mimeType;
@@ -415,11 +427,11 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
                 }
             }
 
-            return `${cacheDirectory}${server}/${filename}-${fileIdPath}.${extension}`;
+            return `${cacheDirectory}${server}/Files/${filename}-${fileIdPath}.${extension}`;
         } else if (file?.id && hasValidExtension) {
-            return `${cacheDirectory}${server}/${fileIdPath}.${file.extension}`;
+            return `${cacheDirectory}${server}/Files/${fileIdPath}.${file.extension}`;
         } else if (file?.id) {
-            return `${cacheDirectory}${server}/${fileIdPath}`;
+            return `${cacheDirectory}${server}/Files/${fileIdPath}`;
         }
     }
 

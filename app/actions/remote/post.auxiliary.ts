@@ -6,6 +6,7 @@ import {chunk} from 'lodash';
 import {prepareModelsForChannelPosts} from '@actions/local/post';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
+import {removeDuplicatesModels} from '@helpers/database';
 
 import {fetchPostAuthors, fetchPostsForChannel} from './post';
 
@@ -68,7 +69,7 @@ export async function processChannelPostsByTeam(
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const models = await Promise.all(prepareModelsPromises);
-        operator.batchRecords(models.flat(), 'processTeamChannels');
+        operator.batchRecords(removeDuplicatesModels(models.flat()), 'processTeamChannels');
     }
     if (!skipAuthors && allPosts.length) {
         await fetchPostAuthors(serverUrl, allPosts, false, groupLabel);
