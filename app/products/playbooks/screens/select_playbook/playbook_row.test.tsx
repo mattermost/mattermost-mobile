@@ -96,7 +96,7 @@ describe('PlaybookRow', () => {
             <PlaybookRow {...props}/>,
         );
 
-        expect(getByText(/No runs in progress/)).toBeTruthy();
+        expect(getByText(/No checklists in progress/)).toBeTruthy();
     });
 
     it('displays single run in progress correctly', () => {
@@ -107,7 +107,7 @@ describe('PlaybookRow', () => {
             <PlaybookRow {...props}/>,
         );
 
-        expect(getByText(/1 run in progress/)).toBeTruthy();
+        expect(getByText(/1 checklist in progress/)).toBeTruthy();
     });
 
     it('displays multiple runs in progress correctly', () => {
@@ -118,7 +118,7 @@ describe('PlaybookRow', () => {
             <PlaybookRow {...props}/>,
         );
 
-        expect(getByText(/5 runs in progress/)).toBeTruthy();
+        expect(getByText(/5 checklists in progress/)).toBeTruthy();
     });
 
     it('calls onPress when pressed', async () => {

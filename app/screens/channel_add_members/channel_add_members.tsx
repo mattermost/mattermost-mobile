@@ -63,7 +63,6 @@ export const getHeaderOptions = async (theme: Theme, displayName: string, inModa
 type Props = {
     componentId: AvailableScreens;
     channel?: ChannelModel;
-    currentUserId: string;
     teammateNameDisplay: string;
     tutorialWatched: boolean;
     inModal?: boolean;
@@ -119,7 +118,6 @@ function removeProfileFromList(list: Set<string>, id: string) {
 export default function ChannelAddMembers({
     componentId,
     channel,
-    currentUserId,
     teammateNameDisplay,
     tutorialWatched,
     inModal,
@@ -303,7 +301,6 @@ export default function ChannelAddMembers({
                 />
             </View>
             <ServerUserList
-                currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
                 selectedIds={selectedIds}
                 term={term}

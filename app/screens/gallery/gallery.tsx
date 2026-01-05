@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'expo-image';
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {BackHandler} from 'react-native';
-import Animated, {runOnJS, runOnUI, useAnimatedReaction, type SharedValue} from 'react-native-reanimated';
+import {runOnJS, runOnUI, useAnimatedReaction, type SharedValue} from 'react-native-reanimated';
 
 import {buildFilePreviewUrl} from '@actions/remote/file';
+import {ExpoImageAnimated} from '@components/expo_image';
 import {useGallery} from '@context/gallery';
 import {useServerUrl} from '@context/server';
 import {isGif} from '@utils/file';
@@ -19,8 +19,6 @@ import VideoRenderer from './renderers/video';
 import GalleryViewer from './viewer';
 
 import type {GalleryItemType, GalleryPagerItem} from '@typings/screens/gallery';
-
-const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 interface GalleryProps {
     headerAndFooterHidden: SharedValue<boolean>;
@@ -58,10 +56,10 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
         lightboxRef.current?.closeLightbox();
     };
 
-    const onLocalIndex = (index: number) => {
+    const onLocalIndex = useCallback((index: number) => {
         setLocalIndex(index);
         onIndexChange?.(index);
-    };
+    }, [onIndexChange]);
 
     useEffect(() => {
         runOnUI(() => {
@@ -73,6 +71,9 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
             const th = item.height / scaleFactor;
             sharedValues.targetHeight.value = th;
         })();
+
+        // sharedValues do not trigger re-renders
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [item, targetDimensions.width]);
 
     useEffect(() => {
@@ -106,7 +107,10 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
 
         runOnJS(onLocalIndex)(nextIndex);
         sharedValues.activeIndex.value = nextIndex;
-    }, []);
+
+        // sharedValues do not trigger re-renders
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [onLocalIndex]);
 
     const renderBackdropComponent = useCallback(
         ({animatedStyles, translateY}: BackdropProps) => {
@@ -146,13 +150,18 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
         sharedValues.y.value = 0;
 
         runOnJS(onHide)();
+
+        // sharedValues do not trigger re-renders
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onRenderItem = useCallback((info: RenderItemInfo) => {
-        if (item.type === 'video' && item.posterUri) {
+        const currentItem = items[localIndex];
+        if (currentItem.type === 'video' && currentItem.posterUri) {
             return (
-                <AnimatedImage
-                    placeholder={{uri: item.posterUri}}
+                <ExpoImageAnimated
+                    id={currentItem.cacheKey}
+                    source={{uri: currentItem.posterUri}}
                     style={info.itemStyles}
                     placeholderContentFit='cover'
                 />
@@ -160,7 +169,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
         }
 
         return null;
-    }, [item]);
+    }, [items, localIndex]);
 
     const onRenderPage = useCallback((props: GalleryPagerItem, idx: number) => {
         switch (props.item.type) {
@@ -183,7 +192,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
             default:
                 return null;
         }
-    }, []);
+    }, [hideHeaderAndFooter, initialIndex]);
 
     const source = useMemo(() => {
         if (isGif(fileInfo) && fileInfo.id && !fileInfo.id.startsWith('uid')) {

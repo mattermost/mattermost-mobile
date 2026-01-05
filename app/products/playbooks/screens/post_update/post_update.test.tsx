@@ -16,6 +16,7 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from '@playbooks/actions/remote/runs';
 import {popTopScreen, setButtons} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {getLastCall} from '@test/mock_helpers';
 import TestHelper from '@test/test_helper';
 
 import PostUpdate from './post_update';
@@ -79,11 +80,6 @@ jest.mock('react-native', () => {
     };
 });
 
-function getLastCall<T, U extends any[], V>(mock: jest.Mock<T, U, V>): U {
-    const allCalls = mock.mock.calls;
-    return allCalls[allCalls.length - 1];
-}
-
 describe('PostUpdate', () => {
     function getBaseProps(): ComponentProps<typeof PostUpdate> {
         return {
@@ -140,7 +136,7 @@ describe('PostUpdate', () => {
         const {getByText, getByTestId} = renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
         await waitFor(() => {
-            expect(getByText(/This update for the run/)).toBeTruthy();
+            expect(getByText(/This update for the checklist/)).toBeTruthy();
             const input = getByTestId('FloatingTextInput');
             expect(input).toHaveProp('value', 'Default message template');
             expect(input).toHaveProp('label', 'Update message');
@@ -161,7 +157,7 @@ describe('PostUpdate', () => {
             expect(selector.props.options).toHaveLength(6);
 
             const toggle = getByTestId('playbooks.post_update.selector.also_mark_run_as_finished');
-            expect(toggle).toHaveProp('label', 'Also mark the run as finished');
+            expect(toggle).toHaveProp('label', 'Also mark the checklist as finished');
             expect(toggle).toHaveProp('selected', false);
             expect(toggle).toHaveProp('type', 'toggle');
         });
@@ -221,7 +217,7 @@ describe('PostUpdate', () => {
         const {getByText} = renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
         await waitFor(() => {
-            expect(getByText('This update for the run Test Run will be broadcasted to 2 channels and 2 direct messages.')).toBeTruthy();
+            expect(getByText('This update for the checklist Test Run will be broadcasted to 2 channels and 2 direct messages.')).toBeTruthy();
         });
     });
 
@@ -250,11 +246,10 @@ describe('PostUpdate', () => {
 
         await waitFor(() => {
             expect(setButtons).toHaveBeenCalled();
+            const lastCall = jest.mocked(setButtons).mock.calls[jest.mocked(setButtons).mock.calls.length - 1];
+            const rightButton = lastCall[1]?.rightButtons?.[0];
+            expect(rightButton?.enabled).toBe(true);
         });
-
-        const lastCall = jest.mocked(setButtons).mock.calls[jest.mocked(setButtons).mock.calls.length - 1];
-        const rightButton = lastCall[1]?.rightButtons?.[0];
-        expect(rightButton?.enabled).toBe(true);
     });
 
     it('should disable save button when message is empty', async () => {
@@ -430,15 +425,15 @@ describe('PostUpdate', () => {
 
         await waitFor(() => {
             expect(Alert.alert).toHaveBeenCalledWith(
-                'Confirm finish run',
-                'Are you sure you want to finish the run Test Run for all participants?',
+                'Confirm finish checklist',
+                'Are you sure you want to finish the checklist Test Run for all participants?',
                 expect.arrayContaining([
                     expect.objectContaining({
                         text: 'Cancel',
                         style: 'cancel',
                     }),
                     expect.objectContaining({
-                        text: 'Finish run',
+                        text: 'Finish',
                     }),
                 ]),
             );
@@ -470,15 +465,15 @@ describe('PostUpdate', () => {
 
         await waitFor(() => {
             expect(Alert.alert).toHaveBeenCalledWith(
-                'Confirm finish run',
-                'There are 3 outstanding tasks. Are you sure you want to finish the run Test Run for all participants?',
+                'Confirm finish checklist',
+                'There are 3 outstanding tasks. Are you sure you want to finish the checklist Test Run for all participants?',
                 expect.arrayContaining([
                     expect.objectContaining({
                         text: 'Cancel',
                         style: 'cancel',
                     }),
                     expect.objectContaining({
-                        text: 'Finish run',
+                        text: 'Finish',
                     }),
                 ]),
             );
@@ -507,7 +502,7 @@ describe('PostUpdate', () => {
 
         // Simulate alert confirm button press
         const alertCall = jest.mocked(Alert.alert).mock.calls[0];
-        const confirmButton = alertCall[2]?.find((button) => button.text === 'Finish run');
+        const confirmButton = alertCall[2]?.find((button) => button.text === 'Finish');
 
         await act(async () => {
             confirmButton?.onPress?.();

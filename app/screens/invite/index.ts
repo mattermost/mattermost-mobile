@@ -2,9 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {of as of$} from 'rxjs';
+import {combineLatest, of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged, map} from 'rxjs/operators';
 
+import {Permissions} from '@constants';
+import {observePermissionForTeam} from '@queries/servers/role';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
 import {isSystemAdmin} from '@utils/user';
@@ -15,6 +18,19 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const team = observeCurrentTeam(database);
+    const currentUser = observeCurrentUser(database);
+
+    const guestAccountsEnabled = observeConfigBooleanValue(database, 'EnableGuestAccounts');
+    const emailInvitationsEnabled = observeConfigBooleanValue(database, 'EnableEmailInvitations');
+    const isGroupConstrained = team.pipe(
+        switchMap((t) => of$(Boolean(t?.isGroupConstrained))),
+    );
+    const hasPermissionToInviteGuests = combineLatest([team, currentUser]).pipe(
+        switchMap(([t, u]) => observePermissionForTeam(database, t, u, Permissions.INVITE_GUEST, false)),
+    );
+    const canInviteGuests = combineLatest([isGroupConstrained, guestAccountsEnabled, hasPermissionToInviteGuests]).pipe(
+        switchMap(([group, enabled, permission]) => of$(!group && enabled && permission)),
+    );
 
     return {
         teamId: team.pipe(
@@ -34,6 +50,9 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             map((user) => isSystemAdmin(user?.roles || '')),
             distinctUntilChanged(),
         ),
+        emailInvitationsEnabled,
+        canInviteGuests,
+        allowGuestMagicLink: observeConfigBooleanValue(database, 'EnableGuestMagicLink'),
     };
 });
 

@@ -16,6 +16,7 @@ import {Ringtone} from '@constants/calls';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
+import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
@@ -25,6 +26,7 @@ import type PlaybookChecklistItemModel from '@playbooks/types/database/models/pl
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type PlaybookRunAttributeModel from '@playbooks/types/database/models/playbook_run_attribute';
 import type PlaybookRunAttributeValueModel from '@playbooks/types/database/models/playbook_run_attribute_value';
+import type CategoryModel from '@typings/database/models/servers/category';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
@@ -145,6 +147,11 @@ class TestHelperSingleton {
             actionType: ActionType.POSTS.RECEIVED_NEW,
             order: [this.basicPost!.id],
             posts: [this.basicPost!],
+            prepareRecordsOnly: false,
+        });
+
+        await operator.handleRole({
+            roles: Object.values(this.basicRoles!),
             prepareRecordsOnly: false,
         });
 
@@ -637,6 +644,27 @@ class TestHelperSingleton {
         };
     };
 
+    fakeCategoryModel = (overwrite?: Partial<CategoryModel>): CategoryModel => {
+        return {
+            ...this.fakeModel(),
+            displayName: this.generateId(),
+            type: 'custom',
+            sortOrder: 0,
+            sorting: 'alpha',
+            muted: false,
+            collapsed: false,
+            teamId: this.generateId(),
+            team: this.fakeRelation(),
+            categoryChannels: this.fakeQuery([]),
+            categoryChannelsBySortOrder: this.fakeQuery([]),
+            channels: this.fakeQuery([]),
+            myChannels: this.fakeQuery([]),
+            observeHasChannels: jest.fn(),
+            toCategoryWithChannels: jest.fn(),
+            ...overwrite,
+        };
+    };
+
     fakeDraftModel = (overwrite?: Partial<DraftModel>): DraftModel => {
         return {
             ...this.fakeModel(),
@@ -646,6 +674,7 @@ class TestHelperSingleton {
             files: [],
             metadata: {},
             updateAt: 0,
+            type: '',
             ...overwrite,
         };
     };
@@ -750,7 +779,7 @@ class TestHelperSingleton {
     };
 
     fakePostModel = (overwrite?: Partial<PostModel>): PostModel => {
-        return {
+        const fakePost: PostModel = {
             ...this.fakeModel(),
             channelId: this.generateId(),
             createAt: 0,
@@ -780,6 +809,9 @@ class TestHelperSingleton {
             toApi: jest.fn(),
             ...overwrite,
         };
+
+        jest.mocked(fakePost.observe).mockReturnValue(of$(fakePost));
+        return fakePost;
     };
 
     fakeGroupModel = (overwrite?: Partial<GroupModel>): GroupModel => {
@@ -871,6 +903,7 @@ class TestHelperSingleton {
             scheduledAt: 0,
             processedAt: 0,
             errorCode: '',
+            type: '',
             toApi: jest.fn(),
             ...overwrite,
         };
@@ -1175,6 +1208,7 @@ class TestHelperSingleton {
                 update_at: Date.now() + i,
                 items_order: checklists.map((checklist) => checklist.id),
                 status_update_broadcast_channels_enabled: false,
+                type: PLAYBOOK_RUN_TYPES.PlaybookType,
             });
         }
         return playbookRuns;
@@ -1250,6 +1284,7 @@ class TestHelperSingleton {
         return {
             ...this.fakeModel(),
             playbookId: this.generateId(),
+            type: 'playbook',
             postId: null,
             ownerUserId: this.basicUser?.id || '',
             teamId: this.basicTeam?.id || '',
@@ -1436,6 +1471,8 @@ class TestHelperSingleton {
                 description: 'authentication.roles.global_admin.description',
                 permissions: [
                     'system_admin_permission',
+                    'create_post',
+                    'edit_post',
                 ],
                 scheme_managed: true,
                 built_in: true,
@@ -1447,6 +1484,8 @@ class TestHelperSingleton {
                 description: 'authentication.roles.global_user.description',
                 permissions: [
                     'system_user_permission',
+                    'create_post',
+                    'edit_post',
                 ],
                 scheme_managed: true,
                 built_in: true,
@@ -1458,6 +1497,8 @@ class TestHelperSingleton {
                 description: 'authentication.roles.team_admin.description',
                 permissions: [
                     'team_admin_permission',
+                    'create_post',
+                    'edit_post',
                 ],
                 scheme_managed: true,
                 built_in: true,
@@ -1469,6 +1510,8 @@ class TestHelperSingleton {
                 description: 'authentication.roles.team_user.description',
                 permissions: [
                     'team_user_permission',
+                    'create_post',
+                    'edit_post',
                 ],
                 scheme_managed: true,
                 built_in: true,
@@ -1480,6 +1523,8 @@ class TestHelperSingleton {
                 description: 'authentication.roles.channel_admin.description',
                 permissions: [
                     'channel_admin_permission',
+                    'create_post',
+                    'edit_post',
                 ],
                 scheme_managed: true,
                 built_in: true,
@@ -1491,6 +1536,8 @@ class TestHelperSingleton {
                 description: 'authentication.roles.channel_user.description',
                 permissions: [
                     'channel_user_permission',
+                    'create_post',
+                    'edit_post',
                 ],
                 scheme_managed: true,
                 built_in: true,

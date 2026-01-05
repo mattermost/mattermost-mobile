@@ -226,7 +226,7 @@ describe('RunList', () => {
         props.inProgressRuns = [inProgressRun];
         const {getByText} = renderWithIntlAndTheme(<RunList {...props}/>);
 
-        expect(getByText('Start a new run')).toBeTruthy();
+        expect(getByText('New')).toBeTruthy();
     });
 
     it('calls goToSelectPlaybook when Start a new run button is pressed', () => {
@@ -235,7 +235,7 @@ describe('RunList', () => {
         const {getByText} = renderWithIntlAndTheme(<RunList {...props}/>);
 
         act(() => {
-            fireEvent.press(getByText('Start a new run'));
+            fireEvent.press(getByText('New'));
         });
 
         expect(goToSelectPlaybook).toHaveBeenCalledTimes(1);
@@ -348,7 +348,7 @@ describe('RunList', () => {
         const {getByText} = renderWithIntlAndTheme(<RunList {...props}/>);
 
         act(() => {
-            fireEvent.press(getByText('Start a new run'));
+            fireEvent.press(getByText('New'));
         });
 
         expect(goToSelectPlaybook).toHaveBeenCalledTimes(1);
