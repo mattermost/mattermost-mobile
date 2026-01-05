@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'expo-image';
 import React from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import ExpoImage from '@components/expo_image';
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@constants';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
@@ -55,9 +55,10 @@ const DraftScheduledPostTooltip = ({draftType, onClose}: Props) => {
     return (
         <View>
             <View style={styles.titleContainer}>
-                <Image
+                <ExpoImage
                     source={longPressGestureHandLogo}
                     style={styles.image}
+                    cachePolicy='memory'
                 />
                 <TouchableOpacity
                     style={styles.close}

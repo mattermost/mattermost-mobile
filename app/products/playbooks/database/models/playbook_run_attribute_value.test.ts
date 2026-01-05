@@ -17,7 +17,8 @@ const SERVER_URL = `playbookRunAttributeValueModel.test.${Date.now()}.com`;
 
 const applyRunData = (run: PlaybookRunModel, mockData: PlaybookRun) => {
     run._raw.id = mockData.id;
-    run.playbookId = mockData.playbook_id;
+    run.playbookId = mockData.playbook_id ?? '';
+    run.type = mockData.type ?? 'playbook';
     run.postId = mockData.post_id ?? null;
     run.ownerUserId = mockData.owner_user_id;
     run.teamId = mockData.team_id;

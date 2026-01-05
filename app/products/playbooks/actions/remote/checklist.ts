@@ -9,7 +9,9 @@ import {
     updateChecklistItem as localUpdateChecklistItem,
     setAssignee as localSetAssignee,
     setDueDate as localSetDueDate,
+    renameChecklist as localRenameChecklist,
 } from '@playbooks/actions/local/checklist';
+import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
@@ -152,6 +154,50 @@ export const setDueDate = async (
         return {data: true};
     } catch (error) {
         logDebug('error on setDueDate', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const renameChecklist = async (
+    serverUrl: string,
+    playbookRunId: string,
+    checklistNumber: number,
+    checklistId: string,
+    newTitle: string,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+
+        // Patch the playbook run with updated checklists
+        await client.renameChecklist(playbookRunId, checklistNumber, newTitle);
+
+        // Update local database
+        const result = await localRenameChecklist(serverUrl, checklistId, newTitle);
+        return result.error ? result : {data: true};
+    } catch (error) {
+        logDebug('error on renameChecklist', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const addChecklistItem = async (
+    serverUrl: string,
+    playbookRunId: string,
+    checklistNumber: number,
+    title: string,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.addChecklistItem(playbookRunId, checklistNumber, title);
+
+        // Fetch and sync the entire run to get the created item with server-generated ID
+        const run = await client.fetchPlaybookRun(playbookRunId);
+        const result = await handlePlaybookRuns(serverUrl, [run], false, true);
+        return result.error ? result : {data: true};
+    } catch (error) {
+        logDebug('error on addChecklistItem', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

@@ -34,5 +34,6 @@ export default tableSchema({
         {name: 'previous_reminder', type: 'number', isOptional: true},
         {name: 'items_order', type: 'string'}, // JSON string
         {name: 'update_at', type: 'number'},
+        {name: 'type', type: 'string'},
     ],
 });

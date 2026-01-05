@@ -7,13 +7,14 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup} from '@support/server_api';
+import {Channel, Post, Setup, User} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
 import {
     AccountScreen,
+    ChannelScreen,
     CustomStatusScreen,
     EditProfileScreen,
     HomeScreen,
@@ -21,16 +22,23 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - Account Menu', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testUser: any;
+    let otherUser: any;
+    let testChannel: any;
 
     beforeAll(async () => {
-        const {user} = await Setup.apiInit(siteOneUrl);
+        const {channel, user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
+        testChannel = channel;
+
+        ({user: otherUser} = await User.apiCreateUser(siteOneUrl));
+        await Channel.apiAddUserToChannel(siteOneUrl, otherUser.id, testChannel.id);
 
         // # Log in to server and go to account screen
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -134,5 +142,75 @@ describe('Account - Account Menu', () => {
 
         // # Go back to account screen
         await SettingsScreen.close();
+    });
+
+    it('MM-T3472 - should be able to add Nickname', async () => {
+        const nickname = 'nickname';
+        const existingNickname = testUser.nickname;
+
+        await AccountScreen.yourProfileOption.tap();
+        await EditProfileScreen.toBeVisible();
+
+        await EditProfileScreen.nicknameInput.replaceText(nickname);
+        await EditProfileScreen.saveButton.tap();
+        await AccountScreen.toBeVisible();
+
+        // Verify nickname is shown in the profile screen
+        await AccountScreen.yourProfileOption.tap();
+        await EditProfileScreen.toBeVisible();
+        await waitFor(EditProfileScreen.nicknameInput).toHaveText(nickname).withTimeout(timeouts.TEN_SEC);
+
+        // Verify nickname is different than previous nickname
+        const {user} = await User.apiGetUserById(siteOneUrl, testUser.id);
+        if (existingNickname === user.nickname) {
+            throw new Error('Nickname was not updated');
+        }
+
+        // # Go back to account screen
+        await EditProfileScreen.close();
+
+    });
+
+    it('MM-T3472 - should show error when Username is updated with invalid characters', async () => {
+        await AccountScreen.yourProfileOption.tap();
+        await EditProfileScreen.toBeVisible();
+
+        await EditProfileScreen.usernameInput.typeText('+new');
+        await EditProfileScreen.saveButton.tap();
+
+        await waitFor(AccountScreen.accountScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await EditProfileScreen.toBeVisible();
+        await expect(EditProfileScreen.usernameInputError).toHaveText('Username must begin with a letter, and contain between 3 to 22 lowercase characters made up of numbers, letters, and the symbols \".\", \"-\", and \"_\".');
+        await EditProfileScreen.close();
+    });
+
+    it('MM-T2056 - Username changes when viewed by other user', async () => {
+        const message = `Test message ${getRandomId()}`;
+        const newUsername = `newusername${getRandomId()}`;
+        await HomeScreen.channelListTab.tap();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem, postListPostItemHeaderDisplayName} = ChannelScreen.getPostListPostItem(post.id, message);
+        await expect(postListPostItem).toBeVisible();
+        await expect(postListPostItemHeaderDisplayName).toHaveText(testUser.username);
+
+        // Also check profile screen
+        await ChannelScreen.back();
+        await AccountScreen.open();
+
+        await AccountScreen.yourProfileOption.tap();
+        await EditProfileScreen.toBeVisible();
+
+        await EditProfileScreen.usernameInput.replaceText(newUsername);
+        await EditProfileScreen.saveButton.tap();
+        await AccountScreen.toBeVisible();
+
+        await HomeScreen.channelListTab.tap();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+
+        const {postListPostItemHeaderDisplayName: updatedUsername} = ChannelScreen.getPostListPostItem(post.id, message);
+        await expect(updatedUsername).toHaveText(newUsername);
     });
 });
