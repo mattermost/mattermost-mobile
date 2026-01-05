@@ -14,8 +14,8 @@ fun ReadableArray.toJson(): JSONArray {
             ReadableType.Boolean -> jsonArray.put(this.getBoolean(i))
             ReadableType.Number -> jsonArray.put(this.getDouble(i))
             ReadableType.String -> jsonArray.put(this.getString(i))
-            ReadableType.Map -> jsonArray.put(this.getMap(i).toJson())
-            ReadableType.Array -> jsonArray.put(this.getArray(i).toJson())
+            ReadableType.Map -> this.getMap(i)?.toJson()?.let { jsonArray.put(it) }
+            ReadableType.Array -> this.getArray(i)?.toJson()?.let { jsonArray.put(it) }
         }
     }
     return jsonArray

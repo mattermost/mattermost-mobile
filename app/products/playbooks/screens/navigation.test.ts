@@ -545,9 +545,9 @@ describe('Playbooks Navigation', () => {
     describe('goToRenamePlaybookRun', () => {
         it('should navigate to rename playbook run screen with correct parameters', async () => {
             const currentTitle = 'Playbook Run Title';
-            const onSave = jest.fn();
+            const playbookRunId = 'run-id-123';
 
-            await goToRenamePlaybookRun(mockIntl, Preferences.THEMES.denim, currentTitle, onSave);
+            await goToRenamePlaybookRun(mockIntl, Preferences.THEMES.denim, currentTitle, playbookRunId);
 
             expect(mockIntl.formatMessage).toHaveBeenCalledWith({
                 id: 'playbooks.playbook_run.rename.title',
@@ -558,7 +558,7 @@ describe('Playbooks Navigation', () => {
                 'Rename playbook run',
                 {
                     currentTitle,
-                    onSave,
+                    playbookRunId,
                 },
             );
         });

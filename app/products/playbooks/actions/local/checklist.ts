@@ -105,7 +105,7 @@ export async function renameChecklist(serverUrl: string, checklistId: string, ti
 
         await database.write(async () => {
             checklist.update((c) => {
-                c.title = title;
+                c.title = title.trim();
             });
         });
 

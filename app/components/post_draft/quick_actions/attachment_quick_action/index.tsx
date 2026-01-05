@@ -3,7 +3,6 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {KeyboardController} from 'react-native-keyboard-controller';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -11,6 +10,7 @@ import {ICON_SIZE} from '@constants/post_draft';
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {openAttachmentOptions} from '@screens/navigation';
+import {dismissKeyboard} from '@utils/keyboard';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {QuickActionAttachmentProps} from '@typings/components/post_draft_quick_action';
@@ -50,7 +50,7 @@ export default function AttachmentQuickAction({
 
     const openFileAttachmentOptions = useCallback(async () => {
         closeInputAccessoryView();
-        await KeyboardController.dismiss();
+        await dismissKeyboard();
 
         openAttachmentOptions(intl, theme, {
             onUploadFiles,

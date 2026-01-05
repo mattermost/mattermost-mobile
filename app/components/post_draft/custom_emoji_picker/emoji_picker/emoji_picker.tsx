@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
@@ -51,6 +51,7 @@ const EmojiPicker: React.FC<Props> = ({
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const [searchTerm, setSearchTerm] = useState<string|undefined>();
+    const isSelectingEmoji = useRef(false);
 
     const onCancelSearch = useCallback(() => setSearchTerm(undefined), []);
 
@@ -67,11 +68,17 @@ const EmojiPicker: React.FC<Props> = ({
 
     const term = searchTerm?.replace(/^:|:$/g, '').trim() || '';
 
+    // Wrap onEmojiPress to set flag before emoji selection
+    const handleEmojiPress = useCallback((emojiName: string) => {
+        isSelectingEmoji.current = true;
+        onEmojiPress(emojiName);
+    }, [onEmojiPress]);
+
     const EmojiList = (
         <EmojiFiltered
             customEmojis={customEmojis}
             searchTerm={term}
-            onEmojiPress={onEmojiPress}
+            onEmojiPress={handleEmojiPress}
             hideEmojiNames={isEmojiSearchFocused}
         />
     );
@@ -101,6 +108,7 @@ const EmojiPicker: React.FC<Props> = ({
                 value={searchTerm}
                 setIsEmojiSearchFocused={setIsEmojiSearchFocused}
                 emojiPickerHeight={emojiPickerHeight}
+                isSelectingEmojiRef={isSelectingEmoji}
             />
             {!isEmojiSearchFocused && EmojiSection}
             {isEmojiSearchFocused && EmojiList}

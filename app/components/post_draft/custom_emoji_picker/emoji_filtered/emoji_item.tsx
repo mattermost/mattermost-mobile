@@ -12,6 +12,7 @@ type TouchableEmojiProps = {
     name: string;
     onEmojiPress: (emojiName: string) => void;
     hideName?: boolean;
+    shouldDismissKeyboard?: boolean;
 }
 
 const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -36,16 +37,16 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const EmojiTouchable = ({name, onEmojiPress, hideName = false}: TouchableEmojiProps) => {
+const EmojiTouchable = ({name, onEmojiPress, hideName = false, shouldDismissKeyboard = true}: TouchableEmojiProps) => {
     const theme = useTheme();
     const style = getStyleSheetFromTheme(theme);
 
     const onPress = useCallback(() => {
-        if (Keyboard.isVisible()) {
+        if (shouldDismissKeyboard && Keyboard.isVisible()) {
             Keyboard.dismiss();
         }
         onEmojiPress(name);
-    }, [name, onEmojiPress]);
+    }, [name, onEmojiPress, shouldDismissKeyboard]);
 
     return (
         <TouchableOpacity

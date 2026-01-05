@@ -18,11 +18,13 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 const SEARCH_BAR_HEIGHT = 56; // paddingTop: 12 + paddingBottom: 12 + search bar ~32px
 const SEARCH_CONTAINER_PADDING = 8; // paddingVertical: 4 * 2
 const SEARCH_VISIBILITY_OFFSET = 40; // Extra height to ensure search values are visible
+const SEARCH_VISIBILITY_OFFSET_ANDROID = 60;
 
 type Props = SearchProps & {
     skinTone: string;
     setIsEmojiSearchFocused: React.Dispatch<React.SetStateAction<boolean>>;
     emojiPickerHeight: SharedValue<number>;
+    isSelectingEmojiRef?: React.MutableRefObject<boolean>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -44,6 +46,7 @@ const EmojiPickerHeader: React.FC<Props> = ({
     skinTone,
     emojiPickerHeight,
     setIsEmojiSearchFocused,
+    isSelectingEmojiRef,
     ...props
 }) => {
     const theme = useTheme();
@@ -117,7 +120,8 @@ const EmojiPickerHeader: React.FC<Props> = ({
                 }
 
                 // Calculate total height: keyboardHeight + search bar height + search container padding + visibility offset
-                const targetHeight = Platform.OS === 'android' ? SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET : currentKeyboardH + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET;
+                const visibilityOffset = Platform.OS === 'android' ? SEARCH_VISIBILITY_OFFSET_ANDROID : SEARCH_VISIBILITY_OFFSET;
+                const targetHeight = Platform.OS === 'android' ? SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + visibilityOffset : currentKeyboardH + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + visibilityOffset;
 
                 emojiPickerHeight.value = withTiming(targetHeight, {
                     duration: 250,
@@ -131,6 +135,11 @@ const EmojiPickerHeader: React.FC<Props> = ({
     const onBlur = useCallback(() => {
         // Ignore blur events during height reduction process
         if (isReducingHeight.current) {
+            return;
+        }
+
+        if (isSelectingEmojiRef?.current) {
+            isSelectingEmojiRef.current = false;
             return;
         }
 
@@ -154,7 +163,7 @@ const EmojiPickerHeader: React.FC<Props> = ({
             const originalHeight = contextLastKeyboardHeight > 0 ? contextLastKeyboardHeight : DEFAULT_INPUT_ACCESSORY_HEIGHT;
             emojiPickerHeight.value = withTiming(originalHeight, {duration: 250});
         }
-    }, [emojiPickerHeight, isSearching, setIsEmojiSearchFocused, contextLastKeyboardHeight, showInputAccessoryView]);
+    }, [emojiPickerHeight, isSearching, setIsEmojiSearchFocused, contextLastKeyboardHeight, showInputAccessoryView, isSelectingEmojiRef]);
 
     const onFocus = useCallback(() => {
         if (Platform.OS === 'android' && showKeyboard) {
@@ -169,7 +178,8 @@ const EmojiPickerHeader: React.FC<Props> = ({
         // Use last keyboard height from context if available, otherwise use default input accessory height
         // The useAnimatedReaction will handle real-time updates when keyboard actually opens
         const keyboardH = contextLastKeyboardHeight > 0 ? contextLastKeyboardHeight : DEFAULT_INPUT_ACCESSORY_HEIGHT;
-        const targetHeight = Platform.OS === 'android' ? SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET : keyboardH + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET;
+        const visibilityOffset = Platform.OS === 'android' ? SEARCH_VISIBILITY_OFFSET_ANDROID : SEARCH_VISIBILITY_OFFSET;
+        const targetHeight = Platform.OS === 'android' ? SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + visibilityOffset : keyboardH + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + visibilityOffset;
 
         if (Platform.OS === 'android') {
             setShowKeyboard(false);
