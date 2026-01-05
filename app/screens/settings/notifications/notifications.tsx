@@ -64,7 +64,7 @@ const Notifications = ({
 }: NotificationsProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser]);
     const callsRingingEnabled = useMemo(() => getCallsConfig(serverUrl).EnableRinging, [serverUrl]);
     const [isRegistered, setIsRegistered] = useState(true);
 

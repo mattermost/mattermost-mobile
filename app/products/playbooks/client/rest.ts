@@ -14,6 +14,7 @@ export interface ClientPlaybooksMix {
     fetchPlaybookRuns: (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => Promise<FetchPlaybookRunsReturn>;
     fetchPlaybookRun: (id: string, groupLabel?: RequestGroupLabel) => Promise<PlaybookRun>;
     fetchPlaybookRunMetadata: (id: string) => Promise<PlaybookRunMetadata>;
+    patchPlaybookRun: (playbookRunId: string, updates: Partial<PlaybookRun>) => Promise<void>;
     setOwner: (playbookRunId: string, ownerId: string) => Promise<void>;
 
     // Run Management
@@ -27,8 +28,9 @@ export interface ClientPlaybooksMix {
     restoreChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
     setAssignee: (playbookRunId: string, checklistNum: number, itemNum: number, assigneeId?: string) => Promise<void>;
     setDueDate: (playbookRunId: string, checklistNum: number, itemNum: number, date?: number) => Promise<void>;
+    addChecklistItem: (playbookRunId: string, checklistNum: number, title: string) => Promise<void>;
 
-    // skipChecklist: (playbookRunID: string, checklistNum: number) => Promise<void>;
+    renameChecklist: (playbookRunId: string, checklistNumber: number, newName: string) => Promise<void>;
 
     // Slash Commands
     runChecklistItemSlashCommand: (playbookRunId: string, checklistNumber: number, itemNumber: number) => Promise<{trigger_id: string}>;
@@ -82,6 +84,20 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         return this.doFetch(
             `${this.getPlaybookRunRoute(id)}/metadata`,
             {method: 'get'},
+        );
+    };
+
+    patchPlaybookRun = async (playbookRunId: string, updates: Partial<PlaybookRun>) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}`,
+            {method: 'patch', body: updates},
+        );
+    };
+
+    renameChecklist = async (playbookRunId: string, checklistNumber: number, newName: string) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNumber}/rename`,
+            {method: 'put', body: {title: newName}},
         );
     };
 
@@ -185,6 +201,13 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         await this.doFetch(
             `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNum}/item/${itemNum}/duedate`,
             {method: 'put', body: {due_date: date}},
+        );
+    };
+
+    addChecklistItem = async (playbookRunId: string, checklistNum: number, title: string) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNum}/add`,
+            {method: 'post', body: {title}},
         );
     };
 

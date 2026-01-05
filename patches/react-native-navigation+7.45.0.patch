@@ -383,18 +383,18 @@ index 551f72b..f275c18 100644
  
 -    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
 -        mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher())
-+    override fun onInterceptTouchEvent(event: MotionEvent?): Boolean {
-+        event?.let {
-+            mJSTouchDispatcher.handleTouchEvent(it, getEventDispatcher()!!)
++    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
++        getEventDispatcher()?.let {
++            mJSTouchDispatcher.handleTouchEvent(event, it)
 +        }
          return super.onInterceptTouchEvent(event)
      }
- 
+
 -    override fun onTouchEvent(event: MotionEvent): Boolean {
 -        mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher())
-+    override fun onTouchEvent(event: MotionEvent?): Boolean {
-+        event?.let {
-+            mJSTouchDispatcher.handleTouchEvent(it, getEventDispatcher()!!)
++    override fun onTouchEvent(event: MotionEvent): Boolean {
++        getEventDispatcher()?.let {
++            mJSTouchDispatcher.handleTouchEvent(event, it)
 +        }
          super.onTouchEvent(event)
          return true
@@ -412,24 +412,15 @@ index fc482a6..9406bbf 100644
          [self.reactView setFrame:self.view.frame];
          [self.view addSubview:self.reactView];
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
-index b44f24f..bf4e1c3 100644
+index b44f24f..a7d2ec9 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
-@@ -1,6 +1,8 @@
- #import "RNNOverlayWindow.h"
- #import "RNNReactView.h"
- #import <React/RCTModalHostView.h>
-+#import <react-native-safe-area-context/RNCSafeAreaView.h>
-+#import <react-native-safe-area-context/RNCSafeAreaProvider.h>
- 
- @implementation RNNOverlayWindow
- 
-@@ -9,6 +11,8 @@
+@@ -9,6 +9,8 @@
  
      if ([hitTestResult isKindOfClass:[UIWindow class]] ||
          [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class] ||
-+        [hitTestResult isKindOfClass:[RNCSafeAreaView class]] ||
-+        [hitTestResult isKindOfClass:[RNCSafeAreaProvider class]] ||
++        [hitTestResult isKindOfClass:NSClassFromString(@"RNCSafeAreaView")] ||
++        [hitTestResult isKindOfClass:NSClassFromString(@"RNCSafeAreaProvider")] ||
          [hitTestResult isKindOfClass:[RCTModalHostView class]] ||
          [hitTestResult isKindOfClass:NSClassFromString(@"RCTRootComponentView")]) {
          return nil;

@@ -62,6 +62,7 @@ interface ClientConfig {
     EnableEmailBatching: string;
     EnableEmailInvitations: string;
     EnableEmojiPicker: string;
+    EnableGuestMagicLink: string;
     EnableFileAttachments: string;
     EnableGifPicker: string;
     EnableGuestAccounts: string;
@@ -136,6 +137,9 @@ interface ClientConfig {
     IosAppDownloadLink: string;
     IosLatestVersion: string;
     IosMinVersion: string;
+    IntuneMAMEnabled?: string;
+    IntuneScope?: string;
+    IntuneAuthService?: string;
     LdapFirstNameAttributeSet: string;
     LdapLastNameAttributeSet: string;
     LdapLoginButtonBorderColor: string;

@@ -108,7 +108,7 @@ describe('Participants', () => {
                 renderContent: expect.any(Function),
                 initialSnapIndex: 1,
                 snapPoints: expect.any(Array),
-                title: 'Run Participants',
+                title: 'Participants',
                 theme: expect.any(Object),
             }));
         });
@@ -146,7 +146,7 @@ describe('Participants', () => {
             const args = jest.mocked(bottomSheet).mock.calls[0][0];
             const Content = args.renderContent;
             const {getByText} = renderWithEverything(<Content/>, {database, serverUrl});
-            expect(getByText('Run Participants')).toBeTruthy();
+            expect(getByText('Participants')).toBeTruthy();
         });
     });
 
@@ -163,7 +163,7 @@ describe('Participants', () => {
             const args = jest.mocked(bottomSheet).mock.calls[0][0];
             const Content = args.renderContent;
             const {queryByText} = renderWithEverything(<Content/>, {database, serverUrl});
-            expect(queryByText('Run Participants')).toBeNull();
+            expect(queryByText('Participants')).toBeNull();
         });
     });
 

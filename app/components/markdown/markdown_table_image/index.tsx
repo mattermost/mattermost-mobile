@@ -12,9 +12,9 @@ import {useServerUrl} from '@context/server';
 import {useGalleryItem} from '@hooks/gallery';
 import {lookupMimeType} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
-import {generateId} from '@utils/general';
 import {calculateDimensions, isGifTooLarge} from '@utils/images';
 import {removeImageProxyForKey} from '@utils/markdown';
+import {urlSafeBase64Encode} from '@utils/security';
 import {secureGetFromRecord} from '@utils/types';
 import {safeDecodeURIComponent} from '@utils/url';
 
@@ -48,10 +48,13 @@ const MarkTableImage = ({
 }: MarkdownTableImageProps) => {
     const sourceKey = removeImageProxyForKey(source);
     const metadata = secureGetFromRecord(imagesMetadata, sourceKey);
-    const fileId = useRef(generateId('uid')).current;
+    const fileId = useRef<string | null>(null);
+    if (fileId.current === null) {
+        fileId.current = `uid-${urlSafeBase64Encode(sourceKey)}`;
+    }
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
     const currentServerUrl = useServerUrl();
-    const galleryIdentifier = `${postId}-${fileId}-${location}`;
+    const galleryIdentifier = `${postId}-${fileId.current}-${location}`;
 
     const getImageSource = useCallback(() => {
         let uri = source;
@@ -83,7 +86,7 @@ const MarkTableImage = ({
         }
 
         return {
-            id: fileId,
+            id: fileId.current || '',
             name: filename,
             extension,
             has_preview_image: true,
@@ -95,7 +98,7 @@ const MarkTableImage = ({
             size: 0,
             user_id: '',
         };
-    }, [fileId, getImageSource, metadata?.height, metadata?.width, postId]);
+    }, [getImageSource, metadata?.height, metadata?.width, postId]);
 
     const handlePreviewImage = useCallback(() => {
         const file = getFileInfo();
@@ -103,7 +106,7 @@ const MarkTableImage = ({
             return;
         }
         const item: GalleryItemType = {
-            ...fileToGalleryItem(file),
+            ...fileToGalleryItem(file, undefined, undefined, 0, file.id),
             type: 'image',
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
@@ -136,7 +139,7 @@ const MarkTableImage = ({
             >
                 <Animated.View style={[styles, {width, height}]}>
                     <ProgressiveImage
-                        id={fileId}
+                        id={fileId.current}
                         imageUri={source}
                         forwardRef={ref}
                         onError={onLoadFailed}

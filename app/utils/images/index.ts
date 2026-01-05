@@ -57,10 +57,22 @@ export const calculateDimensions = (height?: number, width?: number, viewPortWid
             // Portrait: fit to viewport height
             imageHeight = viewPortHeight;
             imageWidth = imageHeight * heightRatio;
+
+            // Ensure width doesn't exceed viewport
+            if (imageWidth > viewPortWidth) {
+                imageWidth = viewPortWidth;
+                imageHeight = imageWidth * ratio;
+            }
         } else {
             // Landscape or square: fit to viewport width
             imageWidth = viewPortWidth;
             imageHeight = imageWidth * ratio;
+
+            // Ensure height doesn't exceed viewport
+            if (imageHeight > viewPortHeight) {
+                imageHeight = viewPortHeight;
+                imageWidth = imageHeight * heightRatio;
+            }
         }
     }
 
