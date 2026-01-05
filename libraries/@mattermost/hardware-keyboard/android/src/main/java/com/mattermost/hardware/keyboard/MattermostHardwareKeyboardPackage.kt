@@ -18,10 +18,11 @@ class MattermostHardwareKeyboardPackage : TurboReactPackage() {
     override fun getReactModuleInfoProvider() = ReactModuleInfoProvider {
         mapOf(
                 MattermostHardwareKeyboardImpl.NAME to ReactModuleInfo(
-                        MattermostHardwareKeyboardImpl.NAME,
-                        MattermostHardwareKeyboardImpl.NAME,
-                    _canOverrideExistingModule = false,
-                    _needsEagerInit = false,
+                    name = MattermostHardwareKeyboardImpl.NAME,
+                    className = MattermostHardwareKeyboardImpl.NAME,
+                    canOverrideExistingModule = false,
+                    needsEagerInit = false,
+                    hasConstants = false,
                     isCxxModule = false,
                     isTurboModule = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
                 )

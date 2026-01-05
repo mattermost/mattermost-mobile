@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type ComponentProps} from 'react';
+import React, {act, type ComponentProps} from 'react';
 import {Alert} from 'react-native';
 
 import UserChip from '@components/chips/user_chip';
+import CompassIcon from '@components/compass_icon';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -17,7 +18,7 @@ import {fireEvent, renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
-import {goToSelectUser} from '../navigation';
+import {goToRenamePlaybookRun, goToSelectUser} from '../navigation';
 
 import ChecklistList from './checklist_list';
 import ErrorState from './error_state';
@@ -31,6 +32,14 @@ import type {PlaybookRunModel} from '@playbooks/database/models';
 const serverUrl = 'some.server.url';
 
 jest.mock('@utils/snack_bar');
+
+jest.mock('@components/compass_icon', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(CompassIcon).mockImplementation(
+    (props) => React.createElement('CompassIcon', {testID: 'compass-icon', ...props}) as any, // override the type since it is expecting a class component
+);
 
 jest.mock('@context/server');
 jest.mocked(useServerUrl).mockReturnValue(serverUrl);
@@ -66,12 +75,14 @@ jest.mocked(StatusUpdateIndicator).mockImplementation(
 );
 
 jest.mock('../navigation', () => ({
+    goToRenamePlaybookRun: jest.fn(),
     goToSelectUser: jest.fn(),
 }));
 
 jest.mock('@playbooks/actions/remote/runs', () => ({
-    setOwner: jest.fn(),
     finishRun: jest.fn(),
+    renamePlaybookRun: jest.fn(),
+    setOwner: jest.fn(),
 }));
 
 jest.mock('@hooks/android_back_handler');
@@ -613,4 +624,37 @@ describe('PlaybookRun', () => {
         expect(queryByTestId('status-update-indicator')).toBeNull();
     });
 
+    it('renders edit icon when not read only', () => {
+        const props = getBaseProps();
+        props.participants.push(TestHelper.fakeUserModel({id: props.currentUserId}));
+        const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
+
+        const editIcon = getByTestId('playbook-run.edit-icon');
+        expect(editIcon).toBeTruthy();
+    });
+
+    it('does not render edit icon when read only', () => {
+        const props = getBaseProps();
+        const {queryByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
+
+        const editIcon = queryByTestId('playbook-run.edit-icon');
+        expect(editIcon).toBeNull();
+    });
+
+    it('handles edit icon press', () => {
+        const props = getBaseProps();
+        props.participants.push(TestHelper.fakeUserModel({id: props.currentUserId}));
+        const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
+
+        const editIcon = getByTestId('playbook-run.edit-icon');
+        act(() => {
+            fireEvent.press(editIcon);
+        });
+        expect(goToRenamePlaybookRun).toHaveBeenCalledWith(
+            expect.anything(), // intl
+            expect.anything(), // theme
+            'Test Playbook Run',
+            props.playbookRun!.id,
+        );
+    });
 });
