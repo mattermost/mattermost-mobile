@@ -1,50 +1,39 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type ComponentProps} from 'react';
+import React from 'react';
 
 import {renderWithIntl} from '@test/intl-test-helper';
 
 import BoRLabel from './index';
 
 describe('components/burn_on_read_label', () => {
-    const getBaseProps = (): ComponentProps<typeof BoRLabel> => ({
-        durationSeconds: 300,
-    });
-
     it('should render BoR label with formatted duration', () => {
-        const props = getBaseProps();
-        const {getByTestId} = renderWithIntl(<BoRLabel {...props}/>);
+        const {getByTestId} = renderWithIntl(<BoRLabel durationSeconds={300}/>);
 
         expect(getByTestId('bor_label')).toBeVisible();
     });
 
     it('should render with custom test ID when id prop is provided', () => {
-        const props = getBaseProps();
-        props.id = 'custom';
-        const {getByTestId} = renderWithIntl(<BoRLabel {...props}/>);
+        const {getByTestId} = renderWithIntl(<BoRLabel durationSeconds={300} id='custom'/>);
 
         expect(getByTestId('custom_bor_label')).toBeVisible();
     });
 
     it('should render with default test ID when no id prop is provided', () => {
-        const props = getBaseProps();
-        const {getByTestId} = renderWithIntl(<BoRLabel {...props}/>);
+        const {getByTestId} = renderWithIntl(<BoRLabel durationSeconds={300}/>);
 
         expect(getByTestId('bor_label')).toBeVisible();
     });
 
     it('should handle different duration values', () => {
-        const props = getBaseProps();
-        props.durationSeconds = 60;
-        const {getByTestId} = renderWithIntl(<BoRLabel {...props}/>);
+        const {getByTestId} = renderWithIntl(<BoRLabel durationSeconds={60}/>);
 
         expect(getByTestId('bor_label')).toBeVisible();
     });
 
     it('should render Tag component with correct props', () => {
-        const props = getBaseProps();
-        const {getByTestId} = renderWithIntl(<BoRLabel {...props}/>);
+        const {getByTestId} = renderWithIntl(<BoRLabel durationSeconds={300}/>);
 
         const tag = getByTestId('bor_label');
         expect(tag).toBeVisible();
