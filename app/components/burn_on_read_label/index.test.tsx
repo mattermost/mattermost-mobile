@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {render} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
+
+import {renderWithIntl} from '@test/intl-test-helper';
 
 import BoRLabel from './index';
 
@@ -13,7 +14,7 @@ describe('components/burn_on_read_label', () => {
 
     it('should render BoR label with formatted duration', () => {
         const props = getBaseProps();
-        const {getByTestId} = render(<BoRLabel {...props}/>);
+        const {getByTestId} = renderWithIntl(<BoRLabel {...props}/>);
 
         expect(getByTestId('bor_label')).toBeVisible();
     });
@@ -21,14 +22,14 @@ describe('components/burn_on_read_label', () => {
     it('should render with custom test ID when id prop is provided', () => {
         const props = getBaseProps();
         props.id = 'custom';
-        const {getByTestId} = render(<BoRLabel {...props}/>);
+        const {getByTestId} = renderWithIntl(<BoRLabel {...props}/>);
 
         expect(getByTestId('custom_bor_label')).toBeVisible();
     });
 
     it('should render with default test ID when no id prop is provided', () => {
         const props = getBaseProps();
-        const {getByTestId} = render(<BoRLabel {...props}/>);
+        const {getByTestId} = renderWithIntl(<BoRLabel {...props}/>);
 
         expect(getByTestId('bor_label')).toBeVisible();
     });
@@ -36,17 +37,18 @@ describe('components/burn_on_read_label', () => {
     it('should handle different duration values', () => {
         const props = getBaseProps();
         props.durationSeconds = 60;
-        const {getByTestId} = render(<BoRLabel {...props}/>);
+        const {getByTestId} = renderWithIntl(<BoRLabel {...props}/>);
 
         expect(getByTestId('bor_label')).toBeVisible();
     });
 
     it('should render Tag component with correct props', () => {
         const props = getBaseProps();
-        const {getByTestId} = render(<BoRLabel {...props}/>);
+        const {getByTestId} = renderWithIntl(<BoRLabel {...props}/>);
 
         const tag = getByTestId('bor_label');
         expect(tag).toBeVisible();
+
         // The Tag component should have the fire icon and dangerDim type
         // These would be tested in the Tag component's own tests
     });
