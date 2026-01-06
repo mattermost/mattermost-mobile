@@ -19,6 +19,7 @@ import {
     addFilesToDraft,
     removeDraft,
     updateDraftPriority,
+    updateDraftBoRConfig,
     updateDraftMarkdownImageMetadata,
 } from './draft';
 
@@ -366,6 +367,60 @@ describe('switchToGlobalDrafts', () => {
         await switchToGlobalDrafts(serverUrl, teamId, DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
 
         expect(popTo).toHaveBeenCalledWith(Screens.GLOBAL_DRAFTS);
+    });
+});
+
+describe('updateDraftBoRConfig', () => {
+    const postBoRConfig: PostBoRConfig = {
+        enabled: true,
+        borDurationSeconds: 300,
+        borMaximumTimeToLiveSeconds: 3600,
+    } as PostBoRConfig;
+
+    it('handle not found database', async () => {
+        const result = await updateDraftBoRConfig('foo', channelId, '', postBoRConfig) as {draft: unknown; error: unknown};
+        expect(result.error).toBeDefined();
+        expect(result.draft).toBeUndefined();
+    });
+
+    it('handle no draft', async () => {
+        const models = await updateDraftBoRConfig(serverUrl, channelId, '', postBoRConfig) as DraftModel[];
+        expect(models).toBeDefined();
+        expect(models.length).toBe(1);
+        expect(models[0].metadata?.borConfig?.enabled).toBe(postBoRConfig.enabled);
+        expect(models[0].metadata?.borConfig?.borDurationSeconds).toBe(postBoRConfig.borDurationSeconds);
+        expect(models[0].type).toBe('burn_on_read');
+    });
+
+    it('update draft BoR config with enabled true', async () => {
+        await operator.handleDraft({drafts: [draft], prepareRecordsOnly: false});
+
+        const result = await updateDraftBoRConfig(serverUrl, channelId, '', postBoRConfig) as {draft: DraftModel; error: unknown};
+        expect(result.error).toBeUndefined();
+        expect(result.draft).toBeDefined();
+        expect(result.draft.metadata?.borConfig?.enabled).toBe(postBoRConfig.enabled);
+        expect(result.draft.metadata?.borConfig?.borDurationSeconds).toBe(postBoRConfig.borDurationSeconds);
+        expect(result.draft.type).toBe('burn_on_read');
+    });
+
+    it('update draft BoR config with enabled false', async () => {
+        await operator.handleDraft({drafts: [draft], prepareRecordsOnly: false});
+
+        const disabledBoRConfig = {...postBoRConfig, enabled: false};
+        const result = await updateDraftBoRConfig(serverUrl, channelId, '', disabledBoRConfig) as {draft: DraftModel; error: unknown};
+        expect(result.error).toBeUndefined();
+        expect(result.draft).toBeDefined();
+        expect(result.draft.metadata?.borConfig?.enabled).toBe(false);
+        expect(result.draft.type).toBe('');
+    });
+
+    it('update draft BoR config with prepareRecordsOnly true', async () => {
+        await operator.handleDraft({drafts: [draft], prepareRecordsOnly: false});
+
+        const result = await updateDraftBoRConfig(serverUrl, channelId, '', postBoRConfig, true) as {draft: DraftModel; error: unknown};
+        expect(result.error).toBeUndefined();
+        expect(result.draft).toBeDefined();
+        expect(result.draft.metadata?.borConfig?.enabled).toBe(postBoRConfig.enabled);
     });
 });
 
