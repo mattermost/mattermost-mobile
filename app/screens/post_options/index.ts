@@ -163,7 +163,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         }),
     );
 
-    const borReceiptData: BurnOnReadRecipientData = combineLatest([channelInfo]).pipe(
+    const borReceiptData = combineLatest([channelInfo]).pipe(
         switchMap(([info]) => {
             const revealedCount = post.metadata?.recipients?.length || 0;
             const totalRecipients = info ? Math.max(0, info.memberCount - 1) : 0;

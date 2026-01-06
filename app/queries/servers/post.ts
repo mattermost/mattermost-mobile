@@ -6,12 +6,13 @@ import {of as of$, combineLatestWith, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
+import {SKU_SHORT_NAME} from '@constants/license';
 import {logDebug, logWarning} from '@utils/log';
 import {updatePermalinkMetadata} from '@utils/permalink_sync';
 
 import {queryGroupsByNames} from './group';
 import {querySavedPostsPreferences} from './preference';
-import {getConfigValue, observeConfigBooleanValue, observeConfigIntValue} from './system';
+import {getConfigValue, observeConfigBooleanValue, observeConfigIntValue, observeIsMinimumLicenseTier} from './system';
 import {queryUsersByUsername, observeUser, observeCurrentUser} from './user';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -258,24 +259,15 @@ export const observeIsPostPriorityEnabled = (database: Database) => {
 };
 
 export const observeIsBoREnabled = (database: Database) => {
-    return observeConfigBooleanValue(database, 'EnableBurnOnRead');
+    const featureEnabled = observeConfigBooleanValue(database, 'EnableBurnOnRead');
+    const licenseValid = observeIsMinimumLicenseTier(database, SKU_SHORT_NAME.EnterpriseAdvanced);
+
+    return combineLatest([featureEnabled, licenseValid]).pipe(
+        switchMap(([enabled, licensed]) => of$(enabled && licensed)),
+    );
 };
 
 export const observeBoRConfig = (database: Database) => {
-    // const botDurationSecondsString = await getConfigValue(database, 'BurnOnReadDurationSeconds') || DEFAULT_BURN_ON_READ_DURATION_SECONDS;
-    // const borDurationSeconds = parseInt(botDurationSecondsString, 10);
-    //
-    // const maxBoRDurationSecondsString = await getConfigValue(database, 'BurnOnReadMaximumTimeToLiveSeconds') || DEFAULT_BURN_ON_READ_MAXIMUM_TTL_SECONDS;
-    // const borMaximumTimeToLiveSeconds = parseInt(maxBoRDurationSecondsString, 10);
-    //
-    // const borConfig: PostBoRConfig = {
-    //     enabled: false,
-    //     borDurationSeconds,
-    //     borMaximumTimeToLiveSeconds,
-    // };
-    //
-    // return borConfig;
-
     const borDurationSecondsObservable = observeConfigIntValue(database, 'BurnOnReadDurationSeconds');
     const maxBoRDurationSecondsStringObservable = observeConfigIntValue(database, 'BurnOnReadMaximumTimeToLiveSeconds');
 

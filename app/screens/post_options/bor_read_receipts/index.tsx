@@ -8,6 +8,8 @@ import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+export const BOR_READ_RECEIPTS_HEIGHT = 54;
+
 type Props = {
     totalReceipts: number;
     readReceipts: number;
@@ -20,12 +22,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.16),
             paddingBottom: 16,
             marginBottom: 16,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            height: BOR_READ_RECEIPTS_HEIGHT,
         },
         title: {
             fontSize: 11,
             fontWeight: 600,
             color: changeOpacity(theme.centerChannelColor, 0.56),
-            paddingBottom: 16,
         },
     };
 });

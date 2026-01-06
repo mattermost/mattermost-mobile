@@ -25,6 +25,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginLeft: 12,
         gap: 7,
         flexWrap: 'wrap',
+        marginBottom: 6,
     },
     error: {
         color: PostPriorityColors.URGENT,
