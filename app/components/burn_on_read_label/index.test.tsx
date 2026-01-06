@@ -15,7 +15,12 @@ describe('components/burn_on_read_label', () => {
     });
 
     it('should render with custom test ID when id prop is provided', () => {
-        const {getByTestId} = renderWithIntl(<BoRLabel durationSeconds={300} id='custom'/>);
+        const {getByTestId} = renderWithIntl(
+            <BoRLabel
+                durationSeconds={300}
+                id='custom'
+            />,
+        );
 
         expect(getByTestId('custom_bor_label')).toBeVisible();
     });
