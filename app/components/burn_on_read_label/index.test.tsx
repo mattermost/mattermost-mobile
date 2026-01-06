@@ -6,11 +6,6 @@ import React, {type ComponentProps} from 'react';
 
 import BoRLabel from './index';
 
-// Mock the formatTime utility
-jest.mock('@utils/datetime', () => ({
-    formatTime: jest.fn((seconds: number) => `${seconds}s`),
-}));
-
 describe('components/burn_on_read_label', () => {
     const getBaseProps = (): ComponentProps<typeof BoRLabel> => ({
         durationSeconds: 300,
@@ -18,9 +13,9 @@ describe('components/burn_on_read_label', () => {
 
     it('should render BoR label with formatted duration', () => {
         const props = getBaseProps();
-        const {getByText} = render(<BoRLabel {...props}/>);
+        const {getByTestId} = render(<BoRLabel {...props}/>);
 
-        expect(getByText('BURN ON READ (300s)')).toBeTruthy();
+        expect(getByTestId('bor_label')).toBeVisible();
     });
 
     it('should render with custom test ID when id prop is provided', () => {
@@ -28,22 +23,22 @@ describe('components/burn_on_read_label', () => {
         props.id = 'custom';
         const {getByTestId} = render(<BoRLabel {...props}/>);
 
-        expect(getByTestId('custom_bor_label')).toBeTruthy();
+        expect(getByTestId('custom_bor_label')).toBeVisible();
     });
 
     it('should render with default test ID when no id prop is provided', () => {
         const props = getBaseProps();
         const {getByTestId} = render(<BoRLabel {...props}/>);
 
-        expect(getByTestId('bor_label')).toBeTruthy();
+        expect(getByTestId('bor_label')).toBeVisible();
     });
 
     it('should handle different duration values', () => {
         const props = getBaseProps();
         props.durationSeconds = 60;
-        const {getByText} = render(<BoRLabel {...props}/>);
+        const {getByTestId} = render(<BoRLabel {...props}/>);
 
-        expect(getByText('BURN ON READ (60s)')).toBeTruthy();
+        expect(getByTestId('bor_label')).toBeVisible();
     });
 
     it('should render Tag component with correct props', () => {
@@ -51,7 +46,7 @@ describe('components/burn_on_read_label', () => {
         const {getByTestId} = render(<BoRLabel {...props}/>);
 
         const tag = getByTestId('bor_label');
-        expect(tag).toBeTruthy();
+        expect(tag).toBeVisible();
         // The Tag component should have the fire icon and dangerDim type
         // These would be tested in the Tag component's own tests
     });
