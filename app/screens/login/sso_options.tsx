@@ -78,6 +78,7 @@ const SsoOptions = ({goToSso, intuneAuthService, isIntuneEnabled, ssoOnly, ssoOp
                 key={ssoType}
             >
                 <Button
+                    testID={`login_options.sso.${ssoType}`}
                     key={ssoType}
                     onPress={handlePress}
                     size='lg'
