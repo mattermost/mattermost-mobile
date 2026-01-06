@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# E2EE protection: validate staged files are clean of E2EE artifacts
+./scripts/validate-e2ee-clean.sh --staged || exit 1
+
 # Intune protection: prevent committing Podfile.lock with Intune dependencies
 if git diff --cached --name-only | grep -q "^ios/Podfile.lock$"; then
     if grep -q "mattermost-intune\|IntuneMAMSwift" ios/Podfile.lock; then

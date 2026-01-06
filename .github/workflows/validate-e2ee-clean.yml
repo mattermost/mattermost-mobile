@@ -1,0 +1,24 @@
+# Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+# See LICENSE.txt for license information.
+
+name: Validate E2EE Clean
+
+on:
+  pull_request:
+    paths:
+      - 'ios/Podfile.lock'
+      - 'ios/Mattermost.xcodeproj/project.pbxproj'
+      - 'libraries/@mattermost/e2ee/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'react-native.config.js'
+
+jobs:
+  validate-e2ee-clean:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate E2EE clean state
+        run: ./scripts/validate-e2ee-clean.sh

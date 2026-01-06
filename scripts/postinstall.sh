@@ -11,6 +11,12 @@ function installPodsM1() {
 }
 
 function buildE2EE() {
+    # Check if E2EE module is present (OSS builds won't have it)
+    if [[ ! -f "libraries/@mattermost/e2ee/package.json" ]]; then
+        echo "E2EE module not present, skipping build..."
+        return 0
+    fi
+
     # Check if E2EE artifacts already exist
     local IOS_FRAMEWORK="libraries/@mattermost/e2ee/MattermostE2eeFramework.xcframework"
     local ANDROID_LIBS="libraries/@mattermost/e2ee/android/src/main/jniLibs"
@@ -27,9 +33,11 @@ function buildE2EE() {
     fi
 }
 
-# Setup Rust toolchain if needed (only installs missing deps)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-"${SCRIPT_DIR}/setup-rust.sh"
+# Setup Rust toolchain if needed (only installs missing deps, and only if e2ee or E2EE_RELEASE is set)
+if [[ -f "libraries/@mattermost/e2ee/package.json" ]] || [[ "$E2EE_RELEASE" = "1" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    "${SCRIPT_DIR}/setup-rust.sh"
+fi
 
 buildE2EE
 

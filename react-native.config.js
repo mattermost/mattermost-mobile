@@ -8,10 +8,6 @@ module.exports = {
                 android: null,
             },
         },
-        '@mattermost/e2ee': {
-            platforms: {
-            },
-        },
     },
     assets: [
         './assets/fonts',

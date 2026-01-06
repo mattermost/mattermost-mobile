@@ -2,6 +2,13 @@ name: prepare-ios-build
 description: Action to prepare environment for ios build
 
 inputs:
+  e2ee-enabled:
+    description: 'Enable E2EE features'
+    required: false
+    default: 'true'
+  e2ee-ssh-private-key:
+    description: 'SSH private key for E2EE submodule repository access (required if e2ee-enabled is true and using submodule)'
+    required: false
   intune-enabled:
     description: 'Enable Intune MAM features (requires Xcode 26.1+)'
     required: false
@@ -58,9 +65,11 @@ runs:
     - name: ci/install-pods-dependencies
       shell: bash
       env:
+        E2EE_ENABLED: ${{ inputs.e2ee-enabled == 'true' && '1' || '0' }}
         INTUNE_ENABLED: ${{ inputs.intune-enabled == 'true' && '1' || '0' }}
       run: |
         echo "::group::install-pods-dependencies"
+        echo "E2EE_ENABLED=$E2EE_ENABLED"
         echo "INTUNE_ENABLED=$INTUNE_ENABLED"
         npm run ios-gems
         npm run pod-install
