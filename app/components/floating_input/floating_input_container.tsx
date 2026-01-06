@@ -196,7 +196,10 @@ const FloatingInputContainer = ({
             onLayout={onLayout}
         >
             <View style={styles.container}>
-                <Pressable onPress={handlePressOnContainer} testID={testID}>
+                <Pressable
+                    onPress={handlePressOnContainer}
+                    testID={testID}
+                >
                     <Animated.Text
                         style={[styles.label, textAnimatedTextStyle]}
                         suppressHighlighting={true}
