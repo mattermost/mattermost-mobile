@@ -135,4 +135,79 @@ describe('PostOptions', () => {
         expect(screen.queryByText('Mark as Unread')).not.toBeVisible();
         expect(screen.queryByText('Follow Message')).not.toBeVisible();
     });
+
+    it('should show BOR read receipts for own BoR post', async () => {
+        const ownBoRPost = TestHelper.fakePostModel({
+            type: PostTypes.BURN_ON_READ,
+            channelId: TestHelper.basicChannel!.id,
+            userId: TestHelper.basicUser!.id,
+            message: 'This is my BoR post',
+            metadata: {
+                expire_at: Date.now() + 1000000,
+                recipients: [
+                    {user_id: 'user1', revealed_at: Date.now()},
+                    {user_id: 'user2', revealed_at: Date.now()},
+                ],
+            },
+        });
+
+        renderWithEverything(
+            <PostOptions
+                post={ownBoRPost}
+                serverUrl={serverUrl}
+                showAddReaction={true}
+                sourceScreen={'DraftScheduledPostOptions'}
+                componentId={'DraftScheduledPostOptions'}
+                showBoRReadReceipts={true}
+                borReceiptData={{
+                    revealedCount: 2,
+                    totalRecipients: 5,
+                }}
+            />,
+            {database},
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('2 of 5 recipients have read this message')).toBeVisible();
+        });
+
+        expect(screen.queryByText('Copy Link')).toBeVisible();
+        expect(screen.queryByText('Save')).toBeVisible();
+    });
+
+    it('should not show BOR read receipts for other users BoR post', async () => {
+        const otherUserBoRPost = TestHelper.fakePostModel({
+            type: PostTypes.BURN_ON_READ,
+            channelId: TestHelper.basicChannel!.id,
+            userId: TestHelper.generateId(), // Different user
+            message: 'This is someone elses BoR post',
+            metadata: {
+                expire_at: Date.now() + 1000000,
+            },
+        });
+
+        renderWithEverything(
+            <PostOptions
+                post={otherUserBoRPost}
+                serverUrl={serverUrl}
+                showAddReaction={true}
+                sourceScreen={'DraftScheduledPostOptions'}
+                componentId={'DraftScheduledPostOptions'}
+                showBoRReadReceipts={false}
+                borReceiptData={{
+                    revealedCount: 1,
+                    totalRecipients: 3,
+                }}
+            />,
+            {database},
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('Mark as Unread')).toBeVisible();
+        });
+
+        expect(screen.queryByText('1 of 3 recipients have read this message')).not.toBeVisible();
+        expect(screen.queryByText('Copy Link')).toBeVisible();
+        expect(screen.queryByText('Save')).toBeVisible();
+    });
 });
