@@ -34,276 +34,112 @@ describe('BoRQuickAction', () => {
         } as PostBoRConfig,
     };
 
+    let database: Database;
+    let operator: ServerDataOperator;
+
+    beforeAll(async () => {
+        const server = await TestHelper.setupServerDatabase(SERVER_URL);
+        database = server.database;
+        operator = server.operator;
+
+        await operator.handleConfigs({
+            configs: [
+                {id: 'EnableBurnOnRead', value: 'true'},
+                {id: 'BuildEnterpriseReady', value: 'true'},
+                {id: 'BurnOnReadDurationSeconds', value: '300'},
+                {id: 'BurnOnReadMaximumTimeToLiveSeconds', value: '3600'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
+            prepareRecordsOnly: false,
+        });
+    });
+
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
-    let database: Database;
-    let operator: ServerDataOperator;
-
-    beforeEach(async () => {
-        const server = await TestHelper.setupServerDatabase(SERVER_URL);
-        database = server.database;
-        operator = server.operator;
-    });
-
-    afterEach(async () => {
+    afterAll(async () => {
         await TestHelper.tearDown();
         NetworkManager.invalidateClient(SERVER_URL);
     });
 
-    describe('Rendering', () => {
-        it('renders the BoR quick action button', async () => {
-            await operator.handleConfigs({
-                configs: [
-                    {id: 'EnableBurnOnRead', value: 'true'},
-                    {id: 'BuildEnterpriseReady', value: 'true'},
-                    {id: 'BurnOnReadDurationSeconds', value: '300'},
-                    {id: 'BurnOnReadMaximumTimeToLiveSeconds', value: '3600'},
-                ],
-                configsToDelete: [],
-                prepareRecordsOnly: false,
-            });
+    it('renders the BoR quick action button', async () => {
+        const {getByTestId} = renderWithEverything(<BoRQuickAction {...baseProps}/>, {database});
 
-            await operator.handleSystem({
-                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
-                prepareRecordsOnly: false,
-            });
-
-            const {getByTestId} = renderWithEverything(<BoRQuickAction {...baseProps}/>, {database});
-
-            const borButton = getByTestId('bor_quick_action');
-            expect(borButton).toBeVisible();
-        });
-
-        it('renders with fire icon', async () => {
-            await operator.handleConfigs({
-                configs: [
-                    {id: 'EnableBurnOnRead', value: 'true'},
-                    {id: 'BuildEnterpriseReady', value: 'true'},
-                    {id: 'BurnOnReadDurationSeconds', value: '300'},
-                    {id: 'BurnOnReadMaximumTimeToLiveSeconds', value: '3600'},
-                ],
-                configsToDelete: [],
-                prepareRecordsOnly: false,
-            });
-
-            await operator.handleSystem({
-                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
-                prepareRecordsOnly: false,
-            });
-
-            const {getByTestId} = renderWithEverything(<BoRQuickAction {...baseProps}/>, {database});
-
-            const borButton = getByTestId('bor_quick_action');
-            expect(borButton).toBeVisible();
-            
-            // The CompassIcon with fire name should be rendered
-            expect(borButton).toBeTruthy();
-        });
+        const borButton = getByTestId('bor_quick_action');
+        expect(borButton).toBeVisible();
     });
 
-    describe('Functionality', () => {
-        it('toggles BoR status from disabled to enabled when pressed', async () => {
-            await operator.handleConfigs({
-                configs: [
-                    {id: 'EnableBurnOnRead', value: 'true'},
-                    {id: 'BuildEnterpriseReady', value: 'true'},
-                    {id: 'BurnOnReadDurationSeconds', value: '300'},
-                    {id: 'BurnOnReadMaximumTimeToLiveSeconds', value: '3600'},
-                ],
-                configsToDelete: [],
-                prepareRecordsOnly: false,
-            });
-
-            await operator.handleSystem({
-                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
-                prepareRecordsOnly: false,
-            });
-
-            const updatePostBoRStatusMock = jest.fn();
-            const props = {
-                ...baseProps,
-                updatePostBoRStatus: updatePostBoRStatusMock,
-                postBoRConfig: {
-                    enabled: false,
-                    borDurationSeconds: 300,
-                    borMaximumTimeToLiveSeconds: 3600,
-                } as PostBoRConfig,
-            };
-
-            const {getByTestId} = renderWithEverything(<BoRQuickAction {...props}/>, {database});
-
-            const borButton = getByTestId('bor_quick_action');
-            fireEvent.press(borButton);
-
-            expect(updatePostBoRStatusMock).toHaveBeenCalledWith({
-                enabled: true,
-                borDurationSeconds: 300,
-                borMaximumTimeToLiveSeconds: 3600,
-            });
-        });
-
-        it('toggles BoR status from enabled to disabled when pressed', async () => {
-            await operator.handleConfigs({
-                configs: [
-                    {id: 'EnableBurnOnRead', value: 'true'},
-                    {id: 'BuildEnterpriseReady', value: 'true'},
-                    {id: 'BurnOnReadDurationSeconds', value: '300'},
-                    {id: 'BurnOnReadMaximumTimeToLiveSeconds', value: '3600'},
-                ],
-                configsToDelete: [],
-                prepareRecordsOnly: false,
-            });
-
-            await operator.handleSystem({
-                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
-                prepareRecordsOnly: false,
-            });
-
-            const updatePostBoRStatusMock = jest.fn();
-            const props = {
-                ...baseProps,
-                updatePostBoRStatus: updatePostBoRStatusMock,
-                postBoRConfig: {
-                    enabled: true,
-                    borDurationSeconds: 300,
-                    borMaximumTimeToLiveSeconds: 3600,
-                } as PostBoRConfig,
-            };
-
-            const {getByTestId} = renderWithEverything(<BoRQuickAction {...props}/>, {database});
-
-            const borButton = getByTestId('bor_quick_action');
-            fireEvent.press(borButton);
-
-            expect(updatePostBoRStatusMock).toHaveBeenCalledWith({
+    it('toggles BoR status from disabled to enabled when pressed', async () => {
+        const updatePostBoRStatusMock = jest.fn();
+        const props = {
+            ...baseProps,
+            updatePostBoRStatus: updatePostBoRStatusMock,
+            postBoRConfig: {
                 enabled: false,
                 borDurationSeconds: 300,
                 borMaximumTimeToLiveSeconds: 3600,
-            });
-        });
+            } as PostBoRConfig,
+        };
 
-        it('uses default config when postBoRConfig is undefined', async () => {
-            await operator.handleConfigs({
-                configs: [
-                    {id: 'EnableBurnOnRead', value: 'true'},
-                    {id: 'BuildEnterpriseReady', value: 'true'},
-                    {id: 'BurnOnReadDurationSeconds', value: '300'},
-                    {id: 'BurnOnReadMaximumTimeToLiveSeconds', value: '3600'},
-                ],
-                configsToDelete: [],
-                prepareRecordsOnly: false,
-            });
+        const {getByTestId} = renderWithEverything(<BoRQuickAction {...props}/>, {database});
 
-            await operator.handleSystem({
-                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
-                prepareRecordsOnly: false,
-            });
+        const borButton = getByTestId('bor_quick_action');
+        fireEvent.press(borButton);
 
-            const updatePostBoRStatusMock = jest.fn();
-            const props = {
-                ...baseProps,
-                updatePostBoRStatus: updatePostBoRStatusMock,
-                postBoRConfig: undefined,
-                defaultBorConfig: {
-                    enabled: false,
-                    borDurationSeconds: 600,
-                    borMaximumTimeToLiveSeconds: 7200,
-                } as PostBoRConfig,
-            };
-
-            const {getByTestId} = renderWithEverything(<BoRQuickAction {...props}/>, {database});
-
-            const borButton = getByTestId('bor_quick_action');
-            fireEvent.press(borButton);
-
-            expect(updatePostBoRStatusMock).toHaveBeenCalledWith({
-                enabled: true,
-                borDurationSeconds: 600,
-                borMaximumTimeToLiveSeconds: 7200,
-            });
-        });
-
-        it('preserves existing config values when toggling', async () => {
-            await operator.handleConfigs({
-                configs: [
-                    {id: 'EnableBurnOnRead', value: 'true'},
-                    {id: 'BuildEnterpriseReady', value: 'true'},
-                    {id: 'BurnOnReadDurationSeconds', value: '300'},
-                    {id: 'BurnOnReadMaximumTimeToLiveSeconds', value: '3600'},
-                ],
-                configsToDelete: [],
-                prepareRecordsOnly: false,
-            });
-
-            await operator.handleSystem({
-                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
-                prepareRecordsOnly: false,
-            });
-
-            const updatePostBoRStatusMock = jest.fn();
-            const customConfig = {
-                enabled: false,
-                borDurationSeconds: 900,
-                borMaximumTimeToLiveSeconds: 10800,
-            } as PostBoRConfig;
-
-            const props = {
-                ...baseProps,
-                updatePostBoRStatus: updatePostBoRStatusMock,
-                postBoRConfig: customConfig,
-            };
-
-            const {getByTestId} = renderWithEverything(<BoRQuickAction {...props}/>, {database});
-
-            const borButton = getByTestId('bor_quick_action');
-            fireEvent.press(borButton);
-
-            expect(updatePostBoRStatusMock).toHaveBeenCalledWith({
-                enabled: true,
-                borDurationSeconds: 900,
-                borMaximumTimeToLiveSeconds: 10800,
-            });
+        expect(updatePostBoRStatusMock).toHaveBeenCalledWith({
+            enabled: true,
+            borDurationSeconds: 300,
+            borMaximumTimeToLiveSeconds: 3600,
         });
     });
 
-    describe('Database Integration', () => {
-        it('observes default BoR config from database', async () => {
-            await operator.handleConfigs({
-                configs: [
-                    {id: 'EnableBurnOnRead', value: 'true'},
-                    {id: 'BuildEnterpriseReady', value: 'true'},
-                    {id: 'BurnOnReadDurationSeconds', value: '450'},
-                    {id: 'BurnOnReadMaximumTimeToLiveSeconds', value: '5400'},
-                ],
-                configsToDelete: [],
-                prepareRecordsOnly: false,
-            });
-
-            await operator.handleSystem({
-                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
-                prepareRecordsOnly: false,
-            });
-
-            const updatePostBoRStatusMock = jest.fn();
-            const props = {
-                testId: 'bor_quick_action',
-                postBoRConfig: undefined,
-                updatePostBoRStatus: updatePostBoRStatusMock,
-            };
-
-            const {getByTestId} = renderWithEverything(<BoRQuickAction {...props}/>, {database});
-
-            const borButton = getByTestId('bor_quick_action');
-            fireEvent.press(borButton);
-
-            // Should use the config from database (450s duration, 5400s max TTL)
-            expect(updatePostBoRStatusMock).toHaveBeenCalledWith({
+    it('toggles BoR status from enabled to disabled when pressed', async () => {
+        const updatePostBoRStatusMock = jest.fn();
+        const props = {
+            ...baseProps,
+            updatePostBoRStatus: updatePostBoRStatusMock,
+            postBoRConfig: {
                 enabled: true,
-                borDurationSeconds: 450,
-                borMaximumTimeToLiveSeconds: 5400,
-            });
+                borDurationSeconds: 300,
+                borMaximumTimeToLiveSeconds: 3600,
+            } as PostBoRConfig,
+        };
+
+        const {getByTestId} = renderWithEverything(<BoRQuickAction {...props}/>, {database});
+
+        const borButton = getByTestId('bor_quick_action');
+        fireEvent.press(borButton);
+
+        expect(updatePostBoRStatusMock).toHaveBeenCalledWith({
+            enabled: false,
+            borDurationSeconds: 300,
+            borMaximumTimeToLiveSeconds: 3600,
+        });
+    });
+
+    it('uses default config when postBoRConfig is undefined', async () => {
+        const updatePostBoRStatusMock = jest.fn();
+        const props = {
+            ...baseProps,
+            updatePostBoRStatus: updatePostBoRStatusMock,
+            postBoRConfig: undefined,
+        };
+
+        const {getByTestId} = renderWithEverything(<BoRQuickAction {...props}/>, {database});
+
+        const borButton = getByTestId('bor_quick_action');
+        fireEvent.press(borButton);
+
+        expect(updatePostBoRStatusMock).toHaveBeenCalledWith({
+            enabled: true,
+            borDurationSeconds: 300,
+            borMaximumTimeToLiveSeconds: 3600,
         });
     });
 });

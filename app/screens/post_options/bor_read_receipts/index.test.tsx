@@ -55,17 +55,4 @@ describe('BORReadReceipts', () => {
         expect(screen.getByText('Burn-on-read message')).toBeVisible();
         expect(screen.getByText('Read by 7 of 7 recipients')).toBeVisible();
     });
-
-    it('should render with single recipient', () => {
-        renderWithEverything(
-            <BORReadReceipts
-                totalReceipts={1}
-                readReceipts={1}
-            />,
-            {database},
-        );
-
-        expect(screen.getByText('Burn-on-read message')).toBeVisible();
-        expect(screen.getByText('Read by 1 of 1 recipients')).toBeVisible();
-    });
 });

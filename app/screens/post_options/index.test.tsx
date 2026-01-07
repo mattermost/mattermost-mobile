@@ -144,10 +144,7 @@ describe('PostOptions', () => {
             message: 'This is my BoR post',
             metadata: {
                 expire_at: Date.now() + 1000000,
-                recipients: [
-                    {user_id: 'user1', revealed_at: Date.now()},
-                    {user_id: 'user2', revealed_at: Date.now()},
-                ],
+                recipients: ['user1', 'user2'],
             },
         });
 
@@ -158,21 +155,15 @@ describe('PostOptions', () => {
                 showAddReaction={true}
                 sourceScreen={'DraftScheduledPostOptions'}
                 componentId={'DraftScheduledPostOptions'}
-                showBoRReadReceipts={true}
-                borReceiptData={{
-                    revealedCount: 2,
-                    totalRecipients: 5,
-                }}
             />,
             {database},
         );
 
         await waitFor(() => {
-            expect(screen.getByText('2 of 5 recipients have read this message')).toBeVisible();
+            expect(screen.queryByTestId('bor_read_receipts')).toBeVisible();
         });
 
-        expect(screen.queryByText('Copy Link')).toBeVisible();
-        expect(screen.queryByText('Save')).toBeVisible();
+        expect(screen.getByText('Read by 2 of 99 recipients')).toBeVisible();
     });
 
     it('should not show BOR read receipts for other users BoR post', async () => {
@@ -180,9 +171,10 @@ describe('PostOptions', () => {
             type: PostTypes.BURN_ON_READ,
             channelId: TestHelper.basicChannel!.id,
             userId: TestHelper.generateId(), // Different user
-            message: 'This is someone elses BoR post',
+            message: 'This is someone else\'s BoR post',
             metadata: {
                 expire_at: Date.now() + 1000000,
+                recipients: ['user1', 'user2'],
             },
         });
 
@@ -193,21 +185,12 @@ describe('PostOptions', () => {
                 showAddReaction={true}
                 sourceScreen={'DraftScheduledPostOptions'}
                 componentId={'DraftScheduledPostOptions'}
-                showBoRReadReceipts={false}
-                borReceiptData={{
-                    revealedCount: 1,
-                    totalRecipients: 3,
-                }}
             />,
             {database},
         );
 
         await waitFor(() => {
-            expect(screen.getByText('Mark as Unread')).toBeVisible();
+            expect(screen.queryByTestId('bor_read_receipts')).not.toBeVisible();
         });
-
-        expect(screen.queryByText('1 of 3 recipients have read this message')).not.toBeVisible();
-        expect(screen.queryByText('Copy Link')).toBeVisible();
-        expect(screen.queryByText('Save')).toBeVisible();
     });
 });

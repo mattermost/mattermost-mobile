@@ -6,14 +6,10 @@ import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import QuickActions from './quick_actions';
 
-// Mock the BoRQuickAction component
-jest.mock('@components/post_draft/quick_actions/bor_quick_action', () => {
-    return jest.fn(({testId}) => {
-        const React = require('react');
-        const {View} = require('react-native');
-        return React.createElement(View, {testID: testId});
-    });
-});
+jest.mock('@components/post_draft/quick_actions/bor_quick_action', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
 
 describe('Quick Actions', () => {
     const baseProps: Parameters<typeof QuickActions>[0] = {

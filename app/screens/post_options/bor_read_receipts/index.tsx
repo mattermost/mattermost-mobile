@@ -40,7 +40,10 @@ export default function BORReadReceipts({totalReceipts, readReceipts}: Props) {
     const styles = getStyleSheet(theme);
 
     return (
-        <View style={styles.container}>
+        <View
+            style={styles.container}
+            testID='bor_read_receipts'
+        >
             <FormattedText
                 style={styles.title}
                 id='mobile.burn_on_read.read_receipt.title'
