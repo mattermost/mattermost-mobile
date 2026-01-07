@@ -1,0 +1,58 @@
+---
+name: build-ios-simulator-maestro
+
+on:
+  pull_request:
+    types:
+      - labeled
+
+env:
+  NODE_VERSION: 22.14.0
+  TERM: xterm
+  INTUNE_ENABLED: 1
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.label.name == 'Build iOS simulator app' }}
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: ci/test
+        uses: ./.github/actions/test
+
+  build-ios-simulator-maestro:
+    runs-on: macos-15-large
+    if: ${{ github.event.label.name == 'Build iOS simulator app' }}
+    needs:
+      - test
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: ci/prepare-ios-build
+        uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: 'true'
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+
+      - name: ci/build-ios-simulator
+        env:
+          TAG: "${{ github.event.pull_request.head.ref }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: bundle exec fastlane ios simulator --env ios.simulator.maestro
+        working-directory: ./fastlane
+
+      - name: ci/upload-ios-pr-simulator
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-build-simulator-maestro-${{ github.run_id }}
+          path: Mattermost-simulator-arm64.app.zip
+
