@@ -6,6 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {Navigation, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@constants/draft';
+import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {goToScreen, popTo} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
@@ -25,7 +26,6 @@ import {
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type DraftModel from '@typings/database/models/servers/draft';
-import {PostTypes} from "@constants/post";
 
 let operator: ServerDataOperator;
 const serverUrl = 'baseHandler.test.com';

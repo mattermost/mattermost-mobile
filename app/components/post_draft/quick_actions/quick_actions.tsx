@@ -29,7 +29,7 @@ type Props = {
     postPriority: PostPriority;
     updatePostPriority: (postPriority: PostPriority) => void;
     postBoRConfig?: PostBoRConfig;
-    updatePostBoRStatus: (config: PostBoRConfig) => void;
+    updatePostBoRStatus?: (config: PostBoRConfig) => void;
     focus: () => void;
 }
 
@@ -118,7 +118,7 @@ export default function QuickActions({
                     updatePostPriority={updatePostPriority}
                 />
             )}
-            {isBoREnabled &&
+            {isBoREnabled && updatePostBoRStatus &&
                 <BoRQuickAction
                     testId={borPriorityActionTestID}
                     postBoRConfig={postBoRConfig}

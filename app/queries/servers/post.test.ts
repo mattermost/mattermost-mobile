@@ -5,13 +5,12 @@ import {Database} from '@nozbe/watermelondb';
 import {firstValueFrom} from 'rxjs';
 
 import {ActionType, License} from '@constants';
-import {SKU_SHORT_NAME} from '@constants/license';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import TestHelper from '@test/test_helper';
 
 import {queryPostsWithPermalinkReferences, observeIsBoREnabled} from './post';
-import {SYSTEM_IDENTIFIERS} from "@constants/database";
 
 describe('Post Queries', () => {
     const serverUrl = 'post.test.com';

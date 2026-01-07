@@ -31,7 +31,6 @@ import type PostModel from '@typings/database/models/servers/post';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
-import type {BurnOnReadRecipientData} from "@typings/components/post_options";
 
 type EnhancedProps = WithDatabaseArgs & {
     combinedPost?: Post | PostModel;
