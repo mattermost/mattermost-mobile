@@ -30,6 +30,7 @@ import ReactionBar from './reaction_bar';
 import type {BurnOnReadRecipientData} from '@typings/components/post_options';
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const POST_OPTIONS_BUTTON = 'close-post-options';
@@ -52,13 +53,14 @@ type PostOptionsProps = {
     isBoRPost?: boolean;
     showBoRReadReceipts?: boolean;
     borReceiptData?: BurnOnReadRecipientData;
+    currentUser?: UserModel;
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply,
     combinedPost, componentId, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
-    isBoRPost, showBoRReadReceipts, borReceiptData,
+    isBoRPost, showBoRReadReceipts, borReceiptData, currentUser,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
     const isTablet = useIsTablet();
@@ -184,6 +186,7 @@ const PostOptions = ({
                     bottomSheetId={Screens.POST_OPTIONS}
                     combinedPost={combinedPost}
                     post={post}
+                    currentUser={currentUser}
                 />}
                 {shouldShowBindings &&
                 <AppBindingsPostOptions

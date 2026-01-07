@@ -873,6 +873,20 @@ export const deletePost = async (serverUrl: string, postToDelete: PostModel | Po
     }
 };
 
+export const burnPostNow = async (serverUrl: string, postToBurn: PostModel | Post) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.burnPostNow(postToBurn.id);
+
+        const post = await removePost(serverUrl, postToBurn);
+        return {post};
+    } catch (error) {
+        logDebug('error on burnPostNow', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
 export const markPostAsUnread = async (serverUrl: string, postId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
