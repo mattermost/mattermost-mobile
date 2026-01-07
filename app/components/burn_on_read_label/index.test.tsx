@@ -62,8 +62,5 @@ describe('components/burn_on_read_label', () => {
 
         const tag = getByTestId('bor_label');
         expect(tag).toBeVisible();
-
-        // The Tag component should have the fire icon and dangerDim type
-        // These would be tested in the Tag component's own tests
     });
 });

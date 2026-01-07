@@ -404,7 +404,6 @@ export const fetchPostsForUnreadChannels = async (
     }
 };
 
-// LOL
 export async function fetchPosts(serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<PostsRequest> {
     try {
         if (!fetchOnly) {

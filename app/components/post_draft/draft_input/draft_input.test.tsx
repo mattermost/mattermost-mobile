@@ -16,6 +16,7 @@ import DraftInput from './draft_input';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+import {act} from "@testing-library/react-hooks";
 
 const SERVER_URL = 'https://appv1.mattermost.com';
 
@@ -217,16 +218,15 @@ describe('DraftInput', () => {
         });
     });
 
-    describe('BoR (Burst on Read) Functionality', () => {
+    describe('BoR (Burn on Read) Functionality', () => {
         it('renders with BoR config disabled by default', () => {
-            const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
-            
+            const {getByTestId, queryByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
+
             // Component should render successfully with BoR config
             const container = getByTestId('draft_input');
             expect(container).toBeVisible();
-            
-            // BoR should be disabled by default
-            expect(baseProps.postBoRConfig?.enabled).toBe(false);
+
+            expect(queryByTestId('bor_label')).not.toBeVisible();
         });
 
         it('passes BoR config to QuickActions component', () => {
@@ -235,37 +235,47 @@ describe('DraftInput', () => {
                 borDurationSeconds: 300,
                 borMaximumTimeToLiveSeconds: 3600,
             } as PostBoRConfig;
-            
+
             const props = {
                 ...baseProps,
                 postBoRConfig: borConfig,
             };
 
             const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
-            
-            // Quick actions should be present (it receives the BoR config)
-            const quickActions = getByTestId('draft_input.quick_actions');
-            expect(quickActions).toBeVisible();
+            expect(getByTestId('bor_label')).toBeVisible();
+            expect(getByTestId('bor_label')).toHaveTextContent('BURN ON READ (5m)');
         });
 
-        it('calls updatePostBoRStatus when BoR config changes', () => {
+        it('calls updatePostBoRStatus when BoR config changes', async () => {
+            const borConfig = {
+                enabled: true,
+                borDurationSeconds: 300,
+                borMaximumTimeToLiveSeconds: 3600,
+            } as PostBoRConfig;
+
             const updatePostBoRStatusMock = jest.fn();
             const props = {
                 ...baseProps,
                 updatePostBoRStatus: updatePostBoRStatusMock,
+                postBoRConfig: borConfig,
             };
 
-            renderWithEverything(<DraftInput {...props}/>, {database});
-            
-            // Verify the function is passed correctly
-            expect(props.updatePostBoRStatus).toBe(updatePostBoRStatusMock);
+            const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+            const borQuickAction = getByTestId('draft_input.bor_action');
+            expect(getByTestId).toBeVisible();
+
+            await act(async () => {
+                fireEvent.press(borQuickAction);
+            });
+
+            expect(updatePostBoRStatusMock).toHaveBeenCalledTimes(1);
         });
 
         it('handles BoR config with various duration settings', () => {
             const testCases = [
-                { enabled: true, borDurationSeconds: 60, borMaximumTimeToLiveSeconds: 1800 },
-                { enabled: true, borDurationSeconds: 300, borMaximumTimeToLiveSeconds: 3600 },
-                { enabled: false, borDurationSeconds: 0, borMaximumTimeToLiveSeconds: 0 },
+                {enabled: true, borDurationSeconds: 60, borMaximumTimeToLiveSeconds: 1800},
+                {enabled: true, borDurationSeconds: 300, borMaximumTimeToLiveSeconds: 3600},
+                {enabled: false, borDurationSeconds: 0, borMaximumTimeToLiveSeconds: 0},
             ];
 
             testCases.forEach((borConfig) => {
@@ -275,10 +285,10 @@ describe('DraftInput', () => {
                 };
 
                 const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
-                
+
                 const container = getByTestId('draft_input');
                 expect(container).toBeVisible();
-                
+
                 // Verify config is properly set
                 expect(props.postBoRConfig?.enabled).toBe(borConfig.enabled);
                 expect(props.postBoRConfig?.borDurationSeconds).toBe(borConfig.borDurationSeconds);
@@ -292,14 +302,14 @@ describe('DraftInput', () => {
                 borDurationSeconds: 300,
                 borMaximumTimeToLiveSeconds: 3600,
             } as PostBoRConfig;
-            
+
             const props = {
                 ...baseProps,
                 postBoRConfig: borConfig,
             };
 
             const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
-            
+
             // The Header component should receive the BoR config
             const container = getByTestId('draft_input');
             expect(container).toBeVisible();
@@ -311,7 +321,7 @@ describe('DraftInput', () => {
                 borDurationSeconds: 300,
                 borMaximumTimeToLiveSeconds: 3600,
             } as PostBoRConfig;
-            
+
             const props = {
                 ...baseProps,
                 postBoRConfig: borConfig,
@@ -319,13 +329,13 @@ describe('DraftInput', () => {
             };
 
             const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
-            
+
             // Send message
             fireEvent.press(getByTestId('draft_input.send_action.send.button'));
-            
+
             // Verify sendMessage was called
             expect(baseProps.sendMessage).toHaveBeenCalledWith(undefined);
-            
+
             // BoR config should remain unchanged
             expect(props.postBoRConfig?.enabled).toBe(true);
             expect(props.postBoRConfig?.borDurationSeconds).toBe(300);
@@ -338,10 +348,10 @@ describe('DraftInput', () => {
             };
 
             const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
-            
+
             const container = getByTestId('draft_input');
             expect(container).toBeVisible();
-            
+
             // Should not crash with undefined BoR config
             expect(props.postBoRConfig).toBeUndefined();
         });
@@ -352,14 +362,14 @@ describe('DraftInput', () => {
                 borDurationSeconds: 300,
                 borMaximumTimeToLiveSeconds: 3600,
             } as PostBoRConfig;
-            
+
             const props = {
                 ...baseProps,
                 postBoRConfig: borConfig,
             };
 
             const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
-            
+
             // Verify all main components are rendered
             expect(getByTestId('draft_input')).toBeVisible();
             expect(getByTestId('draft_input.post.input')).toBeVisible();
