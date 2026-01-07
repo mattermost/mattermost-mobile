@@ -2,13 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
+import {firstValueFrom} from 'rxjs';
 
 import {ActionType} from '@constants';
+import {SKU_SHORT_NAME} from '@constants/license';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import TestHelper from '@test/test_helper';
 
-import {queryPostsWithPermalinkReferences} from './post';
+import {queryPostsWithPermalinkReferences, observeIsBoREnabled} from './post';
 
 describe('Post Queries', () => {
     const serverUrl = 'post.test.com';
@@ -276,6 +278,140 @@ describe('Post Queries', () => {
             const result = await queryPostsWithPermalinkReferences(database, referencedPostId);
 
             expect(result).toHaveLength(0);
+        });
+    });
+
+    describe('observeIsBoREnabled', () => {
+        it('should return true when both feature is enabled and license is valid', async () => {
+            // Set up config for enabled feature
+            const configModels = await operator.handleConfigs({
+                configs: [{
+                    id: 'EnableBurnOnRead',
+                    value: 'true',
+                }],
+                configsToDelete: [],
+                prepareRecordsOnly: true,
+            });
+
+            // Set up license for Enterprise Advanced
+            const licenseModels = await operator.handleLicense({
+                license: TestHelper.fakeLicense({
+                    SkuShortName: SKU_SHORT_NAME.EnterpriseAdvanced,
+                }),
+                prepareRecordsOnly: true,
+            });
+
+            await operator.batchRecords([...configModels, ...licenseModels], 'test');
+
+            const result = await firstValueFrom(observeIsBoREnabled(database));
+            expect(result).toBe(true);
+        });
+
+        it('should return false when feature is disabled but license is valid', async () => {
+            // Set up config for disabled feature
+            const configModels = await operator.handleConfigs({
+                configs: [{
+                    id: 'EnableBurnOnRead',
+                    value: 'false',
+                }],
+                configsToDelete: [],
+                prepareRecordsOnly: true,
+            });
+
+            // Set up license for Enterprise Advanced
+            const licenseModels = await operator.handleLicense({
+                license: TestHelper.fakeLicense({
+                    SkuShortName: SKU_SHORT_NAME.EnterpriseAdvanced,
+                }),
+                prepareRecordsOnly: true,
+            });
+
+            await operator.batchRecords([...configModels, ...licenseModels], 'test');
+
+            const result = await firstValueFrom(observeIsBoREnabled(database));
+            expect(result).toBe(false);
+        });
+
+        it('should return false when feature is enabled but license is insufficient', async () => {
+            // Set up config for enabled feature
+            const configModels = await operator.handleConfigs({
+                configs: [{
+                    id: 'EnableBurnOnRead',
+                    value: 'true',
+                }],
+                configsToDelete: [],
+                prepareRecordsOnly: true,
+            });
+
+            // Set up license for lower tier (Professional)
+            const licenseModels = await operator.handleLicense({
+                license: TestHelper.fakeLicense({
+                    SkuShortName: SKU_SHORT_NAME.Professional,
+                }),
+                prepareRecordsOnly: true,
+            });
+
+            await operator.batchRecords([...configModels, ...licenseModels], 'test');
+
+            const result = await firstValueFrom(observeIsBoREnabled(database));
+            expect(result).toBe(false);
+        });
+
+        it('should return false when both feature is disabled and license is insufficient', async () => {
+            // Set up config for disabled feature
+            const configModels = await operator.handleConfigs({
+                configs: [{
+                    id: 'EnableBurnOnRead',
+                    value: 'false',
+                }],
+                configsToDelete: [],
+                prepareRecordsOnly: true,
+            });
+
+            // Set up license for lower tier (Starter)
+            const licenseModels = await operator.handleLicense({
+                license: TestHelper.fakeLicense({
+                    SkuShortName: SKU_SHORT_NAME.Starter,
+                }),
+                prepareRecordsOnly: true,
+            });
+
+            await operator.batchRecords([...configModels, ...licenseModels], 'test');
+
+            const result = await firstValueFrom(observeIsBoREnabled(database));
+            expect(result).toBe(false);
+        });
+
+        it('should return false when no config is set but license is valid', async () => {
+            // Set up license for Enterprise Advanced but no config
+            const licenseModels = await operator.handleLicense({
+                license: TestHelper.fakeLicense({
+                    SkuShortName: SKU_SHORT_NAME.EnterpriseAdvanced,
+                }),
+                prepareRecordsOnly: true,
+            });
+
+            await operator.batchRecords(licenseModels, 'test');
+
+            const result = await firstValueFrom(observeIsBoREnabled(database));
+            expect(result).toBe(false);
+        });
+
+        it('should return false when no license is set but feature is enabled', async () => {
+            // Set up config for enabled feature but no license
+            const configModels = await operator.handleConfigs({
+                configs: [{
+                    id: 'EnableBurnOnRead',
+                    value: 'true',
+                }],
+                configsToDelete: [],
+                prepareRecordsOnly: true,
+            });
+
+            await operator.batchRecords(configModels, 'test');
+
+            const result = await firstValueFrom(observeIsBoREnabled(database));
+            expect(result).toBe(false);
         });
     });
 });
