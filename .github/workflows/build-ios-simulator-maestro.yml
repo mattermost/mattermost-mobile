@@ -14,7 +14,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-22.04
-    if: ${{ github.event.label.name == 'Build iOS simulator app' }}
+    if: ${{ github.event.label.name == 'Build App for iOS Simulator' }}
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -25,7 +25,7 @@ jobs:
 
   build-ios-simulator-maestro:
     runs-on: macos-15-large
-    if: ${{ github.event.label.name == 'Build iOS simulator app' }}
+    if: ${{ github.event.label.name == 'Build App for iOS Simulator' }}
     needs:
       - test
     steps:
