@@ -8,6 +8,8 @@ import QuickActions from './quick_actions';
 
 describe('Quick Actions', () => {
     const baseProps: Parameters<typeof QuickActions>[0] = {
+        isBoREnabled: false,
+        updatePostBoRStatus: jest.fn(),
         testID: 'test-quick-actions',
         canUploadFiles: true,
         fileCount: 0,
