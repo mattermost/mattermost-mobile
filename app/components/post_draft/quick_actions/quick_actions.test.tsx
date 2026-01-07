@@ -172,4 +172,24 @@ describe('Quick Actions', () => {
         });
     });
 
+    describe('BoR quick action', () => {
+        it('should render BoR action when isBoREnabled is true', () => {
+            const props = {
+                ...baseProps,
+                isBoREnabled: true,
+            };
+            const {queryByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
+            expect(queryByTestId('test-quick-actions.bor_action')).toBeDefined();
+        });
+
+        it('should not render BoR action when isBoREnabled is false', () => {
+            const props = {
+                ...baseProps,
+                isBoREnabled: false,
+            };
+            const {queryByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
+            expect(queryByTestId('test-quick-actions.bor_action')).toBeNull();
+        });
+    });
+
 });
