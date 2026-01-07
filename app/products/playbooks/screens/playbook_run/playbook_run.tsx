@@ -27,6 +27,7 @@ import {typography} from '@utils/typography';
 import {goToRenamePlaybookRun, goToSelectUser} from '../navigation';
 
 import ChecklistList from './checklist_list';
+import {PropertyFieldsList} from './components';
 import ErrorState from './error_state';
 import OutOfDateHeader from './out_of_date_header';
 import StatusUpdateIndicator from './status_update_indicator';
@@ -388,6 +389,11 @@ export default function PlaybookRun({
                             />
                         )}
                     </View>
+                    <PropertyFieldsList
+                        serverUrl={serverUrl}
+                        runId={playbookRun.id}
+                        isReadOnly={readOnly}
+                    />
                     <View style={styles.tasksContainer}>
                         <View style={styles.tasksHeaderContainer}>
                             <Text style={styles.tasksHeader}>

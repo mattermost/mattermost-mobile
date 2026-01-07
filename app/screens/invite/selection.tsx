@@ -13,6 +13,7 @@ import {
     type ListRenderItemInfo,
     ScrollView,
 } from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
 import SelectedChip from '@components/chips/selected_chip';
@@ -369,7 +370,9 @@ export default function Selection({
                 onLayoutContainer={onLayoutSelectionTeamBar}
                 onClose={onClose}
             />
-            <View style={styles.contentContainer}>
+            <KeyboardAwareScrollView
+                contentContainerStyle={styles.contentContainer}
+            >
                 <SelectionSearchBar
                     term={term}
                     onSearchChange={onSearchChange}
@@ -425,7 +428,8 @@ export default function Selection({
                             )}
                             {allowGuestMagicLink && (
                                 <OptionItem
-                                    label={intl.formatMessage({id: 'invite.guest_magic_link', defaultMessage: 'Allow newly created guests to login without password'})}
+                                    label={intl.formatMessage({id: 'invite.guest_magic_link', defaultMessage: 'Use magic link'})}
+                                    description={intl.formatMessage({id: 'invite.guest_magic_link_description', defaultMessage: 'Newly created guests will join and log in without a password, using a magic link sent to their email address'})}
                                     type='toggle'
                                     selected={guestMagicLink}
                                     action={handlePasswordlessInvitesChange}
@@ -435,7 +439,7 @@ export default function Selection({
                         </>
                     )}
                 </View>
-            </View>
+            </KeyboardAwareScrollView>
             <Animated.View style={searchListContainerStyle}>
                 <FlatList
                     data={searchResults}

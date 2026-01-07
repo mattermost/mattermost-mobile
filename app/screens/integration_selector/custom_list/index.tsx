@@ -2,8 +2,10 @@
 // See LICENSE.txt for license information.
 import React, {useCallback} from 'react';
 import {
-    Platform, FlatList, RefreshControl, View,
+    FlatList,
+    Platform, RefreshControl, View,
 } from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -51,9 +53,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                     marginBottom: 20,
                 },
             }),
-        },
-        container: {
-            flexGrow: 1,
         },
         separator: {
             height: 1,
@@ -159,24 +158,25 @@ function CustomList({
     }
 
     return (
-        <FlatList
-            contentContainerStyle={style.container}
-            data={data}
-            keyboardShouldPersistTaps='always'
-            keyExtractor={keyExtractor}
-            initialNumToRender={INITIAL_BATCH_TO_RENDER}
-            ItemSeparatorComponent={renderSeparator}
-            ListEmptyComponent={renderEmptyList()}
-            ListFooterComponent={renderFooter}
-            maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
-            onEndReached={onLoadMore}
-            refreshControl={refreshControl}
-            removeClippedSubviews={true}
-            renderItem={renderListItem}
-            scrollEventThrottle={60}
-            style={style.list}
-            testID={testID}
-        />
+        <KeyboardAwareScrollView>
+            <FlatList
+                data={data}
+                keyboardShouldPersistTaps='always'
+                keyExtractor={keyExtractor}
+                initialNumToRender={INITIAL_BATCH_TO_RENDER}
+                ItemSeparatorComponent={renderSeparator}
+                ListEmptyComponent={renderEmptyList()}
+                ListFooterComponent={renderFooter}
+                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
+                onEndReached={onLoadMore}
+                refreshControl={refreshControl}
+                removeClippedSubviews={true}
+                renderItem={renderListItem}
+                scrollEventThrottle={60}
+                style={style.list}
+                testID={testID}
+            />
+        </KeyboardAwareScrollView>
     );
 }
 

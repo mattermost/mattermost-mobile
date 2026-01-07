@@ -265,7 +265,8 @@ describe('Selection', () => {
         const {getByTestId} = renderWithIntl(<Selection {...props}/>);
 
         const optionItem = getByTestId('invite.guest_magic_link');
-        expect(optionItem).toHaveProp('label', 'Allow newly created guests to login without password');
+        expect(optionItem).toHaveProp('label', 'Use magic link');
+        expect(optionItem).toHaveProp('description', 'Newly created guests will join and log in without a password, using a magic link sent to their email address');
         expect(optionItem).toHaveProp('type', 'toggle');
         expect(optionItem).toHaveProp('selected', false);
 
