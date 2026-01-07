@@ -32,6 +32,7 @@ import {
     fetchPostById,
     fetchSavedPosts,
     fetchPinnedPosts,
+    burnPostNow,
 } from './post';
 import * as PostAuxilaryFunctions from './post.auxiliary';
 
@@ -94,6 +95,7 @@ const mockClient = {
     pinPost: jest.fn(),
     unpinPost: jest.fn(),
     deletePost: jest.fn(),
+    burnPostNow: jest.fn(),
     getChannel: jest.fn((_channelId: string) => ({id: _channelId, name: 'channel1', creatorId: user1.id, total_msg_count: 100})),
     getChannelMember: jest.fn((_channelId: string, userId: string) => ({id: userId + '-' + _channelId, user_id: userId, channel_id: _channelId, roles: '', msg_count: 100, mention_count: 0})),
     getMyChannelMember: jest.fn((_channelId: string) => ({id: user1.id + '-' + _channelId, user_id: user1.id, channel_id: _channelId, roles: '', msg_count: 100, mention_count: 0})),
@@ -377,6 +379,27 @@ describe('create, update & delete posts', () => {
         });
 
         const result = await deletePost(serverUrl, postModels[0] as PostModel);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.post).toBeDefined();
+    });
+
+    it('burnPostNow - handle error', async () => {
+        mockClient.burnPostNow.mockImplementationOnce(jest.fn(throwFunc));
+        const result = await burnPostNow('foo', {} as PostModel);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('burnPostNow - base case', async () => {
+        const postModels = await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await burnPostNow(serverUrl, postModels[0] as PostModel);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.post).toBeDefined();
