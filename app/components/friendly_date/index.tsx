@@ -42,6 +42,64 @@ export function getFriendlyDate(intl: IntlShape, inputDate: number): string {
     const absoluteDifference = Math.abs(difference);
     const sign = Math.sign(difference);
 
+    const momentA = moment.utc(input.getTime());
+    const momentB = moment.utc(today.getTime());
+
+    const diff = momentA.startOf(unit).diff(momentB.startOf(unit), unit);
+
+    return diff;
+}
+
+export function getFriendlyDate(intl: IntlShape, inputDate: number): string {
+    const today = new Date();
+    const date = new Date(inputDate);
+    const difference = (date.getTime() - today.getTime()) / 1000;
+    const absoluteDifference = Math.abs(difference);
+    const sign = Math.sign(difference);
+
+    // Message: Now
+    if (absoluteDifference < SECONDS.MINUTE) {
+        return intl.formatMessage({
+            id: 'friendly_date.now',
+            defaultMessage: 'Now',
+        });
+    }
+
+    // Message: Minutes
+    if (absoluteDifference < SECONDS.HOUR) {
+        return intl.formatRelativeTime(getDiff(inputDate, 'minute'), 'minute', {numeric: 'auto', style: 'short'});
+    }
+
+    // Message: Hours
+    if (absoluteDifference < SECONDS.DAY) {
+        return intl.formatRelativeTime(getDiff(inputDate, 'hour'), 'hour', {numeric: 'auto'});
+    }
+
+    // Message: Days
+    if (absoluteDifference < SECONDS.DAYS_31) {
+        const passedDate = sign === 1 ? today.getDate() <= date.getDate() : today.getDate() >= date.getDate();
+        const completedAMonth = today.getMonth() !== date.getMonth() && passedDate;
+        if (!completedAMonth) {
+            return intl.formatRelativeTime(getDiff(inputDate, 'day'), 'day', {numeric: 'auto'});
+        }
+    }
+
+    // Message: Months
+    if (absoluteDifference < SECONDS.DAYS_366) {
+        return intl.formatRelativeTime(getDiff(inputDate, 'month'), 'month', {numeric: 'auto'});
+    }
+
+    // Message: Years
+    const years = Math.floor(Math.round((10 * difference) / SECONDS.DAYS_365) / 10) || 1;
+    return intl.formatMessage({
+        id: 'friendly_date.years',
+        defaultMessage: 'in {count} {count, plural, one {year} other {years}}',
+    }, {
+        count: years,
+    });
+}
+
+function getFriendlyDateBefore(intl: IntlShape, difference: number, date: Date, today: Date): string {
     // Message: Now
     if (absoluteDifference < SECONDS.MINUTE) {
         return intl.formatMessage({
