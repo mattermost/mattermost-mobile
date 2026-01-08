@@ -45,10 +45,9 @@ runs:
         path: |
           ios/Pods
           libraries/@mattermost/intune/ios/Frameworks
-        key: ${{ runner.os }}-pods-v3-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-${{ hashFiles('ios/Podfile.lock') }}
+        key: ${{ runner.os }}-pods-v4-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-${{ hashFiles('ios/Podfile.lock') }}-${{ github.ref_name }}
         restore-keys: |
-          ${{ runner.os }}-pods-v3-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-
-          ${{ runner.os }}-pods-v3-intune-${{ inputs.intune-enabled }}-
+          ${{ runner.os }}-pods-v4-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-${{ hashFiles('ios/Podfile.lock') }}-
 
     - name: ci/install-pods-dependencies
       shell: bash

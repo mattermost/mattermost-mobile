@@ -253,4 +253,20 @@ describe('renamePlaybookRun', () => {
         const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
         expect(updatedRun.name).toBe(longName);
     });
+
+    it('should trim leading and trailing whitespace from name', async () => {
+        const runs = TestHelper.createPlaybookRuns(1, 0, 0);
+        await handlePlaybookRuns(serverUrl, runs, false, false);
+
+        const playbookRunId = runs[0].id;
+        const nameWithSpaces = '  Updated Run Name  ';
+
+        const {data, error} = await renamePlaybookRun(serverUrl, playbookRunId, nameWithSpaces);
+
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
+        expect(updatedRun.name).toBe('Updated Run Name');
+    });
 });

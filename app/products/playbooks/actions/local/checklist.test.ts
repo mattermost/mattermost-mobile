@@ -374,4 +374,23 @@ describe('renameChecklist', () => {
         expect(updated).toBeDefined();
         expect(updated!.title).toBe(longTitle);
     });
+
+    it('should trim leading and trailing whitespace from title', async () => {
+        const runId = 'runid';
+        const checklist = {
+            ...TestHelper.createPlaybookChecklist(runId, 0, 0),
+            run_id: runId,
+            order: 0,
+        };
+        await operator.handlePlaybookChecklist({checklists: [checklist], prepareRecordsOnly: false});
+
+        const titleWithSpaces = '  Updated Checklist Title  ';
+        const {data, error} = await renameChecklist(serverUrl, checklist.id, titleWithSpaces);
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updated = await getPlaybookChecklistById(operator.database, checklist.id);
+        expect(updated).toBeDefined();
+        expect(updated!.title).toBe('Updated Checklist Title');
+    });
 });
