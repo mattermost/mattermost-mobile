@@ -103,8 +103,11 @@ const Header = (props: HeaderProps) => {
 
     const isUnrevealedPost = useMemo(() => isUnrevealedBoRPost(post), [post, post.metadata?.expire_at]);
     const ownBoRPost = useMemo(() => isOwnBoRPost(post, currentUser), [currentUser, post]);
-    const showBoRIcon = isUnrevealedPost || ownBoRPost;
+    const showBoRIcon = isUnrevealedPost;
     const borExpireAt = post.metadata?.expire_at;
+
+    console.log({message: post.message, showBoRIcon, borExpireAt});
+
     const serverUrl = useServerUrl();
 
     const onBoRPostExpiry = useCallback(async () => {
@@ -164,7 +167,7 @@ const Header = (props: HeaderProps) => {
                         />
                     }
                     {
-                        !showBoRIcon && Boolean(borExpireAt) &&
+                        Boolean(borExpireAt) &&
                         <ExpiryTimer
                             expiryTime={borExpireAt as number}
                             onExpiry={onBoRPostExpiry}
