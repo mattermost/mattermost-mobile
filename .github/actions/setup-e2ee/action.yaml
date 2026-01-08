@@ -1,0 +1,92 @@
+# Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+# See LICENSE.txt for license information.
+
+name: Setup E2EE
+description: Initialize E2EE submodule and prepare for internal builds with E2EE features
+
+inputs:
+  ssh-private-key:
+    description: 'SSH private key for E2EE submodule repository access'
+    required: true
+  build-from-source:
+    description: 'Build from source instead of downloading binaries'
+    default: 'false'
+  platform:
+    description: 'Platform to build for (ios, android, or both)'
+    default: 'both'
+
+runs:
+  using: composite
+  steps:
+    - name: Configure SSH for E2EE submodule
+      uses: ./.github/actions/setup-e2ee-ssh-key
+      with:
+        ssh-private-key: ${{ inputs.ssh-private-key }}
+
+    - name: Initialize E2EE submodule
+      shell: bash
+      env:
+        GIT_SSH_COMMAND: ssh -i $HOME/.ssh/e2ee_submodule_ed25519 -o IdentitiesOnly=yes -o StrictHostKeyChecking=no
+      run: |
+        echo "::group::Initialize E2EE submodule"
+        # Check if submodule is already initialized
+        if [ -e "libraries/@mattermost/e2ee/.git" ]; then
+          echo "E2EE submodule already initialized, updating..."
+          git submodule update --remote libraries/@mattermost/e2ee
+        else
+          echo "Initializing E2EE submodule..."
+          git submodule update --init --recursive libraries/@mattermost/e2ee
+        fi
+
+        # Display submodule info
+        cd libraries/@mattermost/e2ee
+        echo "E2EE submodule initialized:"
+        echo "   Branch: $(git rev-parse --abbrev-ref HEAD)"
+        echo "   Commit: $(git rev-parse --short HEAD)"
+        echo "   Remote: $(git remote get-url origin)"
+        cd ../../..
+
+        echo "E2EE submodule ready"
+        echo "::endgroup::"
+
+    - name: Link E2EE module to node_modules
+      shell: bash
+      run: |
+        echo "::group::Link E2EE module"
+        npm install --install-links --no-save ./libraries/@mattermost/e2ee
+
+        if [ -L "node_modules/@mattermost/e2ee" ] || [ -d "node_modules/@mattermost/e2ee" ]; then
+          echo "E2EE module linked to node_modules/@mattermost/e2ee"
+        else
+          echo "Failed to link E2EE module"
+          exit 1
+        fi
+        echo "::endgroup::"
+
+    - name: Download or build E2EE binaries
+      shell: bash
+      env:
+        E2EE_BUILD_FROM_SOURCE: ${{ inputs.build-from-source }}
+        PLATFORM: ${{ inputs.platform }}
+      run: |
+        echo "::group::Prepare E2EE binaries"
+        if [ "$E2EE_BUILD_FROM_SOURCE" = "true" ]; then
+          echo "Building E2EE from source..."
+          npm run e2ee:build
+        else
+          echo "Attempting to download pre-built binaries..."
+          if ./scripts/download-e2ee-binaries.sh; then
+            echo "Using pre-built binaries"
+          else
+            echo "Pre-built binaries not available, building from source..."
+            npm run e2ee:build
+          fi
+        fi
+        echo "::endgroup::"
+
+    - name: Verify E2EE build
+      shell: bash
+      run: |
+        echo "::group::Verify E2EE build"
+        npm run e2ee:test:verify
+        echo "::endgroup::"
