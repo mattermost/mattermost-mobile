@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert} from 'react-native';
 import {fireEvent, screen} from '@testing-library/react-native';
+import {Alert} from 'react-native';
 
 import {deletePost, burnPostNow} from '@actions/remote/post';
 import {dismissBottomSheet} from '@screens/navigation';
@@ -20,12 +20,6 @@ import type UserModel from '@typings/database/models/servers/user';
 jest.mock('@actions/remote/post');
 jest.mock('@screens/navigation');
 jest.mock('@utils/bor');
-jest.mock('react-native', () => ({
-    ...jest.requireActual('react-native'),
-    Alert: {
-        alert: jest.fn(),
-    },
-}));
 
 const mockDeletePost = deletePost as jest.MockedFunction<typeof deletePost>;
 const mockBurnPostNow = burnPostNow as jest.MockedFunction<typeof burnPostNow>;
@@ -46,7 +40,7 @@ describe('DeletePostOption', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        
+
         mockPost = {
             id: 'post-id-1',
             userId: 'user-id-1',
@@ -57,21 +51,21 @@ describe('DeletePostOption', () => {
         } as UserModel;
 
         mockDismissBottomSheet.mockResolvedValue();
-        mockDeletePost.mockResolvedValue({} as any);
-        mockBurnPostNow.mockResolvedValue({} as any);
+        mockDeletePost.mockResolvedValue({post: {post: mockPost}});
+        mockBurnPostNow.mockResolvedValue({post: {post: mockPost}});
     });
 
-    const defaultProps = {
+    const getDefaultProps = () => ({
         bottomSheetId: 'PostOptions' as const,
         post: mockPost,
         currentUser: mockCurrentUser,
-    };
+    });
 
     it('should render delete option with correct text and icon', () => {
         mockIsBoRPost.mockReturnValue(false);
 
         renderWithEverything(
-            <DeletePostOption {...defaultProps} />,
+            <DeletePostOption {...getDefaultProps()}/>,
             {database},
         );
 
@@ -86,7 +80,7 @@ describe('DeletePostOption', () => {
 
         it('should show confirmation alert when pressed for regular post', () => {
             renderWithEverything(
-                <DeletePostOption {...defaultProps} />,
+                <DeletePostOption {...getDefaultProps()}/>,
                 {database},
             );
 
@@ -112,7 +106,7 @@ describe('DeletePostOption', () => {
 
         it('should call deletePost when confirmed for regular post', async () => {
             renderWithEverything(
-                <DeletePostOption {...defaultProps} />,
+                <DeletePostOption {...getDefaultProps()}/>,
                 {database},
             );
 
@@ -122,7 +116,7 @@ describe('DeletePostOption', () => {
             // Get the onPress function from the Delete button and call it
             const alertCalls = mockAlert.mock.calls;
             const deleteButtonConfig = alertCalls[0][2]?.find((button: any) => button.text === 'Delete');
-            await deleteButtonConfig?.onPress();
+            await deleteButtonConfig?.onPress!();
 
             expect(mockDismissBottomSheet).toHaveBeenCalledWith('PostOptions');
             expect(mockDeletePost).toHaveBeenCalledWith(expect.any(String), mockPost);
@@ -130,9 +124,12 @@ describe('DeletePostOption', () => {
 
         it('should use combinedPost when provided for regular post', async () => {
             const combinedPost = {id: 'combined-post-id'} as Post;
-            
+
             renderWithEverything(
-                <DeletePostOption {...defaultProps} combinedPost={combinedPost} />,
+                <DeletePostOption
+                    {...getDefaultProps()}
+                    combinedPost={combinedPost}
+                />,
                 {database},
             );
 
@@ -141,7 +138,7 @@ describe('DeletePostOption', () => {
 
             const alertCalls = mockAlert.mock.calls;
             const deleteButtonConfig = alertCalls[0][2]?.find((button: any) => button.text === 'Delete');
-            await deleteButtonConfig?.onPress();
+            await deleteButtonConfig?.onPress!();
 
             expect(mockDeletePost).toHaveBeenCalledWith(expect.any(String), combinedPost);
         });
@@ -156,7 +153,7 @@ describe('DeletePostOption', () => {
             mockIsOwnBoRPost.mockReturnValue(true);
 
             renderWithEverything(
-                <DeletePostOption {...defaultProps} />,
+                <DeletePostOption {...getDefaultProps()}/>,
                 {database},
             );
 
@@ -184,7 +181,7 @@ describe('DeletePostOption', () => {
             mockIsOwnBoRPost.mockReturnValue(false);
 
             renderWithEverything(
-                <DeletePostOption {...defaultProps} />,
+                <DeletePostOption {...getDefaultProps()}/>,
                 {database},
             );
 
@@ -212,7 +209,7 @@ describe('DeletePostOption', () => {
             mockIsOwnBoRPost.mockReturnValue(true);
 
             renderWithEverything(
-                <DeletePostOption {...defaultProps} />,
+                <DeletePostOption {...getDefaultProps()}/>,
                 {database},
             );
 
@@ -221,7 +218,7 @@ describe('DeletePostOption', () => {
 
             const alertCalls = mockAlert.mock.calls;
             const deleteButtonConfig = alertCalls[0][2]?.find((button: any) => button.text === 'Delete');
-            await deleteButtonConfig?.onPress();
+            await deleteButtonConfig?.onPress!();
 
             expect(mockDismissBottomSheet).toHaveBeenCalledWith('PostOptions');
             expect(mockBurnPostNow).toHaveBeenCalledWith(expect.any(String), mockPost);
@@ -230,9 +227,12 @@ describe('DeletePostOption', () => {
         it('should use combinedPost when provided for BoR post', async () => {
             const combinedPost = {id: 'combined-post-id'} as Post;
             mockIsOwnBoRPost.mockReturnValue(true);
-            
+
             renderWithEverything(
-                <DeletePostOption {...defaultProps} combinedPost={combinedPost} />,
+                <DeletePostOption
+                    {...getDefaultProps()}
+                    combinedPost={combinedPost}
+                />,
                 {database},
             );
 
@@ -241,7 +241,7 @@ describe('DeletePostOption', () => {
 
             const alertCalls = mockAlert.mock.calls;
             const deleteButtonConfig = alertCalls[0][2]?.find((button: any) => button.text === 'Delete');
-            await deleteButtonConfig?.onPress();
+            await deleteButtonConfig?.onPress!();
 
             expect(mockBurnPostNow).toHaveBeenCalledWith(expect.any(String), combinedPost);
         });
@@ -251,7 +251,7 @@ describe('DeletePostOption', () => {
         mockIsBoRPost.mockReturnValue(false);
 
         renderWithEverything(
-            <DeletePostOption {...defaultProps} />,
+            <DeletePostOption {...getDefaultProps()}/>,
             {database},
         );
 

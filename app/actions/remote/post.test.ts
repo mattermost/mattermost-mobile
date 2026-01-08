@@ -37,6 +37,7 @@ import {
 import * as PostAuxilaryFunctions from './post.auxiliary';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import {getFullErrorMessage} from "@utils/errors";
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -392,17 +393,33 @@ describe('create, update & delete posts', () => {
     });
 
     it('burnPostNow - base case', async () => {
+        const borPost = TestHelper.fakePost({channel_id: channelId, id: 'bor_postid1', user_id: user1.id, type: 'burn_on_read'});
+
         const postModels = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
-            order: [post1.id],
-            posts: [post1],
+            order: [borPost.id],
+            posts: [borPost],
             prepareRecordsOnly: false,
         });
+
+        // verify post exists in database before burn
+        const {database} = operator;
+        const existingPost = await database.get('Post').find(borPost.id);
+        expect(existingPost).toBeDefined();
 
         const result = await burnPostNow(serverUrl, postModels[0] as PostModel);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.post).toBeDefined();
+
+        // Verify that the post is deleted from the database
+        try {
+            await database.get('Post').find(borPost.id);
+            expect(true).toBe(false); // Should not reach here
+        } catch (error) {
+            expect(error).toBeDefined();
+            expect(getFullErrorMessage(error)).toBe('Record Post#bor_postid1 not found');
+        }
     });
 
     it('deletePost - system post', async () => {
