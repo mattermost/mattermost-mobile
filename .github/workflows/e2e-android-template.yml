@@ -75,8 +75,8 @@ env:
   TYPE: ${{ inputs.run-type }}
   PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
   SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
-  SITE_2_URL: "https://test-windows.test.mattermost.cloud"
-  SITE_3_URL: "https://test-macos.test.mattermost.cloud"
+  SITE_2_URL: "https://mobile-e2e-site-2.test.mattermost.cloud"
+  SITE_3_URL: "https://mobile-e2e-site-3.test.mattermost.cloud"
   ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
   JIRA_PROJECT_KEY: "MM"
   ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
