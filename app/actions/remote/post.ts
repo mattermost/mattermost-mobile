@@ -23,6 +23,7 @@ import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers
 import {queryAllUsers} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {setFetchingThreadState} from '@store/fetching_thread_store';
+import {isBoRPost} from '@utils/bor';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {getFullErrorMessage, isServerError} from '@utils/errors';
 import {hasArrayChanged} from '@utils/helpers';
@@ -36,7 +37,6 @@ import {forceLogoutIfNecessary} from './session';
 import type {Client} from '@client/rest';
 import type Model from '@nozbe/watermelondb/Model';
 import type PostModel from '@typings/database/models/servers/post';
-import {isBoRPost} from "@utils/bor";
 
 type PostsRequest = {
     error?: unknown;
