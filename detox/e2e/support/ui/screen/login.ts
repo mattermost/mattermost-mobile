@@ -106,7 +106,8 @@ class LoginScreen {
         await this.loginFormInfoText.tap();
         await this.signinButton.tap();
         await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
-        await this.dismissSavePasswordIfNeeded();
+
+        // await this.dismissSavePasswordIfNeeded();
     };
 
     dismissSavePasswordIfNeeded = async () => {
