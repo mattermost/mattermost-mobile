@@ -9,6 +9,9 @@ export const ANDROID_VIDEO_INSET = 20;
 // Typical Android 3-button navigation bar height is 48-63dp
 export const ANDROID_NAV_BAR_HEIGHT = 63;
 
+// Additional padding for Android gallery footer to ensure visibility above navigation bar
+export const ANDROID_GALLERY_FOOTER_PADDING = 10;
+
 export const DOUBLE_TAP_SCALE = 4;
 export const MAX_SCALE = 7;
 export const MIN_SCALE = 0.7;

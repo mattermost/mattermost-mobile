@@ -4,10 +4,10 @@
 import RNUtils from '@mattermost/rnutils';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {DeviceEventEmitter, Platform, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {initialWindowMetrics, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
-import {ANDROID_NAV_BAR_HEIGHT} from '@constants/gallery';
+import {ANDROID_GALLERY_FOOTER_PADDING, ANDROID_NAV_BAR_HEIGHT} from '@constants/gallery';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
@@ -37,8 +37,8 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     const [localIndex, setLocalIndex] = useState(initialIndex);
 
     // Fallback for Android when SafeAreaContext returns 0 in overlays
-    const bottom = bottomInset || Platform.select({android: ANDROID_NAV_BAR_HEIGHT, default: 0});
-
+    const androidBottom = (initialWindowMetrics?.insets.bottom || ANDROID_NAV_BAR_HEIGHT) + ANDROID_GALLERY_FOOTER_PADDING;
+    const bottom = bottomInset || Platform.select({android: androidBottom, default: 0});
     const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls(bottom);
     const galleryRef = useRef<GalleryRef>(null);
 
