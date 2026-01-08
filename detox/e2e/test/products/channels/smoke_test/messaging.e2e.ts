@@ -84,12 +84,11 @@ describe('Smoke Test - Messaging', () => {
         await EditPostScreen.saveButton.tap();
 
         // * Verify post message is updated and displays edited indicator '(edited)'
-        const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = ChannelScreen.getPostListPostItem(post.id, updatedMessage);
-        await expect(updatedPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
+        const {postListPostItem: updatedPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, updatedMessage);
+        await ChannelScreen.assertPostMessageEdited(post.id, updatedMessage);
 
         // # Open post options for the updated message, tap delete option and confirm
-        await ChannelScreen.openPostOptionsFor(post.id, updatedMessage);
+        await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify post message is deleted
@@ -144,7 +143,7 @@ describe('Smoke Test - Messaging', () => {
         await expect(postListPostItem).toBeVisible();
 
         // # Open post options for message, open emoji picker screen, and add a reaction
-        await ChannelScreen.openPostOptionsFor(post.id, resolvedMessage);
+        await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
         await EmojiPickerScreen.open(true);
         await EmojiPickerScreen.searchInput.replaceText('clown_face');
         await element(by.text('🤡')).tap();
@@ -162,7 +161,7 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.openPostOptionsFor(post.id, message);
+        await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
         await PostOptionsScreen.followThreadOption.tap();
 
         // * Verify message is followed by user via post footer
@@ -171,12 +170,13 @@ describe('Smoke Test - Messaging', () => {
 
         // # Tap on following button via post footer
         await postListPostItemFooterFollowingButton.tap();
+        await wait(timeouts.FOUR_SEC);
 
         // * Verify message is not followed by user via post footer
         await expect(postListPostItemFooterFollowingButton).not.toBeVisible();
 
         // # Open post options for message and tap on save option
-        await ChannelScreen.openPostOptionsFor(post.id, message);
+        await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
         await PostOptionsScreen.savePostOption.tap();
 
         // * Verify saved text is displayed on the post pre-header
@@ -203,7 +203,7 @@ describe('Smoke Test - Messaging', () => {
 
         // # Go back to channel, open post options for message, and tap on unpin from channel option
         await ThreadScreen.back();
-        await ChannelScreen.openPostOptionsFor(post.id, message);
+        await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
         await PostOptionsScreen.unpinPostOption.tap();
 
         // * Verify pinned text is not displayed on the post pre-header

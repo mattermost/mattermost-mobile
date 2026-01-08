@@ -12,6 +12,13 @@ runs:
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
 
+    - name: ci/apply-16kb-pagesize-patch
+      shell: bash
+      run: |
+        echo "::group::Apply 16KB page size compatibility patch"
+        npm run apply-16kb-pagesize-patch
+        echo "::endgroup::"
+
     - name: ci/prepare-rust-toolchain
       uses: ./.github/actions/prepare-rust-toolchain
       with:
