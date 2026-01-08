@@ -30,6 +30,7 @@ import {expect} from 'detox';
 
 describe('Channels - Manage Own Channel Membership', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testTeam: any;
     let testUser: any;
 
@@ -60,7 +61,7 @@ describe('Channels - Manage Own Channel Membership', () => {
         await device.reloadReactNative();
 
         // # Open the channel screen
-        await ChannelScreen.open(channel);
+        await ChannelScreen.open(channelsCategory,channel.name);
 
         // # Open channel info screen
         await ChannelInfoScreen.open();
