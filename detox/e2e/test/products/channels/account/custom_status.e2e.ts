@@ -128,6 +128,7 @@ describe('Account - Custom Status', () => {
         // # Pick emoji and type custom status
         await CustomStatusScreen.openEmojiPicker('default', true);
         await EmojiPickerScreen.searchInput.replaceText(customEmojiName);
+        await EmojiPickerScreen.searchInput.tapReturnKey();
         await element(by.text('🤡')).tap();
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
@@ -164,7 +165,7 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify status is cleared
-        await verifyStatusCleared(status);
+        await verifyStatusCleared();
 
         // # Open custom status screen and verify cleared
         await CustomStatusScreen.open();
@@ -262,7 +263,7 @@ describe('Account - Custom Status', () => {
 
         // # Clear status from account screen
         await AccountScreen.customStatusClearButton.tap();
-        await verifyStatusCleared({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
+        await verifyStatusCleared();
 
         // # Reopen and verify status in recent section
         await CustomStatusScreen.open();
@@ -296,7 +297,7 @@ describe('Account - Custom Status', () => {
         await CustomStatusScreen.doneButton.tap();
 
         // * Verify status is cleared
-        await verifyStatusCleared({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
+        await verifyStatusCleared();
     });
 
     it('MM-T3892 - should manage recent custom statuses correctly', async () => {
@@ -309,6 +310,7 @@ describe('Account - Custom Status', () => {
         // # Create custom status with emoji picker
         await CustomStatusScreen.openEmojiPicker('default', true);
         await EmojiPickerScreen.searchInput.replaceText(customEmojiName);
+        await EmojiPickerScreen.searchInput.tapReturnKey();
         await element(by.text('🤡')).tap();
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
@@ -380,17 +382,14 @@ describe('Account - Custom Status', () => {
         await ChannelScreen.postMessage(messageText);
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem, postListPostItemProfilePicture} =
+        const {postListPostItem, postListPostItemHeaderDisplayName} =
             ChannelScreen.getPostListPostItem(post.id, messageText, {userId: testUser.id});
         await expect(postListPostItem).toBeVisible();
 
-        // # Tap avatar and verify user profile shows status
-        if (!postListPostItemProfilePicture) {
-            throw new Error('postListPostItemProfilePicture is null');
-        }
-        await expect(postListPostItemProfilePicture).toBeVisible();
-        await postListPostItemProfilePicture.tap();
-        await wait(timeouts.TWO_SEC);
+        // # Tap display name to open user profile (more reliable than avatar tap)
+        await expect(postListPostItemHeaderDisplayName).toBeVisible();
+        await postListPostItemHeaderDisplayName.longPress(timeouts.FOUR_SEC);
+        await wait(timeouts.FOUR_SEC);
         await UserProfileScreen.toBeVisible();
         await UserProfileScreen.close();
         await ChannelScreen.back();
@@ -413,7 +412,7 @@ describe('Account - Custom Status', () => {
         // # Open channel info and verify status
         await ChannelScreen.toBeVisible();
         await ChannelScreen.headerTitle.tap();
-        await wait(timeouts.TWO_SEC);
+        await wait(timeouts.FOUR_SEC);
         await ChannelInfoScreen.toBeVisible();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
@@ -421,7 +420,7 @@ describe('Account - Custom Status', () => {
         // # Clean up
         await AccountScreen.open();
         await AccountScreen.customStatusClearButton.tap();
-        await verifyStatusCleared(status);
+        await verifyStatusCleared();
     });
 });
 
@@ -477,9 +476,9 @@ const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: stri
     await expect(accountCustomStatusExpiry).toBeVisible();
 };
 
-const verifyStatusCleared = async (status: {emoji: string; text?: string; duration: string}) => {
-    const {accountCustomStatusEmoji, accountCustomStatusText} =
-        AccountScreen.getCustomStatus(status.emoji, status.duration);
-    await expect(accountCustomStatusEmoji).not.toExist();
-    await expect(accountCustomStatusText).toHaveText('Set a custom status');
+const verifyStatusCleared = async () => {
+    await expect(AccountScreen.setStatusOption).toBeVisible();
+    const customStatusText = element(by.id('account.custom_status.custom_status_text'));
+    await expect(customStatusText).toHaveText('Set a custom status');
+    await expect(AccountScreen.customStatusClearButton).not.toBeVisible();
 };

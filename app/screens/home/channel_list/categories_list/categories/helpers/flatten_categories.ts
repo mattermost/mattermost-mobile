@@ -65,7 +65,7 @@ export const flattenCategories = (
     for (const {category, sortedChannels, unreadIds} of categoriesData) {
         result.push({
             type: 'header',
-            categoryId: category.id,
+            categoryId: category.type,
             category,
         });
 
@@ -74,7 +74,7 @@ export const flattenCategories = (
         for (const channel of channelsToShow) {
             result.push({
                 type: 'channel',
-                categoryId: category.id,
+                categoryId: category.type,
                 channelId: channel.id,
                 channel,
             });

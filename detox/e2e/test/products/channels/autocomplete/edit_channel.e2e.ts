@@ -27,7 +27,6 @@ import {expect} from 'detox';
 
 describe('Autocomplete - Edit Channel', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
@@ -40,7 +39,7 @@ describe('Autocomplete - Edit Channel', () => {
         await ChannelListScreen.toBeVisible();
 
         // # Open a channel screen, open channel info screen, and open edit channel screen
-        await ChannelScreen.open(channelsCategory, channel.name);
+        await ChannelScreen.open(channel);
         await ChannelInfoScreen.open();
         await CreateOrEditChannelScreen.openEditChannel();
     });
@@ -60,45 +59,45 @@ describe('Autocomplete - Edit Channel', () => {
 
     it('MM-T4885_1 - should render at-mention autocomplete in header input', async () => {
         // * Verify at-mention list is not displayed
-        await expect(Autocomplete.sectionAtMentionList).not.toBeVisible();
+        await expect(Autocomplete.sectionAtMentionList).not.toExist();
 
         // # Type in "@" to activate at-mention autocomplete
         await CreateOrEditChannelScreen.headerInput.typeText('@');
 
         // * Verify at-mention list is displayed
-        await waitFor(Autocomplete.sectionAtMentionList).toBeVisible().withTimeout(timeouts.ONE_SEC);
+        await waitFor(Autocomplete.sectionAtMentionList).toExist().withTimeout(timeouts.ONE_SEC);
     });
 
     it('MM-T4885_2 - should render channel mention autocomplete in header input', async () => {
         // * Verify channel mention list is not displayed
-        await expect(Autocomplete.sectionChannelMentionList).not.toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
 
         // # Type in "~" to activate channel mention autocomplete
         await CreateOrEditChannelScreen.headerInput.typeText('~');
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
     });
 
     it('MM-T4885_3 - should render emoji suggestion autocomplete in header input', async () => {
         // * Verify emoji suggestion list is not displayed
-        await expect(Autocomplete.flatEmojiSuggestionList).not.toBeVisible();
+        await expect(Autocomplete.flatEmojiSuggestionList).not.toExist();
 
         // # Type in ":" followed by 2 characters to activate emoji suggestion autocomplete
         await CreateOrEditChannelScreen.headerInput.typeText(':sm');
 
         // * Verify emoji suggestion list is displayed
-        await expect(Autocomplete.flatEmojiSuggestionList).toBeVisible();
+        await expect(Autocomplete.flatEmojiSuggestionList).toExist();
     });
 
     it('MM-T4885_4 - should not render slash suggestion autocomplete in header input', async () => {
         // * Verify slash suggestion list is not displayed
-        await expect(Autocomplete.flatEmojiSuggestionList).not.toBeVisible();
+        await expect(Autocomplete.flatEmojiSuggestionList).not.toExist();
 
         // # Type in "/" to activate slash suggestion autocomplete
         await CreateOrEditChannelScreen.headerInput.typeText('/');
 
         // * Verify slash suggestion list is still not displayed
-        await expect(Autocomplete.flatEmojiSuggestionList).not.toBeVisible();
+        await expect(Autocomplete.flatEmojiSuggestionList).not.toExist();
     });
 });

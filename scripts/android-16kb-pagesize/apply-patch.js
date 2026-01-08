@@ -31,13 +31,6 @@ const COLORS = {
     cyan: '\x1b[36m',
 };
 
-// Files to apply from the diff (excluding node_modules and package-lock.json)
-// git apply will handle everything including file renames
-const FILES_TO_EXCLUDE = [
-    'node_modules/*',
-    'package-lock.json',
-];
-
 // ============================================================================
 // UTILITIES
 // ============================================================================
@@ -76,19 +69,16 @@ function applyDiffChanges(diffPath, dryRun) {
     }
 
     if (dryRun) {
-        log('   [DRY RUN] Would apply all changes using git apply', 'yellow');
-        log('   (excluding node_modules and package-lock.json)', 'yellow');
+        log('   [DRY RUN] Would apply all changes using patch', 'yellow');
         return;
     }
 
     try {
         log('   Applying all changes (including file renames)...', 'cyan');
 
-        // Build exclude arguments
-        const excludeArgs = FILES_TO_EXCLUDE.map((pattern) => `--exclude='${pattern}'`).join(' ');
-
-        // Apply the diff, excluding node_modules and package-lock.json
-        exec(`git apply ${excludeArgs} ${diffPath}`, {silent: true});
+        // Use patch command instead of git apply for better compatibility
+        // patch is more forgiving with context matching
+        exec(`patch -p1 < ${diffPath}`, {silent: true});
 
         log('   ✓ All changes applied successfully', 'green');
         log('   ✓ Patch files renamed automatically', 'green');

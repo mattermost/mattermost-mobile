@@ -26,7 +26,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Server Login', () => {
     const serverOneDisplayName = 'Server 1';
@@ -69,7 +69,8 @@ describe('Smoke Test - Server Login', () => {
         await User.apiAdminLogin(siteTwoUrl);
         const {user} = await Setup.apiInit(siteTwoUrl);
         await ServerListScreen.addServerButton.tap();
-        await expect(ServerScreen.headerTitleAddServer).toBeVisible(35);
+        await wait(timeouts.ONE_SEC);
+        await waitFor(ServerScreen.headerTitleAddServer).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
         await LoginScreen.login(user);
 
@@ -79,22 +80,28 @@ describe('Smoke Test - Server Login', () => {
 
         // # Go back to first server, open server list screen, swipe left on second server and tap on logout option
         await ServerListScreen.open();
+        await wait(timeouts.ONE_SEC);
         if (isIos()) {
             await ServerListScreen.serverListTitle.swipe('up');
         } else if (isAndroid()) {
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
+        await wait(timeouts.ONE_SEC);
         await waitFor(ServerListScreen.getServerItemInactive(serverOneDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ServerListScreen.getServerItemInactive(serverOneDisplayName).tap();
+        await wait(timeouts.TWO_SEC);
         await ServerListScreen.open();
+        await wait(timeouts.ONE_SEC);
         if (isIos()) {
             await ServerListScreen.serverListTitle.swipe('up');
         } else if (isAndroid()) {
             await waitFor(ServerListScreen.serverListTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
+        await wait(timeouts.ONE_SEC);
         await waitFor(ServerListScreen.getServerItemInactive(serverTwoDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
+        await wait(timeouts.ONE_SEC);
         await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).tap();
 
         // * Verify logout server alert is displayed
@@ -106,6 +113,7 @@ describe('Smoke Test - Server Login', () => {
 
         // * Verify second server is logged out
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
+        await wait(timeouts.ONE_SEC);
         await expect(ServerListScreen.getServerItemLoginOption(serverTwoDisplayName)).toBeVisible();
 
         // # Go back to first server

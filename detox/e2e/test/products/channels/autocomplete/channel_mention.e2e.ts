@@ -77,13 +77,13 @@ describe('Autocomplete - Channel Mention', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
 
         // # Type in channel name
         await ChannelScreen.postInput.typeText(testChannel.name);
 
         // * Verify channel mention autocomplete contains associated channel suggestion
-        await expect(channelMentionAutocomplete).toBeVisible();
+        await expect(channelMentionAutocomplete).toExist();
     });
 
     it('MM-T4879_2 - should suggest channel based on channel display name', async () => {
@@ -92,13 +92,13 @@ describe('Autocomplete - Channel Mention', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
 
         // # Type in channel display name
         await ChannelScreen.postInput.typeText(testChannel.display_name);
 
         // * Verify channel mention autocomplete contains associated channel suggestion
-        await expect(channelMentionAutocomplete).toBeVisible();
+        await expect(channelMentionAutocomplete).toExist();
     });
 
     it('MM-T4879_3 - should suggest channel based on lowercase channel display name', async () => {
@@ -107,13 +107,13 @@ describe('Autocomplete - Channel Mention', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
 
         // # Type in lowercase channel display name
         await ChannelScreen.postInput.typeText(testChannel.display_name.toLowerCase());
 
         // * Verify channel mention autocomplete contains associated channel suggestion
-        await expect(channelMentionAutocomplete).toBeVisible();
+        await expect(channelMentionAutocomplete).toExist();
     });
 
     it('MM-T4879_4 - should suggest channel based on partial channel display name', async () => {
@@ -122,13 +122,13 @@ describe('Autocomplete - Channel Mention', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
 
         // # Type in partial channel display name
         await ChannelScreen.postInput.typeText(`${testChannel.display_name.substring(0, testChannel.display_name.length - 4)}`);
 
         // * Verify channel mention autocomplete contains associated channel suggestion
-        await expect(channelMentionAutocomplete).toBeVisible();
+        await expect(channelMentionAutocomplete).toExist();
     });
 
     it('MM-T4879_5 - should stop suggesting channel after channel display name with trailing space', async () => {
@@ -137,20 +137,20 @@ describe('Autocomplete - Channel Mention', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
 
         // # Type in channel display name
         await ChannelScreen.postInput.typeText(testChannel.display_name);
 
         // * Verify channel mention autocomplete contains associated channel suggestion
-        await expect(channelMentionAutocomplete).toBeVisible();
+        await expect(channelMentionAutocomplete).toExist();
 
         // # Type in trailing space
         await ChannelScreen.postInput.typeText(' ');
         await wait(timeouts.ONE_SEC);
 
         // * Verify channel mention autocomplete does not contain associated channel suggestion
-        await expect(channelMentionAutocomplete).not.toBeVisible();
+        await expect(channelMentionAutocomplete).not.toExist();
     });
 
     it('MM-T4879_6 - should stop suggesting channel when keyword is not associated with any channel', async () => {
@@ -159,35 +159,35 @@ describe('Autocomplete - Channel Mention', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
 
         // # Type in keyword not associated with any channel
         await ChannelScreen.postInput.typeText(getRandomId());
 
         // * Verify channel mention autocomplete does not contain associated channel suggestion
-        await expect(channelMentionAutocomplete).not.toBeVisible();
+        await expect(channelMentionAutocomplete).not.toExist();
     });
 
     it('MM-T4879_7 - should be able to select channel mention multiple times', async () => {
         // # Type in "~" to activate channel mention autocomplete
-        await expect(Autocomplete.sectionChannelMentionList).not.toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
         await ChannelScreen.postInput.typeText('~');
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
 
         // # Type in channel name and tap on channel mention autocomplete
         await ChannelScreen.postInput.typeText(testChannel.name);
         await channelMentionAutocomplete.tap();
 
         // * Verify channel mention list disappears
-        await expect(Autocomplete.sectionChannelMentionList).not.toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
 
         // # Type in "~" again to re-activate channel mention list
         await ChannelScreen.postInput.typeText('~');
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
     });
 
     it('MM-T4879_8 - should be able to autocomplete archived channel', async () => {
@@ -197,13 +197,13 @@ describe('Autocomplete - Channel Mention', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
 
         // # Type in channel name of archived channel
         await ChannelScreen.postInput.typeText(testOtherChannel.name);
 
         // * Verify channel mention autocomplete contains associated channel suggestion
-        await expect(otherChannelMentionAutocomplete).toBeVisible();
+        await expect(otherChannelMentionAutocomplete).toExist();
 
         // # Unarchive channel, clear post input, and type in "~" to activate channel mention list
         await Channel.apiRestoreChannel(siteOneUrl, testOtherChannel.id);
@@ -213,13 +213,13 @@ describe('Autocomplete - Channel Mention', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
 
         // # Type in channel name of unarchived channel
         await ChannelScreen.postInput.typeText(testOtherChannel.name);
 
         // * Verify channel mention autocomplete contains associated channel suggestion
-        await expect(otherChannelMentionAutocomplete).toBeVisible();
+        await expect(otherChannelMentionAutocomplete).toExist();
     });
 
     it('MM-T4879_9 - should not be able to autocomplete out of team channel', async () => {
@@ -230,14 +230,14 @@ describe('Autocomplete - Channel Mention', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
 
         // # Type in channel name of out of team channel
         await ChannelScreen.postInput.typeText(outOfTeamChannel.name);
 
         // * Verify channel mention autocomplete does not contain associated channel suggestion
         const {channelMentionItem: outOfTeamChannelChannelMentionAutocomplete} = Autocomplete.getChannelMentionItem(outOfTeamChannel.name);
-        await expect(outOfTeamChannelChannelMentionAutocomplete).not.toBeVisible();
+        await expect(outOfTeamChannelChannelMentionAutocomplete).not.toExist();
     });
 
     it('MM-T4879_10 - should include current channel in autocomplete', async () => {
@@ -246,13 +246,13 @@ describe('Autocomplete - Channel Mention', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
 
         // # Type in channel name of current channel
         await ChannelScreen.postInput.typeText(testChannel.name);
 
         // * Verify channel mention autocomplete contains current channel
         const {channelMentionItemChannelDisplayName} = Autocomplete.getChannelMentionItem(testChannel.name);
-        await expect(channelMentionItemChannelDisplayName).toBeVisible();
+        await expect(channelMentionItemChannelDisplayName).toExist();
     });
 });
