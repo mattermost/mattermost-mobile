@@ -52,7 +52,7 @@ describe('EditPostInput', () => {
             },
         ],
         version: '10.5.0',
-        inputRef: {current: undefined},
+        inputRef: {current: null},
         onTextSelectionChange: jest.fn(),
         onChangeText: jest.fn(),
         addFiles: jest.fn(),

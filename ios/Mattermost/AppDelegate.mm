@@ -10,6 +10,7 @@
 
 #import "Mattermost-Swift.h"
 #import <os/log.h>
+#import "PasteInputModule.h"
 
 #if __has_include(<MSAL/MSAL.h>)
   #import <MSAL/MSAL.h>
@@ -82,11 +83,18 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   [[GekidouWrapper default] setPreference:@"true" forKey:@"ApplicationIsRunning"];
 
   [RNNotifications startMonitorNotifications];
+  
+  BOOL result = [super application:application didFinishLaunchingWithOptions:launchOptions];
 
   os_log(OS_LOG_DEFAULT, "Mattermost started!!");
-
-  // Initialize Expo modules and React Native (replacing RNN bootstrap for Expo Router)
-  [super application:application didFinishLaunchingWithOptions:launchOptions];
+  
+#ifdef RCT_NEW_ARCH_ENABLED
+  if (self.rootViewFactory.reactHost) {
+    [PasteInputModule setReactHost:self.rootViewFactory.reactHost];
+  }
+#endif
+  // Initialize Expo modules and React Native
+  return result;
 
 #if INTUNE_AVAILABLE
   // Restore enrollments if needed (silent, non-blocking)
@@ -97,7 +105,7 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 }
 
 -(BOOL)bridgelessEnabled {
-  return NO;
+  return YES;
 }
 
 - (NSString *)moduleName {

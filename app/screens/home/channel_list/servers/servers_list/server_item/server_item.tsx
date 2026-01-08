@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Animated, DeviceEventEmitter, InteractionManager, Platform, type StyleProp, Text, View, type ViewStyle} from 'react-native';
+import {Animated, DeviceEventEmitter, InteractionManager, Platform, processColor, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
@@ -375,7 +375,7 @@ const ServerItem = ({
                     <RectButton
                         onPress={onServerPressed}
                         style={styles.button}
-                        rippleColor={changeOpacity(theme.centerChannelColor, 0.16) || 'rgba(0, 0, 0, 0.16)'}
+                        rippleColor={processColor(changeOpacity(theme.centerChannelColor, 0.16)) ?? processColor('rgba(0, 0, 0, 0.16)')}
                     >
                         <View style={serverStyle}>
                             {!switching &&

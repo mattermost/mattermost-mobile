@@ -25,7 +25,7 @@ import Uploads from '../uploads';
 
 import Header from './header';
 
-import type {PasteInputRef} from '@mattermost/react-native-paste-input';
+import type {PasteTextInputInstance} from '@mattermost/react-native-paste-input';
 
 export type Props = {
     testID?: string;
@@ -153,7 +153,7 @@ function DraftInput({
         updatePostInputTop(e.nativeEvent.layout.height);
     }, [updatePostInputTop]);
 
-    const inputRef = useRef<PasteInputRef>();
+    const inputRef = useRef<PasteTextInputInstance | null>(null);
     const focus = useCallback(() => {
         inputRef.current?.focus();
     }, []);

@@ -348,10 +348,10 @@ class SecurityManagerSingleton {
         }
 
         // Cleanup storage and MSAL account after all wipes complete
-        await IntuneManager.cleanupAfterWipe(oid);
+        IntuneManager.cleanupAfterWipe(oid);
 
         // Report completion status to native (clears pending state if successful)
-        await IntuneManager.reportWipeComplete(oid, success);
+        IntuneManager.reportWipeComplete(oid, success);
     };
 
     /**
@@ -550,7 +550,7 @@ class SecurityManagerSingleton {
         }
 
         // Check if already enrolled
-        const isManaged = await IntuneManager.isManagedServer(serverUrl);
+        const isManaged = IntuneManager.isManagedServer(serverUrl);
         if (isManaged) {
             return true;
         }
@@ -898,7 +898,7 @@ class SecurityManagerSingleton {
      * Retry any pending wipes that failed in a previous app session
      */
     private retryPendingWipes = async () => {
-        const pendingWipes = await IntuneManager.getPendingWipes();
+        const pendingWipes = IntuneManager.getPendingWipes();
         if (pendingWipes.length === 0) {
             return;
         }
@@ -917,7 +917,7 @@ class SecurityManagerSingleton {
             const success = results.every((result) => result === true);
 
             // Report completion status (clears pending state if successful)
-            await IntuneManager.reportWipeComplete(oid, success);
+            IntuneManager.reportWipeComplete(oid, success);
         });
     };
 }

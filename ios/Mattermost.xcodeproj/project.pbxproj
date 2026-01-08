@@ -147,7 +147,7 @@
 		7FC5698928563FDB000B0905 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FC5698828563FDB000B0905 /* ShareViewController.swift */; };
 		7FC5698C28563FDB000B0905 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7FC5698A28563FDB000B0905 /* MainInterface.storyboard */; };
 		7FC5699028563FDB000B0905 /* MattermostShare.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7FC5698628563FDB000B0905 /* MattermostShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		7FCEFB9326B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FCEFB9226B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m */; };
+		7FCEFB9326B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7FCEFB9226B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.mm */; };
 		7FD482292864D69700A5B18B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7FD482282864D69700A5B18B /* Assets.xcassets */; };
 		7FD4825C2864DC4200A5B18B /* compass-icons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 531BEBC52513E93C00BC05B1 /* compass-icons.ttf */; };
 		7FD4825D2864DC5800A5B18B /* Metropolis-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7F25B626270F666D00F32373 /* Metropolis-Light.ttf */; };
@@ -358,7 +358,7 @@
 		7FC5698D28563FDB000B0905 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7FC569962856436E000B0905 /* MattermostShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MattermostShare.entitlements; sourceTree = "<group>"; };
 		7FCEFB9126B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SDWebImageDownloaderOperation+Swizzle.h"; sourceTree = "<group>"; };
-		7FCEFB9226B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "SDWebImageDownloaderOperation+Swizzle.m"; sourceTree = "<group>"; };
+		7FCEFB9226B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = "SDWebImageDownloaderOperation+Swizzle.mm"; sourceTree = "<group>"; };
 		7FD482282864D69700A5B18B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7FDEF5352C2D01CC0093AADB /* certs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = certs; path = ../assets/certs; sourceTree = "<group>"; };
 		7FF9C03C2983E7C6005CDCF5 /* ErrorSharingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorSharingView.swift; sourceTree = "<group>"; };
@@ -984,7 +984,7 @@
 				536CC6C223E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.h */,
 				536CC6C123E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m */,
 				7FCEFB9126B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.h */,
-				7FCEFB9226B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m */,
+				7FCEFB9226B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.mm */,
 			);
 			name = Extensions;
 			path = Mattermost/Extensions;
@@ -1616,7 +1616,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7F1EB88527FDE361002E7EEC /* GekidouWrapper.swift in Sources */,
-				7FCEFB9326B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m in Sources */,
+				7FCEFB9326B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.mm in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				7F151D3E221B062700FAD8F3 /* RuntimeUtils.swift in Sources */,
 				7F537B2928A517580086D6B3 /* NotificationHelper.swift in Sources */,

@@ -5,8 +5,12 @@
 
 
 #import "SDWebImageDownloaderOperation+Swizzle.h"
-@import react_native_network_client;
 #import <objc/runtime.h>
+
+// Import React headers before Swift header so RCTPromise* types are defined
+#import <React/RCTBridgeModule.h>
+
+#import <react_native_network_client/react_native_network_client-Swift.h>
 
 typedef id (*InitWithRequestInSessionOptionsContextIMP)(id, SEL, NSURLRequest *, NSURLSession *, SDWebImageDownloaderOptions *, id);
 typedef void (*URLSessionTaskDidReceiveChallengeIMP)(id, SEL, NSURLSession *, NSURLSessionTask *, NSURLAuthenticationChallenge *, void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *));
@@ -25,13 +29,13 @@ static URLSessionTaskDidReceiveChallengeIMP originalURLSessionTaskDidReceiveChal
 }
 
 + (void) swizzleInitMethod {
-  Class class = [self class];
-  
+  Class targetClass = [self class];
+
   SEL originalSelector = @selector(initWithRequest:inSession:options:context:);
   SEL swizzledSelector = @selector(swizzled_initWithRequest:inSession:options:context:);
-  
-  Method originalMethod = class_getInstanceMethod(class, originalSelector);
-  Method swizzledMethod = class_getInstanceMethod(class, swizzledSelector);
+
+  Method originalMethod = class_getInstanceMethod(targetClass, originalSelector);
+  Method swizzledMethod = class_getInstanceMethod(targetClass, swizzledSelector);
   
   // Get the implementation of the swizzled method
   IMP swizzledImplementation = method_getImplementation(swizzledMethod);
@@ -47,13 +51,13 @@ static URLSessionTaskDidReceiveChallengeIMP originalURLSessionTaskDidReceiveChal
 }
 
 + (void) swizzleURLSessionTaskDelegateMethod {
-  Class class = [self class];
-  
+  Class targetClass = [self class];
+
   SEL originalSelector = @selector(URLSession:task:didReceiveChallenge:completionHandler:);
   SEL swizzledSelector = @selector(swizzled_URLSession:task:didReceiveChallenge:completionHandler:);
-  
-  Method originalMethod = class_getInstanceMethod(class, originalSelector);
-  Method swizzledMethod = class_getInstanceMethod(class, swizzledSelector);
+
+  Method originalMethod = class_getInstanceMethod(targetClass, originalSelector);
+  Method swizzledMethod = class_getInstanceMethod(targetClass, swizzledSelector);
   
   // Get the implementation of the swizzled method
   IMP swizzledImplementation = method_getImplementation(swizzledMethod);

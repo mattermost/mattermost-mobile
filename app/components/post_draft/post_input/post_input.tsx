@@ -3,7 +3,7 @@
 
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import PasteableTextInput, {type PastedFile, type PasteInputRef} from '@mattermost/react-native-paste-input';
+import PasteableTextInput, {type PastedFile, type PasteTextInputInstance} from '@mattermost/react-native-paste-input';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessage, type IntlShape, useIntl} from 'react-intl';
 import {
@@ -41,7 +41,7 @@ type Props = {
     cursorPosition: number;
     updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     sendMessage: () => void;
-    inputRef: React.MutableRefObject<PasteInputRef | undefined>;
+    inputRef: React.MutableRefObject<PasteTextInputInstance | null>;
     setIsFocused: (isFocused: boolean) => void;
 }
 

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import PasteInput, {type PasteInputRef} from '@mattermost/react-native-paste-input';
+import PasteInput, {type PasteTextInputInstance} from '@mattermost/react-native-paste-input';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {type NativeSyntheticEvent, type TextInputSelectionChangeEventData, View} from 'react-native';
@@ -44,7 +44,7 @@ type PostInputProps = {
     version?: string;
     onTextSelectionChange: (curPos: number) => void;
     onChangeText: (text: string) => void;
-    inputRef: React.MutableRefObject<PasteInputRef | undefined>;
+    inputRef: React.MutableRefObject<PasteTextInputInstance | null>;
     addFiles: (file: FileInfo[]) => void;
 }
 
@@ -66,7 +66,7 @@ const EditPostInput = ({
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
     const focus = useCallback(() => {
         inputRef.current?.focus();
-    }, []);
+    }, [inputRef]);
 
     const updateValue = useCallback((valueOrUpdater: string | ((prevValue: string) => string)) => {
         if (typeof valueOrUpdater === 'function') {
@@ -104,7 +104,7 @@ const EditPostInput = ({
                 onSelectionChange={onSelectionChange}
                 placeholder={intl.formatMessage({id: 'edit_post.editPost', defaultMessage: 'Edit the post...'})}
                 placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                ref={inputRef}
+                forwardedRef={inputRef}
                 smartPunctuation='disable'
                 submitBehavior='newline'
                 style={inputStyle}

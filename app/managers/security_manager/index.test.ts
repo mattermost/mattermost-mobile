@@ -379,7 +379,7 @@ describe('SecurityManager', () => {
 
         beforeEach(async () => {
             jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
-            jest.mocked(IntuneManager.isManagedServer).mockResolvedValue(false);
+            jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
             jest.mocked(isRootedExperimentalAsync).mockResolvedValue(true);
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
             jest.mocked(Emm.authenticate).mockResolvedValue(true);

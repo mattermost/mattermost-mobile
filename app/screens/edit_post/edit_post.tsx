@@ -29,7 +29,7 @@ import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/fil
 
 import EditPostInput from './edit_post_input';
 
-import type {PasteInputRef} from '@mattermost/react-native-paste-input';
+import type {PasteTextInputInstance} from '@mattermost/react-native-paste-input';
 import type {ErrorHandlers} from '@typings/components/upload_error_handlers';
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -89,7 +89,7 @@ const EditPost = ({
     const mainView = useRef<View>(null);
     const uploadErrorHandlers = useRef<ErrorHandlers>({});
 
-    const postInputRef = useRef<PasteInputRef | undefined>(undefined);
+    const postInputRef = useRef<PasteTextInputInstance | null>(null);
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();

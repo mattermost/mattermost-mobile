@@ -90,18 +90,13 @@ export class IntuneManagerSingleton {
      * @param serverUrl - The Mattermost server URL
      * @param identity - The MSAL identity (upn, tid, oid)
      */
-    async enrollServer(serverUrl: string, identity: MSALIdentity): Promise<void> {
+    enrollServer(serverUrl: string, identity: MSALIdentity): void {
         if (!Intune) {
             return;
         }
 
-        try {
-            logDebug('IntuneManager: Enrolling in MAM');
-            await Intune.enrollInMAM(serverUrl, identity);
-        } catch (error) {
-            logError('IntuneManager: MAM enrollment failed', error);
-            throw error;
-        }
+        logDebug('IntuneManager: Enrolling in MAM');
+        Intune.enrollInMAM(serverUrl, identity);
     }
 
     /**
@@ -116,7 +111,7 @@ export class IntuneManagerSingleton {
 
         try {
             const currentServer = await DatabaseManager.getActiveServerUrl();
-            const isManaged = await Intune.isManagedServer(serverUrl);
+            const isManaged = Intune.isManagedServer(serverUrl);
             if (!isManaged) {
                 logDebug('IntuneManager: Server not enrolled in MAM, skipping unenrollment');
                 return;
@@ -125,7 +120,7 @@ export class IntuneManagerSingleton {
             if (currentServer === serverUrl) {
                 await Intune.setCurrentIdentity(null);
             }
-            await Intune.deregisterAndUnenroll(serverUrl, doWipe);
+            Intune.deregisterAndUnenroll(serverUrl, doWipe);
         } catch (error) {
             logError('IntuneManager: Unenrollment failed', error);
         }
@@ -137,16 +132,12 @@ export class IntuneManagerSingleton {
      * to remove the OID-to-serverUrl mappings from keychain and delete the MSAL account.
      * @param oid - The Object ID (OID) to cleanup
      */
-    async cleanupAfterWipe(oid: string): Promise<void> {
+    cleanupAfterWipe(oid: string): void {
         if (!Intune) {
             return;
         }
 
-        try {
-            await Intune.cleanupAfterWipe(oid);
-        } catch (error) {
-            logError('IntuneManager: Cleanup after wipe failed', error);
-        }
+        Intune.cleanupAfterWipe(oid);
     }
 
     /**
@@ -154,17 +145,12 @@ export class IntuneManagerSingleton {
      * @param serverUrl - The Mattermost server URL
      * @returns true if server is Intune-managed
      */
-    async isManagedServer(serverUrl: string): Promise<boolean> {
+    isManagedServer(serverUrl: string): boolean {
         if (!Intune) {
             return false;
         }
 
-        try {
-            return await Intune.isManagedServer(serverUrl);
-        } catch (error) {
-            logError('IntuneManager: Failed to check managed status', error);
-            return false;
-        }
+        return Intune.isManagedServer(serverUrl);
     }
 
     /**
@@ -219,12 +205,12 @@ export class IntuneManagerSingleton {
             if (!isIntuneEnabled) {
                 return null;
             }
-            const isManaged = await Intune.isManagedServer(serverUrl);
+            const isManaged = Intune.isManagedServer(serverUrl);
             if (!isManaged) {
                 return null;
             }
 
-            return await Intune.getPolicy(serverUrl);
+            return Intune.getPolicy(serverUrl);
         } catch (error) {
             logError('IntuneManager: Failed to get policy', error);
             return null;
@@ -315,17 +301,13 @@ export class IntuneManagerSingleton {
      * @param oid - The OID to report completion for
      * @param success - Whether the wipe was successful
      */
-    async reportWipeComplete(oid: string, success: boolean): Promise<void> {
+    reportWipeComplete(oid: string, success: boolean): void {
         if (!Intune) {
             return;
         }
 
-        try {
-            await Intune.reportWipeComplete(oid, success);
-            logDebug(`IntuneManager: Wipe completion reported (success: ${success})`);
-        } catch (error) {
-            logError('IntuneManager: Failed to report wipe completion', error);
-        }
+        Intune.reportWipeComplete(oid, success);
+        logDebug(`IntuneManager: Wipe completion reported (success: ${success})`);
     }
 
     /**
@@ -333,19 +315,14 @@ export class IntuneManagerSingleton {
      * Filters out stale wipes (> 7 days old) automatically
      * @returns Array of pending wipes (empty array if none)
      */
-    async getPendingWipes(): Promise<Array<{oid: string; serverUrls: string[]; timestamp: number}>> {
+    getPendingWipes(): Array<{oid: string; serverUrls: string[]; timestamp: number}> {
         if (!Intune) {
             return [];
         }
 
-        try {
-            const pendingWipes = await Intune.getPendingWipes();
-            logDebug(`IntuneManager: Retrieved ${pendingWipes.length} pending wipe(s)`);
-            return pendingWipes;
-        } catch (error) {
-            logError('IntuneManager: Failed to get pending wipes', error);
-            return [];
-        }
+        const pendingWipes = Intune.getPendingWipes();
+        logDebug(`IntuneManager: Retrieved ${pendingWipes.length} pending wipe(s)`);
+        return pendingWipes;
     }
 }
 
