@@ -10,11 +10,3 @@
 	path = libraries/@mattermost/intune
 	url = git@github.com:mattermost/mattermost-mobile-intune.git
 
-# E2EE library submodule (optional - for E2EE development)
-# To enable E2EE: npm run e2ee:init
-# To disable E2EE: npm run e2ee:disable
-# To check status: npm run e2ee:status
-[submodule "libraries/@mattermost/e2ee"]
-	path = libraries/@mattermost/e2ee
-	url = https://github.com/mattermost/mattermost-mobile-e2ee
-	branch = MM-66932-initial-infra

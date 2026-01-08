@@ -212,7 +212,7 @@
     "test:watch": "npm test -- --watch",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",
     "updatesnapshot": "NODE_OPTIONS=--max_old_space_size=12000 jest --updateSnapshot",
-    "e2ee:init": "./scripts/e2ee-init.sh",
+    "e2ee:enable": "./scripts/e2ee-enable.sh",
     "e2ee:disable": "./scripts/e2ee-disable.sh",
     "e2ee:status": "./scripts/e2ee-status.sh",
     "e2ee:build": "npm run --prefix libraries/@mattermost/e2ee build",

@@ -134,10 +134,7 @@ node_modules/@mattermost/intune
 # Claude Code
 .claude/settings.local.json
 
-# E2EE submodule (source-available repository - internal builds only)
-# Track submodule reference but ignore content
-libraries/@mattermost/e2ee/*
-!libraries/@mattermost/e2ee/.gitkeep
-
-# Prevent committing E2EE module in node_modules
+# E2EE library (source-available repository - internal builds only)
+libraries/@mattermost/e2ee/
 node_modules/@mattermost/e2ee
+.e2ee-dev-mode

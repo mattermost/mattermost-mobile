@@ -1,5 +1,18 @@
 #!/usr/bin/env bash
 
+E2EE_SISTER_DIR="../mattermost-mobile-e2ee"
+E2EE_DEV_MARKER=".e2ee-dev-mode"
+
+function restoreE2EEDevSymlink() {
+    # If dev mode marker exists, restore the symlink (npm install removes it)
+    if [[ -f "$E2EE_DEV_MARKER" ]] && [[ -d "$E2EE_SISTER_DIR" ]]; then
+        echo "Restoring E2EE dev symlink..."
+        rm -rf node_modules/@mattermost/e2ee
+        mkdir -p node_modules/@mattermost
+        ln -s "$(cd "$E2EE_SISTER_DIR" && pwd)" node_modules/@mattermost/e2ee
+    fi
+}
+
 function installPods() {
     echo "Getting Cocoapods dependencies"
     npm run pod-install
@@ -32,6 +45,9 @@ function buildE2EE() {
         exit 1
     fi
 }
+
+# Restore E2EE dev symlink if in dev mode (npm install removes it)
+restoreE2EEDevSymlink
 
 # Setup Rust toolchain if needed (only installs missing deps, and only if e2ee or E2EE_RELEASE is set)
 if [[ -f "libraries/@mattermost/e2ee/package.json" ]] || [[ "$E2EE_RELEASE" = "1" ]]; then

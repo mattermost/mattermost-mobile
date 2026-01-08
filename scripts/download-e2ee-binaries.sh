@@ -19,7 +19,7 @@ E2EE_DIR="libraries/@mattermost/e2ee"
 # Get version from argument or default to latest
 VERSION="${1:-latest}"
 
-echo "📦 Downloading E2EE library (version: $VERSION)..."
+echo "Downloading E2EE library (version: $VERSION)..."
 
 # Determine release URL
 if [ "$VERSION" = "latest" ]; then
@@ -29,11 +29,11 @@ else
 fi
 
 # Get download URL from release
-echo "🔍 Fetching release information..."
+echo "Fetching release information..."
 RELEASE_INFO=$(curl -sf "$RELEASE_URL" 2>/dev/null || echo "")
 
 if [ -z "$RELEASE_INFO" ]; then
-    echo "⚠️  Could not fetch release info for version: $VERSION"
+    echo "[error] Could not fetch release info for version: $VERSION"
     exit 1
 fi
 
@@ -41,28 +41,29 @@ fi
 ARCHIVE_URL=$(echo "$RELEASE_INFO" | grep -o '"browser_download_url": "[^"]*mattermost-e2ee-v[^"]*\.zip"' | head -1 | cut -d'"' -f4)
 
 if [ -z "$ARCHIVE_URL" ]; then
-    echo "⚠️  Could not find release archive in release"
+    echo "[error] Could not find release archive in release"
     exit 1
 fi
 
-echo "📥 Downloading from: $ARCHIVE_URL"
+echo "Downloading from: $ARCHIVE_URL"
 curl -sL "$ARCHIVE_URL" -o /tmp/e2ee-release.zip
 
-# Clean existing content (except .gitkeep)
-echo "🧹 Cleaning existing E2EE directory..."
-find "$E2EE_DIR" -mindepth 1 ! -name '.gitkeep' -exec rm -rf {} + 2>/dev/null || true
+# Clean and recreate directory
+echo "Preparing E2EE directory..."
+rm -rf "$E2EE_DIR"
+mkdir -p "$E2EE_DIR"
 
 # Extract the release archive
-echo "📂 Extracting to $E2EE_DIR/..."
+echo "Extracting to $E2EE_DIR/..."
 unzip -q /tmp/e2ee-release.zip -d "$E2EE_DIR"
 rm /tmp/e2ee-release.zip
 
 # Verify extraction
 if [ ! -f "$E2EE_DIR/package.json" ]; then
-    echo "❌ Extraction failed - package.json not found"
+    echo "[error] Extraction failed - package.json not found"
     exit 1
 fi
 
 echo ""
-echo "✅ E2EE library downloaded successfully"
+echo "[ok] E2EE library downloaded successfully"
 echo "   Version: $(node -p "require('./$E2EE_DIR/package.json').version" 2>/dev/null || echo 'unknown')"

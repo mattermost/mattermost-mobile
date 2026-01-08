@@ -39,54 +39,32 @@ echo ""
 if should_check "package.json"; then
     echo "Checking package.json..."
     if grep -qE '"@mattermost/e2ee":\s*"file:' package.json 2>/dev/null; then
-        echo "  ❌ Contains @mattermost/e2ee as a static dependency"
-        echo "     Remove it from dependencies (use 'npm run e2ee:init' for dynamic linking)"
+        echo "  [error] Contains @mattermost/e2ee as a static dependency"
+        echo "     Remove it from dependencies (use 'npm run e2ee:enable' for dynamic linking)"
         ERRORS=$((ERRORS + 1))
     else
-        echo "  ✓ clean"
+        echo "  [ok]"
     fi
 fi
 
-# Check for E2EE in react-native.config.js
-if should_check "react-native.config.js"; then
-    echo "Checking react-native.config.js..."
-    if grep -q "@mattermost/e2ee" react-native.config.js 2>/dev/null; then
-        echo "  ❌ Contains @mattermost/e2ee entry"
-        ERRORS=$((ERRORS + 1))
-    else
-        echo "  ✓ clean"
-    fi
-fi
-
-# Check for E2EE contamination in Podfile.lock
+# Check for E2EE pods being ADDED to Podfile.lock (not just present)
+# This allows committing other Podfile.lock changes while e2ee is locally enabled
 if should_check "ios/Podfile.lock"; then
     echo "Checking ios/Podfile.lock..."
-    if grep -q "MattermostE2ee" ios/Podfile.lock 2>/dev/null; then
-        echo "  ❌ Contains MattermostE2ee pods"
+    if git diff --cached ios/Podfile.lock 2>/dev/null | grep -q "^+.*MattermostE2ee"; then
+        echo "  [error] Staged changes add MattermostE2ee pods"
         echo "     Run: git checkout -- ios/Podfile.lock"
         ERRORS=$((ERRORS + 1))
     else
-        echo "  ✓ clean"
+        echo "  [ok]"
     fi
 fi
 
-# Check for E2EE references in project.pbxproj
-if should_check "ios/Mattermost.xcodeproj/project.pbxproj"; then
-    echo "Checking ios/Mattermost.xcodeproj/project.pbxproj..."
-    if grep -q "MattermostE2ee\|MattermostE2eeFramework" ios/Mattermost.xcodeproj/project.pbxproj 2>/dev/null; then
-        echo "  ❌ Contains E2EE framework references"
-        echo "     Run: git checkout -- ios/Mattermost.xcodeproj/project.pbxproj"
-        ERRORS=$((ERRORS + 1))
-    else
-        echo "  ✓ clean"
-    fi
-fi
-
-# Check for E2EE files in submodule path
-e2ee_files=$(echo "$FILES_TO_CHECK" | grep "^libraries/@mattermost/e2ee/" | grep -v ".gitkeep$" || true)
+# Check for E2EE files in library path
+e2ee_files=$(echo "$FILES_TO_CHECK" | grep "^libraries/@mattermost/e2ee/" || true)
 if [[ -n "$e2ee_files" ]]; then
     echo "Checking libraries/@mattermost/e2ee/..."
-    echo "  ❌ Contains files that should not be committed:"
+    echo "  [error] Contains files that should not be committed:"
     echo "$e2ee_files" | sed 's/^/     /'
     echo "     The E2EE library should only be modified in its own repository"
     ERRORS=$((ERRORS + 1))
@@ -94,12 +72,12 @@ fi
 
 echo ""
 if [ $ERRORS -gt 0 ]; then
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "❌ VALIDATION FAILED: $ERRORS issue(s) found"
+    echo "============================================"
+    echo "VALIDATION FAILED: $ERRORS issue(s) found"
     echo ""
     echo "Run 'npm run e2ee:disable' to restore clean state."
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "============================================"
     exit 1
 else
-    echo "✓ Validation PASSED: Repository is clean of E2EE artifacts"
+    echo "[ok] Validation passed: Repository is clean of E2EE artifacts"
 fi

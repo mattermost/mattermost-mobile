@@ -61,7 +61,7 @@ target 'Mattermost' do
 
   # Conditional E2EE pod (internal builds only)
   if e2ee_enabled
-    pod 'MattermostE2ee', :path => '../libraries/@mattermost/e2ee'
+    pod 'MattermostE2ee', :path => '../node_modules/@mattermost/e2ee'
   end
 
   # Conditional Intune MAM pod (internal builds only)
