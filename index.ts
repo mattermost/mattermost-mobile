@@ -19,6 +19,7 @@ ViewReactNativeStyleAttributes.scaleY = true;
 
 // Check if running E2E tests
 const isRunningE2e = RUNNING_E2E === 'true';
+export {isRunningE2e};
 
 TurboLogger.configure({
     dailyRolling: false,
