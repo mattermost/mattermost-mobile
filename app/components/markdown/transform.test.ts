@@ -3258,6 +3258,124 @@ describe('Components.Markdown.transform', () => {
             });
         }
     });
+
+    describe('parseCitationUrl', () => {
+        const {parseCitationUrl} = require('@components/markdown/transform');
+
+        it('should return null for URLs without view=citation', () => {
+            expect(parseCitationUrl('http://localhost:8066/team/pl/abc123')).toBeNull();
+            expect(parseCitationUrl('http://localhost:8066/team/channels/general')).toBeNull();
+            expect(parseCitationUrl('')).toBeNull();
+        });
+
+        it('should parse post citation URLs', () => {
+            const result = parseCitationUrl('http://localhost:8066/missionops/pl/hod5do9pc38q7e7ofcc7e3hzae?view=citation');
+            expect(result).toEqual({
+                entityType: 'POST',
+                entityId: 'hod5do9pc38q7e7ofcc7e3hzae',
+                linkUrl: 'http://localhost:8066/missionops/pl/hod5do9pc38q7e7ofcc7e3hzae?view=citation',
+            });
+        });
+
+        it('should parse channel citation URLs', () => {
+            const result = parseCitationUrl('http://localhost:8066/missionops/channels/mission-planning?view=citation');
+            expect(result).toEqual({
+                entityType: 'CHANNEL',
+                entityId: 'mission-planning',
+                linkUrl: 'http://localhost:8066/missionops/channels/mission-planning?view=citation',
+            });
+        });
+
+        it('should parse team citation URLs', () => {
+            const result = parseCitationUrl('http://localhost:8066/missionops?view=citation');
+            expect(result).toEqual({
+                entityType: 'TEAM',
+                entityId: 'missionops',
+                linkUrl: 'http://localhost:8066/missionops?view=citation',
+            });
+        });
+
+        it('should handle view=citation with additional query params', () => {
+            const result = parseCitationUrl('http://localhost:8066/team/pl/abc123?foo=bar&view=citation');
+            expect(result).toEqual({
+                entityType: 'POST',
+                entityId: 'abc123',
+                linkUrl: 'http://localhost:8066/team/pl/abc123?foo=bar&view=citation',
+            });
+        });
+    });
+
+    describe('processInlineEntities', () => {
+        const {processInlineEntities} = require('@components/markdown/transform');
+
+        it('should not modify links without view=citation', () => {
+            const input = parser.parse('[link text](http://example.com/team/pl/abc123)');
+            const result = processInlineEntities(input);
+
+            const walker = result.walker();
+            let foundLink = false;
+            let e;
+            while ((e = walker.next())) {
+                if (e.node.type === 'link') {
+                    foundLink = true;
+                    expect(e.node.destination).toBe('http://example.com/team/pl/abc123');
+                }
+            }
+            expect(foundLink).toBe(true);
+        });
+
+        it('should transform post citation links to inline_entity_link nodes', () => {
+            const input = parser.parse('[permalink](http://localhost:8066/team/pl/abc123?view=citation)');
+            const result = processInlineEntities(input);
+
+            const walker = result.walker();
+            let foundInlineEntity = false;
+            let e;
+            while ((e = walker.next())) {
+                if (e.node.type === 'inline_entity_link') {
+                    foundInlineEntity = true;
+                    expect(e.node.entityType).toBe('POST');
+                    expect(e.node.entityId).toBe('abc123');
+                    expect(e.node.linkUrl).toBe('http://localhost:8066/team/pl/abc123?view=citation');
+                }
+            }
+            expect(foundInlineEntity).toBe(true);
+        });
+
+        it('should transform channel citation links to inline_entity_link nodes', () => {
+            const input = parser.parse('[permalink](http://localhost:8066/team/channels/general?view=citation)');
+            const result = processInlineEntities(input);
+
+            const walker = result.walker();
+            let foundInlineEntity = false;
+            let e;
+            while ((e = walker.next())) {
+                if (e.node.type === 'inline_entity_link') {
+                    foundInlineEntity = true;
+                    expect(e.node.entityType).toBe('CHANNEL');
+                    expect(e.node.entityId).toBe('general');
+                }
+            }
+            expect(foundInlineEntity).toBe(true);
+        });
+
+        it('should handle multiple citation links in one document', () => {
+            const input = parser.parse('First [link](http://localhost:8066/team/pl/post1?view=citation) and second [link](http://localhost:8066/team/pl/post2?view=citation)');
+            const result = processInlineEntities(input);
+
+            const walker = result.walker();
+            const entityLinks: any[] = [];
+            let e;
+            while ((e = walker.next())) {
+                if (e.node.type === 'inline_entity_link') {
+                    entityLinks.push(e.node);
+                }
+            }
+            expect(entityLinks.length).toBe(2);
+            expect(entityLinks[0].entityId).toBe('post1');
+            expect(entityLinks[1].entityId).toBe('post2');
+        });
+    });
 });
 
 // Testing and debugging functions

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DateTimePicker from '@react-native-community/datetimepicker';
-import React, {useMemo, useState} from 'react';
+import DateTimePicker, {type DateTimePickerEvent} from '@react-native-community/datetimepicker';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, Text, TouchableOpacity, View} from 'react-native';
 
@@ -96,21 +96,42 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
         return since.getTime() <= until.getTime();
     }, [since, until]);
 
-    const onChangeDate = (_: any, date?: Date) => {
-        if (!pickerTarget || !date) {
-            setPickerTarget(undefined);
-            return;
-        }
+    const openPicker = useCallback((target: 'since' | 'until') => {
+        setPickerTarget(target);
+    }, []);
 
-        if (pickerTarget === 'since') {
-            setSince(date);
+    const onChangeDate = useCallback((_: DateTimePickerEvent, date?: Date) => {
+        if (Platform.OS === 'ios') {
+            // iOS uses an inline picker that can stay visible
+            const currentTarget = pickerTarget;
+
+            if (!currentTarget || !date) {
+                setPickerTarget(undefined);
+                return;
+            }
+
+            if (currentTarget === 'since') {
+                setSince(date);
+            } else {
+                setUntil(date);
+            }
+
+            // Don't close picker on iOS - user can continue adjusting
         } else {
-            setUntil(date);
+            // Android: Set date inside functional updater to batch both state updates,
+            // preventing React re-renders from causing the picker to reopen.
+            setPickerTarget((currentTarget) => {
+                if (currentTarget && date) {
+                    if (currentTarget === 'since') {
+                        setSince(date);
+                    } else {
+                        setUntil(date);
+                    }
+                }
+                return undefined; // Always close on Android (modal auto-dismisses)
+            });
         }
-        if (Platform.OS !== 'ios') {
-            setPickerTarget(undefined);
-        }
-    };
+    }, [pickerTarget]);
 
     const handleSubmit = () => {
         setErrorText(undefined);
@@ -150,7 +171,7 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
                 {intl.formatMessage({id: 'agents.channel_summary.since', defaultMessage: 'Start'})}
             </Text>
             <TouchableOpacity
-                onPress={() => setPickerTarget('since')}
+                onPress={() => openPicker('since')}
                 style={styles.dateBox}
                 testID='agents.channel_summary.date_from'
             >
@@ -164,7 +185,7 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
                 {intl.formatMessage({id: 'agents.channel_summary.until', defaultMessage: 'End'})}
             </Text>
             <TouchableOpacity
-                onPress={() => setPickerTarget('until')}
+                onPress={() => openPicker('until')}
                 style={styles.dateBox}
                 testID='agents.channel_summary.date_to'
             >

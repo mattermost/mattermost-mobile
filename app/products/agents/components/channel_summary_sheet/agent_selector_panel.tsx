@@ -85,6 +85,63 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+type AgentItemProps = {
+    agent: Agent;
+    profileImageUrl?: string;
+    currentAgentUsername: string;
+    onSelect: (agent: Agent) => void;
+    showDivider: boolean;
+};
+
+const AgentItem = React.memo(({agent, profileImageUrl, currentAgentUsername, onSelect, showDivider}: AgentItemProps) => {
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
+
+    const handlePress = useCallback(() => {
+        onSelect(agent);
+    }, [onSelect, agent]);
+
+    return (
+        <React.Fragment>
+            <TouchableOpacity
+                onPress={handlePress}
+                style={styles.agentRow}
+                testID={`agents.selector.agent.${agent.username}`}
+            >
+                <View style={styles.agentInfo}>
+                    {profileImageUrl ? (
+                        <Image
+                            source={{uri: profileImageUrl}}
+                            style={styles.agentAvatar}
+                            placeholder='account-outline'
+                        />
+                    ) : (
+                        <View style={styles.agentAvatarFallback}>
+                            <CompassIcon
+                                name='account-outline'
+                                size={20}
+                                color={changeOpacity(theme.centerChannelColor, 0.56)}
+                            />
+                        </View>
+                    )}
+                    <Text style={styles.agentName}>
+                        {agent.displayName || agent.username}
+                    </Text>
+                </View>
+                {currentAgentUsername === agent.username && (
+                    <CompassIcon
+                        name='check'
+                        size={24}
+                        color={theme.linkColor}
+                    />
+                )}
+            </TouchableOpacity>
+            {showDivider && <View style={styles.divider}/>}
+        </React.Fragment>
+    );
+});
+AgentItem.displayName = 'AgentItem';
+
 const AgentSelectorPanel = ({
     agents,
     currentAgentUsername,
@@ -95,10 +152,6 @@ const AgentSelectorPanel = ({
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
-
-    const handleAgentPress = useCallback((agent: Agent) => {
-        onSelectAgent(agent);
-    }, [onSelectAgent]);
 
     // Build profile image URLs for all agents
     const agentImageUrls = useMemo(() => {
@@ -144,42 +197,14 @@ const AgentSelectorPanel = ({
             {agents.map((agent, index) => {
                 const profileImageUrl = agent.id ? agentImageUrls[agent.id] : undefined;
                 return (
-                    <React.Fragment key={agent.id || agent.username}>
-                        <TouchableOpacity
-                            onPress={() => handleAgentPress(agent)}
-                            style={styles.agentRow}
-                            testID={`agents.selector.agent.${agent.username}`}
-                        >
-                            <View style={styles.agentInfo}>
-                                {profileImageUrl ? (
-                                    <Image
-                                        source={{uri: profileImageUrl}}
-                                        style={styles.agentAvatar}
-                                        placeholder='account-outline'
-                                    />
-                                ) : (
-                                    <View style={styles.agentAvatarFallback}>
-                                        <CompassIcon
-                                            name='account-outline'
-                                            size={20}
-                                            color={changeOpacity(theme.centerChannelColor, 0.56)}
-                                        />
-                                    </View>
-                                )}
-                                <Text style={styles.agentName}>
-                                    {agent.displayName || agent.username}
-                                </Text>
-                            </View>
-                            {currentAgentUsername === agent.username && (
-                                <CompassIcon
-                                    name='check'
-                                    size={24}
-                                    color={theme.linkColor}
-                                />
-                            )}
-                        </TouchableOpacity>
-                        {index < agents.length - 1 && <View style={styles.divider}/>}
-                    </React.Fragment>
+                    <AgentItem
+                        key={agent.id || agent.username}
+                        agent={agent}
+                        profileImageUrl={profileImageUrl}
+                        currentAgentUsername={currentAgentUsername}
+                        onSelect={onSelectAgent}
+                        showDivider={index < agents.length - 1}
+                    />
                 );
             })}
         </View>

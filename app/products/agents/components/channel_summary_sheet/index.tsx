@@ -13,6 +13,7 @@ import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {dismissBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -124,6 +125,47 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+type SummaryOptionItemProps = {
+    option: SummaryOption;
+    onPress: (option: SummaryOption) => void;
+    showDivider: boolean;
+    disabled: boolean;
+};
+
+const SummaryOptionItem = React.memo(({option, onPress, showDivider, disabled}: SummaryOptionItemProps) => {
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
+    const intl = useIntl();
+
+    const handlePress = useCallback(() => {
+        onPress(option);
+    }, [onPress, option]);
+
+    return (
+        <React.Fragment>
+            <TouchableOpacity
+                onPress={handlePress}
+                style={styles.optionRow}
+                testID={`agents.channel_summary.option.${option.id}`}
+                disabled={disabled}
+            >
+                <Text style={styles.optionLabel}>
+                    {intl.formatMessage({id: option.labelId, defaultMessage: option.defaultLabel})}
+                </Text>
+                {option.showChevron && (
+                    <CompassIcon
+                        name='chevron-right'
+                        size={24}
+                        color={changeOpacity(theme.centerChannelColor, 0.56)}
+                    />
+                )}
+            </TouchableOpacity>
+            {showDivider && <View style={styles.divider}/>}
+        </React.Fragment>
+    );
+});
+SummaryOptionItem.displayName = 'SummaryOptionItem';
+
 const ChannelSummarySheet = ({channelId}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -158,23 +200,24 @@ const ChannelSummarySheet = ({channelId}: Props) => {
             return;
         }
 
+        // Validate selectedAgent before setting submitting state to avoid stuck loading UI
+        if (!selectedAgent) {
+            return;
+        }
+
         setSubmitting(true);
-        const options: Record<string, string | number | undefined> = {};
+        const options: Record<string, string | number | boolean | undefined> = {};
 
         if (option.days) {
             options.days = option.days;
         }
 
         if (option.id === 'unreads') {
-            options.unreads_only = 'true';
+            options.unreads_only = true;
         }
 
         if (customPrompt.trim()) {
             options.prompt = customPrompt.trim();
-        }
-
-        if (!selectedAgent) {
-            return;
         }
 
         const {error} = await requestChannelSummary(
@@ -277,6 +320,10 @@ const ChannelSummarySheet = ({channelId}: Props) => {
         dismissBottomSheet();
     }, [serverUrl, channelId, selectedAgent, customPrompt, intl]);
 
+    const handleOptionPressDebounced = usePreventDoubleTap(handleOptionPress);
+    const handleCustomPromptSubmitDebounced = usePreventDoubleTap(handleCustomPromptSubmit);
+    const handleDateRangeSubmitDebounced = usePreventDoubleTap(handleDateRangeSubmit);
+
     if (showAgentSelector) {
         return (
             <AgentSelectorPanel
@@ -291,7 +338,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
     if (showDatePicker) {
         return (
             <DateRangePicker
-                onSubmit={handleDateRangeSubmit}
+                onSubmit={handleDateRangeSubmitDebounced}
                 onCancel={() => setShowDatePicker(false)}
             />
         );
@@ -342,11 +389,11 @@ const ChannelSummarySheet = ({channelId}: Props) => {
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.48)}
                     testID='agents.channel_summary.prompt_input'
                     editable={!submitting}
-                    onSubmitEditing={handleCustomPromptSubmit}
+                    onSubmitEditing={handleCustomPromptSubmitDebounced}
                     returnKeyType='send'
                 />
                 <TouchableOpacity
-                    onPress={handleCustomPromptSubmit}
+                    onPress={handleCustomPromptSubmitDebounced}
                     style={[
                         styles.sendButton,
                         (!customPrompt.trim() || submitting) && styles.sendButtonDisabled,
@@ -364,26 +411,13 @@ const ChannelSummarySheet = ({channelId}: Props) => {
 
             {/* Summary Options */}
             {SUMMARY_OPTIONS.map((option, index) => (
-                <React.Fragment key={option.id}>
-                    <TouchableOpacity
-                        onPress={() => handleOptionPress(option)}
-                        style={styles.optionRow}
-                        testID={`agents.channel_summary.option.${option.id}`}
-                        disabled={submitting}
-                    >
-                        <Text style={styles.optionLabel}>
-                            {intl.formatMessage({id: option.labelId, defaultMessage: option.defaultLabel})}
-                        </Text>
-                        {option.showChevron && (
-                            <CompassIcon
-                                name='chevron-right'
-                                size={24}
-                                color={changeOpacity(theme.centerChannelColor, 0.56)}
-                            />
-                        )}
-                    </TouchableOpacity>
-                    {index < SUMMARY_OPTIONS.length - 1 && <View style={styles.divider}/>}
-                </React.Fragment>
+                <SummaryOptionItem
+                    key={option.id}
+                    option={option}
+                    onPress={handleOptionPressDebounced}
+                    showDivider={index < SUMMARY_OPTIONS.length - 1}
+                    disabled={submitting}
+                />
             ))}
 
             {submitting && (

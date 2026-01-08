@@ -120,6 +120,7 @@ const getExtraPropsForNode = (node: any) => {
     if (node.type === 'inline_entity_link') {
         extraProps.entityType = node.entityType;
         extraProps.entityId = node.entityId;
+        extraProps.linkUrl = node.linkUrl;
     }
 
     return extraProps;
@@ -291,11 +292,12 @@ const Markdown = ({
         );
     }, [theme.centerChannelColor]);
 
-    const renderInlineEntityLink = useCallback(({entityType, entityId}: {entityType: InlineEntityType; entityId: string}) => {
+    const renderInlineEntityLink = useCallback(({entityType, entityId, linkUrl}: {entityType: InlineEntityType; entityId: string; linkUrl?: string}) => {
         return (
             <InlineEntityLink
                 entityType={entityType}
                 entityId={entityId}
+                linkUrl={linkUrl}
             />
         );
     }, []);
