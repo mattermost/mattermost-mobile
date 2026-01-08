@@ -111,6 +111,7 @@
   "browse_channels.showPublicChannels": "Show: Public Channels",
   "browse_channels.showSharedChannels": "Show: Shared Channels",
   "browse_channels.title": "Browse channels",
+  "burn_on_read.label.title": "BURN ON READ ({duration})",
   "calls.join_call_avatars.bottom_sheet_title": "Call participants",
   "camera_type.photo.option": "Capture Photo",
   "camera_type.video.option": "Record Video",
