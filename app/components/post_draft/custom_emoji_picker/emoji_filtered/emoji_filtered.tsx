@@ -4,7 +4,7 @@
 import Fuse from 'fuse.js';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, Text, View, type ListRenderItemInfo} from 'react-native';
+import {FlatList, Platform, Text, View, type ListRenderItemInfo} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
@@ -27,6 +27,7 @@ type Props = {
 export const SEARCH_BAR_HEIGHT = 56; // paddingTop: 12 + paddingBottom: 12 + search bar ~32px
 export const SEARCH_CONTAINER_PADDING = 8; // paddingVertical: 4 * 2
 export const SEARCH_VISIBILITY_OFFSET = 40; // Extra height to ensure search values are visible
+export const SEARCH_VISIBILITY_OFFSET_ANDROID = 60;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -63,9 +64,11 @@ const EmojiFiltered: React.FC<Props> = ({
     const style = getStyleSheet(theme);
 
     // Calculate dynamic height: keyboardHeight + search bar height + search container padding + visibility offset
+    // On Android, use increased visibility offset to account for bottom safe area
     const animatedStyle = useAnimatedStyle(() => {
         const calculatedKeyboardHeight = Math.max(keyboardHeight.value, 0);
-        const calculatedHeight = calculatedKeyboardHeight + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET;
+        const visibilityOffset = Platform.OS === 'android' ? SEARCH_VISIBILITY_OFFSET_ANDROID : SEARCH_VISIBILITY_OFFSET;
+        const calculatedHeight = calculatedKeyboardHeight + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + visibilityOffset;
         return {
             height: calculatedHeight,
         };
@@ -105,6 +108,7 @@ const EmojiFiltered: React.FC<Props> = ({
                 onEmojiPress={onEmojiPress}
                 name={item}
                 hideName={hideEmojiNames}
+                shouldDismissKeyboard={false}
             />
         );
     }, [

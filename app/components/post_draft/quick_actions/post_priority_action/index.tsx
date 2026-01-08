@@ -4,7 +4,6 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
-import {KeyboardController} from 'react-native-keyboard-controller';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -14,6 +13,7 @@ import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {openAsBottomSheet} from '@screens/navigation';
+import {dismissKeyboard} from '@utils/keyboard';
 import {changeOpacity} from '@utils/theme';
 
 type Props = {
@@ -44,7 +44,7 @@ export default function PostPriorityAction({
 
     const onPress = useCallback(async () => {
         closeInputAccessoryView();
-        await KeyboardController.dismiss();
+        await dismissKeyboard();
 
         const title = isTablet ? intl.formatMessage({id: 'post_priority.picker.title', defaultMessage: 'Message priority'}) : '';
 
