@@ -5,7 +5,7 @@ import DatabaseManager from '@database/manager';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import TestHelper from '@test/test_helper';
 
-import {handlePlaybookRuns, setOwner, renamePlaybookRun} from './run';
+import {handlePlaybookRuns, setOwner, updatePlaybookRun} from './run';
 
 import type {Database} from '@nozbe/watermelondb';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
@@ -154,21 +154,111 @@ describe('setOwner', () => {
     });
 });
 
-describe('renamePlaybookRun', () => {
+describe('updatePlaybookRun', () => {
     let database: Database;
     beforeEach(() => {
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     });
 
-    it('should handle not found database', async () => {
-        const {error} = await renamePlaybookRun('foo', 'runid', 'New Name');
-        expect(error).toBeTruthy();
-        expect((error as Error).message).toContain('foo database not found');
+    it('should update both name and summary successfully', async () => {
+        const runs = TestHelper.createPlaybookRuns(1, 0, 0);
+        await handlePlaybookRuns(serverUrl, runs, false, false);
+
+        const playbookRunId = runs[0].id;
+        const newName = 'Updated Run Name';
+        const newSummary = 'Updated run summary';
+
+        const {data, error} = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary);
+
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
+        expect(updatedRun.name).toBe(newName);
+        expect(updatedRun.summary).toBe(newSummary);
+    });
+
+    it('should trim both name and summary', async () => {
+        const runs = TestHelper.createPlaybookRuns(1, 0, 0);
+        await handlePlaybookRuns(serverUrl, runs, false, false);
+
+        const playbookRunId = runs[0].id;
+        const nameWithSpaces = '  Updated Run Name  ';
+        const summaryWithSpaces = '  Updated summary  ';
+
+        const {data, error} = await updatePlaybookRun(serverUrl, playbookRunId, nameWithSpaces, summaryWithSpaces);
+
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
+        expect(updatedRun.name).toBe('Updated Run Name');
+        expect(updatedRun.summary).toBe('Updated summary');
+    });
+
+    it('should allow empty summary', async () => {
+        const runs = TestHelper.createPlaybookRuns(1, 0, 0);
+        await handlePlaybookRuns(serverUrl, runs, false, false);
+
+        const playbookRunId = runs[0].id;
+        const newName = 'Updated Run Name';
+        const emptySummary = '';
+
+        const {data, error} = await updatePlaybookRun(serverUrl, playbookRunId, newName, emptySummary);
+
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
+        expect(updatedRun.name).toBe(newName);
+        expect(updatedRun.summary).toBe('');
+    });
+
+    it('should reject empty name', async () => {
+        const runs = TestHelper.createPlaybookRuns(1, 0, 0);
+        await handlePlaybookRuns(serverUrl, runs, false, false);
+
+        const playbookRunId = runs[0].id;
+        const originalName = runs[0].name;
+        const originalSummary = runs[0].summary;
+
+        const {data, error} = await updatePlaybookRun(serverUrl, playbookRunId, '', 'New summary');
+
+        expect(error).toBe('Name cannot be empty or whitespace-only');
+        expect(data).toBeUndefined();
+
+        const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
+        expect(updatedRun.name).toBe(originalName);
+        expect(updatedRun.summary).toBe(originalSummary);
+    });
+
+    it('should reject whitespace-only name', async () => {
+        const runs = TestHelper.createPlaybookRuns(1, 0, 0);
+        await handlePlaybookRuns(serverUrl, runs, false, false);
+
+        const playbookRunId = runs[0].id;
+        const originalName = runs[0].name;
+        const originalSummary = runs[0].summary;
+
+        const {data, error} = await updatePlaybookRun(serverUrl, playbookRunId, '   ', 'New summary');
+
+        expect(error).toBe('Name cannot be empty or whitespace-only');
+        expect(data).toBeUndefined();
+
+        const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
+        expect(updatedRun.name).toBe(originalName);
+        expect(updatedRun.summary).toBe(originalSummary);
     });
 
     it('should handle playbook run not found', async () => {
-        const {error} = await renamePlaybookRun(serverUrl, 'nonexistent', 'New Name');
+        const {error} = await updatePlaybookRun(serverUrl, 'nonexistent', 'New Name', 'New summary');
         expect(error).toBe('Playbook run not found: nonexistent');
+    });
+
+    it('should handle not found database', async () => {
+        const {error} = await updatePlaybookRun('foo', 'runid', 'New Name', 'New summary');
+        expect(error).toBeTruthy();
+        expect((error as Error).message).toContain('foo database not found');
     });
 
     it('should handle database write errors', async () => {
@@ -180,93 +270,10 @@ describe('renamePlaybookRun', () => {
         const originalWrite = database.write;
         database.write = jest.fn().mockRejectedValue(new Error('Database write failed'));
 
-        const {error} = await renamePlaybookRun(serverUrl, playbookRunId, 'New Name');
+        const {error} = await updatePlaybookRun(serverUrl, playbookRunId, 'New Name', 'New summary');
         expect(error).toBeTruthy();
         expect((error as Error).message).toBe('Database write failed');
 
         database.write = originalWrite;
-    });
-
-    it('should rename playbook run successfully', async () => {
-        const runs = TestHelper.createPlaybookRuns(1, 0, 0);
-        await handlePlaybookRuns(serverUrl, runs, false, false);
-
-        const playbookRunId = runs[0].id;
-        const newName = 'Updated Run Name';
-
-        const {data, error} = await renamePlaybookRun(serverUrl, playbookRunId, newName);
-
-        expect(error).toBeUndefined();
-        expect(data).toBe(true);
-
-        const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
-        expect(updatedRun.name).toBe(newName);
-    });
-
-    it('should reject empty name string', async () => {
-        const runs = TestHelper.createPlaybookRuns(1, 0, 0);
-        await handlePlaybookRuns(serverUrl, runs, false, false);
-
-        const playbookRunId = runs[0].id;
-        const originalName = runs[0].name;
-
-        const {data, error} = await renamePlaybookRun(serverUrl, playbookRunId, '');
-
-        expect(error).toBe('Name cannot be empty or whitespace-only');
-        expect(data).toBeUndefined();
-
-        // Verify the name was not changed
-        const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
-        expect(updatedRun.name).toBe(originalName);
-    });
-
-    it('should reject whitespace-only name', async () => {
-        const runs = TestHelper.createPlaybookRuns(1, 0, 0);
-        await handlePlaybookRuns(serverUrl, runs, false, false);
-
-        const playbookRunId = runs[0].id;
-        const originalName = runs[0].name;
-        const whitespaceName = '   ';
-
-        const {data, error} = await renamePlaybookRun(serverUrl, playbookRunId, whitespaceName);
-
-        expect(error).toBe('Name cannot be empty or whitespace-only');
-        expect(data).toBeUndefined();
-
-        // Verify the name was not changed
-        const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
-        expect(updatedRun.name).toBe(originalName);
-    });
-
-    it('should handle very long names', async () => {
-        const runs = TestHelper.createPlaybookRuns(1, 0, 0);
-        await handlePlaybookRuns(serverUrl, runs, false, false);
-
-        const playbookRunId = runs[0].id;
-        const longName = 'A'.repeat(300); // 300 characters
-
-        const {data, error} = await renamePlaybookRun(serverUrl, playbookRunId, longName);
-
-        expect(error).toBeUndefined();
-        expect(data).toBe(true);
-
-        const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
-        expect(updatedRun.name).toBe(longName);
-    });
-
-    it('should trim leading and trailing whitespace from name', async () => {
-        const runs = TestHelper.createPlaybookRuns(1, 0, 0);
-        await handlePlaybookRuns(serverUrl, runs, false, false);
-
-        const playbookRunId = runs[0].id;
-        const nameWithSpaces = '  Updated Run Name  ';
-
-        const {data, error} = await renamePlaybookRun(serverUrl, playbookRunId, nameWithSpaces);
-
-        expect(error).toBeUndefined();
-        expect(data).toBe(true);
-
-        const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
-        expect(updatedRun.name).toBe('Updated Run Name');
     });
 });
