@@ -22,6 +22,29 @@ const server = express();
 server.use(express.json());
 server.use(express.urlencoded({extended: true}));
 
+// Log all incoming requests
+server.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    console.log('Headers:', req.headers);
+    if (req.query && Object.keys(req.query).length > 0) {
+        console.log('Query params:', req.query);
+    }
+    if (req.body && Object.keys(req.body).length > 0) {
+        console.log('Request body:', req.body);
+    }
+    next();
+});
+
+// Add error handling for failed requests
+server.use((err, req, res, next) => {
+    console.error('=== SERVER ERROR ===');
+    console.error('Error:', err);
+    console.error('Request URL:', req.url);
+    console.error('Request Method:', req.method);
+    console.error('=== END SERVER ERROR ===');
+    next(err);
+});
+
 process.title = process.argv[2];
 
 server.get('/', ping);
@@ -31,6 +54,11 @@ server.post('/simple_dialog_request', onSimpleDialogRequest);
 server.post('/user_and_channel_dialog_request', onUserAndChannelDialogRequest);
 server.post('/dialog_submit', onDialogSubmit);
 server.post('/boolean_dialog_request', onBooleanDialogRequest);
+server.post('/simple_dialog_error_request', onSimpleDialogErrorRequest);
+server.post('/select_fields_dialog_request', onSelectFieldsDialogRequest);
+server.post('/multiselect_dynamic_dialog_request', onMultiselectDynamicDialogRequest);
+server.post('/dynamic_options', getDynamicOptions);
+server.post('/dynamic_multiselect_options', getDynamicMultiselectOptions);
 server.post('/slack_compatible_message_response', postSlackCompatibleMessageResponse);
 server.post('/send_message_to_channel', postSendMessageToChannel);
 server.post('/post_outgoing_webhook', postOutgoingWebhook);
@@ -293,3 +321,61 @@ function postOutgoingWebhook(req, res) {
     };
     res.status(200).send(response);
 }
+
+function onMultiselectDynamicDialogRequest(req, res) {
+    const {body} = req;
+    console.log('=== MULTISELECT DYNAMIC DIALOG REQUEST ===');
+    console.log('Request body:', JSON.stringify(body, null, 2));
+
+    if (body.trigger_id) {
+        const webhookBaseUrl = getWebhookBaseUrl();
+        console.log('Webhook base URL:', webhookBaseUrl);
+
+        const dialog = webhookUtils.getMultiselectDynamicDialog(body.trigger_id, webhookBaseUrl);
+        console.log('Generated dialog:', JSON.stringify(dialog, null, 2));
+
+        openDialog(dialog);
+        console.log('Dialog sent to openDialog function');
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    console.log('=== END MULTISELECT DYNAMIC DIALOG REQUEST ===');
+    return res.json({text: 'Multiselect dynamic dialog triggered via slash command!'});
+}
+
+function getDynamicOptions(req, res) {
+    const {body} = req;
+    const searchTerm = body.user_input || '';
+
+    // Add a small delay to simulate real API call
+    setTimeout(() => {
+        const response = webhookUtils.getDynamicOptionsResponse(searchTerm);
+        res.status(200).json(response);
+    }, 200);
+}
+
+function getDynamicMultiselectOptions(req, res) {
+    const {body} = req;
+    const searchTerm = body.user_input || '';
+
+    // Add a small delay to simulate real API call
+    setTimeout(() => {
+        const response = webhookUtils.getDynamicMultiselectOptionsResponse(searchTerm);
+        res.status(200).json(response);
+    }, 300);
+}
+
+// Catch-all route for unmatched requests
+server.use((req, res) => {
+
+    res.status(404).json({
+        error: 'Not Found',
+        method: req.method,
+        url: req.originalUrl,
+        message: 'This endpoint does not exist on the webhook server',
+    });
+});
+
+server.listen(port, () => {
+    console.log(`Webhook test server listening on port ${port}!`);
+});
