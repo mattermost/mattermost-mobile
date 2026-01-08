@@ -3,11 +3,12 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {View, Text, ScrollView, Alert} from 'react-native';
+import {View, Text, ScrollView, Alert, TouchableOpacity} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
 import UserChip from '@components/chips/user_chip';
+import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
 import Tag from '@components/tag';
 import UserAvatarsStack from '@components/user_avatars_stack';
@@ -22,9 +23,10 @@ import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {goToSelectUser} from '../navigation';
+import {goToRenamePlaybookRun, goToSelectUser} from '../navigation';
 
 import ChecklistList from './checklist_list';
+import {PropertyFieldsList} from './components';
 import ErrorState from './error_state';
 import OutOfDateHeader from './out_of_date_header';
 import StatusUpdateIndicator from './status_update_indicator';
@@ -258,25 +260,13 @@ export default function PlaybookRun({
         );
     }, [handleSelectOwner, intl, owner, participants, playbookRun?.name, theme]);
 
-    // this will be back once there is a rename function on the server side
-    // const handleRename = useCallback(async (newName: string) => {
-    //     if (!playbookRun) {
-    //         return;
-    //     }
+    const handleEditPress = useCallback(() => {
+        if (!playbookRun) {
+            return;
+        }
 
-    //     const res = await renamePlaybookRun(serverUrl, playbookRun.id, newName);
-    //     if (res.error) {
-    //         showPlaybookErrorSnackbar();
-    //     }
-    // }, [playbookRun, serverUrl]);
-
-    // const handleEditPress = useCallback(() => {
-    //     if (!playbookRun) {
-    //         return;
-    //     }
-
-    //     goToRenamePlaybookRun(intl, theme, playbookRun.name, handleRename);
-    // }, [intl, theme, playbookRun, handleRename]);
+        goToRenamePlaybookRun(intl, theme, playbookRun.name, playbookRun.id);
+    }, [intl, theme, playbookRun]);
 
     const handleFinishRun = useCallback(() => {
         if (!playbookRun) {
@@ -333,13 +323,17 @@ export default function PlaybookRun({
                         <View style={styles.titleAndDescription}>
                             <View style={styles.titleRow}>
                                 <Text style={styles.title}>{playbookRun.name}</Text>
-                                {/* This will be back once there is a rename function on the server side
-                                <TouchableOpacity onPress={handleEditPress}>
-                                    <CompassIcon
-                                        name='pencil-outline'
-                                        style={styles.editIcon}
-                                    />
-                                </TouchableOpacity> */}
+                                {!readOnly && (
+                                    <TouchableOpacity
+                                        onPress={handleEditPress}
+                                        testID='playbook-run.edit-icon'
+                                    >
+                                        <CompassIcon
+                                            name='pencil-outline'
+                                            style={styles.editIcon}
+                                        />
+                                    </TouchableOpacity>
+                                )}
                             </View>
                             {isFinished && (
                                 <Tag
@@ -400,6 +394,11 @@ export default function PlaybookRun({
                             />
                         )}
                     </View>
+                    <PropertyFieldsList
+                        serverUrl={serverUrl}
+                        runId={playbookRun.id}
+                        isReadOnly={readOnly}
+                    />
                     <View style={styles.tasksContainer}>
                         <View style={styles.tasksHeaderContainer}>
                             <Text style={styles.tasksHeader}>
