@@ -13,7 +13,7 @@ import PlaybookRunsOption from '@playbooks/components/channel_actions/playbook_r
 import {dismissBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-type Props = {
+export type ChannelQuickActionsProps = {
     channelId: string;
     callsEnabled: boolean;
     isDMorGM: boolean;
@@ -40,12 +40,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelQuickAction = ({
+const ChannelQuickActions = ({
     channelId,
     callsEnabled,
     isDMorGM,
     hasPlaybookRuns,
-}: Props) => {
+}: ChannelQuickActionsProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -85,4 +85,4 @@ const ChannelQuickAction = ({
     );
 };
 
-export default ChannelQuickAction;
+export default ChannelQuickActions;

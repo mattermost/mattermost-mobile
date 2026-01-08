@@ -7,7 +7,7 @@ import {View, type ViewStyle} from 'react-native';
 
 import Button from '@components/button';
 import {useTheme} from '@context/theme';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
 import MessageBox from '../message_box/message_box';
@@ -17,7 +17,7 @@ type Props = {
 }
 
 const handleOnPress = preventDoubleTap(() => {
-    popTopScreen();
+    navigateBack();
 });
 
 export const NoCommonTeamForm = ({

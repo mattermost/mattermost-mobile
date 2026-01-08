@@ -11,10 +11,7 @@ import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {fetchPlaybooks} from '@playbooks/actions/remote/playbooks';
 import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
-import {
-    popTo,
-    popTopScreen,
-} from '@screens/navigation';
+import {dismissAllRoutesAndResetToRootRoute, navigateBack} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -46,10 +43,6 @@ jest.mock('@context/server', () => ({
 
 jest.mock('@hooks/android_back_handler', () => jest.fn());
 
-jest.mock('@managers/security_manager', () => ({
-    getShieldScreenId: jest.fn((id) => `shield_${id}`),
-}));
-
 jest.mock('./playbook_row', () => ({
     __esModule: true,
     default: jest.fn(),
@@ -66,6 +59,8 @@ jest.mocked(SearchBar).mockImplementation(
     (props) => React.createElement('SearchBar', {...props}),
 );
 
+jest.mock('@screens/navigation');
+
 const mockServerUrl = 'https://test-server.com';
 
 describe('SelectPlaybook', () => {
@@ -73,7 +68,6 @@ describe('SelectPlaybook', () => {
         return {
             currentTeamId: 'team-id-1',
             currentUserId: 'user-id-1',
-            componentId: 'PlaybooksSelectPlaybook',
             playbooksUsedInChannel: new Set<string>(),
         };
     }
@@ -444,8 +438,6 @@ describe('SelectPlaybook', () => {
 
         await waitFor(() => {
             expect(goToStartARun).toHaveBeenCalledWith(
-                expect.any(Object), // intl
-                expect.any(Object), // theme
                 mockPlaybook,
                 expect.any(Function), // onRunCreated callback
                 undefined, // channelId
@@ -489,16 +481,16 @@ describe('SelectPlaybook', () => {
         });
 
         // Get the onRunCreated callback and call it
-        const onRunCreated = jest.mocked(goToStartARun).mock.calls[0][3];
+        const onRunCreated = jest.mocked(goToStartARun).mock.calls[0][1];
         act(() => {
             onRunCreated(mockRun);
         });
 
         await waitFor(() => {
-            expect(popTo).toHaveBeenCalledWith(Screens.HOME);
+            expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledWith();
             expect(fetchPlaybookRunsForChannel).toHaveBeenCalledWith(mockServerUrl, 'channel-id-1');
             expect(switchToChannelById).toHaveBeenCalledWith(mockServerUrl, 'channel-id-1');
-            expect(goToPlaybookRun).toHaveBeenCalledWith(expect.any(Object), 'run-1');
+            expect(goToPlaybookRun).toHaveBeenCalledWith('run-1');
         });
     });
 
@@ -540,14 +532,14 @@ describe('SelectPlaybook', () => {
         const props = getBaseProps();
         renderWithIntlAndTheme(<SelectPlaybook {...props}/>);
 
-        expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(props.componentId, expect.any(Function));
+        expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(Screens.PLAYBOOKS_SELECT_PLAYBOOK, expect.any(Function));
 
         const closeHandler = jest.mocked(useAndroidHardwareBackHandler).mock.calls[0][1];
         act(() => {
             closeHandler();
         });
 
-        expect(popTopScreen).toHaveBeenCalled();
+        expect(navigateBack).toHaveBeenCalled();
     });
 
     it('should not load more plyabooks while it is loading', async () => {

@@ -6,6 +6,7 @@ import React, {type ComponentProps} from 'react';
 
 import UserChip from '@components/chips/user_chip';
 import UserAvatarsStack from '@components/user_avatars_stack';
+import {Screens} from '@constants';
 import ProgressBar from '@playbooks/components/progress_bar';
 import {goToPlaybookRun, goToPlaybookRunWithChannelSwitch} from '@playbooks/screens/navigation';
 import {openUserProfileModal} from '@screens/navigation';
@@ -27,6 +28,8 @@ jest.mocked(UserChip).mockImplementation((props) => React.createElement('UserChi
 jest.mock('@playbooks/components/progress_bar');
 jest.mocked(ProgressBar).mockImplementation((props) => React.createElement('ProgressBar', {...props, testID: 'progress-bar'}));
 
+jest.mock('@screens/navigation');
+
 describe('PlaybookCard', () => {
     function getBaseProps(): ComponentProps<typeof PlaybookCard> {
         const mockRun = TestHelper.fakePlaybookRunModel({
@@ -44,7 +47,7 @@ describe('PlaybookCard', () => {
 
         return {
             run: mockRun,
-            location: 'PlaybookRuns',
+            location: Screens.PLAYBOOKS_RUNS,
             participants: mockParticipants,
             progress: 50,
             owner: mockOwner,
@@ -108,8 +111,6 @@ describe('PlaybookCard', () => {
         userChip.props.onPress(props.owner?.id);
 
         expect(openUserProfileModal).toHaveBeenCalledWith(
-            expect.anything(),
-            expect.anything(),
             expect.objectContaining({userId: props.owner?.id, channelId: (props.run as PlaybookRunModel).channelId, location: props.location}),
         );
     });
@@ -123,7 +124,6 @@ describe('PlaybookCard', () => {
         });
 
         expect(goToPlaybookRun).toHaveBeenCalledWith(
-            expect.anything(),
             props.run.id,
             undefined,
         );
@@ -145,7 +145,6 @@ describe('PlaybookCard', () => {
         });
 
         expect(goToPlaybookRun).toHaveBeenCalledWith(
-            expect.anything(),
             props.run.id,
             props.run,
         );
@@ -154,7 +153,7 @@ describe('PlaybookCard', () => {
 
     it('navigates to playbook run with channel switch when location is PARTICIPANT_PLAYBOOKS', () => {
         const props = getBaseProps();
-        props.location = 'ParticipantPlaybooks';
+        props.location = Screens.PARTICIPANT_PLAYBOOKS;
         const {getByText} = renderWithIntl(<PlaybookCard {...props}/>);
 
         act(() => {

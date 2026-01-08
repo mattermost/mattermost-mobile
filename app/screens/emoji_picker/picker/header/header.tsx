@@ -5,8 +5,7 @@ import React, {useCallback, useEffect} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {useSharedValue} from 'react-native-reanimated';
 
-import SearchBar, {type SearchProps} from '@components/search';
-import {useIsTablet} from '@hooks/device';
+import {type SearchProps} from '@components/search';
 import {setEmojiSkinTone} from '@hooks/emoji_category_bar';
 
 import BottomSheetSearch from './bottom_sheet_search';
@@ -22,7 +21,6 @@ const styles = StyleSheet.create({
 });
 
 const PickerHeader = ({skinTone, ...props}: Props) => {
-    const isTablet = useIsTablet();
     const containerWidth = useSharedValue(0);
     const isSearching = useSharedValue(false);
 
@@ -36,34 +34,18 @@ const PickerHeader = ({skinTone, ...props}: Props) => {
 
     const onBlur = useCallback(() => {
         isSearching.value = false;
+        //eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onFocus = useCallback(() => {
         isSearching.value = true;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         containerWidth.value = e.nativeEvent.layout.width;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    let search;
-    if (isTablet) {
-        search = (
-            <SearchBar
-                {...props}
-                onBlur={onBlur}
-                onFocus={onFocus}
-            />
-        );
-    } else {
-        search = (
-            <BottomSheetSearch
-                {...props}
-                onBlur={onBlur}
-                onFocus={onFocus}
-            />
-        );
-    }
 
     return (
         <View
@@ -71,7 +53,11 @@ const PickerHeader = ({skinTone, ...props}: Props) => {
             style={styles.row}
         >
             <View style={styles.flex}>
-                {search}
+                <BottomSheetSearch
+                    {...props}
+                    onBlur={onBlur}
+                    onFocus={onFocus}
+                />
             </View>
             <SkinToneSelector
                 skinTone={skinTone}

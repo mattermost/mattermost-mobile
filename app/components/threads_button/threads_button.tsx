@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {DeviceEventEmitter, TouchableOpacity, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 
 import {switchToGlobalThreads} from '@actions/local/thread';
 import Badge from '@components/badge';
@@ -13,8 +13,7 @@ import {
 } from '@components/channel_item/channel_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import {Events, Screens} from '@constants';
-import {THREAD} from '@constants/screens';
+import {Screens} from '@constants';
 import {HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -69,7 +68,6 @@ const ThreadsButton = ({
     const customStyles = getStyleSheet(theme);
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
-        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, THREAD);
         if (onPress) {
             onPress();
         } else {

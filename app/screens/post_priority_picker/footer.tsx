@@ -3,11 +3,12 @@
 
 import {BottomSheetFooter, type BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import React from 'react';
-import {Platform, TouchableOpacity, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
+import {useBottomSheetFooterStyles, useBottomSheetStyle} from '@screens/bottom_sheet/hooks';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -19,17 +20,11 @@ export type Props = BottomSheetFooterProps & {
 const TEXT_HEIGHT = 24; // typography 200 line height
 const BUTTON_PADDING = 15;
 const FOOTER_PADDING = 20;
-const FOOTER_PADDING_BOTTOM_TABLET_ADJUST = 20;
 export const FOOTER_HEIGHT = (FOOTER_PADDING * 2) + (BUTTON_PADDING * 2) + TEXT_HEIGHT;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        backgroundColor: theme.centerChannelBg,
-        borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
-        borderTopWidth: 1,
-        paddingTop: FOOTER_PADDING,
         flexDirection: 'row',
-        paddingHorizontal: 20,
     },
     cancelButton: {
         alignItems: 'center',
@@ -54,19 +49,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.buttonColor,
         ...typography('Body', 200, 'SemiBold'),
     },
+    separator: {
+        height: 1,
+        borderTopWidth: 3,
+        borderTopColor: changeOpacity(theme.centerChannelColor, 0.08),
+    },
 }));
 
 const PostPriorityPickerFooter = ({onCancel, onSubmit, ...props}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const isTablet = useIsTablet();
+    const bottomStyle = useBottomSheetFooterStyles();
+    const containerStyle = useBottomSheetStyle();
+    const {bottom} = useSafeAreaInsets();
 
     const footer = (
-        <View
-            style={[style.container, {
-                paddingBottom: Platform.select({ios: (isTablet ? FOOTER_PADDING_BOTTOM_TABLET_ADJUST : 0), default: FOOTER_PADDING}),
-            }]}
-        >
+        <View style={[style.container, containerStyle, {top: bottom}]}>
             <TouchableOpacity
                 onPress={onCancel}
                 style={style.cancelButton}
@@ -90,12 +88,11 @@ const PostPriorityPickerFooter = ({onCancel, onSubmit, ...props}: Props) => {
         </View>
     );
 
-    if (isTablet) {
-        return footer;
-    }
     return (
         <BottomSheetFooter {...props}>
+            <View style={[style.separator, bottomStyle, {height: undefined, top: undefined}]}/>
             {footer}
+            <View style={bottomStyle}/>
         </BottomSheetFooter>
     );
 };

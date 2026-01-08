@@ -9,13 +9,11 @@ import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls'
 import ChannelActions from '@components/channel_actions';
 import ConvertToChannelLabel from '@components/channel_actions/convert_to_channel/convert_to_channel_label';
 import ChannelBookmarks from '@components/channel_bookmarks';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {dismissModal} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelInfoAppBindings from './app_bindings';
@@ -24,15 +22,11 @@ import Extra from './extra';
 import Options from './options';
 import Title from './title';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type Props = {
     canAddBookmarks: boolean;
     canEnableDisableCalls: boolean;
     canManageSettings: boolean;
     channelId: string;
-    closeButtonId: string;
-    componentId: AvailableScreens;
     isBookmarksEnabled: boolean;
     isCallsEnabledInChannel: boolean;
     isPlaybooksEnabled: boolean;
@@ -67,8 +61,6 @@ const ChannelInfo = ({
     canManageMembers,
     canManageSettings,
     channelId,
-    closeButtonId,
-    componentId,
     isBookmarksEnabled,
     isCallsEnabledInChannel,
     isPlaybooksEnabled,
@@ -90,19 +82,15 @@ const ChannelInfo = ({
     }
 
     const onPressed = useCallback(() => {
-        return dismissModal({componentId});
-    }, [componentId]);
+        return navigateBack();
+    }, []);
 
-    useNavButtonPressed(closeButtonId, componentId, onPressed, [onPressed]);
-    useAndroidHardwareBackHandler(componentId, onPressed);
+    useAndroidHardwareBackHandler(Screens.CHANNEL_INFO, onPressed);
 
     const convertGMOptionAvailable = isConvertGMFeatureAvailable && type === General.GM_CHANNEL && !isGuestUser;
 
     return (
-        <View
-            style={styles.flex}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-        >
+        <View style={styles.flex}>
             <SafeAreaView
                 edges={edges}
                 style={styles.flex}
@@ -166,7 +154,6 @@ const ChannelInfo = ({
                     />
                     <DestructiveOptions
                         channelId={channelId}
-                        componentId={componentId}
                         type={type}
                     />
                 </ScrollView>

@@ -8,13 +8,11 @@ import NoResults from '@components/files_search/no_results';
 import FormattedText from '@components/formatted_text';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {
     getChannelNamesWithID,
     getFileInfosIndexes,
-    getNumberFileMenuOptions,
     getOrderedFileInfos,
     getOrderedGalleryItems,
 } from '@utils/files';
@@ -23,7 +21,6 @@ import {TabTypes} from '@utils/search';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {showMobileOptionsBottomSheet} from './file_options/mobile_options';
 import Toasts from './file_options/toasts';
 import FileResult from './file_result';
 
@@ -68,13 +65,11 @@ const FileResults = ({
 }: Props) => {
     const theme = useTheme();
     const styles = getStyles(theme);
-    const isTablet = useIsTablet();
 
     const [action, setAction] = useState<GalleryAction>('none');
     const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
 
     const containerStyle = useMemo(() => ([paddingTop, {flexGrow: 1}]), [paddingTop]);
-    const numOptions = getNumberFileMenuOptions(canDownloadFiles, enableSecureFilePreview, publicLinkEnabled);
 
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos);
     const filesForGallery = useMemo(() => imageAttachments.concat(nonImageAttachments), [imageAttachments, nonImageAttachments]);
@@ -95,16 +90,7 @@ const FileResults = ({
 
     const onOptionsPress = useCallback((fInfo: FileInfo) => {
         setLastViewedFileInfo(fInfo);
-
-        if (!isTablet) {
-            showMobileOptionsBottomSheet({
-                fileInfo: fInfo,
-                numOptions,
-                setAction,
-                theme,
-            });
-        }
-    }, [isTablet, numOptions, theme]);
+    }, []);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<FileInfo>) => {
         let channelName: string | undefined;
@@ -116,11 +102,11 @@ const FileResults = ({
             <FileResult
                 canDownloadFiles={canDownloadFiles}
                 enableSecureFilePreview={enableSecureFilePreview}
+                publicLinkEnabled={publicLinkEnabled}
                 channelName={channelName}
                 fileInfo={item}
                 index={fileInfosIndexes[item.id!] || 0}
                 key={`${item.id}-${item.name}`}
-                numOptions={numOptions}
                 onOptionsPress={onOptionsPress}
                 onPress={onPreviewPress}
                 setAction={setAction}
@@ -130,11 +116,11 @@ const FileResults = ({
     }, [
         canDownloadFiles,
         enableSecureFilePreview,
+        publicLinkEnabled,
         channelNames,
         fileInfosIndexes,
         onPreviewPress,
         onOptionsPress,
-        numOptions,
         isChannelFiles,
         updateFileForGallery,
     ]);
@@ -153,36 +139,40 @@ const FileResults = ({
         );
     }, [isChannelFiles, isFilterEnabled, searchValue]);
 
+    const memoFlatList = useMemo(() => (
+        <FlatList
+            ListHeaderComponent={
+                <FormattedText
+                    style={styles.resultsNumber}
+                    id='mobile.search.results'
+                    defaultMessage='{count} search {count, plural, one {result} other {results}}'
+                    values={{count: orderedFileInfos.length}}
+                />
+            }
+            ItemSeparatorComponent={Separator}
+            ListEmptyComponent={noResults}
+            contentContainerStyle={containerStyle}
+            data={orderedFileInfos}
+            indicatorStyle='black'
+            nestedScrollEnabled={true}
+            refreshing={false}
+            removeClippedSubviews={false}
+            renderItem={renderItem}
+            scrollToOverflowEnabled={true}
+            showsVerticalScrollIndicator={true}
+            testID='search_results.post_list.flat_list'
+        />
+    ), [
+        containerStyle,
+        noResults,
+        orderedFileInfos,
+        renderItem,
+        styles.resultsNumber,
+    ]);
+
     return (
         <>
-            <FlatList
-                ListHeaderComponent={
-                    <FormattedText
-                        style={styles.resultsNumber}
-                        id='mobile.search.results'
-                        defaultMessage='{count} search {count, plural, one {result} other {results}}'
-                        values={{count: orderedFileInfos.length}}
-                    />
-                }
-                ItemSeparatorComponent={Separator}
-                ListEmptyComponent={noResults}
-                contentContainerStyle={containerStyle}
-                data={orderedFileInfos}
-                indicatorStyle='black'
-                initialNumToRender={10}
-
-                //@ts-expect-error key not defined in types
-                listKey={'files'}
-                maxToRenderPerBatch={5}
-                nestedScrollEnabled={true}
-                refreshing={false}
-                removeClippedSubviews={true}
-                renderItem={renderItem}
-                scrollEventThrottle={16}
-                scrollToOverflowEnabled={true}
-                showsVerticalScrollIndicator={true}
-                testID='search_results.post_list.flat_list'
-            />
+            {memoFlatList}
             {!enableSecureFilePreview &&
             <Toasts
                 action={action}
@@ -194,4 +184,4 @@ const FileResults = ({
     );
 };
 
-export default FileResults;
+export default React.memo(FileResults);

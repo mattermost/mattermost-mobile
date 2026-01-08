@@ -150,7 +150,7 @@ describe('ChannelHeader', () => {
         expect(playbookButton).toBeTruthy();
 
         playbookButton?.onPress();
-        expect(goToPlaybookRun).toHaveBeenCalledWith(expect.anything(), 'run-id');
+        expect(goToPlaybookRun).toHaveBeenCalledWith('run-id');
         expect(goToPlaybookRuns).not.toHaveBeenCalled();
     });
 
@@ -168,7 +168,7 @@ describe('ChannelHeader', () => {
         expect(playbookButton).toBeTruthy();
 
         playbookButton?.onPress();
-        expect(goToPlaybookRuns).toHaveBeenCalledWith(expect.anything(), 'channel-id', 'Test Channel');
+        expect(goToPlaybookRuns).toHaveBeenCalledWith('channel-id', 'Test Channel');
         expect(goToPlaybookRun).not.toHaveBeenCalled();
     });
 
@@ -188,12 +188,10 @@ describe('ChannelHeader', () => {
         playbookButton?.onPress();
 
         expect(goToCreateQuickChecklist).toHaveBeenCalledWith(
-            expect.anything(), // intl
             'channel-id',
             'Test Channel',
             'current-user-id',
             'team-id',
-            serverUrl,
         );
         expect(goToPlaybookRun).not.toHaveBeenCalled();
         expect(goToPlaybookRuns).not.toHaveBeenCalled();

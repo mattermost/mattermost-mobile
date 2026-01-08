@@ -190,10 +190,7 @@ describe('ChannelBanner', () => {
         const banner = screen.getByText('Test Banner Text');
         fireEvent.press(banner);
 
-        expect(bottomSheet).toHaveBeenCalledWith(expect.objectContaining({
-            title: 'Channel Banner',
-            closeButtonId: 'channel-banner-close',
-        }));
+        expect(bottomSheet).toHaveBeenCalledWith(expect.any(Function), expect.any(Array));
     });
 
     it('does not render when channel ID is empty', async () => {

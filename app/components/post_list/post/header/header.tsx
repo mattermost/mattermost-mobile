@@ -10,7 +10,7 @@ import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import ExpiryTimer from '@components/post_list/post/header/expiry_timer';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
-import {CHANNEL, THREAD} from '@constants/screens';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
@@ -90,7 +90,7 @@ const Header = (props: HeaderProps) => {
     const style = getStyleSheet(theme);
     const pendingPostStyle = isPendingOrFailed ? style.pendingPost : undefined;
     const isReplyPost = Boolean(post.rootId && !isEphemeral);
-    const showReply = !isReplyPost && (location !== THREAD) && (shouldRenderReplyButton && (!rootPostAuthor && commentCount > 0));
+    const showReply = !isReplyPost && (location !== Screens.THREAD) && (shouldRenderReplyButton && (!rootPostAuthor && commentCount > 0));
     const displayName = postUserDisplayName(post, author, teammateNameDisplay, enablePostUsernameOverride);
     const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser?.locale, teammateNameDisplay, true) : undefined;
     const customStatus = getUserCustomStatus(author);
@@ -101,6 +101,7 @@ const Header = (props: HeaderProps) => {
     const userIconOverride = ensureString(post.props?.override_icon_url);
     const usernameOverride = ensureString(post.props?.override_username);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const isUnrevealedPost = useMemo(() => isUnrevealedBoRPost(post), [post, post.metadata?.expire_at]);
     const ownBoRPost = useMemo(() => isOwnBoRPost(post, currentUser), [currentUser, post]);
     const showBoRIcon = isUnrevealedPost || ownBoRPost;
@@ -180,7 +181,7 @@ const Header = (props: HeaderProps) => {
                     }
                 </View>
             </View>
-            {Boolean(rootAuthorDisplayName) && location === CHANNEL &&
+            {Boolean(rootAuthorDisplayName) && location === Screens.CHANNEL &&
             <HeaderCommentedOn
                 locale={currentUser?.locale || DEFAULT_LOCALE}
                 name={rootAuthorDisplayName!}

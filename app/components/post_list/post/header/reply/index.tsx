@@ -6,7 +6,7 @@ import {Text, TouchableOpacity, View} from 'react-native';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
-import {SEARCH} from '@constants/screens';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -64,7 +64,7 @@ const HeaderReply = ({commentCount, location, post, theme}: HeaderReplyProps) =>
                     size={18}
                     color={theme.linkColor}
                 />
-                {location !== SEARCH && commentCount > 0 &&
+                {location !== Screens.SEARCH && commentCount > 0 &&
                 <Text
                     style={style.replyText}
                     testID='post_header.reply_count'

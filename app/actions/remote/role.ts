@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {chunk} from 'lodash';
+
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -47,9 +49,9 @@ export const fetchRolesIfNeeded = async (
         }
 
         const getRolesRequests = [];
-        for (let i = 0; i < newRoles.length; i += General.MAX_GET_ROLES_BY_NAMES) {
-            const chunk = newRoles.slice(i, i + General.MAX_GET_ROLES_BY_NAMES);
-            getRolesRequests.push(client.getRolesByNames(chunk, groupLabel));
+        const chunks = chunk(newRoles, General.MAX_GET_ROLES_BY_NAMES);
+        for (const roles of chunks) {
+            getRolesRequests.push(client.getRolesByNames(roles, groupLabel));
         }
 
         const roles = (await Promise.all(getRolesRequests)).flat();

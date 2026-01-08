@@ -59,6 +59,7 @@
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
         android:windowSoftInputMode="adjustResize"
         android:launchMode="singleTask"
+        android:theme="@style/AppTheme"
         android:exported="true"
         android:taskAffinity=""
       >
@@ -86,12 +87,6 @@
       <receiver android:name=".NotificationReplyBroadcastReceiver"
                android:enabled="true"
                android:exported="false" />
-      <activity
-        android:name="com.reactnativenavigation.controllers.NavigationActivity"
-        android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
-        android:resizeableActivity="true"
-        android:exported="false"
-      />
       <activity
         android:name="com.mattermost.rnshare.ShareActivity"
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"

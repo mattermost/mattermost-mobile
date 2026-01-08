@@ -5,6 +5,8 @@ import React, {useMemo} from 'react';
 import {useWindowDimensions} from 'react-native';
 import {useSharedValue} from 'react-native-reanimated';
 
+import {isGif as isGifImage} from '@utils/file';
+import {galleryItemToFileInfo} from '@utils/gallery';
 import * as vec from '@utils/gallery/vectors';
 import {calculateDimensions} from '@utils/images';
 
@@ -62,6 +64,8 @@ function ImageRenderer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }), [targetDimensions, targetHeight, canvas]);
 
+    const isGif = useMemo(() => isGifImage(galleryItemToFileInfo(item)), [item]);
+
     return (
         <TransfrormerProvider sharedValues={sharedValues}>
             <ImageTransformer
@@ -70,6 +74,7 @@ function ImageRenderer({
                 targetDimensions={targetDimensions}
                 height={targetHeight}
                 isSvg={item.extension === 'svg'}
+                isGif={isGif}
                 onPageStateChange={onPageStateChange}
                 source={item.uri}
                 width={targetWidth}

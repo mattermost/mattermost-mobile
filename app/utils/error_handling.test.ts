@@ -4,8 +4,7 @@
 import {Alert} from 'react-native';
 import Exception from 'react-native-exception-handler';
 
-import {dismissAllModals, dismissAllOverlays} from '@screens/navigation';
-import testHelper from '@test/test_helper';
+import {dismissAllRoutesAndResetToRootRoute} from '@screens/navigation';
 import * as Sentry from '@utils/sentry';
 
 import errorHandling from './error_handling';
@@ -22,6 +21,8 @@ jest.mock('react-native-exception-handler', () => ({
 jest.mock('@utils/log', () => ({
     logWarning: jest.fn(() => ''),
 }));
+
+jest.mock('@screens/navigation');
 
 describe('JavascriptAndNativeErrorHandler', () => {
     const warning = jest.spyOn(Log, 'logWarning');
@@ -62,8 +63,6 @@ describe('JavascriptAndNativeErrorHandler', () => {
         errorHandling.errorHandler(throwError, true);
         expect(alert?.mock?.calls?.[0]?.length).toBe(4);
         alert?.mock.calls?.[0]?.[2]?.[0]?.onPress?.();
-        expect(dismissAllModals).toHaveBeenCalledTimes(1);
-        await testHelper.wait(20);
-        expect(dismissAllOverlays).toHaveBeenCalledTimes(1);
+        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(1);
     });
 });

@@ -25,8 +25,6 @@ const serverUrl = 'server-url';
 describe('StartARun', () => {
     function getBaseProps(): ComponentProps<typeof StartARun> {
         return {
-            componentId: 'PlaybooksStartARun',
-            onRunCreated: jest.fn(),
             playbook: TestHelper.fakePlaybook({
                 id: 'playbook-id',
                 title: 'Test Playbook',

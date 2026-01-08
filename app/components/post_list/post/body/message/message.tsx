@@ -7,7 +7,7 @@ import Animated from 'react-native-reanimated';
 
 import Markdown from '@components/markdown';
 import {isChannelMentions} from '@components/markdown/channel_mention/channel_mention';
-import {SEARCH} from '@constants/screens';
+import {Screens} from '@constants';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -106,7 +106,7 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
                             imagesMetadata={post.metadata?.images}
                             isEdited={isEdited}
                             isReplyPost={isReplyPost}
-                            isSearchResult={location === SEARCH}
+                            isSearchResult={location === Screens.SEARCH}
                             layoutWidth={layoutWidth}
                             location={location}
                             postId={post.id}

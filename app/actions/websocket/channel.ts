@@ -206,7 +206,7 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
             channelMemberships: [updatedChannelMember],
             prepareRecordsOnly: true,
         }));
-        const rolesRequest = await fetchRolesIfNeeded(serverUrl, updatedChannelMember.roles.split(','), true);
+        const rolesRequest = await fetchRolesIfNeeded(serverUrl, updatedChannelMember.roles.split(' '), true);
         if (rolesRequest.roles?.length) {
             models.push(...await operator.handleRole({roles: rolesRequest.roles, prepareRecordsOnly: true}));
         }

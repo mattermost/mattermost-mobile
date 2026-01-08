@@ -4,7 +4,6 @@
 import {mosThreshold} from '@mattermost/calls/lib/rtc_monitor';
 import {AppState, type AppStateStatus} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
-import {Navigation} from 'react-native-navigation';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {needsRecordingAlert} from '@calls/alerts';
@@ -40,6 +39,8 @@ import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getThreadById} from '@queries/servers/thread';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
+import {dismissBottomSheet, navigateBack} from '@screens/navigation';
+import {NavigationStore} from '@store/navigation_store';
 import {isDMorGM} from '@utils/channel';
 import {generateId} from '@utils/general';
 import {isMainActivity} from '@utils/helpers';
@@ -465,12 +466,13 @@ export const setCurrentCallConnected = (channelId: string, sessionId: string) =>
     setCurrentCall(nextCurrentCall);
 };
 
-export const myselfLeftCall = () => {
+export const myselfLeftCall = async () => {
     setCurrentCall(null);
 
-    // Remove the call screen, and in some situations it needs to be removed twice before actually being removed.
-    Navigation.pop(Screens.CALL).catch(() => null);
-    Navigation.pop(Screens.CALL).catch(() => null);
+    if (NavigationStore.isScreenInStack(Screens.CALL)) {
+        await dismissBottomSheet();
+        navigateBack();
+    }
 };
 
 export const callStarted = async (serverUrl: string, call: Call) => {

@@ -3,14 +3,14 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, View, type Insets} from 'react-native';
+import {Alert, View, type Insets} from 'react-native';
 
 import Button from '@components/button';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {BOTTOM_SHEET_ANDROID_OFFSET, TITLE_HEIGHT} from '@screens/bottom_sheet';
-import {bottomSheet, showModal} from '@screens/navigation';
+import {TITLE_HEIGHT} from '@screens/bottom_sheet';
+import {bottomSheet, navigateToScreen} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -95,25 +95,7 @@ const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, 
         }
 
         if (!canUploadFiles) {
-            const title = formatMessage({id: 'screens.channel_bookmark_add', defaultMessage: 'Add a bookmark'});
-            const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-            const closeButtonId = 'close-channel-bookmark-add';
-
-            const options = {
-                topBar: {
-                    leftButtons: [{
-                        id: closeButtonId,
-                        icon: closeButton,
-                        testID: 'close.channel_bookmark_add.button',
-                    }],
-                },
-            };
-            showModal(Screens.CHANNEL_BOOKMARK, title, {
-                channelId,
-                closeButtonId,
-                type: 'link',
-                ownerId: currentUserId,
-            }, options);
+            navigateToScreen(Screens.CHANNEL_BOOKMARK, {channelId, type: 'link', ownerId: currentUserId});
             return;
         }
 
@@ -124,19 +106,10 @@ const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, 
             />
         );
 
-        let height = bottomSheetSnapPoint(1, (2 * ITEM_HEIGHT)) + TITLE_HEIGHT;
-        if (Platform.OS === 'android') {
-            height += BOTTOM_SHEET_ANDROID_OFFSET;
-        }
+        const height = bottomSheetSnapPoint(1, (2 * ITEM_HEIGHT)) + TITLE_HEIGHT;
 
-        bottomSheet({
-            title: formatMessage({id: 'channel_info.add_bookmark', defaultMessage: 'Add a bookmark'}),
-            renderContent,
-            snapPoints: [1, height],
-            theme,
-            closeButtonId: 'close-channel-quick-actions',
-        });
-    }, [bookmarksCount, canUploadFiles, formatMessage, theme, channelId, currentUserId]);
+        bottomSheet(renderContent, [1, height]);
+    }, [bookmarksCount, canUploadFiles, formatMessage, channelId, currentUserId]);
 
     const button = (
         <Button

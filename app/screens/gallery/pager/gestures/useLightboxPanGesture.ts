@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {Gesture, type GestureUpdateEvent, type PanGestureHandlerEventPayload} from 'react-native-gesture-handler';
-import {runOnJS, useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
+import {useSharedValue, withSpring, withTiming} from 'react-native-reanimated';
 
 import {pagerTimingConfig} from '@screens/gallery/animation_config/timing';
 import {useLightboxSharedValues} from '@screens/gallery/lightbox_swipeout/context';
-import {freezeOtherScreens} from '@utils/gallery';
 
 import {usePagerSharedValues} from '../context';
 
@@ -31,17 +30,12 @@ export default function useLightboxPanGesture() {
     const shouldAllowPanGesture = (evt: GestureUpdateEvent<PanGestureHandlerEventPayload>) => {
         'worklet';
 
-        const shouldHandle = (
+        return (
             evt.numberOfPointers <= 1 && isActive.value &&
             Math.abs(evt.velocityX) < Math.abs(evt.velocityY) &&
             Math.abs(evt.translationY) > Math.abs(evt.translationX) &&
             animationProgress.value === 1 && !isPagerInProgress.value
         );
-
-        if (shouldHandle) {
-            runOnJS(freezeOtherScreens)(false);
-        }
-        return shouldHandle;
     };
 
     return Gesture.Pan().

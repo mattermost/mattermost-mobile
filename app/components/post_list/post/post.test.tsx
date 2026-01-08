@@ -4,6 +4,7 @@
 import React, {type ComponentProps} from 'react';
 
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
+import {Screens} from '@constants';
 import {PostTypes} from '@constants/post';
 import NetworkManager from '@managers/network_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
@@ -38,7 +39,7 @@ describe('performance metrics', () => {
             isEphemeral: false,
             isPostAddChannelMember: false,
             isPostPriorityEnabled: false,
-            location: 'Channel',
+            location: Screens.CHANNEL,
             post,
             isLastPost: true,
         };
@@ -76,7 +77,7 @@ describe('performance metrics', () => {
     });
     it('on thread', async () => {
         const props = getBaseProps();
-        props.location = 'Thread';
+        props.location = Screens.THREAD;
         renderWithEverything(<Post {...props}/>, {database, serverUrl});
         await waitFor(() => {
             expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('THREAD', serverUrl);

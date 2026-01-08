@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {DeviceEventEmitter, Text, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import {
@@ -11,8 +11,6 @@ import {
 } from '@components/channel_item/channel_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import {Events} from '@constants';
-import {DRAFT} from '@constants/screens';
 import {HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -85,11 +83,8 @@ const DraftsButton: React.FC<DraftListProps> = ({
     const customStyles = getStyleSheet(theme);
     const isTablet = useIsTablet();
 
-    const handlePress = usePreventDoubleTap(useCallback(async () => {
-        const {error} = await switchToGlobalDrafts(serverUrl);
-        if (!error) {
-            DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
-        }
+    const handlePress = usePreventDoubleTap(useCallback(() => {
+        switchToGlobalDrafts(serverUrl);
     }, [serverUrl]));
 
     const isActive = isTablet && isActiveTab;

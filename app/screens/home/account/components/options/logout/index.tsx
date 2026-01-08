@@ -3,13 +3,12 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Navigation} from 'react-native-navigation';
 
 import {logout} from '@actions/remote/session';
 import OptionItem from '@components/option_item';
-import {Screens} from '@constants';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {updateParams} from '@screens/navigation';
 import {alertServerLogout} from '@utils/server';
 
 const LogOut = () => {
@@ -18,7 +17,7 @@ const LogOut = () => {
     const serverDisplayName = useServerDisplayName();
 
     const onLogout = usePreventDoubleTap(useCallback(() => {
-        Navigation.updateProps(Screens.HOME, {extra: undefined});
+        updateParams({extra: undefined});
         alertServerLogout(serverDisplayName, () => logout(serverUrl, intl), intl);
     }, [serverDisplayName, serverUrl, intl]));
 

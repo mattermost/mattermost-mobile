@@ -8,14 +8,18 @@ import {Notifications} from 'react-native-notifications';
 
 import {Events} from '@constants';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
-import {popToRoot} from '@screens/navigation';
+import {dismissAllRoutesAndResetToRootRoute} from '@screens/navigation';
 
 import {
     convertToNotificationData,
     notificationError,
     emitNotificationError,
     scheduleExpiredNotification,
-} from '.';
+} from './index';
+
+jest.mock('@screens/navigation', () => ({
+    dismissAllRoutesAndResetToRootRoute: jest.fn(),
+}));
 
 describe('Notification Utils', () => {
     const intl = createIntl({locale: DEFAULT_LOCALE, messages: getTranslations(DEFAULT_LOCALE)});
@@ -85,7 +89,7 @@ describe('Notification Utils', () => {
                 'Message not found',
                 'This message belongs to a channel where you are not a member.',
             );
-            expect(popToRoot).toHaveBeenCalled();
+            expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalled();
         });
 
         it('should display alert and popToRoot for Team type', () => {
@@ -94,7 +98,7 @@ describe('Notification Utils', () => {
                 'Message not found',
                 'This message belongs to a team where you are not a member.',
             );
-            expect(popToRoot).toHaveBeenCalled();
+            expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalled();
         });
 
         it('should display alert and popToRoot for Post type', () => {
@@ -103,7 +107,7 @@ describe('Notification Utils', () => {
                 'Message not found',
                 'The message has not been found.',
             );
-            expect(popToRoot).toHaveBeenCalled();
+            expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalled();
         });
 
         it('should display alert and popToRoot for Connection type', () => {
@@ -112,7 +116,7 @@ describe('Notification Utils', () => {
                 'Message not found',
                 'The server is unreachable and it was not possible to retrieve the specific message information for the notification.',
             );
-            expect(popToRoot).toHaveBeenCalled();
+            expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalled();
         });
     });
 

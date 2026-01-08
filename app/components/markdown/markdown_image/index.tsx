@@ -185,15 +185,9 @@ const MarkdownImage = ({
                 );
             };
 
-            bottomSheet({
-                closeButtonId: 'close-mardown-image',
-                renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
-                title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
-                theme,
-            });
+            bottomSheet(renderContent, [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)]);
         }
-    }, [managedConfig?.copyAndPasteProtection, intl, theme, style.bottomSheet, linkDestination, source]);
+    }, [managedConfig?.copyAndPasteProtection, intl, style.bottomSheet, linkDestination, source]);
 
     const handleOnError = useCallback(() => {
         setFailed(true);

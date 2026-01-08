@@ -6,9 +6,10 @@ import {View, Text, ScrollView} from 'react-native';
 
 import Button from '@components/button';
 import MenuDivider from '@components/menu_divider';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 import {emailLogs, getDefaultReportAProblemLink, shareLogs} from '@utils/share_logs';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -19,12 +20,10 @@ import AppLogs from './app_logs';
 import CopyMetadata from './copy_metadata';
 import {getCommonStyleSheet} from './styles';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
 import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
 export const REPORT_PROBLEM_CLOSE_BUTTON_ID = 'close-report-problem';
 
 type Props = {
-    componentId: AvailableScreens;
     reportAProblemMail?: string;
     reportAProblemLink?: string;
     siteName?: string;
@@ -67,7 +66,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 }));
 
 const ReportProblem = ({
-    componentId,
     reportAProblemMail,
     reportAProblemLink,
     siteName,
@@ -109,10 +107,7 @@ const ReportProblem = ({
         tryOpenURL(reportAProblemLink);
     }, [reportAProblemType, reportAProblemLink, reportAProblemMail, metadata, siteName, allowDownloadLogs, isLicensed]);
 
-    const close = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.REPORT_PROBLEM, navigateBack);
 
     const descriptionText = allowDownloadLogs ? intl.formatMessage({
         id: 'screen.report_problem.details.description',
@@ -140,7 +135,7 @@ const ReportProblem = ({
                     <MenuDivider/>
                     <CopyMetadata
                         metadata={metadata}
-                        componentId={componentId}
+                        componentId={Screens.REPORT_PROBLEM}
                     />
                     {allowDownloadLogs && (
                         <>

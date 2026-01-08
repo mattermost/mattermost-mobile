@@ -3,16 +3,13 @@
 
 import {createIntl} from 'react-intl';
 import {Alert} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import {ServerErrors} from '@constants';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 
-import {mergeNavigationOptions, alertTeamRemove, alertChannelRemove, alertChannelArchived, alertTeamAddError} from '.';
+import {alertTeamRemove, alertChannelRemove, alertChannelArchived, alertTeamAddError} from './index';
 
 describe('Navigation utils', () => {
-    const componentId = 'component-id';
-    const options = {topBar: {title: {text: 'Test'}}};
     const displayName = 'Test Display Name';
     const serverError = {server_error_id: ServerErrors.TEAM_MEMBERSHIP_DENIAL_ERROR_ID};
     const genericServerError = {server_error_id: 'api.some_server_error.id', message: 'Generic error message'};
@@ -20,11 +17,6 @@ describe('Navigation utils', () => {
 
     afterEach(() => {
         jest.clearAllMocks();
-    });
-
-    it('should call Navigation.mergeOptions with the correct arguments', () => {
-        mergeNavigationOptions(componentId, options);
-        expect(Navigation.mergeOptions).toHaveBeenCalledWith(componentId, options);
     });
 
     it('should display alert when a user is removed from a team', () => {

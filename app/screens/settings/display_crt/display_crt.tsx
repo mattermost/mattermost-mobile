@@ -9,14 +9,11 @@ import SettingBlock from '@components/settings/block';
 import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
-import {Preferences} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
-import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const crtDescription = defineMessage({
     id: 'settings_display.crt.desc',
@@ -24,18 +21,16 @@ const crtDescription = defineMessage({
 });
 
 type Props = {
-    componentId: AvailableScreens;
     currentUserId: string;
     isCRTEnabled: boolean;
 }
 
-const DisplayCRT = ({componentId, currentUserId, isCRTEnabled}: Props) => {
+const DisplayCRT = ({currentUserId, isCRTEnabled}: Props) => {
     const [isEnabled, setIsEnabled] = useState(isCRTEnabled);
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
     const saveCRTPreference = useCallback(async () => {
-        popTopScreen(componentId);
         if (isCRTEnabled !== isEnabled) {
             const crtPreference: PreferenceType = {
                 category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
@@ -50,10 +45,10 @@ const DisplayCRT = ({componentId, currentUserId, isCRTEnabled}: Props) => {
                 handleCRTToggled(serverUrl);
             }
         }
-    }, [componentId, isCRTEnabled, isEnabled, currentUserId, serverUrl]);
+    }, [isCRTEnabled, isEnabled, currentUserId, serverUrl]);
 
     useBackNavigation(saveCRTPreference);
-    useAndroidHardwareBackHandler(componentId, saveCRTPreference);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_DISPLAY_CRT, saveCRTPreference);
 
     return (
         <SettingContainer testID='crt_display_settings'>

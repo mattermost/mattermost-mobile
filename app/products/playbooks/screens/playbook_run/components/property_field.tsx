@@ -85,13 +85,7 @@ const PropertyField = ({
             />
         );
 
-        bottomSheet({
-            title: propertyField.name,
-            renderContent,
-            snapPoints: ['50%', '50%'],
-            theme,
-            closeButtonId: 'close-property-field',
-        });
+        bottomSheet(renderContent, ['50%', '50%']);
     }, [isDisabled, currentValue, onValueChange, propertyField.id, propertyField.name, testID, theme]);
 
     return (

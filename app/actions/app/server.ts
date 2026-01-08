@@ -1,36 +1,34 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Navigation} from 'react-native-navigation';
-
 import {doPing} from '@actions/remote/general';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {Screens} from '@constants';
+import {fetchConfigAndLicense, type ConfigAndLicenseRequest} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerByIdentifier} from '@queries/app/servers';
 import {logError} from '@utils/log';
 import {canReceiveNotifications} from '@utils/push_proxy';
-import {alertServerAlreadyConnected, alertServerError, loginToServer} from '@utils/server';
+import {alertServerAlreadyConnected, alertServerError} from '@utils/server';
 
 import type {IntlShape} from 'react-intl';
 
-export async function switchToServer(serverUrl: string, theme: Theme, intl: IntlShape, callback?: () => void) {
+export async function switchToServer(serverUrl: string, callback?: () => void) {
     const server = await getServer(serverUrl);
     if (!server) {
         logError(`Switch to Server with url ${serverUrl} not found`);
+        callback?.();
         return;
     }
     if (server.lastActiveAt) {
         const isJailbroken = await SecurityManager.isDeviceJailbroken(server.url);
         if (isJailbroken) {
+            callback?.();
             return;
         }
 
         const authenticated = await SecurityManager.authenticateWithBiometricsIfNeeded(server.url);
         if (authenticated) {
-            Navigation.updateProps(Screens.HOME, {extra: undefined});
             DatabaseManager.setActiveServerDatabase(server.url, {
                 skipJailbreakCheck: true,
                 skipBiometricCheck: true,
@@ -39,14 +37,11 @@ export async function switchToServer(serverUrl: string, theme: Theme, intl: Intl
             });
             WebsocketManager.initializeClient(server.url, 'Server Switch');
         }
-
-        return;
     }
-
-    switchToServerAndLogin(serverUrl, theme, intl, callback);
+    callback?.();
 }
 
-export async function switchToServerAndLogin(serverUrl: string, theme: Theme, intl: IntlShape, callback?: () => void) {
+export async function switchToServerAndLogin(serverUrl: string, theme: Theme, intl: IntlShape, callback: (data?: ConfigAndLicenseRequest) => void) {
     const server = await getServer(serverUrl);
     if (!server) {
         logError(`Switch to Server with url ${serverUrl} not found`);
@@ -56,7 +51,7 @@ export async function switchToServerAndLogin(serverUrl: string, theme: Theme, in
     const result = await doPing(server.url, true);
     if (result.error) {
         alertServerError(intl, result.error);
-        callback?.();
+        callback();
         return;
     }
 
@@ -89,6 +84,9 @@ export async function switchToServerAndLogin(serverUrl: string, theme: Theme, in
 
     if (authenticated) {
         canReceiveNotifications(server.url, result.canReceiveNotifications as string, intl);
-        loginToServer(theme, server.url, server.displayName, data.config!, data.license!);
+        callback(data);
+        return;
     }
+
+    callback();
 }

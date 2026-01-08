@@ -194,14 +194,12 @@ export class IntuneManagerSingleton {
             logError('IntuneManager: Failed to set current identity', error);
             if (serverUrl) {
                 await new Promise((resolve) => setTimeout(resolve, 250));
-                Emm.enableBlurScreen(true);
-                Emm.applyBlurEffect(20);
+                Emm.applyBlurEffect(0.5);
                 const locale = await getCurrentUserLocale(serverUrl);
                 await showBiometricFailureAlertForOrganization(serverUrl, locale, () => {
                     Emm.removeBlurEffect();
                     this.setCurrentIdentity(serverUrl);
                 });
-                Emm.enableBlurScreen(false);
             }
         }
     }

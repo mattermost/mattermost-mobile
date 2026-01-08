@@ -9,7 +9,7 @@ import {Events} from '@constants';
 import {NOTIFICATION_TYPE} from '@constants/push_notification';
 import {DEFAULT_LOCALE} from '@i18n';
 import PushNotifications from '@init/push_notifications';
-import {popToRoot} from '@screens/navigation';
+import {dismissAllRoutesAndResetToRootRoute} from '@screens/navigation';
 import {getIntlShape} from '@utils/general';
 
 export const convertToNotificationData = (notification: Notification, tapped = true): NotificationWithData => {
@@ -81,7 +81,7 @@ export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel' | 'C
     }
 
     Alert.alert(title, message);
-    popToRoot();
+    dismissAllRoutesAndResetToRootRoute();
 };
 
 export const emitNotificationError = (type: 'Team' | 'Channel' | 'Post' | 'Connection') => {

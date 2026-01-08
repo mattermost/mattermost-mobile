@@ -95,7 +95,6 @@ describe('PostUpdate', () => {
         function getBaseProps(): ComponentProps<typeof PostUpdate> {
             return {
                 playbookRunId,
-                componentId: 'PlaybookPostUpdate',
             };
         }
 

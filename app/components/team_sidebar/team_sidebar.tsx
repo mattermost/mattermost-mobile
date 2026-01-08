@@ -55,11 +55,11 @@ export default function TeamSidebar({iconPad, canJoinOtherTeams, hasMoreThanOneT
 
     useEffect(() => {
         marginTop.value = iconPad ? 44 : 0;
-    }, [iconPad]);
+    }, [iconPad, marginTop]);
 
     useEffect(() => {
         width.value = hasMoreThanOneTeam ? TEAM_SIDEBAR_WIDTH : 0;
-    }, [hasMoreThanOneTeam]);
+    }, [hasMoreThanOneTeam, width]);
 
     return (
         <Animated.View style={[styles.container, transform]}>

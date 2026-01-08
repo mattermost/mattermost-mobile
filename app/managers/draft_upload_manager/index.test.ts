@@ -9,7 +9,7 @@ import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
 import TestHelper from '@test/test_helper';
 
-import {exportedForTesting} from '.';
+import {exportedForTesting} from './index';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';

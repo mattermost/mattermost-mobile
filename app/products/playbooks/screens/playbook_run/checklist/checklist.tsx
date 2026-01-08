@@ -154,8 +154,8 @@ const Checklist = ({
 
     const handleEditPress = useCallback((e: GestureResponderEvent) => {
         e.stopPropagation();
-        goToRenameChecklist(intl, theme, playbookRunName, checklist.title, handleRename);
-    }, [intl, theme, playbookRunName, checklist.title, handleRename]);
+        goToRenameChecklist(playbookRunName, checklist.title, handleRename);
+    }, [playbookRunName, checklist.title, handleRename]);
 
     const handleAddItem = useCallback(async (title: string) => {
         const res = await addChecklistItem(serverUrl, playbookRunId, checklistNumber, title);
@@ -166,8 +166,8 @@ const Checklist = ({
     }, [serverUrl, playbookRunId, checklistNumber]);
 
     const handleAddPress = useCallback(() => {
-        goToAddChecklistItem(intl, theme, playbookRunName, handleAddItem);
-    }, [intl, theme, playbookRunName, handleAddItem]);
+        goToAddChecklistItem(playbookRunName, handleAddItem);
+    }, [playbookRunName, handleAddItem]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {

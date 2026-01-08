@@ -9,6 +9,7 @@ import CompassIcon from '@components/compass_icon';
 import MenuDivider from '@components/menu_divider';
 import OptionBox from '@components/option_box';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {setAssignee, setChecklistItemCommand, setDueDate} from '@playbooks/actions/remote/checklist';
@@ -244,19 +245,18 @@ const ChecklistItemBottomSheet = ({
     );
 
     const onUserChipPress = useCallback((userId: string) => {
-        openUserProfileModal(intl, theme, {
+        openUserProfileModal({
             userId,
-            location: 'PlaybookRun',
+            location: Screens.PLAYBOOK_RUN,
         });
-    }, [intl, theme]);
-
+    }, []);
     const updateCommand = useCallback(async (command: string) => {
         await setChecklistItemCommand(serverUrl, runId, item.id, checklistNumber, itemNumber, command);
     }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
 
     const openEditCommandModal = useCallback(() => {
-        goToEditCommand(intl, theme, runName, item.command, channelId, updateCommand);
-    }, [intl, theme, runName, item.command, channelId, updateCommand]);
+        goToEditCommand(runName, item.command, channelId, updateCommand);
+    }, [runName, item.command, channelId, updateCommand]);
 
     const assigneeInfo: ComponentProps<typeof OptionItem>['info'] = useMemo(() => {
         if (!assignee) {
@@ -271,10 +271,10 @@ const ChecklistItemBottomSheet = ({
     }, [assignee, intl, onUserChipPress, teammateNameDisplay]);
 
     const openEditDateModal = useCallback(async () => {
-        goToSelectDate(intl, theme, runName, (date) => {
+        goToSelectDate(runName, (date) => {
             setDueDate(serverUrl, runId, item.id, checklistNumber, itemNumber, date);
         }, dueDate);
-    }, [intl, theme, runName, dueDate, serverUrl, runId, item.id, checklistNumber, itemNumber]);
+    }, [runName, dueDate, serverUrl, runId, item.id, checklistNumber, itemNumber]);
 
     const handleSelect = useCallback(async (selected: UserProfile) => {
         const res = await setAssignee(serverUrl, runId, item.id, checklistNumber, itemNumber, selected.id);
@@ -292,7 +292,6 @@ const ChecklistItemBottomSheet = ({
 
     const openUserSelector = useCallback(() => {
         goToSelectUser(
-            theme,
             runName,
             intl.formatMessage(messages.assignee),
             participantIds,
@@ -300,7 +299,7 @@ const ChecklistItemBottomSheet = ({
             handleSelect,
             handleRemove,
         );
-    }, [assignee?.id, handleRemove, handleSelect, intl, participantIds, runName, theme]);
+    }, [assignee?.id, handleRemove, handleSelect, intl, participantIds, runName]);
 
     const renderTaskDetails = () => (
         <View style={styles.taskDetailsContainer}>

@@ -47,7 +47,6 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme, showPermalink
     }
 
     const attachments = isMessageAttachmentArray(post.props?.attachments) ? post.props.attachments : [];
-
     switch (contentType[type]) {
         case contentType.image:
             return (

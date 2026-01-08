@@ -10,11 +10,13 @@ import PdfViewer from './pdf_viewer';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type Props = WithDatabaseArgs & {
+export type PdfViewerScreenProps = {
+    title: string;
     fileId: string;
+    filePath: string;
 }
 
-const enhance = withObservables([], ({database}: Props) => ({
+const enhance = withObservables([], ({database}: WithDatabaseArgs) => ({
     siteURL: observeConfigValue(database, 'SiteURL'),
     allowPdfLinkNavigation: observeAllowPdfLinkNavigation(database),
 }));

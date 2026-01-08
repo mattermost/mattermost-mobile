@@ -6,9 +6,7 @@ import {useIntl} from 'react-intl';
 
 import OptionBox from '@components/option_box';
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
-import {getHeaderOptions} from '@screens/channel_add_members/channel_add_members';
-import {dismissBottomSheet, goToScreen, showModal} from '@screens/navigation';
+import {dismissBottomSheet, navigateToChannelInfoScreen} from '@screens/navigation';
 
 import type {StyleProp, ViewStyle} from 'react-native';
 
@@ -28,19 +26,14 @@ const AddMembersBox = ({
     testID,
 }: Props) => {
     const intl = useIntl();
-    const theme = useTheme();
 
     const onAddMembers = useCallback(async () => {
-        const title = intl.formatMessage({id: 'intro.add_members', defaultMessage: 'Add members'});
-        const options = await getHeaderOptions(theme, displayName, inModal);
-        if (inModal) {
-            goToScreen(Screens.CHANNEL_ADD_MEMBERS, title, {channelId, inModal}, options);
-            return;
+        if (!inModal) {
+            await dismissBottomSheet();
         }
 
-        await dismissBottomSheet();
-        showModal(Screens.CHANNEL_ADD_MEMBERS, title, {channelId, inModal}, options);
-    }, [intl, channelId, inModal, testID, displayName]);
+        navigateToChannelInfoScreen(Screens.CHANNEL_ADD_MEMBERS, {channelId, displayName, inModal});
+    }, [inModal, channelId, displayName]);
 
     return (
         <OptionBox

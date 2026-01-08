@@ -5,7 +5,6 @@
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTLinkingManager.h>
 #import <RNKeychain/RNKeychainManager.h>
-#import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import <UserNotifications/UserNotifications.h>
 #import <TurboLogIOSNative/TurboLog.h>
 
@@ -85,18 +84,24 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   [RNNotifications startMonitorNotifications];
 
   os_log(OS_LOG_DEFAULT, "Mattermost started!!");
-  [ReactNativeNavigation bootstrapWithDelegate:self launchOptions:launchOptions];
+
+  // Initialize Expo modules and React Native (replacing RNN bootstrap for Expo Router)
+  [super application:application didFinishLaunchingWithOptions:launchOptions];
 
 #if INTUNE_AVAILABLE
   // Restore enrollments if needed (silent, non-blocking)
   [IntuneAccess checkAndRestoreEnrollmentOnLaunch];
 #endif
-  
+
   return YES;
 }
 
 -(BOOL)bridgelessEnabled {
   return NO;
+}
+
+- (NSString *)moduleName {
+  return @"Mattermost";
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
@@ -229,7 +234,6 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 - (NSArray<id<RCTBridgeModule>> *)extraModulesForBridge:(RCTBridge *)bridge
 {
   NSMutableArray<id<RCTBridgeModule>> *extraModules = [NSMutableArray new];
-  [extraModules addObjectsFromArray:[ReactNativeNavigation extraModulesForBridge:bridge]];
   
   // You can inject any extra modules that you would like here, more information at:
   // https://facebook.github.io/react-native/docs/native-modules-ios.html#dependency-injection

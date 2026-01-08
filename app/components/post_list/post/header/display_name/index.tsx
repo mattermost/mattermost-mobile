@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
@@ -68,18 +67,17 @@ const HeaderDisplayName = ({
     showCustomStatusEmoji, customStatus,
 }: HeaderDisplayNameProps) => {
     const dimensions = useWindowDimensions();
-    const intl = useIntl();
     const style = getStyleSheet(theme);
 
     const onPress = usePreventDoubleTap(useCallback(() => {
-        openUserProfileModal(intl, theme, {
+        openUserProfileModal({
             location,
             userId,
             channelId,
             userIconOverride,
             usernameOverride,
         });
-    }, [intl, userId, channelId, location, userIconOverride, usernameOverride, theme]));
+    }, [userId, channelId, location, userIconOverride, usernameOverride]));
 
     const calcNameWidth = () => {
         const isLandscape = dimensions.width > dimensions.height;

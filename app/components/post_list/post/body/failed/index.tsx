@@ -64,14 +64,8 @@ const Failed = ({post, theme}: FailedProps) => {
             );
         };
 
-        bottomSheet({
-            closeButtonId: 'close-post-failed',
-            renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
-            title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
-            theme,
-        });
-    }, [intl, post, serverUrl, theme]);
+        bottomSheet(renderContent, [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)]);
+    }, [intl, post, serverUrl]);
 
     return (
         <TouchableOpacity

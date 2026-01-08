@@ -4,18 +4,18 @@
 import React, {useCallback, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 
 import {updateMe} from '@actions/remote/user';
 import FloatingTextChipsInput from '@components/floating_input/floating_text_chips_input';
 import SettingBlock from '@components/settings/block';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
-import {popTopScreen} from '@screens/navigation';
 import ReplySettings from '@screens/settings/notification_mention/reply_settings';
 import {areBothStringArraysEqual} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -23,7 +23,6 @@ import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const mentionHeaderText = defineMessage({
     id: 'notification_settings.mentions.keywords_mention',
@@ -49,7 +48,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type Props = {
-    componentId: AvailableScreens;
     currentUser?: UserModel;
     isCRTEnabled: boolean;
 };
@@ -109,7 +107,7 @@ export function getUniqueKeywordsFromInput(inputText: string, keywords: string[]
     return keywords;
 }
 
-const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
+const MentionSettings = ({currentUser, isCRTEnabled}: Props) => {
     const serverUrl = useServerUrl();
     const [mentionProps] = useState(() => getMentionProps(currentUser));
     const notifyProps = mentionProps.notifyProps;
@@ -156,12 +154,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
             };
             updateMe(serverUrl, {notify_props});
         }
-
-        popTopScreen(componentId);
-    }, [
-        componentId, currentUser, channelMentionOn, replyNotificationType, firstNameMentionOn,
-        usernameMentionOn, mentionKeywords, mentionProps, notifyProps, serverUrl,
-    ]);
+    }, [currentUser, channelMentionOn, replyNotificationType, firstNameMentionOn, usernameMentionOn, mentionKeywords, mentionProps, notifyProps, serverUrl]);
 
     const handleFirstNameToggle = useCallback(() => {
         setFirstNameMentionOn((prev) => !prev);
@@ -208,19 +201,15 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
     }, [mentionKeywords]);
 
     useBackNavigation(saveMention);
-
-    useAndroidHardwareBackHandler(componentId, saveMention);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_MENTION, saveMention);
 
     return (
         <KeyboardAwareScrollView
-            bounces={false}
-            enableAutomaticScroll={true}
-            enableOnAndroid={true}
+            bounces={true}
             keyboardShouldPersistTaps='handled'
             keyboardDismissMode='none'
             scrollToOverflowEnabled={true}
-            noPaddingBottomOnAndroid={true}
-            style={styles.flex}
+            contentContainerStyle={styles.flex}
         >
             <SettingBlock
                 headerText={mentionHeaderText}

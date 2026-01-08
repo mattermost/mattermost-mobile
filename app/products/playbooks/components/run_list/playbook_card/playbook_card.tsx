@@ -101,17 +101,17 @@ const PlaybookCard = ({
         if (location === PlaybookScreens.PARTICIPANT_PLAYBOOKS) {
             goToPlaybookRunWithChannelSwitch(intl, serverUrl, run as PlaybookRun);
         } else {
-            goToPlaybookRun(intl, run.id, 'observe' in run ? undefined : run);
+            goToPlaybookRun(run.id, 'observe' in run ? undefined : run);
         }
     }, [intl, serverUrl, run, location]);
 
     const onUserChipPress = useCallback((userId: string) => {
-        openUserProfileModal(intl, theme, {
+        openUserProfileModal({
             userId,
             channelId,
             location,
         });
-    }, [channelId, intl, theme, location]);
+    }, [channelId, location]);
 
     return (
         <TouchableOpacity

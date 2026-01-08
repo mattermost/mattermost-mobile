@@ -24,10 +24,7 @@ const serverUrl = 'server-url';
 describe('SelectUser', () => {
     function getBaseProps(): ComponentProps<typeof SelectUser> {
         return {
-            handleSelect: jest.fn(),
-            handleRemove: jest.fn(),
             selected: 'selected-user-id',
-            componentId: 'PlaybookSelectUser',
             participantIds: ['participant-id'],
         };
     }

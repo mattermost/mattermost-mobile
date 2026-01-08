@@ -2,14 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from 'react-native';
-import {Navigation, OptionsModalPresentationStyle, type Options} from 'react-native-navigation';
 
-import CompassIcon from '@components/compass_icon';
 import {Screens, ServerErrors} from '@constants';
-import {showModal} from '@screens/navigation';
 import {isErrorWithMessage, isServerError} from '@utils/errors';
 
-import type {GalleryItemType} from '@typings/screens/gallery';
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {IntlShape} from 'react-intl';
 
@@ -20,13 +16,7 @@ export const appearanceControlledScreens = new Set<AvailableScreens>([
     Screens.FORGOT_PASSWORD,
     Screens.MFA,
     Screens.SSO,
-    Screens.REVIEW_APP,
-    Screens.SHARE_FEEDBACK,
 ]);
-
-export function mergeNavigationOptions(componentId: string, options: Options) {
-    Navigation.mergeOptions(componentId, options);
-}
 
 export function alertTeamRemove(displayName: string, intl: IntlShape) {
     Alert.alert(
@@ -97,28 +87,4 @@ export function alertTeamAddError(error: unknown, intl: IntlShape) {
         intl.formatMessage({id: 'join_team.error.title', defaultMessage: 'Error joining a team'}),
         errMsg,
     );
-}
-
-export function previewPdf(item: FileInfo | GalleryItemType, path: string, theme: Theme, onDismiss?: () => void) {
-    const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-    const closeButtonId = 'close-pdf-viewer';
-
-    const options: Options = {
-        modalPresentationStyle: OptionsModalPresentationStyle.currentContext,
-        topBar: {
-            visible: false,
-            animate: false,
-            leftButtons: [{
-                id: closeButtonId,
-                icon: closeButton,
-                testID: closeButtonId,
-            }],
-        },
-    };
-    showModal(Screens.PDF_VIEWER, item.name, {
-        fileId: item.id,
-        filePath: path,
-        closeButtonId,
-        onDismiss,
-    }, options);
 }

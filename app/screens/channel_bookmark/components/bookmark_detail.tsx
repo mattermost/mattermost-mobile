@@ -3,7 +3,6 @@
 
 import {Button} from '@rneui/base';
 import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
 import {TextInput, View} from 'react-native';
 
 import BookmarkIcon from '@components/channel_bookmarks/channel_bookmark/bookmark_icon';
@@ -12,7 +11,8 @@ import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {openAsBottomSheet} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -76,25 +76,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName, setBookmarkEmoji, title}: Props) => {
-    const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
     const paddingStyle = useMemo(() => ({paddingHorizontal: isTablet ? 42 : 0}), [isTablet]);
     const styles = getStyleSheet(theme);
 
     const openEmojiPicker = useCallback(() => {
-        openAsBottomSheet({
-            closeButtonId: 'close-add-emoji',
-            screen: Screens.EMOJI_PICKER,
-            theme,
-            title: intl.formatMessage({id: 'channel_bookmark.add.emoji', defaultMessage: 'Add emoji'}),
-            props: {
-                onEmojiPress: setBookmarkEmoji,
-                imageUrl,
-                file,
-            },
-        });
-    }, [theme, intl, setBookmarkEmoji, imageUrl, file]);
+        CallbackStore.setCallback(setBookmarkEmoji);
+        navigateToScreen(Screens.EMOJI_PICKER, {file, imageUrl});
+    }, [setBookmarkEmoji, imageUrl, file]);
 
     return (
         <View style={paddingStyle}>

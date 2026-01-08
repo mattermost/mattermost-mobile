@@ -3,13 +3,14 @@
 
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import {Keyboard, Platform} from 'react-native';
-import Animated, {KeyboardState, useAnimatedKeyboard, useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
+import {useAnimatedKeyboard} from 'react-native-keyboard-controller';
+import Animated, {KeyboardState, useAnimatedReaction, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
-import {useIsTablet} from '@hooks/device';
+import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import NavigationStore from '@store/navigation_store';
+import {useCurrentScreen} from '@store/navigation_store';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -28,22 +29,16 @@ const KEYBOARD_OFFSET = -77;
 export const ExtraKeyboardContext = createContext<ExtraKeyboardContextProps|undefined>(undefined);
 
 const useOffetForCurrentScreen = (): number => {
-    const [screen, setScreen] = useState<AvailableScreens|undefined>();
+    const screen = useCurrentScreen();
     const [offset, setOffset] = useState(0);
     const isTablet = useIsTablet();
+    const {bottom} = useSafeAreaInsets();
 
     useEffect(() => {
-        const sub = NavigationStore.getSubject();
-        const s = sub.subscribe(setScreen);
-
-        return () => s.unsubscribe();
-    }, []);
-
-    useEffect(() => {
-        if (isTablet && screen === Screens.HOME) {
-            setOffset(KEYBOARD_OFFSET);
+        if (isTablet && screen === Screens.CHANNEL_LIST) {
+            setOffset(KEYBOARD_OFFSET + bottom);
         }
-    }, [isTablet, screen]);
+    }, [isTablet, screen, bottom]);
 
     return offset;
 };
@@ -162,15 +157,18 @@ export const useHideExtraKeyboardIfNeeded = (callback: (...args: any) => void, d
         }
 
         callback(...args);
+
+        // Recreate the callback if any of the dependencies change
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [keyboardContext, ...dependencies]));
 };
 
 const ExtraKeyboardComponent = () => {
-    const keyb = useAnimatedKeyboard({isStatusBarTranslucentAndroid: true});
-    const defaultKeyboardHeight = Platform.select({ios: 291, default: 240});
+    const keyb = useAnimatedKeyboard();
+    const defaultKeyboardHeight = useKeyboardHeight();
     const context = useExtraKeyboardContext();
-    const insets = useSafeAreaInsets();
     const offset = useOffetForCurrentScreen();
+    const {bottom} = useSafeAreaInsets();
 
     const maxKeyboardHeight = useDerivedValue(() => {
         if (keyb.state.value === KeyboardState.OPEN) {
@@ -181,19 +179,37 @@ const ExtraKeyboardComponent = () => {
         return defaultKeyboardHeight;
     });
 
+    const invalidState = useSharedValue(false);
+
+    useAnimatedReaction(
+        () => keyb.state.value,
+        (current, previous) => {
+            if (current !== previous) {
+                const isInvalidTransition = current === KeyboardState.OPEN && previous === KeyboardState.CLOSED;
+
+                if (isInvalidTransition) {
+                    invalidState.value = true;
+                } else if (invalidState.value && (current === KeyboardState.OPENING || current === KeyboardState.CLOSED || current === KeyboardState.UNKNOWN)) {
+                    // Reset invalid flag when we get a valid transition
+                    invalidState.value = false;
+                }
+            }
+        },
+    );
+
     const animatedStyle = useAnimatedStyle(() => {
-        let height = keyb.height.value + offset;
+        let height = invalidState.value ? 0 : keyb.height.value + (offset - bottom);
         if (context?.isExtraKeyboardVisible) {
-            height = withTiming(maxKeyboardHeight.value, {duration: 250});
+            height = withTiming(maxKeyboardHeight.value, {duration: 150});
         } else if (keyb.state.value === KeyboardState.CLOSED || keyb.state.value === KeyboardState.UNKNOWN) {
             height = withTiming(0, {duration: 250});
         }
 
         return {
             height,
-            marginBottom: withTiming((keyb.state.value === KeyboardState.CLOSED || keyb.state.value === KeyboardState.CLOSING || keyb.state.value === KeyboardState.UNKNOWN) ? insets.bottom : 0, {duration: 250}),
+            marginBottom: withTiming(0, {duration: 250}),
         };
-    }, [context, insets.bottom, offset]);
+    }, [context, offset, bottom]);
 
     return (
         <Animated.View style={animatedStyle}>
@@ -203,7 +219,14 @@ const ExtraKeyboardComponent = () => {
 };
 
 // Do not use ExtraKeyboard on Android versions below 11
-export const ExtraKeyboard = () => {
+export const ExtraKeyboard = ({location}: {location: AvailableScreens}) => {
+    const currentScreen = useCurrentScreen();
+
+    // ExtraKeyboard should only be shown on the screen that requested it
+    if (currentScreen !== location) {
+        return null;
+    }
+
     if (Platform.OS === 'android' && Platform.Version < 30) {
         return null;
     }

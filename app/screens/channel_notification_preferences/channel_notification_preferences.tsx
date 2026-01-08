@@ -7,25 +7,21 @@ import {useSharedValue} from 'react-native-reanimated';
 
 import {updateChannelNotifyProps} from '@actions/remote/channel';
 import SettingsContainer from '@components/settings/container';
-import {NotificationLevel} from '@constants';
+import {NotificationLevel, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
 import useBackNavigation from '@hooks/navigate_back';
+import {navigateBack} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
-
-import {popTopScreen} from '../navigation';
 
 import MutedBanner, {MUTED_BANNER_HEIGHT} from './muted_banner';
 import NotifyAbout, {BLOCK_TITLE_HEIGHT} from './notify_about';
 import ResetToDefault from './reset';
 import ThreadReplies from './thread_replies';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type Props = {
     channelId: string;
-    componentId: AvailableScreens;
     defaultLevel: NotificationLevel;
     defaultThreadReplies: 'all' | 'mention';
     isCRTEnabled: boolean;
@@ -38,7 +34,6 @@ type Props = {
 
 const ChannelNotificationPreferences = ({
     channelId,
-    componentId,
     defaultLevel,
     defaultThreadReplies,
     isCRTEnabled,
@@ -92,11 +87,11 @@ const ChannelNotificationPreferences = ({
 
             updateChannelNotifyProps(serverUrl, channelId, props);
         }
-        popTopScreen(componentId);
-    }, [defaultLevel, channelId, componentId, isCRTEnabled, notifyAbout, notifyLevel, notifyThreadReplies, serverUrl, threadReplies]);
+        navigateBack();
+    }, [defaultLevel, channelId, isCRTEnabled, notifyAbout, notifyLevel, notifyThreadReplies, serverUrl, threadReplies]);
 
     useBackNavigation(save);
-    useAndroidHardwareBackHandler(componentId, save);
+    useAndroidHardwareBackHandler(Screens.CHANNEL_NOTIFICATION_PREFERENCES, save);
 
     const showThreadReplies = isCRTEnabled && (
         !hasGMasDMFeature ||

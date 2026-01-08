@@ -1,21 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type MutableRefObject, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, Platform, Pressable, TouchableOpacity, useWindowDimensions, View} from 'react-native';
+import {Keyboard, Pressable, TouchableOpacity, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
-import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {removeProtocol, stripTrailingSlashes} from '@utils/url';
-
-import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 const ADVANCED_OPTIONS_COLLAPSED = 0;
 const ADVANCED_OPTIONS_EXPANDED = 150; // Approximate height for the content
@@ -28,7 +25,6 @@ type Props = {
     handleUpdate: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
     handlePreauthSecretTextChanged: (text: string) => void;
-    keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | null>;
     preauthSecret?: string;
     preauthSecretError?: string;
     serverUrl: string;
@@ -117,7 +113,6 @@ const EditServerForm = ({
     handleUpdate,
     handleDisplayNameTextChanged,
     handlePreauthSecretTextChanged,
-    keyboardAwareRef,
     preauthSecret = '',
     preauthSecretError,
     serverUrl,
@@ -126,8 +121,6 @@ const EditServerForm = ({
     theme,
 }: Props) => {
     const {formatMessage} = useIntl();
-    const isTablet = useIsTablet();
-    const dimensions = useWindowDimensions();
     const displayNameRef = useRef<FloatingTextInputRef>(null);
     const preauthSecretRef = useRef<FloatingTextInputRef>(null);
     const styles = getStyleSheet(theme);
@@ -150,15 +143,6 @@ const EditServerForm = ({
             />
         </TouchableOpacity>
     ), [isPreauthSecretVisible, styles.endAdornment, theme.centerChannelColor, togglePreauthSecretVisibility]);
-
-    const onBlur = useCallback(() => {
-        if (Platform.OS === 'ios') {
-            const reset = !displayNameRef.current?.isFocused();
-            if (reset) {
-                keyboardAwareRef.current?.scrollToPosition(0, 0);
-            }
-        }
-    }, [keyboardAwareRef]);
 
     const onUpdate = useCallback(() => {
         Keyboard.dismiss();
@@ -193,34 +177,6 @@ const EditServerForm = ({
         transform: [{rotate: `${chevronRotation.value}deg`}],
     }));
 
-    const onFocus = useCallback(() => {
-        // For iOS we set the position of the input instead of
-        // having the KeyboardAwareScrollView figure it out by itself
-        // on Android KeyboardAwareScrollView does nothing as is handled
-        // by the OS
-        if (Platform.OS === 'ios') {
-            let offsetY = 160;
-            if (isTablet) {
-                const {width, height} = dimensions;
-                const isLandscape = width > height;
-                offsetY = isLandscape ? 230 : 100;
-            }
-            requestAnimationFrame(() => {
-                keyboardAwareRef.current?.scrollToPosition(0, offsetY);
-            });
-        }
-    }, [dimensions, isTablet, keyboardAwareRef]);
-
-    useEffect(() => {
-        if (Platform.OS === 'ios' && isTablet) {
-            if (displayNameRef.current?.isFocused()) {
-                onFocus();
-            } else {
-                keyboardAwareRef.current?.scrollToPosition(0, 0);
-            }
-        }
-    }, [isTablet, keyboardAwareRef, onFocus]);
-
     const saveButtonTestId = buttonDisabled ? 'edit_server_form.save.button.disabled' : 'edit_server_form.save.button';
 
     return (
@@ -234,9 +190,7 @@ const EditServerForm = ({
                         id: 'mobile.components.select_server_view.displayName',
                         defaultMessage: 'Display Name',
                     })}
-                    onBlur={onBlur}
                     onChangeText={handleDisplayNameTextChanged}
-                    onFocus={onFocus}
                     onSubmitEditing={onDisplayNameSubmit}
                     ref={displayNameRef}
                     returnKeyType={showAdvancedOptions || preauthSecretError ? 'next' : 'done'}

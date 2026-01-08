@@ -15,7 +15,6 @@ import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bottomSheetId: AvailableScreens;
     isCRTEnabled: boolean;
     sourceScreen: AvailableScreens;
     post: PostModel;
@@ -29,18 +28,18 @@ const messages = defineMessages({
     },
 });
 
-const MarkAsUnreadOption = ({bottomSheetId, isCRTEnabled, sourceScreen, post, teamId}: Props) => {
+const MarkAsUnreadOption = ({isCRTEnabled, sourceScreen, post, teamId}: Props) => {
     const serverUrl = useServerUrl();
 
     const onPress = useCallback(async () => {
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         if (sourceScreen === Screens.THREAD && isCRTEnabled) {
             const threadId = post.rootId || post.id;
             markThreadAsUnread(serverUrl, teamId, threadId, post.id);
         } else {
             markPostAsUnread(serverUrl, post.id);
         }
-    }, [bottomSheetId, sourceScreen, isCRTEnabled, post.rootId, post.id, serverUrl, teamId]);
+    }, [sourceScreen, isCRTEnabled, post.rootId, post.id, serverUrl, teamId]);
 
     return (
         <BaseOption

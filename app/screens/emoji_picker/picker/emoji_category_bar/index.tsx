@@ -14,12 +14,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         justifyContent: 'space-between',
         backgroundColor: theme.centerChannelBg,
-        height: 55,
         paddingHorizontal: 12,
         paddingTop: 11,
         borderTopColor: changeOpacity(theme.centerChannelColor, 0.08),
         borderTopWidth: 1,
         flexDirection: 'row',
+        flex: 1,
     },
 }));
 
@@ -39,7 +39,7 @@ const EmojiCategoryBar = ({onSelect}: Props) => {
         }
 
         selectEmojiCategoryBarSection(index);
-    }, []);
+    }, [onSelect]);
 
     if (!icons) {
         return null;

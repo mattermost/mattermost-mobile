@@ -5,7 +5,7 @@ import Emm from '@mattermost/react-native-emm';
 import deepEqual from 'deep-equal';
 import {isRootedExperimentalAsync} from 'expo-device';
 import {defineMessages} from 'react-intl';
-import {Alert, type AlertButton, AppState, type AppStateStatus, Platform} from 'react-native';
+import {Alert, type AlertButton, AppState, type AppStateStatus, type EventSubscription, type NativeEventSubscription, Platform} from 'react-native';
 
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {toMilliseconds} from '@utils/datetime';
@@ -62,9 +62,11 @@ class ManagedAppSingleton {
     processConfigTimeout?: NodeJS.Timeout;
     vendor = 'Mattermost';
     cacheConfig?: ManagedConfig = undefined;
+    private emmListener: EventSubscription | undefined;
+    private appStateChangeListener: NativeEventSubscription | undefined;
 
     constructor() {
-        Emm.addListener((cfg: ManagedConfig) => {
+        this.emmListener = Emm.addListener((cfg: ManagedConfig) => {
             if (!deepEqual(cfg, this.cacheConfig)) {
                 this.processConfig(cfg);
                 this.cacheConfig = cfg;
@@ -73,12 +75,17 @@ class ManagedAppSingleton {
 
         this.setIOSAppGroupIdentifier();
 
-        AppState.addEventListener('change', this.onAppStateChange);
+        this.appStateChangeListener = AppState.addEventListener('change', this.onAppStateChange);
     }
 
     init() {
         this.cacheConfig = Emm.getManagedConfig<ManagedConfig>();
         this.processConfig(this.cacheConfig);
+    }
+
+    cleanup() {
+        this.emmListener?.remove();
+        this.appStateChangeListener?.remove();
     }
 
     setIOSAppGroupIdentifier = () => {

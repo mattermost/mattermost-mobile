@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef} from 'react';
+import React, {useCallback, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -11,7 +11,9 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
-import {openAsBottomSheet} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
+import {useCurrentScreen} from '@store/navigation_store';
 import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -60,9 +62,7 @@ export type Props = {
     scheduledPostsEnabled: boolean;
 }
 
-const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
-
-const SCHEDULED_POST_PICKER_BUTTON = 'close-scheduled-post-picker';
+const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right', 'bottom'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -139,10 +139,19 @@ function DraftInput({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const isTablet = useIsTablet();
+    const currentScreen = useCurrentScreen();
+
+    const edges = useMemo<Edge[]>(() => {
+        if (isTablet && currentScreen === Screens.CHANNEL_LIST) {
+            return ['left', 'right'];
+        }
+
+        return SAFE_AREA_VIEW_EDGES;
+    }, [isTablet, currentScreen]);
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
-    }, []);
+    }, [updatePostInputTop]);
 
     const inputRef = useRef<PasteInputRef>();
     const focus = useCallback(() => {
@@ -178,19 +187,9 @@ function DraftInput({
         }
 
         Keyboard.dismiss();
-        const title = isTablet ? intl.formatMessage({id: 'scheduled_post.picker.title', defaultMessage: 'Schedule draft'}) : '';
-
-        openAsBottomSheet({
-            closeButtonId: SCHEDULED_POST_PICKER_BUTTON,
-            screen: Screens.SCHEDULED_POST_OPTIONS,
-            theme,
-            title,
-            props: {
-                closeButtonId: SCHEDULED_POST_PICKER_BUTTON,
-                onSchedule: handleSendMessage,
-            },
-        });
-    }, [handleSendMessage, intl, isTablet, scheduledPostsEnabled, theme]);
+        CallbackStore.setCallback<((schedulingInfo: SchedulingInfo) => Promise<void | {data?: boolean; error?: unknown}>)>(handleSendMessage);
+        navigateToScreen(Screens.SCHEDULED_POST_OPTIONS);
+    }, [handleSendMessage, scheduledPostsEnabled]);
 
     const sendActionDisabled = !canSend || noMentionsError;
 
@@ -201,7 +200,7 @@ function DraftInput({
                 rootId={rootId}
             />
             <SafeAreaView
-                edges={SAFE_AREA_VIEW_EDGES}
+                edges={edges}
                 onLayout={handleLayout}
                 style={style.inputWrapper}
                 testID={testID}

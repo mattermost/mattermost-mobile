@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, type ReactNode} from 'react';
-import {useIntl} from 'react-intl';
 import {Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
@@ -11,7 +10,6 @@ import ExpoImage from '@components/expo_image';
 import ProfilePicture from '@components/profile_picture';
 import {View as ViewConstant} from '@constants';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {openUserProfileModal} from '@screens/navigation';
 import {ensureString} from '@utils/types';
@@ -35,8 +33,6 @@ const style = StyleSheet.create({
 });
 
 const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}: AvatarProps) => {
-    const intl = useIntl();
-    const theme = useTheme();
     const serverUrl = useServerUrl();
 
     const fromWebHook = post.props?.from_webhook === 'true';
@@ -93,14 +89,14 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
         if (!author) {
             return;
         }
-        openUserProfileModal(intl, theme, {
+        openUserProfileModal({
             location,
             userId: author.id,
             channelId: post.channelId,
             userIconOverride: propsIconUrl,
             usernameOverride: propsUsername,
         });
-    }, [author, intl, location, post.channelId, propsIconUrl, propsUsername, theme]));
+    }, [author, location, post.channelId, propsIconUrl, propsUsername]));
 
     let component = (
         <ProfilePicture

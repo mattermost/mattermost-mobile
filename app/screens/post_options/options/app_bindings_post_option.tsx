@@ -17,17 +17,15 @@ import {isSystemMessage} from '@utils/post';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bottomSheetId: AvailableScreens;
     bindings: AppBinding[];
     post: PostModel;
     serverUrl: string;
     teamId: string;
 }
 
-const AppBindingsPostOptions = ({bottomSheetId, serverUrl, post, teamId, bindings}: Props) => {
+const AppBindingsPostOptions = ({serverUrl, post, teamId, bindings}: Props) => {
     const onCallResponse = useCallback((callResp: AppCallResponse, message: string) => {
         postEphemeralCallResponseForPost(serverUrl, callResp, message, post);
     }, [serverUrl, post]);
@@ -48,11 +46,11 @@ const AppBindingsPostOptions = ({bottomSheetId, serverUrl, post, teamId, binding
 
     const onPress = useCallback(async (binding: AppBinding) => {
         const submitPromise = handleBindingSubmit(binding);
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
 
         const finish = await submitPromise;
         await finish();
-    }, [bottomSheetId, handleBindingSubmit]);
+    }, [handleBindingSubmit]);
 
     if (isSystemMessage(post)) {
         return null;

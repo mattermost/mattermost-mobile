@@ -6,9 +6,10 @@ import {useIntl} from 'react-intl';
 
 import {handleBindingClick} from '@actions/remote/apps';
 import {handleGotoLocation} from '@actions/remote/command';
+import {Screens} from '@constants';
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
-import {showAppForm} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import {createCallContext} from '@utils/apps';
 
 export type UseAppBindingContext = {
@@ -74,7 +75,7 @@ export const useAppBinding = (context: UseAppBindingContext, config: UseAppBindi
                         if (config.onForm) {
                             config.onForm(callResp.form);
                         } else {
-                            await showAppForm(callResp.form, callContext);
+                            navigateToScreen(Screens.APPS_FORM, {form: callResp.form, callContext});
                         }
                     }
                     return;

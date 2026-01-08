@@ -158,6 +158,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 16,
             justifyContent: 'center',
             height: 24,
+            marginHorizontal: 12,
         },
         sectionWrapper: {
             backgroundColor: theme.centerChannelBg,
@@ -241,12 +242,11 @@ export default function UserList({
             user = profile;
         }
 
-        openUserProfileModal(intl, theme, {
+        openUserProfileModal({
             userId: user.id,
             location,
         });
-    }, [intl, location, serverUrl, theme]);
-
+    }, [location, serverUrl]);
     const renderItem = useCallback(({item, index, section}: RenderItemType) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
         const selected = selectedIds.has(item.id);

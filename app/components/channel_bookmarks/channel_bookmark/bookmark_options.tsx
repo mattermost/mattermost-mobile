@@ -2,21 +2,19 @@
 // See LICENSE.txt for license information.
 
 import Clipboard from '@react-native-clipboard/clipboard';
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 import Share from 'react-native-share';
 
 import {deleteChannelBookmark} from '@actions/remote/channel_bookmark';
 import {fetchPublicLink} from '@actions/remote/file';
-import CompassIcon from '@components/compass_icon';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
-import {dismissBottomSheet, showModal, showOverlay} from '@screens/navigation';
+import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
 import {isImage, isVideo} from '@utils/file';
 import {showSnackBar} from '@utils/snack_bar';
@@ -35,7 +33,6 @@ type Props = {
     canEditBookmarks: boolean;
     enableSecureFilePreview: boolean;
     file?: FileModel;
-    setAction: React.Dispatch<React.SetStateAction<GalleryAction>>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -57,13 +54,12 @@ const ChannelBookmarkOptions = ({
     canEditBookmarks,
     enableSecureFilePreview,
     file,
-    setAction,
 }: Props) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const intl = useIntl();
     const styles = getStyleSheet(theme);
+    const [action, setAction] = useState<GalleryAction | undefined>();
     const canShare = canDownloadFiles || bookmark.type === 'link';
 
     const isVideoFile = useMemo(() => isVideo(file), [file]);
@@ -150,51 +146,26 @@ const ChannelBookmarkOptions = ({
         await dismissBottomSheet();
 
         const title = intl.formatMessage({id: 'screens.channel_bookmark_edit', defaultMessage: 'Edit bookmark'});
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const closeButtonId = 'close-channel_bookmark_edit';
-
-        const options = {
-            topBar: {
-                leftButtons: [{
-                    id: closeButtonId,
-                    icon: closeButton,
-                    testID: 'close.channel_bookmark_edit.button',
-                }],
-            },
-        };
-
-        showModal(Screens.CHANNEL_BOOKMARK, title, {
+        navigateToScreen(Screens.CHANNEL_BOOKMARK, {
             bookmark: bookmark.toApi(),
             canDeleteBookmarks,
             channelId: bookmark.channelId,
-            closeButtonId,
             file: file?.toFileInfo(bookmark.ownerId),
             ownerId: bookmark.ownerId,
             type: bookmark.type,
-        }, options);
-    }, [bookmark, canDeleteBookmarks, file, intl, theme]);
+            title,
+        });
+    }, [bookmark, canDeleteBookmarks, file, intl]);
 
     const onShare = useCallback(async () => {
-        await dismissBottomSheet();
-
         if (bookmark.type === 'file') {
             if (file) {
                 setAction('sharing');
-                showOverlay(Screens.GENERIC_OVERLAY, {
-                    children: (
-                        <DownloadWithAction
-                            action={'sharing'}
-                            enableSecureFilePreview={enableSecureFilePreview}
-                            galleryView={false}
-                            item={galleryItem!}
-                            setAction={setAction}
-                        />
-                    ),
-                }, {}, bookmark.id);
             }
             return;
         }
 
+        await dismissBottomSheet();
         if (bookmark.type === 'link') {
             const title = bookmark.displayName;
             const url = bookmark.linkUrl!;
@@ -207,20 +178,18 @@ const ChannelBookmarkOptions = ({
                 // do nothing
             });
         }
-    }, [bookmark.displayName, bookmark.id, bookmark.linkUrl, bookmark.type, enableSecureFilePreview, file, galleryItem, setAction]);
+    }, [bookmark.displayName, bookmark.linkUrl, bookmark.type, file, setAction]);
 
     return (
         <>
-            {!isTablet && (
-                <View style={styles.header}>
-                    <Text
-                        style={styles.headerText}
-                        numberOfLines={1}
-                    >
-                        {bookmark.displayName}
-                    </Text>
-                </View>
-            )}
+            <View style={styles.header}>
+                <Text
+                    style={styles.headerText}
+                    numberOfLines={1}
+                >
+                    {bookmark.displayName}
+                </Text>
+            </View>
             <View style={styles.flex}>
                 {canEditBookmarks &&
                     <OptionItem
@@ -256,6 +225,18 @@ const ChannelBookmarkOptions = ({
                     />
                 }
             </View>
+            {Boolean(action && galleryItem) && action !== 'none' && (
+                <View>
+                    <DownloadWithAction
+                        action={'sharing'}
+                        enableSecureFilePreview={enableSecureFilePreview}
+                        galleryView={false}
+                        item={galleryItem!}
+                        setAction={setAction}
+                        onShareCallback={dismissBottomSheet}
+                    />
+                </View>
+            )}
         </>
     );
 };

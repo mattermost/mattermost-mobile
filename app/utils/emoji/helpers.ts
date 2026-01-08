@@ -5,7 +5,7 @@ import emojiRegex from 'emoji-regex';
 
 import SystemModel from '@database/models/server/system';
 
-import {Emojis, EmojiIndicesByAlias, EmojiIndicesByUnicode} from '.';
+import {Emojis, EmojiIndicesByAlias, EmojiIndicesByUnicode} from './index';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type Fuse from 'fuse.js';

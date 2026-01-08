@@ -10,9 +10,8 @@ import ChannelItem from '@components/channel_item';
 import {ROW_HEIGHT as CHANNEL_ROW_HEIGHT} from '@components/channel_item/channel_item';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
-import {Events} from '@constants';
+import {Events, Screens} from '@constants';
 import {UNREADS_CATEGORY} from '@constants/categories';
-import {CHANNEL, DRAFT, THREAD} from '@constants/screens';
 import {HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -77,7 +76,7 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.ACTIVE_SCREEN, (screen: string) => {
-            setChannelScreenActive(screen !== DRAFT && screen !== THREAD);
+            setChannelScreenActive(screen !== Screens.GLOBAL_DRAFTS && screen !== Screens.THREAD && screen !== Screens.PARTICIPANT_PLAYBOOKS);
         });
 
         return () => {
@@ -99,7 +98,7 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
     }, [directChannels, serverUrl]);
 
     const onChannelSwitch = useCallback(async (c: Channel | ChannelModel) => {
-        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, CHANNEL);
+        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, Screens.CHANNEL);
         PerformanceMetricsManager.startMetric('mobile_channel_switch');
         switchToChannelById(serverUrl, c.id);
     }, [serverUrl]);

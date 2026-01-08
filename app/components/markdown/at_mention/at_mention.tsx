@@ -96,7 +96,7 @@ const AtMention = ({
             return;
         }
 
-        openUserProfileModal(intl, theme, {
+        openUserProfileModal({
             location,
             userId: user.id,
             channelId,
@@ -138,15 +138,9 @@ const AtMention = ({
                 );
             };
 
-            bottomSheet({
-                closeButtonId: 'close-at-mention',
-                renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
-                title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
-                theme,
-            });
+            bottomSheet(renderContent, [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)]);
         }
-    }, [managedConfig?.copyAndPasteProtection, intl, theme, mentionName, user?.username]);
+    }, [managedConfig?.copyAndPasteProtection, intl, mentionName, user?.username]);
 
     const mentionTextStyle: StyleProp<TextStyle> = [];
 

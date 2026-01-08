@@ -7,7 +7,7 @@ import React from 'react';
 import {switchToThread} from '@actions/local/thread';
 import {switchToChannelById} from '@actions/remote/channel';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@constants/draft';
-import {openAsBottomSheet} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -24,7 +24,7 @@ jest.mock('@actions/remote/channel', () => ({
 }));
 
 jest.mock('@screens/navigation', () => ({
-    openAsBottomSheet: jest.fn(),
+    navigateToScreen: jest.fn(),
 }));
 
 jest.mock('@context/server', () => ({
@@ -188,17 +188,17 @@ describe('DraftAndScheduledPost', () => {
     });
 
     it('opens options on long press for draft', () => {
-        const mockOpenAsBottonSheet = jest.mocked(openAsBottomSheet);
+        const mockOpenAsBottonSheet = jest.mocked(navigateToScreen);
         renderWithIntlAndTheme(<DraftAndScheduledPost {...baseProps}/>);
 
         fireEvent(screen.getByTestId('draft_post'), 'longPress');
 
         expect(mockOpenAsBottonSheet).toHaveBeenCalled();
-        expect(mockOpenAsBottonSheet.mock.calls[0][0].props?.draftType).toBe(DRAFT_TYPE_DRAFT);
+        expect(mockOpenAsBottonSheet.mock.calls[0][1]?.draftType).toBe(DRAFT_TYPE_DRAFT);
     });
 
     it('opens options on long press for scheduled post', () => {
-        const mockOpenAsBottonSheet = jest.mocked(openAsBottomSheet);
+        const mockOpenAsBottonSheet = jest.mocked(navigateToScreen);
         const props = {
             ...baseProps,
             draftType: DRAFT_TYPE_SCHEDULED,
@@ -215,6 +215,6 @@ describe('DraftAndScheduledPost', () => {
         fireEvent(screen.getByTestId('draft_post'), 'longPress');
 
         expect(mockOpenAsBottonSheet).toHaveBeenCalled();
-        expect(mockOpenAsBottonSheet.mock.calls[0][0].props?.draftType).toBe(DRAFT_TYPE_SCHEDULED);
+        expect(mockOpenAsBottonSheet.mock.calls[0][1]?.draftType).toBe(DRAFT_TYPE_SCHEDULED);
     });
 });

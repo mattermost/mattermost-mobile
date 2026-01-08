@@ -11,18 +11,13 @@ import useDidUpdate from '@hooks/did_update';
 import BrowseChannels, {ARCHIVED, PUBLIC, SHARED} from './browse_channels';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
-import type {AvailableScreens} from '@typings/screens/navigation';
-import type {ImageResource} from 'react-native-navigation';
 
 type Props = {
 
     // Screen Props (do not change during the lifetime of the screen)
-    componentId: AvailableScreens;
     categoryId?: string;
-    closeButton: ImageResource;
 
     // Properties not changing during the lifetime of the screen)
-    currentUserId: string;
     currentTeamId: string;
 
     // Calculated Props
@@ -151,7 +146,7 @@ export default function SearchHandler(props: Props) {
 
     const isSearch = Boolean(term);
 
-    const doGetChannels = (t: string) => {
+    const doGetChannels = useCallback((t: string) => {
         let next: (typeof nextPublic | typeof nextShared | typeof nextArchived);
         let fetch: (typeof fetchChannels | typeof fetchSharedChannels | typeof fetchArchivedChannels);
         let page: (typeof publicPage | typeof sharedPage | typeof archivedPage);
@@ -187,13 +182,13 @@ export default function SearchHandler(props: Props) {
                 () => dispatch(StopAction),
             );
         }
-    };
+    }, [currentTeamId, serverUrl]);
 
     const onEndReached = useCallback(() => {
         if (!loading && !term) {
             doGetChannels(typeOfChannels);
         }
-    }, [typeOfChannels, loading, term]);
+    }, [typeOfChannels, loading, term, doGetChannels]);
 
     let activeChannels: Channel[];
     switch (typeOfChannels) {
@@ -210,7 +205,7 @@ export default function SearchHandler(props: Props) {
     const stopSearch = useCallback(() => {
         setSearchResults(defaultSearchResults);
         setTerm('');
-    }, [activeChannels]);
+    }, []);
 
     const doSearchChannels = useCallback((text: string) => {
         if (text) {
@@ -231,7 +226,7 @@ export default function SearchHandler(props: Props) {
         } else {
             stopSearch();
         }
-    }, [activeChannels, visibleChannels, joinedChannels, stopSearch]);
+    }, [searchResults, serverUrl, currentTeamId, stopSearch]);
 
     const changeChannelType = useCallback((channelType: string) => {
         setTypeOfChannels(channelType);
@@ -276,13 +271,13 @@ export default function SearchHandler(props: Props) {
         return () => {
             loadedChannels.current = async () => {/* Do nothing */};
         };
-    }, [joinedChannels]);
+    }, [doGetChannels, joinedChannels]);
 
     useEffect(() => {
         if (!isSearch) {
             doGetChannels(typeOfChannels);
         }
-    }, [typeOfChannels, isSearch]);
+    }, [typeOfChannels, isSearch, doGetChannels]);
 
     useDidUpdate(() => {
         if (isSearch) {

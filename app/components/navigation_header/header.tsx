@@ -3,25 +3,16 @@
 
 import React, {useMemo} from 'react';
 import {Platform, Text, View} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, withTiming, type SharedValue} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
+import NavigationButton, {type NavigationButtonProps} from '@components/navigation_button';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import ViewConstants from '@constants/view';
+import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-export type HeaderRightButton = {
-    borderless?: boolean;
-    buttonType?: 'native' | 'opacity' | 'highlight';
-    color?: string;
-    iconName: string;
-    count?: number | string;
-    onPress: () => void;
-    rippleRadius?: number;
-    testID?: string;
-}
 
 type Props = {
     defaultHeight: number;
@@ -31,8 +22,8 @@ type Props = {
     leftComponent?: React.ReactElement;
     onBackPress?: () => void;
     onTitlePress?: () => void;
-    rightButtons?: HeaderRightButton[];
-    scrollValue?: Animated.SharedValue<number>;
+    rightButtons?: NavigationButtonProps[];
+    scrollValue?: SharedValue<number>;
     showBackButton?: boolean;
     subtitle?: string;
     subtitleCompanion?: React.ReactElement;
@@ -41,7 +32,6 @@ type Props = {
 }
 
 const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
-const rightButtonHitSlop = {top: 20, bottom: 5, left: 5, right: 5};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     centered: {
@@ -93,7 +83,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         ...Platform.select({
             ios: {
-                paddingLeft: 16,
+                paddingLeft: 4,
                 zIndex: 5,
                 position: 'absolute',
                 bottom: 0,
@@ -107,7 +97,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'flex-end',
         ...Platform.select({
             ios: {
-                right: 16,
+                right: 4,
                 bottom: 0,
                 position: 'absolute',
                 zIndex: 2,
@@ -118,9 +108,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
-    },
-    rightIcon: {
-        padding: 5,
     },
     title: {
         color: theme.sidebarHeaderTextColor,
@@ -146,6 +133,7 @@ const Header = ({
 }: Props) => {
     const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
+    const isTablet = useIsTablet();
 
     const opacity = useAnimatedStyle(() => {
         if (!isLargeTitle) {
@@ -169,8 +157,8 @@ const Header = ({
 
     const containerAnimatedStyle = useAnimatedStyle(() => ({
         height: defaultHeight,
-        paddingTop: insets.top,
-    }), [defaultHeight]);
+        paddingTop: isTablet ? 0 : insets.top,
+    }), [defaultHeight, isTablet, insets.top]);
 
     const containerStyle = useMemo(() => (
         [styles.container, containerAnimatedStyle]), [styles, containerAnimatedStyle]);
@@ -244,27 +232,15 @@ const Header = ({
             <Animated.View style={styles.rightContainer}>
                 {Boolean(rightButtons?.length) &&
                 rightButtons?.map((r) => (
-                    <TouchableWithFeedback
+                    <NavigationButton
                         key={r.iconName}
-                        borderlessRipple={r.borderless === undefined ? true : r.borderless}
-                        hitSlop={rightButtonHitSlop}
+                        borderless={r.borderless}
+                        iconName={r.iconName}
+                        count={r.count}
                         onPress={r.onPress}
-                        rippleRadius={r.rippleRadius || 20}
-                        type={r.buttonType || Platform.select({android: 'native', default: 'opacity'})}
-                        style={styles.rightIcon}
+                        rippleRadius={r.rippleRadius}
                         testID={r.testID}
-                    >
-                        <View style={styles.rightButtonContainer}>
-                            <CompassIcon
-                                size={24}
-                                name={r.iconName}
-                                color={r.color || theme.sidebarHeaderTextColor}
-                            />
-                            {Boolean(r.count) && (
-                                <Text style={styles.title}>{r.count}</Text>
-                            )}
-                        </View>
-                    </TouchableWithFeedback>
+                    />
                 ))
                 }
             </Animated.View>

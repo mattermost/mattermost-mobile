@@ -29,13 +29,12 @@ import {
     JOIN_CALL_BAR_HEIGHT,
 } from '@constants/view';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {useAppState} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
-import {openAsBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {navigateToScreen, openUserProfileModal} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
 import {isSystemAdmin} from '@utils/user';
 
@@ -131,7 +130,7 @@ export const usePermissionsChecker = (micPermissionsGranted: boolean) => {
         if (!micPermissionsGranted) {
             asyncFn();
         }
-    }, [appState]);
+    }, [appState, micPermissionsGranted]);
 
     return hasPermission;
 };
@@ -195,33 +194,26 @@ export const useHostControlsAvailable = () => {
 };
 
 export const useHostMenus = () => {
-    const intl = useIntl();
-    const theme = useTheme();
     const currentCall = useCurrentCall();
     const hostControlsAvailable = useHostControlsAvailable();
     const isHost = currentCall?.hostId === currentCall?.myUserId;
 
-    const openHostControl = useCallback(async (session: CallSession) => {
-        const screen = Screens.CALL_HOST_CONTROLS;
-        const title = intl.formatMessage({id: 'mobile.calls_host_controls', defaultMessage: 'Host controls'});
-        const closeHostControls = 'close-host-controls';
-        const props = {closeButtonId: closeHostControls, session};
-
-        openAsBottomSheet({screen, title, theme, closeButtonId: closeHostControls, props});
-    }, [intl, theme]);
+    const openHostControl = useCallback(async (sessionId: string) => {
+        navigateToScreen(Screens.CALL_HOST_CONTROLS, {sessionId});
+    }, []);
 
     const openUserProfile = useCallback(async (session: CallSession) => {
-        openUserProfileModal(intl, theme, {
+        openUserProfileModal({
             userId: session.userId,
         });
-    }, [intl, theme]);
+    }, []);
 
     const onPress = useCallback((session: CallSession) => () => {
         // Show host controls when allowed and I'm host or admin,
         // but don't show if this is me and I'm the host already.
         const isYou = session.userId === currentCall?.myUserId;
         if (hostControlsAvailable && !(isYou && isHost)) {
-            openHostControl(session);
+            openHostControl(session.sessionId);
         } else {
             openUserProfile(session);
         }

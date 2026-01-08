@@ -8,7 +8,7 @@ import CompassIcon from '@components/compass_icon';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import CustomListRow from '.';
+import CustomListRow from './index';
 
 import type Database from '@nozbe/watermelondb/Database';
 

@@ -17,7 +17,6 @@ import {
     useSplitView,
     useViewPosition,
     useKeyboardOverlap,
-    useAvoidKeyboard,
     testSetUtilsEmitter,
 } from './device';
 
@@ -252,41 +251,6 @@ describe('device hooks', () => {
             });
 
             expect(result.current).toBe(300);
-        });
-    });
-
-    describe('useAvoidKeyboard', () => {
-        const mockScrollToPosition = jest.fn();
-        const mockRef = {
-            current: {
-                scrollToPosition: mockScrollToPosition,
-            },
-        } as any;
-
-        beforeEach(() => {
-            jest.clearAllMocks();
-        });
-
-        it('should scroll when keyboard height changes', () => {
-            renderHook(() => useAvoidKeyboard(mockRef));
-
-            act(() => {
-                const showCallback = (Keyboard.addListener as jest.Mock).mock.calls[0][1];
-                showCallback({endCoordinates: {height: 300}, duration: 250});
-            });
-
-            expect(mockScrollToPosition).toHaveBeenCalledWith(0, 100);
-        });
-
-        it('should not scroll when calculated offset is less than 80', () => {
-            renderHook(() => useAvoidKeyboard(mockRef, 5));
-
-            act(() => {
-                const showCallback = (Keyboard.addListener as jest.Mock).mock.calls[0][1];
-                showCallback({endCoordinates: {height: 300}, duration: 250});
-            });
-
-            expect(mockScrollToPosition).toHaveBeenCalledWith(0, 0);
         });
     });
 });

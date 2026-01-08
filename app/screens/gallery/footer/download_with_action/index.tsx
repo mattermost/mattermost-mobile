@@ -22,12 +22,12 @@ import Toast from '@components/toast';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {previewPdf} from '@screens/navigation';
 import {alertFailedToOpenDocument, alertOnlyPDFSupported} from '@utils/document';
 import {getFullErrorMessage} from '@utils/errors';
 import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission, isPdf, pathWithPrefix} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
 import {logDebug} from '@utils/log';
-import {previewPdf} from '@utils/navigation';
 import {typography} from '@utils/typography';
 
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
@@ -40,6 +40,7 @@ type Props = {
     item: GalleryItemType;
     setAction: (action: GalleryAction) => void;
     onDownloadSuccess?: (path: string) => void;
+    onShareCallback?: () => void;
 }
 
 const styles = StyleSheet.create({
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSuccess, setAction, galleryView = true}: Props) => {
+const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallback, onDownloadSuccess, setAction, galleryView = true}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -197,6 +198,8 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
                 saveToFiles: true,
             }).catch(() => {
                 // do nothing
+            }).finally(() => {
+                onShareCallback?.();
             });
 
             setAction('none');
@@ -253,6 +256,8 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
                     showAppsToView: true,
                 }).catch(() => {
                     // do nothing
+                }).finally(() => {
+                    onShareCallback?.();
                 });
             }
             setShowToast(false);
@@ -312,6 +317,9 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
         return () => {
             mounted.current = false;
         };
+
+        // Only want to run this effect on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -336,6 +344,9 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
         }
 
         return () => clearTimeout(t);
+
+        // Only want to run this effect when showToast changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showToast]);
 
     return (

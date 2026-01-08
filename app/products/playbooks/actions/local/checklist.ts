@@ -1,9 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPlaybookChecklistById} from '@playbooks/database/queries/checklist';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
+import {getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {addChannelToTeamHistory} from '@queries/servers/team';
 import {logError} from '@utils/log';
 
 export async function updateChecklistItem(serverUrl: string, itemId: string, state: ChecklistItemState) {
@@ -113,5 +116,16 @@ export async function renameChecklist(serverUrl: string, checklistId: string, ti
     } catch (error) {
         logError('failed to rename checklist', error);
         return {error};
+    }
+}
+
+export async function switchToGlobalPlaybooks(serverUrl: string) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const teamId = await getCurrentTeamId(database);
+        await setCurrentTeamAndChannelId(operator, teamId, '');
+        await addChannelToTeamHistory(operator, teamId, Screens.PARTICIPANT_PLAYBOOKS);
+    } catch (error) {
+        logError('Failed switchToGlobalPlaybooks', error);
     }
 }

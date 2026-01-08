@@ -11,7 +11,7 @@ import DatabaseManager from '@database/manager';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {isMinimumLicenseTier} from '@utils/helpers';
 
-import IntuneManager from '.';
+import IntuneManager from './index';
 
 import type {MSALIdentity, MSALTokens, IntunePolicy} from './types';
 import type ServerDataOperator from '@database/operator/server_data_operator';

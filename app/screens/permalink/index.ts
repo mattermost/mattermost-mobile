@@ -16,10 +16,11 @@ import Permalink from './permalink';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 
-type OwnProps = {
+export type PermalinkProps = {
     postId: PostModel['id'];
     teamName?: string;
-} & WithDatabaseArgs;
+}
+type OwnProps = PermalinkProps & WithDatabaseArgs;
 
 const enhance = withObservables([], ({database, postId, teamName}: OwnProps) => {
     const post = observePost(database, postId);

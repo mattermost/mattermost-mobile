@@ -6,7 +6,6 @@ import {act} from '@testing-library/react-hooks';
 import {fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
-import AvailableScreens from '@constants/screens';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -88,6 +87,7 @@ jest.mock('@actions/remote/custom_profile', () => ({
 
 jest.mock('@utils/log', () => ({
     logError: (...args: any[]) => mockLogError(...args),
+    logInfo: jest.fn(),
 }));
 
 jest.mock('@actions/remote/user', () => ({
@@ -184,7 +184,6 @@ describe('EditProfile', () => {
     it('should update custom attribute value while preserving name and sort order', async () => {
         const {findAllByTestId} = renderWithIntlAndTheme(
             <EditProfile
-                componentId={AvailableScreens.EDIT_PROFILE}
                 currentUser={mockCurrentUser}
                 isModal={false}
                 isTablet={false}
@@ -231,7 +230,6 @@ describe('EditProfile', () => {
         // Setup component with database values from customAttributesSet prop
         const {findAllByTestId, rerender} = renderWithIntlAndTheme(
             <EditProfile
-                componentId={AvailableScreens.EDIT_PROFILE}
                 currentUser={mockCurrentUser}
                 isModal={false}
                 isTablet={false}
@@ -273,7 +271,6 @@ describe('EditProfile', () => {
             // Rerender with server values
             rerender(
                 <EditProfile
-                    componentId={AvailableScreens.EDIT_PROFILE}
                     currentUser={mockCurrentUser}
                     isModal={false}
                     isTablet={false}
@@ -310,7 +307,6 @@ describe('EditProfile', () => {
         // Setup component with empty attributes initially
         const {findAllByTestId, queryAllByTestId, rerender} = renderWithIntlAndTheme(
             <EditProfile
-                componentId={AvailableScreens.EDIT_PROFILE}
                 currentUser={mockCurrentUser}
                 isModal={false}
                 isTablet={false}
@@ -333,7 +329,6 @@ describe('EditProfile', () => {
         await act(async () => {
             rerender(
                 <EditProfile
-                    componentId={AvailableScreens.EDIT_PROFILE}
                     currentUser={mockCurrentUser}
                     isModal={false}
                     isTablet={false}
@@ -383,7 +378,6 @@ describe('EditProfile', () => {
         await act(async () => {
             rerender(
                 <EditProfile
-                    componentId={AvailableScreens.EDIT_PROFILE}
                     currentUser={mockCurrentUser}
                     isModal={false}
                     isTablet={false}
@@ -414,7 +408,6 @@ describe('EditProfile', () => {
         it('should update custom attributes when enableCustomAttributes is true and customAttributes exist', async () => {
             renderWithIntlAndTheme(
                 <EditProfile
-                    componentId={AvailableScreens.EDIT_PROFILE}
                     currentUser={mockCurrentUser}
                     isModal={false}
                     isTablet={true}
@@ -462,7 +455,6 @@ describe('EditProfile', () => {
         it('should not update custom attributes when enableCustomAttributes is false', async () => {
             const {getByTestId} = renderWithIntlAndTheme(
                 <EditProfile
-                    componentId={AvailableScreens.EDIT_PROFILE}
                     currentUser={mockCurrentUser}
                     isModal={false}
                     isTablet={true}
@@ -507,7 +499,6 @@ describe('EditProfile', () => {
 
             const {getByTestId} = renderWithIntlAndTheme(
                 <EditProfile
-                    componentId={AvailableScreens.EDIT_PROFILE}
                     currentUser={mockCurrentUser}
                     isModal={false}
                     isTablet={true}
@@ -552,7 +543,6 @@ describe('EditProfile', () => {
 
             renderWithIntlAndTheme(
                 <EditProfile
-                    componentId={AvailableScreens.EDIT_PROFILE}
                     currentUser={mockCurrentUser}
                     isModal={false}
                     isTablet={true}
@@ -602,7 +592,6 @@ describe('EditProfile', () => {
     it('should pass customFields prop to ProfileForm component', async () => {
         renderWithIntlAndTheme(
             <EditProfile
-                componentId={AvailableScreens.EDIT_PROFILE}
                 currentUser={mockCurrentUser}
                 isModal={false}
                 isTablet={false}
@@ -667,7 +656,6 @@ describe('EditProfile', () => {
         it('should not submit SAML-linked custom fields during profile update', async () => {
             const {getByTestId} = renderWithIntlAndTheme(
                 <EditProfile
-                    componentId={AvailableScreens.EDIT_PROFILE}
                     currentUser={mockCurrentUser}
                     isModal={false}
                     isTablet={true}
@@ -730,7 +718,6 @@ describe('EditProfile', () => {
 
             const {getByTestId} = renderWithIntlAndTheme(
                 <EditProfile
-                    componentId={AvailableScreens.EDIT_PROFILE}
                     currentUser={mockCurrentUser}
                     isModal={false}
                     isTablet={true}
@@ -785,7 +772,6 @@ describe('EditProfile', () => {
 
             const {getByTestId} = renderWithIntlAndTheme(
                 <EditProfile
-                    componentId={AvailableScreens.EDIT_PROFILE}
                     currentUser={mockCurrentUser}
                     isModal={false}
                     isTablet={true}
@@ -838,7 +824,6 @@ describe('EditProfile', () => {
 
             const {getByTestId} = renderWithIntlAndTheme(
                 <EditProfile
-                    componentId={AvailableScreens.EDIT_PROFILE}
                     currentUser={mockCurrentUser}
                     isModal={false}
                     isTablet={true}
