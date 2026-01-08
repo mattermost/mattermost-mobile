@@ -81,7 +81,6 @@ jest.mock('../navigation', () => ({
 
 jest.mock('@playbooks/actions/remote/runs', () => ({
     finishRun: jest.fn(),
-    renamePlaybookRun: jest.fn(),
     setOwner: jest.fn(),
 }));
 
@@ -654,6 +653,7 @@ describe('PlaybookRun', () => {
             expect.anything(), // intl
             expect.anything(), // theme
             'Test Playbook Run',
+            'Test summary',
             props.playbookRun!.id,
         );
     });
