@@ -26,6 +26,7 @@ import {expect} from 'detox';
 
 describe('Messaging - Markdown Block Quote', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -51,7 +52,7 @@ describe('Messaging - Markdown Block Quote', () => {
         // # Open a channel screen and post a markdown block quote
         const message = 'this is a quote that i am making long so it wraps on mobile this is a quote that i am making long so it wraps on mobile this is a quote that i am making long so it wraps on mobile this is a quote that i am making long so it wraps on mobile';
         const markdownBlockQuote = `>${message}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(markdownBlockQuote);
 
         // * Verify markdown block quote is displayed

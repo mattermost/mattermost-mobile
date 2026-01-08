@@ -32,6 +32,7 @@ import {expect} from 'detox';
 
 describe('Smoke Test - Messaging', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     const savedText = 'Saved';
     const pinnedText = 'Pinned';
     let testChannel: any;
@@ -62,7 +63,7 @@ describe('Smoke Test - Messaging', () => {
     it('MM-T4786_1 - should be able to post, edit, and delete a message', async () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.dismissScheduledPostTooltip();
         await ChannelScreen.postMessage(message);
 
@@ -101,7 +102,7 @@ describe('Smoke Test - Messaging', () => {
     it('MM-T4786_2 - should be able to reply to a message', async () => {
         // # Open a channel screen, post a message, and tap on the post
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
@@ -133,7 +134,7 @@ describe('Smoke Test - Messaging', () => {
     it('MM-T4786_3 - should be able to include emojis in a message and add reaction to a message', async () => {
         // # Open a channel screen and post a message that includes emojis
         const message = 'The quick brown fox :fox_face: jumps over the lazy dog :dog:';
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
         // * Verify message is posted with emojis
@@ -159,7 +160,7 @@ describe('Smoke Test - Messaging', () => {
     it('MM-T4786_4 - should be able to follow/unfollow a message, save/unsave a message, and pin/unpin a message', async () => {
         // # Open a channel screen, post a message, open post options for message, and tap on follow message option
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -221,7 +222,7 @@ describe('Smoke Test - Messaging', () => {
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         const message = `Message @${testUser.username} ~${targetChannel.name}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
         // * Verify at-mention is posted as lowercase and channel mention is posted as display name
@@ -243,7 +244,7 @@ describe('Smoke Test - Messaging', () => {
         });
 
         // # Open a channel screen and post a message with labeled permalink to the target message and labeled channel link to the target channel
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         const permalinkLabel = `permalink-${getRandomId()}`;
         const permalinkMessage = `[${permalinkLabel}](/${testTeam.name}/pl/${permalinkTargetPost.id})`;
         const channelLinkLabel = `channel-link-${getRandomId()}`;
@@ -263,7 +264,7 @@ describe('Smoke Test - Messaging', () => {
         // # Open a channel screen and post a message with markdown
         const message = `Message ${getRandomId()}`;
         const markdown = `#### ${message}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(markdown);
 
         // * Verify message with markdown is posted

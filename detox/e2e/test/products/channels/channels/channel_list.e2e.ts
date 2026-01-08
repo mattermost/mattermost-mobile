@@ -35,6 +35,7 @@ describe('Channels - Channel List', () => {
     const directMessagesCategory = 'direct_messages';
     const offTopicChannelName = 'off-topic';
     const townSquareChannelName = 'town-square';
+    const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
@@ -111,7 +112,7 @@ describe('Channels - Channel List', () => {
 
     it('MM-T4728_3 - should be able to collapse and expand categories', async () => {
         // # Go to a channel to make it active and go back to channel list screen
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage('Test message');
         await ChannelScreen.back();
 

@@ -25,6 +25,7 @@ import {expect} from 'detox';
 
 describe('Channels - Mute and Unmute Channel', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -48,7 +49,7 @@ describe('Channels - Mute and Unmute Channel', () => {
 
     it('MM-T4930_1 - should be able to mute/unmute a channel from channel quick actions', async () => {
         // # Open a channel screen, tap on channel quick actions button, and tap on mute quick action to mute the channel
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.channelQuickActionsButton.tap();
         await wait(timeouts.ONE_SEC);
         await ChannelScreen.muteQuickAction.tap();
@@ -74,7 +75,7 @@ describe('Channels - Mute and Unmute Channel', () => {
 
     it('MM-T4930_2 - should be able to mute/unmute a channel from channel info screen', async () => {
         // # Open a channel screen, open channel info screen, and tap on mute action to mute the channel
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.muteAction.tap();
 

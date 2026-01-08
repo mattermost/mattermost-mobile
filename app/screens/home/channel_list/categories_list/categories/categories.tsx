@@ -11,7 +11,6 @@ import {ROW_HEIGHT as CHANNEL_ROW_HEIGHT} from '@components/channel_item/channel
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {Events} from '@constants';
-import {UNREADS_CATEGORY} from '@constants/categories';
 import {CHANNEL, DRAFT, THREAD} from '@constants/screens';
 import {HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
@@ -120,7 +119,7 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
         }
 
         // item.type === 'channel'
-        const testIdSuffix = item.categoryId === UNREADS_CATEGORY ? UNREADS_CATEGORY : item.channelId;
+        const testIdSuffix = item.categoryId;
         return (
             <ChannelItem
                 channel={item.channel}

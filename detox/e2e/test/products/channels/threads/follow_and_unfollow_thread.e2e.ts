@@ -31,6 +31,7 @@ import {expect, waitFor} from 'detox';
 
 describe('Threads - Follow and Unfollow Thread', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -55,7 +56,7 @@ describe('Threads - Follow and Unfollow Thread', () => {
     it('MM-T4806_1 - should be able to follow/unfollow a thread via thread navigation', async () => {
         // # Create a thread
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
 
         // # Wait for keyboard to dismiss and message to be visible
@@ -94,7 +95,7 @@ describe('Threads - Follow and Unfollow Thread', () => {
     it('MM-T4806_2 - should be able to follow/unfollow a thread via post footer', async () => {
         // # Create a thread and go back to channel screen
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
@@ -127,7 +128,7 @@ describe('Threads - Follow and Unfollow Thread', () => {
     it('MM-T4806_3 - should be able to follow/unfollow a thread via post options', async () => {
         // # Create a thread, go back to channel screen, and open post options for thread
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
@@ -175,7 +176,7 @@ describe('Threads - Follow and Unfollow Thread', () => {
     it('MM-T4806_4 - should be able to unfollow a thread via thread options', async () => {
         // # Create a thread, go back to channel list screen, then go to global threads screen, and tap on all your threads button
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);

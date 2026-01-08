@@ -31,6 +31,7 @@ import {expect} from 'detox';
 
 describe('Channels - Favorite and Unfavorite Channel', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     const favoritesCategory = 'favorites';
     const directMessagesCategory = 'direct_messages';
     let testChannel: any;
@@ -60,7 +61,7 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
 
     it('MM-T4929_1 - should be able to favorite/unfavorite a channel from channel quick actions', async () => {
         // # Open a channel screen, tap on channel quick actions button, and tap on favorite quick action to favorite the channel
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.channelQuickActionsButton.tap();
         await wait(timeouts.ONE_SEC);
         await ChannelScreen.favoriteQuickAction.tap();
@@ -97,7 +98,7 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
 
     it('MM-T4929_2 - should be able to favorite/unfavorite a channel from channel info screen', async () => {
         // # Open a channel screen, open channel info screen, tap on favorite action to favorite the channel, and go back to channel list screen
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.favoriteAction.tap();
         await ChannelInfoScreen.close();
@@ -131,6 +132,7 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await ChannelScreen.postMessage('test');
         await ChannelScreen.back();
         await ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name).tap();
+        await waitFor(ChannelScreen.introFavoriteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.introFavoriteAction.tap();
         await ChannelScreen.back();
 

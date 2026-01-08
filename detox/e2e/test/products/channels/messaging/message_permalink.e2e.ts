@@ -29,6 +29,7 @@ import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Permalink Preview', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
@@ -87,7 +88,7 @@ describe('Messaging - Message Permalink Preview', () => {
         });
 
         await wait(timeouts.FOUR_SEC);
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
 
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
         await copyLinkFromPost(postListPostItem);
@@ -114,7 +115,7 @@ describe('Messaging - Message Permalink Preview', () => {
         const {channel: otherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
         await wait(timeouts.FOUR_SEC);
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
         await copyLinkFromPost(postListPostItem);
 
@@ -191,7 +192,7 @@ describe('Messaging - Message Permalink Preview', () => {
             userId: testOtherUser.id,
         });
 
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, originalMessage);
         await copyLinkFromPost(postListPostItem);
 
@@ -210,7 +211,7 @@ describe('Messaging - Message Permalink Preview', () => {
         await wait(timeouts.FOUR_SEC);
 
         await ChannelScreen.back();
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
 
         const editedMessage = `Edited message ${getRandomId()}`;
         await Post.apiPatchPost(siteOneUrl, targetPost.post.id, JSON.stringify({message: editedMessage}));
@@ -237,7 +238,7 @@ describe('Messaging - Message Permalink Preview', () => {
             userId: testOtherUser.id,
         });
 
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, longMessage);
         await copyLinkFromPost(postListPostItem);
 
@@ -264,7 +265,7 @@ describe('Messaging - Message Permalink Preview', () => {
 
         const targetMessage = `Message to be deleted ${getRandomId()}`;
 
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(targetMessage);
 
         await wait(timeouts.TWO_SEC);
@@ -290,7 +291,7 @@ describe('Messaging - Message Permalink Preview', () => {
         await wait(timeouts.FOUR_SEC);
 
         await ChannelScreen.back();
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
 
         const {postListPostItem: postToDelete} = ChannelScreen.getPostListPostItem(targetPost.id, targetMessage);
         await postToDelete.longPress();

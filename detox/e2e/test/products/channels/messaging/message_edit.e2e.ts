@@ -30,6 +30,7 @@ import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Edit', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -54,7 +55,7 @@ describe('Messaging - Message Edit', () => {
     it('MM-T4783_1 - should be able to edit a post message and save', async () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
@@ -91,7 +92,7 @@ describe('Messaging - Message Edit', () => {
     it('MM-T4783_2 - should be able to edit a post message and cancel', async () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
@@ -124,7 +125,7 @@ describe('Messaging - Message Edit', () => {
     it('MM-T4783_3 - should be able to edit a post message from reply thread', async () => {
         // # Open a channel screen, post a message, and tap on the post to open reply thread
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);

@@ -26,6 +26,7 @@ import {expect} from 'detox';
 
 describe('Messaging - Markdown Code', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -55,7 +56,7 @@ describe('Messaging - Markdown Code', () => {
         const line3 = 'console.log(`sum: ${x + y}`);';
         const message = `${line1}\n${line2}\n${line3}`;
         const markdownCodeBlock = `\`\`\`\n${message}\n\`\`\``;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(markdownCodeBlock);
 
         // * Verify markdown code block is displayed
@@ -72,7 +73,7 @@ describe('Messaging - Markdown Code', () => {
         // # Open a channel screen and post a html
         const message = '<html>\n<body>\n<span>This is html block</span>\n</body>\n</html>';
         const markdownHtml = `\`\`\`html\n${message}\n\`\`\``;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(markdownHtml);
 
         // * Verify markdown html is displayed

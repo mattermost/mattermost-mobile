@@ -26,6 +26,7 @@ import {expect} from 'detox';
 
 describe('Messaging - Markdown Separator', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -50,7 +51,7 @@ describe('Messaging - Markdown Separator', () => {
     it('MM-T4897_1 - should be able to display markdown separator', async () => {
         // # Open a channel screen and post a markdown separator
         const markdownSeparator = '---';
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await Post.apiCreatePost(siteOneUrl, {
             channelId: testChannel.id,
             message: markdownSeparator,

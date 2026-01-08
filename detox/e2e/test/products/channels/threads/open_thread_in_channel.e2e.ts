@@ -31,6 +31,7 @@ import {expect, waitFor} from 'detox';
 
 describe('Threads - Open Thread in Channel', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -55,7 +56,7 @@ describe('Threads - Open Thread in Channel', () => {
     it('MM-T4810_1 - should be able to open a thread in channel via thread options', async () => {
         // # Create a thread, go back to channel list screen, and then go to global threads screen
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
 
         await ChannelScreen.dismissScheduledPostTooltip();
@@ -97,7 +98,7 @@ describe('Threads - Open Thread in Channel', () => {
     it('MM-T4810_2 - should be able to open a thread in channel by permalink', async () => {
         // # Create a thread, go back to channel list screen, and then go to global threads screen
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         await ChannelScreen.dismissScheduledPostTooltip();
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);

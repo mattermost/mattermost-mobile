@@ -27,6 +27,7 @@ import {expect} from 'detox';
 
 describe('Messaging - Message Post', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -50,7 +51,7 @@ describe('Messaging - Message Post', () => {
 
     it('MM-T4782_1 - should be able to post a message when send button is tapped', async () => {
         // # Open a channel screen
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // * Verify send button is disabled
         await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
@@ -80,7 +81,7 @@ describe('Messaging - Message Post', () => {
     it('MM-T4782_2 - should be able to post a long message', async () => {
         // # Open a channel screen, post a long message, and a short message after
         const longMessage = 'The quick brown fox jumps over the lazy dog.'.repeat(40);
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(longMessage);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.postMessage('short message');

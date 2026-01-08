@@ -33,6 +33,7 @@ import {expect} from 'detox';
 
 describe('Smoke Test - Search', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
 
@@ -59,7 +60,7 @@ describe('Smoke Test - Search', () => {
     it('MM-T4911_1 - should be able to display a recent mention on recent mentions screen', async () => {
         // # Open a channel screen, post a message with at-mention to current user, go back to channel list screen, and open recent mentions screen
         const message = `@${testUser.username}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.back();
         await RecentMentionsScreen.open();
@@ -77,7 +78,7 @@ describe('Smoke Test - Search', () => {
     it('MM-T4911_2 - should be able to display a saved message on saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -97,7 +98,7 @@ describe('Smoke Test - Search', () => {
     it('MM-T4911_3 - should be able to display a pinned message on pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -120,7 +121,7 @@ describe('Smoke Test - Search', () => {
         // # Open a channel screen, post a message, go back to channel list screen, open search messages screen, type in a search term that will yield results, and tap on search key
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();

@@ -27,6 +27,7 @@ import {expect, waitFor} from 'detox';
 
 describe('Account - Account Menu', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testUser: any;
     let testChannel: any;
 
@@ -188,7 +189,7 @@ describe('Account - Account Menu', () => {
         const message = `Test message ${getRandomId()}`;
         const newUsername = `newusername${getRandomId()}`;
         await HomeScreen.channelListTab.tap();
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
         // Wait for keyboard to dismiss and message to be posted
@@ -211,7 +212,7 @@ describe('Account - Account Menu', () => {
         await AccountScreen.toBeVisible();
 
         await HomeScreen.channelListTab.tap();
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
 
         const {postListPostItemHeaderDisplayName: updatedUsername} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(updatedUsername).toHaveText(newUsername);

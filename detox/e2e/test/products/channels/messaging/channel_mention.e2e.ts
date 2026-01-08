@@ -28,6 +28,7 @@ import {expect} from 'detox';
 
 describe('Messaging - Channel Mention', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
@@ -55,7 +56,7 @@ describe('Messaging - Channel Mention', () => {
 
     it('MM-T4875_1 - should post channel mention as channel display name', async () => {
         // # Open a channel screen and post a channel name mention
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         const channelNameMention = `~${targetChannel.name}`;
@@ -72,7 +73,7 @@ describe('Messaging - Channel Mention', () => {
 
     it('MM-T4875_2 - should be able to open joined channel by tapping on channel mention', async () => {
         // # Open a channel screen, post a channel name mention, and tap on channel display name mention
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         const channelNameMention = `~${targetChannel.name}`;

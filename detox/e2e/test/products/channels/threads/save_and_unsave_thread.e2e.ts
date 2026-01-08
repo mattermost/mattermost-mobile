@@ -30,6 +30,7 @@ import {expect, waitFor} from 'detox';
 
 describe('Threads - Save and Unsave Thread', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     const savedText = 'Saved';
     let testChannel: any;
 
@@ -55,7 +56,7 @@ describe('Threads - Save and Unsave Thread', () => {
     it('MM-T4808_1 - should be able to save/unsave a thread via thread options', async () => {
         // # Create a thread, go back to channel list screen, and then go to global threads screen
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
 
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -98,7 +99,7 @@ describe('Threads - Save and Unsave Thread', () => {
     it('MM-T4808_2 - should be able to save/unsave a thread via thread overview', async () => {
         // # Create a thread, go back to channel list screen, and then go to global threads screen
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);

@@ -29,6 +29,7 @@ import {expect} from 'detox';
 
 describe('Threads - Global Threads', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
 
@@ -69,7 +70,7 @@ describe('Threads - Global Threads', () => {
     it('MM-T4805_2 - should be able to go to a thread a user started and followed', async () => {
         // # Create a thread started by the current user which current user replied to
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
@@ -114,7 +115,7 @@ describe('Threads - Global Threads', () => {
     it('MM-T4805_3 - should not display a thread a user started but not followed', async () => {
         // # Create a thread started by the current user and current user unfollows the thread
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
@@ -144,7 +145,7 @@ describe('Threads - Global Threads', () => {
             channelId: testChannel.id,
             message: parentMessage,
         });
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
@@ -184,7 +185,7 @@ describe('Threads - Global Threads', () => {
             channelId: testChannel.id,
             message: parentMessage,
         });
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
         await ThreadScreen.followingButton.tap();

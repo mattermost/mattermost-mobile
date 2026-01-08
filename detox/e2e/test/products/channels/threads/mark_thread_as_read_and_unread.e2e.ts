@@ -31,6 +31,7 @@ import {expect} from 'detox';
 
 describe('Threads - Mark Thread as Read and Unread', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -55,7 +56,7 @@ describe('Threads - Mark Thread as Read and Unread', () => {
     it('MM-T4807_1 - should be able to mark a thread as read by opening thread', async () => {
         // # Create a thread started by the current user which another user replied to, go back to channel list screen, then go to global threads screen, and tap on unread threads button
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await Post.apiCreatePost(siteOneUrl, {
@@ -94,7 +95,7 @@ describe('Threads - Mark Thread as Read and Unread', () => {
     it('MM-T4807_2 - should be able to mark a thread as read/unread via thread options', async () => {
         // # Create a thread started by the current user which another user replied to, go back to channel list screen, then go to global threads screen, and tap on unread threads button
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await Post.apiCreatePost(siteOneUrl, {
@@ -144,7 +145,7 @@ describe('Threads - Mark Thread as Read and Unread', () => {
     it('MM-T4807_3 - should be able to mark all threads as read', async () => {
         // # Create a thread started by the current user which another user replied to, go back to channel list screen, then go to global threads screen, and tap on unread threads button
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await Post.apiCreatePost(siteOneUrl, {

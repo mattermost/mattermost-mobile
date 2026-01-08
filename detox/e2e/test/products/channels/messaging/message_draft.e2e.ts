@@ -30,6 +30,7 @@ import {expect} from 'detox';
 describe('Messaging - Message Draft', () => {
     const serverOneDisplayName = 'Server 1';
     const offTopicChannelName = 'off-topic';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -54,7 +55,7 @@ describe('Messaging - Message Draft', () => {
     it('MM-T4781_1 - should be able to create a message draft', async () => {
         // # Open a channel screen and create a message draft
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.replaceText(message);
 
@@ -72,7 +73,7 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
         await ChannelScreen.open(channelsCategory, offTopicChannelName);
         await ChannelScreen.back();
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // * Verify message draft still exists in post draft
         if (isIos()) {
@@ -89,7 +90,7 @@ describe('Messaging - Message Draft', () => {
     it('MM-T4781_2 - should save message draft when app is closed then re-opened', async () => {
         // # Open a channel screen and create a message draft
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.clearText();
         await ChannelScreen.postInput.replaceText(message);
@@ -120,7 +121,7 @@ describe('Messaging - Message Draft', () => {
     it('MM-T4781_3 - should show character count warning when message exceeds character limit', async () => {
         // # Open a channel screen and create a message draft that exceeds character limit (> 16383)
         let message = '1234567890'.repeat(1638) + '1234';
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.clearText();
         await ChannelScreen.postInput.replaceText(message);
@@ -148,7 +149,7 @@ describe('Messaging - Message Draft', () => {
     it('MM-T4781_4 - should be able to create a message draft from reply thread', async () => {
         // # Open a channel screen, post a message, and tap on the post to open reply thread
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);

@@ -28,6 +28,7 @@ import {expect} from 'detox';
 
 describe('Messaging - Message Draft', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -146,7 +147,7 @@ describe('Messaging - Message Draft', () => {
 
 async function openChannel(channelsCategory: string, testChannel: any) {
     await ChannelListScreen.draftsButton.toNotBeVisible();
-    await ChannelScreen.open(testChannel);
+    await ChannelScreen.open(channelsCategory, testChannel.name);
 }
 
 async function createDraft(message: string, testChannel: any): Promise<void> {

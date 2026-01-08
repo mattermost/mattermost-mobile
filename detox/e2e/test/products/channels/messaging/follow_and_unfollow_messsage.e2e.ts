@@ -29,6 +29,7 @@ import {waitFor} from 'detox';
 
 describe('Messaging - Follow and Unfollow Message', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -63,7 +64,7 @@ describe('Messaging - Follow and Unfollow Message', () => {
     it('MM-T4863_1 - should be able to follow/unfollow a message via post options', async () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
         // # Wait for keyboard to dismiss and message to be visible
@@ -102,7 +103,7 @@ describe('Messaging - Follow and Unfollow Message', () => {
     it('MM-T4863_2 - should be able to unfollow a message via post footer', async () => {
         // # Open a channel screen, post a message, open post options for message, and tap on follow message option
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
         // # Wait for keyboard to dismiss and message to be visible

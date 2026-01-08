@@ -29,6 +29,7 @@ import {expect} from 'detox';
 
 describe('Channels - Archive Channel', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testTeam: any;
     let testUser: any;
 

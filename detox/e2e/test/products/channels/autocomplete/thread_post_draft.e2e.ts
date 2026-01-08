@@ -29,6 +29,7 @@ import {expect} from 'detox';
 
 describe('Autocomplete - Thread Post Draft', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -44,7 +45,7 @@ describe('Autocomplete - Thread Post Draft', () => {
 
         // # Open a channel screen, post a message, and open reply thread
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await wait(timeouts.ONE_SEC);

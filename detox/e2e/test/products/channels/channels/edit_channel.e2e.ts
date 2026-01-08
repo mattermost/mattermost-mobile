@@ -31,6 +31,7 @@ import {expect} from 'detox';
 
 describe('Channels - Edit Channel', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testOtherUser1: any;
     let testOtherUser2: any;
     let testChannel: any;
@@ -52,7 +53,7 @@ describe('Channels - Edit Channel', () => {
         await ChannelListScreen.toBeVisible();
 
         // # Open a channel screen
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
     });
 
     beforeEach(async () => {

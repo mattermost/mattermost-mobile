@@ -30,6 +30,7 @@ import {expect, waitFor} from 'detox';
 
 describe('Threads - Reply to Thread', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -54,7 +55,7 @@ describe('Threads - Reply to Thread', () => {
     it('MM-T4809_1 - should be able to reply to a thread via thread options', async () => {
         // # Create a thread, go back to channel list screen, and then go to global threads screen
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
 
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -95,7 +96,7 @@ describe('Threads - Reply to Thread', () => {
     it('MM-T4809_2 - should be able to reply to a thread by opening thread', async () => {
         // # Create a thread, go back to channel list screen, and then go to global threads screen
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         await wait(timeouts.TWO_SEC);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);

@@ -29,6 +29,7 @@ import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Reply', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -53,7 +54,7 @@ describe('Messaging - Message Reply', () => {
     it('MM-T4785_1 - should be able to reply to a post via post options reply option', async () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
@@ -87,7 +88,7 @@ describe('Messaging - Message Reply', () => {
     it('MM-T4785_2 - should be able to open reply thread by tapping on the post', async () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
@@ -109,7 +110,7 @@ describe('Messaging - Message Reply', () => {
     it('MM-T4785_3 - should not have reply option available on reply thread post options', async () => {
         // # Open a channel screen, post a message, and tap on the post
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);

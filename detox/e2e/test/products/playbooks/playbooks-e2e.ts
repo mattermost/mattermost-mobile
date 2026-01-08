@@ -7,7 +7,7 @@ import {ServerScreen, LoginScreen, ChannelScreen, ChannelListScreen, ThreadScree
 
 describe('Playbooks - Basic', () => {
     const serverOneDisplayName = 'Server 1';
-
+    const channelsCategory = 'channels';
     let testUser: any;
     let testTeam: any;
     let testChannel: any;
@@ -68,7 +68,7 @@ describe('Playbooks - Basic', () => {
         // Start the playbook run
         const activeRun = await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
         await Playbooks.apiAddUsersToRun(siteOneUrl, activeRun.id, [secondUser.id, thirdUser.id]);
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
 
         await pilot.perform(
             'Verify the Playbook icon and count "1" are visible in the Channel Header',
@@ -103,7 +103,7 @@ describe('Playbooks - Basic', () => {
         });
         const activeRun = await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
         await Playbooks.apiFinishRun(siteOneUrl, activeRun.id);
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await pilot.perform(
             'Tap the "Quick Actions" icon in the Channel Header',
             'Tap the "Playbook runs" option in the bottom sheet',
@@ -139,7 +139,7 @@ describe('Playbooks - Basic', () => {
             const activeRun = await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
             playbookRunsToDelete.push(activeRun.id);
         }
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await pilot.perform(
             'Tap the "Quick Actions" icon in the Channel Header',
             'Tap the "Playbook runs" option in the bottom sheet',
@@ -172,7 +172,7 @@ describe('Playbooks - Basic', () => {
         });
         const activeRun = await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
         await Playbooks.apiAddUsersToRun(siteOneUrl, activeRun.id, [testUser.id, secondUser.id, thirdUser.id]);
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await pilot.perform(
             'Tap the "Quick Actions" icon in the Channel Header',
             'Tap the "Playbook runs" option in the bottom sheet',
@@ -209,7 +209,7 @@ describe('Playbooks - Basic', () => {
         });
         const activeRun = await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
         await Playbooks.apiAddUsersToRun(siteOneUrl, activeRun.id, [testUser.id, secondUser.id, thirdUser.id]);
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await pilot.perform(
             'Tap the "Quick Actions" icon in the Channel Header',
             'Tap the "Playbook runs" option in the bottom sheet',

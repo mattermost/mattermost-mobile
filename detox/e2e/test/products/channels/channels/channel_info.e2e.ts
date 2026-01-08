@@ -25,6 +25,7 @@ import {expect} from 'detox';
 
 describe('Channels - Channel Info', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -48,7 +49,7 @@ describe('Channels - Channel Info', () => {
 
     it('MM-T4928_1 - should match elements on channel info screen', async () => {
         // # Open a channel screen and open channel info screen
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
 
         // * Verify basic elements on channel info screen
@@ -77,7 +78,7 @@ describe('Channels - Channel Info', () => {
 
     it('MM-T4928_2 - should be able to view channel info by tapping intro channel info action', async () => {
         // # Open a channel screen and tap on intro channel info action
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.introChannelInfoAction.tap();
 
         // * Verify on channel info screen
@@ -90,7 +91,7 @@ describe('Channels - Channel Info', () => {
 
     it('MM-T4928_3 - should be able to view channel info from channel quick actions', async () => {
         // # Open a channel screen, tap on channel quick actions button, and tap on channel info action
-        await ChannelScreen.open(testChannel);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.channelQuickActionsButton.tap();
         await wait(timeouts.ONE_SEC);
         await ChannelScreen.channelInfoQuickAction.tap();
