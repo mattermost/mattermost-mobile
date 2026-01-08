@@ -61,7 +61,7 @@ describe('Channels - Manage Own Channel Membership', () => {
         await device.reloadReactNative();
 
         // # Open the channel screen
-        await ChannelScreen.open(channelsCategory,channel.name);
+        await ChannelScreen.open(channelsCategory, channel.name);
 
         // # Open channel info screen
         await ChannelInfoScreen.open();
