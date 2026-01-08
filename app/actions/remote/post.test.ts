@@ -9,6 +9,7 @@ import DatabaseManager from '@database/manager';
 import PostModel from '@database/models/server/post';
 import NetworkManager from '@managers/network_manager';
 import TestHelper from '@test/test_helper';
+import {getFullErrorMessage} from '@utils/errors';
 
 import {
     createPost,
@@ -37,7 +38,6 @@ import {
 import * as PostAuxilaryFunctions from './post.auxiliary';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import {getFullErrorMessage} from "@utils/errors";
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
