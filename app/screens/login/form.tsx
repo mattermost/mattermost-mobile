@@ -3,6 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Button as RNEButton} from '@rneui/base';
+import {isRunningE2e} from 'index';
 import React, {useCallback, useEffect, useMemo, useRef, useState, type RefObject} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
@@ -361,7 +362,7 @@ const LoginForm = ({
             <FloatingTextInput
                 rawInput={true}
                 blurOnSubmit={false}
-                autoComplete='email'
+                autoComplete={isRunningE2e ? 'off' : 'email'}
                 disableFullscreenUI={true}
                 enablesReturnKeyAutomatically={true}
                 error={userInputError}
@@ -381,7 +382,7 @@ const LoginForm = ({
                     <FloatingTextInput
                         rawInput={true}
                         blurOnSubmit={false}
-                        autoComplete='current-password'
+                        autoComplete={isRunningE2e ? 'off' : 'current-password'}
                         disableFullscreenUI={true}
                         enablesReturnKeyAutomatically={true}
                         error={error}

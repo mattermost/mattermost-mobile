@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image, ImageBackground, type ImageBackgroundProps, type ImageProps, type ImageSource} from 'expo-image';
+import {Image, ImageBackground, type ImageBackgroundProps, type ImageProps} from 'expo-image';
 import React, {forwardRef, useMemo} from 'react';
 import Animated from 'react-native-reanimated';
 
@@ -25,13 +25,13 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
      * for filesystem path compatibility (avoiding special characters in directory names).
      */
     const cachePath = useMemo(() => urlSafeBase64Encode(serverUrl), [serverUrl]);
-    const source: ImageSource = useMemo(() => {
+    const source = useMemo(() => {
         if (typeof props.source === 'number') {
             return props.source;
         }
 
         // Only add cacheKey and cachePath if id is provided (i.e., not memory-only caching)
-        if (id) {
+        if (id && props.source && typeof props.source === 'object' && !Array.isArray(props.source) && 'uri' in props.source) {
             return {
                 ...props.source,
                 cacheKey: id,
@@ -43,13 +43,13 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
     }, [id, props.source, cachePath]);
 
     // Process placeholder to add cachePath and cacheKey if it has a uri
-    const placeholder: ImageSource | undefined = useMemo(() => {
+    const placeholder = useMemo(() => {
         if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string') {
             return props.placeholder;
         }
 
         // If placeholder has a uri and id is provided, add cachePath and cacheKey
-        if (props.placeholder.uri && id) {
+        if (props.placeholder && typeof props.placeholder === 'object' && !Array.isArray(props.placeholder) && 'uri' in props.placeholder && id) {
             return {
                 ...props.placeholder,
                 cacheKey: `${id}-thumb`,
@@ -74,13 +74,13 @@ ExpoImage.displayName = 'ExpoImage';
 const ExpoImageBackground = ({id, ...props}: ExpoImageBackgroundProps) => {
     const serverUrl = useServerUrl();
     const cachePath = useMemo(() => urlSafeBase64Encode(serverUrl), [serverUrl]);
-    const source: ImageSource = useMemo(() => {
+    const source = useMemo(() => {
         if (typeof props.source === 'number') {
             return props.source;
         }
 
         // Only add cacheKey and cachePath if id is provided (i.e., not memory-only caching)
-        if (id) {
+        if (id && props.source && typeof props.source === 'object' && !Array.isArray(props.source) && 'uri' in props.source) {
             return {
                 ...props.source,
                 cacheKey: id,
@@ -92,13 +92,13 @@ const ExpoImageBackground = ({id, ...props}: ExpoImageBackgroundProps) => {
     }, [id, props.source, cachePath]);
 
     // Process placeholder to add cachePath and cacheKey if it has a uri
-    const placeholder: ImageSource | undefined = useMemo(() => {
+    const placeholder = useMemo(() => {
         if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string') {
             return props.placeholder;
         }
 
         // If placeholder has a uri and id is provided, add cachePath and cacheKey
-        if (props.placeholder.uri && id) {
+        if (props.placeholder && typeof props.placeholder === 'object' && !Array.isArray(props.placeholder) && 'uri' in props.placeholder && id) {
             return {
                 ...props.placeholder,
                 cacheKey: `${id}-thumb`,
