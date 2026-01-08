@@ -32,7 +32,6 @@ import {expect} from 'detox';
 
 describe('Channels - Channel List', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     const directMessagesCategory = 'direct_messages';
     const offTopicChannelName = 'off-topic';
     const townSquareChannelName = 'town-square';
@@ -112,7 +111,7 @@ describe('Channels - Channel List', () => {
 
     it('MM-T4728_3 - should be able to collapse and expand categories', async () => {
         // # Go to a channel to make it active and go back to channel list screen
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage('Test message');
         await ChannelScreen.back();
 

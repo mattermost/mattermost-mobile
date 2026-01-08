@@ -34,7 +34,6 @@ import {expect, waitFor} from 'detox';
 
 describe('Search - Saved Messages', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     const savedText = 'Saved';
     let testChannel: any;
     let testTeam: any;
@@ -76,7 +75,7 @@ describe('Search - Saved Messages', () => {
     it('MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel', async () => {
         // # Open a channel screen, post a message, open post options for message, and tap on save option
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -117,7 +116,7 @@ describe('Search - Saved Messages', () => {
     it('MM-T4910_3 - should be able to edit, reply to, and delete a saved message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
 
         const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -184,7 +183,7 @@ describe('Search - Saved Messages', () => {
     it('MM-T4910_4 - should be able to unsave a message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
 
         const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -214,7 +213,7 @@ describe('Search - Saved Messages', () => {
     it('MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
 
         const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -232,7 +231,7 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.pinPostOption.tap();
         await ChannelListScreen.open();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
 
@@ -248,7 +247,7 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.unpinPostOption.tap();
         await ChannelListScreen.open();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
 

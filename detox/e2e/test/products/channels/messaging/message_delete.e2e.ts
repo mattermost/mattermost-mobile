@@ -29,7 +29,6 @@ import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Delete', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -54,7 +53,7 @@ describe('Messaging - Message Delete', () => {
     it('MM-T4784_1 - should be able to delete a post message and confirm', async () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
@@ -76,7 +75,7 @@ describe('Messaging - Message Delete', () => {
     it('MM-T4784_2 - should be able to delete a post message and cancel', async () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
@@ -98,7 +97,7 @@ describe('Messaging - Message Delete', () => {
     it('MM-T4784_3 - should be able to delete a post message from reply thread', async () => {
         // # Open a channel screen, post a message, and tap on the post to open reply thread
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
 
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);

@@ -32,7 +32,6 @@ import {expect} from 'detox';
 
 describe('Search - Cross Team Search', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     const searchTerm = 'Horses are fun';
     let testUser: any;
     let teamOpen: any;

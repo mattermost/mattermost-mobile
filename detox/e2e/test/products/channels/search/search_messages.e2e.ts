@@ -38,7 +38,6 @@ import {expect} from 'detox';
 
 describe('Search - Search Messages', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
@@ -84,7 +83,7 @@ describe('Search - Search Messages', () => {
     it('MM-T5294_2 - should be able to search messages from a specific user', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
@@ -114,7 +113,7 @@ describe('Search - Search Messages', () => {
     it('MM-T5294_3 - should be able to search messages in a specific channel', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
@@ -147,7 +146,7 @@ describe('Search - Search Messages', () => {
         const messagePrefix = 'Message';
         const messageWithNonExcludedTerm = `${messagePrefix} ${getRandomId()}`;
         const messageWithExcludedTerm = `${messagePrefix} ${excludedTerm}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(messageWithNonExcludedTerm);
         const {post: nonExcludedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: nonExcludedPostListPostItem} = SearchMessagesScreen.getPostListPostItem(nonExcludedPost.id, messageWithNonExcludedTerm);
@@ -183,7 +182,7 @@ describe('Search - Search Messages', () => {
         const messagePrefix = 'How are';
         const messageWithNonIncludedTerm = `${messagePrefix} ${getRandomId()}`;
         const messageWithIncludedTerm = `${messagePrefix} ${includedTerm}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(messageWithNonIncludedTerm);
         const {post: nonIncludedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: nonIncludedPostListPostItem} = SearchMessagesScreen.getPostListPostItem(nonIncludedPost.id, messageWithNonIncludedTerm);
@@ -221,7 +220,7 @@ describe('Search - Search Messages', () => {
     it('MM-T5294_6 - should be able to search messages using combination of modifiers', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
@@ -249,7 +248,7 @@ describe('Search - Search Messages', () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
@@ -337,7 +336,7 @@ describe('Search - Search Messages', () => {
     it('MM-T5294_9 - should show empty search results screen when search result is empty', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
@@ -365,7 +364,7 @@ describe('Search - Search Messages', () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
@@ -435,7 +434,7 @@ describe('Search - Search Messages', () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
@@ -476,7 +475,7 @@ describe('Search - Search Messages', () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
@@ -493,7 +492,7 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
         await PostOptionsScreen.pinPostOption.tap();
         await ChannelListScreen.open();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
 
@@ -509,7 +508,7 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
         await PostOptionsScreen.unpinPostOption.tap();
         await ChannelListScreen.open();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
 

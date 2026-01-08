@@ -26,7 +26,6 @@ import {timeouts} from '@support/utils';
 
 describe('Messaging - Markdown Image', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -51,7 +50,7 @@ describe('Messaging - Markdown Image', () => {
     it('MM-T4896_1 - should be able to display markdown image', async () => {
         // # Open a channel screen and post a markdown image
         const markdownImage = '![Mattermost](https://docs.mattermost.com/_images/icon-76x76.png)';
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(markdownImage);
 
         // * Verify markdown image is displayed
@@ -71,7 +70,7 @@ describe('Messaging - Markdown Image', () => {
     it('MM-T4896_2 - should be able to display markdown image with link', async () => {
         // # Open a channel screen and post a markdown image with link
         const markdownImage = '[![Mattermost](https://docs.mattermost.com/_images/icon-76x76.png)](https://github.com/mattermost/mattermost-server)';
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(markdownImage);
 
         // * Verify markdown image with link is displayed

@@ -27,7 +27,6 @@ import {expect} from 'detox';
 
 describe('Smoke Test - Autocomplete', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
 
@@ -44,7 +43,7 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelListScreen.toBeVisible();
 
         // # Open a channel screen
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
     });
 
     beforeEach(async () => {

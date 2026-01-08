@@ -26,7 +26,6 @@ import {expect} from 'detox';
 
 describe('Messaging - Markdown Heading', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -52,7 +51,7 @@ describe('Messaging - Markdown Heading', () => {
         // # Open a channel screen and post a markdown heading
         const message = 'Heading';
         const markdownHeading = `## ${message}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(markdownHeading);
 
         // * Verify markdown heading is displayed

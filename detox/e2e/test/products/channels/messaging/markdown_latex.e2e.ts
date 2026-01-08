@@ -26,7 +26,6 @@ import {expect} from 'detox';
 
 describe('Messaging - Markdown Latex', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -53,7 +52,7 @@ describe('Messaging - Markdown Latex', () => {
         const message = String.raw`X_k = \sum_{n=0}^{2N-1} x_n \cos\left[\frac{\pi}{N}\left(n+\frac{1}{2}\right)\left(k+\frac{N}{2}\right)\right]`;
         const markdownLatexCodeBlock = `\`\`\`latex\n${message}\n\`\`\``;
 
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(markdownLatexCodeBlock);
 
         // * Verify markdown latex code block is displayed
@@ -75,7 +74,7 @@ describe('Messaging - Markdown Latex', () => {
         // eslint-disable-next-line no-useless-escape
         const message = 'X_k = \\sum_{n=0}^{2N-1} x_n \\cos \\left[\\frac{\\pi}{N} \\left(n+\\frac{1}{2}+\\frac{N}{2}\\right) \\left(k+\\frac{1}{2}\\right) \\right]';
         const markdownInlineLatex = `$${message}$`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(markdownInlineLatex);
 
         // * Verify markdown inline latex is displayed

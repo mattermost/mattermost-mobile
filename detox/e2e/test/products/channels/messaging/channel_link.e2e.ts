@@ -28,7 +28,6 @@ import {expect, waitFor} from 'detox';
 
 describe('Messaging - Channel Link', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
@@ -56,7 +55,7 @@ describe('Messaging - Channel Link', () => {
 
     it('MM-T4877_1 - should be able to open joined channel by tapping on channel link from main channel', async () => {
         // # Open a channel screen and post a channel link to target channel
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         const channelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name}`;
@@ -76,7 +75,7 @@ describe('Messaging - Channel Link', () => {
 
     it('MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread', async () => {
         // # Open a channel screen, post a channel link to target channel, tap on post to open reply thread, and tap on channel link
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         const channelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name}`;

@@ -30,7 +30,6 @@ import {expect, waitFor} from 'detox';
 
 describe('Messaging - Permalink', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
@@ -58,7 +57,7 @@ describe('Messaging - Permalink', () => {
 
     const expectPermalinkTargetMessage = async (teamName: any, permalinkTargetPost: any, permalinkTargetChannelDiplayName: string) => {
         // # Open a channel screen, post a permalink to target post, and tap on permalink
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         const permalinkLabel = `permalink-${getRandomId()}`;
         const permalinkMessage = `[${permalinkLabel}](/${teamName}/pl/${permalinkTargetPost.id})`;
         await ChannelScreen.postMessage(permalinkMessage);

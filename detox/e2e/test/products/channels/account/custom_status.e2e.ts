@@ -33,7 +33,6 @@ import {expect} from 'detox';
 
 describe('Account - Custom Status', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
 
     // Predefined status configurations
     const STATUSES = {
@@ -378,7 +377,7 @@ describe('Account - Custom Status', () => {
 
         // # Create post and verify status in user profile
         await ChannelListScreen.open();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(messageText);
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);

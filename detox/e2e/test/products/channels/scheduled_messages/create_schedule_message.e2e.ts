@@ -33,7 +33,6 @@ import {expect} from 'detox';
 
 describe('Scheduled Draft,', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
@@ -66,7 +65,7 @@ describe('Scheduled Draft,', () => {
 
     it('MM-T5762 should be able to create a scheduled message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
         await ChannelScreen.longPressSendButton();
         await chooseScheduleMessageDate();
@@ -87,7 +86,7 @@ describe('Scheduled Draft,', () => {
     it('MM-T5767 should be able to create a scheduled message under a threaded post', async () => {
         const parentMessage = 'Root Post for Scheduled Message';
         const scheduledMessageText = 'Scheduled Message In a channel';
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.postMessage(parentMessage);
 
@@ -113,7 +112,7 @@ describe('Scheduled Draft,', () => {
         await DraftScreen.backButton.tap();
 
         // * Verify the scheduled message is  shown in the channel
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await expect(element(by.text(scheduledMessageText))).toBeVisible();
 
@@ -123,7 +122,7 @@ describe('Scheduled Draft,', () => {
 
     it('MM-T5731 should be able to Delete a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
         await ChannelScreen.longPressSendButton();
         await chooseScheduleMessageDate();
@@ -144,7 +143,7 @@ describe('Scheduled Draft,', () => {
 
     it('MM-T5730 should be able to Send a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
         await ChannelScreen.longPressSendButton();
         await chooseScheduleMessageDate();
@@ -161,7 +160,7 @@ describe('Scheduled Draft,', () => {
         await DraftScreen.backButton.tap();
 
         // * Verify the scheduled message is  shown in the channel
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
 
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -174,7 +173,7 @@ describe('Scheduled Draft,', () => {
 
     it('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
         await ChannelScreen.longPressSendButton();
         await chooseScheduleMessageDate();

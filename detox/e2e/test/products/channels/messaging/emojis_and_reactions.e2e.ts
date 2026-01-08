@@ -31,7 +31,6 @@ import {expect, waitFor} from 'detox';
 
 describe('Messaging - Emojis and Reactions', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
 
@@ -58,7 +57,7 @@ describe('Messaging - Emojis and Reactions', () => {
     it('MM-T4862_1 - should be able to view recent reactions and add new reaction via post options', async () => {
         // # Open a channel screen, post a message, and open post options for message
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -102,7 +101,7 @@ describe('Messaging - Emojis and Reactions', () => {
     it('MM-T4862_2 - should be able to long press on a reaction to view the list of users who reacted', async () => {
         // # Open a channel screen, post a message, open post options for message, open emoji picker screen, and add a reaction
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -136,7 +135,7 @@ describe('Messaging - Emojis and Reactions', () => {
     it('MM-T4862_3 - should be able to include emojis in a message and be able to find them in emoji bar and recently used section', async () => {
         // # Open a channel screen and post a message that includes emojis
         const message = 'brown fox :fox_face: lazy dog :dog:';
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
 
         // * Verify message is posted with emojis
@@ -169,7 +168,7 @@ describe('Messaging - Emojis and Reactions', () => {
     it('MM-T4862_4 - should display empty search state for emoji picker', async () => {
         // # Open a channel screen, post a message, open post options for message, open emoji picker screen, and search for a non-existent emoji
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const searchTerm = 'blahblahblahblah';

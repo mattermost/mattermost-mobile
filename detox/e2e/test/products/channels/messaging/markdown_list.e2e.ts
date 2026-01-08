@@ -26,7 +26,6 @@ import {expect} from 'detox';
 
 describe('Messaging - Markdown List', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -49,7 +48,7 @@ describe('Messaging - Markdown List', () => {
         const item2 = 'item two';
         const item2SubPoint = 'item two sub-point';
         const markdownBulletList = `* ${item1}\n- ${item2}\n  + ${item2SubPoint}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(markdownBulletList);
 
         // * Verify markdown bullet list is displayed
@@ -84,7 +83,7 @@ describe('Messaging - Markdown List', () => {
         const item2 = 'Item two';
         const item3 = 'Item three';
         const markdownOrderedList = `1. ${item1}\n1. ${item2}\n1. ${item3}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(markdownOrderedList);
 
         // * Verify markdown ordered list is displayed

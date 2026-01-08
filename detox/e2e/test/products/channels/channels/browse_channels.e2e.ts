@@ -30,7 +30,6 @@ import {expect} from 'detox';
 
 describe('Channels - Browse Channels', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testTeam: any;
     let testUser: any;
 

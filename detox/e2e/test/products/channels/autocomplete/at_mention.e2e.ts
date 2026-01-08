@@ -30,7 +30,6 @@ import {expect} from 'detox';
 
 describe('Autocomplete - At-Mention', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
@@ -58,7 +57,7 @@ describe('Autocomplete - At-Mention', () => {
         await ChannelListScreen.toBeVisible();
 
         // # Open a channel screen
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
     });
 
     beforeEach(async () => {

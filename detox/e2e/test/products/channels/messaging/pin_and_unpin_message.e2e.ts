@@ -29,7 +29,6 @@ import {expect, waitFor} from 'detox';
 
 describe('Messaging - Pin and Unpin Message', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     const pinnedText = 'Pinned';
     let testChannel: any;
 
@@ -55,7 +54,7 @@ describe('Messaging - Pin and Unpin Message', () => {
     it('MM-T4865_1 - should be able to pin/unpin a message via post options on channel screen', async () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
 
         // * Verify message is posted
@@ -87,7 +86,7 @@ describe('Messaging - Pin and Unpin Message', () => {
     it('MM-T4865_2 - should be able to pin/unpin a message via post options on thread screen', async () => {
         // # Open a channel screen, post a message, tap on post to open thread, open post options for message, and tap on pin to channel option
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);

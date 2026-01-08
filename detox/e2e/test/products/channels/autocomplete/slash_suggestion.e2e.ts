@@ -25,7 +25,6 @@ import {expect} from 'detox';
 
 describe('Autocomplete - Slash Suggestion', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     const slashCommand = 'away';
     let slashSuggestionAutocomplete: any;
 
@@ -42,7 +41,7 @@ describe('Autocomplete - Slash Suggestion', () => {
         await ChannelListScreen.toBeVisible();
 
         // # Open a channel screen
-        await ChannelScreen.open(channelsCategory, channel.name);
+        await ChannelScreen.open(channel);
     });
 
     beforeEach(async () => {

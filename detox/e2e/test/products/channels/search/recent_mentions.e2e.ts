@@ -35,7 +35,6 @@ import {expect} from 'detox';
 
 describe('Search - Recent Mentions', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
@@ -78,7 +77,7 @@ describe('Search - Recent Mentions', () => {
     it('MM-T4909_2 - should be able to display a recent mention in recent mentions screen and navigate to message channel', async () => {
         // # Open a channel screen and post a message with at-mention to current user
         const message = `@${testUser.username}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
 
         // * Verify message with at-mention to current user is posted
@@ -115,7 +114,7 @@ describe('Search - Recent Mentions', () => {
     it('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
         // # Open a channel screen, post a message with at-mention to current user, go back to channel list screen, and open recent mentions screen
         const message = `@${testUser.username}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.back();
         await RecentMentionsScreen.open();
@@ -176,7 +175,7 @@ describe('Search - Recent Mentions', () => {
     it('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
         // # Open a channel screen, post a message with at-mention to current user, go back to channel list screen, and open recent mentions screen
         const message = `@${testUser.username}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.back();
         await RecentMentionsScreen.open();
@@ -210,7 +209,7 @@ describe('Search - Recent Mentions', () => {
     it('MM-T4909_5 - should be able to pin/unpin a recent mention from recent mentions screen', async () => {
         // # Open a channel screen, post a message with at-mention to current user, go back to channel list screen, and open recent mentions screen
         const message = `@${testUser.username}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.back();
         await RecentMentionsScreen.open();
@@ -223,7 +222,7 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, message);
         await PostOptionsScreen.pinPostOption.tap();
         await ChannelListScreen.open();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
 
@@ -239,7 +238,7 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, message);
         await PostOptionsScreen.unpinPostOption.tap();
         await ChannelListScreen.open();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
 

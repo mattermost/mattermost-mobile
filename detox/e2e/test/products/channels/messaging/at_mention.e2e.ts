@@ -32,7 +32,6 @@ import {expect} from 'detox';
 
 describe('Messaging - At-Mention', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
@@ -66,7 +65,7 @@ describe('Messaging - At-Mention', () => {
     it('MM-T4874_1 - should post at-mention as lowercase', async () => {
         // # Open a channel screen and post a message with lowercase at-mention
         const camelCaseUsernameMessage = `Message @${testUser.username.substring(0, 1).toUpperCase()}${testUser.username.substring(1)}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(camelCaseUsernameMessage);
 
         // * Verify at-mention is posted as lowercase
@@ -92,7 +91,7 @@ describe('Messaging - At-Mention', () => {
             await Team.apiAddUserToTeam(siteOneUrl, user.id, testTeam.id);
             await Channel.apiAddUserToChannel(siteOneUrl, user.id, testChannel.id);
         });
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postInput.replaceText('@all');
         await ChannelScreen.sendButton.tap();
 
@@ -143,7 +142,7 @@ describe('Messaging - At-Mention', () => {
     it('MM-T4874_3 - should be able to open user profile by tapping on at-mention', async () => {
         // # Open a channel screen, post a message with at-mention, and tap on at-mention
         const message = `@${testUser.username}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
         await element(by.text(message)).tap({x: 5, y: 10});
         await wait(timeouts.ONE_SEC);

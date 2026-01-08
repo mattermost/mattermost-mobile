@@ -31,7 +31,6 @@ import {expect} from 'detox';
 
 describe('Smoke Test - Threads', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     const savedText = 'Saved';
     let testChannel: any;
 
@@ -57,7 +56,7 @@ describe('Smoke Test - Threads', () => {
     it('MM-T4811_1 - should be able to create a thread, follow/unfollow a thread, mark a thread as read/unread, and reply to thread', async () => {
         // # Create a thread and unfollow thread via thread navigation
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -125,7 +124,7 @@ describe('Smoke Test - Threads', () => {
     it('MM-T4811_2 - should be able to save/unsave a thread and open a thread in channel', async () => {
         // # Create a thread, go back to channel list screen, then go to global threads screen, open thread options for thread, tap on save option, and tap on thread
         const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);

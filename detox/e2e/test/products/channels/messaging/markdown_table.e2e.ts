@@ -28,7 +28,6 @@ import {expect} from 'detox';
 
 describe('Messaging - Markdown Table', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -61,7 +60,7 @@ describe('Messaging - Markdown Table', () => {
             channelId: testChannel.id,
             message: markdownTable,
         });
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
 
         // * Verify markdown table is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -82,7 +81,7 @@ describe('Messaging - Markdown Table', () => {
             channelId: testChannel.id,
             message: markdownTable,
         });
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
 
         // * Verify table is displayed with long text wrapped properly
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -124,7 +123,7 @@ describe('Messaging - Markdown Table', () => {
             channelId: testChannel.id,
             message: markdownTable,
         });
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
 
         // * Verify table is displayed with some right columns not visible
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -161,7 +160,7 @@ describe('Messaging - Markdown Table', () => {
             channelId: testChannel.id,
             message: markdownTable,
         });
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
 
         // * Verify table is displayed with some bottom rows not visible
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -203,7 +202,7 @@ describe('Messaging - Markdown Table', () => {
             channelId: testChannel.id,
             message: markdownTable,
         });
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
 
         // * Verify table is displayed with some right columns and bottom rows not visible
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);

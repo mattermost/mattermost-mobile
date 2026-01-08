@@ -35,7 +35,6 @@ import {expect} from 'detox';
 
 describe('Smoke Test - Channels', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
@@ -78,7 +77,7 @@ describe('Smoke Test - Channels', () => {
 
         // # Go back to channel list screen and switch to an existing channel
         await ChannelScreen.back();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
 
         // * Verify on the other channel screen
         await ChannelScreen.toBeVisible();
@@ -127,7 +126,7 @@ describe('Smoke Test - Channels', () => {
     it('MM-T4774_3 - should be able to post a message in a channel', async () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelScreen.postMessage(message);
 
         // * Verify message is posted
@@ -168,7 +167,7 @@ describe('Smoke Test - Channels', () => {
 
     it('MM-T4774_5 - should be able to favorite and mute a channel', async () => {
         // # Open a channel screen, open channel info screen, tap on favorite action to favorite the channel, and tap on mute action to mute the channel
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(testChannel);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.favoriteAction.tap();
         await ChannelInfoScreen.muteAction.tap();
@@ -196,7 +195,7 @@ describe('Smoke Test - Channels', () => {
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
-        await ChannelScreen.open(channelsCategory, channel.name);
+        await ChannelScreen.open(channel);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.archivePublicChannel({confirm: true});
 

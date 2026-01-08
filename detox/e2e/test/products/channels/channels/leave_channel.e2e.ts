@@ -28,7 +28,6 @@ import {expect} from 'detox';
 
 describe('Channels - Leave Channel', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testTeam: any;
     let testUser: any;
 
@@ -57,7 +56,7 @@ describe('Channels - Leave Channel', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
-        await ChannelScreen.open(channelsCategory, channel.name);
+        await ChannelScreen.open(channel);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.leaveChannel({confirm: true});
 
@@ -71,7 +70,7 @@ describe('Channels - Leave Channel', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
-        await ChannelScreen.open(channelsCategory, channel.name);
+        await ChannelScreen.open(channel);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.leaveChannel({confirm: false});
 
@@ -88,7 +87,7 @@ describe('Channels - Leave Channel', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
-        await ChannelScreen.open(channelsCategory, channel.name);
+        await ChannelScreen.open(channel);
         await ChannelScreen.channelQuickActionsButton.tap();
         await wait(timeouts.ONE_SEC);
         await ChannelScreen.leaveChannel({confirm: true});

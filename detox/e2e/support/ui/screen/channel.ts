@@ -13,7 +13,6 @@ import {
     SendButton,
 } from '@support/ui/component';
 import {
-    ChannelListScreen,
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
@@ -170,13 +169,13 @@ class ChannelScreen {
         }
     };
 
-    open = async (categoryKey: string, channelName: string) => {
+    open = async (channelName: any) => {
         // # Open channel screen
-        await waitFor(ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName).tap();
+        await wait(timeouts.FOUR_SEC);
+
+        await element(by.id(`channel_list.category.${channelName.id}.channel_item.${channelName.name}.display_name`)).tap();
 
         await this.dismissScheduledPostTooltip();
-
         return this.toBeVisible();
     };
 
