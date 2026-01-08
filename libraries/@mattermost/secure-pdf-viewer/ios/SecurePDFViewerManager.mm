@@ -10,10 +10,10 @@
 
 #if RCT_NEW_ARCH_ENABLED
 #import <React/RCTConversions.h>
-#import <react/renderer/components/RNSecurePdfViewerSpec/ComponentDescriptors.h>
-#import <react/renderer/components/RNSecurePdfViewerSpec/EventEmitters.h>
-#import <react/renderer/components/RNSecurePdfViewerSpec/Props.h>
-#import <react/renderer/components/RNSecurePdfViewerSpec/RCTComponentViewHelpers.h>
+#import <react/renderer/components/SecurePdfViewer/ComponentDescriptors.h>
+#import <react/renderer/components/SecurePdfViewer/EventEmitters.h>
+#import <react/renderer/components/SecurePdfViewer/Props.h>
+#import <react/renderer/components/SecurePdfViewer/RCTComponentViewHelpers.h>
 #import <React/RCTComponentViewFactory.h>
 #endif
 
@@ -37,22 +37,13 @@ RCT_EXPORT_VIEW_PROPERTY(onTap, RCTBubblingEventBlock)
 
 - (UIView *)view {
 #if RCT_NEW_ARCH_ENABLED
+  // For new architecture, return a placeholder since the real component
+  // is registered via RCTSecurePDFViewerComponentView
   return [UIView new];
 #else
+  // For old architecture, return the Swift view directly
   return [[SecurePdfViewerComponentView alloc] initWithFrame:CGRectZero];
 #endif
 }
 
 @end
-
-#if RCT_NEW_ARCH_ENABLED
-
-Class<RCTComponentViewProtocol> SecurePdfViewerCls(void) {
-  return SecurePdfViewerComponentView.class;
-}
-
-__attribute__((constructor)) static void registerSecurePdfViewer() {
-  RCTRegisterComponentViewClass(SecurePdfViewerCls);
-}
-
-#endif

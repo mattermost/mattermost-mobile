@@ -16,7 +16,7 @@
     },
     "ios": {
       "componentProvider": {
-        "RNSecurePdfViewer": "SecurePdfViewer"
+        "SecurePdfViewer": "RCTSecurePDFViewerComponentView"
       }
     }
   }
