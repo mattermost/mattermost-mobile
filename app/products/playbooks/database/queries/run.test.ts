@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {of as of$} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
@@ -630,10 +632,12 @@ describe('Playbook Run Queries', () => {
     describe('queryPlaybookRunsByParticipant', () => {
         it('should query playbook runs by participant ID', async () => {
             const participantId = 'participant-id-1';
+            const teamId = 'team-id-1';
             const mockRuns = TestHelper.createPlaybookRuns(2, 0, 0).map((run, index) => ({
                 ...run,
                 participant_ids: [participantId, 'other-participant'],
                 id: `run-${index}`,
+                channel_id: 'channel-id-1',
             }));
 
             await operator.handlePlaybookRun({
@@ -642,7 +646,13 @@ describe('Playbook Run Queries', () => {
                 removeAssociatedRecords: false,
             });
 
-            const result = queryPlaybookRunsByParticipant(operator.database, participantId);
+            const channel = TestHelper.fakeChannel({id: 'channel-id-1', team_id: teamId});
+            await operator.handleChannel({
+                channels: [channel],
+                prepareRecordsOnly: false,
+            });
+
+            const result = queryPlaybookRunsByParticipant(operator.database, participantId, teamId);
             const fetchedRuns = await result.fetch();
 
             expect(fetchedRuns.length).toBe(2);
@@ -656,10 +666,12 @@ describe('Playbook Run Queries', () => {
 
         it('should return empty array when no runs match participant ID', async () => {
             const participantId = 'participant-id-1';
+            const teamId = 'team-id-1';
             const nonMatchingParticipantId = 'other-participant';
             const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0).map((run) => ({
                 ...run,
                 participant_ids: [nonMatchingParticipantId],
+                channel_id: 'channel-id-1',
             }));
 
             await operator.handlePlaybookRun({
@@ -668,7 +680,13 @@ describe('Playbook Run Queries', () => {
                 removeAssociatedRecords: false,
             });
 
-            const result = queryPlaybookRunsByParticipant(operator.database, participantId);
+            const channel = TestHelper.fakeChannel({id: 'channel-id-1', team_id: teamId});
+            await operator.handleChannel({
+                channels: [channel],
+                prepareRecordsOnly: false,
+            });
+
+            const result = queryPlaybookRunsByParticipant(operator.database, participantId, teamId);
             const fetchedRuns = await result.fetch();
 
             expect(fetchedRuns.length).toBe(0);
@@ -676,6 +694,7 @@ describe('Playbook Run Queries', () => {
 
         it('should handle JSON array participant_ids properly', async () => {
             const participantId = 'user123';
+            const teamId = 'team-id-1';
             const mockRuns = TestHelper.createPlaybookRuns(3, 0, 0).map((run, index) => ({
                 ...run,
                 participant_ids: (() => {
@@ -688,6 +707,7 @@ describe('Playbook Run Queries', () => {
                     return ['different'];
                 })(),
                 id: `run-${index}`,
+                channel_id: 'channel-id-1',
             }));
 
             await operator.handlePlaybookRun({
@@ -696,7 +716,13 @@ describe('Playbook Run Queries', () => {
                 removeAssociatedRecords: false,
             });
 
-            const result = queryPlaybookRunsByParticipant(operator.database, participantId);
+            const channel = TestHelper.fakeChannel({id: 'channel-id-1', team_id: teamId});
+            await operator.handleChannel({
+                channels: [channel],
+                prepareRecordsOnly: false,
+            });
+
+            const result = queryPlaybookRunsByParticipant(operator.database, participantId, teamId);
             const fetchedRuns = await result.fetch();
 
             // Should only return the first two runs (index 0 and 1)
@@ -705,6 +731,36 @@ describe('Playbook Run Queries', () => {
             expect(runIds).toContain(mockRuns[0].id);
             expect(runIds).toContain(mockRuns[1].id);
             expect(runIds).not.toContain(mockRuns[2].id);
+        });
+
+        it('should filter out runs from other teams', async () => {
+            const participantId = 'participant-id-1';
+            const teamId = 'team-id-1';
+            const mockRuns = TestHelper.createPlaybookRuns(2, 0, 0).map((run, index) => ({
+                ...run,
+                participant_ids: [participantId],
+                channel_id: index === 0 ? 'channel-id-1' : 'channel-id-2',
+            }));
+
+            await operator.handlePlaybookRun({
+                runs: mockRuns,
+                prepareRecordsOnly: false,
+                removeAssociatedRecords: false,
+            });
+
+            const channel = TestHelper.fakeChannel({id: 'channel-id-1', team_id: teamId});
+            await operator.handleChannel({
+                channels: [channel],
+                prepareRecordsOnly: false,
+            });
+
+            const result = queryPlaybookRunsByParticipant(operator.database, participantId, teamId);
+            const fetchedRuns = await result.fetch();
+
+            expect(fetchedRuns.length).toBe(1);
+            const runIds = fetchedRuns.map((run) => run.id);
+            expect(runIds).toContain(mockRuns[0].id);
+            expect(runIds).not.toContain(mockRuns[1].id);
         });
     });
 });
