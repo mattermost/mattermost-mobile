@@ -393,6 +393,7 @@ describe('create, update & delete posts', () => {
     });
 
     it('burnPostNow - base case', async () => {
+        mockClient.burnPostNow.mockReset();
         const borPost = TestHelper.fakePost({channel_id: channelId, id: 'bor_postid1', user_id: user1.id, type: 'burn_on_read'});
 
         const postModels = await operator.handlePosts({
@@ -420,6 +421,13 @@ describe('create, update & delete posts', () => {
             expect(error).toBeDefined();
             expect(getFullErrorMessage(error)).toBe('Record Post#bor_postid1 not found');
         }
+    });
+
+    it('burnPostNow - returns error for non-BoR posts', async () => {
+        const result = await burnPostNow('foo', {} as PostModel);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+        expect(result.error).toBe('Post is not a Burn-on-Read post');
     });
 
     it('deletePost - system post', async () => {

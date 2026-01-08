@@ -36,6 +36,7 @@ import {forceLogoutIfNecessary} from './session';
 import type {Client} from '@client/rest';
 import type Model from '@nozbe/watermelondb/Model';
 import type PostModel from '@typings/database/models/servers/post';
+import {isBoRPost} from "@utils/bor";
 
 type PostsRequest = {
     error?: unknown;
@@ -874,6 +875,10 @@ export const deletePost = async (serverUrl: string, postToDelete: PostModel | Po
 };
 
 export const burnPostNow = async (serverUrl: string, postToBurn: PostModel | Post) => {
+    if (!isBoRPost(postToBurn)) {
+        return {error: 'Post is not a Burn-on-Read post'};
+    }
+
     try {
         const client = NetworkManager.getClient(serverUrl);
         await client.burnPostNow(postToBurn.id);
