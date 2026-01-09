@@ -64,7 +64,12 @@ const Notifications = ({
 }: NotificationsProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser]);
+
+    // We need to depend on the notifyProps object directly,
+    // since changes in it may not be reflected in the currentUser object
+    // (it is still the same object reference).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
     const callsRingingEnabled = useMemo(() => getCallsConfig(serverUrl).EnableRinging, [serverUrl]);
     const [isRegistered, setIsRegistered] = useState(true);
 
