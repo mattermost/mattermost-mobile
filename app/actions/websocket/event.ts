@@ -7,7 +7,7 @@ import * as bookmark from '@actions/local/channel_bookmark';
 import {
     handleBoRPostAllRevealed,
     handleBoRPostBurnedEvent,
-    handleBoRPostRevealedEvent
+    handleBoRPostRevealedEvent,
 } from '@actions/websocket/burn_on_read';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';

@@ -3,14 +3,13 @@
 
 import {removePost} from '@actions/local/post';
 import {handleNewPostEvent, handlePostEdited} from '@actions/websocket/posts';
+import {ActionType} from '@constants';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
+import {getCurrentUser} from '@queries/servers/user';
+import {isOwnBoRPost} from '@utils/bor';
 import {logError} from '@utils/log';
-import {getCurrentUser} from "@queries/servers/user";
-import {isOwnBoRPost} from "@utils/bor";
-import {PostModel} from "@database/models/server";
-import {ActionType} from "@constants";
 
 export async function handleBoRPostRevealedEvent(serverUrl: string, msg: WebSocketMessage) {
     try {
