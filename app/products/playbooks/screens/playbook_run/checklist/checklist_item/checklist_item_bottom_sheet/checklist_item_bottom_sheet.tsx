@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo, type ComponentProps} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {View, Text, Platform, TouchableOpacity, Alert} from 'react-native';
+import {View, Text, Platform, Pressable, Alert} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import MenuDivider from '@components/menu_divider';
@@ -171,6 +171,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     deleteButtonText: {
         ...typography('Body', 200, 'SemiBold'),
         color: theme.dndIndicator,
+    },
+    deleteButtonPressed: {
+        opacity: 0.2,
     },
 }));
 
@@ -446,15 +449,15 @@ const ChecklistItemBottomSheet = ({
             {!isDisabled && (
                 <>
                     <MenuDivider/>
-                    <TouchableOpacity
+                    <Pressable
                         onPress={handleDelete}
-                        style={styles.deleteButton}
+                        style={({pressed}) => [styles.deleteButton, pressed && styles.deleteButtonPressed]}
                         testID='checklist_item_bottom_sheet.delete_button'
                     >
                         <Text style={styles.deleteButtonText}>
                             {intl.formatMessage(messages.deleteTask)}
                         </Text>
-                    </TouchableOpacity>
+                    </Pressable>
                 </>
             )}
         </View>
