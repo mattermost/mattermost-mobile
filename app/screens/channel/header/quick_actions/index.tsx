@@ -77,13 +77,11 @@ const ChannelQuickAction = ({
                     showAsLabel={true}
                 />
             }
-            {!isDMorGM &&
-                <AskAgentsOption
-                    channelId={channelId}
-                    showAsLabel={true}
-                    testID='channel.quick_actions.ask_agents'
-                />
-            }
+            <AskAgentsOption
+                channelId={channelId}
+                showAsLabel={true}
+                testID='channel.quick_actions.ask_agents'
+            />
             <View style={styles.line}/>
             <LeaveChannelLabel
                 channelId={channelId}

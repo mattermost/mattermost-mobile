@@ -8,10 +8,7 @@
 // *******************************************************************
 
 import {
-    Channel,
     Setup,
-    Team,
-    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -30,16 +27,11 @@ import {expect} from 'detox';
 describe('Agents - Channel Summary', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
-    const directMessagesCategory = 'direct_messages';
     let testChannel: any;
-    let testUser: any;
-    let testTeam: any;
 
     beforeAll(async () => {
-        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-        testUser = user;
-        testTeam = team;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -68,34 +60,6 @@ describe('Agents - Channel Summary', () => {
         await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Close the bottom sheet by pressing back
-        await device.pressBack();
-        await ChannelScreen.back();
-    });
-
-    it('should NOT show Ask Agents option in DM', async () => {
-        // # Create a DM channel with another user
-        const {user: otherUser} = await User.apiCreateUser(siteOneUrl);
-        await Team.apiAddUserToTeam(siteOneUrl, otherUser.id, testTeam.id);
-        const {channel: dmChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, otherUser.id]);
-
-        // # Reload to see the new DM channel
-        await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
-
-        // # Wait for DM channel to appear in the list
-        await waitFor(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, dmChannel.name)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-        // # Open the DM channel
-        await ChannelScreen.open(directMessagesCategory, dmChannel.name);
-
-        // # Open quick actions by tapping the quick actions button
-        await wait(timeouts.ONE_SEC);
-        await ChannelScreen.channelQuickActionsButton.tap();
-
-        // * Verify Ask Agents option is NOT visible in DM
-        await expect(element(by.id('channel.quick_actions.ask_agents'))).not.toBeVisible();
-
-        // # Close the bottom sheet
         await device.pressBack();
         await ChannelScreen.back();
     });
@@ -146,4 +110,3 @@ describe('Agents - Channel Summary', () => {
         await ChannelScreen.back();
     });
 });
-

@@ -13,14 +13,12 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 
 type Props = {
     channelId: string;
-    isDMorGM?: boolean;
     showAsLabel?: boolean;
     testID?: string;
 }
 
 const AskAgentsOption = ({
     channelId,
-    isDMorGM = false,
     showAsLabel,
     testID,
 }: Props) => {
@@ -49,11 +47,6 @@ const AskAgentsOption = ({
         });
     }, [channelId, label, theme]);
 
-    // Don't show for DMs or GMs
-    if (isDMorGM) {
-        return null;
-    }
-
     if (showAsLabel) {
         return (
             <SlideUpPanelItem
@@ -77,4 +70,3 @@ const AskAgentsOption = ({
 };
 
 export default AskAgentsOption;
-
