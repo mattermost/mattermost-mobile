@@ -321,9 +321,9 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.BOR_POST_BURNED:
             handleBoRPostBurnedEvent(serverUrl, msg);
             break;
-        // case WebsocketEvents.BURN_ON_READ_ALL_REVEALED:
-        //     handleBoRPostAllRevealed(serverUrl, msg);
-        //     break;
+        case WebsocketEvents.BURN_ON_READ_ALL_REVEALED:
+            handleBoRPostAllRevealed(serverUrl, msg);
+            break;
     }
     handlePlaybookEvents(serverUrl, msg);
 }

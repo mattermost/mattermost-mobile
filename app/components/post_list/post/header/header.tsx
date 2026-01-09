@@ -14,7 +14,7 @@ import {CHANNEL, THREAD} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
-import {isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
+import {isUnrevealedBoRPost} from '@utils/bor';
 import {postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {ensureString} from '@utils/types';
@@ -101,12 +101,8 @@ const Header = (props: HeaderProps) => {
     const userIconOverride = ensureString(post.props?.override_icon_url);
     const usernameOverride = ensureString(post.props?.override_username);
 
-    const isUnrevealedPost = useMemo(() => isUnrevealedBoRPost(post), [post, post.metadata?.expire_at]);
-    const ownBoRPost = useMemo(() => isOwnBoRPost(post, currentUser), [currentUser, post]);
-    const showBoRIcon = isUnrevealedPost;
+    const showBoRIcon = useMemo(() => isUnrevealedBoRPost(post), [post, post.metadata?.expire_at]);;
     const borExpireAt = post.metadata?.expire_at;
-
-    console.log({message: post.message, showBoRIcon, borExpireAt});
 
     const serverUrl = useServerUrl();
 

@@ -118,12 +118,6 @@ function shouldUpdateForBoRPost(e: PostModel, n: Post): boolean {
     const bothBoRPost = e.type === PostTypes.BURN_ON_READ && n.type === PostTypes.BURN_ON_READ;
     if (!bothBoRPost) {
         return false;
-    } else {
-        return true;
-    }
-
-    if (bothBoRPost) {
-        console.log({existing: JSON.stringify(e.metadata), new: JSON.stringify(n.metadata)});
     }
 
     const borPostGotRevealed = isUnrevealedBoRPost(e) && !isUnrevealedBoRPost(n);
