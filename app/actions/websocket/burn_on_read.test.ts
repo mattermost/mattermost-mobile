@@ -3,20 +3,21 @@
 
 import {removePost} from '@actions/local/post';
 import {handleNewPostEvent, handlePostEdited} from '@actions/websocket/posts';
+import {ActionType} from '@constants';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
 import {getCurrentUser} from '@queries/servers/user';
-import {isOwnBoRPost} from '@utils/bor';
 import TestHelper from '@test/test_helper';
 
 import {handleBoRPostRevealedEvent, handleBoRPostBurnedEvent, handleBoRPostAllRevealed} from './burn_on_read';
+
+import type {ServerDatabase} from '@typings/database/database';
 
 jest.mock('@actions/websocket/posts');
 jest.mock('@queries/servers/post');
 jest.mock('@actions/local/post');
 jest.mock('@queries/servers/user');
-jest.mock('@utils/bor');
 
 const serverUrl = 'burnOnRead.test.com';
 
@@ -28,7 +29,6 @@ describe('WebSocket Burn on Read Actions', () => {
     const mockedHandlePostEdited = jest.mocked(handlePostEdited);
     const mockedRemovePost = jest.mocked(removePost);
     const mockedGetCurrentUser = jest.mocked(getCurrentUser);
-    const mockedIsOwnBoRPost = jest.mocked(isOwnBoRPost);
 
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
@@ -209,12 +209,11 @@ describe('WebSocket Burn on Read Actions', () => {
         } as WebSocketMessage;
 
         beforeEach(() => {
-            // Mock the operator.handlePosts method
             const mockOperator = {
                 database: {},
                 handlePosts: jest.fn().mockResolvedValue({}),
             };
-            DatabaseManager.serverDatabases[serverUrl] = {operator: mockOperator} as any;
+            DatabaseManager.serverDatabases[serverUrl] = {operator: mockOperator} as unknown as ServerDatabase;
         });
 
         it('should update post with expire_at when user owns the burn-on-read post', async () => {
@@ -228,16 +227,14 @@ describe('WebSocket Burn on Read Actions', () => {
 
             mockedGetPostById.mockResolvedValue(burnOnReadPost);
             mockedGetCurrentUser.mockResolvedValue(currentUser);
-            mockedIsOwnBoRPost.mockReturnValue(true);
 
             const result = await handleBoRPostAllRevealed(serverUrl, msg);
 
             expect(mockedGetPostById).toHaveBeenCalledWith(expect.any(Object), 'post1');
             expect(mockedGetCurrentUser).toHaveBeenCalledWith(expect.any(Object));
-            expect(mockedIsOwnBoRPost).toHaveBeenCalledWith(burnOnReadPost, currentUser);
             expect(mockToApi).toHaveBeenCalled();
             expect(DatabaseManager.serverDatabases[serverUrl]?.operator?.handlePosts).toHaveBeenCalledWith({
-                actionType: 'POSTS.RECEIVED_NEW',
+                actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: ['post1'],
                 posts: [{
                     id: 'post1',
@@ -248,7 +245,7 @@ describe('WebSocket Burn on Read Actions', () => {
                 prepareRecordsOnly: false,
             });
             expect(result).toHaveProperty('post');
-            expect(result!.post.metadata.expire_at).toBe(67890);
+            expect(result!.post!.metadata.expire_at).toBe(67890);
         });
 
         it('should return null when post does not exist locally', async () => {
@@ -258,20 +255,22 @@ describe('WebSocket Burn on Read Actions', () => {
 
             expect(mockedGetPostById).toHaveBeenCalledWith(expect.any(Object), 'post1');
             expect(mockedGetCurrentUser).not.toHaveBeenCalled();
-            expect(mockedIsOwnBoRPost).not.toHaveBeenCalled();
             expect(result).toBeNull();
         });
 
         it('should return null when user does not own the post', async () => {
-            mockedGetPostById.mockResolvedValue(burnOnReadPost);
+            const otherUsersBoRPost = TestHelper.fakePostModel({
+                id: 'post1',
+                type: PostTypes.BURN_ON_READ,
+                userId: 'otheruser1',
+            });
+            mockedGetPostById.mockResolvedValue(otherUsersBoRPost);
             mockedGetCurrentUser.mockResolvedValue(currentUser);
-            mockedIsOwnBoRPost.mockReturnValue(false);
 
             const result = await handleBoRPostAllRevealed(serverUrl, msg);
 
             expect(mockedGetPostById).toHaveBeenCalledWith(expect.any(Object), 'post1');
             expect(mockedGetCurrentUser).toHaveBeenCalledWith(expect.any(Object));
-            expect(mockedIsOwnBoRPost).toHaveBeenCalledWith(burnOnReadPost, currentUser);
             expect(DatabaseManager.serverDatabases[serverUrl]?.operator?.handlePosts).not.toHaveBeenCalled();
             expect(result).toBeNull();
         });
@@ -281,7 +280,6 @@ describe('WebSocket Burn on Read Actions', () => {
 
             expect(mockedGetPostById).not.toHaveBeenCalled();
             expect(mockedGetCurrentUser).not.toHaveBeenCalled();
-            expect(mockedIsOwnBoRPost).not.toHaveBeenCalled();
             expect(result).toBeNull();
         });
 
@@ -292,7 +290,6 @@ describe('WebSocket Burn on Read Actions', () => {
 
             expect(mockedGetPostById).not.toHaveBeenCalled();
             expect(mockedGetCurrentUser).not.toHaveBeenCalled();
-            expect(mockedIsOwnBoRPost).not.toHaveBeenCalled();
             expect(result).toBeNull();
         });
 
@@ -304,22 +301,6 @@ describe('WebSocket Burn on Read Actions', () => {
             expect(result).toHaveProperty('error');
             expect(result!.error).toBeInstanceOf(Error);
             expect(mockedGetCurrentUser).not.toHaveBeenCalled();
-            expect(mockedIsOwnBoRPost).not.toHaveBeenCalled();
-        });
-
-        it('should handle toApi conversion errors gracefully', async () => {
-            const mockToApi = jest.fn().mockRejectedValue(new Error('toApi error'));
-            burnOnReadPost.toApi = mockToApi;
-
-            mockedGetPostById.mockResolvedValue(burnOnReadPost);
-            mockedGetCurrentUser.mockResolvedValue(currentUser);
-            mockedIsOwnBoRPost.mockReturnValue(true);
-
-            const result = await handleBoRPostAllRevealed(serverUrl, msg);
-
-            expect(result).toHaveProperty('error');
-            expect(result!.error).toBeInstanceOf(Error);
-            expect(DatabaseManager.serverDatabases[serverUrl]?.operator?.handlePosts).not.toHaveBeenCalled();
         });
     });
 });

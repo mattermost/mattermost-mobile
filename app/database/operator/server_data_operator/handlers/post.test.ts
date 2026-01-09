@@ -18,6 +18,7 @@ import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
 import {exportedForTest} from './post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator/index';
+import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
@@ -876,6 +877,67 @@ describe('*** Operator: Post Handlers tests ***', () => {
             }),
         );
     });
+
+    it('=> HandlePosts: should update burn-on-read post when its read by all', async () => {
+        const spyOnProcessRecords = jest.spyOn(operator, 'processRecords');
+        const now = Date.now();
+
+        const existingPost: Post = {
+            id: 'bor_post_id',
+            create_at: 1596032651747,
+            update_at: 1596032651747,
+            edit_at: 0,
+            delete_at: 0,
+            is_pinned: false,
+            is_following: false,
+            user_id: 'user_id',
+            channel_id: 'channel_id',
+            root_id: '',
+            original_id: '',
+            message: 'This is the revealed message',
+            type: 'burn_on_read',
+            props: {expire_at: now + 1000000},
+            hashtags: '',
+            pending_post_id: '',
+            reply_count: 0,
+            last_reply_at: 0,
+            participants: null,
+            metadata: {},
+        };
+
+        // First, create the existing post
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [existingPost.id],
+            posts: [existingPost],
+            prepareRecordsOnly: false,
+        });
+
+        // Now create an updated version of the same post
+        const updatedPost: Post = {
+            ...existingPost,
+            metadata: {
+                ...existingPost.metadata,
+                expire_at: now + 1000000,
+            },
+        };
+
+        // Handle the updated post
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [updatedPost.id],
+            posts: [updatedPost],
+            prepareRecordsOnly: false,
+        });
+
+        // Verify that processRecords was called with the shouldUpdate function that handles BoR posts
+        expect(spyOnProcessRecords).toHaveBeenCalledWith(
+            expect.objectContaining({
+                createOrUpdateRawValues: [updatedPost],
+                shouldUpdate: expect.any(Function),
+            }),
+        );
+    });
 });
 
 describe('*** Operator: shouldUpdateForBoRPost tests ***', () => {
@@ -885,12 +947,12 @@ describe('*** Operator: shouldUpdateForBoRPost tests ***', () => {
         const existingPost = {
             type: 'regular',
             metadata: {},
-        } as PostModel;
+        } as unknown as PostModel;
 
         const newPost = {
             type: 'regular',
             metadata: {},
-        } as Post;
+        } as unknown as Post;
 
         expect(shouldUpdateForBoRPost(existingPost, newPost)).toBe(false);
     });
@@ -904,7 +966,7 @@ describe('*** Operator: shouldUpdateForBoRPost tests ***', () => {
         const newPost = {
             type: 'regular',
             metadata: {},
-        } as Post;
+        } as unknown as Post;
 
         expect(shouldUpdateForBoRPost(existingPost, newPost)).toBe(false);
     });
@@ -914,7 +976,7 @@ describe('*** Operator: shouldUpdateForBoRPost tests ***', () => {
             type: 'burn_on_read',
             props: {expire_at: 123456789},
             metadata: {},
-        } as PostModel;
+        } as unknown as PostModel;
 
         const newPost = {
             type: 'burn_on_read',
@@ -989,7 +1051,7 @@ describe('*** Operator: shouldUpdateForBoRPost tests ***', () => {
         const newPost = {
             type: 'burn_on_read',
             metadata: {recipients: []},
-        } as Post;
+        } as unknown as Post;
 
         expect(shouldUpdateForBoRPost(existingPost, newPost)).toBe(true);
     });
