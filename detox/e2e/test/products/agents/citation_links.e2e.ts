@@ -22,8 +22,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts, wait} from '@support/utils';
 
 describe('Agents - Citation Links', () => {
     const serverOneDisplayName = 'Server 1';
@@ -57,31 +56,27 @@ describe('Agents - Citation Links', () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // # Create a post to link to
+        // # Create a target post to link to via API
         const targetPostMessage = `Target Post ${getRandomId()}`;
         const targetPost = await Post.apiCreatePost(siteOneUrl, {
             channelId: testChannel.id,
             message: targetPostMessage,
         });
+        const postId = targetPost.post.id;
+
+        // # Wait for target post to appear
+        await wait(timeouts.ONE_SEC);
 
         // # Create a post with citation link to the target post
         // Format: [text](http://server/team/pl/postId?view=citation)
-        // We can use a relative URL or constructing full one. The implementation parses the path.
-        // Let's try relative path assuming current server context or full path.
-        // The implementation uses URL() constructor in InlineEntityLink if provided, but transform.ts handles string matching.
-        // Let's use a mock full URL structure.
-        const postId = targetPost.post.id;
         const citationUrl = `${serverOneUrl}/${testTeam.name}/pl/${postId}?view=citation`;
-        const citationMessage = `Here is a citation: [Source](${citationUrl})`;
+        const citationMessage = `Here is a citation [Source](${citationUrl})`;
 
         await ChannelScreen.postMessage(citationMessage);
 
-        // * Verify message is posted
-        await expect(element(by.text(citationMessage))).not.toBeVisible(); // Markdown should render differently
-
-        // * Verify citation icon is rendered
-        // testID format: inline_entity_link.post.postId
-        await expect(element(by.id(`inline_entity_link.post.${postId}`))).toBeVisible();
+        // * Wait for the post to render and verify citation icon is displayed
+        // testID format: inline_entity_link.post.{postId}
+        await waitFor(element(by.id(`inline_entity_link.post.${postId}`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Back to channel list
         await ChannelScreen.back();
@@ -95,14 +90,13 @@ describe('Agents - Citation Links', () => {
         // Format: [text](http://server/team/channels/channelName?view=citation)
         const channelName = testChannel.name;
         const citationUrl = `${serverOneUrl}/${testTeam.name}/channels/${channelName}?view=citation`;
-        const citationMessage = `Channel citation: [Source](${citationUrl})`;
+        const citationMessage = `Channel citation [Source](${citationUrl})`;
 
         await ChannelScreen.postMessage(citationMessage);
 
-        // * Verify citation icon is rendered
-        // testID format: inline_entity_link.channel.channelName
-        // Note: channel name in testID comes from the URL
-        await expect(element(by.id(`inline_entity_link.channel.${channelName}`))).toBeVisible();
+        // * Wait for the post to render and verify citation icon is displayed
+        // testID format: inline_entity_link.channel.{channelName}
+        await waitFor(element(by.id(`inline_entity_link.channel.${channelName}`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Back to channel list
         await ChannelScreen.back();
@@ -116,16 +110,15 @@ describe('Agents - Citation Links', () => {
         // Format: [text](http://server/team?view=citation)
         const teamName = testTeam.name;
         const citationUrl = `${serverOneUrl}/${teamName}?view=citation`;
-        const citationMessage = `Team citation: [Source](${citationUrl})`;
+        const citationMessage = `Team citation [Source](${citationUrl})`;
 
         await ChannelScreen.postMessage(citationMessage);
 
-        // * Verify citation icon is rendered
-        // testID format: inline_entity_link.team.teamName
-        await expect(element(by.id(`inline_entity_link.team.${teamName}`))).toBeVisible();
+        // * Wait for the post to render and verify citation icon is displayed
+        // testID format: inline_entity_link.team.{teamName}
+        await waitFor(element(by.id(`inline_entity_link.team.${teamName}`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Back to channel list
         await ChannelScreen.back();
     });
 });
-

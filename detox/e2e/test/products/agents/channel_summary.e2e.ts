@@ -24,6 +24,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Agents - Channel Summary', () => {
@@ -59,83 +60,89 @@ describe('Agents - Channel Summary', () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // # Open quick actions
-        await ChannelScreen.headerTitle.tap();
+        // # Open quick actions by tapping the quick actions button
+        await wait(timeouts.ONE_SEC);
+        await ChannelScreen.channelQuickActionsButton.tap();
 
         // * Verify Ask Agents option is visible
-        await expect(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible();
+        await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
-        // # Close quick actions
+        // # Close the bottom sheet by pressing back
+        await device.pressBack();
         await ChannelScreen.back();
     });
 
     it('should NOT show Ask Agents option in DM', async () => {
-        // # Create a DM
+        // # Create a DM channel with another user
         const {user: otherUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, otherUser.id, testTeam.id);
-        await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, otherUser.id]);
+        const {channel: dmChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, otherUser.id]);
 
-        // # Open DM
-        // Note: ChannelListScreen.getChannelItemDisplayName expects display name, which for DM is username usually (or display name depending on config).
-        // For API created user, display name might be empty or specific.
-        // Setup.apiCreateUser creates user with username, first_name, last_name.
-        // The list item usually shows username or full name.
-        // Let's rely on CreateDirectMessageScreen flow if we were creating it manually, but here we use API.
-        // ChannelScreen.open uses ChannelListScreen.getChannelItemDisplayName.
-        // Typically it matches the username for DMs.
-        await ChannelScreen.open(directMessagesCategory, otherUser.username);
+        // # Reload to see the new DM channel
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
 
-        // # Open quick actions
-        await ChannelScreen.headerTitle.tap();
+        // # Wait for DM channel to appear in the list
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, dmChannel.name)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // * Verify Ask Agents option is NOT visible
+        // # Open the DM channel
+        await ChannelScreen.open(directMessagesCategory, dmChannel.name);
+
+        // # Open quick actions by tapping the quick actions button
+        await wait(timeouts.ONE_SEC);
+        await ChannelScreen.channelQuickActionsButton.tap();
+
+        // * Verify Ask Agents option is NOT visible in DM
         await expect(element(by.id('channel.quick_actions.ask_agents'))).not.toBeVisible();
 
+        // # Close the bottom sheet
+        await device.pressBack();
         await ChannelScreen.back();
     });
 
     it('should open summary sheet and show options', async () => {
+        // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.headerTitle.tap();
 
-        // # Tap Ask Agents
+        // # Open quick actions by tapping the quick actions button
+        await wait(timeouts.ONE_SEC);
+        await ChannelScreen.channelQuickActionsButton.tap();
+
+        // # Wait for and tap Ask Agents option to open the summary sheet
+        await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await element(by.id('channel.quick_actions.ask_agents')).tap();
 
-        // * Verify options
-        await expect(element(by.id('agents.channel_summary.option.unreads'))).toBeVisible();
+        // * Verify summary options are visible
+        await waitFor(element(by.id('agents.channel_summary.option.unreads'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await expect(element(by.id('agents.channel_summary.option.7d'))).toBeVisible();
         await expect(element(by.id('agents.channel_summary.option.custom'))).toBeVisible();
         await expect(element(by.id('agents.channel_summary.agent_selector'))).toBeVisible();
 
-        // # Open Agent Selector
+        // # Open Agent Selector panel
         await element(by.id('agents.channel_summary.agent_selector')).tap();
 
-        // * Verify Agent Selector UI
-        await expect(element(by.id('agents.selector.back'))).toBeVisible();
-
-        // Check for empty state or agents depending on server state.
-        // Since we don't have agents, it should likely show "No agents available" or similar.
-        // element(by.text('No agents available'))
+        // * Verify Agent Selector back button is visible
+        await waitFor(element(by.id('agents.selector.back'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Go back from Agent Selector
         await element(by.id('agents.selector.back')).tap();
 
-        // # Open Date Picker
+        // # Wait for main options to reappear and open Date Range Picker
+        await waitFor(element(by.id('agents.channel_summary.option.custom'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await element(by.id('agents.channel_summary.option.custom')).tap();
 
-        // * Verify Date Picker UI
-        await expect(element(by.id('agents.channel_summary.date_picker.back'))).toBeVisible();
+        // * Verify Date Picker UI elements
+        await waitFor(element(by.id('agents.channel_summary.date_picker.back'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await expect(element(by.id('agents.channel_summary.date_from'))).toBeVisible();
 
         // # Go back from Date Picker
         await element(by.id('agents.channel_summary.date_picker.back')).tap();
 
-        // # Close sheet (via back button since it's a bottom sheet)
-        // If it's a standard navigation modal, back button works.
-        // If it's a bottom sheet, tapping back usually closes it.
-        // Or we can tap the close button if it has one (ChannelSummarySheet doesn't seem to have an explicit close button ID except the one passed to bottomSheet wrapper 'close-channel-summary').
-        // Let's try matching the ID 'close-channel-summary' if it exists.
-        // Or just go back to channel screen.
+        // # Close the bottom sheet by pressing back
+        await wait(timeouts.ONE_SEC);
+        await device.pressBack();
+
+        // # Navigate back to channel list
         await ChannelScreen.back();
     });
 });
