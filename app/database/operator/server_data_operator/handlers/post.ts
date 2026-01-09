@@ -125,7 +125,6 @@ function shouldUpdateForBoRPost(e: PostModel, n: Post): boolean {
 
     // Since a user can't un-see a BoR post, we consider an update if the recipients list length has changed
     const borRecipientsUpdated = (e.metadata?.recipients || []).length !== (n.metadata?.recipients || []).length;
-
     return borPostGotRevealed || borRecipientsUpdated || borPostGotReadByAll;
 }
 

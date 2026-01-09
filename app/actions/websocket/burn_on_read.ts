@@ -67,7 +67,6 @@ export async function handleBoRPostBurnedEvent(serverUrl: string, msg: WebSocket
     }
 }
 export async function handleBoRPostAllRevealed(serverUrl: string, msg: WebSocketMessage) {
-    console.log('handleBoRPostAllRevealed called...');
     try {
         const postId = msg.data.post_id;
         const expireAt = msg.data.sender_expire_at;
@@ -100,7 +99,6 @@ export async function handleBoRPostAllRevealed(serverUrl: string, msg: WebSocket
         });
 
         return {post: updatedPost};
-
     } catch (error) {
         logError('handleBoRPostAllRevealed could not handle websocket event for all revealed burn-on-read posts', error);
         return {error};
