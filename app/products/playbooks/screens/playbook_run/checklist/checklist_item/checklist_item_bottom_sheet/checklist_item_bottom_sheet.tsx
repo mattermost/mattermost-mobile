@@ -87,11 +87,11 @@ const messages = defineMessages({
         defaultMessage: 'Are you sure you want to delete this task? This action cannot be undone.',
     },
     cancel: {
-        id: 'mobile.post.cancel',
+        id: 'playbooks.checklist_item.delete_task_cancel',
         defaultMessage: 'Cancel',
     },
     delete: {
-        id: 'post_info.del',
+        id: 'playbooks.checklist_item.delete_task_confirm',
         defaultMessage: 'Delete',
     },
 });

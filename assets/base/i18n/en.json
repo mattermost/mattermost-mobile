@@ -1041,6 +1041,8 @@
   "playbooks.checklist_item.checked": "Checked",
   "playbooks.checklist_item.command": "Command",
   "playbooks.checklist_item.delete_task": "Delete task",
+  "playbooks.checklist_item.delete_task_cancel": "Cancel",
+  "playbooks.checklist_item.delete_task_confirm": "Delete",
   "playbooks.checklist_item.delete_task_confirmation": "Are you sure you want to delete this task? This action cannot be undone.",
   "playbooks.checklist_item.delete_task_title": "Delete task",
   "playbooks.checklist_item.due_date": "Due date",
