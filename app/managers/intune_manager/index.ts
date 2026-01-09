@@ -92,7 +92,6 @@ export class IntuneManagerSingleton {
      */
     async enrollServer(serverUrl: string, identity: MSALIdentity): Promise<void> {
         if (!Intune) {
-            logWarning('IntuneManager: Cannot enroll in MAM - Intune library not available');
             return;
         }
 
@@ -112,7 +111,6 @@ export class IntuneManagerSingleton {
      */
     async unenrollServer(serverUrl: string, doWipe: boolean): Promise<void> {
         if (!Intune) {
-            logWarning('IntuneManager: Cannot unenroll - Intune library not available');
             return;
         }
 

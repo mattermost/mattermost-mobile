@@ -26,6 +26,17 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 17,
+        steps: [
+            addColumns({
+                table: PLAYBOOK_RUN_ATTRIBUTE_VALUE,
+                columns: [
+                    {name: 'update_at', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 16,
         steps: [
             addColumns({
