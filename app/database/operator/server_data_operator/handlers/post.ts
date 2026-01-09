@@ -112,6 +112,7 @@ const mergePostInChannelChunks = async (newChunk: PostsInChannelModel, existingC
 
 export const exportedForTest = {
     mergePostInChannelChunks,
+    shouldUpdateForBoRPost,
 };
 
 function shouldUpdateForBoRPost(e: PostModel, n: Post): boolean {

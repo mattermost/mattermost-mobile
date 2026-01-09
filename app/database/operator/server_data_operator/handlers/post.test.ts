@@ -878,6 +878,123 @@ describe('*** Operator: Post Handlers tests ***', () => {
     });
 });
 
+describe('*** Operator: shouldUpdateForBoRPost tests ***', () => {
+    const {shouldUpdateForBoRPost} = exportedForTest;
+
+    it('should return false for non-BoR posts', () => {
+        const existingPost = {
+            type: 'regular',
+            metadata: {},
+        } as PostModel;
+
+        const newPost = {
+            type: 'regular',
+            metadata: {},
+        } as Post;
+
+        expect(shouldUpdateForBoRPost(existingPost, newPost)).toBe(false);
+    });
+
+    it('should return false when only one post is BoR', () => {
+        const existingPost = {
+            type: 'burn_on_read',
+            metadata: {},
+        } as PostModel;
+
+        const newPost = {
+            type: 'regular',
+            metadata: {},
+        } as Post;
+
+        expect(shouldUpdateForBoRPost(existingPost, newPost)).toBe(false);
+    });
+
+    it('should return true when BoR post gets revealed', () => {
+        const existingPost = {
+            type: 'burn_on_read',
+            props: {expire_at: 123456789},
+            metadata: {},
+        } as PostModel;
+
+        const newPost = {
+            type: 'burn_on_read',
+            metadata: {expire_at: 123456789},
+        } as Post;
+
+        expect(shouldUpdateForBoRPost(existingPost, newPost)).toBe(true);
+    });
+
+    it('should return true when BoR post recipients list changes', () => {
+        const existingPost = {
+            type: 'burn_on_read',
+            metadata: {recipients: ['user1']},
+        } as PostModel;
+
+        const newPost = {
+            type: 'burn_on_read',
+            metadata: {recipients: ['user1', 'user2']},
+        } as Post;
+
+        expect(shouldUpdateForBoRPost(existingPost, newPost)).toBe(true);
+    });
+
+    it('should return true when BoR post gets read by all (expire_at added)', () => {
+        const existingPost = {
+            type: 'burn_on_read',
+            metadata: {},
+        } as PostModel;
+
+        const newPost = {
+            type: 'burn_on_read',
+            metadata: {expire_at: 123456789},
+        } as Post;
+
+        expect(shouldUpdateForBoRPost(existingPost, newPost)).toBe(true);
+    });
+
+    it('should return false when BoR posts have no relevant changes', () => {
+        const existingPost = {
+            type: 'burn_on_read',
+            metadata: {recipients: ['user1'], expire_at: 123456789},
+        } as PostModel;
+
+        const newPost = {
+            type: 'burn_on_read',
+            metadata: {recipients: ['user1'], expire_at: 123456789},
+        } as Post;
+
+        expect(shouldUpdateForBoRPost(existingPost, newPost)).toBe(false);
+    });
+
+    it('should handle missing recipients arrays', () => {
+        const existingPost = {
+            type: 'burn_on_read',
+            metadata: {},
+        } as PostModel;
+
+        const newPost = {
+            type: 'burn_on_read',
+            metadata: {recipients: ['user1']},
+        } as Post;
+
+        expect(shouldUpdateForBoRPost(existingPost, newPost)).toBe(true);
+    });
+
+    it('should handle recipients array becoming empty', () => {
+        const existingPost = {
+            type: 'burn_on_read',
+            metadata: {recipients: ['user1']},
+        } as PostModel;
+
+        const newPost = {
+            type: 'burn_on_read',
+            metadata: {recipients: []},
+        } as Post;
+
+        expect(shouldUpdateForBoRPost(existingPost, newPost)).toBe(true);
+    });
+});
+
 describe('*** Operator: merge chunks ***', () => {
     const {mergePostInChannelChunks} = exportedForTest;
     let database: Database;
