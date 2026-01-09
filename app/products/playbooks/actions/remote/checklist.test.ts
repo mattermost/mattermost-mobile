@@ -451,7 +451,6 @@ describe('checklist', () => {
             jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
 
             const result = await deleteChecklistItem(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber);
-            expect(result).toBeDefined();
             expect(result.error).toBeDefined();
             expect(mockClient.deleteChecklistItem).not.toHaveBeenCalled();
             expect(localDeleteChecklistItem).not.toHaveBeenCalled();
@@ -461,7 +460,6 @@ describe('checklist', () => {
             mockClient.deleteChecklistItem.mockImplementationOnce(throwFunc);
 
             const result = await deleteChecklistItem(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber);
-            expect(result).toBeDefined();
             expect(result.error).toBeDefined();
             expect(mockClient.deleteChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber);
             expect(localDeleteChecklistItem).not.toHaveBeenCalled();
@@ -472,8 +470,6 @@ describe('checklist', () => {
             jest.mocked(localDeleteChecklistItem).mockResolvedValueOnce({error: 'Local DB error'});
 
             const result = await deleteChecklistItem(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber);
-            expect(result).toBeDefined();
-            expect(result.error).toBeDefined();
             expect(result.error).toBe('Local DB error');
             expect(mockClient.deleteChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber);
             expect(localDeleteChecklistItem).toHaveBeenCalledWith(serverUrl, itemId);
@@ -484,7 +480,6 @@ describe('checklist', () => {
             jest.mocked(localDeleteChecklistItem).mockResolvedValueOnce({data: true});
 
             const result = await deleteChecklistItem(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber);
-            expect(result).toBeDefined();
             expect(result.error).toBeUndefined();
             expect(result.data).toBe(true);
             expect(mockClient.deleteChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber);
