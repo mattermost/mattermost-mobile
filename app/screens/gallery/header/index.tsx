@@ -59,8 +59,12 @@ const Header = ({index, onClose, style, total}: Props) => {
             style={style}
         >
             <Animated.View style={topContainerStyle}/>
-            <Animated.View style={containerStyle}>
+            <Animated.View
+                style={containerStyle}
+                testID='gallery.header'
+            >
                 <PressableOpacity
+                    testID='gallery.header.close'
                     onPress={onClose}
                     style={iconStyle}
                 >

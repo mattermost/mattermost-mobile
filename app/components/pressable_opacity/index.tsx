@@ -11,9 +11,10 @@ type Props = {
     children: React.ReactNode;
     onPress: () => void;
     style?: StyleProp<ViewStyle>;
+    testID?: string;
 }
 
-export default function PressableOpacity({children, onPress, style}: Props) {
+export default function PressableOpacity({children, onPress, style, testID}: Props) {
     const cancelOpacity = useSharedValue(1);
 
     const cancelAnimatedStyle = useAnimatedStyle(() => {
@@ -24,11 +25,11 @@ export default function PressableOpacity({children, onPress, style}: Props) {
 
     const cancelPressIn = useCallback(() => {
         cancelOpacity.value = withTiming(0.5, {duration: 100});
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps -- cancelOpacity is a SharedValue and doesn't need to be in deps
 
     const cancelPressOut = useCallback(() => {
         cancelOpacity.value = withTiming(1, {duration: 100});
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps -- cancelOpacity is a SharedValue and doesn't need to be in deps
 
     return (
         <Pressable
@@ -36,6 +37,7 @@ export default function PressableOpacity({children, onPress, style}: Props) {
             onPressOut={cancelPressOut}
             onPress={onPress}
             style={[style, cancelAnimatedStyle]}
+            testID={testID || 'pressable_opacity.button'}
         >
             {children}
         </Pressable>
