@@ -35,7 +35,9 @@ export type Props = {
 
     // Post Props
     postPriority: PostPriority;
+    postBoRConfig?: PostBoRConfig;
     updatePostPriority: (postPriority: PostPriority) => void;
+    updatePostBoRStatus: (config: PostBoRConfig) => void;
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
 
@@ -128,10 +130,12 @@ function DraftInput({
     updatePostInputTop,
     postPriority,
     updatePostPriority,
+    updatePostBoRStatus,
     persistentNotificationInterval,
     persistentNotificationMaxRecipients,
     setIsFocused,
     scheduledPostsEnabled,
+    postBoRConfig,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -216,6 +220,7 @@ function DraftInput({
                     <Header
                         noMentionsError={noMentionsError}
                         postPriority={postPriority}
+                        postBoRConfig={postBoRConfig}
                     />
                     <PostInput
                         testID={postInputTestID}
@@ -248,6 +253,8 @@ function DraftInput({
                             postPriority={postPriority}
                             updatePostPriority={updatePostPriority}
                             canShowPostPriority={canShowPostPriority}
+                            postBoRConfig={postBoRConfig}
+                            updatePostBoRStatus={updatePostBoRStatus}
                             focus={focus}
                         />
                         <SendAction

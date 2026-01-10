@@ -248,7 +248,9 @@ export const observeIsCustomStatusExpirySupported = (database: Database) => {
 
 export const observeConfigBooleanValue = (database: Database, key: keyof ClientConfig, defaultValue = false) => {
     return observeConfigValue(database, key).pipe(
-        switchMap((v) => of$(v ? v === 'true' : defaultValue)),
+        switchMap((v) => {
+            return of$(v ? v === 'true' : defaultValue);
+        }),
         distinctUntilChanged(),
     );
 };

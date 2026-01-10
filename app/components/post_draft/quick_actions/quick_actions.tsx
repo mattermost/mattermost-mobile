@@ -4,6 +4,8 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
+import BoRQuickAction from '@components/post_draft/quick_actions/bor_quick_action';
+
 import AttachmentAction from './attachment_quick_action';
 import EmojiAction from './emoji_quick_action';
 import InputAction from './input_quick_action';
@@ -14,6 +16,7 @@ type Props = {
     canUploadFiles: boolean;
     fileCount: number;
     isPostPriorityEnabled: boolean;
+    isBoREnabled: boolean;
     canShowPostPriority?: boolean;
     canShowSlashCommands?: boolean;
     canShowEmojiPicker?: boolean;
@@ -25,6 +28,8 @@ type Props = {
     addFiles: (file: FileInfo[]) => void;
     postPriority: PostPriority;
     updatePostPriority: (postPriority: PostPriority) => void;
+    postBoRConfig?: PostBoRConfig;
+    updatePostBoRStatus?: (config: PostBoRConfig) => void;
     focus: () => void;
 }
 
@@ -45,6 +50,7 @@ export default function QuickActions({
     value,
     fileCount,
     isPostPriorityEnabled,
+    isBoREnabled,
     canShowSlashCommands = true,
     canShowPostPriority,
     canShowEmojiPicker = true,
@@ -54,6 +60,8 @@ export default function QuickActions({
     postPriority,
     updatePostPriority,
     focus,
+    updatePostBoRStatus,
+    postBoRConfig,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
     const slashDisabled = value.length > 0;
@@ -63,6 +71,7 @@ export default function QuickActions({
     const emojiActionTestID = `${testID}.emoji_action`;
     const attachmentActionTestID = `${testID}.attachment_action`;
     const postPriorityActionTestID = `${testID}.post_priority_action`;
+    const borPriorityActionTestID = `${testID}.bor_action`;
 
     const uploadProps = {
         disabled: !canUploadFiles,
@@ -109,6 +118,13 @@ export default function QuickActions({
                     updatePostPriority={updatePostPriority}
                 />
             )}
+            {isBoREnabled && updatePostBoRStatus &&
+                <BoRQuickAction
+                    testId={borPriorityActionTestID}
+                    postBoRConfig={postBoRConfig}
+                    updatePostBoRStatus={updatePostBoRStatus}
+                />
+            }
         </View>
     );
 }

@@ -65,6 +65,31 @@ const enhanced = withObservables(['channelId', 'rootId', 'draftType'], (ownProps
         );
     }
 
+    let postBoRConfig;
+    if (draftType === DRAFT_TYPE_SCHEDULED) {
+        postBoRConfig = queryScheduledPost(database, channelId, rootId).observeWithColumns(['metadata']).pipe(
+            switchMap(observeFirstScheduledPost),
+            switchMap((d) => {
+                if (!d?.metadata?.borConfig) {
+                    return of$(null);
+                }
+
+                return of$(d.metadata.borConfig);
+            }),
+        );
+    } else {
+        postBoRConfig = queryDraft(database, channelId, rootId).observeWithColumns(['metadata']).pipe(
+            switchMap(observeFirstDraft),
+            switchMap((d) => {
+                if (!d?.metadata?.borConfig) {
+                    return of$(null);
+                }
+
+                return of$(d.metadata.borConfig);
+            }),
+        );
+    }
+
     const enableConfirmNotificationsToChannel = observeConfigBooleanValue(database, 'EnableConfirmNotificationsToChannel');
     const maxMessageLength = observeConfigIntValue(database, 'MaxPostSize', MAX_MESSAGE_LENGTH_FALLBACK);
     const persistentNotificationInterval = observeConfigIntValue(database, 'PersistentNotificationIntervalMinutes');
@@ -104,6 +129,7 @@ const enhanced = withObservables(['channelId', 'rootId', 'draftType'], (ownProps
         persistentNotificationInterval,
         persistentNotificationMaxRecipients,
         postPriority,
+        postBoRConfig,
     };
 });
 
