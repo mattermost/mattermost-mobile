@@ -224,12 +224,19 @@ lane :link_sentry do |options|
   end
 end
 
+# Uploads built files to S3
+# It's currently uploading to two different buckets depending on the
+# enable_s3_new_bucket option.
+# Default, uploads to the legacy bucket using static credentials (AWS_BUCKET_NAME).
+# To upload to the new bucket AWS_NEW_BUCKET_NAME (using IAM/OIDC), pass :enable_s3_new_bucket => true in options.
+# Example: upload_file_to_s3({:os_type => "ios", :enable_s3_new_bucket => true})
 desc 'Upload file to s3'
 lane :upload_file_to_s3 do |options|
   os_type = options[:os_type].downcase
   extensions = os_type == "android" ? ["*.apk", "*.aab"] : ["*.ipa"]
   build_folder_path = Dir[File.expand_path('..')].first
   files = []
+  enable_s3_new_bucket = options[:enable_s3_new_bucket] == true
 
   unless options[:file].nil? || options[:file].empty?
     files.push("#{build_folder_path}/#{options[:file]}")
@@ -259,6 +266,8 @@ lane :upload_file_to_s3 do |options|
 
     s3_region = ENV['AWS_REGION']
     s3_bucket_name = ENV['AWS_BUCKET_NAME']
+    s3_new_bucket_name = ENV['AWS_NEW_BUCKET_NAME']
+    bucket_name = enable_s3_new_bucket ? s3_new_bucket_name : s3_bucket_name
 
     if is_build_pr
       # Get the current git commit SHA (short version)
@@ -267,8 +276,18 @@ lane :upload_file_to_s3 do |options|
     else
       s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
     end
-
-    s3_client = Aws::S3::Client.new(region: s3_region)
+    if enable_s3_new_bucket
+      # Client for new bucket assumes role via GitHub Actions OIDC
+      s3_client = Aws::S3::Client.new(region: s3_region)
+      UI.message("Set S3 Client to upload to new S3 bucket: #{s3_new_bucket_name}")
+    else
+      s3_client = Aws::S3::Client.new(
+        region: s3_region,
+        access_key_id: ENV['AWS_ACCESS_KEY_ID'],
+        secret_access_key: ENV['AWS_SECRET_ACCESS_KEY']
+      )
+      UI.message("Set S3 Client to upload to existing S3 bucket: #{s3_bucket_name}")
+    end
     transfer_manager = Aws::S3::TransferManager.new(client: s3_client)
     mutex = Mutex.new
     threads = []
@@ -288,7 +307,8 @@ lane :upload_file_to_s3 do |options|
           filename = File.basename(file)
           puts "[#{Thread.current["file_number"]}/#{total_files}] #{filename} uploading..."
           s3_key = "#{s3_folder}/#{filename}"
-          transfer_manager.upload_file(file, bucket: s3_bucket_name, key: s3_key)
+          transfer_manager.upload_file(file, bucket: bucket_name, key: s3_key)
+          # Keep s3_bucket_name to support both buckets.
           links.push("https://#{s3_bucket_name}/#{s3_key}")
         end
       }
@@ -304,7 +324,7 @@ lane :upload_file_to_s3 do |options|
         plist_body = ERB.new(plist_template).result(binding)
 
         s3_client.put_object(
-          bucket: s3_bucket_name,
+          bucket: bucket_name,
           key: "#{s3_folder}/#{plist_file}",
           body: plist_body,
           content_type: 'application/xml'
@@ -313,13 +333,15 @@ lane :upload_file_to_s3 do |options|
         install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket_name}/#{s3_folder}/#{plist_file}"
       end
 
-      qa_build_message({
-                            :os_type => os_type,
-                            :install_url => install_url
-                        })
+      if enable_s3_new_bucket == false
+        qa_build_message({
+                              :os_type => os_type,
+                              :install_url => install_url
+                          })
+      end
     end
 
-    if options[:file]&.start_with?('Mattermost-simulator-') && options[:file]&.end_with?('.app.zip')
+    if options[:file]&.start_with?('Mattermost-simulator-') && options[:file]&.end_with?('.app.zip') && enable_s3_new_bucket == false
       pretext = '#### New iOS build for VM/Simulator'
       msg = "Download link: #{links.first}"
       send_message_to_mattermost({
@@ -395,6 +417,7 @@ platform :ios do
     link_sentry({:os_type => "ios"})
     build_ios
     upload_file_to_s3({:os_type => "ios"})
+    upload_file_to_s3({:os_type => "ios", :enable_s3_new_bucket => true})
   end
 
   desc 'Build an unsigned ipa'
@@ -442,6 +465,11 @@ platform :ios do
     upload_file_to_s3({
       :os_type => "ios",
       :file => output_file
+    })
+    upload_file_to_s3({
+      :os_type => "ios",
+      :file => output_file,
+      :enable_s3_new_bucket => true
     })
   end
 
@@ -770,6 +798,7 @@ platform :android do
     build_android
     move_android_to_root
     upload_file_to_s3({:os_type => "android"})
+    upload_file_to_s3({:os_type => "android", :enable_s3_new_bucket => true})
   end
 
   desc 'Build an unsigned apk'
