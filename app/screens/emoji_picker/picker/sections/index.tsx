@@ -227,8 +227,6 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
         return fetchingCustomEmojis ? <SectionFooter/> : null;
     }, [fetchingCustomEmojis]);
 
-    const List = useMemo(() => (isTablet ? FlashList : BottomSheetFlashList), [isTablet]);
-
     useEffect(() => {
         setEmojiCategoryBarIcons(sections.filter((s) => s.type === 'section').map((s) => ({
             key: s.key,
@@ -251,7 +249,7 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
 
     return (
         <View style={styles.container}>
-            <List
+            <BottomSheetFlashList
                 contentContainerStyle={containerStyle}
                 data={sections}
                 estimatedItemSize={EMOJI_SIZE + EMOJI_ROW_MARGIN}

@@ -16,6 +16,7 @@ type PermalinkFilesProps = {
     failed?: boolean;
     parentLocation?: string;
     parentPostId?: string;
+    filesInfo?: FileInfo[];
 };
 
 const styles = StyleSheet.create({
@@ -25,7 +26,7 @@ const styles = StyleSheet.create({
 });
 
 const PermalinkFiles = (props: PermalinkFilesProps) => {
-    const {parentLocation, parentPostId, post, location, isReplyPost, failed} = props;
+    const {parentLocation, parentPostId, post, location, isReplyPost, failed, filesInfo = []} = props;
     const [layoutWidth, setLayoutWidth] = useState(0);
 
     const listener = useCallback((viewableItemsMap: Record<string, boolean>) => {
@@ -60,7 +61,9 @@ const PermalinkFiles = (props: PermalinkFilesProps) => {
             style={styles.container}
         >
             <Files
-                post={post}
+                postId={post.id}
+                postProps={post.props ?? undefined}
+                filesInfo={filesInfo}
                 location={location}
                 isReplyPost={isReplyPost}
                 failed={failed}

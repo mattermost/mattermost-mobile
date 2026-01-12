@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
 
 import {fetchPostThread} from '@actions/remote/post';
@@ -44,6 +44,7 @@ const ThreadPostList = ({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const isFetchingThread = useFetchingThreadState(rootPost.id);
+    const [showHeader, setShowHeader] = useState(false);
 
     const canLoadMorePosts = useRef(true);
     const onEndReached = useDebounce(useCallback(async () => {
@@ -90,10 +91,19 @@ const ThreadPostList = ({
 
     const lastViewedAt = isCRTEnabled ? (thread?.viewedAt ?? 0) : channelLastViewedAt;
 
-    let header;
-    if (isFetchingThread && threadPosts.length === 1) {
-        header = <ActivityIndicator color={theme.centerChannelColor}/>;
-    }
+    useEffect(() => {
+        const raf = requestAnimationFrame(() => {
+            setShowHeader(isFetchingThread && threadPosts.length === 1);
+        });
+        return () => cancelAnimationFrame(raf);
+    }, [isFetchingThread, threadPosts.length, theme.centerChannelColor]);
+
+    const header = useMemo(() => {
+        if (showHeader) {
+            return <ActivityIndicator color={theme.centerChannelColor}/>;
+        }
+        return undefined;
+    }, [showHeader, theme.centerChannelColor]);
 
     const postList = (
         <PostList

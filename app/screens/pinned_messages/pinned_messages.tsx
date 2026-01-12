@@ -11,6 +11,7 @@ import DateSeparator from '@components/post_list/date_separator';
 import Post from '@components/post_list/post';
 import {Events, Screens} from '@constants';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
+import {PostConfigProvider} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -21,10 +22,12 @@ import EmptyState from './empty';
 
 import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
+import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     appsEnabled: boolean;
     channelId: string;
+    currentUser: UserModel;
     currentTimezone: string | null;
     customEmojiNames: string[];
     isCRTEnabled: boolean;
@@ -50,6 +53,7 @@ const styles = StyleSheet.create({
 function SavedMessages({
     appsEnabled,
     channelId,
+    currentUser,
     currentTimezone,
     customEmojiNames,
     isCRTEnabled,
@@ -122,6 +126,7 @@ function SavedMessages({
                     <Post
                         appsEnabled={appsEnabled}
                         customEmojiNames={customEmojiNames}
+                        currentUser={currentUser}
                         highlightPinnedOrSaved={false}
                         isCRTEnabled={isCRTEnabled}
                         location={Screens.PINNED_MESSAGES}
@@ -139,7 +144,7 @@ function SavedMessages({
             default:
                 return null;
         }
-    }, [appsEnabled, currentTimezone, customEmojiNames, isCRTEnabled]);
+    }, [appsEnabled, currentTimezone, currentUser, customEmojiNames, isCRTEnabled]);
 
     return (
         <SafeAreaView
@@ -148,17 +153,19 @@ function SavedMessages({
             testID='pinned_messages.screen'
         >
             <ExtraKeyboardProvider>
-                <FlatList
-                    contentContainerStyle={data.length ? styles.list : [styles.empty]}
-                    ListEmptyComponent={emptyList}
-                    data={data}
-                    onRefresh={handleRefresh}
-                    refreshing={refreshing}
-                    renderItem={renderItem}
-                    scrollToOverflowEnabled={true}
-                    onViewableItemsChanged={onViewableItemsChanged}
-                    testID='pinned_messages.post_list.flat_list'
-                />
+                <PostConfigProvider>
+                    <FlatList
+                        contentContainerStyle={data.length ? styles.list : [styles.empty]}
+                        ListEmptyComponent={emptyList}
+                        data={data}
+                        onRefresh={handleRefresh}
+                        refreshing={refreshing}
+                        renderItem={renderItem}
+                        scrollToOverflowEnabled={true}
+                        onViewableItemsChanged={onViewableItemsChanged}
+                        testID='pinned_messages.post_list.flat_list'
+                    />
+                </PostConfigProvider>
             </ExtraKeyboardProvider>
         </SafeAreaView>
     );

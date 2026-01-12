@@ -297,6 +297,7 @@ const PermalinkPreview = ({
                             isReplyPost={false}
                             parentLocation={parentLocation}
                             parentPostId={parentPostId}
+                            filesInfo={filesInfo}
                         />
                     )}
                 </View>

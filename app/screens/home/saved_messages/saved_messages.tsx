@@ -17,20 +17,23 @@ import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
 import {SCREENS_AS_BOTTOM_SHEET} from '@constants/screens';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
+import {PostConfigProvider} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
 import {useCurrentScreen} from '@store/navigation_store';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
+import {getTimezone} from '@utils/user';
 
 import EmptyState from './components/empty';
 
 import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
+import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     appsEnabled?: boolean;
-    currentTimezone: string | null;
+    currentUser: UserModel;
     customEmojiNames: string[];
     posts: PostModel[];
 }
@@ -48,12 +51,13 @@ const styles = StyleSheet.create({
     },
 });
 
-function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: Props) {
+function SavedMessages({appsEnabled, posts, currentUser, customEmojiNames}: Props) {
     const intl = useIntl();
     const [loading, setLoading] = useState(!posts.length);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
     const serverUrl = useServerUrl();
+    const currentTimezone = useMemo(() => getTimezone(currentUser.timezone), [currentUser.timezone]);
     const route = useRoute();
     const isFocused = useIsFocused();
     const currentScreen = useCurrentScreen();
@@ -157,6 +161,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
                 return (
                     <PostWithChannelInfo
                         appsEnabled={appsEnabled ?? false}
+                        currentUser={currentUser}
                         customEmojiNames={customEmojiNames}
                         key={item.value.currentPost.id}
                         location={Screens.SAVED_MESSAGES}
@@ -168,7 +173,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
             default:
                 return null;
         }
-    }, [appsEnabled, currentTimezone, customEmojiNames]);
+    }, [appsEnabled, currentUser, currentTimezone, customEmojiNames]);
 
     return (
         <ExtraKeyboardProvider>
@@ -189,24 +194,26 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
                     <Animated.View style={top}>
                         <RoundedHeaderContext/>
                     </Animated.View>
-                    <Animated.FlatList
-                        ref={scrollRef}
-                        contentContainerStyle={paddingTop}
-                        ListEmptyComponent={emptyList}
-                        data={data}
-                        onRefresh={handleRefresh}
-                        refreshing={refreshing}
-                        renderItem={renderItem}
-                        scrollToOverflowEnabled={true}
-                        showsVerticalScrollIndicator={false}
-                        progressViewOffset={scrollPaddingTop}
-                        scrollEventThrottle={16}
-                        indicatorStyle='black'
-                        onScroll={onScroll}
-                        removeClippedSubviews={true}
-                        onViewableItemsChanged={onViewableItemsChanged}
-                        testID='saved_messages.post_list.flat_list'
-                    />
+                    <PostConfigProvider>
+                        <Animated.FlatList
+                            ref={scrollRef}
+                            contentContainerStyle={paddingTop}
+                            ListEmptyComponent={emptyList}
+                            data={data}
+                            onRefresh={handleRefresh}
+                            refreshing={refreshing}
+                            renderItem={renderItem}
+                            scrollToOverflowEnabled={true}
+                            showsVerticalScrollIndicator={false}
+                            progressViewOffset={scrollPaddingTop}
+                            scrollEventThrottle={16}
+                            indicatorStyle='black'
+                            onScroll={onScroll}
+                            removeClippedSubviews={true}
+                            onViewableItemsChanged={onViewableItemsChanged}
+                            testID='saved_messages.post_list.flat_list'
+                        />
+                    </PostConfigProvider>
                 </Animated.View>
             </SafeAreaView>
         </ExtraKeyboardProvider>

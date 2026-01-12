@@ -11,7 +11,6 @@ import {observeSavedPostsByIds, observeIsPostAcknowledgementsEnabled} from '@que
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
-import {getTimezone} from '@utils/user';
 
 import PostList from './post_list';
 
@@ -19,12 +18,9 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 
 const enhancedWithoutPosts = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentUser = observeCurrentUser(database);
     return {
         appsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
-        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
-        currentUserId: currentUser.pipe((switchMap((user) => of$(user?.id)))),
-        currentUsername: currentUser.pipe((switchMap((user) => of$(user?.username)))),
+        currentUser: observeCurrentUser(database),
         customEmojiNames: queryAllCustomEmojis(database).observeWithColumns(['name']).pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
         ),

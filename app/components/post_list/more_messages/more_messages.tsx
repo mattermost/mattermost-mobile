@@ -162,7 +162,7 @@ const MoreMessages = ({
         localUnreadCount.current = unreadCount;
     }, [unreadCount]);
 
-    const resetCount = async () => {
+    const resetCount = useCallback(async () => {
         localUnreadCount.current = 0;
 
         if (resetting.current || (isCRTEnabled && rootId)) {
@@ -172,9 +172,9 @@ const MoreMessages = ({
         resetting.current = true;
         await resetMessageCount(serverUrl, channelId);
         resetting.current = false;
-    };
+    }, [isCRTEnabled, rootId, serverUrl, channelId]);
 
-    const onViewableItemsChanged = (viewableItems: ViewToken[]) => {
+    const onViewableItemsChanged = useCallback((viewableItems: ViewToken[]) => {
         pressed.current = false;
 
         if (newMessageLineIndex <= 0 || viewableItems.length === 0 || isManualUnread || resetting.current) {
@@ -203,7 +203,7 @@ const MoreMessages = ({
             setRemaining(totalUnread);
             top.value = 1;
         }
-    };
+    }, [newMessageLineIndex, isManualUnread, scrollToIndex, posts, resetCount, top]);
 
     const onScrollEndIndex = () => {
         pressed.current = false;
@@ -243,13 +243,13 @@ const MoreMessages = ({
         const unregister = registerScrollEndIndexListener(onScrollEndIndex);
 
         return () => unregister();
-    }, []);
+    }, [registerScrollEndIndexListener]);
 
     useEffect(() => {
         const unregister = registerViewableItemsListener(onViewableItemsChanged);
 
         return () => unregister();
-    }, [channelId, unreadCount, newMessageLineIndex, posts]);
+    }, [registerViewableItemsListener, onViewableItemsChanged]);
 
     useEffect(() => {
         resetting.current = false;

@@ -602,3 +602,11 @@ export const filesLocalPathValidation = async (files: FileModel[], authorId: str
 
     return filesInfo;
 };
+
+/**
+ * Convert FileModel array to FileInfo array
+ * Note: Does NOT validate local paths - validation is done by Files component
+ */
+export function fileModelsToFileInfo(files: FileModel[], userId: string): FileInfo[] {
+    return files.map((f) => f.toFileInfo(userId));
+}

@@ -11,6 +11,7 @@ import FormattedTime from '@components/formatted_time';
 import ExpiryTimer from '@components/post_list/post/header/expiry_timer';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {Screens} from '@constants';
+import {usePostConfig} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
@@ -34,22 +35,17 @@ type HeaderProps = {
     author?: UserModel;
     commentCount: number;
     currentUser?: UserModel;
-    enablePostUsernameOverride: boolean;
     isAutoResponse: boolean;
     isCRTEnabled?: boolean;
-    isCustomStatusEnabled: boolean;
     isEphemeral: boolean;
-    isMilitaryTime: boolean;
     isPendingOrFailed: boolean;
     isSystemPost: boolean;
     isWebHook: boolean;
     location: AvailableScreens;
     post: PostModel;
-    rootPostAuthor?: UserModel;
+    rootPostAuthor?: UserModel | null;
     showPostPriority: boolean;
     shouldRenderReplyButton?: boolean;
-    teammateNameDisplay: string;
-    hideGuestTags: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -82,20 +78,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Header = (props: HeaderProps) => {
     const {
-        author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
-        isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isWebHook,
-        location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton, teammateNameDisplay, hideGuestTags,
+        author, commentCount = 0, currentUser, isAutoResponse, isCRTEnabled,
+        isEphemeral, isPendingOrFailed, isSystemPost, isWebHook,
+        location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton,
     } = props;
+    const postConfig = usePostConfig();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const pendingPostStyle = isPendingOrFailed ? style.pendingPost : undefined;
     const isReplyPost = Boolean(post.rootId && !isEphemeral);
     const showReply = !isReplyPost && (location !== Screens.THREAD) && (shouldRenderReplyButton && (!rootPostAuthor && commentCount > 0));
-    const displayName = postUserDisplayName(post, author, teammateNameDisplay, enablePostUsernameOverride);
-    const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser?.locale, teammateNameDisplay, true) : undefined;
+    const displayName = postUserDisplayName(post, author, postConfig.teammateNameDisplay, postConfig.enablePostUsernameOverride);
+    const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser?.locale, postConfig.teammateNameDisplay, true) : undefined;
     const customStatus = getUserCustomStatus(author);
     const showCustomStatusEmoji = Boolean(
-        isCustomStatusEnabled && displayName && customStatus &&
+        postConfig.isCustomStatusEnabled && displayName && customStatus &&
         !(isSystemPost || author?.isBot || isAutoResponse || isWebHook),
     ) && !isCustomStatusExpired(author) && Boolean(customStatus?.emoji);
     const userIconOverride = ensureString(post.props?.override_icon_url);
@@ -134,12 +131,12 @@ const Header = (props: HeaderProps) => {
                     <HeaderTag
                         isAutoResponder={isAutoResponse}
                         isAutomation={isWebHook || author?.isBot}
-                        showGuestTag={author?.isGuest && !hideGuestTags}
+                        showGuestTag={author?.isGuest && !postConfig.hideGuestTags}
                     />
                     }
                     <FormattedTime
                         timezone={getUserTimezone(currentUser)}
-                        isMilitaryTime={isMilitaryTime}
+                        isMilitaryTime={postConfig.isMilitaryTime}
                         value={post.createAt}
                         style={style.time}
                         testID='post_header.date_time'

@@ -3,13 +3,19 @@
 
 import {useEffect, useRef} from 'react';
 
+import {logInfo} from '@utils/log';
+
 export function useWhyDidYouUpdate(name: string, props: any) {
     // Get a mutable ref object where we can store props ...
     // ... for comparison next time this hook runs.
     const previousProps = useRef<any|undefined>();
+    const renderCount = useRef(0);
+
     useEffect(() => {
+        renderCount.current += 1;
+
         if (previousProps.current) {
-        // Get all keys from previous and current props
+            // Get all keys from previous and current props
             const allKeys = Object.keys({...previousProps.current, ...props});
 
             // Use this object to keep track of changed props
@@ -29,9 +35,13 @@ export function useWhyDidYouUpdate(name: string, props: any) {
 
             // If changesObj not empty then output to console
             if (Object.keys(changesObj).length) {
-                // eslint-disable-next-line no-console
-                console.log('[why-did-you-update]', name, changesObj);
+                logInfo(Date.now(), `[why-did-you-update] ${name} render #${renderCount.current}:`, JSON.stringify(Object.keys(changesObj)));
+            } else {
+                // IMPORTANT: Render happened but nothing changed!
+                logInfo(Date.now(), `[why-did-you-update] ${name} render #${renderCount.current}: NO CHANGES DETECTED (parent re-render)`);
             }
+        } else {
+            logInfo(Date.now(), `[why-did-you-update] ${name} render #${renderCount.current}: INITIAL RENDER`);
         }
 
         // Finally update previousProps with current props for next hook call

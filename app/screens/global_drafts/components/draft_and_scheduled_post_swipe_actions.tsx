@@ -67,11 +67,11 @@ function RightAction({deletePost, drag, draftType}: { deletePost: () => void; dr
         };
     });
 
-    const handleLayout = (event: { nativeEvent: { layout: { width: number } } }) => {
+    const handleLayout = useCallback((event: { nativeEvent: { layout: { width: number } } }) => {
         const width = event.nativeEvent.layout.width;
         containerWidth.value = width;
         setIsReady(true);
-    };
+    }, [containerWidth]);
 
     return (
         <Reanimated.View

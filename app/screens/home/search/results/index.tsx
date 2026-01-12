@@ -27,6 +27,7 @@ const enhance = withObservables(['fileChannelIds'], ({database, fileChannelIds}:
     const currentUser = observeCurrentUser(database);
 
     return {
+        currentUser,
         appsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone))))),
         customEmojiNames: queryAllCustomEmojis(database).observe().pipe(

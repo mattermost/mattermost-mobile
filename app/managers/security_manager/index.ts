@@ -604,7 +604,7 @@ class SecurityManagerSingleton {
                     // Step 2: Enroll in MAM (NO token sent to server - session exists)
                     // If enrollServer doesn't throw, consider it successful
                     // Policy and enrollment status will be updated via events
-                    await IntuneManager.enrollServer(serverUrl, tokens.identity);
+                    IntuneManager.enrollServer(serverUrl, tokens.identity);
 
                     logDebug('ensureMAMEnrollment: Enrollment successful');
 

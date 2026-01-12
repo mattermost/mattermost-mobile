@@ -8,12 +8,13 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Permissions, Preferences, Screens} from '@constants';
 import {queryFilesForPost} from '@queries/servers/file';
-import {observePost, observePostAuthor, queryPostsBetween, observeIsPostPriorityEnabled} from '@queries/servers/post';
+import {observePost, observePostAuthor, queryPostsBetween, queryPostReplies} from '@queries/servers/post';
 import {queryReactionsForPost} from '@queries/servers/reaction';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
 import {observeThreadById} from '@queries/servers/thread';
-import {observeCurrentUser} from '@queries/servers/user';
+import {observeUser} from '@queries/servers/user';
 import {isBoRPost} from '@utils/bor';
+import {fileModelsToFileInfo} from '@utils/file';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
 
 import Post from './post';
@@ -25,7 +26,7 @@ import type PostsInThreadModel from '@typings/database/models/servers/posts_in_t
 import type UserModel from '@typings/database/models/servers/user';
 
 type PropsInput = WithDatabaseArgs & {
-    currentUser?: UserModel;
+    currentUser: UserModel;
     isCRTEnabled?: boolean;
     nextPost: PostModel | undefined;
     post: PostModel;
@@ -86,10 +87,6 @@ function isFirstReply(post: PostModel, previousPost?: PostModel) {
     return false;
 }
 
-const withSystem = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentUser: observeCurrentUser(database),
-}));
-
 const withPost = withObservables(
     ['currentUser', 'isCRTEnabled', 'post', 'previousPost', 'nextPost'],
     ({currentUser, database, isCRTEnabled, post, previousPost, nextPost, location}: PropsInput) => {
@@ -132,20 +129,34 @@ const withPost = withObservables(
             distinctUntilChanged(),
         );
 
-        const hasFiles = queryFilesForPost(database, post.id).observeCount().pipe(
-            switchMap((c) => of$(c > 0)),
+        // Convert FileModel[] to FileInfo[] without validation
+        // Validation will be done by Files component after render
+        const filesInfo = queryFilesForPost(database, post.id).observe().pipe(
+            switchMap((fs) => of$(fileModelsToFileInfo(fs, post.userId))),
+        );
+
+        const hasReactions = queryReactionsForPost(database, post.id).observe().pipe(
+            switchMap((c) => of$(c.length > 0)),
             distinctUntilChanged(),
         );
 
-        const hasReactions = queryReactionsForPost(database, post.id).observeCount().pipe(
-            switchMap((c) => of$(c > 0)),
+        // Header observables
+        const commentCount = queryPostReplies(database, post.rootId || post.id).observe().pipe(
+            switchMap((c) => of$(c.length)),
             distinctUntilChanged(),
         );
+        const rootPostAuthor = differentThreadSequence ? observePost(database, post.rootId).pipe(switchMap((root) => {
+            if (root) {
+                return observeUser(database, root.userId);
+            }
+            return of$(null);
+        })) : of$(null);
 
         return {
+            author,
             canDelete,
-            differentThreadSequence: of$(differentThreadSequence),
-            hasFiles,
+            commentCount,
+            filesInfo,
             hasReplies,
             highlightReplyBar,
             isConsecutivePost,
@@ -153,12 +164,12 @@ const withPost = withObservables(
             isFirstReply: of$(isFirstReply(post, previousPost)),
             isLastReply,
             isPostAddChannelMember,
-            isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
             post: post.observe(),
+            rootPostAuthor,
             thread: isCRTEnabled ? observeThreadById(database, post.id) : of$(undefined),
             hasReactions,
             isLastPost: of$(!nextPost),
         };
     });
 
-export default React.memo(withDatabase(withSystem(withPost(Post))));
+export default React.memo(withDatabase(withPost(Post)));

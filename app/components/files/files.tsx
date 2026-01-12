@@ -7,18 +7,17 @@ import Animated from 'react-native-reanimated';
 
 import {Events} from '@constants';
 import {GalleryInit} from '@context/gallery';
+import {usePostConfig} from '@context/post_config';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {isImage, isVideo} from '@utils/file';
+import {fileExists, isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {getViewPortWidth} from '@utils/images';
 
 import File from './file';
 
 type FilesProps = {
-    canDownloadFiles: boolean;
-    enableSecureFilePreview: boolean;
     failed?: boolean;
     filesInfo: FileInfo[];
     layoutWidth?: number;
@@ -54,8 +53,6 @@ const styles = StyleSheet.create({
 });
 
 const Files = ({
-    canDownloadFiles,
-    enableSecureFilePreview,
     failed,
     filesInfo,
     isReplyPost,
@@ -68,8 +65,12 @@ const Files = ({
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
     const isTablet = useIsTablet();
+    const {canDownloadFiles, enableSecureFilePreview} = usePostConfig();
 
-    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(filesInfo);
+    // Validate local paths asynchronously after render
+    const [validatedFilesInfo, setValidatedFilesInfo] = useState(filesInfo);
+
+    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(validatedFilesInfo);
     const [filesForGallery, setFilesForGallery] = useState(() => [...imageAttachments, ...nonImageAttachments]);
 
     const attachmentIndex = (fileId: string) => {
@@ -177,6 +178,46 @@ const Files = ({
     useEffect(() => {
         setFilesForGallery([...imageAttachments, ...nonImageAttachments]);
     }, [imageAttachments, nonImageAttachments]);
+
+    // Validate local paths asynchronously in background
+    useEffect(() => {
+        let isCancelled = false;
+
+        const validateFiles = async () => {
+            // If no files have localPath, skip validation but still update state
+            const hasLocalPaths = filesInfo.some((f) => f.localPath);
+            if (!hasLocalPaths) {
+                if (!isCancelled) {
+                    setValidatedFilesInfo(filesInfo);
+                }
+                return;
+            }
+
+            // Validate each file's localPath
+            const validated = await Promise.all(
+                filesInfo.map(async (file) => {
+                    if (file.localPath) {
+                        const exists = await fileExists(file.localPath);
+                        if (!exists) {
+                            return {...file, localPath: ''};
+                        }
+                    }
+                    return file;
+                }),
+            );
+
+            // Only update state if component is still mounted
+            if (!isCancelled) {
+                setValidatedFilesInfo(validated);
+            }
+        };
+
+        validateFiles();
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [filesInfo]);
 
     return (
         <GalleryInit galleryIdentifier={galleryIdentifier}>

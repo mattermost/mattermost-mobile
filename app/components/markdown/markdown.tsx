@@ -7,6 +7,7 @@ import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {type ReactElement, useCallback, useMemo, useRef} from 'react';
 import {Dimensions, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
+import performance from 'react-native-performance';
 
 import CompassIcon from '@components/compass_icon';
 import EditedIndicator from '@components/edited_indicator';
@@ -14,6 +15,7 @@ import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import {logError} from '@utils/log';
 import {computeTextStyle, getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import PostListPerformance from '@utils/performance/post_list_performance';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -658,6 +660,7 @@ const Markdown = ({
     const errorLogged = useRef(false);
 
     const output = useMemo(() => {
+        const startTime = performance.now();
         let ast;
         try {
             ast = parser.parse(value.toString());
@@ -705,6 +708,13 @@ const Markdown = ({
 
         try {
             const generatedOutput = renderer.render(ast);
+            const duration = performance.now() - startTime;
+
+            // Track markdown parsing performance
+            if (channelId && postId && value) {
+                PostListPerformance.trackMarkdownParse(channelId, undefined, postId, value.length, duration);
+            }
+
             return generatedOutput;
         } catch (e) {
             if (!errorLogged.current) {
@@ -721,7 +731,7 @@ const Markdown = ({
                 />
             );
         }
-    }, [highlightKeys, isEdited, mentionKeys, parser, renderer, searchPatterns, style.errorMessage, value]);
+    }, [channelId, highlightKeys, isEdited, mentionKeys, parser, postId, renderer, searchPatterns, style.errorMessage, value]);
 
     return output;
 };

@@ -18,6 +18,7 @@ import SystemHeader from '@components/system_header';
 import {Screens} from '@constants';
 import {POST_TIME_TO_FAIL} from '@constants/post';
 import {useHideExtraKeyboardIfNeeded} from '@context/extra_keyboard';
+import {usePostConfig} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -44,11 +45,12 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type PostProps = {
     appsEnabled: boolean;
+    author?: UserModel;
     canDelete: boolean;
+    commentCount: number;
     currentUser?: UserModel;
     customEmojiNames: string[];
-    differentThreadSequence: boolean;
-    hasFiles: boolean;
+    filesInfo: FileInfo[];
     hasReplies: boolean;
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
@@ -61,10 +63,10 @@ type PostProps = {
     isSaved?: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
-    isPostPriorityEnabled: boolean;
     location: AvailableScreens;
     post: PostModel;
     rootId?: string;
+    rootPostAuthor?: UserModel | null;
     previousPost?: PostModel;
     isLastPost: boolean;
     hasReactions: boolean;
@@ -117,11 +119,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Post = ({
     appsEnabled,
+    author,
     canDelete,
+    commentCount,
     currentUser,
     customEmojiNames,
-    differentThreadSequence,
-    hasFiles,
+    filesInfo,
     hasReplies,
     highlight,
     highlightPinnedOrSaved = true,
@@ -134,10 +137,10 @@ const Post = ({
     isLastReply,
     isPostAcknowledgementEnabled,
     isPostAddChannelMember,
-    isPostPriorityEnabled,
     location,
     post,
     rootId,
+    rootPostAuthor,
     hasReactions,
     searchPatterns,
     shouldRenderReplyButton,
@@ -156,6 +159,7 @@ const Post = ({
     const theme = useTheme();
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
+    const postConfig = usePostConfig();
     const isAutoResponder = fromAutoResponder(post);
     const isPendingOrFailed = isPostPendingOrFailed(post);
     const isFailed = isPostFailed(post);
@@ -291,7 +295,7 @@ const Post = ({
     // If the post is a priority post:
     // 1. Show the priority label in channel screen
     // 2. Show the priority label in thread screen for the root post
-    const showPostPriority = Boolean(isPostPriorityEnabled && post.metadata?.priority?.priority) && (location !== Screens.THREAD || !post.rootId);
+    const showPostPriority = Boolean(postConfig.isPostPriorityEnabled && post.metadata?.priority?.priority) && (location !== Screens.THREAD || !post.rootId);
 
     const sameSequence = hasReplies ? (hasReplies && post.rootId) : !post.rootId;
     if (!showPostPriority && hasSameRoot && isConsecutivePost && sameSequence) {
@@ -323,8 +327,9 @@ const Post = ({
         } else {
             header = (
                 <Header
+                    author={author}
+                    commentCount={commentCount}
                     currentUser={currentUser}
-                    differentThreadSequence={differentThreadSequence}
                     isAutoResponse={isAutoResponder}
                     isCRTEnabled={isCRTEnabled}
                     isEphemeral={isEphemeral}
@@ -333,6 +338,7 @@ const Post = ({
                     isWebHook={isWebHook}
                     location={location}
                     post={post}
+                    rootPostAuthor={rootPostAuthor}
                     showPostPriority={showPostPriority}
                     shouldRenderReplyButton={shouldRenderReplyButton}
                 />
@@ -377,7 +383,7 @@ const Post = ({
         body = (
             <Body
                 appsEnabled={appsEnabled}
-                hasFiles={hasFiles}
+                filesInfo={filesInfo}
                 hasReactions={hasReactions}
                 highlight={Boolean(highlightedStyle)}
                 highlightReplyBar={highlightReplyBar}

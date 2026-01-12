@@ -36,7 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         shadowOpacity: 0.12,
         shadowRadius: 24,
     },
-    backDrop: {opacity: 0},
+    backDrop: {opacity: 0.5},
 }));
 
 const openDownMargin = 64;
@@ -70,7 +70,7 @@ const FileOptions = ({
     }, [setShowOptions]);
 
     const downloadAllowed = useMemo(() => {
-        if (!canDownloadFiles && enableSecureFilePreview) {
+        if (!canDownloadFiles || enableSecureFilePreview) {
             return false;
         }
 

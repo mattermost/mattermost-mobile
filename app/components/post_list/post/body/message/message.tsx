@@ -8,6 +8,7 @@ import Animated from 'react-native-reanimated';
 import Markdown from '@components/markdown';
 import {isChannelMentions} from '@components/markdown/channel_mention/channel_mention';
 import {Screens} from '@constants';
+import {usePostConfig} from '@context/post_config';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -21,7 +22,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type MessageProps = {
     currentUser?: UserModel;
-    isHighlightWithoutNotificationLicensed?: boolean;
     highlight: boolean;
     isEdited: boolean;
     isPendingOrFailed: boolean;
@@ -36,6 +36,8 @@ type MessageProps = {
 const SHOW_MORE_HEIGHT = 54;
 
 const EMPTY_HIGHLIGHT_KEYS: HighlightWithoutNotificationKey[] = [];
+const EMPTY_CHANNEL_MENTIONS = {};
+const EMPTY_IMAGES_METADATA = undefined;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -56,23 +58,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, searchPatterns, theme}: MessageProps) => {
+const Message = ({currentUser, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, searchPatterns, theme}: MessageProps) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
     const dimensions = useWindowDimensions();
     const maxHeight = Math.round((dimensions.height * 0.5) + SHOW_MORE_HEIGHT);
     const animatedStyle = useShowMoreAnimatedStyle(height, maxHeight, open);
     const style = getStyleSheet(theme);
+    const postConfig = usePostConfig();
 
     // We need to memoize these two values because they are actually getters that return a new list
     // on every render. We need to trust that changes in the currentUser will trigger the recalculation.
     const mentionKeys = useMemo(() => currentUser?.mentionKeys ?? undefined, [currentUser]);
     const highlightKeys = useMemo(() => {
-        if (isHighlightWithoutNotificationLicensed) {
+        if (postConfig.isHighlightWithoutNotificationLicensed) {
             return currentUser?.highlightKeys ?? EMPTY_HIGHLIGHT_KEYS;
         }
         return EMPTY_HIGHLIGHT_KEYS;
-    }, [currentUser, isHighlightWithoutNotificationLicensed]);
+    }, [currentUser, postConfig.isHighlightWithoutNotificationLicensed]);
 
     const onLayout = useCallback((event: LayoutChangeEvent) => {
         const h = event.nativeEvent.layout.height;
@@ -83,8 +86,12 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
     const onPress = () => setOpen(!open);
 
     const channelMentions = useMemo(() => {
-        return isChannelMentions(post.props?.channel_mentions) ? post.props.channel_mentions : {};
+        return isChannelMentions(post.props?.channel_mentions) ? post.props.channel_mentions : EMPTY_CHANNEL_MENTIONS;
     }, [post.props?.channel_mentions]);
+
+    const imagesMetadata = useMemo(() => {
+        return post.metadata?.images ?? EMPTY_IMAGES_METADATA;
+    }, [post.metadata?.images]);
 
     return (
         <>
@@ -103,7 +110,7 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
                             baseTextStyle={style.message}
                             channelId={post.channelId}
                             channelMentions={channelMentions}
-                            imagesMetadata={post.metadata?.images}
+                            imagesMetadata={imagesMetadata}
                             isEdited={isEdited}
                             isReplyPost={isReplyPost}
                             isSearchResult={location === Screens.SEARCH}

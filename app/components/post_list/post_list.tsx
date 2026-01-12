@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, FlatList, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
-import Animated, {type AnimatedStyle} from 'react-native-reanimated';
+import {DeviceEventEmitter, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent, type ViewToken, FlatList, type ListRenderItemInfo} from 'react-native';
+import {type AnimatedStyle} from 'react-native-reanimated';
 
 import {removePost} from '@actions/local/post';
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -14,25 +14,27 @@ import Post from '@components/post_list/post';
 import ThreadOverview from '@components/post_list/thread_overview';
 import {Events, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
+import {PostConfigProvider} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import PostListPerformance from '@utils/performance/post_list_performance';
 import {getDateForDateLine, preparePostList} from '@utils/post_list';
+import {getTimezone} from '@utils/user';
 
-import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
+import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from './config';
 import MoreMessages from './more_messages';
 import ScrollToEndView from './scroll_to_end_view';
 
 import type {PostListItem, PostListOtherItem, ViewableItemsChanged, ViewableItemsChangedListenerEvent} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
+import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     appsEnabled: boolean;
     channelId: string;
     contentContainerStyle?: StyleProp<AnimatedStyle<ViewStyle>>;
-    currentTimezone: string | null;
-    currentUserId: string;
-    currentUsername: string;
+    currentUser: UserModel;
     customEmojiNames: string[];
     disablePullToRefresh?: boolean;
     highlightedId?: PostModel['id'];
@@ -65,9 +67,8 @@ type ScrollIndexFailed = {
 };
 
 const CONTENT_OFFSET_THRESHOLD = 160;
-const SCROLL_EVENT_THROTTLE = Platform.select({android: 17, default: 60});
 
-const keyExtractor = (item: PostListItem | PostListOtherItem) => (item.type === 'post' ? item.value.currentPost.id : item.value);
+export const keyExtractor = (item: PostListItem | PostListOtherItem) => (item.type === 'post' ? item.value.currentPost.id : item.value);
 
 const styles = StyleSheet.create({
     flex: {
@@ -81,10 +82,7 @@ const styles = StyleSheet.create({
 const PostList = ({
     appsEnabled,
     channelId,
-    contentContainerStyle,
-    currentTimezone,
-    currentUserId,
-    currentUsername,
+    currentUser,
     customEmojiNames,
     disablePullToRefresh,
     footer,
@@ -95,7 +93,6 @@ const PostList = ({
     isPostAcknowledgementEnabled,
     lastViewedAt,
     location,
-    nativeID,
     onEndReached,
     posts,
     rootId,
@@ -108,36 +105,47 @@ const PostList = ({
 }: Props) => {
     const firstIdInPosts = posts[0]?.id;
 
-    const listRef = useRef<FlatList<string | PostModel>>(null);
+    // Derive values from currentUser
+    const currentUserId = currentUser.id;
+    const currentUsername = currentUser.username;
+    const currentTimezone = useMemo(() => getTimezone(currentUser.timezone), [currentUser.timezone]);
+
+    const listRef = useRef<FlatList<PostListItem | PostListOtherItem>>(null);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const scrolledToHighlighted = useRef(false);
+    const initialRenderTracked = useRef(false);
+    const viewableItemsDebounceTimer = useRef<NodeJS.Timeout | null>(null);
     const [refreshing, setRefreshing] = useState(false);
     const [showScrollToEndBtn, setShowScrollToEndBtn] = useState(false);
-    const [lastPostId, setLastPostId] = useState<string | undefined>(firstIdInPosts);
+    const [lastPostId, setLastPostId] = useState<string | undefined>(() => firstIdInPosts);
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const orderedPosts = useMemo(() => {
-        return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location === Screens.THREAD, savedPostIds);
-    }, [posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location, savedPostIds]);
 
-    const initialIndex = useMemo(() => {
-        return orderedPosts.findIndex((i) => i.type === 'start-of-new-messages');
-    }, [orderedPosts]);
+    // Progressive loading: start with 10 items, then add the rest after initial render
+    // The remaining posts are loaded in trackInitialRenderMetrics when viewable items are detected
+    const [showAllPosts, setShowAllPosts] = useState(false);
+
+    const {orderedPosts, initialIndex} = useMemo(() => {
+        const result = preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location === Screens.THREAD, savedPostIds);
+        const unreadIndex = result.findIndex((i) => i.type === 'start-of-new-messages');
+
+        let postsToShow = result;
+        if (!showAllPosts) {
+            postsToShow = result.slice(0, INITIAL_BATCH_TO_RENDER);
+        }
+
+        return {
+            orderedPosts: postsToShow,
+            initialIndex: unreadIndex,
+        };
+    }, [posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location, savedPostIds, showAllPosts]);
 
     const isNewMessage = lastPostId ? firstIdInPosts !== lastPostId : false;
 
     const scrollToEnd = useCallback(() => {
         listRef.current?.scrollToOffset({offset: 0, animated: true});
     }, []);
-
-    useEffect(() => {
-        const t = setTimeout(() => {
-            scrollToEnd();
-        }, 300);
-
-        return () => clearTimeout(t);
-    }, [channelId, rootId, scrollToEnd]);
 
     useEffect(() => {
         const scrollToBottom = (screen: string) => {
@@ -155,6 +163,25 @@ const PostList = ({
             scrollBottomListener.remove();
         };
     }, [location, scrollToEnd]);
+
+    // Performance tracking: Start ONLY when channel/thread changes (not on post updates)
+    useEffect(() => {
+        // Start tracking for this NEW channel/thread
+        PostListPerformance.startInitialRender(channelId, rootId, posts.length);
+        initialRenderTracked.current = false;
+
+        // Reset showAllPosts when channel/thread changes to enable progressive loading for new channel
+        setShowAllPosts(false);
+
+        return () => {
+            // Print summary when switching away from this channel/thread
+            PostListPerformance.printSummary(channelId, rootId);
+            PostListPerformance.clearMetrics(channelId, rootId);
+        };
+
+        // ONLY channelId and rootId - NOT posts.length!
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [channelId, rootId]);
 
     const onRefresh = useCallback(async () => {
         if (disablePullToRefresh) {
@@ -213,7 +240,48 @@ const PostList = ({
         }
     }, [highlightedId, scrollToIndex]);
 
+    const trackInitialRenderMetrics = useCallback((viewableItems: ViewToken[]) => {
+        if (initialRenderTracked.current) {
+            return; // Already tracked
+        }
+
+        // Count posts that are viewable in viewport (excludes date separators, etc.)
+        const viewablePostCount = viewableItems.filter((viewToken) => {
+            const item = viewToken.item as PostListItem | PostListOtherItem;
+            return item.type === 'post' || item.type === 'user-activity';
+        }).length;
+
+        // Only track when we actually have viewable posts
+        if (viewablePostCount > 0 || viewableItems.length === 0) {
+            initialRenderTracked.current = true;
+
+            // initialNumToRender is how many items FlatList actually renders initially
+            const initialNumRendered = INITIAL_BATCH_TO_RENDER; // 10 items as per config
+
+            PostListPerformance.endInitialRender(channelId, rootId, initialNumRendered, viewablePostCount);
+
+            // Progressive loading: Now that initial render is complete and tracked, load remaining posts
+            if (!showAllPosts) {
+                setShowAllPosts(true);
+            }
+        }
+    }, [channelId, rootId, showAllPosts]);
+
     const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
+        // Performance tracking: End initial render when posts become viewable
+        // Debounce to wait for viewable items to stabilize (FlatList renders in batches)
+        if (!initialRenderTracked.current && viewableItems.length > 0) {
+            // Clear any existing timer
+            if (viewableItemsDebounceTimer.current) {
+                clearTimeout(viewableItemsDebounceTimer.current);
+            }
+
+            // Set a timer to track metrics after viewable items stabilize
+            viewableItemsDebounceTimer.current = setTimeout(() => {
+                trackInitialRenderMetrics(viewableItems);
+            }, 250); // 250ms debounce
+        }
+
         if (!viewableItems.length) {
             return;
         }
@@ -225,12 +293,14 @@ const PostList = ({
             return acc;
         }, {});
 
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
+        requestAnimationFrame(() => {
+            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
+        });
 
         if (onViewableItemsChangedListener.current) {
             onViewableItemsChangedListener.current(viewableItems);
         }
-    }, [location]);
+    }, [location, trackInitialRenderMetrics]);
 
     const registerScrollEndIndexListener = useCallback((listener: onScrollEndIndexListenerEvent) => {
         onScrollEndIndexListener.current = listener;
@@ -296,9 +366,10 @@ const PostList = ({
             default: {
                 const post = item.value.currentPost;
                 const {isSaved, nextPost, previousPost} = item.value;
-                const skipSaveddHeader = (location === Screens.THREAD && post.id === rootId);
+                const skipSavedHeader = (location === Screens.THREAD && post.id === rootId);
                 const postProps = {
                     appsEnabled,
+                    currentUser,
                     customEmojiNames,
                     isCRTEnabled,
                     isPostAcknowledgementEnabled,
@@ -311,7 +382,7 @@ const PostList = ({
                     previousPost,
                     rootId,
                     shouldRenderReplyButton,
-                    skipSaveddHeader,
+                    skipSavedHeader,
                     testID: `${testID}.post`,
                 };
 
@@ -323,7 +394,12 @@ const PostList = ({
                 );
             }
         }
-    }, [appsEnabled, currentTimezone, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
+    }, [
+        appsEnabled, currentUser, currentTimezone, currentUsername,
+        customEmojiNames, highlightPinnedOrSaved, highlightedId,
+        isCRTEnabled, isPostAcknowledgementEnabled, location, rootId,
+        shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme,
+    ]);
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -347,34 +423,33 @@ const PostList = ({
 
     return (
         <>
-            <Animated.FlatList
-                contentContainerStyle={contentContainerStyle}
-                data={orderedPosts}
-                keyboardDismissMode='interactive'
-                keyboardShouldPersistTaps='handled'
-                keyExtractor={keyExtractor}
-                initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
-                ListHeaderComponent={header}
-                ListFooterComponent={footer}
-                maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                maxToRenderPerBatch={10}
-                nativeID={nativeID}
-                onEndReached={onEndReached}
-                onEndReachedThreshold={0.9}
-                onScroll={onScroll}
-                onScrollToIndexFailed={onScrollToIndexFailed}
-                onViewableItemsChanged={onViewableItemsChanged}
-                ref={listRef}
-                removeClippedSubviews={true}
-                renderItem={renderItem}
-                scrollEventThrottle={SCROLL_EVENT_THROTTLE}
-                style={styles.flex}
-                viewabilityConfig={VIEWABILITY_CONFIG}
-                testID={`${testID}.flat_list`}
-                inverted={true}
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-            />
+            <PostConfigProvider>
+                <FlatList
+                    data={orderedPosts}
+                    keyboardDismissMode='interactive'
+                    keyboardShouldPersistTaps='handled'
+                    keyExtractor={keyExtractor}
+                    initialNumToRender={INITIAL_BATCH_TO_RENDER}
+                    maxToRenderPerBatch={5}
+                    updateCellsBatchingPeriod={100}
+                    ListHeaderComponent={header}
+                    ListFooterComponent={footer}
+                    onEndReached={onEndReached}
+                    onEndReachedThreshold={0.9}
+                    onScroll={onScroll}
+                    onScrollToIndexFailed={onScrollToIndexFailed}
+                    onViewableItemsChanged={onViewableItemsChanged}
+                    ref={listRef}
+                    renderItem={renderItem}
+                    testID={`${testID}.flat_list`}
+                    inverted={true}
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
+                    removeClippedSubviews={true}
+                    windowSize={10}
+                />
+            </PostConfigProvider>
             {location !== Screens.PERMALINK &&
             <ScrollToEndView
                 onPress={scrollToEnd}

@@ -37,6 +37,7 @@ const Intro = ({channel, roles}: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const [fetching, setFetching] = useState(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channel?.id || ''));
+    const [showActivityIndicator, setShowActivityIndicator] = useState(false);
 
     const element = useMemo(() => {
         if (!channel) {
@@ -88,7 +89,24 @@ const Intro = ({channel, roles}: Props) => {
         setFetching(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channel?.id || ''));
     }, [serverUrl, channel?.id]);
 
-    if (fetching) {
+    useEffect(() => {
+        let timeout: NodeJS.Timeout;
+        if (fetching) {
+            timeout = setTimeout(() => {
+                setShowActivityIndicator(true);
+            }, 500);
+        } else {
+            setShowActivityIndicator(false);
+        }
+
+        return () => {
+            if (timeout) {
+                clearTimeout(timeout);
+            }
+        };
+    }, [fetching]);
+
+    if (showActivityIndicator) {
         return (
             <ActivityIndicator
                 size='small'

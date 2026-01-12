@@ -26,6 +26,7 @@ const enhance = withObservables(['channelId'], ({channelId, database}: Props) =>
     const posts = observePinnedPostsInChannel(database, channelId);
 
     return {
+        currentUser,
         appsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
         customEmojiNames: queryAllCustomEmojis(database).observe().pipe(

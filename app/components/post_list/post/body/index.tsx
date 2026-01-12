@@ -26,7 +26,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type BodyProps = {
     appsEnabled: boolean;
-    hasFiles: boolean;
+    filesInfo: FileInfo[];
     hasReactions: boolean;
     highlight: boolean;
     highlightReplyBar: boolean;
@@ -86,7 +86,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Body = ({
-    appsEnabled, hasFiles, hasReactions, highlight, highlightReplyBar,
+    appsEnabled, filesInfo, hasReactions, highlight, highlightReplyBar,
     isCRTEnabled, isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAcknowledgementEnabled, isPostAddChannelMember,
     location, post, searchPatterns, showAddReaction, theme,
 }: BodyProps) => {
@@ -195,12 +195,14 @@ const Body = ({
                     theme={theme}
                 />
                 }
-                {hasFiles &&
+                {Boolean(filesInfo.length) &&
                 <Files
                     failed={isFailed}
+                    filesInfo={filesInfo}
                     layoutWidth={layoutWidth}
                     location={location}
-                    post={post}
+                    postId={post.id}
+                    postProps={post.props ?? undefined}
                     isReplyPost={isReplyPost}
                 />
                 }
@@ -244,4 +246,4 @@ const Body = ({
     );
 };
 
-export default Body;
+export default React.memo(Body);

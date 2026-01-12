@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {type StyleProp, StyleSheet, type ViewStyle, DeviceEventEmitter} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -49,7 +49,7 @@ const ChannelPostList = ({
     const [fetchingPosts, setFetchingPosts] = useState(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
     const oldPostsCount = useRef<number>(posts.length);
 
-    const onEndReached = useDebounce(useCallback(async () => {
+    const handleEndReached = useCallback(async () => {
         if (!fetchingPosts && canLoadPostsBefore.current && posts.length) {
             const lastPost = posts[posts.length - 1];
             const result = await fetchPostsBefore(serverUrl, channelId, lastPost?.id || '');
@@ -58,7 +58,9 @@ const ChannelPostList = ({
                 canLoadPostsBefore.current = (result.posts?.length ?? 0) > 0;
             }
         }
-    }, [fetchingPosts, serverUrl, channelId, posts]), 500);
+    }, [fetchingPosts, serverUrl, channelId, posts]);
+
+    const onEndReached = useDebounce(handleEndReached, 500);
 
     useDidUpdate(() => {
         setFetchingPosts(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
@@ -112,7 +114,7 @@ const ChannelPostList = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const intro = (<Intro channelId={channelId}/>);
+    const intro = useMemo(() => (<Intro channelId={channelId}/>), [channelId]);
 
     const postList = (
         <PostList
