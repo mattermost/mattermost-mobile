@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Delete', () => {
@@ -60,7 +60,7 @@ describe('Messaging - Message Delete', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItem).toExist().withTimeout(timeouts.FOUR_SEC);
+        await waitForElementToBeVisible(postListPostItem);
 
         // # Open post options for the message that was just posted, tap delete option and confirm
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -82,7 +82,7 @@ describe('Messaging - Message Delete', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItem).toExist().withTimeout(timeouts.FOUR_SEC);
+        await waitForElementToBeVisible(postListPostItem);
 
         // # Open post options for the message that was just posted, tap delete option and cancel
         await ChannelScreen.openPostOptionsFor(post.id, message);

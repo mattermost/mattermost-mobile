@@ -29,7 +29,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Saved Messages', () => {
@@ -80,8 +80,6 @@ describe('Search - Saved Messages', () => {
         await ChannelScreen.postMessage(message);
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.savePostOption.tap();
 
@@ -121,10 +119,9 @@ describe('Search - Saved Messages', () => {
         await ChannelScreen.postMessage(message);
 
         const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
-        await waitFor(channelPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
+        await wait(timeouts.TWO_SEC);
         await ChannelScreen.back();
         await SavedMessagesScreen.open();
 
@@ -189,7 +186,7 @@ describe('Search - Saved Messages', () => {
 
         const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
-        await waitFor(channelPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitForElementToBeVisible(channelPostListPostItem);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
         await ChannelScreen.back();
@@ -219,7 +216,7 @@ describe('Search - Saved Messages', () => {
 
         const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
-        await waitFor(channelPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitForElementToBeVisible(channelPostListPostItem);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
         await ChannelScreen.back();

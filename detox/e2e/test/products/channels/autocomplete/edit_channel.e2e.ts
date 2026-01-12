@@ -27,6 +27,7 @@ import {expect} from 'detox';
 
 describe('Autocomplete - Edit Channel', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
@@ -39,7 +40,7 @@ describe('Autocomplete - Edit Channel', () => {
         await ChannelListScreen.toBeVisible();
 
         // # Open a channel screen, open channel info screen, and open edit channel screen
-        await ChannelScreen.open(channel);
+        await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
         await CreateOrEditChannelScreen.openEditChannel();
     });

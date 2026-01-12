@@ -25,6 +25,7 @@ import {expect} from 'detox';
 
 describe('Autocomplete - Emoji Suggestion', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     const emojiName = 'fox_face';
     const emojiNameFirst2Chars = emojiName.substring(0, 2);
     const emojiName3rdToLastChars = emojiName.substring(2);
@@ -43,7 +44,7 @@ describe('Autocomplete - Emoji Suggestion', () => {
         await ChannelListScreen.toBeVisible();
 
         // # Open a channel screen
-        await ChannelScreen.open(channel);
+        await ChannelScreen.open(channelsCategory, channel.name);
     });
 
     beforeEach(async () => {

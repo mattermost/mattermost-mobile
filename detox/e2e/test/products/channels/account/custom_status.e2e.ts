@@ -94,6 +94,7 @@ describe('Account - Custom Status', () => {
         await openCustomStatusScreen();
         await selectSuggestedStatus(status);
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify status is set on account screen
         await verifyStatusSetOnAccountScreen(status);
@@ -116,6 +117,7 @@ describe('Account - Custom Status', () => {
         // # Clean up
         await clearStatusInput();
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.ONE_SEC);
     });
 
     it('MM-T4990_3 - should be able to set a status via emoji picker and custom status', async () => {
@@ -133,6 +135,7 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify custom status is set
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
@@ -148,6 +151,7 @@ describe('Account - Custom Status', () => {
         await clearButton.tap();
         await clearStatusInput();
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.ONE_SEC);
     });
 
     it('MM-T4990_4 - should be able to clear custom status from account', async () => {
@@ -156,6 +160,7 @@ describe('Account - Custom Status', () => {
         await openCustomStatusScreen();
         await selectSuggestedStatus(status);
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify status is set
         await verifyStatusSetOnAccountScreen(status);
@@ -203,6 +208,7 @@ describe('Account - Custom Status', () => {
 
         // # Save status
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.TWO_SEC);
         await expect(CustomStatusScreen.customStatusScreen).not.toBeVisible();
 
         // * Verify status is set and visible in account screen
@@ -228,6 +234,7 @@ describe('Account - Custom Status', () => {
         await expect(recentCustomStatus).not.toExist();
 
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.ONE_SEC);
     });
 
     it('MM-T3891 - should be able to set custom status with emoji picker and manage it', async () => {
@@ -255,14 +262,15 @@ describe('Account - Custom Status', () => {
         await expect(CustomStatusScreen.getCustomStatusEmoji(customEmojiName)).toBeVisible();
 
         // # Save status
-        await wait(timeouts.TWO_SEC);
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify status is set in account screen
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
 
         // # Clear status from account screen
         await AccountScreen.customStatusClearButton.tap();
+        await wait(timeouts.ONE_SEC);
         await verifyStatusCleared();
 
         // # Reopen and verify status in recent section
@@ -276,6 +284,7 @@ describe('Account - Custom Status', () => {
         await recentStatus.tap();
         await verifyStatusInInput({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify status is set again
         await AccountScreen.toBeVisible();
@@ -295,6 +304,7 @@ describe('Account - Custom Status', () => {
         await expect(recentCustomStatus).not.toExist();
 
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify status is cleared
         await verifyStatusCleared();
@@ -315,6 +325,7 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify status is set
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
@@ -337,6 +348,7 @@ describe('Account - Custom Status', () => {
         const suggestedStatus = STATUSES.IN_MEETING;
         await selectSuggestedStatus(suggestedStatus);
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.ONE_SEC);
         await verifyStatusSetOnAccountScreen(suggestedStatus);
 
         // # Clear and verify in recent section
@@ -354,6 +366,7 @@ describe('Account - Custom Status', () => {
         await expect(CustomStatusScreen.getSuggestedCustomStatus(suggestedStatus.emoji, suggestedStatus.text, suggestedStatus.duration).customStatusSuggestion).toBeVisible();
 
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.ONE_SEC);
     });
 
     it('MM-T4091 - should be able to set custom status with expiry time and verify in various locations', async () => {
@@ -367,6 +380,7 @@ describe('Account - Custom Status', () => {
         await selectSuggestedStatus(status);
         await expect(CustomStatusScreen.getCustomStatusExpiry(status.duration)).toBeVisible();
         await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify status is set with expiry time
         await AccountScreen.toBeVisible();
@@ -420,6 +434,7 @@ describe('Account - Custom Status', () => {
         // # Clean up
         await AccountScreen.open();
         await AccountScreen.customStatusClearButton.tap();
+        await wait(timeouts.ONE_SEC);
         await verifyStatusCleared();
     });
 });

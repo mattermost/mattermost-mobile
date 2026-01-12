@@ -29,6 +29,7 @@ import {expect} from 'detox';
 
 describe('Autocomplete - Edit Post', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
@@ -42,7 +43,7 @@ describe('Autocomplete - Edit Post', () => {
 
         // # Open a channel screen, post a message, open post options for message, and open edit post screen
         const message = `Messsage ${getRandomId()}`;
-        await ChannelScreen.open(channel);
+        await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, channel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);

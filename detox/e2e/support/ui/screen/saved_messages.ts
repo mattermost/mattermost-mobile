@@ -43,7 +43,7 @@ class SavedMessagesScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.savedMessagesScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.savedMessagesScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.savedMessagesScreen;
     };

@@ -24,7 +24,7 @@ import {
     PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {waitFor} from 'detox';
 
 describe('Messaging - Follow and Unfollow Message', () => {
@@ -79,13 +79,13 @@ describe('Messaging - Follow and Unfollow Message', () => {
         await wait(timeouts.TWO_SEC);
 
         // # Open post options for message and tap on follow message option
-        await postListPostItem.longPress(timeouts.ONE_SEC);
+        await postListPostItem.longPress(timeouts.FOUR_SEC);
         await waitFor(PostOptionsScreen.followThreadOption).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await PostOptionsScreen.followThreadOption.tap();
 
         // * Verify message is followed by user via post footer
         const {postListPostItemFooterFollowingButton} = ChannelScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItemFooterFollowingButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToBeVisible(postListPostItemFooterFollowingButton);
 
         // # Open post options for message and tap on unfollow message option
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -111,10 +111,7 @@ describe('Messaging - Follow and Unfollow Message', () => {
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        // # Wait for thread to be created in DB (CRT creates threads asynchronously)
-        await wait(timeouts.TWO_SEC);
+        await waitForElementToBeVisible(postListPostItem);
 
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await waitFor(PostOptionsScreen.followThreadOption).toBeVisible().withTimeout(timeouts.FOUR_SEC);

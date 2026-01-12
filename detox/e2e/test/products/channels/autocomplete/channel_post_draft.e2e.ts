@@ -25,6 +25,7 @@ import {expect} from 'detox';
 
 describe('Autocomplete - Channel Post Draft', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
@@ -37,7 +38,7 @@ describe('Autocomplete - Channel Post Draft', () => {
         await ChannelListScreen.toBeVisible();
 
         // # Open a channel screen
-        await ChannelScreen.open(channel);
+        await ChannelScreen.open(channelsCategory, channel.name);
     });
 
     beforeEach(async () => {

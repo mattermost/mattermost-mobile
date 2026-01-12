@@ -23,7 +23,7 @@ import {
     PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Post List', () => {
@@ -108,6 +108,7 @@ describe('Channels - Channel Post List', () => {
         await expect(postListPostItem).toBeVisible();
 
         // # Open post options for the message that was just posted, tap delete option and confirm
+        await waitForElementToBeVisible(postListPostItem);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.deletePost({confirm: true});
 
