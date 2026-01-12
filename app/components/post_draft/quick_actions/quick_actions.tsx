@@ -5,11 +5,14 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import BoRQuickAction from '@components/post_draft/quick_actions/bor_quick_action';
+import {Screens} from '@constants';
 
 import AttachmentAction from './attachment_quick_action';
 import EmojiAction from './emoji_quick_action';
 import InputAction from './input_quick_action';
 import PostPriorityAction from './post_priority_action';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     testID?: string;
@@ -21,6 +24,7 @@ type Props = {
     canShowSlashCommands?: boolean;
     canShowEmojiPicker?: boolean;
     maxFileCount: number;
+    location?: AvailableScreens;
 
     // Draft Handler
     value: string;
@@ -62,9 +66,11 @@ export default function QuickActions({
     focus,
     updatePostBoRStatus,
     postBoRConfig,
+    location,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
     const slashDisabled = value.length > 0;
+    const showBoRAction = isBoREnabled && updatePostBoRStatus && location === Screens.CHANNEL;
 
     const atInputActionTestID = `${testID}.at_input_action`;
     const slashInputActionTestID = `${testID}.slash_input_action`;
@@ -118,7 +124,7 @@ export default function QuickActions({
                     updatePostPriority={updatePostPriority}
                 />
             )}
-            {isBoREnabled && updatePostBoRStatus &&
+            {showBoRAction &&
                 <BoRQuickAction
                     testId={borPriorityActionTestID}
                     postBoRConfig={postBoRConfig}
