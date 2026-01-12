@@ -107,7 +107,7 @@ export function useGalleryItem(
 
     useEffect(() => {
         gallery.registerItem(index, ref);
-    }, [gallery, index, ref]);
+    }, []);
 
     const onGestureEvent = () => {
         'worklet';
