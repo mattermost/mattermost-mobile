@@ -61,6 +61,10 @@ jobs:
           intune-enabled: 'true'
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
+      - name: Set .env with RUNNING_E2E=true
+        run: |
+          echo "RUNNING_E2E=true" > .env
+
       - name: Build iOS Simulator
         env:
           TAG: "${{ github.event.pull_request.head.sha }}"

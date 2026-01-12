@@ -3,7 +3,6 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Button as RNEButton} from '@rneui/base';
-import {isRunningE2e} from 'index';
 import React, {useCallback, useEffect, useMemo, useRef, useState, type RefObject} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
@@ -22,6 +21,8 @@ import {getFullErrorMessage, getServerError, isErrorWithMessage, isServerError} 
 import {logError} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
+
+import {isRunningE2e} from '../../../index';
 
 import type {LaunchProps} from '@typings/launch';
 import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
