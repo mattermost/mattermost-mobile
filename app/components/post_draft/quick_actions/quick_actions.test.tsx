@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Screens} from '@constants';
 import {PostPriorityType} from '@constants/post';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
@@ -30,6 +31,7 @@ describe('Quick Actions', () => {
         },
         updatePostPriority: jest.fn(),
         focus: jest.fn(),
+        location: Screens.CHANNEL,
     };
 
     describe('slash commands', () => {
@@ -191,6 +193,16 @@ describe('Quick Actions', () => {
             const props = {
                 ...baseProps,
                 isBoREnabled: false,
+            };
+            const {queryByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
+            expect(queryByTestId('test-quick-actions.bor_action')).toBeNull();
+        });
+
+        it('should not render BoR action in in threads', () => {
+            const props = {
+                ...baseProps,
+                isBoREnabled: true,
+                location: Screens.THREAD,
             };
             const {queryByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
             expect(queryByTestId('test-quick-actions.bor_action')).toBeNull();
