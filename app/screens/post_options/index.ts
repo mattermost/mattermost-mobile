@@ -3,7 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$, Observable} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
@@ -13,7 +13,7 @@ import {observeChannel, observeIsReadOnlyChannel} from '@queries/servers/channel
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observeReactionsForPost} from '@queries/servers/reaction';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
-import {observeConfigIntValue, observeConfigValue, observeCurrentUserId, observeLicense} from '@queries/servers/system';
+import {observeConfigIntValue, observeConfigValue, observeLicense} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
@@ -79,7 +79,6 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
     const channel = observeChannel(database, post.channelId);
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
     const currentUser = observeCurrentUser(database);
-    const currentUserId = observeCurrentUserId(database);
     const isLicensed = observeLicense(database).pipe(switchMap((lcs) => of$(lcs?.IsLicensed === 'true')));
     const allowEditPost = observeConfigValue(database, 'AllowEditPost');
     const serverVersion = observeConfigValue(database, 'Version');
@@ -147,13 +146,18 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         }),
     );
 
-    const canDelete = combineLatest([canDeletePostPermission, channelIsArchived, channelIsReadOnly, canPostPermission, currentUserId]).pipe(switchMap(([permission, isArchived, isReadOnly, canPost, userId]) => {
-        const canDeleteBoRPost = borPost ? post.userId === userId : true;
+    const canDelete = combineLatest([canDeletePostPermission, channelIsArchived, channelIsReadOnly, canPostPermission, currentUser]).pipe(switchMap(([permission, isArchived, isReadOnly, canPost, user]) => {
+        const canDeleteBoRPost = borPost ? post.userId === user?.id : true;
         return of$(permission && !isArchived && !isReadOnly && canPost && canDeleteBoRPost);
     }));
 
     const thread = observeIsCRTEnabled(database).pipe(
         switchMap((enabled) => (enabled ? observeThreadById(database, post.id) : of$(undefined))),
+    );
+
+    const currentUserId = currentUser.pipe(
+        switchMap((u) => of$(u?.id)),
+        distinctUntilChanged(),
     );
 
     return {
