@@ -22,7 +22,7 @@ describe('BoRLabel', () => {
 
         const tag = getByTestId('test-post-id_bor_label');
         expect(tag).toBeVisible();
-        expect(tag).toHaveTextContent(/BURN ON READ \(.+\)/);
+        expect(tag).toHaveTextContent('BURN ON READ (5m)');
     });
 
     it('should render without postId', () => {
@@ -32,7 +32,7 @@ describe('BoRLabel', () => {
 
         const tag = getByTestId('bor_label');
         expect(tag).toBeVisible();
-        expect(tag).toHaveTextContent(/BURN ON READ \(.+\)/);
+        expect(tag).toHaveTextContent('BURN ON READ (1m)');
     });
 
     it('should format duration correctly for seconds', () => {
@@ -44,7 +44,7 @@ describe('BoRLabel', () => {
         );
 
         const tag = getByTestId('test_bor_label');
-        expect(tag).toHaveTextContent(/BURN ON READ \(.+\)/);
+        expect(tag).toHaveTextContent('BURN ON READ (30s)');
     });
 
     it('should format duration correctly for hours', () => {
@@ -56,7 +56,7 @@ describe('BoRLabel', () => {
         );
 
         const tag = getByTestId('test_bor_label');
-        expect(tag).toHaveTextContent(/BURN ON READ \(.+\)/);
+        expect(tag).toHaveTextContent('BURN ON READ (2h)');
     });
 
     it('should generate correct testID with postId', () => {

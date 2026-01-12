@@ -56,12 +56,12 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
     return date.toLocaleString(currentUserLocale, options);
 }
 
-export function formatTime(seconds: number, humanReadable: boolean = false) {
+export function formatTime(seconds: number, textTime: boolean = false) {
     const h = Math.max(Math.floor(seconds / 3600), 0);
     const m = Math.max(Math.floor((seconds % 3600) / 60), 0);
     const s = Math.max(Math.floor(seconds % 60), 0);
 
-    if (humanReadable) {
+    if (textTime) {
         const parts: string[] = [];
         if (h > 0) {
             parts.push(`${h}h`);

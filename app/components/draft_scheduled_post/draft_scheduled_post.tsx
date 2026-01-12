@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, TouchableHighlight, View} from 'react-native';
 
@@ -124,7 +124,7 @@ const DraftAndScheduledPost: React.FC<Props> = ({
         switchToChannelById(serverUrl, channel.id, channel.teamId, false);
     }, [channel.id, channel.teamId, post.rootId, serverUrl]);
 
-    const borPost = isBoRPost(post);
+    const borPost = useMemo(() => isBoRPost(post), [post]);
 
     return (
         <TouchableHighlight
@@ -165,7 +165,7 @@ const DraftAndScheduledPost: React.FC<Props> = ({
                                 />
                             </View>
                         }
-                        {borPost && borUserTimeLimit &&
+                        {borPost && borUserTimeLimit !== undefined && Boolean(borUserTimeLimit) &&
                             <View
                                 style={style.indicatorItem}
                                 testID='draft_post.bor_indicator'
