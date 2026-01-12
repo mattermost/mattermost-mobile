@@ -1,8 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-type PostType =
+type PostTypesUserCreatable =
     | ''
+    | 'burn_on_read';
+
+type PostType = PostTypesUserCreatable
     | 'system_add_remove'
     | 'system_add_to_channel'
     | 'system_add_to_team'
@@ -76,6 +79,7 @@ type PostMetadata = {
     images?: Dictionary<PostImage | undefined>;
     reactions?: Reaction[];
     priority?: PostPriority;
+    expire_at?: number;
 };
 
 type Post = {

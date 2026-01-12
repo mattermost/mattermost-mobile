@@ -26,11 +26,13 @@ suspend fun PushNotificationDataRunnable.Companion.fetchMyChannel(db: WMDatabase
             "D" -> {
                 profilesArray = fetchProfileInChannel(db, serverUrl, channelId)
                 if ((profilesArray?.size() ?: 0) > 0) {
-                    val displayName = displayUsername(profilesArray!!.getMap(0), displayNameSetting)
-                    val data = Arguments.createMap()
-                    data.merge(channelData)
-                    data.putString("display_name", displayName)
-                    channelData = data
+                    profilesArray?.getMap(0)?.let { profile ->
+                        val displayName = displayUsername(profile, displayNameSetting)
+                        val data = Arguments.createMap()
+                        data.merge(channelData)
+                        data.putString("display_name", displayName)
+                        channelData = data
+                    }
                 }
             }
             "G" -> {
@@ -117,8 +119,10 @@ private suspend fun PushNotificationDataRunnable.Companion.fetchProfileInChannel
         if (profilesArray != null) {
             for (i in 0 until profilesArray.size()) {
                 val profile = profilesArray.getMap(i)
-                if (profile.getString("id") != currentUserId) {
-                    result.pushMap(profile)
+                profile?.let {
+                    if (it.getString("id") != currentUserId) {
+                        result.pushMap(it)
+                    }
                 }
             }
         }
@@ -152,7 +156,9 @@ private fun PushNotificationDataRunnable.Companion.displayGroupMessageName(profi
     val names = ArrayList<String>()
     for (i in 0 until profilesArray.size()) {
         val profile = profilesArray.getMap(i)
-        names.add(displayUsername(profile, displayNameSetting))
+        profile?.let {
+            names.add(displayUsername(it, displayNameSetting))
+        }
     }
 
     return names.sortedWith { s1, s2 ->
