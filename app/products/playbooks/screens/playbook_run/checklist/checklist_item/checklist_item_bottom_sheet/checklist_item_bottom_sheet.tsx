@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo, type ComponentProps} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {View, Text, Platform, Pressable, Alert, TouchableOpacity} from 'react-native';
+import {View, Text, Platform, Pressable, Alert} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import MenuDivider from '@components/menu_divider';
@@ -131,6 +131,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         fontSize: 18,
         color: changeOpacity(theme.centerChannelColor, 0.56),
         paddingHorizontal: 4,
+    },
+    editIconPressed: {
+        opacity: 0.2,
     },
     taskTitle: {
         ...typography('Body', 300, 'Regular'),
@@ -466,15 +469,16 @@ const ChecklistItemBottomSheet = ({
                         )}
                     </View>
                     {!isDisabled && (
-                        <TouchableOpacity
+                        <Pressable
                             onPress={openEditItemModal}
+                            style={({pressed}) => pressed && styles.editIconPressed}
                             testID='checklist_item.edit_button'
                         >
                             <CompassIcon
                                 name='pencil-outline'
                                 style={styles.editIcon}
                             />
-                        </TouchableOpacity>
+                        </Pressable>
                     )}
                 </View>
             </View>
