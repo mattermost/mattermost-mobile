@@ -174,6 +174,7 @@ describe('Smoke Test - Account', () => {
         await DisplaySettingsScreen.open();
         await ThemeDisplaySettingsScreen.open();
         await ThemeDisplaySettingsScreen.denimOption.tap();
+        await ThemeDisplaySettingsScreen.back();
 
         // * Verify on display settings screen and denim is set
         await DisplaySettingsScreen.toBeVisible();
