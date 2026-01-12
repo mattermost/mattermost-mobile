@@ -154,27 +154,27 @@ export const useHandleSendMessage = ({
                 return;
             }
 
-            const {post: createdPost} = await createPost(serverUrl, post, postFiles);
+            createPost(serverUrl, post, postFiles).then(({post: createdPost}) => {
+                if (createdPost?.id && onPostCreated) {
+                    // Use post ID or root ID for thread navigation
+                    const threadRootId = createdPost.root_id || createdPost.id;
+                    onPostCreated(threadRootId);
+                }
+            });
             clearDraft();
-
-            if (createdPost?.id && onPostCreated) {
-                // Use post ID or root ID for thread navigation
-                const threadRootId = createdPost.root_id || createdPost.id;
-                onPostCreated(threadRootId);
-            }
 
             // Early return to avoid calling DeviceEventEmitter.emit
             return;
         } else {
             // Response error is handled at the post level so don't have to wait to clear draft
-            const {post: createdPost} = await createPost(serverUrl, post, postFiles);
+            createPost(serverUrl, post, postFiles).then(({post: createdPost}) => {
+                if (createdPost?.id && onPostCreated) {
+                    // Use post ID or root ID for thread navigation
+                    const threadRootId = createdPost.root_id || createdPost.id;
+                    onPostCreated(threadRootId);
+                }
+            });
             clearDraft();
-
-            if (createdPost?.id && onPostCreated) {
-                // Use post ID or root ID for thread navigation
-                const threadRootId = createdPost.root_id || createdPost.id;
-                onPostCreated(threadRootId);
-            }
         }
 
         setSendingMessage(false);
