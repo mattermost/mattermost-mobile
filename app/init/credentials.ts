@@ -84,6 +84,9 @@ export const setServerCredentials = (serverUrl: string, token: string, preauthSe
 
 export const removeServerCredentials = async (serverUrl: string) => {
     await KeyChain.resetInternetCredentials({server: serverUrl});
+};
+
+export const removePreauthSecret = async (serverUrl: string) => {
     try {
         await KeyChain.resetGenericPassword({server: serverUrl});
     } catch (e) {
