@@ -6,7 +6,7 @@ import {getPlaybookChecklistById} from '@playbooks/database/queries/checklist';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import TestHelper from '@test/test_helper';
 
-import {updateChecklistItem, setChecklistItemCommand, setAssignee, setDueDate, renameChecklist} from './checklist';
+import {updateChecklistItem, setChecklistItemCommand, setAssignee, setDueDate, renameChecklist, deleteChecklistItem} from './checklist';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -392,5 +392,71 @@ describe('renameChecklist', () => {
         const updated = await getPlaybookChecklistById(operator.database, checklist.id);
         expect(updated).toBeDefined();
         expect(updated!.title).toBe('Updated Checklist Title');
+    });
+});
+
+describe('deleteChecklistItem', () => {
+    it('should handle not found database', async () => {
+        const {error} = await deleteChecklistItem('foo', 'itemid');
+        expect(error).toBeTruthy();
+        expect((error as Error).message).toContain('foo database not found');
+    });
+
+    it('should handle item not found', async () => {
+        const {error} = await deleteChecklistItem(serverUrl, 'nonexistent');
+        expect(error).toBe('Item not found: nonexistent');
+    });
+
+    it('should handle database write errors', async () => {
+        const checklistId = 'checklistid';
+        const item = TestHelper.createPlaybookItem(checklistId, 0);
+        await operator.handlePlaybookChecklistItem({items: [{...item, checklist_id: checklistId}], prepareRecordsOnly: false});
+
+        const originalWrite = operator.database.write;
+        operator.database.write = jest.fn().mockRejectedValue(new Error('Database write failed'));
+
+        const {error} = await deleteChecklistItem(serverUrl, item.id);
+        expect(error).toBeTruthy();
+
+        operator.database.write = originalWrite;
+    });
+
+    it('should delete checklist item successfully', async () => {
+        const checklistId = 'checklistid';
+        const item = TestHelper.createPlaybookItem(checklistId, 0);
+        await operator.handlePlaybookChecklistItem({items: [{...item, checklist_id: checklistId}], prepareRecordsOnly: false});
+
+        // Verify item exists before deletion
+        const beforeDelete = await getPlaybookChecklistItemById(operator.database, item.id);
+        expect(beforeDelete).toBeDefined();
+        expect(beforeDelete!.id).toBe(item.id);
+
+        const {data, error} = await deleteChecklistItem(serverUrl, item.id);
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        // Verify item is deleted
+        const afterDelete = await getPlaybookChecklistItemById(operator.database, item.id);
+        expect(afterDelete).toBeUndefined();
+    });
+
+    it('should delete checklist item with different states', async () => {
+        const checklistId = 'checklistid';
+        const states: ChecklistItemState[] = ['', 'in_progress', 'closed', 'skipped'];
+
+        const testPromises = states.map(async (state) => {
+            const item = TestHelper.createPlaybookItem(checklistId, 0);
+            item.state = state;
+            await operator.handlePlaybookChecklistItem({items: [{...item, checklist_id: checklistId}], prepareRecordsOnly: false});
+
+            const {data, error} = await deleteChecklistItem(serverUrl, item.id);
+            expect(error).toBeUndefined();
+            expect(data).toBe(true);
+
+            const deleted = await getPlaybookChecklistItemById(operator.database, item.id);
+            expect(deleted).toBeUndefined();
+        });
+
+        await Promise.all(testPromises);
     });
 });
