@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
 const EditChecklistItemBottomSheet = ({
     componentId,
     currentTitle,
-    currentDescription,
+    currentDescription = '',
     onSave,
 }: Props) => {
     const intl = useIntl();
@@ -48,7 +48,7 @@ const EditChecklistItemBottomSheet = ({
     const theme = useTheme();
 
     const [title, setTitle] = useState<string>(currentTitle);
-    const [description, setDescription] = useState<string>(currentDescription || '');
+    const [description, setDescription] = useState<string>(currentDescription);
     const [canSave, setCanSave] = useState(false);
 
     const rightButton = React.useMemo(() => {
@@ -71,7 +71,7 @@ const EditChecklistItemBottomSheet = ({
 
     useEffect(() => {
         const titleChanged = title.trim() !== currentTitle.trim();
-        const descriptionChanged = (description.trim() || '') !== (currentDescription?.trim() || '');
+        const descriptionChanged = description.trim() !== currentDescription.trim();
         setCanSave(title.trim().length > 0 && (titleChanged || descriptionChanged));
     }, [title, description, currentTitle, currentDescription]);
 
@@ -84,7 +84,7 @@ const EditChecklistItemBottomSheet = ({
         if (saveTitle.length > 0) {
             onSave({
                 title: saveTitle,
-                description: description ? description.trim() : '',
+                description: description.trim(),
             });
             close(componentId);
         }

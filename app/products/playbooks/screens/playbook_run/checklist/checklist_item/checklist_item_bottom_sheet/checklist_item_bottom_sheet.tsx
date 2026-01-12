@@ -355,8 +355,8 @@ const ChecklistItemBottomSheet = ({
     }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
 
     const openEditItemModal = useCallback(() => {
-        const itemDescription = 'description' in item ? item.description : '';
-        goToEditChecklistItem(intl, theme, runName, item.title, itemDescription || undefined, handleEditItem);
+        const itemDescription = ('description' in item && item.description) || undefined;
+        goToEditChecklistItem(intl, theme, runName, item.title, itemDescription, handleEditItem);
     }, [intl, theme, runName, item, handleEditItem]);
 
     const renderTaskDetails = () => (
