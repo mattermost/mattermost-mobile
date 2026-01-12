@@ -5,7 +5,7 @@ import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 import {Keyboard} from 'react-native';
 
-import {Preferences} from '@constants';
+import {Preferences, Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
@@ -20,14 +20,6 @@ jest.mock('@screens/navigation', () => ({
     setButtons: jest.fn(),
 }));
 
-jest.mock('react-native', () => {
-    const RN = jest.requireActual('react-native');
-    RN.Keyboard = {
-        dismiss: jest.fn(),
-    };
-    return RN;
-});
-
 jest.mock('@hooks/navigation_button_pressed', () => jest.fn());
 jest.mock('@hooks/android_back_handler', () => jest.fn());
 jest.mock('@managers/security_manager', () => ({
@@ -35,7 +27,7 @@ jest.mock('@managers/security_manager', () => ({
 }));
 
 describe('EditChecklistItemBottomSheet', () => {
-    const componentId = 'test-component-id' as any;
+    const componentId = Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM;
     const mockOnSave = jest.fn();
 
     const mockRightButton = {

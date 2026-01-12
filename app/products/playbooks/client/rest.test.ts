@@ -1040,16 +1040,30 @@ describe('renameChecklist', () => {
 });
 
 describe('addChecklistItem', () => {
-    test('should add item successfully', async () => {
+    test('should add item with title only', async () => {
         const playbookRunId = 'run123';
         const checklistNum = 1;
-        const title = 'New Item';
+        const item: ChecklistItemInput = {title: 'New Item'};
         const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/add`;
-        const expectedOptions = {method: 'post', body: {title}};
+        const expectedOptions = {method: 'post', body: item};
 
         jest.mocked(client.doFetch).mockResolvedValue(undefined);
 
-        await client.addChecklistItem(playbookRunId, checklistNum, {title});
+        await client.addChecklistItem(playbookRunId, checklistNum, item);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should add item with title and description', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const item: ChecklistItemInput = {title: 'New Item', description: 'Item description'};
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/add`;
+        const expectedOptions = {method: 'post', body: item};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.addChecklistItem(playbookRunId, checklistNum, item);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
@@ -1057,25 +1071,83 @@ describe('addChecklistItem', () => {
     test('should handle network errors', async () => {
         const playbookRunId = 'run123';
         const checklistNum = 1;
-        const title = 'New Item';
+        const item: ChecklistItemInput = {title: 'New Item'};
 
         jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
 
-        await expect(client.addChecklistItem(playbookRunId, checklistNum, {title})).rejects.toThrow('Network error');
+        await expect(client.addChecklistItem(playbookRunId, checklistNum, item)).rejects.toThrow('Network error');
     });
 
     test('should handle invalid checklist number', async () => {
         const playbookRunId = 'run123';
         const checklistNum = -1;
-        const title = 'New Item';
+        const item: ChecklistItemInput = {title: 'New Item'};
         const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/add`;
-        const expectedOptions = {method: 'post', body: {title}};
+        const expectedOptions = {method: 'post', body: item};
 
         jest.mocked(client.doFetch).mockResolvedValue(undefined);
 
-        await client.addChecklistItem(playbookRunId, checklistNum, {title});
+        await client.addChecklistItem(playbookRunId, checklistNum, item);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+});
+
+describe('updateChecklistItem', () => {
+    test('should update item with title only', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const item: ChecklistItemInput = {title: 'Updated Title'};
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/item/${itemNum}`;
+        const expectedOptions = {method: 'put', body: item};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.updateChecklistItem(playbookRunId, checklistNum, itemNum, item);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should update item with title and description', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const item: ChecklistItemInput = {title: 'Updated Title', description: 'Updated description'};
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/item/${itemNum}`;
+        const expectedOptions = {method: 'put', body: item};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.updateChecklistItem(playbookRunId, checklistNum, itemNum, item);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should handle zero indices', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 0;
+        const itemNum = 0;
+        const item: ChecklistItemInput = {title: 'Updated Title'};
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/item/${itemNum}`;
+        const expectedOptions = {method: 'put', body: item};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.updateChecklistItem(playbookRunId, checklistNum, itemNum, item);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should handle network errors', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const item: ChecklistItemInput = {title: 'Updated Title'};
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.updateChecklistItem(playbookRunId, checklistNum, itemNum, item)).rejects.toThrow('Network error');
     });
 });
 

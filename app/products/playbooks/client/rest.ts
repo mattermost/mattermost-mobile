@@ -29,6 +29,7 @@ export interface ClientPlaybooksMix {
     setAssignee: (playbookRunId: string, checklistNum: number, itemNum: number, assigneeId?: string) => Promise<void>;
     setDueDate: (playbookRunId: string, checklistNum: number, itemNum: number, date?: number) => Promise<void>;
     addChecklistItem: (playbookRunId: string, checklistNum: number, item: ChecklistItemInput) => Promise<void>;
+    deleteChecklistItem: (playbookRunId: string, checklistNum: number, itemNum: number) => Promise<void>;
     updateChecklistItem: (playbookRunId: string, checklistNum: number, itemNum: number, item: ChecklistItemInput) => Promise<void>;
 
     renameChecklist: (playbookRunId: string, checklistNumber: number, newName: string) => Promise<void>;
