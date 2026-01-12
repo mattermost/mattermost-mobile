@@ -18,7 +18,6 @@ import DraftInput from './draft_input';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
-import type {URL} from "react-native-url-polyfill";
 
 const SERVER_URL = 'https://appv1.mattermost.com';
 
