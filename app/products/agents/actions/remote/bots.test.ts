@@ -1,0 +1,90 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import NetworkManager from '@managers/network_manager';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
+
+import {fetchAIBots, getBotDirectChannel} from './bots';
+
+jest.mock('@managers/network_manager');
+jest.mock('@utils/errors');
+jest.mock('@utils/log');
+
+const serverUrl = 'https://test.mattermost.com';
+
+const mockClient = {
+    getAIBots: jest.fn(),
+    createDirectChannel: jest.fn(),
+};
+
+beforeAll(() => {
+    jest.mocked(NetworkManager.getClient).mockReturnValue(mockClient as any);
+});
+
+beforeEach(() => {
+    jest.clearAllMocks();
+});
+
+describe('fetchAIBots', () => {
+    it('should return bots and config flags on success', async () => {
+        const mockResponse = {
+            bots: [{id: 'bot1', name: 'Test Bot'}],
+            searchEnabled: true,
+            allowUnsafeLinks: false,
+        };
+        mockClient.getAIBots.mockResolvedValue(mockResponse);
+
+        const result = await fetchAIBots(serverUrl);
+
+        expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
+        expect(mockClient.getAIBots).toHaveBeenCalled();
+        expect(result.bots).toEqual(mockResponse.bots);
+        expect(result.searchEnabled).toBe(true);
+        expect(result.allowUnsafeLinks).toBe(false);
+        expect(result.error).toBeUndefined();
+    });
+
+    it('should return error and log on failure', async () => {
+        const error = new Error('Network error');
+        const errorMessage = 'Network error occurred';
+        mockClient.getAIBots.mockRejectedValue(error);
+        jest.mocked(getFullErrorMessage).mockReturnValue(errorMessage);
+
+        const result = await fetchAIBots(serverUrl);
+
+        expect(logError).toHaveBeenCalledWith('[fetchAIBots] Failed to fetch AI bots', error);
+        expect(getFullErrorMessage).toHaveBeenCalledWith(error);
+        expect(result).toEqual({error: errorMessage});
+    });
+});
+
+describe('getBotDirectChannel', () => {
+    const currentUserId = 'current-user-id';
+    const botUserId = 'bot-user-id';
+
+    it('should return channelId on success', async () => {
+        const mockChannel = {id: 'channel-123'};
+        mockClient.createDirectChannel.mockResolvedValue(mockChannel);
+
+        const result = await getBotDirectChannel(serverUrl, currentUserId, botUserId);
+
+        expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
+        expect(mockClient.createDirectChannel).toHaveBeenCalledWith([currentUserId, botUserId]);
+        expect(result.channelId).toBe('channel-123');
+        expect(result.error).toBeUndefined();
+    });
+
+    it('should return error and log on failure', async () => {
+        const error = new Error('Failed to create channel');
+        const errorMessage = 'Channel creation failed';
+        mockClient.createDirectChannel.mockRejectedValue(error);
+        jest.mocked(getFullErrorMessage).mockReturnValue(errorMessage);
+
+        const result = await getBotDirectChannel(serverUrl, currentUserId, botUserId);
+
+        expect(logError).toHaveBeenCalledWith('[getBotDirectChannel] Failed to get bot direct channel', error);
+        expect(getFullErrorMessage).toHaveBeenCalledWith(error);
+        expect(result).toEqual({error: errorMessage});
+    });
+});
