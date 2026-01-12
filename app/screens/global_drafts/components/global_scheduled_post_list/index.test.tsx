@@ -105,10 +105,14 @@ describe('GlobalScheduledPostList', () => {
             {database},
         );
 
-        const globalScheduledPostList = getByTestId('global-scheduled-post-list');
-        expect(globalScheduledPostList.props.tutorialWatched).toBe(false);
+        await waitFor(() => {
+            const globalScheduledPostList = getByTestId('global-scheduled-post-list');
+            expect(globalScheduledPostList.props.tutorialWatched).toBe(false);
+        });
 
-        await storeGlobal(Tutorial.SCHEDULED_POSTS_LIST, 'true', false);
+        await act(async () => {
+            await storeGlobal(Tutorial.SCHEDULED_POSTS_LIST, 'true', false);
+        });
 
         await waitFor(() => {
             const updatedGlobalScheduledPostList = getByTestId('global-scheduled-post-list');

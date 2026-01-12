@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act} from '@testing-library/react-native';
+import {act, waitFor} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
@@ -69,9 +69,11 @@ describe('components/post_list/PostList', () => {
     const baseProps: ComponentProps<typeof PostList> = {
         appsEnabled: false,
         channelId: 'channel-id',
-        currentTimezone: 'UTC',
-        currentUserId: 'current-user',
-        currentUsername: 'username',
+        currentUser: TestHelper.fakeUserModel({
+            id: 'current-user',
+            username: 'username',
+            timezone: {useAutomaticTimezone: true, automaticTimezone: 'UTC', manualTimezone: ''},
+        }),
         customEmojiNames: [],
         lastViewedAt: 0,
         location: Screens.CHANNEL,
@@ -260,10 +262,12 @@ describe('components/post_list/PostList', () => {
         });
 
         // Verify the DeviceEventEmitter.emit was called with correct params
-        expect(emitSpy).toHaveBeenCalledWith(
-            Events.ITEM_IN_VIEWPORT,
-            {[`${Screens.CHANNEL}-${mockPosts[0].id}`]: true},
-        );
+        await waitFor(() => {
+            expect(emitSpy).toHaveBeenCalledWith(
+                Events.ITEM_IN_VIEWPORT,
+                {[`${Screens.CHANNEL}-${mockPosts[0].id}`]: true},
+            );
+        });
     });
 
     it('handles scroll to index failure', async () => {

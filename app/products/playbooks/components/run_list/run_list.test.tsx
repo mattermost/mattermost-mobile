@@ -259,7 +259,10 @@ describe('RunList', () => {
         props.showCachedWarning = true;
         const {getByText} = renderWithEverything(<RunList {...props}/>, {database});
 
-        expect(getByText('Cannot reach the server')).toBeTruthy();
+        await waitFor(() => {
+            expect(getByText('Cannot reach the server')).toBeTruthy();
+        });
+        await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
     it('hides cached warning when showCachedWarning is false', () => {

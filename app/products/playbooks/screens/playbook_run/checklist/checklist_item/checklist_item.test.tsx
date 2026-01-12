@@ -404,19 +404,25 @@ describe('ChecklistItem', () => {
         expect(bottomSheetRenderedComponent.props.itemNumber).toBe(props.itemNumber);
         expect(bottomSheetRenderedComponent.props.channelId).toBe(props.channelId);
 
-        bottomSheetRenderedComponent.props.onCheck();
+        act(() => {
+            bottomSheetRenderedComponent.props.onCheck();
+        });
 
         await waitFor(() => {
             expect(updateChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.item.id, props.checklistNumber, props.itemNumber, 'closed');
         });
 
-        bottomSheetRenderedComponent.props.onSkip();
+        act(() => {
+            bottomSheetRenderedComponent.props.onSkip();
+        });
 
         await waitFor(() => {
             expect(skipChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.item.id, props.checklistNumber, props.itemNumber);
         });
 
-        bottomSheetRenderedComponent.props.onRunCommand();
+        act(() => {
+            bottomSheetRenderedComponent.props.onRunCommand();
+        });
 
         await waitFor(() => {
             expect(runChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.checklistNumber, props.itemNumber);

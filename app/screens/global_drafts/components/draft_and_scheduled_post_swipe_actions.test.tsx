@@ -31,6 +31,21 @@ jest.mock('@components/draft_scheduled_post', () => {
     }));
 });
 
+// Mock ReanimatedSwipeable to avoid worklet warnings
+jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
+    const MockReact = require('react');
+    const {View} = require('react-native');
+
+    return MockReact.forwardRef((props: {children: React.ReactNode; renderRightActions?: (arg1: {value: number}, arg2: {value: number}) => React.ReactNode; testID?: string}, ref: React.Ref<unknown>) => {
+        return MockReact.createElement(
+            View,
+            {testID: props.testID, ref},
+            props.children,
+            props.renderRightActions && props.renderRightActions({value: 0}, {value: 0}),
+        );
+    });
+});
+
 jest.mock('@utils/draft', () => ({
     deleteDraftConfirmation: jest.fn(),
 }));
@@ -60,7 +75,7 @@ describe('DraftAndScheduledPostSwipeActions', () => {
         jest.clearAllMocks();
     });
 
-    it('renders draft correctly', () => {
+    it('renders draft correctly', async () => {
         const {getByTestId} = renderWithIntl(
             <DraftAndScheduledPostSwipeActions
                 draftType={DRAFT_TYPE_DRAFT}
@@ -70,8 +85,10 @@ describe('DraftAndScheduledPostSwipeActions', () => {
             />,
         );
 
-        expect(getByTestId('draft-scheduled-post-draft-draft-id-1')).toBeTruthy();
-        expect(getByTestId('draft_scheduled_post_swipeable')).toBeTruthy();
+        await waitFor(() => {
+            expect(getByTestId('draft-scheduled-post-draft-draft-id-1')).toBeTruthy();
+            expect(getByTestId('draft_scheduled_post_swipeable')).toBeTruthy();
+        });
     });
 
     it('renders scheduled post correctly', () => {

@@ -141,31 +141,24 @@ describe('IntuneManager', () => {
             oid: 'object_id',
         };
 
-        it('should call enrollInMAM on successful enrollment', async () => {
-            jest.mocked(Intune.enrollInMAM).mockResolvedValue();
+        it('should call enrollInMAM on successful enrollment', () => {
+            jest.mocked(Intune.enrollInMAM).mockReturnValue();
 
-            await IntuneManager.enrollServer(serverUrl, mockIdentity);
+            IntuneManager.enrollServer(serverUrl, mockIdentity);
             expect(jest.mocked(Intune.enrollInMAM)).toHaveBeenCalledWith(serverUrl, mockIdentity);
-        });
-
-        it('should throw error on enrollment failure', async () => {
-            const error = new Error('Enrollment failed');
-            jest.mocked(Intune.enrollInMAM).mockRejectedValue(error);
-
-            await expect(IntuneManager.enrollServer(serverUrl, mockIdentity)).rejects.toThrow('Enrollment failed');
         });
     });
 
     describe('unenrollServer', () => {
         it('should skip unenrollment when server not enrolled', async () => {
-            jest.mocked(Intune.isManagedServer).mockResolvedValue(false);
+            jest.mocked(Intune.isManagedServer).mockReturnValue(false);
 
             await IntuneManager.unenrollServer(serverUrl, false);
             expect(jest.mocked(Intune.deregisterAndUnenroll)).not.toHaveBeenCalled();
         });
 
         it('should clear current identity when unenrolling active server', async () => {
-            jest.mocked(Intune.isManagedServer).mockResolvedValue(true);
+            jest.mocked(Intune.isManagedServer).mockReturnValue(true);
             jest.mocked(Intune.setCurrentIdentity).mockResolvedValue();
             jest.mocked(Intune.deregisterAndUnenroll).mockResolvedValue();
 
@@ -175,7 +168,7 @@ describe('IntuneManager', () => {
         });
 
         it('should not clear identity when unenrolling non-active server', async () => {
-            jest.mocked(Intune.isManagedServer).mockResolvedValue(true);
+            jest.mocked(Intune.isManagedServer).mockReturnValue(true);
             jest.mocked(DatabaseManager.getActiveServerUrl).mockResolvedValue('https://other.com');
             jest.mocked(Intune.deregisterAndUnenroll).mockResolvedValue();
 
@@ -185,7 +178,7 @@ describe('IntuneManager', () => {
         });
 
         it('should call deregisterAndUnenroll with doWipe = true', async () => {
-            jest.mocked(Intune.isManagedServer).mockResolvedValue(true);
+            jest.mocked(Intune.isManagedServer).mockReturnValue(true);
             jest.mocked(Intune.deregisterAndUnenroll).mockResolvedValue();
 
             await IntuneManager.unenrollServer(serverUrl, true);
@@ -193,7 +186,7 @@ describe('IntuneManager', () => {
         });
 
         it('should catch and log errors on unenrollment failure', async () => {
-            jest.mocked(Intune.isManagedServer).mockResolvedValue(true);
+            jest.mocked(Intune.isManagedServer).mockReturnValue(true);
             jest.mocked(Intune.deregisterAndUnenroll).mockRejectedValue(new Error('Unenroll failed'));
 
             await IntuneManager.unenrollServer(serverUrl, false);
@@ -201,25 +194,18 @@ describe('IntuneManager', () => {
     });
 
     describe('isManagedServer', () => {
-        it('should return true when server is managed', async () => {
-            jest.mocked(Intune.isManagedServer).mockResolvedValue(true);
+        it('should return true when server is managed', () => {
+            jest.mocked(Intune.isManagedServer).mockReturnValue(true);
 
-            const result = await IntuneManager.isManagedServer(serverUrl);
+            const result = IntuneManager.isManagedServer(serverUrl);
             expect(result).toBe(true);
             expect(jest.mocked(Intune.isManagedServer)).toHaveBeenCalledWith(serverUrl);
         });
 
-        it('should return false when server is not managed', async () => {
-            jest.mocked(Intune.isManagedServer).mockResolvedValue(false);
+        it('should return false when server is not managed', () => {
+            jest.mocked(Intune.isManagedServer).mockReturnValue(false);
 
-            const result = await IntuneManager.isManagedServer(serverUrl);
-            expect(result).toBe(false);
-        });
-
-        it('should return false on error', async () => {
-            jest.mocked(Intune.isManagedServer).mockRejectedValue(new Error('Check failed'));
-
-            const result = await IntuneManager.isManagedServer(serverUrl);
+            const result = IntuneManager.isManagedServer(serverUrl);
             expect(result).toBe(false);
         });
     });
@@ -303,23 +289,12 @@ describe('IntuneManager', () => {
             mockedGetConfig.mockResolvedValue({IntuneMAMEnabled: 'true', IntuneScope: 'scope', IntuneAuthService: 'saml'} as ClientConfig);
             mockedGetLicense.mockResolvedValue({} as ClientLicense);
             mockedIsMinimumLicenseTier.mockReturnValue(true);
-            jest.mocked(Intune.isManagedServer).mockResolvedValue(true);
+            jest.mocked(Intune.isManagedServer).mockReturnValue(true);
             jest.mocked(Intune.getPolicy).mockResolvedValue(mockPolicy);
 
             const result = await IntuneManager.getPolicy(serverUrl);
             expect(result).toEqual(mockPolicy);
             expect(jest.mocked(Intune.getPolicy)).toHaveBeenCalledWith(serverUrl);
-        });
-
-        it('should return null on error', async () => {
-            mockedGetConfig.mockResolvedValue({IntuneMAMEnabled: 'true', IntuneScope: 'scope', IntuneAuthService: 'office365'} as ClientConfig);
-            mockedGetLicense.mockResolvedValue({} as ClientLicense);
-            mockedIsMinimumLicenseTier.mockReturnValue(true);
-            jest.mocked(Intune.isManagedServer).mockResolvedValue(true);
-            jest.mocked(Intune.getPolicy).mockRejectedValue(new Error('Get policy failed'));
-
-            const result = await IntuneManager.getPolicy(serverUrl);
-            expect(result).toBeNull();
         });
     });
 

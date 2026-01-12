@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, waitFor} from '@testing-library/react-native';
+import {act, cleanup, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -28,6 +28,13 @@ describe('components/categories_list', () => {
                 team.displayName = 'Test Team!';
             });
         });
+    });
+
+    afterEach(async () => {
+        cleanup();
+
+        // Allow observables to settle before next test
+        await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     it('should render', async () => {

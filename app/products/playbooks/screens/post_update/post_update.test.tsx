@@ -161,11 +161,13 @@ describe('PostUpdate', () => {
         jest.mocked(postStatusUpdate).mockResolvedValue({data: true});
     });
 
-    it('should render loading state initially', () => {
+    it('should render loading state initially', async() => {
         const props = getBaseProps();
         const {getByTestId} = renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
-        expect(getByTestId('loader')).toBeTruthy();
+        await waitFor(() => {
+            expect(getByTestId('loader')).toBeTruthy();
+        });
     });
 
     it('should render correctly after loading', async () => {
@@ -662,7 +664,7 @@ describe('PostUpdate', () => {
         });
     });
 
-    it('should handle Android back button press', () => {
+    it('should handle Android back button press', async () => {
         const props = getBaseProps();
         renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
@@ -677,8 +679,10 @@ describe('PostUpdate', () => {
             backHandler();
         });
 
-        expect(navigateBack).toHaveBeenCalled();
-        expect(Keyboard.dismiss).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(navigateBack).toHaveBeenCalled();
+            expect(Keyboard.dismiss).toHaveBeenCalled();
+        });
     });
 
     it('should update reminder value correctly for different time options', async () => {

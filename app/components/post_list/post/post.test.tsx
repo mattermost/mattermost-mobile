@@ -20,7 +20,7 @@ import type PostModel from '@typings/database/models/servers/post';
 
 jest.mock('@managers/performance_metrics_manager');
 jest.mock('@components/post_list/post/burn_on_read/unrevealed');
-jest.mock('./body');
+jest.mock('./body', () => jest.fn());
 
 describe('performance metrics', () => {
     let database: Database;
@@ -31,14 +31,13 @@ describe('performance metrics', () => {
             appsEnabled: false,
             canDelete: false,
             customEmojiNames: [],
-            differentThreadSequence: false,
-            hasFiles: false,
+            filesInfo: [],
             hasReactions: false,
             hasReplies: false,
             highlightReplyBar: false,
             isEphemeral: false,
             isPostAddChannelMember: false,
-            isPostPriorityEnabled: false,
+            commentCount: 0,
             location: Screens.CHANNEL,
             post,
             isLastPost: true,

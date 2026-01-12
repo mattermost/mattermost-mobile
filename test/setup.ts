@@ -548,6 +548,19 @@ jest.mock('@mattermost/react-native-emm', () => ({
     useManagedConfig: () => ({}),
 }));
 
+jest.mock('@mattermost/react-native-paste-input', () => {
+    const React = require('react');
+    const MockedPasteTextInput = React.forwardRef((props: any, ref: any) => {
+        const {TextInput} = require('react-native');
+        return React.createElement(TextInput, {...props, ref});
+    });
+    MockedPasteTextInput.displayName = 'PasteTextInput';
+    return {
+        __esModule: true,
+        default: MockedPasteTextInput,
+    };
+});
+
 jest.mock('@react-native-clipboard/clipboard', () => ({}));
 
 jest.mock('react-native-document-picker', () => ({}));

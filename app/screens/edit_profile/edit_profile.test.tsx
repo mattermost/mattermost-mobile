@@ -606,9 +606,11 @@ describe('EditProfile', () => {
             />,
         );
 
-        // Verify the ProfileForm component is rendered (which means customFields was passed)
-        const scrollView = screen.getByTestId('edit_profile.scroll_view');
-        expect(scrollView).toBeTruthy();
+        await waitFor(() => {
+            // Verify the ProfileForm component is rendered (which means customFields was passed)
+            const scrollView = screen.getByTestId('edit_profile.scroll_view');
+            expect(scrollView).toBeTruthy();
+        });
     });
 
     describe('SAML Field Handling', () => {

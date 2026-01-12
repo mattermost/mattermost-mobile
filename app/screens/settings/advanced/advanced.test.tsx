@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, screen, waitFor} from '@testing-library/react-native';
+import {act, fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {Alert} from 'react-native';
 
@@ -178,7 +178,9 @@ describe('AdvancedSettings', () => {
             const alertCalls = (Alert.alert as jest.Mock).mock.calls;
             const deleteCallback = alertCalls[0][2][1].onPress;
 
-            await deleteCallback();
+            await act(async () => {
+                await deleteCallback();
+            });
 
             await waitFor(() => {
                 expect(mockDeleteFileCache).toHaveBeenCalledWith('https://test.mattermost.com');
@@ -293,7 +295,9 @@ describe('AdvancedSettings', () => {
             const alertCalls = (Alert.alert as jest.Mock).mock.calls;
             const deleteCallback = alertCalls[0][2][1].onPress;
 
-            await deleteCallback();
+            await act(async () => {
+                await deleteCallback();
+            });
 
             await waitFor(() => {
                 expect(mockGetAllFilesInCachesDirectory).toHaveBeenCalledTimes(2);

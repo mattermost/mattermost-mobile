@@ -334,6 +334,15 @@ describe('NavigationStore', () => {
     });
 
     describe('async wait utilities', () => {
+        beforeEach(() => {
+            jest.useFakeTimers({doNotFake: ['nextTick', 'setImmediate']});
+        });
+
+        afterEach(() => {
+            jest.runOnlyPendingTimers();
+            jest.useRealTimers();
+        });
+
         it('should resolve waitUntilScreenHasLoaded when screen is added', async () => {
             const promise = NavigationStore.waitUntilScreenHasLoaded(Screens.ABOUT);
 
@@ -407,8 +416,6 @@ describe('NavigationStore', () => {
         });
 
         it('should timeout after 30 seconds', async () => {
-            jest.useFakeTimers({doNotFake: ['nextTick', 'setImmediate']});
-
             const promise = NavigationStore.waitUntilScreenHasLoaded(Screens.ABOUT);
 
             // Fast-forward 30 seconds to trigger setTimeout callback
@@ -419,8 +426,6 @@ describe('NavigationStore', () => {
 
             // Should resolve even though screen was never added
             expect(NavigationStore.isScreenInStack(Screens.ABOUT)).toBe(false);
-
-            jest.useRealTimers();
         });
     });
 });

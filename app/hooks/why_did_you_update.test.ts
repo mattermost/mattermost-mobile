@@ -3,12 +3,15 @@
 
 import {renderHook} from '@testing-library/react-hooks';
 
+import {logInfo} from '@utils/log';
+
 import {useWhyDidYouUpdate} from './why_did_you_update';
+
+jest.mock('@utils/log');
 
 describe('hooks/useWhyDidYouUpdate', () => {
     beforeEach(() => {
-        // Mock console.log since that's what we use to output changes
-        global.console.log = jest.fn();
+        jest.clearAllMocks();
     });
 
     afterEach(() => {
@@ -19,7 +22,11 @@ describe('hooks/useWhyDidYouUpdate', () => {
         const props = {test: 'value'};
         renderHook(() => useWhyDidYouUpdate('TestComponent', props));
 
-        expect(console.log).not.toHaveBeenCalled();
+        // Initial render does log, but we check it's the initial message
+        expect(logInfo).toHaveBeenCalledWith(
+            expect.any(Number),
+            expect.stringContaining('INITIAL RENDER'),
+        );
     });
 
     it('should log when props change', () => {
@@ -33,15 +40,11 @@ describe('hooks/useWhyDidYouUpdate', () => {
         const newProps = {test: 'updated'};
         rerender(newProps);
 
-        expect(console.log).toHaveBeenCalledWith(
-            '[why-did-you-update]',
-            'TestComponent',
-            {
-                test: {
-                    from: 'initial',
-                    to: 'updated',
-                },
-            },
+        // Check that logInfo was called with timestamp and message containing the changed prop
+        expect(logInfo).toHaveBeenCalledWith(
+            expect.any(Number),
+            expect.stringContaining('[why-did-you-update] TestComponent render #2:'),
+            expect.stringContaining('test'),
         );
     });
 
@@ -55,7 +58,12 @@ describe('hooks/useWhyDidYouUpdate', () => {
         // Rerender with same props
         rerender(props);
 
-        expect(console.log).not.toHaveBeenCalled();
+        // Should log twice: once for initial, once for re-render with no changes
+        expect(logInfo).toHaveBeenCalledTimes(2);
+        expect(logInfo).toHaveBeenLastCalledWith(
+            expect.any(Number),
+            expect.stringContaining('NO CHANGES DETECTED'),
+        );
     });
 
     it('should handle multiple prop changes', () => {
@@ -69,19 +77,11 @@ describe('hooks/useWhyDidYouUpdate', () => {
         const newProps = {prop1: 'updated1', prop2: 'updated2'};
         rerender(newProps);
 
-        expect(console.log).toHaveBeenCalledWith(
-            '[why-did-you-update]',
-            'TestComponent',
-            {
-                prop1: {
-                    from: 'initial1',
-                    to: 'updated1',
-                },
-                prop2: {
-                    from: 'initial2',
-                    to: 'updated2',
-                },
-            },
+        // Check that logInfo was called with both changed props
+        expect(logInfo).toHaveBeenCalledWith(
+            expect.any(Number),
+            expect.stringContaining('[why-did-you-update] TestComponent render #2:'),
+            expect.stringMatching(/prop1.*prop2|prop2.*prop1/),
         );
     });
 });

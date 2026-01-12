@@ -33,6 +33,7 @@ jest.mock('@screens/navigation', () => ({
 
 jest.mock('@actions/local/draft', () => ({
     removeDraft: jest.fn(),
+    updateDraftMessage: jest.fn(),
 }));
 
 jest.mock('@actions/remote/post', () => ({
@@ -90,10 +91,11 @@ describe('components/post_draft/send_handler/SendHandler', () => {
         jest.clearAllMocks();
     });
 
-    it('should render DraftInput when not from draft view', () => {
+    it('should render DraftInput when not from draft view', async () => {
         const wrapper = renderWithEverything(
             <SendHandler {...baseProps}/>, {database},
         );
+
         expect(wrapper.getByTestId('test_send_handler')).toBeTruthy();
     });
 

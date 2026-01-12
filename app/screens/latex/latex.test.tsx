@@ -34,11 +34,16 @@ describe('Latex', () => {
         );
     };
 
-    it('should render error message when MathView throws an error', () => {
+    it('should render error message when MathView throws an error', async () => {
+        // Suppress expected console.error from ErrorBoundary
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
         jest.mocked(MathView).mockImplementation(() => {
             throw new Error('Test error');
         });
         renderComponent();
         expect(screen.getByText('Latex render error')).toBeTruthy();
+
+        consoleErrorSpy.mockRestore();
     });
 });

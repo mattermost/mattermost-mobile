@@ -49,7 +49,10 @@ describe('performance metrics', () => {
 
     it('finish load on load', async () => {
         const props = getBaseProps();
-        renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(getByTestId('channel_list.screen')).toBeTruthy();
+        });
         await waitFor(() => {
             expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('HOME', serverUrl);
         });

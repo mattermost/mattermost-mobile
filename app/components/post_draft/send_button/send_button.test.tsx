@@ -6,7 +6,7 @@ import React from 'react';
 import {InteractionManager} from 'react-native';
 
 import SendButton from '@components/post_draft/send_button/send_button';
-import {fireEvent, renderWithIntl} from '@test/intl-test-helper';
+import {fireEvent, renderWithIntl, waitFor} from '@test/intl-test-helper';
 
 describe('components/post_draft/send_button', () => {
     const baseProps: Parameters<typeof SendButton>[0] = {
@@ -67,10 +67,14 @@ describe('components/post_draft/send_button', () => {
         const button = getByTestId('test_id.send.button');
 
         // First tap
-        fireEvent.press(button);
+        act(() => {
+            fireEvent.press(button);
+        });
 
         // Second tap immediately after
-        fireEvent.press(button);
+        act(() => {
+            fireEvent.press(button);
+        });
 
         // Should only call once despite two taps
         expect(onPress).toHaveBeenCalledTimes(1);
@@ -130,14 +134,16 @@ describe('components/post_draft/send_button', () => {
         );
         const text = 'Type a message and long press the send button to schedule it for a later time.';
 
-        expect(queryByText(text)).toBeNull();
-
-        InteractionManager.clearInteractionHandle(handle);
-        await new Promise((resolve) => setImmediate(resolve));
-
-        act(() => {
-            expect(queryByText(text)).toBeTruthy();
+        await waitFor(() => {
+            expect(queryByText(text)).toBeNull();
         });
+
+        await act(async () => {
+            InteractionManager.clearInteractionHandle(handle);
+            await new Promise((resolve) => setImmediate(resolve));
+        });
+
+        expect(queryByText(text)).toBeTruthy();
     });
 
     it('should not show the tooltip if the scheduled post feature is disabled', async () => {
@@ -150,11 +156,11 @@ describe('components/post_draft/send_button', () => {
         );
         const text = 'Type a message and long press the send button to schedule it for a later time.';
 
-        InteractionManager.clearInteractionHandle(handle);
-        await new Promise((resolve) => setImmediate(resolve));
-
-        act(() => {
-            expect(queryByText(text)).toBeFalsy();
+        await act(async () => {
+            InteractionManager.clearInteractionHandle(handle);
+            await new Promise((resolve) => setImmediate(resolve));
         });
+
+        expect(queryByText(text)).toBeFalsy();
     });
 });

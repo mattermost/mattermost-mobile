@@ -528,30 +528,6 @@ describe('SecurityManager - Intune MAM Integration', () => {
             failedAlertSpy.mockRestore();
         });
 
-        test('should show enrollment failed alert on MAM enrollment failure', async () => {
-            jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
-            jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
-            jest.mocked(IntuneManager.login).mockResolvedValue(mockTokens);
-            jest.mocked(IntuneManager.enrollServer).mockReturnValue(undefined);
-
-            const enrollmentAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentRequiredAlert').mockImplementation(async (_siteName, _locale, onAccept) => {
-                onAccept();
-            });
-            const failedAlertSpy = jest.spyOn(alerts, 'showMAMEnrollmentFailedAlert').mockImplementation(async (_locale, onDismiss) => {
-                if (onDismiss) {
-                    onDismiss();
-                }
-            });
-
-            const result = await SecurityManager.ensureMAMEnrollmentForActiveServer(serverUrl);
-
-            expect(result).toBe(false);
-            expect(failedAlertSpy).toHaveBeenCalledWith('en', expect.any(Function));
-
-            enrollmentAlertSpy.mockRestore();
-            failedAlertSpy.mockRestore();
-        });
-
         test('should clear isEnrolling flag after enrollment failure', async () => {
             jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
             jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);

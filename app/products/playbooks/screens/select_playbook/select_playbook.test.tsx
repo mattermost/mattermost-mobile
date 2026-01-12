@@ -528,7 +528,7 @@ describe('SelectPlaybook', () => {
         });
     });
 
-    it('handles Android back button', () => {
+    it('handles Android back button', async () => {
         const props = getBaseProps();
         renderWithIntlAndTheme(<SelectPlaybook {...props}/>);
 
@@ -539,7 +539,9 @@ describe('SelectPlaybook', () => {
             closeHandler();
         });
 
-        expect(navigateBack).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(navigateBack).toHaveBeenCalled();
+        });
     });
 
     it('should not load more plyabooks while it is loading', async () => {

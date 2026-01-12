@@ -298,6 +298,7 @@ describe('useHandleSendMessage', () => {
     it('should handle call command error', async () => {
         const mockHandleCallsSlashCommand = jest.mocked(handleCallsSlashCommand);
         mockHandleCallsSlashCommand.mockResolvedValueOnce({handled: false, error: 'Call error'});
+        jest.spyOn(DraftUtils, 'alertSlashCommandFailed');
 
         const props = {
             ...defaultProps,
@@ -397,7 +398,7 @@ describe('useHandleSendMessage', () => {
         expect(defaultProps.clearDraft).toHaveBeenCalled();
     });
 
-    it('should fetch and handle channel timezones', async () => {
+    it('should fetch and handle channel timezones', () => {
         jest.mocked(getChannelTimezones).mockResolvedValueOnce({
             channelTimezones: ['UTC', 'America/New_York'],
         });
@@ -410,7 +411,9 @@ describe('useHandleSendMessage', () => {
             membersCount: 25,
         };
 
-        renderHook(() => useHandleSendMessage(props), {wrapper});
+        act(() => {
+            renderHook(() => useHandleSendMessage(props), {wrapper});
+        });
 
         expect(getChannelTimezones).toHaveBeenCalledWith(
             'https://server.com',
@@ -439,6 +442,7 @@ describe('useHandleSendMessage', () => {
         expect(DraftUtils.alertChannelWideMention).toHaveBeenCalled();
         expect(createPost).not.toHaveBeenCalled();
     });
+
     it('should include post priority metadata', async () => {
         const props = {
             ...defaultProps,
@@ -553,6 +557,7 @@ describe('useHandleSendMessage', () => {
 
     describe('channel mentions handling', () => {
         it('should bypass mention confirmation when disabled', async () => {
+            jest.spyOn(DraftUtils, 'alertChannelWideMention');
             const props = {
                 ...defaultProps,
                 value: '@channel message',
