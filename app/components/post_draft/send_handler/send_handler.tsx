@@ -53,6 +53,7 @@ type Props = {
     channelDisplayName?: string;
     isFromDraftView?: boolean;
     draftReceiverUserName?: string;
+    location?: AvailableScreens;
 }
 
 export const INITIAL_PRIORITY = {
@@ -95,6 +96,7 @@ export default function SendHandler({
     draftType,
     postId,
     postBoRConfig,
+    location,
 }: Props) {
     const serverUrl = useServerUrl();
 
@@ -179,6 +181,7 @@ export default function SendHandler({
             persistentNotificationInterval={persistentNotificationInterval}
             persistentNotificationMaxRecipients={persistentNotificationMaxRecipients}
             setIsFocused={setIsFocused}
+            location={location}
         />
     );
 }

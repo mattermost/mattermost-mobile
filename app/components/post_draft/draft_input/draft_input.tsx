@@ -24,6 +24,8 @@ import Uploads from '../uploads';
 
 import Header from './header';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 export type Props = {
     testID?: string;
     channelId: string;
@@ -32,6 +34,7 @@ export type Props = {
     rootId?: string;
     currentUserId: string;
     canShowPostPriority?: boolean;
+    location?: AvailableScreens;
 
     // Post Props
     postPriority: PostPriority;
@@ -136,6 +139,7 @@ function DraftInput({
     setIsFocused,
     scheduledPostsEnabled,
     postBoRConfig,
+    location,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -256,6 +260,7 @@ function DraftInput({
                             postBoRConfig={postBoRConfig}
                             updatePostBoRStatus={updatePostBoRStatus}
                             focus={focus}
+                            location={location}
                         />
                         <SendAction
                             testID={sendActionTestID}
