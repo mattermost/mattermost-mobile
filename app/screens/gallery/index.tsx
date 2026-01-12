@@ -3,6 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {DeviceEventEmitter, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events, Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -25,8 +26,10 @@ export type GalleryProps = {
 
 const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: GalleryProps) => {
     const dim = useWindowDimensions();
+    const {bottom: bottomInset} = useSafeAreaInsets();
     const [localIndex, setLocalIndex] = useState(initialIndex);
-    const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls();
+
+    const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls(bottomInset);
     const galleryRef = useRef<GalleryRef>(null);
 
     const containerStyle = dim;
@@ -39,11 +42,6 @@ const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Ga
     }, [hideHeaderAndFooter]);
 
     const close = useCallback(() => {
-        // setScreensOrientation(isTablet);
-        // if (Platform.OS === 'ios' && !isTablet) {
-        //     // We need both the navigation & the module
-        //     RNUtils.lockPortrait();
-        // }
         requestAnimationFrame(async () => {
             navigateBack();
         });

@@ -5,13 +5,13 @@
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
-import {ScrollView} from 'react-native';
+import {Alert, ScrollView} from 'react-native';
 
 import OptionBox from '@components/option_box';
 import OptionItem from '@components/option_item';
 import {Preferences, Screens} from '@constants';
 import {useIsTablet} from '@hooks/device';
-import {setAssignee, setChecklistItemCommand, setDueDate} from '@playbooks/actions/remote/checklist';
+import {setAssignee, setChecklistItemCommand, setDueDate, deleteChecklistItem} from '@playbooks/actions/remote/checklist';
 import {goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
 import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
@@ -723,6 +723,112 @@ describe('ChecklistItemBottomSheet', () => {
             const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
             expect(icon.props.name).toBe('source-branch');
             expect(icon.props.size).toBe(24);
+        });
+    });
+
+    describe('delete button', () => {
+        beforeEach(() => {
+            jest.spyOn(Alert, 'alert');
+        });
+
+        it('should render delete button when isDisabled is false', () => {
+            const props = getBaseProps();
+            props.isDisabled = false;
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            expect(getByTestId('checklist_item_bottom_sheet.delete_button')).toBeVisible();
+        });
+
+        it('should not render delete button when isDisabled is true', () => {
+            const props = getBaseProps();
+            props.isDisabled = true;
+            const {queryByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            expect(queryByTestId('checklist_item_bottom_sheet.delete_button')).toBeNull();
+        });
+
+        it('should show confirmation alert when delete button is pressed', () => {
+            const props = getBaseProps();
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const deleteButton = getByTestId('checklist_item_bottom_sheet.delete_button');
+            fireEvent.press(deleteButton);
+
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Delete task',
+                'Are you sure you want to delete this task? This action cannot be undone.',
+                expect.arrayContaining([
+                    expect.objectContaining({text: 'Cancel', style: 'cancel'}),
+                    expect.objectContaining({text: 'Delete', style: 'destructive'}),
+                ]),
+            );
+        });
+
+        it('should call deleteChecklistItem and dismissBottomSheet when confirmed', async () => {
+            jest.mocked(deleteChecklistItem).mockResolvedValue({data: true});
+            const props = getBaseProps();
+            props.checklistNumber = 2;
+            props.itemNumber = 3;
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const deleteButton = getByTestId('checklist_item_bottom_sheet.delete_button');
+            fireEvent.press(deleteButton);
+
+            // Get the onPress callback from the Delete button in the alert
+            const alertCall = jest.mocked(Alert.alert).mock.calls[0];
+            const buttons = alertCall[2] as Array<{text: string; onPress?: () => void}>;
+            const deleteButtonConfig = buttons.find((b) => b.text === 'Delete');
+
+            await act(async () => {
+                deleteButtonConfig?.onPress?.();
+            });
+
+            expect(dismissBottomSheet).toHaveBeenCalled();
+            expect(deleteChecklistItem).toHaveBeenCalledWith(
+                'server-url',
+                'run-1',
+                'item-1',
+                2,
+                3,
+            );
+        });
+
+        it('should not call deleteChecklistItem when cancelled', () => {
+            const props = getBaseProps();
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const deleteButton = getByTestId('checklist_item_bottom_sheet.delete_button');
+            fireEvent.press(deleteButton);
+
+            // Get the onPress callback from the Cancel button in the alert
+            const alertCall = jest.mocked(Alert.alert).mock.calls[0];
+            const buttons = alertCall[2] as Array<{text: string; onPress?: () => void}>;
+            const cancelButtonConfig = buttons.find((b) => b.text === 'Cancel');
+
+            // Cancel button doesn't have onPress, it just closes the alert
+            expect(cancelButtonConfig?.onPress).toBeUndefined();
+            expect(deleteChecklistItem).not.toHaveBeenCalled();
+        });
+
+        it('should show error snackbar when deleteChecklistItem fails', async () => {
+            jest.mocked(deleteChecklistItem).mockResolvedValue({error: 'Delete failed'});
+            const props = getBaseProps();
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const deleteButton = getByTestId('checklist_item_bottom_sheet.delete_button');
+            fireEvent.press(deleteButton);
+
+            const alertCall = jest.mocked(Alert.alert).mock.calls[0];
+            const buttons = alertCall[2] as Array<{text: string; onPress?: () => void}>;
+            const deleteButtonConfig = buttons.find((b) => b.text === 'Delete');
+
+            await act(async () => {
+                deleteButtonConfig?.onPress?.();
+            });
+
+            await waitFor(() => {
+                expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
+            });
         });
     });
 });

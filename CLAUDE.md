@@ -300,8 +300,10 @@ Located at `libraries/@mattermost/`:
 
 ### Localization (i18n)
 - **CRITICAL**: Only update `en.json` - never modify other language files or Weblate gets corrupted
+- **Adding new strings**: Define the message ID and defaultMessage in code using `defineMessages()`, then run `npm run i18n-extract` to automatically add them to `en.json`
 - Default messages in code must match JSON translations exactly, including newlines
 - Translation IDs should be descriptive enough for translators to understand context
+- Don't reuse translation IDs
 - Translate user-facing strings, not debug/error messages
 
 ### Markdown Component Usage

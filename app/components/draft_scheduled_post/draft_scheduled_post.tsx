@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {Keyboard, View} from 'react-native';
 import {Pressable} from 'react-native-gesture-handler';
 
 import {switchToThread} from '@actions/local/thread';
 import {switchToChannelById} from '@actions/remote/channel';
+import BoRLabel from '@components/burn_on_read_label';
 import DraftAndScheduledPostHeader from '@components/draft_scheduled_post_header';
 import Header from '@components/post_draft/draft_input/header';
 import {Screens} from '@constants';
@@ -14,6 +15,7 @@ import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {navigateToScreen} from '@screens/navigation';
+import {isBoRPost} from '@utils/bor';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import DraftAndScheduledPostContainer from './draft_scheduled_post_container';
@@ -33,6 +35,7 @@ type Props = {
     isPostPriorityEnabled: boolean;
     draftType: DraftType;
     firstItem?: boolean;
+    borUserTimeLimit?: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -52,9 +55,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         pressInContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
         },
-        postPriority: {
-            marginTop: 10,
+        indicatorContainer: {
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'flex-end',
+            gap: 7,
+        },
+        priorityIndicator: {
             marginLeft: -12,
+        },
+        indicatorItem: {
+            marginTop: 10,
         },
         errorLine: {
             backgroundColor: theme.errorTextColor,
@@ -63,6 +74,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             top: 0,
             left: 0,
             height: '100%',
+        },
+        borIndicator: {
+            paddingVertical: 2,
         },
     };
 });
@@ -76,6 +90,7 @@ const DraftAndScheduledPost: React.FC<Props> = ({
     isPostPriorityEnabled,
     draftType,
     firstItem,
+    borUserTimeLimit,
 }) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -100,6 +115,8 @@ const DraftAndScheduledPost: React.FC<Props> = ({
         }
         switchToChannelById(serverUrl, channel.id, channel.teamId, false);
     }, [channel.id, channel.teamId, post.rootId, serverUrl]);
+
+    const borPost = useMemo(() => isBoRPost(post), [post]);
 
     return (
         <Pressable
@@ -128,17 +145,30 @@ const DraftAndScheduledPost: React.FC<Props> = ({
                         postScheduledAt={'scheduledAt' in post ? post.scheduledAt : undefined}
                         scheduledPostErrorCode={'errorCode' in post ? post.errorCode : undefined}
                     />
-                    {showPostPriority && post.metadata?.priority &&
-                    <View
-                        style={style.postPriority}
-                        testID='draft_post.priority'
-                    >
-                        <Header
-                            noMentionsError={false}
-                            postPriority={post.metadata?.priority}
-                        />
+                    <View style={style.indicatorContainer}>
+                        {showPostPriority && post.metadata?.priority &&
+                            <View
+                                style={[style.indicatorItem, style.priorityIndicator]}
+                                testID='draft_post.priority'
+                            >
+                                <Header
+                                    noMentionsError={false}
+                                    postPriority={post.metadata?.priority}
+                                />
+                            </View>
+                        }
+                        {borPost && borUserTimeLimit !== undefined && Boolean(borUserTimeLimit) &&
+                            <View
+                                style={style.indicatorItem}
+                                testID='draft_post.bor_indicator'
+                            >
+                                <BoRLabel
+                                    id={post.id}
+                                    durationSeconds={borUserTimeLimit}
+                                />
+                            </View>
+                        }
                     </View>
-                    }
                     <DraftAndScheduledPostContainer
                         post={post}
                         location={location}

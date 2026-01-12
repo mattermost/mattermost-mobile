@@ -37,7 +37,7 @@ export const translateYConfig: WithTimingConfig = {
     easing: Easing.bezier(0.33, 0.01, 0, 1),
 };
 
-export function useGalleryControls() {
+export function useGalleryControls(bottomInset = 0) {
     const headerAndFooterHidden = useSharedValue(false);
 
     const headerStyles = useAnimatedStyle(() => ({
@@ -54,6 +54,7 @@ export function useGalleryControls() {
     }));
 
     const footerStyles = useAnimatedStyle(() => ({
+        backgroundColor: '#000',
         opacity: headerAndFooterHidden.value ? withTiming(0) : withTiming(1),
         transform: [
             {
@@ -61,10 +62,10 @@ export function useGalleryControls() {
             },
         ],
         position: 'absolute',
-        bottom: 0,
+        bottom: bottomInset,
         width: '100%',
         zIndex: 1,
-    }));
+    }), [bottomInset]);
 
     const hideHeaderAndFooter = useCallback((hidden?: boolean) => {
         'worklet';
@@ -80,7 +81,7 @@ export function useGalleryControls() {
         }
 
         headerAndFooterHidden.value = hidden;
-    }, []);
+    }, [headerAndFooterHidden]);
 
     return {
         headerAndFooterHidden,
@@ -107,6 +108,9 @@ export function useGalleryItem(
 
     useEffect(() => {
         gallery.registerItem(index, ref);
+
+        // Avoid registration on every render
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onGestureEvent = () => {

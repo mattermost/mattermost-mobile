@@ -129,3 +129,22 @@ export async function switchToGlobalPlaybooks(serverUrl: string) {
         logError('Failed switchToGlobalPlaybooks', error);
     }
 }
+
+export async function deleteChecklistItem(serverUrl: string, itemId: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const item = await getPlaybookChecklistItemById(database, itemId);
+        if (!item) {
+            return {error: `Item not found: ${itemId}`};
+        }
+
+        await database.write(async () => {
+            await item.destroyPermanently();
+        });
+
+        return {data: true};
+    } catch (error) {
+        logError('failed to delete checklist item', error);
+        return {error};
+    }
+}
