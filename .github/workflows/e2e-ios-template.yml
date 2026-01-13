@@ -206,9 +206,12 @@ jobs:
             echo "Created simulator with ID: $SIMULATOR_ID"
           else
             echo "Found existing simulator: $SIMULATOR_ID"
+            # Shut down if already running so we can apply settings
+            xcrun simctl shutdown "$SIMULATOR_ID" 2>/dev/null || true
+            sleep 2
           fi
 
-          echo "Disabling password autofill"
+          echo "Disabling password autofill (before boot)"
           SETTINGS_DIR="$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles"
           SETTINGS_PLIST="$SETTINGS_DIR/UserSettings.plist"
 
