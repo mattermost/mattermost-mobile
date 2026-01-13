@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type {IntlShape} from 'react-intl';
+
 export function isSameDate(a: Date, b: Date = new Date()): boolean {
     return a.getDate() === b.getDate() && isSameMonth(a, b) && isSameYear(a, b);
 }
@@ -56,23 +58,23 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
     return date.toLocaleString(currentUserLocale, options);
 }
 
-export function formatTime(seconds: number, humanReadable: boolean = false) {
+export function formatTime(seconds: number, textTime: boolean = false, intl?: IntlShape) {
     const h = Math.max(Math.floor(seconds / 3600), 0);
     const m = Math.max(Math.floor((seconds % 3600) / 60), 0);
     const s = Math.max(Math.floor(seconds % 60), 0);
 
-    if (humanReadable) {
+    if (textTime && intl) {
         const parts: string[] = [];
         if (h > 0) {
-            parts.push(`${h}h`);
+            parts.push(intl.formatMessage({id: 'mobile.format_time.text_time.hours_component', defaultMessage: '{hours}h'}, {hours: h}));
         }
         if (m > 0) {
-            parts.push(`${m}m`);
+            parts.push(intl.formatMessage({id: 'mobile.format_time.text_time.minutes_component', defaultMessage: '{minutes}m'}, {minutes: m}));
         }
         if (s > 0) {
-            parts.push(`${s}s`);
+            parts.push(intl.formatMessage({id: 'mobile.format_time.text_time.seconds_component', defaultMessage: '{seconds}s'}, {seconds: s}));
         }
-        return parts.length > 0 ? parts.join(' ') : '0s';
+        return parts.length > 0 ? parts.join(' ') : intl.formatMessage({id: 'mobile.format_time.text_time.seconds_component', defaultMessage: '{seconds}s'}, {seconds: 0});
     }
 
     const hh = h > 0 ? `${h}:` : '';

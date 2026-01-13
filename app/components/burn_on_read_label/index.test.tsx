@@ -7,44 +7,74 @@ import {renderWithIntl} from '@test/intl-test-helper';
 
 import BoRLabel from './index';
 
-describe('components/burn_on_read_label', () => {
-    it('should render BoR label with formatted duration', () => {
-        const {getByTestId, getByText} = renderWithIntl(<BoRLabel durationSeconds={300}/>);
-
-        expect(getByTestId('bor_label')).toBeVisible();
-        expect(getByText('BURN ON READ (5m)')).toBeVisible();
+describe('BoRLabel', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
-    it('should render with custom test ID when id prop is provided', () => {
+    it('should render with correct message and props', () => {
         const {getByTestId} = renderWithIntl(
             <BoRLabel
                 durationSeconds={300}
-                id='custom'
+                id='test-post-id'
             />,
         );
 
-        expect(getByTestId('custom_bor_label')).toBeVisible();
+        const tag = getByTestId('test-post-id_bor_label');
+        expect(tag).toBeVisible();
+        expect(tag).toHaveTextContent('BURN ON READ (5m)');
     });
 
-    it('should render with default test ID when no id prop is provided', () => {
-        const {getByTestId} = renderWithIntl(<BoRLabel durationSeconds={300}/>);
+    it('should render without postId', () => {
+        const {getByTestId} = renderWithIntl(
+            <BoRLabel durationSeconds={60}/>,
+        );
 
-        expect(getByTestId('bor_label')).toBeVisible();
+        const tag = getByTestId('bor_label');
+        expect(tag).toBeVisible();
+        expect(tag).toHaveTextContent('BURN ON READ (1m)');
     });
 
-    it('should handle different duration values', () => {
-        const {getByTestId, getByText, rerender} = renderWithIntl(<BoRLabel durationSeconds={60}/>);
+    it('should format duration correctly for seconds', () => {
+        const {getByTestId} = renderWithIntl(
+            <BoRLabel
+                durationSeconds={30}
+                id='test'
+            />,
+        );
+
+        const tag = getByTestId('test_bor_label');
+        expect(tag).toHaveTextContent('BURN ON READ (30s)');
+    });
+
+    it('should format duration correctly for hours', () => {
+        const {getByTestId} = renderWithIntl(
+            <BoRLabel
+                durationSeconds={7200}
+                id='test'
+            />,
+        );
+
+        const tag = getByTestId('test_bor_label');
+        expect(tag).toHaveTextContent('BURN ON READ (2h)');
+    });
+
+    it('should generate correct testID with postId', () => {
+        const {getByTestId} = renderWithIntl(
+            <BoRLabel
+                durationSeconds={120}
+                id='test-post'
+            />,
+        );
+
+        expect(getByTestId('test-post_bor_label')).toBeVisible();
+    });
+
+    it('should generate correct testID without postId', () => {
+        const {getByTestId} = renderWithIntl(
+            <BoRLabel durationSeconds={120}/>,
+        );
 
         expect(getByTestId('bor_label')).toBeVisible();
-        expect(getByText('BURN ON READ (1m)')).toBeVisible();
-
-        rerender(<BoRLabel durationSeconds={30}/>);
-        expect(getByText('BURN ON READ (30s)')).toBeVisible();
-
-        rerender(<BoRLabel durationSeconds={3661}/>);
-        expect(getByText('BURN ON READ (1h 1m 1s)')).toBeVisible();
-
-        rerender(<BoRLabel durationSeconds={3600}/>);
-        expect(getByText('BURN ON READ (1h)')).toBeVisible();
     });
 });

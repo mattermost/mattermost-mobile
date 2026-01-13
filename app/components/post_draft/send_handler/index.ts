@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {combineLatest, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatest, type Observable, of as of$, shareReplay} from 'rxjs';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
@@ -40,55 +40,33 @@ const enhanced = withObservables(['channelId', 'rootId', 'draftType'], (ownProps
         switchMap((u) => of$(u?.status === General.OUT_OF_OFFICE)),
     );
 
-    let postPriority;
+    let metadata: Observable<PostMetadata>;
     if (draftType === DRAFT_TYPE_SCHEDULED) {
-        postPriority = queryScheduledPost(database, channelId, rootId).observeWithColumns(['metadata']).pipe(
-            switchMap(observeFirstScheduledPost),
-            switchMap((d) => {
-                if (!d?.metadata?.priority) {
-                    return of$(INITIAL_PRIORITY);
-                }
-
-                return of$(d.metadata.priority);
-            }),
-        );
+        metadata = queryScheduledPost(database, channelId, rootId).observeWithColumns(['metadata']).
+            pipe(
+                switchMap(observeFirstScheduledPost),
+                switchMap((item) => of$(item?.metadata || {})),
+                shareReplay({bufferSize: 1, refCount: true}),
+            );
     } else {
-        postPriority = queryDraft(database, channelId, rootId).observeWithColumns(['metadata']).pipe(
+        metadata = queryDraft(database, channelId, rootId).observeWithColumns(['metadata']).pipe(
             switchMap(observeFirstDraft),
-            switchMap((d) => {
-                if (!d?.metadata?.priority) {
-                    return of$(INITIAL_PRIORITY);
-                }
-
-                return of$(d.metadata.priority);
-            }),
+            switchMap((item) => of$(item?.metadata || {})),
+            shareReplay({bufferSize: 1, refCount: true}),
         );
     }
 
-    let postBoRConfig;
-    if (draftType === DRAFT_TYPE_SCHEDULED) {
-        postBoRConfig = queryScheduledPost(database, channelId, rootId).observeWithColumns(['metadata']).pipe(
-            switchMap(observeFirstScheduledPost),
-            switchMap((d) => {
-                if (!d?.metadata?.borConfig) {
-                    return of$(null);
-                }
+    const postPriority = metadata.pipe(
+        switchMap((m) => of$(m?.priority || INITIAL_PRIORITY)),
+        distinctUntilChanged(),
+    );
 
-                return of$(d.metadata.borConfig);
-            }),
-        );
-    } else {
-        postBoRConfig = queryDraft(database, channelId, rootId).observeWithColumns(['metadata']).pipe(
-            switchMap(observeFirstDraft),
-            switchMap((d) => {
-                if (!d?.metadata?.borConfig) {
-                    return of$(null);
-                }
-
-                return of$(d.metadata.borConfig);
-            }),
-        );
-    }
+    const postBoRConfig = metadata.pipe(
+        switchMap((m) => {
+            return of$(m?.borConfig || null);
+        }),
+        distinctUntilChanged(),
+    );
 
     const enableConfirmNotificationsToChannel = observeConfigBooleanValue(database, 'EnableConfirmNotificationsToChannel');
     const maxMessageLength = observeConfigIntValue(database, 'MaxPostSize', MAX_MESSAGE_LENGTH_FALLBACK);
