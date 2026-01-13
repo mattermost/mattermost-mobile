@@ -208,6 +208,25 @@ jobs:
             echo "Found existing simulator: $SIMULATOR_ID"
           fi
 
+          echo "Disabling password autofill"
+          SETTINGS_DIR="$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles"
+          SETTINGS_PLIST="$SETTINGS_DIR/UserSettings.plist"
+
+          # Ensure the directory exists
+          mkdir -p "$SETTINGS_DIR"
+
+          if [ -f "$SETTINGS_PLIST" ]; then
+            # File exists, modify it
+            plutil -replace restrictedBool.allowPasswordAutoFill.value -bool NO "$SETTINGS_PLIST" && echo "✅ Password autofill disabled" || echo "⚠️ Failed to disable password autofill"
+          else
+            # File doesn't exist, create it with the setting
+            echo "⚠️ UserSettings.plist not found, creating with password autofill disabled"
+            plutil -create xml1 "$SETTINGS_PLIST"
+            plutil -insert restrictedBool -dictionary "$SETTINGS_PLIST"
+            plutil -insert restrictedBool.allowPasswordAutoFill -dictionary "$SETTINGS_PLIST"
+            plutil -insert restrictedBool.allowPasswordAutoFill.value -bool NO "$SETTINGS_PLIST" && echo "✅ Created UserSettings.plist with password autofill disabled" || echo "⚠️ Failed to create settings"
+          fi
+
           echo "Booting simulator: $SIMULATOR_ID"
           xcrun simctl boot "$SIMULATOR_ID" || echo "Simulator already booted"
 

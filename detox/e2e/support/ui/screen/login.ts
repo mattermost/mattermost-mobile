@@ -106,7 +106,6 @@ class LoginScreen {
         await this.signinButton.tap();
         await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
     };
-
 }
 
 const loginScreen = new LoginScreen();
