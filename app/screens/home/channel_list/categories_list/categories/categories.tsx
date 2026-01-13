@@ -119,7 +119,7 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
         }
 
         // item.type === 'channel'
-        const testIdSuffix = item.categoryId;
+        const testIdSuffix = item.categoryType;
         return (
             <ChannelItem
                 channel={item.channel}
