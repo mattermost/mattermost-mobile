@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {getIntlShape} from '@utils/general';
+
 import {formatTime, getReadableTimestamp, isSameDate, isSameMonth, isSameYear, isToday, isYesterday} from './datetime';
 
 describe('Datetime', () => {
@@ -126,46 +128,48 @@ describe('formatTime', () => {
     });
 
     describe('text time format', () => {
+        const intl = getIntlShape();
+
         it('should format seconds only in text time format', () => {
-            expect(formatTime(30, true)).toBe('30s');
-            expect(formatTime(5, true)).toBe('5s');
-            expect(formatTime(59, true)).toBe('59s');
+            expect(formatTime(30, true, intl)).toBe('30s');
+            expect(formatTime(5, true, intl)).toBe('5s');
+            expect(formatTime(59, true, intl)).toBe('59s');
         });
 
         it('should format minutes and seconds in text time format', () => {
-            expect(formatTime(90, true)).toBe('1m 30s');
-            expect(formatTime(125, true)).toBe('2m 5s');
-            expect(formatTime(3599, true)).toBe('59m 59s');
+            expect(formatTime(90, true, intl)).toBe('1m 30s');
+            expect(formatTime(125, true, intl)).toBe('2m 5s');
+            expect(formatTime(3599, true, intl)).toBe('59m 59s');
         });
 
         it('should format hours, minutes, and seconds in text time format', () => {
-            expect(formatTime(3600, true)).toBe('1h');
-            expect(formatTime(3661, true)).toBe('1h 1m 1s');
-            expect(formatTime(7325, true)).toBe('2h 2m 5s');
-            expect(formatTime(36000, true)).toBe('10h');
+            expect(formatTime(3600, true, intl)).toBe('1h');
+            expect(formatTime(3661, true, intl)).toBe('1h 1m 1s');
+            expect(formatTime(7325, true, intl)).toBe('2h 2m 5s');
+            expect(formatTime(36000, true, intl)).toBe('10h');
         });
 
         it('should format hours and minutes only in text time format', () => {
-            expect(formatTime(3660, true)).toBe('1h 1m');
-            expect(formatTime(7200, true)).toBe('2h');
+            expect(formatTime(3660, true, intl)).toBe('1h 1m');
+            expect(formatTime(7200, true, intl)).toBe('2h');
         });
 
         it('should format hours and seconds only in text time format', () => {
-            expect(formatTime(3605, true)).toBe('1h 5s');
+            expect(formatTime(3605, true, intl)).toBe('1h 5s');
         });
 
         it('should format minutes only in text time format', () => {
-            expect(formatTime(60, true)).toBe('1m');
-            expect(formatTime(120, true)).toBe('2m');
+            expect(formatTime(60, true, intl)).toBe('1m');
+            expect(formatTime(120, true, intl)).toBe('2m');
         });
 
         it('should handle zero seconds in text time format', () => {
-            expect(formatTime(0, true)).toBe('0s');
+            expect(formatTime(0, true, intl)).toBe('0s');
         });
 
         it('should handle negative values in text time format', () => {
-            expect(formatTime(-30, true)).toBe('0s');
-            expect(formatTime(-3600, true)).toBe('0s');
+            expect(formatTime(-30, true, intl)).toBe('0s');
+            expect(formatTime(-3600, true, intl)).toBe('0s');
         });
     });
 });
