@@ -198,7 +198,7 @@ describe('Quick Actions', () => {
             expect(queryByTestId('test-quick-actions.bor_action')).toBeNull();
         });
 
-        it('should not render BoR action in in threads', () => {
+        it('should not render BoR action in threads', () => {
             const props = {
                 ...baseProps,
                 isBoREnabled: true,
