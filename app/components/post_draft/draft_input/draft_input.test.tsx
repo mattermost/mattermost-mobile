@@ -58,6 +58,7 @@ describe('DraftInput', () => {
         updatePostInputTop: jest.fn(),
         setIsFocused: jest.fn(),
         scheduledPostsEnabled: true,
+        location: Screens.CHANNEL,
     };
 
     beforeEach(() => {

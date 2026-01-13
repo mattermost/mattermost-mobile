@@ -5,7 +5,7 @@ import DatabaseManager from '@database/manager';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import TestHelper from '@test/test_helper';
 
-import PlaybookRunAttributeModel from './playbook_run_attribute';
+import PlaybookRunPropertyFieldModel from './playbook_run_attribute';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -13,7 +13,7 @@ const {PLAYBOOK_RUN_ATTRIBUTE} = PLAYBOOK_TABLES;
 
 const SERVER_URL = `playbookRunAttributeModel.test.${Date.now()}.com`;
 
-const applyMockData = (attribute: PlaybookRunAttributeModel, mockData: PlaybookRunAttribute, includeAttrs = true) => {
+const applyMockData = (attribute: PlaybookRunPropertyFieldModel, mockData: PlaybookRunPropertyField, includeAttrs = true) => {
     attribute._raw.id = mockData.id;
     attribute.groupId = mockData.group_id;
     attribute.name = mockData.name;
@@ -24,13 +24,20 @@ const applyMockData = (attribute: PlaybookRunAttributeModel, mockData: PlaybookR
     attribute.updateAt = mockData.update_at;
     attribute.deleteAt = mockData.delete_at;
     if (includeAttrs) {
-        attribute.attrs = mockData.attrs || '{"placeholder": "Enter value"}';
+        // API can send attrs as string or object, DB expects string
+        if (!mockData.attrs) {
+            attribute.attrs = '{"placeholder": "Enter value"}';
+        } else if (typeof mockData.attrs === 'string') {
+            attribute.attrs = mockData.attrs;
+        } else {
+            attribute.attrs = JSON.stringify(mockData.attrs);
+        }
     }
 };
 
-describe('PlaybookRunAttributeModel', () => {
+describe('PlaybookRunPropertyFieldModel', () => {
     let operator: ServerDataOperator;
-    let playbook_run_attribute: PlaybookRunAttributeModel;
+    let playbook_run_attribute: PlaybookRunPropertyFieldModel;
 
     beforeEach(async () => {
         await DatabaseManager.init([SERVER_URL]);
@@ -38,7 +45,7 @@ describe('PlaybookRunAttributeModel', () => {
         const {database} = operator;
 
         await database.write(async () => {
-            playbook_run_attribute = await database.get<PlaybookRunAttributeModel>(PLAYBOOK_RUN_ATTRIBUTE).create((attribute: PlaybookRunAttributeModel) => {
+            playbook_run_attribute = await database.get<PlaybookRunPropertyFieldModel>(PLAYBOOK_RUN_ATTRIBUTE).create((attribute: PlaybookRunPropertyFieldModel) => {
                 applyMockData(attribute, TestHelper.createPlaybookRunAttribute('test', 0));
             });
         });
@@ -63,15 +70,15 @@ describe('PlaybookRunAttributeModel', () => {
     });
 
     it('=> should have the correct table name', () => {
-        expect(PlaybookRunAttributeModel.table).toBe(PLAYBOOK_RUN_ATTRIBUTE);
+        expect(PlaybookRunPropertyFieldModel.table).toBe(PLAYBOOK_RUN_ATTRIBUTE);
     });
 
     it('=> should handle optional attrs field', async () => {
-        let attributeWithoutAttrs: PlaybookRunAttributeModel;
+        let attributeWithoutAttrs: PlaybookRunPropertyFieldModel;
         const {database} = operator;
 
         await database.write(async () => {
-            attributeWithoutAttrs = await database.get<PlaybookRunAttributeModel>(PLAYBOOK_RUN_ATTRIBUTE).create((attribute: PlaybookRunAttributeModel) => {
+            attributeWithoutAttrs = await database.get<PlaybookRunPropertyFieldModel>(PLAYBOOK_RUN_ATTRIBUTE).create((attribute: PlaybookRunPropertyFieldModel) => {
                 applyMockData(attribute, TestHelper.createPlaybookRunAttribute('test', 1), false);
             });
         });
@@ -85,7 +92,7 @@ describe('PlaybookRunAttributeModel', () => {
         const {database} = operator;
 
         await database.write(async () => {
-            await playbook_run_attribute.update((attribute: PlaybookRunAttributeModel) => {
+            await playbook_run_attribute.update((attribute: PlaybookRunPropertyFieldModel) => {
                 attribute.name = 'Updated Attribute Name';
                 attribute.type = 'number';
                 attribute.updateAt = 1620000005000;
@@ -103,7 +110,7 @@ describe('PlaybookRunAttributeModel', () => {
         const {database} = operator;
 
         await database.write(async () => {
-            await playbook_run_attribute.update((attribute: PlaybookRunAttributeModel) => {
+            await playbook_run_attribute.update((attribute: PlaybookRunPropertyFieldModel) => {
                 attribute.deleteAt = 1620000010000;
             });
         });

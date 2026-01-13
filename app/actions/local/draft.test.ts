@@ -413,7 +413,7 @@ describe('updateDraftBoRConfig', () => {
         enabled: true,
         borDurationSeconds: 300,
         borMaximumTimeToLiveSeconds: 3600,
-    } as PostBoRConfig;
+    };
 
     it('handle not found database', async () => {
         const result = await updateDraftBoRConfig('foo', channelId, '', postBoRConfig) as {draft: unknown; error: unknown};
