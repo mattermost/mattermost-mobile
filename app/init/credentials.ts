@@ -94,6 +94,18 @@ export const removePreauthSecret = async (serverUrl: string) => {
     }
 };
 
+export const getPreauthSecret = async (serverUrl: string): Promise<string | undefined> => {
+    try {
+        const preauthCredentials = await KeyChain.getGenericPassword({
+            server: serverUrl,
+        });
+        const secret = preauthCredentials ? preauthCredentials.password : undefined;
+        return secret;
+    } catch (e) {
+        return undefined;
+    }
+};
+
 export const removeActiveServerCredentials = async () => {
     const serverUrl = await getActiveServerUrl();
     if (serverUrl) {
