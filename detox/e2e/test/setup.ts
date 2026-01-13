@@ -31,7 +31,7 @@ export async function launchAppWithRetry(): Promise<void> {
                     newInstance: true,
                     delete: true,
                     permissions: {
-                        notifications: 'NO',
+                        notifications: 'YES',
                         camera: 'NO',
                         medialibrary: 'NO',
                         photos: 'NO',
@@ -39,7 +39,6 @@ export async function launchAppWithRetry(): Promise<void> {
                     launchArgs: {
                         detoxPrintBusyIdleResources: 'YES',
                         detoxDebugVisibility: 'YES',
-                        disablePasswordAutofill: 'YES',
                         detoxDisableSynchronization: 'YES',
                         detoxDisableHierarchyDump: 'YES',
                         reduceMotion: 'YES',
@@ -51,7 +50,7 @@ export async function launchAppWithRetry(): Promise<void> {
                 await device.launchApp({
                     newInstance: false,
                     permissions: {
-                        notifications: 'NO',
+                        notifications: 'YES',
                         camera: 'NO',
                         medialibrary: 'NO',
                         photos: 'NO',
@@ -59,7 +58,6 @@ export async function launchAppWithRetry(): Promise<void> {
                     launchArgs: {
                         detoxPrintBusyIdleResources: 'YES',
                         detoxDebugVisibility: 'YES',
-                        disablePasswordAutofill: 'YES',
                         detoxDisableSynchronization: 'YES',
                         detoxURLBlacklistRegex: '.*localhost.*',
                     },

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen, ServerScreen} from '@support/ui/screen';
-import {isAndroid, isIos, retryWithReload, timeouts, wait} from '@support/utils';
+import {isAndroid, retryWithReload, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class LoginScreen {
@@ -70,7 +70,6 @@ class LoginScreen {
         await this.signinButton.tap();
 
         await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
-        await this.dismissSavePasswordIfNeeded();
     };
 
     login = async (user: any = {}) => {
@@ -106,21 +105,8 @@ class LoginScreen {
         await this.loginFormInfoText.tap();
         await this.signinButton.tap();
         await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
-
-        // await this.dismissSavePasswordIfNeeded();
     };
 
-    dismissSavePasswordIfNeeded = async () => {
-        if (isIos()) {
-            await wait(timeouts.FOUR_SEC);
-            try {
-                // * Dismiss save password dialog if it appears
-                await device.tap({x: 200, y: 100});
-            } catch {
-                // do nothing
-            }
-        }
-    };
 }
 
 const loginScreen = new LoginScreen();

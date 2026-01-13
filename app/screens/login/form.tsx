@@ -22,8 +22,6 @@ import {logError} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
-import {isRunningE2e} from '../../../index';
-
 import type {LaunchProps} from '@typings/launch';
 import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
@@ -363,7 +361,7 @@ const LoginForm = ({
             <FloatingTextInput
                 rawInput={true}
                 blurOnSubmit={false}
-                autoComplete={isRunningE2e ? 'off' : 'email'}
+                autoComplete='email'
                 disableFullscreenUI={true}
                 enablesReturnKeyAutomatically={true}
                 error={userInputError}
@@ -383,7 +381,7 @@ const LoginForm = ({
                     <FloatingTextInput
                         rawInput={true}
                         blurOnSubmit={false}
-                        autoComplete={isRunningE2e ? 'off' : 'current-password'}
+                        autoComplete='current-password'
                         disableFullscreenUI={true}
                         enablesReturnKeyAutomatically={true}
                         error={error}

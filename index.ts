@@ -17,10 +17,6 @@ declare const global: { HermesInternal: null | {} };
 // Add scaleY back to work around its removal in React Native 0.70.
 ViewReactNativeStyleAttributes.scaleY = true;
 
-// Check if running E2E tests
-const isRunningE2e = RUNNING_E2E === 'true';
-export {isRunningE2e};
-
 TurboLogger.configure({
     dailyRolling: false,
     logToFile: !__DEV__,
@@ -34,6 +30,7 @@ if (__DEV__) {
     ]);
 
     // Ignore all notifications if running e2e
+    const isRunningE2e = RUNNING_E2E === 'true';
     logInfo(`RUNNING_E2E: ${RUNNING_E2E}, isRunningE2e: ${isRunningE2e}`);
     if (isRunningE2e) {
         LogBox.ignoreAllLogs(true);
@@ -64,19 +61,5 @@ if (Platform.OS === 'android') {
 }
 
 Navigation.events().registerAppLaunchedListener(async () => {
-    try {
-        await start();
-    } finally {
-        // Only notify Detox when explicitly running E2E tests
-        if (isRunningE2e && (global as any).__detox__) {
-            setTimeout(() => {
-                try {
-                    const {NativeModules} = require('react-native');
-                    NativeModules.Detox?.notifyAppReady?.();
-                } catch {
-                    // no-op: never crash app for Detox
-                }
-            }, 500);
-        }
-    }
+    start();
 });
