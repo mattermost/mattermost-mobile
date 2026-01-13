@@ -717,6 +717,9 @@
   "mobile.files_paste.error_description": "An error occurred while pasting the file(s). Please try again.",
   "mobile.files_paste.error_dismiss": "Dismiss",
   "mobile.files_paste.error_title": "Paste failed",
+  "mobile.format_time.text_time.hours_component": "{hours}h",
+  "mobile.format_time.text_time.minutes_component": "{minutes}m",
+  "mobile.format_time.text_time.seconds_component": "{seconds}s",
   "mobile.gallery.title": "{index} of {total}",
   "mobile.integration_selector.loading_channels": "Loading channels...",
   "mobile.integration_selector.loading_options": "Loading options...",
@@ -1539,8 +1542,5 @@
   "video.failed_description": "An error occurred while trying to play the video.",
   "video.normal": "Normal",
   "video.playback_speed": "Playback Speed",
-  "your.servers": "Your servers",
-  "mobile.format_time.text_time.hours_component": "{hours}h",
-  "mobile.format_time.text_time.minutes_component": "{minutes}m",
-  "mobile.format_time.text_time.seconds_component": "{seconds}s"
+  "your.servers": "Your servers"
 }
