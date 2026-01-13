@@ -228,7 +228,7 @@ const Autocomplete = ({
         </Animated.View>
     );
 
-    if (usePortal) {
+    if (usePortal && Platform.OS === 'android') {
         return (
             <Portal>
                 {component}
