@@ -26,7 +26,6 @@ import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useKeyboardHeight, useKeyboardOverlap} from '@hooks/device';
-import {useInputPropagation} from '@hooks/input';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -120,8 +119,6 @@ export default function ChannelInfoForm({
     const [wrapperHeight, setWrapperHeight] = useState(0);
     const keyboardOverlap = useKeyboardOverlap(mainView, wrapperHeight);
 
-    const [propagateValue, shouldProcessEvent] = useInputPropagation();
-
     const keyboardHeight = useKeyboardHeight();
     const [keyboardVisible, setKeyBoardVisible] = useState(false);
     const [scrollPosition, setScrollPosition] = useState(0);
@@ -185,15 +182,11 @@ export default function ChannelInfoForm({
 
     const onHeaderAutocompleteChange = useCallback((value: string) => {
         onHeaderChange(value);
-        propagateValue(value);
-    }, [onHeaderChange, propagateValue]);
+    }, [onHeaderChange]);
 
     const onHeaderInputChange = useCallback((value: string) => {
-        if (!shouldProcessEvent(value)) {
-            return;
-        }
         onHeaderChange(value);
-    }, [onHeaderChange, shouldProcessEvent]);
+    }, [onHeaderChange]);
 
     const onLayoutError = useCallback((e: LayoutChangeEvent) => {
         setErrorHeight(e.nativeEvent.layout.height);

@@ -21,7 +21,6 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useKeyboardOverlap} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
-import {useInputPropagation} from '@hooks/input';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import PostError from '@screens/edit_post/post_error';
 import {navigateBack} from '@screens/navigation';
@@ -82,7 +81,6 @@ const EditPost = ({
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [isUpdating, setIsUpdating] = useState(false);
     const [containerHeight, setContainerHeight] = useState(0);
-    const [propagateValue, shouldProcessEvent] = useInputPropagation();
     const [postFiles, setPostFiles] = useState<FileInfo[]>(files || []);
     const [canSave, setCanSave] = useState(false);
 
@@ -320,17 +318,13 @@ const EditPost = ({
 
     const onAutocompleteChangeText = useCallback((message: string) => {
         setPostMessage(message);
-        propagateValue(message);
         onChangeTextCommon(message);
-    }, [onChangeTextCommon, propagateValue]);
+    }, [onChangeTextCommon]);
 
     const onInputChangeText = useCallback((message: string) => {
-        if (!shouldProcessEvent(message)) {
-            return;
-        }
         setPostMessage(message);
         onChangeTextCommon(message);
-    }, [onChangeTextCommon, shouldProcessEvent]);
+    }, [onChangeTextCommon]);
 
     const handleUIUpdates = useCallback((res: {error?: unknown}) => {
         if (res.error) {

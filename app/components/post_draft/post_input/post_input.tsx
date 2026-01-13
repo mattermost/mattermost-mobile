@@ -14,11 +14,11 @@ import {
 import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
 import {Events, Screens} from '@constants';
+import {useExtraKeyboardContext} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {useInputPropagation} from '@hooks/input';
-import {NavigationStore} from '@store/navigation_store';
+import {useCurrentScreen} from '@store/navigation_store';
 import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -120,8 +120,9 @@ export default function PostInput({
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+    const currentScreen = useCurrentScreen();
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const [propagateValue, shouldProcessEvent] = useInputPropagation();
+    const keyboardContext = useExtraKeyboardContext();
 
     const lastTypingEventSent = useRef(0);
 
@@ -136,7 +137,16 @@ export default function PostInput({
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
 
+    const handleAndroidKeyboardHide = () => {
+        onBlur();
+    };
+
+    const handleAndroidKeyboardShow = () => {
+        onFocus();
+    };
+
     const onBlur = useCallback(() => {
+        keyboardContext?.registerTextInputBlur();
         handleDraftUpdate({
             serverUrl,
             channelId,
@@ -144,19 +154,12 @@ export default function PostInput({
             value,
         });
         setIsFocused(false);
-    }, [serverUrl, channelId, rootId, value, setIsFocused]);
+    }, [keyboardContext, serverUrl, channelId, rootId, value, setIsFocused]);
 
     const onFocus = useCallback(() => {
+        keyboardContext?.registerTextInputFocus();
         setIsFocused(true);
-    }, [setIsFocused]);
-
-    const handleAndroidKeyboardHide = useCallback(() => {
-        onBlur();
-    }, [onBlur]);
-
-    const handleAndroidKeyboardShow = useCallback(() => {
-        onFocus();
-    }, [onFocus]);
+    }, [setIsFocused, keyboardContext]);
 
     const checkMessageLength = useCallback((newValue: string) => {
         const valueLength = newValue.trim().length;
@@ -191,9 +194,6 @@ export default function PostInput({
     }, [updateCursorPosition, cursorPosition]);
 
     const handleTextChange = useCallback((newValue: string) => {
-        if (!shouldProcessEvent(newValue)) {
-            return;
-        }
         updateValue(newValue);
         lastNativeValue.current = newValue;
 
@@ -209,7 +209,6 @@ export default function PostInput({
             lastTypingEventSent.current = Date.now();
         }
     }, [
-        shouldProcessEvent,
         updateValue,
         checkMessageLength,
         timeBetweenUserTypingUpdatesMilliseconds,
@@ -230,20 +229,18 @@ export default function PostInput({
     }, [addFiles, intl]);
 
     const handleHardwareEnterPress = useCallback(() => {
-        const topScreen = NavigationStore.getVisibleScreen();
         let sourceScreen: AvailableScreens = Screens.CHANNEL;
         if (rootId) {
             sourceScreen = Screens.THREAD;
         } else if (isTablet) {
             sourceScreen = Screens.HOME;
         }
-        if (topScreen === sourceScreen) {
+        if (currentScreen === sourceScreen) {
             sendMessage();
         }
-    }, [sendMessage, rootId, isTablet]);
+    }, [rootId, isTablet, currentScreen, sendMessage]);
 
     const handleHardwareShiftEnter = useCallback(() => {
-        const topScreen = NavigationStore.getVisibleScreen();
         let sourceScreen: AvailableScreens = Screens.CHANNEL;
         if (rootId) {
             sourceScreen = Screens.THREAD;
@@ -251,16 +248,16 @@ export default function PostInput({
             sourceScreen = Screens.HOME;
         }
 
-        if (topScreen === sourceScreen) {
+        if (currentScreen === sourceScreen) {
             let newValue: string;
             updateValue((v) => {
                 newValue = v.substring(0, cursorPosition) + '\n' + v.substring(cursorPosition);
                 return newValue;
             });
+
             updateCursorPosition((pos) => pos + 1);
-            propagateValue(newValue!);
         }
-    }, [rootId, isTablet, updateValue, updateCursorPosition, cursorPosition, propagateValue]);
+    }, [rootId, isTablet, currentScreen, updateValue, updateCursorPosition, cursorPosition]);
 
     const onAppStateChange = useCallback((appState: AppStateStatus) => {
         if (appState !== 'active' && previousAppState.current === 'active') {
@@ -282,7 +279,10 @@ export default function PostInput({
             keyboardShowListener?.remove();
             keyboardHideListener?.remove();
         });
-    }, [handleAndroidKeyboardHide, handleAndroidKeyboardShow]);
+
+        // Only run on mount and unmount
+        //eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         const listener = AppState.addEventListener('change', onAppStateChange);
@@ -299,7 +299,6 @@ export default function PostInput({
                 const draft = value ? `${value} ${text} ` : `${text} `;
                 updateValue(draft);
                 updateCursorPosition(draft.length);
-                propagateValue(draft);
                 inputRef.current?.focus();
             }
         });
@@ -307,14 +306,13 @@ export default function PostInput({
             listener.remove();
             updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
         };
-    }, [updateValue, channelId, rootId, value, updateCursorPosition, propagateValue, inputRef, serverUrl]);
+    }, [updateValue, channelId, rootId, value, updateCursorPosition, inputRef, serverUrl]);
 
     useEffect(() => {
         if (value !== lastNativeValue.current) {
-            propagateValue(value);
             lastNativeValue.current = value;
         }
-    }, [propagateValue, value]);
+    }, [value]);
 
     const events = useMemo(() => ({
         onEnterPressed: handleHardwareEnterPress,

@@ -25,7 +25,7 @@
     "@mattermost/hardware-keyboard": "file:./libraries/@mattermost/hardware-keyboard",
     "@mattermost/react-native-emm": "github:mattermost/react-native-emm#a97585e30f7e5998b067c38620280a8f4ddd76f4",
     "@mattermost/react-native-network-client": "github:mattermost/react-native-network-client#74335214c4149f1e8554aadb5d92a78feab829a6",
-    "@mattermost/react-native-paste-input": "github:mattermost/react-native-paste-input#a57582c5a4aa32b97e3e8c4a72c9086fa2558401",
+    "@mattermost/react-native-paste-input": "github:mattermost/react-native-paste-input#36019d4611cc2962379da19d9209febe9f094728",
     "@mattermost/react-native-turbo-log": "0.6.0",
     "@mattermost/rnshare": "file:./libraries/@mattermost/rnshare",
     "@mattermost/rnutils": "file:./libraries/@mattermost/rnutils",

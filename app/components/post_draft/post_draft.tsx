@@ -64,7 +64,9 @@ function PostDraft({
     useEffect(() => {
         setValue(message);
         setCursorPosition(message.length);
-    }, [channelId, message, rootId]);
+
+        //eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [channelId, rootId]);
 
     const autocompletePosition = AUTOCOMPLETE_ADJUST + keyboardHeight + (postInputTop - bottom);
     const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);
