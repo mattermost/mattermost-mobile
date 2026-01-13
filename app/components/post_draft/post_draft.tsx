@@ -115,6 +115,7 @@ function PostDraft({
             shouldDirectlyReact={!Boolean(files?.length)}
             availableSpace={animatedAutocompleteAvailableSpace}
             serverUrl={serverUrl}
+            usePortal={true}
         />
     ) : null;
 
