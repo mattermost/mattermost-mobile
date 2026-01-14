@@ -10,6 +10,7 @@ import {
     setAssignee as localSetAssignee,
     setDueDate as localSetDueDate,
     renameChecklist as localRenameChecklist,
+    deleteChecklistItem as localDeleteChecklistItem,
 } from '@playbooks/actions/local/checklist';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 
@@ -23,6 +24,7 @@ import {
     setDueDate,
     renameChecklist,
     addChecklistItem,
+    deleteChecklistItem,
 } from './checklist';
 
 const serverUrl = 'baseHandler.test.com';
@@ -43,6 +45,7 @@ const mockClient = {
     setDueDate: jest.fn(),
     renameChecklist: jest.fn(),
     addChecklistItem: jest.fn(),
+    deleteChecklistItem: jest.fn(),
     fetchPlaybookRun: jest.fn(),
 };
 
@@ -440,6 +443,47 @@ describe('checklist', () => {
             expect(mockClient.addChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, emptyTitle);
             expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(playbookRunId);
             expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true);
+        });
+    });
+
+    describe('deleteChecklistItem', () => {
+        it('should handle client error', async () => {
+            jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+            const result = await deleteChecklistItem(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber);
+            expect(result.error).toBeDefined();
+            expect(mockClient.deleteChecklistItem).not.toHaveBeenCalled();
+            expect(localDeleteChecklistItem).not.toHaveBeenCalled();
+        });
+
+        it('should handle API exception - server deletion fails', async () => {
+            mockClient.deleteChecklistItem.mockImplementationOnce(throwFunc);
+
+            const result = await deleteChecklistItem(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber);
+            expect(result.error).toBeDefined();
+            expect(mockClient.deleteChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber);
+            expect(localDeleteChecklistItem).not.toHaveBeenCalled();
+        });
+
+        it('should handle local deletion error - server succeeds but local fails', async () => {
+            mockClient.deleteChecklistItem.mockResolvedValueOnce(undefined);
+            jest.mocked(localDeleteChecklistItem).mockResolvedValueOnce({error: 'Local DB error'});
+
+            const result = await deleteChecklistItem(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber);
+            expect(result.error).toBe('Local DB error');
+            expect(mockClient.deleteChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber);
+            expect(localDeleteChecklistItem).toHaveBeenCalledWith(serverUrl, itemId);
+        });
+
+        it('should delete checklist item successfully', async () => {
+            mockClient.deleteChecklistItem.mockResolvedValueOnce(undefined);
+            jest.mocked(localDeleteChecklistItem).mockResolvedValueOnce({data: true});
+
+            const result = await deleteChecklistItem(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber);
+            expect(result.error).toBeUndefined();
+            expect(result.data).toBe(true);
+            expect(mockClient.deleteChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber);
+            expect(localDeleteChecklistItem).toHaveBeenCalledWith(serverUrl, itemId);
         });
     });
 });

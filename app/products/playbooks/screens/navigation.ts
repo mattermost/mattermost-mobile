@@ -116,12 +116,12 @@ export async function goToRenamePlaybookRun(
     intl: IntlShape,
     theme: Theme,
     currentTitle: string,
-    onSave: (newTitle: string) => void,
+    playbookRunId: string,
 ) {
     const title = intl.formatMessage({id: 'playbooks.playbook_run.rename.title', defaultMessage: 'Rename playbook run'});
     goToScreen(Screens.PLAYBOOK_RENAME_RUN, title, {
         currentTitle,
-        onSave,
+        playbookRunId,
     });
 }
 
