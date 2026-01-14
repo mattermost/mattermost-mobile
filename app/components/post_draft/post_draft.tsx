@@ -2,13 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState} from 'react';
-import {Platform} from 'react-native';
 
 import Autocomplete from '@components/autocomplete';
-import {ExtraKeyboard} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {useKeyboardHeight} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 
 import Archived from './archived';
@@ -55,8 +52,6 @@ function PostDraft({
     const [cursorPosition, setCursorPosition] = useState(message.length);
     const [postInputTop, setPostInputTop] = useState(0);
     const [isFocused, setIsFocused] = useState(false);
-    const keyboardHeight = useKeyboardHeight();
-    const kbHeight = Platform.OS === 'ios' ? keyboardHeight : 0; // useKeyboardHeight is already deducting the keyboard height on Android
     const headerHeight = useDefaultHeaderHeight();
     const serverUrl = useServerUrl();
 
@@ -64,9 +59,9 @@ function PostDraft({
     useEffect(() => {
         setValue(message);
         setCursorPosition(message.length);
-    }, [channelId, rootId]);
+    }, [channelId, message, rootId]);
 
-    const autocompletePosition = AUTOCOMPLETE_ADJUST + kbHeight + postInputTop;
+    const autocompletePosition = postInputTop + AUTOCOMPLETE_ADJUST;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
@@ -120,6 +115,7 @@ function PostDraft({
             shouldDirectlyReact={!Boolean(files?.length)}
             availableSpace={animatedAutocompleteAvailableSpace}
             serverUrl={serverUrl}
+            usePortal={true}
         />
     ) : null;
 
@@ -127,7 +123,6 @@ function PostDraft({
         <>
             {draftHandler}
             {autoComplete}
-            {Platform.OS !== 'android' && <ExtraKeyboard/>}
         </>
     );
 }

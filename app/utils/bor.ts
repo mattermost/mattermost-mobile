@@ -4,10 +4,12 @@
 import {Post} from '@constants';
 import {ensureNumber} from '@utils/types';
 
+import type DraftModel from '@typings/database/models/servers/draft';
 import type PostModel from '@typings/database/models/servers/post';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type UserModel from '@typings/database/models/servers/user';
 
-export function isBoRPost(post: PostModel | Post): boolean {
+export function isBoRPost(post: PostModel | DraftModel | ScheduledPostModel | Post): boolean {
     return Boolean(post.type && post.type === Post.POST_TYPES.BURN_ON_READ);
 }
 
