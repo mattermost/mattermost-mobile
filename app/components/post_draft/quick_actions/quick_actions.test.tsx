@@ -208,5 +208,4 @@ describe('Quick Actions', () => {
             expect(queryByTestId('test-quick-actions.bor_action')).toBeNull();
         });
     });
-
 });

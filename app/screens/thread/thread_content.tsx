@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PortalProvider} from '@gorhom/portal';
 import React from 'react';
 import {StyleSheet} from 'react-native';
 
@@ -42,36 +43,38 @@ const ThreadContent = ({
     onEmojiSearchFocusChange,
 }: ThreadContentProps) => {
     return (
-        <KeyboardAwarePostDraftContainer
-            textInputNativeID={THREAD_POST_INPUT_NATIVE_ID}
-            containerStyle={styles.flex}
-            isThreadView={true}
-            enabled={enabled}
-            onEmojiSearchFocusChange={onEmojiSearchFocusChange}
-            renderList={({listRef, onTouchMove, onTouchEnd}) => (
-                <ThreadPostList
-                    rootPost={rootPost}
-                    listRef={listRef}
-                    onTouchMove={onTouchMove}
-                    onTouchEnd={onTouchEnd}
-                />
-            )}
-        >
-            {scheduledPostCount > 0 &&
+        <PortalProvider>
+            <KeyboardAwarePostDraftContainer
+                textInputNativeID={THREAD_POST_INPUT_NATIVE_ID}
+                containerStyle={styles.flex}
+                isThreadView={true}
+                enabled={enabled}
+                onEmojiSearchFocusChange={onEmojiSearchFocusChange}
+                renderList={({listRef, onTouchMove, onTouchEnd}) => (
+                    <ThreadPostList
+                        rootPost={rootPost}
+                        listRef={listRef}
+                        onTouchMove={onTouchMove}
+                        onTouchEnd={onTouchEnd}
+                    />
+                )}
+            >
+                {scheduledPostCount > 0 &&
                 <ScheduledPostIndicator
                     isThread={true}
                     scheduledPostCount={scheduledPostCount}
                 />
-            }
-            <PostDraft
-                channelId={rootPost.channelId}
-                rootId={rootId}
-                testID={THREAD_POST_DRAFT_TESTID}
-                containerHeight={containerHeight}
-                isChannelScreen={false}
-                location={Screens.THREAD}
-            />
-        </KeyboardAwarePostDraftContainer>
+                }
+                <PostDraft
+                    channelId={rootPost.channelId}
+                    rootId={rootId}
+                    testID={THREAD_POST_DRAFT_TESTID}
+                    containerHeight={containerHeight}
+                    isChannelScreen={false}
+                    location={Screens.THREAD}
+                />
+            </KeyboardAwarePostDraftContainer>
+        </PortalProvider>
     );
 };
 

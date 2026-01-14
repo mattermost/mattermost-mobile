@@ -426,9 +426,9 @@ const PostList = ({
     // Combine contentContainerStyle with padding style
     // Use regular style with state value synced from SharedValues
     const contentContainerStyleWithPadding = useMemo(() => {
-        const paddingStyle = {paddingTop: postInputContainerHeight + emojiPickerPadding};
+        const paddingStyle = {paddingTop: location === Screens.PERMALINK ? 0 : postInputContainerHeight + emojiPickerPadding};
         return contentContainerStyle ? [contentContainerStyle, paddingStyle] : paddingStyle;
-    }, [contentContainerStyle, postInputContainerHeight, emojiPickerPadding]);
+    }, [location, postInputContainerHeight, emojiPickerPadding, contentContainerStyle]);
 
     // contentInset only for dynamic keyboard height
     const animatedProps = useAnimatedProps(
