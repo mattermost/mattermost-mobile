@@ -58,17 +58,13 @@ describe('Threads - Follow and Unfollow Thread', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
-
-        // # Wait for keyboard to dismiss and message to be visible
-        await wait(timeouts.TWO_SEC);
-
+        await ChannelScreen.dismissKeyboard();
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
-        await wait(timeouts.ONE_SEC);
 
         // * Verify thread is followed by user by default via thread navigation
         await expect(ThreadScreen.followingButton).toBeVisible();
@@ -97,10 +93,10 @@ describe('Threads - Follow and Unfollow Thread', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
+        await ChannelScreen.dismissKeyboard();
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
-        await wait(timeouts.ONE_SEC);
         await ThreadScreen.back();
 
         // * Verify thread is followed by user by default via post footer
@@ -130,6 +126,7 @@ describe('Threads - Follow and Unfollow Thread', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
+        await ChannelScreen.dismissKeyboard();
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
@@ -178,6 +175,7 @@ describe('Threads - Follow and Unfollow Thread', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
+        await ChannelScreen.dismissKeyboard();
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;

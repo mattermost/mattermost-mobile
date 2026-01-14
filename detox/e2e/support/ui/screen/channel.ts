@@ -17,7 +17,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ChannelScreen {
@@ -206,22 +206,29 @@ class ChannelScreen {
         }
     };
 
+    dismissKeyboard = async () => {
+        // Explicitly dismiss keyboard before long press
+        if (isAndroid()) {
+            try {
+                await device.pressBack();
+                await wait(timeouts.ONE_SEC);
+            } catch (error) {
+                // Keyboard might not be open, continue
+            }
+        }
+        if (isIos()) {
+            // On iOS, tap outside the input area to dismiss keyboard
+            await this.postInput.tapReturnKey();
+            await wait(timeouts.ONE_SEC);
+        }
+    };
+
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-
-        // Poll for the post to become visible without waiting for idle bridge
-        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
-
-        // Dismiss any tooltips that might be blocking the long press
-        await this.dismissScheduledPostTooltip();
-
-        // Dismiss keyboard by tapping on the post list (needed after posting a message)
-        const flatList = this.postList.getFlatList();
-        await flatList.scroll(100, 'down');
-        await wait(timeouts.ONE_SEC);
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Open post options
-        await postListPostItem.longPress(timeouts.FOUR_SEC);
+        await postListPostItem.longPress();
         await PostOptionsScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     };
@@ -240,7 +247,7 @@ class ChannelScreen {
         await this.postInput.clearText();
         await this.postInput.replaceText(message);
         await this.tapSendButton();
-        await wait(timeouts.FOUR_SEC);
+        await wait(timeouts.TWO_SEC);
     };
 
     enterMessageToSchedule = async (message: string) => {

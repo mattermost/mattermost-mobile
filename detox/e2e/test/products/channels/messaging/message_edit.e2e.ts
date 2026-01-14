@@ -57,6 +57,7 @@ describe('Messaging - Message Edit', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+        await ChannelScreen.dismissKeyboard();
 
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -94,6 +95,7 @@ describe('Messaging - Message Edit', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+        await ChannelScreen.dismissKeyboard();
 
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -127,7 +129,7 @@ describe('Messaging - Message Edit', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-
+        await ChannelScreen.dismissKeyboard();
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);
 
@@ -141,6 +143,7 @@ describe('Messaging - Message Edit', () => {
         // # Post a reply, open post options for the reply message and tap edit option
         const replyMessage = `${message} reply`;
         await ThreadScreen.postMessage(replyMessage);
+        await ChannelScreen.dismissKeyboard();
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
 
