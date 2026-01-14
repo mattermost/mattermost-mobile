@@ -37,6 +37,9 @@ const styles = StyleSheet.create({
         paddingVertical: 32,
         paddingHorizontal: 20,
     },
+    summaryInput: {
+        marginTop: 16,
+    },
 });
 
 const RenamePlaybookRunBottomSheet = ({
@@ -112,15 +115,17 @@ const RenamePlaybookRunBottomSheet = ({
                 theme={theme}
                 autoFocus={true}
             />
-            <FloatingTextInput
-                label={summaryLabel}
-                onChangeText={setSummary}
-                testID='playbooks.playbook_run.edit.summary_input'
-                value={summary}
-                theme={theme}
-                multiline={true}
-                multilineInputHeight={100}
-            />
+            <View style={styles.summaryInput}>
+                <FloatingTextInput
+                    label={summaryLabel}
+                    onChangeText={setSummary}
+                    testID='playbooks.playbook_run.edit.summary_input'
+                    value={summary}
+                    theme={theme}
+                    multiline={true}
+                    multilineInputHeight={100}
+                />
+            </View>
         </View>
     );
 };
