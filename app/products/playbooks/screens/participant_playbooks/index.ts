@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {queryPlaybookRunsByParticipant} from '@playbooks/database/queries/run';
+import {queryPlaybookRunsByParticipantAndTeam} from '@playbooks/database/queries/run';
 import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 
 import ParticipantPlaybooks from './participant_playbooks';
@@ -22,7 +22,7 @@ const enhanced = withObservables([], ({database}: OwnProps) => {
         currentTeamId,
         cachedPlaybookRuns: combineLatest([currentUserId, currentTeamId]).pipe(
             switchMap(([userId, teamId]) =>
-                (userId ? queryPlaybookRunsByParticipant(database, userId, teamId).observe() : of([])),
+                (userId ? queryPlaybookRunsByParticipantAndTeam(database, userId, teamId).observe() : of([])),
             ),
         ),
     };

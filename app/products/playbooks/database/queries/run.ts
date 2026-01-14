@@ -89,7 +89,7 @@ export const observeParticipantsIdsFromPlaybookModel = (runModel: PlaybookRunMod
     );
 };
 
-export const queryPlaybookRunsByParticipant = (database: Database, participantId: string, teamId: string) => {
+export const queryPlaybookRunsByParticipantAndTeam = (database: Database, participantId: string, teamId: string) => {
     return database.get<PlaybookRunModel>(PLAYBOOK_RUN).query(
         Q.experimentalJoinTables([CHANNEL]),
         Q.on(CHANNEL, 'team_id', Q.eq(teamId)),

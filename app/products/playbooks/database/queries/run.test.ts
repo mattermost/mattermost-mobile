@@ -11,7 +11,7 @@ import TestHelper from '@test/test_helper';
 
 import {
     queryPlaybookRunsPerChannel,
-    queryPlaybookRunsByParticipant,
+    queryPlaybookRunsByParticipantAndTeam,
     getPlaybookRunById,
     observePlaybookRunById,
     observePlaybookRunProgress,
@@ -652,7 +652,7 @@ describe('Playbook Run Queries', () => {
                 prepareRecordsOnly: false,
             });
 
-            const result = queryPlaybookRunsByParticipant(operator.database, participantId, teamId);
+            const result = queryPlaybookRunsByParticipantAndTeam(operator.database, participantId, teamId);
             const fetchedRuns = await result.fetch();
 
             expect(fetchedRuns.length).toBe(2);
@@ -686,7 +686,7 @@ describe('Playbook Run Queries', () => {
                 prepareRecordsOnly: false,
             });
 
-            const result = queryPlaybookRunsByParticipant(operator.database, participantId, teamId);
+            const result = queryPlaybookRunsByParticipantAndTeam(operator.database, participantId, teamId);
             const fetchedRuns = await result.fetch();
 
             expect(fetchedRuns.length).toBe(0);
@@ -722,7 +722,7 @@ describe('Playbook Run Queries', () => {
                 prepareRecordsOnly: false,
             });
 
-            const result = queryPlaybookRunsByParticipant(operator.database, participantId, teamId);
+            const result = queryPlaybookRunsByParticipantAndTeam(operator.database, participantId, teamId);
             const fetchedRuns = await result.fetch();
 
             // Should only return the first two runs (index 0 and 1)
@@ -754,7 +754,7 @@ describe('Playbook Run Queries', () => {
                 prepareRecordsOnly: false,
             });
 
-            const result = queryPlaybookRunsByParticipant(operator.database, participantId, teamId);
+            const result = queryPlaybookRunsByParticipantAndTeam(operator.database, participantId, teamId);
             const fetchedRuns = await result.fetch();
 
             expect(fetchedRuns.length).toBe(1);
