@@ -140,6 +140,7 @@ describe('PlaybookRun', () => {
             pendingCount: 3,
             currentUserId: 'current-user',
             teammateNameDisplay: General.TEAMMATE_NAME_DISPLAY.SHOW_USERNAME,
+            canEditSummary: true,
         };
     }
 

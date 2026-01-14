@@ -73,12 +73,13 @@ describe('RenamePlaybookRunBottomSheet', () => {
         });
     });
 
-    function getBaseProps() {
+    function getBaseProps(canEditSummary = true) {
         return {
             componentId,
             currentTitle,
             currentSummary,
             playbookRunId,
+            canEditSummary,
         };
     }
 
@@ -287,7 +288,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
             await saveCallback();
         });
 
-        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, currentSummary);
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, currentSummary, true);
         expect(Keyboard.dismiss).toHaveBeenCalled();
         expect(popTopScreen).toHaveBeenCalledWith(componentId);
     });
@@ -310,8 +311,8 @@ describe('RenamePlaybookRunBottomSheet', () => {
             await saveCallback();
         });
 
-        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, 'New Playbook Run Name', currentSummary);
-        expect(updatePlaybookRun).not.toHaveBeenCalledWith('some.server.url', playbookRunId, titleWithSpaces, currentSummary);
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, 'New Playbook Run Name', currentSummary, true);
+        expect(updatePlaybookRun).not.toHaveBeenCalledWith('some.server.url', playbookRunId, titleWithSpaces, currentSummary, true);
     });
 
     it('should close when Android back button is pressed', () => {
@@ -391,7 +392,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
             await saveCallback();
         });
 
-        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, newSummary);
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, newSummary, true);
     });
 
     it('should trim summary when saving', async () => {
@@ -410,7 +411,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
             await saveCallback();
         });
 
-        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, 'New summary with spaces');
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, 'New summary with spaces', true);
     });
 
     it('should show error snackbar when save fails', async () => {

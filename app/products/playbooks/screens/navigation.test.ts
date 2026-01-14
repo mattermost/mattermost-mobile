@@ -608,6 +608,7 @@ describe('Playbooks Navigation', () => {
             const currentTitle = 'Playbook Run Title';
             const currentSummary = 'Playbook run summary';
             const playbookRunId = 'run-id-123';
+            const canEditSummary = true;
 
             await goToEditPlaybookRun(mockIntl, Preferences.THEMES.denim, currentTitle, currentSummary, playbookRunId);
 
@@ -622,6 +623,7 @@ describe('Playbooks Navigation', () => {
                     currentTitle,
                     currentSummary,
                     playbookRunId,
+                    canEditSummary,
                 },
             );
         });

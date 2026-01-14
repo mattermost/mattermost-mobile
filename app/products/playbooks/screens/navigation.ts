@@ -135,12 +135,14 @@ export async function goToEditPlaybookRun(
     currentTitle: string,
     currentSummary: string,
     playbookRunId: string,
+    canEditSummary: boolean,
 ) {
     const title = intl.formatMessage({id: 'playbooks.playbook_run.edit.title', defaultMessage: 'Edit playbook run'});
     goToScreen(Screens.PLAYBOOK_RENAME_RUN, title, {
         currentTitle,
         currentSummary,
         playbookRunId,
+        canEditSummary,
     });
 }
 

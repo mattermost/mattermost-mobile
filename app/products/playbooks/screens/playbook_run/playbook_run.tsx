@@ -173,6 +173,7 @@ type Props = {
     pendingCount: number;
     currentUserId: string;
     teammateNameDisplay: string;
+    canEditSummary: boolean;
 }
 
 export default function PlaybookRun({
@@ -185,6 +186,7 @@ export default function PlaybookRun({
     componentId,
     currentUserId,
     teammateNameDisplay,
+    canEditSummary,
 }: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
