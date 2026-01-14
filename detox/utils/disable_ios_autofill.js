@@ -4,7 +4,6 @@
 
 const os = require('os');
 const path = require('path');
-const readline = require('readline');
 
 const shell = require('shelljs');
 
@@ -134,8 +133,77 @@ function disablePasswordAutofill(udid) {
         result = shell.exec(`plutil -insert restrictedBool.allowPasswordAutoFill.value -bool NO "${settingsPlist}"`, {silent: true});
     }
 
+    if (result.code !== 0) {
+        console.error('⚠️  Failed to set allowPasswordAutoFill');
+        console.error(result.stderr);
+        return false;
+    }
+
+    // Also disable password autofill via restrictedValue.passwordAutoFillPasswords.value
+    console.log('Setting restrictedValue.passwordAutoFillPasswords.value...');
+
+    // Try to replace directly first
+    result = shell.exec(
+        `plutil -replace restrictedValue.passwordAutoFillPasswords.value -integer 0 "${settingsPlist}"`,
+        {silent: true},
+    );
+
     if (result.code === 0) {
-        console.log('✅ Password autofill disabled successfully');
+        console.log('✅ Password autofill disabled successfully (both keys set)');
+        return true;
+    }
+
+    // If direct replace failed, create the key structure
+    console.log('Creating restrictedValue key structure...');
+
+    // Check if restrictedValue exists
+    const checkRestrictedValue = shell.exec(
+        `plutil -extract restrictedValue xml1 -o - "${settingsPlist}" 2>/dev/null`,
+        {silent: true},
+    );
+
+    if (checkRestrictedValue.code !== 0) {
+        // restrictedValue doesn't exist, create it
+        result = shell.exec(`plutil -insert restrictedValue -dictionary "${settingsPlist}"`, {silent: true});
+        if (result.code !== 0) {
+            console.error('⚠️  Failed to insert restrictedValue dictionary');
+            console.error(result.stderr);
+            return false;
+        }
+    }
+
+    // Check if restrictedValue.passwordAutoFillPasswords exists
+    const checkPasswordAutoFillPasswords = shell.exec(
+        `plutil -extract restrictedValue.passwordAutoFillPasswords xml1 -o - "${settingsPlist}" 2>/dev/null`,
+        {silent: true},
+    );
+
+    if (checkPasswordAutoFillPasswords.code !== 0) {
+        // passwordAutoFillPasswords doesn't exist, create it
+        result = shell.exec(`plutil -insert restrictedValue.passwordAutoFillPasswords -dictionary "${settingsPlist}"`, {silent: true});
+        if (result.code !== 0) {
+            console.error('⚠️  Failed to insert passwordAutoFillPasswords dictionary');
+            console.error(result.stderr);
+            return false;
+        }
+    }
+
+    // Check if restrictedValue.passwordAutoFillPasswords.value exists
+    const checkPasswordValue = shell.exec(
+        `plutil -extract restrictedValue.passwordAutoFillPasswords.value xml1 -o - "${settingsPlist}" 2>/dev/null`,
+        {silent: true},
+    );
+
+    if (checkPasswordValue.code === 0) {
+        // value exists, replace it
+        result = shell.exec(`plutil -replace restrictedValue.passwordAutoFillPasswords.value -integer 0 "${settingsPlist}"`, {silent: true});
+    } else {
+        // value doesn't exist, insert it
+        result = shell.exec(`plutil -insert restrictedValue.passwordAutoFillPasswords.value -integer 0 "${settingsPlist}"`, {silent: true});
+    }
+
+    if (result.code === 0) {
+        console.log('✅ Password autofill disabled successfully (both keys set)');
         return true;
     }
     console.error('⚠️  Failed to disable password autofill');
@@ -144,38 +212,11 @@ function disablePasswordAutofill(udid) {
 
 }
 
-async function selectSimulator(simulators) {
-    return new Promise((resolve) => {
-        console.log('\nAvailable iOS Simulators:\n');
-
-        simulators.forEach((sim, index) => {
-            const stateIndicator = sim.state === 'Booted' ? '🟢' : '⚪';
-            console.log(`${index + 1}. ${stateIndicator} ${sim.name} (${sim.os}) - ${sim.state}`);
-        });
-
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout,
-        });
-
-        rl.question('\nEnter the number of the simulator: ', (answer) => {
-            rl.close();
-            const index = parseInt(answer, 10) - 1;
-
-            if (index >= 0 && index < simulators.length) {
-                resolve(simulators[index]);
-            } else {
-                console.error('Error: Invalid selection');
-                process.exit(1);
-            }
-        });
-    });
-}
-
 async function main() {
     console.log('iOS Simulator - Disable Password Autofill\n');
     console.log('This tool disables password autofill on iOS simulators,');
-    console.log('which can interfere with Detox E2E test login flows.\n');
+    console.log('which can interfere with Detox E2E test login flows.');
+    console.log('Target: iPhone 17 Pro (iOS 26.2)\n');
 
     // Check if running on macOS
     if (process.platform !== 'darwin') {
@@ -211,8 +252,24 @@ async function main() {
 
         console.log(`Using simulator: ${selectedSimulator.name} (${selectedSimulator.os})`);
     } else {
-        // Interactive mode
-        selectedSimulator = await selectSimulator(simulators);
+        // Automatically select iPhone 17 Pro with iOS 26.2
+        selectedSimulator = simulators.find((sim) =>
+            sim.name === 'iPhone 17 Pro' &&
+            sim.os === 'iOS 26.2',
+        );
+
+        if (!selectedSimulator) {
+            console.error('Error: iPhone 17 Pro (iOS 26.2) simulator not found');
+            console.error('Please create this simulator in Xcode first.');
+            console.error('\nAvailable simulators:');
+            simulators.forEach((sim) => {
+                const stateIndicator = sim.state === 'Booted' ? '🟢' : '⚪';
+                console.error(`  ${stateIndicator} ${sim.name} (${sim.os}) - ${sim.state}`);
+            });
+            process.exit(1);
+        }
+
+        console.log(`Using simulator: ${selectedSimulator.name} (${selectedSimulator.os})`);
     }
 
     // Apply the setting

@@ -220,14 +220,30 @@ jobs:
 
           if [ -f "$SETTINGS_PLIST" ]; then
             # File exists, modify it
-            plutil -replace restrictedBool.allowPasswordAutoFill.value -bool NO "$SETTINGS_PLIST" && echo "✅ Password autofill disabled" || echo "⚠️ Failed to disable password autofill"
+            echo "Setting restrictedBool.allowPasswordAutoFill.value..."
+            plutil -replace restrictedBool.allowPasswordAutoFill.value -bool NO "$SETTINGS_PLIST" 2>/dev/null || \
+            (plutil -insert restrictedBool -dictionary "$SETTINGS_PLIST" 2>/dev/null || true && \
+             plutil -insert restrictedBool.allowPasswordAutoFill -dictionary "$SETTINGS_PLIST" 2>/dev/null || true && \
+             plutil -insert restrictedBool.allowPasswordAutoFill.value -bool NO "$SETTINGS_PLIST")
+
+            echo "Setting restrictedValue.passwordAutoFillPasswords.value..."
+            plutil -replace restrictedValue.passwordAutoFillPasswords.value -integer 0 "$SETTINGS_PLIST" 2>/dev/null || \
+            (plutil -insert restrictedValue -dictionary "$SETTINGS_PLIST" 2>/dev/null || true && \
+             plutil -insert restrictedValue.passwordAutoFillPasswords -dictionary "$SETTINGS_PLIST" 2>/dev/null || true && \
+             plutil -insert restrictedValue.passwordAutoFillPasswords.value -integer 0 "$SETTINGS_PLIST")
+
+            echo "✅ Password autofill disabled (both keys set)"
           else
             # File doesn't exist, create it with the setting
             echo "⚠️ UserSettings.plist not found, creating with password autofill disabled"
             plutil -create xml1 "$SETTINGS_PLIST"
             plutil -insert restrictedBool -dictionary "$SETTINGS_PLIST"
             plutil -insert restrictedBool.allowPasswordAutoFill -dictionary "$SETTINGS_PLIST"
-            plutil -insert restrictedBool.allowPasswordAutoFill.value -bool NO "$SETTINGS_PLIST" && echo "✅ Created UserSettings.plist with password autofill disabled" || echo "⚠️ Failed to create settings"
+            plutil -insert restrictedBool.allowPasswordAutoFill.value -bool NO "$SETTINGS_PLIST"
+            plutil -insert restrictedValue -dictionary "$SETTINGS_PLIST"
+            plutil -insert restrictedValue.passwordAutoFillPasswords -dictionary "$SETTINGS_PLIST"
+            plutil -insert restrictedValue.passwordAutoFillPasswords.value -integer 0 "$SETTINGS_PLIST"
+            echo "✅ Created UserSettings.plist with password autofill disabled (both keys set)"
           fi
 
           echo "Booting simulator: $SIMULATOR_ID"
