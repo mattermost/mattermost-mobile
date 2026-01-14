@@ -73,9 +73,9 @@ class ServerScreen {
             }
         }
 
-        // The bridge can be busy during login transition, so poll for the element without waiting for idle
-        const timeout = isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN;
-        await waitForElementToBeVisible(this.usernameInput, timeout, timeouts.ONE_SEC);
+        // The bridge can be busy during login transition, use waitFor without idle check
+        const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
+        await waitFor(this.usernameInput).toBeVisible().withTimeout(timeout);
     };
 
     close = async () => {

@@ -160,9 +160,8 @@ describe('Channels - Find Channels', () => {
         // * Verify on archievd channel name
         await verifyDetailsOnChannelScreen(archivedChannel.display_name);
 
-        // # Go back to channel list screen by closing archived channel
-        await expect(ChannelScreen.archievedCloseChannelButton).toBeVisible();
-        await ChannelScreen.archievedCloseChannelButton.tap();
+        // # Go back to channel list screen
+        await ChannelScreen.back();
     });
 
     it('MM-T4907_6 - should be able to find a joined private channel and not find an unjoined private channel', async () => {

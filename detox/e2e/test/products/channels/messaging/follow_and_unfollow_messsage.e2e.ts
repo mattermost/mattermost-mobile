@@ -66,9 +66,10 @@ describe('Messaging - Follow and Unfollow Message', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+        await ChannelScreen.dismissKeyboard();
 
         // # Wait for keyboard to dismiss and message to be visible
-        await wait(timeouts.TWO_SEC);
+        await wait(timeouts.ONE_SEC);
 
         // * Verify message is posted
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -105,9 +106,10 @@ describe('Messaging - Follow and Unfollow Message', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+        await ChannelScreen.dismissKeyboard();
 
         // # Wait for keyboard to dismiss and message to be visible
-        await wait(timeouts.TWO_SEC);
+        await wait(timeouts.ONE_SEC);
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);

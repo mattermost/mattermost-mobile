@@ -5,6 +5,7 @@ import {
     Channel,
     Post,
     Setup,
+    Team,
     User,
 } from '@support/server_api';
 import {
@@ -48,7 +49,9 @@ describe('Messaging - Message Permalink Preview', () => {
         await ChannelScreen.postInput.replaceText(text);
         await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.sendButton.tap();
-        await wait(timeouts.FOUR_SEC);
+        await wait(timeouts.TWO_SEC);
+        await ChannelScreen.dismissKeyboard();
+        await wait(timeouts.TWO_SEC);
     };
 
     const expectPermalinkPreviewVisible = async (message: string, channelName: string) => {
@@ -65,6 +68,7 @@ describe('Messaging - Message Permalink Preview', () => {
         testUser = user;
 
         ({user: testOtherUser} = await User.apiCreateUser(siteOneUrl));
+        await Team.apiAddUserToTeam(siteOneUrl, testOtherUser.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, testOtherUser.id, testChannel.id);
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

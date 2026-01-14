@@ -394,6 +394,7 @@ describe('Account - Custom Status', () => {
         await ChannelListScreen.open();
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(messageText);
+        await ChannelScreen.dismissKeyboard();
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem, postListPostItemHeaderDisplayName} =
@@ -402,8 +403,8 @@ describe('Account - Custom Status', () => {
 
         // # Tap display name to open user profile (more reliable than avatar tap)
         await expect(postListPostItemHeaderDisplayName).toBeVisible();
-        await postListPostItemHeaderDisplayName.longPress(timeouts.FOUR_SEC);
-        await wait(timeouts.FOUR_SEC);
+        await postListPostItemHeaderDisplayName.longPress();
+        await wait(timeouts.ONE_SEC);
         await UserProfileScreen.toBeVisible();
         await UserProfileScreen.close();
         await ChannelScreen.back();
