@@ -431,5 +431,83 @@ describe('RenamePlaybookRunBottomSheet', () => {
         expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
         expect(popTopScreen).not.toHaveBeenCalled();
     });
+
+    it('should allow clearing an existing summary', async () => {
+        const props = getBaseProps();
+        const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+
+        const summaryInput = getByTestId('playbooks.playbook_run.edit.summary_input');
+
+        act(() => {
+            fireEvent.changeText(summaryInput, '');
+        });
+
+        // Save button should be enabled since summary changed (from non-empty to empty)
+        const updatedButton = {
+            ...mockRightButton,
+            enabled: true,
+        };
+        expect(setButtons).toHaveBeenCalledWith(componentId, {
+            rightButtons: [updatedButton],
+        });
+
+        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        await act(async () => {
+            await saveCallback();
+        });
+
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, '');
+    });
+
+    it('should disable save button when summary is reverted to original', () => {
+        const props = getBaseProps();
+        const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+
+        const summaryInput = getByTestId('playbooks.playbook_run.edit.summary_input');
+
+        // Change summary to something different
+        act(() => {
+            fireEvent.changeText(summaryInput, 'Different Summary');
+        });
+
+        // Button should be enabled
+        expect(setButtons).toHaveBeenCalledWith(componentId, {
+            rightButtons: [{...mockRightButton, enabled: true}],
+        });
+
+        // Change back to original summary
+        act(() => {
+            fireEvent.changeText(summaryInput, currentSummary);
+        });
+
+        // Button should be disabled since nothing changed
+        expect(setButtons).toHaveBeenLastCalledWith(componentId, {
+            rightButtons: [{...mockRightButton, enabled: false}],
+        });
+    });
+
+    it('should update both name and summary when both are changed', async () => {
+        const props = getBaseProps();
+        const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+
+        const titleInput = getByTestId('playbooks.playbook_run.rename.input');
+        const summaryInput = getByTestId('playbooks.playbook_run.edit.summary_input');
+
+        const newTitle = 'Brand New Title';
+        const newSummary = 'Brand New Summary';
+
+        act(() => {
+            fireEvent.changeText(titleInput, newTitle);
+            fireEvent.changeText(summaryInput, newSummary);
+        });
+
+        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        await act(async () => {
+            await saveCallback();
+        });
+
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, newSummary);
+        expect(popTopScreen).toHaveBeenCalledWith(componentId);
+    });
 });
 

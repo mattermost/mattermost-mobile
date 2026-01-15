@@ -276,4 +276,40 @@ describe('updatePlaybookRun', () => {
 
         database.write = originalWrite;
     });
+
+    it('should update only name when summary is unchanged', async () => {
+        const runs = TestHelper.createPlaybookRuns(1, 0, 0);
+        await handlePlaybookRuns(serverUrl, runs, false, false);
+
+        const playbookRunId = runs[0].id;
+        const originalSummary = runs[0].summary;
+        const newName = 'New Name Only';
+
+        const {data, error} = await updatePlaybookRun(serverUrl, playbookRunId, newName, originalSummary);
+
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
+        expect(updatedRun.name).toBe(newName);
+        expect(updatedRun.summary).toBe(originalSummary);
+    });
+
+    it('should handle very long name and summary values', async () => {
+        const runs = TestHelper.createPlaybookRuns(1, 0, 0);
+        await handlePlaybookRuns(serverUrl, runs, false, false);
+
+        const playbookRunId = runs[0].id;
+        const longName = 'A'.repeat(300);
+        const longSummary = 'B'.repeat(1000);
+
+        const {data, error} = await updatePlaybookRun(serverUrl, playbookRunId, longName, longSummary);
+
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
+        expect(updatedRun.name).toBe(longName);
+        expect(updatedRun.summary).toBe(longSummary);
+    });
 });
