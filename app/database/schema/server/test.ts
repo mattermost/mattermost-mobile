@@ -3,10 +3,14 @@
 
 /* eslint-disable max-lines */
 
+import {AGENTS_TABLES} from '@agents/constants/database';
+
 import {MM_TABLES} from '@constants/database';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 
 import {serverSchema} from './index';
+
+const {AI_BOT, AI_THREAD} = AGENTS_TABLES;
 
 const {
     CATEGORY,
@@ -52,9 +56,53 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 17,
+            version: 18,
             unsafeSql: undefined,
             tables: {
+                [AI_BOT]: {
+                    name: AI_BOT,
+                    unsafeSql: undefined,
+                    columns: {
+                        display_name: {name: 'display_name', type: 'string'},
+                        username: {name: 'username', type: 'string'},
+                        last_icon_update: {name: 'last_icon_update', type: 'number'},
+                        dm_channel_id: {name: 'dm_channel_id', type: 'string', isIndexed: true},
+                        channel_access_level: {name: 'channel_access_level', type: 'number'},
+                        channel_ids: {name: 'channel_ids', type: 'string'},
+                        user_access_level: {name: 'user_access_level', type: 'number'},
+                        user_ids: {name: 'user_ids', type: 'string'},
+                        team_ids: {name: 'team_ids', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'display_name', type: 'string'},
+                        {name: 'username', type: 'string'},
+                        {name: 'last_icon_update', type: 'number'},
+                        {name: 'dm_channel_id', type: 'string', isIndexed: true},
+                        {name: 'channel_access_level', type: 'number'},
+                        {name: 'channel_ids', type: 'string'},
+                        {name: 'user_access_level', type: 'number'},
+                        {name: 'user_ids', type: 'string'},
+                        {name: 'team_ids', type: 'string'},
+                    ],
+                },
+                [AI_THREAD]: {
+                    name: AI_THREAD,
+                    unsafeSql: undefined,
+                    columns: {
+                        message: {name: 'message', type: 'string'},
+                        title: {name: 'title', type: 'string'},
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        reply_count: {name: 'reply_count', type: 'number'},
+                        update_at: {name: 'update_at', type: 'number', isIndexed: true},
+                    },
+                    columnArray: [
+                        {name: 'message', type: 'string'},
+                        {name: 'title', type: 'string'},
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'reply_count', type: 'number'},
+                        {name: 'update_at', type: 'number', isIndexed: true},
+                    ],
+                },
                 [CATEGORY]: {
                     name: CATEGORY,
                     unsafeSql: undefined,

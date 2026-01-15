@@ -66,7 +66,9 @@ describe('updateAgentsVersion', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.data).toBe(true);
-        expect(setAgentsVersion).toHaveBeenCalledWith(serverUrl, '');
+
+        // setAgentsVersion not called because current version ('') equals new version ('')
+        expect(setAgentsVersion).not.toHaveBeenCalled();
     });
 
     it('should handle empty manifests array', async () => {
@@ -76,6 +78,8 @@ describe('updateAgentsVersion', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.data).toBe(true);
-        expect(setAgentsVersion).toHaveBeenCalledWith(serverUrl, '');
+
+        // setAgentsVersion not called because current version ('') equals new version ('')
+        expect(setAgentsVersion).not.toHaveBeenCalled();
     });
 });

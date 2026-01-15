@@ -7,6 +7,13 @@ import {logError} from '@utils/log';
 
 import {fetchAIBots} from './bots';
 
+jest.mock('@database/manager', () => ({
+    getServerDatabaseAndOperator: jest.fn(() => ({
+        operator: {
+            handleAIBots: jest.fn(),
+        },
+    })),
+}));
 jest.mock('@managers/network_manager');
 jest.mock('@utils/errors');
 jest.mock('@utils/log');

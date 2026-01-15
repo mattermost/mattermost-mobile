@@ -7,6 +7,13 @@ import {logError} from '@utils/log';
 
 import {fetchAIThreads} from './threads';
 
+jest.mock('@database/manager', () => ({
+    getServerDatabaseAndOperator: jest.fn(() => ({
+        operator: {
+            handleAIThreads: jest.fn(),
+        },
+    })),
+}));
 jest.mock('@managers/network_manager');
 jest.mock('@utils/errors');
 jest.mock('@utils/log');
