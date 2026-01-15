@@ -17,7 +17,6 @@ import {
 } from '@support/test_config';
 import {
     BrowseChannelsScreen,
-    ChannelDropdownMenuScreen,
     ChannelScreen,
     ChannelListScreen,
     HomeScreen,
@@ -64,22 +63,13 @@ describe('Channels - Archive Channel', () => {
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.archivePublicChannel({confirm: true});
 
-        // * Verify on channel screen and post draft archived message is displayed
-        await ChannelScreen.toBeVisible();
-        await expect(ChannelScreen.postDraftArchived).toBeVisible();
-        await expect(element(by.text('You are viewing an archived channel. New messages cannot be posted.'))).toBeVisible();
-
-        // # Tap on close channel button, open browse channels screen, tap on channel dropdown, tap on archived channels menu item, and search for the archived public channel
-        await ChannelScreen.postDraftArchivedCloseChannelButton.tap();
+        // # Tap on close channel button, open browse channels screen, search for the archived public channel
         await BrowseChannelsScreen.open();
-        await BrowseChannelsScreen.channelDropdownTextPublic.tap();
-        await wait(timeouts.ONE_SEC);
-        await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
         await BrowseChannelsScreen.searchInput.replaceText(publicChannel.name);
 
         // * Verify search returns the archived public channel item
         await wait(timeouts.ONE_SEC);
-        await expect(BrowseChannelsScreen.getChannelItemDisplayName(publicChannel.name)).toHaveText(publicChannel.display_name);
+        await expect(element(by.text(`No matches found for “${publicChannel.name}”`))).toBeVisible();
 
         // # Go back to channel list screen
         await BrowseChannelsScreen.close();
@@ -113,22 +103,13 @@ describe('Channels - Archive Channel', () => {
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.archivePrivateChannel({confirm: true});
 
-        // * Verify on channel screen and post draft archived message is displayed
-        await ChannelScreen.toBeVisible();
-        await expect(ChannelScreen.postDraftArchived).toBeVisible();
-        await expect(element(by.text('You are viewing an archived channel. New messages cannot be posted.'))).toBeVisible();
-
         // # Tap on close channel button, open browse channels screen, tap on channel dropdown, tap on archived channels menu item, and search for the archived private channel
-        await ChannelScreen.postDraftArchivedCloseChannelButton.tap();
         await BrowseChannelsScreen.open();
-        await BrowseChannelsScreen.channelDropdownTextPublic.tap();
-        await wait(timeouts.ONE_SEC);
-        await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
         await BrowseChannelsScreen.searchInput.replaceText(privateChannel.name);
 
         // * Verify search returns the archived private channel item
         await wait(timeouts.ONE_SEC);
-        await expect(BrowseChannelsScreen.getChannelItemDisplayName(privateChannel.name)).toHaveText(privateChannel.display_name);
+        await expect(element(by.text(`No matches found for “${privateChannel.name}”`))).toBeVisible();
 
         // # Go back to channel list screen
         await BrowseChannelsScreen.close();

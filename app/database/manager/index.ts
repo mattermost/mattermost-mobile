@@ -8,6 +8,7 @@ import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import {deleteAsync, documentDirectory, getInfoAsync, makeDirectoryAsync, moveAsync} from 'expo-file-system';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
+import {Events} from '@constants';
 import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
 import ServerDatabaseMigrations from '@database/migration/server';
@@ -23,7 +24,7 @@ import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {beforeUpgrade} from '@helpers/database/upgrade';
-import {PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunAttributeModel, PlaybookRunAttributeValueModel} from '@playbooks/database/models';
+import {PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel} from '@playbooks/database/models';
 import {getActiveServer, getServer, getServerByIdentifier} from '@queries/app/servers';
 import {logDebug, logError} from '@utils/log';
 import {deleteIOSDatabase, getIOSAppGroupDetails, renameIOSDatabase} from '@utils/mattermost_managed';
@@ -50,7 +51,7 @@ class DatabaseManagerSingleton {
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             ScheduledPostModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
             ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
-            PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunAttributeModel, PlaybookRunAttributeValueModel,
+            PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel,
         ];
 
         this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : `${documentDirectory}/databases/`;
@@ -334,15 +335,16 @@ class DatabaseManagerSingleton {
     * @param {string} serverUrl
     * @returns {Promise<void>}
     */
-    public setActiveServerDatabase = async (serverUrl: string): Promise<void> => {
+    public setActiveServerDatabase = async (serverUrl: string, options?: ActiveServerOptions): Promise<void> => {
         if (this.appDatabase?.database) {
             const database = this.appDatabase?.database;
             await database.write(async () => {
                 const servers = await database.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch();
                 if (servers.length) {
-                    servers[0].update((server: ServersModel) => {
+                    await servers[0].update((server: ServersModel) => {
                         server.lastActiveAt = Date.now();
                     });
+                    DeviceEventEmitter.emit(Events.ACTIVE_SERVER_CHANGED, {serverUrl, options});
                 }
             });
         }

@@ -13,6 +13,8 @@ import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
+import {fetchPlaybookRunPropertyFields} from './property_fields';
+
 type PlaybookRunsRequest = {
     runs?: PlaybookRun[];
     error?: unknown;
@@ -99,6 +101,14 @@ export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOn
             if (result.error) {
                 logDebug('error on handlePlaybookRuns', getFullErrorMessage(result.error));
                 return {error: result.error};
+            }
+
+            // Fetch property fields and values for the run
+            const propertyFieldsResult = await fetchPlaybookRunPropertyFields(serverUrl, runId, fetchOnly);
+            if (propertyFieldsResult.error) {
+                logDebug('error on fetchPlaybookRunPropertyFields', getFullErrorMessage(propertyFieldsResult.error));
+
+                // Don't return error - property fields are not critical, just log it
             }
         }
 
@@ -196,7 +206,7 @@ export const finishRun = async (serverUrl: string, playbookRunId: string) => {
     }
 };
 
-export const fetchPlaybookRunsPageForParticipant = async (serverUrl: string, participantId: string, page = 0) => {
+export const fetchPlaybookRunsPageForParticipant = async (serverUrl: string, participantId: string, teamId: string, page = 0) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
 
@@ -206,6 +216,7 @@ export const fetchPlaybookRunsPageForParticipant = async (serverUrl: string, par
             participant_id: participantId,
             sort: 'create_at',
             direction: 'desc',
+            team_id: teamId,
         });
 
         return {runs, hasMore: has_more};

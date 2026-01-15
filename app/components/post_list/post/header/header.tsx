@@ -1,15 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {View} from 'react-native';
 
+import {removePost} from '@actions/local/post';
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
+import ExpiryTimer from '@components/post_list/post/header/expiry_timer';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {CHANNEL, THREAD} from '@constants/screens';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
+import {isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {ensureString} from '@utils/types';
@@ -96,6 +101,16 @@ const Header = (props: HeaderProps) => {
     const userIconOverride = ensureString(post.props?.override_icon_url);
     const usernameOverride = ensureString(post.props?.override_username);
 
+    const isUnrevealedPost = useMemo(() => isUnrevealedBoRPost(post), [post]);
+    const ownBoRPost = useMemo(() => isOwnBoRPost(post, currentUser), [currentUser, post]);
+    const showBoRIcon = isUnrevealedPost || ownBoRPost;
+    const borExpireAt = post.metadata?.expire_at;
+    const serverUrl = useServerUrl();
+
+    const onBoRPostExpiry = useCallback(async () => {
+        await removePost(serverUrl, post);
+    }, [post, serverUrl]);
+
     return (
         <>
             <View style={[style.container, pendingPostStyle]}>
@@ -141,6 +156,20 @@ const Header = (props: HeaderProps) => {
                             label={post.metadata.priority.priority}
                         />
                     )}
+                    {showBoRIcon &&
+                        <CompassIcon
+                            name='fire'
+                            size={16}
+                            color={theme.dndIndicator}
+                        />
+                    }
+                    {
+                        !showBoRIcon && Boolean(borExpireAt) &&
+                        <ExpiryTimer
+                            expiryTime={borExpireAt as number}
+                            onExpiry={onBoRPostExpiry}
+                        />
+                    }
                     {!isCRTEnabled && showReply && commentCount > 0 &&
                         <HeaderReply
                             commentCount={commentCount}

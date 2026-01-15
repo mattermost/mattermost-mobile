@@ -5,13 +5,31 @@ import {act, fireEvent, waitFor, within} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
 import Button from '@components/button';
+import {useServerUrl} from '@context/server';
+import {addChecklistItem} from '@playbooks/actions/remote/checklist';
 import ProgressBar from '@playbooks/components/progress_bar';
 import {goToAddChecklistItem} from '@playbooks/screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {logError} from '@utils/log';
+import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import Checklist from './checklist';
 import ChecklistItem from './checklist_item';
+
+const serverUrl = 'test-server-url';
+
+jest.mock('@context/server');
+jest.mocked(useServerUrl).mockReturnValue(serverUrl);
+
+jest.mock('@components/compass_icon', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+const CompassIcon = require('@components/compass_icon').default;
+jest.mocked(CompassIcon).mockImplementation(
+    (props: any) => React.createElement('CompassIcon', {testID: 'compass-icon', ...props}) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+);
 
 jest.mock('./checklist_item');
 jest.mocked(ChecklistItem).mockImplementation(
@@ -34,6 +52,15 @@ jest.mocked(Button).mockImplementation(
 jest.mock('@playbooks/screens/navigation', () => ({
     goToRenameChecklist: jest.fn(),
     goToAddChecklistItem: jest.fn(),
+}));
+
+jest.mock('@playbooks/actions/remote/checklist', () => ({
+    renameChecklist: jest.fn(),
+    addChecklistItem: jest.fn(),
+}));
+
+jest.mock('@utils/snack_bar', () => ({
+    showPlaybookErrorSnackbar: jest.fn(),
 }));
 
 describe('Checklist', () => {
@@ -289,5 +316,117 @@ describe('Checklist', () => {
         fireEvent.press(addButton);
 
         expect(goToAddChecklistItem).toHaveBeenCalled();
+    });
+
+    it('renders edit icon in header', () => {
+        const props = getBaseProps();
+        const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+        const editButton = getByTestId('edit-checklist-button');
+        expect(editButton).toBeTruthy();
+    });
+
+    it('toggles expanded state which affects chevron icon', async () => {
+        const props = getBaseProps();
+        const {getByText, getByTestId, getAllByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+        const header = getByText('Test Checklist');
+
+        // Initially expanded - chevron should be down
+        await waitFor(() => {
+            expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 16});
+        });
+        const chevronIcons = getAllByTestId('compass-icon');
+        const chevron = chevronIcons.find((icon) => icon.props.name === 'chevron-down' || icon.props.name === 'chevron-right');
+        expect(chevron).toBeTruthy();
+        expect(chevron?.props.name).toBe('chevron-down');
+
+        // Toggle to collapsed - chevron should change to right
+        act(() => {
+            fireEvent.press(header);
+        });
+
+        await waitFor(() => {
+            expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 0});
+        });
+        const chevronIconsCollapsed = getAllByTestId('compass-icon');
+        const chevronCollapsed = chevronIconsCollapsed.find((icon) => icon.props.name === 'chevron-down' || icon.props.name === 'chevron-right');
+        expect(chevronCollapsed).toBeTruthy();
+        expect(chevronCollapsed?.props.name).toBe('chevron-right');
+
+        // Toggle back to expanded - chevron should change to down
+        act(() => {
+            fireEvent.press(header);
+        });
+
+        await waitFor(() => {
+            expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 16});
+        });
+        const chevronIconsExpanded = getAllByTestId('compass-icon');
+        const chevronExpanded = chevronIconsExpanded.find((icon) => icon.props.name === 'chevron-down' || icon.props.name === 'chevron-right');
+        expect(chevronExpanded).toBeTruthy();
+        expect(chevronExpanded?.props.name).toBe('chevron-down');
+    });
+
+    it('handles add item error correctly', async () => {
+        const mockError = {message: 'Add item failed'};
+        jest.mocked(addChecklistItem).mockResolvedValueOnce({error: mockError} as {error: Error});
+        jest.mocked(goToAddChecklistItem).mockClear();
+
+        const props = getBaseProps();
+        props.isFinished = false;
+        props.isParticipant = true;
+
+        const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+        const addButton = getByTestId('add-checklist-item-button');
+        act(() => {
+            fireEvent.press(addButton);
+        });
+
+        const onAdd = jest.mocked(goToAddChecklistItem).mock.calls[0][3];
+        await act(async () => {
+            await onAdd('New Item');
+        });
+
+        await waitFor(() => {
+            expect(addChecklistItem).toHaveBeenCalledWith(
+                serverUrl,
+                props.playbookRunId,
+                props.checklistNumber,
+                'New Item',
+            );
+            expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
+            expect(logError).toHaveBeenCalledWith('error on addChecklistItem', expect.any(String));
+        });
+    });
+
+    it('handles successful add item without errors', async () => {
+        jest.mocked(addChecklistItem).mockResolvedValueOnce({data: true} as {data: boolean});
+        jest.mocked(goToAddChecklistItem).mockImplementation(async (intl, theme, playbookRunName, onAdd) => {
+            onAdd('New Item');
+        });
+
+        const props = getBaseProps();
+        props.isFinished = false;
+        props.isParticipant = true;
+
+        const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+        const addButton = getByTestId('add-checklist-item-button');
+        act(() => {
+            fireEvent.press(addButton);
+        });
+
+        await waitFor(() => {
+            expect(addChecklistItem).toHaveBeenCalledWith(
+                serverUrl,
+                props.playbookRunId,
+                props.checklistNumber,
+                'New Item',
+            );
+            expect(showPlaybookErrorSnackbar).not.toHaveBeenCalled();
+            expect(logError).not.toHaveBeenCalled();
+        });
     });
 });

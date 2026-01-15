@@ -59,27 +59,50 @@ describe('ParticipantPlaybooks Index', () => {
         expect(component).toBeTruthy();
         expect(component.props.componentId).toBe('ParticipantPlaybooks');
         expect(component.props.currentUserId).toBe('');
+        expect(component.props.currentTeamId).toBe('');
         expect(component.props.cachedPlaybookRuns).toEqual([]);
     });
 
     it('renders ParticipantPlaybooks component with current user data', async () => {
+        const currentTeamId = 'current-team-id';
         await operator.handleSystem({
-            systems: [{
-                id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
-                value: currentUserId,
-            }],
+            systems: [
+                {
+                    id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
+                    value: currentUserId,
+                },
+                {
+                    id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID,
+                    value: currentTeamId,
+                },
+            ],
             prepareRecordsOnly: false,
         });
 
-        const runs = TestHelper.createPlaybookRuns(4, 1, 1);
+        const runs = TestHelper.createPlaybookRuns(5, 1, 1);
         runs[0].participant_ids = [currentUserId];
         runs[1].participant_ids = ['other-user-id'];
         runs[2].participant_ids = [currentUserId];
         runs[3].participant_ids = ['other-user-id'];
+        runs[4].participant_ids = [currentUserId];
+
+        runs[0].channel_id = 'channel-id-1';
+        runs[1].channel_id = 'channel-id-1';
+        runs[2].channel_id = 'channel-id-1';
+        runs[3].channel_id = 'channel-id-2';
+        runs[4].channel_id = 'channel-id-2';
 
         await operator.handlePlaybookRun({
             prepareRecordsOnly: false,
             runs,
+        });
+
+        const channel1 = TestHelper.fakeChannel({id: 'channel-id-1', team_id: currentTeamId});
+        const channel2 = TestHelper.fakeChannel({id: 'channel-id-2', team_id: 'other-team-id'});
+
+        await operator.handleChannel({
+            channels: [channel1, channel2],
+            prepareRecordsOnly: false,
         });
 
         const props = {
@@ -95,6 +118,7 @@ describe('ParticipantPlaybooks Index', () => {
         expect(component).toBeTruthy();
         expect(component.props.componentId).toBe('ParticipantPlaybooks');
         expect(component.props.currentUserId).toBe(currentUserId);
+        expect(component.props.currentTeamId).toBe(currentTeamId);
         expect(component.props.cachedPlaybookRuns).toHaveLength(2);
         const runIds = component.props.cachedPlaybookRuns.map((r: PlaybookRunModel) => r.id);
         expect(runIds).toContain(runs[0].id);
@@ -102,6 +126,17 @@ describe('ParticipantPlaybooks Index', () => {
     });
 
     it('reacts to current user changes', async () => {
+        const currentTeamId = 'current-team-id';
+        await operator.handleSystem({
+            systems: [
+                {
+                    id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID,
+                    value: currentTeamId,
+                },
+            ],
+            prepareRecordsOnly: false,
+        });
+
         const props = {
             componentId,
         };
@@ -112,9 +147,23 @@ describe('ParticipantPlaybooks Index', () => {
         runs[1].participant_ids = [otherUserId];
         runs[2].participant_ids = [currentUserId];
         runs[3].participant_ids = [otherUserId];
+
+        runs[0].channel_id = 'channel-id-1';
+        runs[1].channel_id = 'channel-id-1';
+        runs[2].channel_id = 'channel-id-1';
+        runs[3].channel_id = 'channel-id-2';
+
         await operator.handlePlaybookRun({
             prepareRecordsOnly: false,
             runs,
+        });
+
+        const channel1 = TestHelper.fakeChannel({id: 'channel-id-1', team_id: currentTeamId});
+        const channel2 = TestHelper.fakeChannel({id: 'channel-id-2', team_id: 'other-team-id'});
+
+        await operator.handleChannel({
+            channels: [channel1, channel2],
+            prepareRecordsOnly: false,
         });
 
         const {getByTestId} = renderWithEverything(
@@ -124,6 +173,7 @@ describe('ParticipantPlaybooks Index', () => {
 
         let component = getByTestId('participant-playbooks');
         expect(component.props.currentUserId).toBe('');
+        expect(component.props.currentTeamId).toBe(currentTeamId);
         expect(component.props.cachedPlaybookRuns).toEqual([]);
 
         // Add current user to database
@@ -162,10 +212,9 @@ describe('ParticipantPlaybooks Index', () => {
         await waitFor(() => {
             component = getByTestId('participant-playbooks');
             expect(component.props.currentUserId).toBe(otherUserId);
-            expect(component.props.cachedPlaybookRuns).toHaveLength(2);
+            expect(component.props.cachedPlaybookRuns).toHaveLength(1);
             const runIds = component.props.cachedPlaybookRuns.map((r: PlaybookRunModel) => r.id);
             expect(runIds).toContain(runs[1].id);
-            expect(runIds).toContain(runs[3].id);
         });
     });
 });

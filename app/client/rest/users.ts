@@ -20,6 +20,7 @@ export interface ClientUsersMix {
     login: (loginId: string, password: string, token?: string, deviceId?: string, ldapOnly?: boolean) => Promise<UserProfile>;
     loginById: (id: string, password: string, token?: string, deviceId?: string) => Promise<UserProfile>;
     loginByMagicLinkLogin: (token: string, deviceId?: string) => Promise<UserProfile>;
+    loginByIntune: (accessToken: string, deviceId?: string) => Promise<UserProfile>;
     logout: () => Promise<any>;
     getProfiles: (page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
     getProfilesByIds: (userIds: string[], options?: Record<string, any>, groupLabel?: RequestGroupLabel) => Promise<UserProfile[]>;
@@ -144,7 +145,7 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     loginById = async (id: string, password: string, token = '', deviceId = '') => {
-        const body: any = {
+        const body = {
             device_id: deviceId,
             id,
             password,
@@ -153,6 +154,25 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
 
         const resp = await this.doFetch(
             `${this.getUsersRoute()}/login`,
+            {
+                method: 'post',
+                body,
+                headers: {'Cache-Control': 'no-store'},
+            },
+            false,
+        );
+
+        return resp?.data;
+    };
+
+    loginByIntune = async (accessToken: string, deviceId = '') => {
+        const body = {
+            device_id: deviceId,
+            access_token: accessToken,
+        };
+
+        const resp = await this.doFetch(
+            '/oauth/intune',
             {
                 method: 'post',
                 body,
