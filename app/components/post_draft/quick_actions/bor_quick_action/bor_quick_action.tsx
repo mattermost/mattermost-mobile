@@ -4,7 +4,7 @@
 import React, {useCallback} from 'react';
 
 import CompassIcon from '@components/compass_icon';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
+import PressableOpacity from '@components/pressable_opacity';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
@@ -29,17 +29,16 @@ export default function BoRQuickAction({testId, defaultBorConfig, postBoRConfig,
     }, [defaultBorConfig, postBoRConfig, updatePostBoRStatus]);
 
     return (
-        <TouchableWithFeedback
-            testID={testId}
+        <PressableOpacity
             style={style.icon}
-            type='opacity'
             onPress={toggleEnabled}
         >
             <CompassIcon
+                testID={testId}
                 name={'fire'}
                 size={ICON_SIZE}
                 color={iconColor}
             />
-        </TouchableWithFeedback>
+        </PressableOpacity>
     );
 }

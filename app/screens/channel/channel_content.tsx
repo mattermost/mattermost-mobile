@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PortalProvider} from '@gorhom/portal';
 import React from 'react';
 import {StyleSheet} from 'react-native';
 
@@ -40,32 +41,34 @@ const ChannelContent = ({
     onEmojiSearchFocusChange,
 }: ChannelContentProps) => {
     return (
-        <KeyboardAwarePostDraftContainer
-            textInputNativeID={CHANNEL_POST_INPUT_NATIVE_ID}
-            containerStyle={[styles.flex, {marginTop}]}
-            enabled={enabled}
-            onEmojiSearchFocusChange={onEmojiSearchFocusChange}
-            renderList={({listRef, onTouchMove, onTouchEnd}) => (
-                <ChannelPostList
-                    channelId={channelId}
-                    listRef={listRef}
-                    onTouchMove={onTouchMove}
-                    onTouchEnd={onTouchEnd}
-                />
-            )}
-        >
-            {scheduledPostCount > 0 &&
+        <PortalProvider>
+            <KeyboardAwarePostDraftContainer
+                textInputNativeID={CHANNEL_POST_INPUT_NATIVE_ID}
+                containerStyle={[styles.flex, {marginTop}]}
+                enabled={enabled}
+                onEmojiSearchFocusChange={onEmojiSearchFocusChange}
+                renderList={({listRef, onTouchMove, onTouchEnd}) => (
+                    <ChannelPostList
+                        channelId={channelId}
+                        listRef={listRef}
+                        onTouchMove={onTouchMove}
+                        onTouchEnd={onTouchEnd}
+                    />
+                )}
+            >
+                {scheduledPostCount > 0 &&
                 <ScheduledPostIndicator scheduledPostCount={scheduledPostCount}/>
-            }
-            <PostDraft
-                channelId={channelId}
-                testID={CHANNEL_POST_DRAFT_TESTID}
-                containerHeight={containerHeight}
-                isChannelScreen={true}
-                canShowPostPriority={true}
-                location={Screens.CHANNEL}
-            />
-        </KeyboardAwarePostDraftContainer>
+                }
+                <PostDraft
+                    channelId={channelId}
+                    testID={CHANNEL_POST_DRAFT_TESTID}
+                    containerHeight={containerHeight}
+                    isChannelScreen={true}
+                    canShowPostPriority={true}
+                    location={Screens.CHANNEL}
+                />
+            </KeyboardAwarePostDraftContainer>
+        </PortalProvider>
     );
 };
 
