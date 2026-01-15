@@ -37,4 +37,5 @@ export default keyMirror({
     ACTIVE_SCREEN: null,
     ACTIVE_SERVER_CHANGED: null,
     FILE_ADD_REMOVED: null,
+    FILE_REJECTED: null,
 });
