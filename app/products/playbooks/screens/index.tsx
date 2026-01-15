@@ -20,6 +20,8 @@ export function loadPlaybooksScreen(screenName: string | number) {
             return withServerDatabase(require('@playbooks/screens/playbook_run/checklist/rename_checklist_bottom_sheet').default);
         case Screens.PLAYBOOK_ADD_CHECKLIST_ITEM:
             return withServerDatabase(require('@playbooks/screens/playbook_run/checklist/add_checklist_item_bottom_sheet').default);
+        case Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM:
+            return withServerDatabase(require('@playbooks/screens/playbook_run/checklist/edit_checklist_item_bottom_sheet').default);
         case Screens.PLAYBOOK_RENAME_RUN:
             return withServerDatabase(require('@playbooks/screens/playbook_run/rename_playbook_run_bottom_sheet').default);
         case Screens.PLAYBOOK_SELECT_USER:
