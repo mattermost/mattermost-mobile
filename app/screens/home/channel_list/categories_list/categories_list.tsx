@@ -9,7 +9,7 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import DraftsButton from '@components/drafts_buttton';
 import ThreadsButton from '@components/threads_button';
 import {Events, Screens} from '@constants';
-import {CHANNEL, DRAFT, THREAD} from '@constants/screens';
+import {AGENTS, CHANNEL, DRAFT, THREAD} from '@constants/screens';
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -47,7 +47,7 @@ const getTabletWidth = (moreThanOneTeam: boolean) => {
     return TABLET_SIDEBAR_WIDTH - (moreThanOneTeam ? TEAM_SIDEBAR_WIDTH : 0);
 };
 
-type ScreenType = typeof DRAFT | typeof THREAD | typeof CHANNEL;
+type ScreenType = typeof AGENTS | typeof DRAFT | typeof THREAD | typeof CHANNEL;
 
 const CategoriesList = ({
     hasChannels,
@@ -80,7 +80,7 @@ const CategoriesList = ({
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.ACTIVE_SCREEN, (screen: string) => {
-            if (screen === DRAFT || screen === THREAD) {
+            if (screen === AGENTS || screen === DRAFT || screen === THREAD) {
                 setActiveScreen(screen);
             } else {
                 setActiveScreen(CHANNEL);
@@ -136,9 +136,11 @@ const CategoriesList = ({
         }
 
         return (
-            <AgentsButton/>
+            <AgentsButton
+                shouldHighlightActive={activeScreen === AGENTS}
+            />
         );
-    }, [agentsEnabled]);
+    }, [agentsEnabled, activeScreen]);
 
     const playbooksButtonComponent = useMemo(() => {
         if (!playbooksEnabled) {

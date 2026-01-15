@@ -31,6 +31,11 @@ export async function fetchIsAgentsEnabled(database: Database) {
     return isAgentsEnabledFromSystemModel(systems);
 }
 
+export async function fetchAgentsVersion(database: Database): Promise<string> {
+    const systems = await queryAgentsVersion(database).fetch();
+    return systems[0]?.value || '';
+}
+
 export function observeIsAgentsEnabled(database: Database) {
     return database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).query(
         Q.where('id', SYSTEM_IDENTIFIERS.AGENTS_VERSION),

@@ -7,15 +7,16 @@ import {View, Text, TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
+import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {AIThread} from '@agents/types';
+import type AiThreadModel from '@agents/types/database/models/ai_thread';
 
 export const THREAD_ITEM_HEIGHT = 88;
 
 type Props = {
-    thread: AIThread;
-    onPress: (thread: AIThread) => void;
+    thread: AiThreadModel;
+    onPress: (thread: AiThreadModel) => void;
     botName?: string;
     theme: Theme;
 };
@@ -107,7 +108,7 @@ const ThreadItem = ({thread, onPress, botName, theme}: Props) => {
                         })}
                     </Text>
                     <FormattedRelativeTime
-                        value={thread.update_at}
+                        value={thread.updateAt}
                         style={styles.threadTimestamp}
                     />
                 </View>
@@ -125,15 +126,12 @@ const ThreadItem = ({thread, onPress, botName, theme}: Props) => {
                         size={14}
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
                     />
-                    <Text style={styles.threadReplyCount}>
-                        {`${thread.reply_count} ${thread.reply_count === 1 ? intl.formatMessage({
-                            id: 'agents.threads_list.reply',
-                            defaultMessage: 'reply',
-                        }) : intl.formatMessage({
-                            id: 'agents.threads_list.replies',
-                            defaultMessage: 'replies',
-                        })}`}
-                    </Text>
+                    <FormattedText
+                        id='agents.threads_list.reply_count'
+                        defaultMessage='{count, plural, one {# reply} other {# replies}}'
+                        values={{count: thread.replyCount}}
+                        style={styles.threadReplyCount}
+                    />
                     {botName && (
                         <View style={styles.agentTag}>
                             <Text style={styles.agentTagText}>

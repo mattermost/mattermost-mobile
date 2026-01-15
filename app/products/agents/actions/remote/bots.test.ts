@@ -5,7 +5,7 @@ import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
-import {fetchAIBots, getBotDirectChannel} from './bots';
+import {fetchAIBots} from './bots';
 
 jest.mock('@managers/network_manager');
 jest.mock('@utils/errors');
@@ -15,7 +15,6 @@ const serverUrl = 'https://test.mattermost.com';
 
 const mockClient = {
     getAIBots: jest.fn(),
-    createDirectChannel: jest.fn(),
 };
 
 beforeAll(() => {
@@ -54,36 +53,6 @@ describe('fetchAIBots', () => {
         const result = await fetchAIBots(serverUrl);
 
         expect(logError).toHaveBeenCalledWith('[fetchAIBots] Failed to fetch AI bots', error);
-        expect(getFullErrorMessage).toHaveBeenCalledWith(error);
-        expect(result).toEqual({error: errorMessage});
-    });
-});
-
-describe('getBotDirectChannel', () => {
-    const currentUserId = 'current-user-id';
-    const botUserId = 'bot-user-id';
-
-    it('should return channelId on success', async () => {
-        const mockChannel = {id: 'channel-123'};
-        mockClient.createDirectChannel.mockResolvedValue(mockChannel);
-
-        const result = await getBotDirectChannel(serverUrl, currentUserId, botUserId);
-
-        expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
-        expect(mockClient.createDirectChannel).toHaveBeenCalledWith([currentUserId, botUserId]);
-        expect(result.channelId).toBe('channel-123');
-        expect(result.error).toBeUndefined();
-    });
-
-    it('should return error and log on failure', async () => {
-        const error = new Error('Failed to create channel');
-        const errorMessage = 'Channel creation failed';
-        mockClient.createDirectChannel.mockRejectedValue(error);
-        jest.mocked(getFullErrorMessage).mockReturnValue(errorMessage);
-
-        const result = await getBotDirectChannel(serverUrl, currentUserId, botUserId);
-
-        expect(logError).toHaveBeenCalledWith('[getBotDirectChannel] Failed to get bot direct channel', error);
         expect(getFullErrorMessage).toHaveBeenCalledWith(error);
         expect(result).toEqual({error: errorMessage});
     });

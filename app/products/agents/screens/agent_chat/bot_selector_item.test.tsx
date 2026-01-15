@@ -8,7 +8,7 @@ import {Preferences} from '@constants';
 
 import BotSelectorItem from './bot_selector_item';
 
-import type {LLMBot} from '@agents/types';
+import type AiBotModel from '@agents/types/database/models/ai_bot';
 
 // Mock SlideUpPanelItem to avoid complex dependencies
 jest.mock('@components/slide_up_panel_item', () => {
@@ -45,18 +45,19 @@ jest.mock('@components/slide_up_panel_item', () => {
 });
 
 describe('BotSelectorItem', () => {
-    const mockBot: LLMBot = {
+    // Mock bot data with camelCase properties matching AiBotModel
+    const mockBot = {
         id: 'bot-123',
         displayName: 'Test Bot',
         username: 'testbot',
         lastIconUpdate: 0,
-        dmChannelID: 'dm-channel-123',
+        dmChannelId: 'dm-channel-123',
         channelAccessLevel: 0,
-        channelIDs: [],
+        channelIds: [],
         userAccessLevel: 0,
-        userIDs: [],
-        teamIDs: [],
-    };
+        userIds: [],
+        teamIds: [],
+    } as unknown as AiBotModel;
 
     const getBaseProps = (): ComponentProps<typeof BotSelectorItem> => ({
         bot: mockBot,
@@ -124,13 +125,13 @@ describe('BotSelectorItem', () => {
             displayName: 'Another Agent',
             username: 'anotheragent',
             lastIconUpdate: 123456,
-            dmChannelID: 'dm-channel-456',
+            dmChannelId: 'dm-channel-456',
             channelAccessLevel: 0,
-            channelIDs: [],
+            channelIds: [],
             userAccessLevel: 0,
-            userIDs: [],
-            teamIDs: [],
-        };
+            userIds: [],
+            teamIds: [],
+        } as unknown as AiBotModel;
         const {getByText, getByTestId} = render(<BotSelectorItem {...props}/>);
 
         expect(getByText('Another Agent')).toBeTruthy();

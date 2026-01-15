@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchAIBots, getBotDirectChannel, type LLMBot} from '@agents/actions/remote/bots';
+import {fetchAIBots} from '@agents/actions/remote/bots';
 import {AgentsIntro} from '@agents/components/illustrations';
 import BotSelectorItem from '@agents/screens/agent_chat/bot_selector_item';
 import {goToAgentThreadsList} from '@agents/screens/navigation';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, View, Text, TouchableOpacity} from 'react-native';
+import {type LayoutChangeEvent, Text, TouchableOpacity, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {createDirectChannel} from '@actions/remote/channel';
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {buildProfileImageUrl} from '@actions/remote/user';
@@ -28,11 +29,12 @@ import {bottomSheet, dismissBottomSheet, popTopScreen} from '@screens/navigation
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import type AiBotModel from '@agents/types/database/models/ai_bot';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     componentId: AvailableScreens;
-    currentUserId: string;
+    bots: AiBotModel[];
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -132,7 +134,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const AgentChat = ({
     componentId,
-    currentUserId,
+    bots,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -140,40 +142,62 @@ const AgentChat = ({
     const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
-    const [bots, setBots] = useState<LLMBot[]>([]);
-    const [selectedBot, setSelectedBot] = useState<LLMBot | null>(null);
+    // Track if this is the first load
+    const initialLoadDone = useRef(false);
+    const [selectedBot, setSelectedBot] = useState<AiBotModel | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [channelId, setChannelId] = useState<string | null>(null);
     const [containerHeight, setContainerHeight] = useState(0);
 
+    // Auto-select first bot when bots are loaded from database
     useEffect(() => {
-        const loadBots = async () => {
-            setLoading(true);
-            const {bots: fetchedBots, error: fetchError} = await fetchAIBots(serverUrl);
-            setLoading(false);
+        if (bots.length > 0 && !selectedBot) {
+            setSelectedBot(bots[0]);
+        }
+    }, [bots, selectedBot]);
 
-            if (fetchError) {
+    // Refresh bots from network on mount
+    useEffect(() => {
+        const refreshBots = async () => {
+            // If we have cached data, don't show loading spinner
+            if (bots.length > 0) {
+                initialLoadDone.current = true;
+                setLoading(false);
+            }
+
+            const {error: fetchError} = await fetchAIBots(serverUrl);
+
+            // Mark initial load as done
+            if (!initialLoadDone.current) {
+                initialLoadDone.current = true;
+                setLoading(false);
+            }
+
+            // Only show error if fetch failed AND we have no cached data
+            if (fetchError && bots.length === 0) {
                 setError(intl.formatMessage({
                     id: 'agents.chat.error_loading_bots',
                     defaultMessage: 'Failed to load agents. Please try again.',
                 }));
-                return;
-            }
-
-            if (fetchedBots && fetchedBots.length > 0) {
-                setBots(fetchedBots);
-                setSelectedBot(fetchedBots[0]);
-            } else {
-                setError(intl.formatMessage({
-                    id: 'agents.chat.no_bots',
-                    defaultMessage: 'No agents available.',
-                }));
             }
         };
 
-        loadBots();
-    }, [serverUrl, intl]);
+        refreshBots();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps -- only run on mount
+
+    // Show error if no bots after loading
+    useEffect(() => {
+        if (!loading && bots.length === 0 && !error) {
+            setError(intl.formatMessage({
+                id: 'agents.chat.no_bots',
+                defaultMessage: 'No agents available.',
+            }));
+        } else if (bots.length > 0 && error) {
+            // Clear error if we now have bots
+            setError(null);
+        }
+    }, [loading, bots.length, error, intl]);
 
     // Get or create DM channel when bot is selected
     useEffect(() => {
@@ -183,13 +207,12 @@ const AgentChat = ({
                 return;
             }
 
-            const {channelId: dmChannelId, error: channelError} = await getBotDirectChannel(
+            const {data, error: channelError} = await createDirectChannel(
                 serverUrl,
-                currentUserId,
                 selectedBot.id,
             );
 
-            if (channelError || !dmChannelId) {
+            if (channelError || !data) {
                 setError(intl.formatMessage({
                     id: 'agents.chat.error_creating_channel',
                     defaultMessage: 'Failed to start conversation. Please try again.',
@@ -197,11 +220,11 @@ const AgentChat = ({
                 return;
             }
 
-            setChannelId(dmChannelId);
+            setChannelId(data.id);
         };
 
         getChannel();
-    }, [selectedBot, serverUrl, currentUserId, intl]);
+    }, [selectedBot, serverUrl, intl]);
 
     const exit = useCallback(() => {
         popTopScreen(componentId);
@@ -213,7 +236,7 @@ const AgentChat = ({
         goToAgentThreadsList(intl);
     }, [intl]);
 
-    const handleBotSelect = useCallback((bot: LLMBot) => {
+    const handleBotSelect = useCallback((bot: AiBotModel) => {
         setSelectedBot(bot);
         dismissBottomSheet();
     }, []);
@@ -268,7 +291,8 @@ const AgentChat = ({
         fetchAndSwitchToThread(serverUrl, postId);
     }, [serverUrl]);
 
-    if (loading) {
+    // Show loading only on first load with no cached data
+    if (loading && bots.length === 0) {
         return (
             <View style={[styles.container, {paddingTop: insets.top}]}>
                 <Loading

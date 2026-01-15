@@ -4,7 +4,7 @@
 import {goToAgentChat} from '@agents/screens/navigation';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {TouchableOpacity, View} from 'react-native';
+import {DeviceEventEmitter, Pressable, View} from 'react-native';
 
 import {
     getStyleSheet as getChannelItemStyleSheet,
@@ -13,10 +13,17 @@ import {
 } from '@components/channel_item/channel_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import {Events} from '@constants';
+import {AGENTS} from '@constants/screens';
 import {HOME_PADDING} from '@constants/view';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+type Props = {
+    shouldHighlightActive?: boolean;
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     icon: {
@@ -32,13 +39,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const AgentsButton = () => {
+const AgentsButton = ({
+    shouldHighlightActive = false,
+}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const commonChannelItemStyles = getChannelItemStyleSheet(theme);
     const styles = getStyleSheet(theme);
 
+    const isActive = isTablet && shouldHighlightActive;
+
     const handlePress = usePreventDoubleTap(useCallback(() => {
+        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, AGENTS);
         goToAgentChat(intl);
     }, [intl]));
 
@@ -46,24 +59,30 @@ const AgentsButton = () => {
         const container = [
             commonChannelItemStyles.container,
             HOME_PADDING,
+            isActive && commonChannelItemStyles.activeItem,
+            isActive && {
+                paddingLeft: HOME_PADDING.paddingLeft - commonChannelItemStyles.activeItem.borderLeftWidth,
+            },
             {minHeight: ROW_HEIGHT},
         ];
 
         const icon = [
             styles.icon,
+            isActive && styles.iconActive,
         ];
 
         const text = [
             styles.text,
             channelItemTextStyle.regular,
             commonChannelItemStyles.text,
+            isActive && commonChannelItemStyles.textActive,
         ];
 
         return [container, icon, text];
-    }, [styles, commonChannelItemStyles]);
+    }, [styles, commonChannelItemStyles, isActive]);
 
     return (
-        <TouchableOpacity
+        <Pressable
             onPress={handlePress}
             testID='channel_list.agents.button'
         >
@@ -79,7 +98,7 @@ const AgentsButton = () => {
                     style={textStyle}
                 />
             </View>
-        </TouchableOpacity>
+        </Pressable>
     );
 };
 

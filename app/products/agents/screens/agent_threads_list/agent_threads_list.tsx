@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchAIBots, type LLMBot} from '@agents/actions/remote/bots';
+import {fetchAIBots} from '@agents/actions/remote/bots';
 import {fetchAIThreads} from '@agents/actions/remote/threads';
 import ThreadItem, {THREAD_ITEM_HEIGHT} from '@agents/screens/agent_threads_list/thread_item';
 import {goToAgentChat} from '@agents/screens/navigation';
 import {FlashList, type ListRenderItem} from '@shopify/flash-list';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, RefreshControl} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -20,11 +20,14 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {AIThread} from '@agents/types';
+import type AiBotModel from '@agents/types/database/models/ai_bot';
+import type AiThreadModel from '@agents/types/database/models/ai_thread';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     componentId: AvailableScreens;
+    threads: AiThreadModel[];
+    bots: AiBotModel[];
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -86,6 +89,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 40,
+        paddingTop: 120,
     },
     emptyIcon: {
         marginBottom: 16,
@@ -115,6 +119,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const AgentThreadsList = ({
     componentId,
+    threads,
+    bots,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -122,8 +128,8 @@ const AgentThreadsList = ({
     const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
-    const [threads, setThreads] = useState<AIThread[]>([]);
-    const [bots, setBots] = useState<LLMBot[]>([]);
+    // Track if this is the first load (show loading spinner only on first load with no cached data)
+    const initialLoadDone = useRef(false);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -132,58 +138,55 @@ const AgentThreadsList = ({
     const botNameByChannelId = useMemo(() => {
         const map: Record<string, string> = {};
         for (const bot of bots) {
-            if (bot.dmChannelID) {
-                map[bot.dmChannelID] = bot.displayName;
+            if (bot.dmChannelId) {
+                map[bot.dmChannelId] = bot.displayName;
             }
         }
         return map;
     }, [bots]);
 
-    // Fetch bots on mount for agent tags
-    useEffect(() => {
-        const loadBots = async () => {
-            const {bots: fetchedBots} = await fetchAIBots(serverUrl);
-            if (fetchedBots) {
-                setBots(fetchedBots);
-            }
-        };
-        loadBots();
-    }, [serverUrl]);
-
-    const loadThreads = useCallback(async (isRefresh = false) => {
+    // Refresh data from network (updates database, observers will update UI)
+    const refreshData = useCallback(async (isRefresh = false) => {
         if (isRefresh) {
             setRefreshing(true);
-        } else {
-            setLoading(true);
         }
 
-        const {threads: fetchedThreads, error: fetchError} = await fetchAIThreads(serverUrl);
+        // Fetch both bots and threads in parallel
+        const [botsResult, threadsResult] = await Promise.all([
+            fetchAIBots(serverUrl),
+            fetchAIThreads(serverUrl),
+        ]);
 
         if (isRefresh) {
             setRefreshing(false);
-        } else {
-            setLoading(false);
         }
 
-        if (fetchError) {
+        // Only show error if both calls failed and we have no cached data
+        if (botsResult.error && threadsResult.error && threads.length === 0) {
             setError(intl.formatMessage({
                 id: 'agents.threads_list.error_loading',
                 defaultMessage: 'Failed to load conversations. Please try again.',
             }));
-            return;
-        }
-
-        if (fetchedThreads) {
-            // Sort by most recent first
-            const sortedThreads = fetchedThreads.sort((a, b) => b.update_at - a.update_at);
-            setThreads(sortedThreads);
+        } else {
             setError(null);
         }
-    }, [serverUrl, intl]);
 
+        // Mark initial load as done
+        if (!initialLoadDone.current) {
+            initialLoadDone.current = true;
+            setLoading(false);
+        }
+    }, [serverUrl, intl, threads.length]);
+
+    // On mount, refresh data from network
     useEffect(() => {
-        loadThreads();
-    }, [loadThreads]);
+        // If we have cached data, don't show loading spinner
+        if (threads.length > 0 || bots.length > 0) {
+            initialLoadDone.current = true;
+            setLoading(false);
+        }
+        refreshData();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps -- only run on mount
 
     const exit = useCallback(() => {
         popTopScreen(componentId);
@@ -192,26 +195,26 @@ const AgentThreadsList = ({
     useAndroidHardwareBackHandler(componentId, exit);
 
     const handleRefresh = useCallback(() => {
-        loadThreads(true);
-    }, [loadThreads]);
+        refreshData(true);
+    }, [refreshData]);
 
     const handleNewChat = useCallback(() => {
         goToAgentChat(intl);
     }, [intl]);
 
-    const handleThreadPress = useCallback(async (thread: AIThread) => {
+    const handleThreadPress = useCallback(async (thread: AiThreadModel) => {
         // Navigate to the thread
         await fetchAndSwitchToThread(serverUrl, thread.id, false);
 
         // fetchAndSwitchToThread handles navigation, so we don't need to exit
     }, [serverUrl]);
 
-    const renderItem: ListRenderItem<AIThread> = useCallback(({item}) => {
+    const renderItem: ListRenderItem<AiThreadModel> = useCallback(({item}) => {
         return (
             <ThreadItem
                 thread={item}
                 onPress={handleThreadPress}
-                botName={botNameByChannelId[item.channel_id]}
+                botName={botNameByChannelId[item.channelId]}
                 theme={theme}
             />
         );
@@ -262,7 +265,8 @@ const AgentThreadsList = ({
         );
     }, [error, intl, styles, theme]);
 
-    if (loading) {
+    // Show loading only on first load with no cached data
+    if (loading && threads.length === 0) {
         return (
             <Loading
                 containerStyle={styles.loadingContainer}

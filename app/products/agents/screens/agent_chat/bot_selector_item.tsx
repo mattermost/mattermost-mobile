@@ -5,13 +5,13 @@ import React, {useCallback} from 'react';
 
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 
-import type {LLMBot} from '@agents/types';
+import type AiBotModel from '@agents/types/database/models/ai_bot';
 
 type Props = {
-    bot: LLMBot;
+    bot: AiBotModel;
     avatarUrl?: string;
     isSelected: boolean;
-    onSelect: (bot: LLMBot) => void;
+    onSelect: (bot: AiBotModel) => void;
     theme: Theme;
 };
 

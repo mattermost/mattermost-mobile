@@ -8,17 +8,18 @@ import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ThreadItem, {THREAD_ITEM_HEIGHT} from './thread_item';
 
-import type {AIThread} from '@agents/types';
+import type AiThreadModel from '@agents/types/database/models/ai_thread';
 
 describe('ThreadItem', () => {
-    const mockThread: AIThread = {
+    // Mock thread data with camelCase properties matching AiThreadModel
+    const mockThread = {
         id: 'thread-123',
-        channel_id: 'channel-456',
+        channelId: 'channel-456',
         title: 'Test Conversation',
         message: 'This is a preview of the conversation',
-        reply_count: 5,
-        update_at: Date.now() - 60000, // 1 minute ago
-    };
+        replyCount: 5,
+        updateAt: Date.now() - 60000, // 1 minute ago
+    } as unknown as unknown as AiThreadModel;
 
     const getBaseProps = (): ComponentProps<typeof ThreadItem> => ({
         thread: mockThread,
@@ -39,7 +40,7 @@ describe('ThreadItem', () => {
 
     it('should render default title when thread has no title', () => {
         const props = getBaseProps();
-        props.thread = {...mockThread, title: ''};
+        props.thread = {...mockThread, title: ''} as unknown as AiThreadModel;
         const {getByText} = renderWithIntlAndTheme(<ThreadItem {...props}/>);
 
         expect(getByText('Conversation with Agents')).toBeTruthy();
@@ -54,7 +55,7 @@ describe('ThreadItem', () => {
 
     it('should not render message preview when empty', () => {
         const props = getBaseProps();
-        props.thread = {...mockThread, message: ''};
+        props.thread = {...mockThread, message: ''} as unknown as AiThreadModel;
         const {queryByText} = renderWithIntlAndTheme(<ThreadItem {...props}/>);
 
         // Message should not be present
@@ -71,7 +72,7 @@ describe('ThreadItem', () => {
 
     it('should render plural "replies" for multiple replies', () => {
         const props = getBaseProps();
-        props.thread = {...mockThread, reply_count: 5};
+        props.thread = {...mockThread, replyCount: 5} as unknown as AiThreadModel;
         const {getByText} = renderWithIntlAndTheme(<ThreadItem {...props}/>);
 
         expect(getByText('5 replies')).toBeTruthy();
@@ -79,7 +80,7 @@ describe('ThreadItem', () => {
 
     it('should render singular "reply" for one reply', () => {
         const props = getBaseProps();
-        props.thread = {...mockThread, reply_count: 1};
+        props.thread = {...mockThread, replyCount: 1} as unknown as AiThreadModel;
         const {getByText} = renderWithIntlAndTheme(<ThreadItem {...props}/>);
 
         expect(getByText('1 reply')).toBeTruthy();
@@ -87,7 +88,7 @@ describe('ThreadItem', () => {
 
     it('should render zero replies', () => {
         const props = getBaseProps();
-        props.thread = {...mockThread, reply_count: 0};
+        props.thread = {...mockThread, replyCount: 0} as unknown as AiThreadModel;
         const {getByText} = renderWithIntlAndTheme(<ThreadItem {...props}/>);
 
         expect(getByText('0 replies')).toBeTruthy();
@@ -113,7 +114,7 @@ describe('ThreadItem', () => {
 
     it('should render with correct testID', () => {
         const props = getBaseProps();
-        props.thread = {...mockThread, id: 'unique-thread-id'};
+        props.thread = {...mockThread, id: 'unique-thread-id'} as unknown as AiThreadModel;
         const {getByTestId} = renderWithIntlAndTheme(<ThreadItem {...props}/>);
 
         expect(getByTestId('agent_thread.unique-thread-id')).toBeTruthy();
