@@ -7,6 +7,7 @@ import {View} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from "@utils/typography";
 
 export const BOR_READ_RECEIPTS_HEIGHT = 54;
 
@@ -28,9 +29,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: BOR_READ_RECEIPTS_HEIGHT,
         },
         title: {
-            fontSize: 11,
-            fontWeight: 600,
+            ...typography('Body', 50, 'SemiBold'),
             color: changeOpacity(theme.centerChannelColor, 0.56),
+        },
+        body: {
+            color: theme.centerChannelColor,
         },
     };
 });
@@ -53,6 +56,7 @@ export default function BORReadReceipts({totalReceipts, readReceipts}: Props) {
                 id='mobile.burn_on_read.read_receipt.text'
                 defaultMessage='Read by {readReceipts} of {totalReceipts} recipients'
                 values={{totalReceipts, readReceipts}}
+                style={styles.body}
             />
         </View>
     );
