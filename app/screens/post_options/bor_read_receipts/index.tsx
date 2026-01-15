@@ -7,7 +7,7 @@ import {View} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from "@utils/typography";
+import {typography} from '@utils/typography';
 
 export const BOR_READ_RECEIPTS_HEIGHT = 54;
 
