@@ -6,7 +6,7 @@ import {getPlaybookChecklistById} from '@playbooks/database/queries/checklist';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import TestHelper from '@test/test_helper';
 
-import {updateChecklistItem, setChecklistItemCommand, setAssignee, setDueDate, renameChecklist, deleteChecklistItem} from './checklist';
+import {updateChecklistItem, setChecklistItemCommand, setAssignee, setDueDate, renameChecklist, deleteChecklistItem, updateChecklistItemTitleAndDescription} from './checklist';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -458,5 +458,81 @@ describe('deleteChecklistItem', () => {
         });
 
         await Promise.all(testPromises);
+    });
+});
+
+describe('updateChecklistItemTitleAndDescription', () => {
+    it('should handle not found database', async () => {
+        const {error} = await updateChecklistItemTitleAndDescription('foo', 'itemid', 'New Title', 'New Description');
+        expect(error).toBeTruthy();
+        expect((error as Error).message).toContain('foo database not found');
+    });
+
+    it('should handle item not found', async () => {
+        const {error} = await updateChecklistItemTitleAndDescription(serverUrl, 'nonexistent', 'New Title', 'New Description');
+        expect(error).toBe('Item not found: nonexistent');
+    });
+
+    it('should handle database write errors', async () => {
+        const checklistId = 'updatetitledesc-checklist-write-error';
+        const item = TestHelper.createPlaybookItem(checklistId, 0);
+        await operator.handlePlaybookChecklistItem({items: [{...item, checklist_id: checklistId}], prepareRecordsOnly: false});
+
+        const originalWrite = operator.database.write;
+        operator.database.write = jest.fn().mockRejectedValue(new Error('Database write failed'));
+
+        const {error} = await updateChecklistItemTitleAndDescription(serverUrl, item.id, 'New Title', 'New Description');
+        expect(error).toBeTruthy();
+
+        operator.database.write = originalWrite;
+    });
+
+    it('should update title and description successfully', async () => {
+        const checklistId = 'updatetitledesc-checklist-success';
+        const item = TestHelper.createPlaybookItem(checklistId, 0);
+        await operator.handlePlaybookChecklistItem({items: [{...item, checklist_id: checklistId}], prepareRecordsOnly: false});
+
+        const newTitle = 'Updated Item Title';
+        const newDescription = 'Updated Item Description';
+        const {data, error} = await updateChecklistItemTitleAndDescription(serverUrl, item.id, newTitle, newDescription);
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updated = await getPlaybookChecklistItemById(operator.database, item.id);
+        expect(updated).toBeDefined();
+        expect(updated!.title).toBe(newTitle);
+        expect(updated!.description).toBe(newDescription);
+    });
+
+    it('should update with empty description', async () => {
+        const checklistId = 'updatetitledesc-checklist-empty-desc';
+        const item = TestHelper.createPlaybookItem(checklistId, 0);
+        await operator.handlePlaybookChecklistItem({items: [{...item, checklist_id: checklistId}], prepareRecordsOnly: false});
+
+        const newTitle = 'Updated Item Title';
+        const {data, error} = await updateChecklistItemTitleAndDescription(serverUrl, item.id, newTitle, '');
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updated = await getPlaybookChecklistItemById(operator.database, item.id);
+        expect(updated).toBeDefined();
+        expect(updated!.title).toBe(newTitle);
+        expect(updated!.description).toBe('');
+    });
+
+    it('should update with undefined description', async () => {
+        const checklistId = 'updatetitledesc-checklist-undef-desc';
+        const item = TestHelper.createPlaybookItem(checklistId, 0);
+        await operator.handlePlaybookChecklistItem({items: [{...item, checklist_id: checklistId}], prepareRecordsOnly: false});
+
+        const newTitle = 'Updated Item Title';
+        const {data, error} = await updateChecklistItemTitleAndDescription(serverUrl, item.id, newTitle, undefined);
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updated = await getPlaybookChecklistItemById(operator.database, item.id);
+        expect(updated).toBeDefined();
+        expect(updated!.title).toBe(newTitle);
+        expect(updated!.description).toBe('');
     });
 });
