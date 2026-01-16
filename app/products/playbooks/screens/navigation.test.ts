@@ -7,7 +7,7 @@ import {goToScreen} from '@screens/navigation';
 import TestHelper from '@test/test_helper';
 import {changeOpacity} from '@utils/theme';
 
-import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate, goToPostUpdate, goToSelectPlaybook, goToStartARun, goToRenameChecklist, goToAddChecklistItem, goToRenamePlaybookRun, goToCreateQuickChecklist} from './navigation';
+import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate, goToPostUpdate, goToSelectPlaybook, goToStartARun, goToRenameChecklist, goToAddChecklistItem, goToEditChecklistItem, goToRenamePlaybookRun, goToCreateQuickChecklist} from './navigation';
 
 jest.mock('@screens/navigation', () => ({
     goToScreen: jest.fn(),
@@ -528,6 +528,67 @@ describe('Playbooks Navigation', () => {
                 Screens.PLAYBOOK_ADD_CHECKLIST_ITEM,
                 'New Task',
                 {
+                    onSave,
+                },
+                {
+                    topBar: {
+                        subtitle: {
+                            text: 'Run 1',
+                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
+                        },
+                    },
+                },
+            );
+        });
+    });
+
+    describe('goToEditChecklistItem', () => {
+        it('should navigate to edit checklist item screen with correct parameters', async () => {
+            const currentTitle = 'Test Task';
+            const currentDescription = 'Test Description';
+            const onSave = jest.fn();
+
+            await goToEditChecklistItem(mockIntl, Preferences.THEMES.denim, 'Run 1', currentTitle, currentDescription, onSave);
+
+            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
+                id: 'playbooks.checklist_item.edit.title',
+                defaultMessage: 'Edit Task',
+            });
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM,
+                'Edit Task',
+                {
+                    currentTitle,
+                    currentDescription,
+                    onSave,
+                },
+                {
+                    topBar: {
+                        subtitle: {
+                            text: 'Run 1',
+                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
+                        },
+                    },
+                },
+            );
+        });
+
+        it('should navigate to edit checklist item screen with undefined description', async () => {
+            const currentTitle = 'Test Task';
+            const onSave = jest.fn();
+
+            await goToEditChecklistItem(mockIntl, Preferences.THEMES.denim, 'Run 1', currentTitle, undefined, onSave);
+
+            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
+                id: 'playbooks.checklist_item.edit.title',
+                defaultMessage: 'Edit Task',
+            });
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM,
+                'Edit Task',
+                {
+                    currentTitle,
+                    currentDescription: undefined,
                     onSave,
                 },
                 {

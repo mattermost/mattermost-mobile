@@ -28,13 +28,20 @@ export interface ClientPlaybooksMix {
     restoreChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
     setAssignee: (playbookRunId: string, checklistNum: number, itemNum: number, assigneeId?: string) => Promise<void>;
     setDueDate: (playbookRunId: string, checklistNum: number, itemNum: number, date?: number) => Promise<void>;
-    addChecklistItem: (playbookRunId: string, checklistNum: number, title: string) => Promise<void>;
+    addChecklistItem: (playbookRunId: string, checklistNum: number, item: ChecklistItemInput) => Promise<void>;
+    deleteChecklistItem: (playbookRunId: string, checklistNum: number, itemNum: number) => Promise<void>;
+    updateChecklistItem: (playbookRunId: string, checklistNum: number, itemNum: number, item: ChecklistItemInput) => Promise<void>;
 
     renameChecklist: (playbookRunId: string, checklistNumber: number, newName: string) => Promise<void>;
 
     // Slash Commands
     runChecklistItemSlashCommand: (playbookRunId: string, checklistNumber: number, itemNumber: number) => Promise<{trigger_id: string}>;
     setChecklistItemCommand: (playbookRunID: string, checklistNum: number, itemNum: number, command: string) => Promise<void>;
+
+    // Property Fields
+    fetchRunPropertyFields: (runId: string, updatedSince?: number) => Promise<PlaybookRunPropertyField[]>;
+    fetchRunPropertyValues: (runId: string, updatedSince?: number) => Promise<PlaybookRunPropertyValue[]>;
+    setRunPropertyValue: (runId: string, fieldId: string, value: string, fieldType?: string) => Promise<PlaybookRunPropertyValue>;
 }
 
 const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -204,10 +211,24 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         );
     };
 
-    addChecklistItem = async (playbookRunId: string, checklistNum: number, title: string) => {
+    addChecklistItem = async (playbookRunId: string, checklistNum: number, item: ChecklistItemInput) => {
         await this.doFetch(
             `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNum}/add`,
-            {method: 'post', body: {title}},
+            {method: 'post', body: item},
+        );
+    };
+
+    updateChecklistItem = async (playbookRunId: string, checklistNum: number, itemNum: number, item: ChecklistItemInput) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNum}/item/${itemNum}`,
+            {method: 'put', body: item},
+        );
+    };
+
+    deleteChecklistItem = async (playbookRunId: string, checklistNum: number, itemNum: number) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNum}/item/${itemNum}`,
+            {method: 'delete'},
         );
     };
 
@@ -227,6 +248,45 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
             {method: 'put', body: {command}},
         );
 
+        return data;
+    };
+
+    // Property Fields
+    fetchRunPropertyFields = async (runId: string, updatedSince?: number) => {
+        const queryParams = updatedSince ? buildQueryString({updated_since: updatedSince}) : '';
+        const data = await this.doFetch(
+            `${this.getPlaybookRunRoute(runId)}/property_fields${queryParams}`,
+            {method: 'get'},
+        );
+        return data || [];
+    };
+
+    fetchRunPropertyValues = async (runId: string, updatedSince?: number) => {
+        const queryParams = updatedSince ? buildQueryString({updated_since: updatedSince}) : '';
+        const data = await this.doFetch(
+            `${this.getPlaybookRunRoute(runId)}/property_values${queryParams}`,
+            {method: 'get'},
+        );
+        return data || [];
+    };
+
+    setRunPropertyValue = async (runId: string, fieldId: string, value: string, fieldType?: string) => {
+        // Convert value to appropriate format based on field type
+        let bodyValue: string | string[] = value;
+
+        if (fieldType === 'multiselect') {
+            // For multiselect fields, always convert to array (even if empty)
+            if (value) {
+                bodyValue = value.split(',').filter((id) => id.length > 0);
+            } else {
+                bodyValue = [];
+            }
+        }
+
+        const data = await this.doFetch(
+            `${this.getPlaybookRunRoute(runId)}/property_fields/${fieldId}/value`,
+            {method: 'put', body: {value: bodyValue}},
+        );
         return data;
     };
 };
