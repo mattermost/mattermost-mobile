@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {router} from 'expo-router';
-import {DeviceEventEmitter, Keyboard} from 'react-native';
+import {DeviceEventEmitter} from 'react-native';
 
 import {Events, Screens} from '@constants';
 import BottomSheetStore from '@store/bottom_sheet_store';
@@ -21,8 +21,6 @@ import {
     navigateToScreen,
     navigateToScreenWithBaseRoute,
     navigateToSettingsScreen,
-    openUserProfileModal,
-    previewPdf,
     propsToParams,
     resetToRootRoute,
     updateParams,
@@ -464,33 +462,6 @@ describe('navigation', () => {
         });
     });
 
-    describe('openUserProfileModal', () => {
-        it('should dismiss keyboard when visible and navigate to user profile', () => {
-            const dismissSpy = jest.spyOn(Keyboard, 'dismiss');
-            Keyboard.isVisible = jest.fn(() => true);
-
-            const props = {userId: 'user123', username: 'johndoe'};
-            openUserProfileModal(props);
-
-            expect(dismissSpy).toHaveBeenCalled();
-            expect(router.push).toHaveBeenCalledWith({
-                pathname: '/(bottom_sheet)/user_profile',
-                params: {userId: 'user123', username: 'johndoe'},
-            });
-        });
-
-        it('should not dismiss keyboard if not visible', () => {
-            const dismissSpy = jest.spyOn(Keyboard, 'dismiss');
-            Keyboard.isVisible = jest.fn(() => false);
-
-            const props = {userId: 'user123'};
-            openUserProfileModal(props);
-
-            expect(dismissSpy).not.toHaveBeenCalled();
-            expect(router.push).toHaveBeenCalled();
-        });
-    });
-
     describe('navigateToSettingsScreen', () => {
         it('should navigate to settings screen with base route', () => {
             navigateToSettingsScreen(Screens.SETTINGS_DISPLAY, {theme: 'dark'});
@@ -527,74 +498,6 @@ describe('navigation', () => {
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(modals)/(channel_info)/channel_notification_preferences',
                 params: {},
-            });
-        });
-    });
-
-    describe('previewPdf', () => {
-        it('should set callback and navigate to PDF viewer with file info', () => {
-            const onDismiss = jest.fn();
-            const item = {
-                id: 'file123',
-                name: 'document.pdf',
-            } as FileInfo;
-            const path = '/path/to/document.pdf';
-            const theme = {centerChannelBg: '#fff'} as Theme;
-
-            previewPdf(item, path, theme, onDismiss);
-
-            expect(CallbackStore.getCallback()).toBe(onDismiss);
-            expect(router.push).toHaveBeenCalledWith({
-                pathname: '/(modals)/pdf_viewer',
-                params: {
-                    title: 'document.pdf',
-                    allowPdfLinkNavigation: 'false',
-                    fileId: 'file123',
-                    filePath: '/path/to/document.pdf',
-                },
-            });
-        });
-
-        it('should navigate without onDismiss callback', () => {
-            const item = {
-                id: 'file456',
-                name: 'report.pdf',
-            } as FileInfo;
-            const path = '/path/to/report.pdf';
-            const theme = {centerChannelBg: '#fff'} as Theme;
-
-            previewPdf(item, path, theme);
-
-            expect(CallbackStore.getCallback()).toBeUndefined();
-            expect(router.push).toHaveBeenCalledWith({
-                pathname: '/(modals)/pdf_viewer',
-                params: {
-                    title: 'report.pdf',
-                    allowPdfLinkNavigation: 'false',
-                    fileId: 'file456',
-                    filePath: '/path/to/report.pdf',
-                },
-            });
-        });
-
-        it('should work with GalleryItemType', () => {
-            const item = {
-                id: 'gallery123',
-                name: 'image.pdf',
-            } as any;
-            const path = '/gallery/image.pdf';
-            const theme = {centerChannelBg: '#fff'} as Theme;
-
-            previewPdf(item, path, theme);
-
-            expect(router.push).toHaveBeenCalledWith({
-                pathname: '/(modals)/pdf_viewer',
-                params: {
-                    title: 'image.pdf',
-                    allowPdfLinkNavigation: 'false',
-                    fileId: 'gallery123',
-                    filePath: '/gallery/image.pdf',
-                },
             });
         });
     });

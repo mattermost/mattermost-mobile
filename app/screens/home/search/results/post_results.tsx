@@ -9,7 +9,6 @@ import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import {Events, Screens} from '@constants';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useTheme} from '@context/theme';
 import {convertSearchTermToRegex, parseSearchTerms} from '@utils/markdown';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
@@ -50,7 +49,7 @@ const PostResults = ({
 }: Props) => {
     const theme = useTheme();
     const styles = getStyles(theme);
-    const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [posts]);
+    const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [currentTimezone, posts]);
     const containerStyle = useMemo(() => ([paddingTop, {flexGrow: 1}]), [paddingTop]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
@@ -115,36 +114,34 @@ const PostResults = ({
     }, []);
 
     return (
-        <ExtraKeyboardProvider>
-            <FlatList
-                ListHeaderComponent={
-                    <FormattedText
-                        style={styles.resultsNumber}
-                        id='mobile.search.results'
-                        defaultMessage='{count} search {count, plural, one {result} other {results}}'
-                        values={{count: posts.length}}
-                    />
-                }
-                ListEmptyComponent={noResults}
-                contentContainerStyle={containerStyle}
-                data={orderedPosts}
-                indicatorStyle='black'
-                initialNumToRender={5}
+        <FlatList
+            ListHeaderComponent={
+                <FormattedText
+                    style={styles.resultsNumber}
+                    id='mobile.search.results'
+                    defaultMessage='{count} search {count, plural, one {result} other {results}}'
+                    values={{count: posts.length}}
+                />
+            }
+            ListEmptyComponent={noResults}
+            contentContainerStyle={containerStyle}
+            data={orderedPosts}
+            indicatorStyle='black'
+            initialNumToRender={5}
 
-                //@ts-expect-error key not defined in types
-                listKey={'posts'}
-                maxToRenderPerBatch={5}
-                nestedScrollEnabled={true}
-                refreshing={false}
-                removeClippedSubviews={true}
-                renderItem={renderItem}
-                scrollEventThrottle={16}
-                scrollToOverflowEnabled={true}
-                showsVerticalScrollIndicator={true}
-                onViewableItemsChanged={onViewableItemsChanged}
-                testID='search_results.post_list.flat_list'
-            />
-        </ExtraKeyboardProvider>
+            //@ts-expect-error key not defined in types
+            listKey={'posts'}
+            maxToRenderPerBatch={5}
+            nestedScrollEnabled={true}
+            refreshing={false}
+            removeClippedSubviews={true}
+            renderItem={renderItem}
+            scrollEventThrottle={16}
+            scrollToOverflowEnabled={true}
+            showsVerticalScrollIndicator={true}
+            onViewableItemsChanged={onViewableItemsChanged}
+            testID='search_results.post_list.flat_list'
+        />
     );
 };
 

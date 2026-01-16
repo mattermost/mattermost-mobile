@@ -3,7 +3,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {ActionType, Navigation, Screens} from '@constants';
+import {ActionType, Events, Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
@@ -108,6 +108,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
 
         await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
         navigateToScreen(Screens.THREAD, {rootId, channelName: channel.displayName});
+        DeviceEventEmitter.emit(Events.CLOSE_INPUT_ACCESSORY_VIEW);
 
         return {};
     } catch (error) {

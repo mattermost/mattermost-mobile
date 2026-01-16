@@ -8,7 +8,8 @@ import {FlatList} from 'react-native-gesture-handler';
 
 import UserItem from '@components/user_item';
 import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
-import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -27,9 +28,9 @@ type ItemProps = {
 }
 
 const Item = ({channelId, location, user}: ItemProps) => {
-    const openUserProfile = useCallback(async (u: UserModel | UserProfile) => {
+    const openProfile = useCallback(async (u: UserModel | UserProfile) => {
         await dismissBottomSheet();
-        openUserProfileModal({
+        openUserProfile({
             userId: u.id,
             channelId,
             location,
@@ -39,7 +40,7 @@ const Item = ({channelId, location, user}: ItemProps) => {
     return (
         <UserItem
             user={user}
-            onUserPress={openUserProfile}
+            onUserPress={openProfile}
         />
     );
 };

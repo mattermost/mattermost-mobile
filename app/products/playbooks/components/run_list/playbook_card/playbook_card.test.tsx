@@ -9,9 +9,9 @@ import UserAvatarsStack from '@components/user_avatars_stack';
 import {Screens} from '@constants';
 import ProgressBar from '@playbooks/components/progress_bar';
 import {goToPlaybookRun, goToPlaybookRunWithChannelSwitch} from '@playbooks/screens/navigation';
-import {openUserProfileModal} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {openUserProfile} from '@utils/navigation';
 
 import PlaybookCard from './playbook_card';
 
@@ -29,6 +29,7 @@ jest.mock('@playbooks/components/progress_bar');
 jest.mocked(ProgressBar).mockImplementation((props) => React.createElement('ProgressBar', {...props, testID: 'progress-bar'}));
 
 jest.mock('@screens/navigation');
+jest.mock('@utils/navigation');
 
 describe('PlaybookCard', () => {
     function getBaseProps(): ComponentProps<typeof PlaybookCard> {
@@ -110,7 +111,7 @@ describe('PlaybookCard', () => {
         const userChip = getByTestId('user-chip');
         userChip.props.onPress(props.owner?.id);
 
-        expect(openUserProfileModal).toHaveBeenCalledWith(
+        expect(openUserProfile).toHaveBeenCalledWith(
             expect.objectContaining({userId: props.owner?.id, channelId: (props.run as PlaybookRunModel).channelId, location: props.location}),
         );
     });

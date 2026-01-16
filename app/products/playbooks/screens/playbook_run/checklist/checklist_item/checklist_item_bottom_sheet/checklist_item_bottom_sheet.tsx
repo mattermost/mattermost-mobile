@@ -15,7 +15,8 @@ import {useTheme} from '@context/theme';
 import {setAssignee, setChecklistItemCommand, setDueDate, deleteChecklistItem} from '@playbooks/actions/remote/checklist';
 import {goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
 import {getDueDateString} from '@playbooks/utils/time';
-import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -276,7 +277,7 @@ const ChecklistItemBottomSheet = ({
     );
 
     const onUserChipPress = useCallback((userId: string) => {
-        openUserProfileModal({
+        openUserProfile({
             userId,
             location: Screens.PLAYBOOK_RUN,
         });

@@ -13,9 +13,10 @@ import {Preferences, Screens} from '@constants';
 import {useIsTablet} from '@hooks/device';
 import {setAssignee, setChecklistItemCommand, setDueDate, deleteChecklistItem} from '@playbooks/actions/remote/checklist';
 import {goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
-import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {openUserProfile} from '@utils/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import ChecklistItemBottomSheet from './checklist_item_bottom_sheet';
@@ -45,6 +46,7 @@ jest.mock('@context/server', () => ({
 jest.mock('@playbooks/screens/navigation');
 jest.mock('@utils/snack_bar');
 jest.mock('@screens/navigation');
+jest.mock('@utils/navigation');
 
 describe('ChecklistItemBottomSheet', () => {
     const mockOnCheck = jest.fn();
@@ -479,7 +481,7 @@ describe('ChecklistItemBottomSheet', () => {
             onPress('user-1');
         });
 
-        expect(openUserProfileModal).toHaveBeenCalledWith(
+        expect(openUserProfile).toHaveBeenCalledWith(
             {
                 userId: 'user-1',
                 location: Screens.PLAYBOOK_RUN,

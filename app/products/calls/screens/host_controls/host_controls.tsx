@@ -54,7 +54,7 @@ export const HostControls = ({
     const intl = useIntl();
     const theme = useTheme();
     const {bottom} = useSafeAreaInsets();
-    const {openUserProfile} = useHostMenus();
+    const {openProfile} = useHostMenus();
     const styles = getStyleFromTheme(theme);
 
     const sharingScreen = currentCall.screenOn === session.sessionId;
@@ -81,8 +81,8 @@ export const HostControls = ({
 
     const profilePress = useCallback(async () => {
         await dismissBottomSheet();
-        openUserProfile(session);
-    }, [openUserProfile, session]);
+        openProfile(session);
+    }, [openProfile, session]);
 
     const removePress = useCallback(async () => {
         const displayName = displayUsername(session.userModel, intl.locale, teammateNameDisplay, true);

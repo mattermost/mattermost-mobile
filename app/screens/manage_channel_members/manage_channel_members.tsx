@@ -19,8 +19,9 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {navigateBack, openUserProfileModal} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {NavigationStore} from '@store/navigation_store';
+import {openUserProfile} from '@utils/navigation';
 import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
@@ -129,7 +130,7 @@ export default function ManageChannelMembers({
         };
 
         Keyboard.dismiss();
-        openUserProfileModal(props);
+        openUserProfile(props);
     }, [currentUserId, isManageMode, channelId, canManageAndRemoveMembers, serverUrl]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {

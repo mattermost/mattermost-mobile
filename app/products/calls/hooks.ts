@@ -34,8 +34,9 @@ import {useAppState} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
-import {navigateToScreen, openUserProfileModal} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
+import {openUserProfile} from '@utils/navigation';
 import {isSystemAdmin} from '@utils/user';
 
 import type {Client} from '@client/rest';
@@ -202,8 +203,8 @@ export const useHostMenus = () => {
         navigateToScreen(Screens.CALL_HOST_CONTROLS, {sessionId});
     }, []);
 
-    const openUserProfile = useCallback(async (session: CallSession) => {
-        openUserProfileModal({
+    const openProfile = useCallback(async (session: CallSession) => {
+        openUserProfile({
             userId: session.userId,
         });
     }, []);
@@ -215,9 +216,9 @@ export const useHostMenus = () => {
         if (hostControlsAvailable && !(isYou && isHost)) {
             openHostControl(session.sessionId);
         } else {
-            openUserProfile(session);
+            openProfile(session);
         }
-    }, [currentCall?.myUserId, hostControlsAvailable, isHost, openHostControl, openUserProfile]);
+    }, [currentCall?.myUserId, hostControlsAvailable, isHost, openHostControl, openProfile]);
 
-    return {hostControlsAvailable, onPress, openUserProfile};
+    return {hostControlsAvailable, onPress, openProfile};
 };

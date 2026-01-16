@@ -19,7 +19,8 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
-import {navigateBack, openUserProfileModal} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -223,7 +224,7 @@ export default function PlaybookRun({
             return;
         }
 
-        openUserProfileModal({
+        openUserProfile({
             userId: owner.id,
             channelId,
             location: Screens.PLAYBOOK_RUN,

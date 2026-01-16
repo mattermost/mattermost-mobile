@@ -3,6 +3,7 @@
 
 import React, {useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, View, TouchableOpacity} from 'react-native';
+import {useKeyboardState} from 'react-native-keyboard-controller';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Shadow} from 'react-native-shadow-2';
@@ -73,6 +74,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
     const tabWidth = width / tabs.length;
     const style = getStyleSheet(theme);
     const safeareaInsets = useSafeAreaInsets();
+    const keyboardState = useKeyboardState();
 
     useEffect(() => {
         const event = DeviceEventEmitter.addListener(Events.TAB_BAR_VISIBLE, (show) => {
@@ -89,6 +91,19 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
 
         return () => listner.remove();
     });
+
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.EMOJI_PICKER_SEARCH_FOCUSED, (focused: boolean) => {
+            setVisible(!focused);
+        });
+
+        return () => listener.remove();
+    }, []);
+
+    useEffect(() => {
+        // Hide tab bar when keyboard opens, show when it closes
+        setVisible(!keyboardState.isVisible);
+    }, [keyboardState.isVisible]);
 
     useEffect(() => {
         const listner = DeviceEventEmitter.addListener(NavigationConstants.NAVIGATE_TO_TAB, ({screen, params = {}}: {screen: string; params: any}) => {

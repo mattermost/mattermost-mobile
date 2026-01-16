@@ -13,9 +13,10 @@ import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
-import {navigateBack, openUserProfileModal} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {fireEvent, renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {openUserProfile} from '@utils/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import {goToRenamePlaybookRun, goToSelectUser} from '../navigation';
@@ -86,6 +87,7 @@ jest.mock('@playbooks/actions/remote/runs', () => ({
 }));
 
 jest.mock('@screens/navigation');
+jest.mock('@utils/navigation');
 jest.mock('@hooks/android_back_handler');
 
 describe('PlaybookRun', () => {
@@ -195,7 +197,7 @@ describe('PlaybookRun', () => {
         expect(ownerChip.props.action).toBe(undefined);
 
         ownerChip.props.onPress();
-        expect(openUserProfileModal).toHaveBeenCalledWith({
+        expect(openUserProfile).toHaveBeenCalledWith({
             userId: props.owner!.id,
             channelId: (props.playbookRun as PlaybookRunModel).channelId,
             location: Screens.PLAYBOOK_RUN,
@@ -241,7 +243,7 @@ describe('PlaybookRun', () => {
             props.owner!.id,
             expect.any(Function),
         );
-        expect(openUserProfileModal).not.toHaveBeenCalled();
+        expect(openUserProfile).not.toHaveBeenCalled();
 
         let handleSelect = jest.mocked(goToSelectUser).mock.calls[0][4];
         handleSelect(TestHelper.fakeUser({id: 'user-2'}));
@@ -266,7 +268,7 @@ describe('PlaybookRun', () => {
             props.owner!.id,
             expect.any(Function),
         );
-        expect(openUserProfileModal).not.toHaveBeenCalled();
+        expect(openUserProfile).not.toHaveBeenCalled();
 
         handleSelect = jest.mocked(goToSelectUser).mock.calls[0][4];
         handleSelect(TestHelper.fakeUser({id: 'user-2'}));
@@ -442,7 +444,7 @@ describe('PlaybookRun', () => {
     it('handles openOwnerProfile when owner is undefined', () => {
         const props = getBaseProps();
         props.owner = undefined;
-        jest.mocked(openUserProfileModal).mockClear();
+        jest.mocked(openUserProfile).mockClear();
         const {queryByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
         // Should not crash, but owner chip won't be rendered

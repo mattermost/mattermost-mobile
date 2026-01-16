@@ -66,6 +66,7 @@ const EditPostInput = ({
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
     const focus = useCallback(() => {
         inputRef.current?.focus();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const updateValue = useCallback((valueOrUpdater: string | ((prevValue: string) => string)) => {
@@ -131,6 +132,7 @@ const EditPostInput = ({
                         canShowPostPriority={false}
                         postPriority={INITIAL_PRIORITY}
                         canShowSlashCommands={false}
+                        canShowEmojiPicker={false}
                         focus={focus}
                     />
                 </>

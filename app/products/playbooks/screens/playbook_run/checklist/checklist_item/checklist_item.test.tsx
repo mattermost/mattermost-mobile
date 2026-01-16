@@ -10,9 +10,10 @@ import UserChip from '@components/chips/user_chip';
 import {General, Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {runChecklistItem, skipChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
-import {bottomSheet, dismissAllRoutesAndPopToScreen, openUserProfileModal} from '@screens/navigation';
+import {bottomSheet, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {openUserProfile} from '@utils/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import Checkbox from './checkbox';
@@ -39,6 +40,7 @@ jest.mock('@calls/actions');
 jest.mock('@playbooks/actions/remote/checklist');
 jest.mock('@utils/snack_bar');
 jest.mock('@screens/navigation');
+jest.mock('@utils/navigation');
 
 describe('ChecklistItem', () => {
     const mockItem = TestHelper.fakePlaybookChecklistItemModel({
@@ -204,7 +206,7 @@ describe('ChecklistItem', () => {
         expect(userChip.props.teammateNameDisplay).toBe(props.teammateNameDisplay);
 
         userChip.props.onPress(props.assignee.id);
-        expect(openUserProfileModal).toHaveBeenCalledWith({
+        expect(openUserProfile).toHaveBeenCalledWith({
             userId: props.assignee.id,
             channelId: props.channelId,
             location: Screens.PLAYBOOK_RUN,
@@ -227,7 +229,7 @@ describe('ChecklistItem', () => {
         expect(differentUserChip.props.teammateNameDisplay).toBe(props.teammateNameDisplay);
 
         differentUserChip.props.onPress(props.assignee.id);
-        expect(openUserProfileModal).toHaveBeenCalledWith({
+        expect(openUserProfile).toHaveBeenCalledWith({
             userId: props.assignee.id,
             channelId: props.channelId,
             location: Screens.PLAYBOOK_RUN,

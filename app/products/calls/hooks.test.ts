@@ -26,7 +26,8 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
-import {navigateToScreen, openUserProfileModal} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 
 import {useTryCallsFunction, usePermissionsChecker, useCallsAdjustment, useHostControlsAvailable, useHostMenus} from './hooks';
 
@@ -78,8 +79,8 @@ jest.mock('@queries/servers/user', () => ({
 
 jest.mock('@screens/navigation', () => ({
     navigateToScreen: jest.fn(),
-    openUserProfileModal: jest.fn(),
 }));
+jest.mock('@utils/navigation');
 
 describe('Calls Hooks', () => {
     beforeAll(async () => {
@@ -270,7 +271,7 @@ describe('Calls Hooks', () => {
                 await result.current.onPress(mockSession)();
             });
 
-            expect(openUserProfileModal).toHaveBeenCalledWith(
+            expect(openUserProfile).toHaveBeenCalledWith(
                 expect.objectContaining({
                     userId: mockSession.userId,
                 }),

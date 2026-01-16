@@ -159,7 +159,11 @@ const ChannelListScreen = (props: ChannelProps) => {
         if (!props.hasCurrentUser || !props.currentUserId) {
             refetchCurrentUser(serverUrl, props.currentUserId);
         }
-    }, [props.currentUserId, props.hasCurrentUser, serverUrl]);
+
+    // - serverUrl is stable from useServerUrl hook
+    // - We only need to re-run when the current user state changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.currentUserId, props.hasCurrentUser]);
 
     useEffect(() => {
         if (hasRendered) {
@@ -169,16 +173,13 @@ const ChannelListScreen = (props: ChannelProps) => {
         if (!NavigationStore.isToSOpen()) {
             tryRunAppReview(props.launchType, props.coldStart);
         }
-
-        // Init the rate app. Only run the effect on the first render if ToS is not open
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [props.launchType, props.coldStart]);
 
     useEffect(() => {
         PerformanceMetricsManager.finishLoad('HOME', serverUrl);
         PerformanceMetricsManager.measureTimeToInteraction();
 
-        // Performance metrics for home screen only need to be recorded once on initial load
+        // Only needed on mount
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
