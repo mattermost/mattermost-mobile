@@ -98,7 +98,7 @@ export async function goToRenameChecklist(
 
 export async function goToAddChecklistItem(
     runName: string,
-    onSave: (title: string) => void,
+    onSave: (item: ChecklistItemInput) => void,
 ) {
     const props = {subtitle: runName};
     CallbackStore.setCallback(onSave);
@@ -109,6 +109,22 @@ export async function goToAddChecklistItem(
     }
 
     navigateToScreen(Screens.PLAYBOOK_ADD_CHECKLIST_ITEM, props);
+}
+
+export async function goToEditChecklistItem(
+    runName: string,
+    currentTitle: string,
+    currentDescription: string | undefined,
+    onSave: (item: ChecklistItemInput) => void,
+) {
+    const props = {currentTitle, currentDescription, subtitle: runName};
+    CallbackStore.setCallback(onSave);
+
+    if (NavigationStore.isModalOpen()) {
+        navigateToChannelInfoScreen(Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM, props);
+        return;
+    }
+    navigateToScreen(Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM, props);
 }
 
 export async function goToRenamePlaybookRun(

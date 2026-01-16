@@ -9,7 +9,7 @@ import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import TestHelper from '@test/test_helper';
 
-import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate, goToPostUpdate, goToSelectPlaybook, goToStartARun, goToRenameChecklist, goToAddChecklistItem, goToCreateQuickChecklist, goToRenamePlaybookRun} from './navigation';
+import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate, goToPostUpdate, goToSelectPlaybook, goToStartARun, goToRenameChecklist, goToAddChecklistItem, goToEditChecklistItem, goToRenamePlaybookRun, goToCreateQuickChecklist} from './navigation';
 
 jest.mock('@screens/navigation', () => ({
     navigateToScreen: jest.fn(),
@@ -377,6 +377,41 @@ describe('Playbooks Navigation', () => {
             expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_ADD_CHECKLIST_ITEM,
                 {subtitle: 'Run 1'},
+            );
+        });
+    });
+
+    describe('goToEditChecklistItem', () => {
+        it('should navigate to edit checklist item screen with correct parameters', async () => {
+            const currentTitle = 'Test Task';
+            const currentDescription = 'Test Description';
+            const onSave = jest.fn();
+
+            await goToEditChecklistItem('Run 1', currentTitle, currentDescription, onSave);
+            expect(CallbackStore.setCallback).toHaveBeenCalledWith(onSave);
+            expect(navigateToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM,
+                {
+                    currentTitle,
+                    currentDescription,
+                    subtitle: 'Run 1',
+                },
+            );
+        });
+
+        it('should navigate to edit checklist item screen with undefined description', async () => {
+            const currentTitle = 'Test Task';
+            const onSave = jest.fn();
+
+            await goToEditChecklistItem('Run 1', currentTitle, undefined, onSave);
+
+            expect(navigateToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM,
+                {
+                    currentTitle,
+                    currentDescription: undefined,
+                    subtitle: 'Run 1',
+                },
             );
         });
     });

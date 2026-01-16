@@ -60,9 +60,11 @@ describe('AddChecklistItemBottomSheet', () => {
         expect(input.props.value).toBe('');
         expect(input.props.autoFocus).toBe(true);
 
-        // Check label is rendered
-        const label = getByText('Task name');
-        expect(label).toBeTruthy();
+        // Check labels are rendered
+        const titleLabel = getByText('Task name');
+        expect(titleLabel).toBeTruthy();
+        const descriptionLabel = getByText('Description');
+        expect(descriptionLabel).toBeTruthy();
     });
 
     it('should set up navigation header with disabled save button initially', () => {
@@ -103,6 +105,45 @@ describe('AddChecklistItemBottomSheet', () => {
         });
 
         expect(input.props.value).toBe(newTitle);
+    });
+
+    it('should update description when text input changes', () => {
+        const {getByTestId} = renderWithIntlAndTheme(<AddChecklistItemBottomSheet/>);
+
+        const descriptionInput = getByTestId('playbooks.checklist_item.add.description_input');
+        const newDescription = 'Task description';
+
+        act(() => {
+            fireEvent.changeText(descriptionInput, newDescription);
+        });
+
+        expect(descriptionInput.props.value).toBe(newDescription);
+    });
+
+    it('should call onSave with description when provided', () => {
+        const {getByTestId} = renderWithIntlAndTheme(<AddChecklistItemBottomSheet/>);
+
+        const titleInput = getByTestId('playbooks.checklist_item.add.input');
+        const descriptionInput = getByTestId('playbooks.checklist_item.add.description_input');
+        const taskTitle = 'New Task';
+        const taskDescription = 'Task description';
+
+        // Set title and description
+        act(() => {
+            fireEvent.changeText(titleInput, taskTitle);
+            fireEvent.changeText(descriptionInput, taskDescription);
+        });
+
+        // Get the headerRight component and call its onPress handler
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const onPress = navigationButton.props.onPress;
+
+        // Trigger save button press
+        onPress();
+
+        expect(mockOnSave).toHaveBeenCalledWith({title: taskTitle, description: taskDescription});
     });
 
     it('should enable save button when title has content', () => {
@@ -181,7 +222,7 @@ describe('AddChecklistItemBottomSheet', () => {
         // Trigger save button press
         onPress();
 
-        expect(mockOnSave).toHaveBeenCalledWith(taskTitle);
+        expect(mockOnSave).toHaveBeenCalledWith({title: taskTitle});
         expect(Keyboard.dismiss).toHaveBeenCalled();
         expect(navigateBack).toHaveBeenCalled();
     });
@@ -206,7 +247,7 @@ describe('AddChecklistItemBottomSheet', () => {
         // Trigger save button press
         onPress();
 
-        expect(mockOnSave).toHaveBeenCalledWith('Task with spaces');
+        expect(mockOnSave).toHaveBeenCalledWith({title: 'Task with spaces'});
         expect(mockOnSave).not.toHaveBeenCalledWith(taskTitle);
     });
 

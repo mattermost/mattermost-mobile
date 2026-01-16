@@ -540,7 +540,7 @@ export default function PostInput({
             placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
             ref={inputRef}
-            showSoftInputOnFocus={true}
+            showSoftInputOnFocus={(Platform.OS === 'android' && !isAndroidEdgeToEdge) ? (!showInputAccessoryView || isManuallyFocusingAfterEmojiDismiss) : true}
             smartPunctuation='disable'
             submitBehavior='newline'
             style={pasteInputStyle}

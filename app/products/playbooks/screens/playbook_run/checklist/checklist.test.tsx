@@ -386,7 +386,7 @@ describe('Checklist', () => {
 
         const onAdd = jest.mocked(goToAddChecklistItem).mock.calls[0][1];
         await act(async () => {
-            onAdd('New Item');
+            await onAdd({title: 'New Item'});
         });
 
         await waitFor(() => {
@@ -394,7 +394,7 @@ describe('Checklist', () => {
                 serverUrl,
                 props.playbookRunId,
                 props.checklistNumber,
-                'New Item',
+                {title: 'New Item'},
             );
             expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
             expect(logError).toHaveBeenCalledWith('error on addChecklistItem', expect.any(String));
@@ -404,7 +404,7 @@ describe('Checklist', () => {
     it('handles successful add item without errors', async () => {
         jest.mocked(addChecklistItem).mockResolvedValueOnce({data: true} as {data: boolean});
         jest.mocked(goToAddChecklistItem).mockImplementation(async (playbookRunName, onAdd) => {
-            onAdd('New Item');
+            onAdd({title: 'New Item'});
         });
 
         const props = getBaseProps();
@@ -423,7 +423,7 @@ describe('Checklist', () => {
                 serverUrl,
                 props.playbookRunId,
                 props.checklistNumber,
-                'New Item',
+                {title: 'New Item'},
             );
             expect(showPlaybookErrorSnackbar).not.toHaveBeenCalled();
             expect(logError).not.toHaveBeenCalled();
