@@ -5,6 +5,7 @@ import {getInfoAsync, deleteAsync} from 'expo-file-system';
 import {Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
+import {IOS_NSURL_ERROR} from '@constants/network';
 import {getIntlShape} from '@utils/general';
 import {logError} from '@utils/log';
 import {urlSafeBase64Encode} from '@utils/security';
@@ -25,6 +26,7 @@ import {
     getFileType,
     getFormattedFileSize,
     getLocalFilePathFromFile,
+    getUploadErrorMessage,
     hasWriteStoragePermission,
     isDocument,
     isGif,
@@ -269,6 +271,24 @@ describe('Image utils', () => {
         it('should return correct upload disabled warning', () => {
             const msg = uploadDisabledWarning(intl);
             expect(msg).toBe('File uploads from mobile are disabled.');
+        });
+    });
+
+    describe('getUploadErrorMessage', () => {
+        it('should map network unavailable error code to user-friendly message', () => {
+            const msg = getUploadErrorMessage(intl, 'Any localized message', IOS_NSURL_ERROR.NOT_CONNECTED_TO_INTERNET);
+            expect(msg).toBe("File couldn't be uploaded. Check your connection and try again.");
+        });
+
+        it('should map connection lost error code to user-friendly message', () => {
+            const msg = getUploadErrorMessage(intl, 'Any localized message', IOS_NSURL_ERROR.NETWORK_CONNECTION_LOST);
+            expect(msg).toBe('Upload interrupted. Check your connection and try again.');
+        });
+
+        it('should return original message for unknown errors', () => {
+            const originalMessage = 'Some other error occurred';
+            const msg = getUploadErrorMessage(intl, originalMessage);
+            expect(msg).toBe(originalMessage);
         });
     });
 

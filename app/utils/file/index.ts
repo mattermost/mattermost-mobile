@@ -12,6 +12,7 @@ import {Alert, Linking, Platform} from 'react-native';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
+import {IOS_NSURL_ERROR} from '@constants/network';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
@@ -506,6 +507,24 @@ export function uploadDisabledWarning(intl: IntlShape) {
         id: 'mobile.file_upload.disabled2',
         defaultMessage: 'File uploads from mobile are disabled.',
     });
+}
+
+export function getUploadErrorMessage(intl: IntlShape, errorMessage: string, errorCode?: number) {
+    if (errorCode === IOS_NSURL_ERROR.NOT_CONNECTED_TO_INTERNET) {
+        return intl.formatMessage({
+            id: 'mobile.file_upload.network_unavailable',
+            defaultMessage: "File couldn't be uploaded. Check your connection and try again.",
+        });
+    }
+
+    if (errorCode === IOS_NSURL_ERROR.NETWORK_CONNECTION_LOST) {
+        return intl.formatMessage({
+            id: 'mobile.file_upload.connection_lost',
+            defaultMessage: 'Upload interrupted. Check your connection and try again.',
+        });
+    }
+
+    return errorMessage;
 }
 
 export const fileExists = async (path: string) => {
