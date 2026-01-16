@@ -7,17 +7,22 @@ import PasteableTextInput, {type PastedFile, type PasteTextInputInstance} from '
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessage, type IntlShape, useIntl} from 'react-intl';
 import {
-    Alert, AppState, type AppStateStatus, DeviceEventEmitter, type EmitterSubscription, Keyboard,
+    Alert, AppState, type AppStateStatus, DeviceEventEmitter,
     type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
 } from 'react-native';
+import {runOnUI} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
 import {Events, Screens} from '@constants';
-import {useExtraKeyboardContext} from '@context/extra_keyboard';
+import {isAndroidEdgeToEdge} from '@constants/device';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {useFocusAfterEmojiDismiss} from '@hooks/useFocusAfterEmojiDismiss';
+import {DEFAULT_INPUT_ACCESSORY_HEIGHT} from '@hooks/useInputAccessoryView';
 import {useCurrentScreen} from '@store/navigation_store';
 import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
@@ -122,7 +127,41 @@ export default function PostInput({
     const serverUrl = useServerUrl();
     const currentScreen = useCurrentScreen();
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const keyboardContext = useExtraKeyboardContext();
+    const insets = useSafeAreaInsets();
+
+    const {
+        setShowInputAccessoryView,
+        showInputAccessoryView,
+        isInputAccessoryViewMode,
+        inputAccessoryViewAnimatedHeight,
+        keyboardTranslateY,
+        isTransitioningFromCustomView,
+        setIsEmojiSearchFocused,
+        isEmojiSearchFocused,
+        keyboardHeight,
+        lastKeyboardHeight,
+        bottomInset,
+        scrollOffset,
+        registerCursorPosition,
+        registerPostInputCallbacks,
+    } = useKeyboardAnimationContext();
+
+    // Register cursor position updates with context
+    useEffect(() => {
+        if (showInputAccessoryView) {
+            return;
+        }
+        if (registerCursorPosition) {
+            registerCursorPosition(cursorPosition);
+        }
+    }, [registerCursorPosition, cursorPosition, showInputAccessoryView]);
+
+    // Register updateValue and updateCursorPosition with context
+    useEffect(() => {
+        if (registerPostInputCallbacks) {
+            registerPostInputCallbacks(updateValue, updateCursorPosition);
+        }
+    }, [registerPostInputCallbacks, updateValue, updateCursorPosition]);
 
     const lastTypingEventSent = useRef(0);
 
@@ -131,22 +170,25 @@ export default function PostInput({
 
     const [longMessageAlertShown, setLongMessageAlertShown] = useState(false);
 
+    // Handle focus after emoji picker dismissal
+    const focusInput = useCallback(() => {
+        inputRef.current?.focus();
+    }, [inputRef]);
+
+    const {
+        focus: focusWithEmojiDismiss,
+        isDismissingEmojiPicker,
+        focusTimeoutRef,
+        isManuallyFocusingAfterEmojiDismiss,
+    } = useFocusAfterEmojiDismiss(inputRef, focusInput);
+
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
     const maxHeight = isTablet ? 150 : 88;
     const pasteInputStyle = useMemo(() => {
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
 
-    const handleAndroidKeyboardHide = () => {
-        onBlur();
-    };
-
-    const handleAndroidKeyboardShow = () => {
-        onFocus();
-    };
-
     const onBlur = useCallback(() => {
-        keyboardContext?.registerTextInputBlur();
         handleDraftUpdate({
             serverUrl,
             channelId,
@@ -154,12 +196,168 @@ export default function PostInput({
             value,
         });
         setIsFocused(false);
-    }, [keyboardContext, serverUrl, channelId, rootId, value, setIsFocused]);
+    }, [serverUrl, channelId, rootId, value, setIsFocused]);
+
+    // Refs to capture emoji picker state before it's dismissed by handlePress
+    // This is necessary because on Android, handlePress dismisses the emoji picker
+    // before onFocus is called, so we need to capture the state early
+    const wasShowingEmojiPickerRef = useRef(false);
+    const emojiPickerHeightRef = useRef(0);
+
+    // Handle press event (fires BEFORE onFocus) - dismiss emoji picker before keyboard opens
+    const handlePress = useCallback(() => {
+        // Capture emoji picker state BEFORE dismissing it
+        // This happens before focusWithEmojiDismiss() which clears these values
+        wasShowingEmojiPickerRef.current = isInputAccessoryViewMode.value;
+        emojiPickerHeightRef.current = inputAccessoryViewAnimatedHeight.value;
+        focusWithEmojiDismiss();
+    }, [focusWithEmojiDismiss, isInputAccessoryViewMode, inputAccessoryViewAnimatedHeight]);
 
     const onFocus = useCallback(() => {
-        keyboardContext?.registerTextInputFocus();
+        // On Android EdgeToEdge, ignore subsequent focus events during transition from emoji picker to keyboard
+        // The first onFocus handles the transition, subsequent calls would interfere
+        if (isAndroidEdgeToEdge && isTransitioningFromCustomView.value) {
+            return;
+        }
+
+        // Ignore focus events during emoji picker dismissal - handled manually
+        if (!isAndroidEdgeToEdge && (isDismissingEmojiPicker.current || focusTimeoutRef.current || isManuallyFocusingAfterEmojiDismiss)) {
+            return;
+        }
+
+        // On Android, ignore focus events when emoji search is focused
+        // This prevents the emoji picker from closing when the search bar gets focus
+        if (Platform.OS === 'android' && isEmojiSearchFocused) {
+            return;
+        }
+
         setIsFocused(true);
-    }, [setIsFocused, keyboardContext]);
+
+        // Reset emoji search focus immediately to prevent jumping
+        // This must happen before closing the emoji picker
+        setIsEmojiSearchFocused(false);
+
+        // Detect if emoji picker is showing:
+        // 1. wasShowingEmojiPickerRef: Captured from handlePress when user taps to close emoji picker
+        // 2. isInputAccessoryViewMode.value: SharedValue that's true when emoji picker is currently open
+        // We need both checks because when switching from emoji search to post input,
+        // handlePress doesn't fire, so we need to check the current SharedValue state
+        // IMPORTANT: Use SharedValue (synchronous) not React state (asynchronous)
+        const wasShowingEmojiPicker = wasShowingEmojiPickerRef.current || isInputAccessoryViewMode.value;
+
+        // Close emoji picker immediately
+        setShowInputAccessoryView(false);
+
+        // Reset ref after processing (for next time)
+        if (Platform.OS === 'android') {
+            if (isAndroidEdgeToEdge && wasShowingEmojiPicker) {
+                // Android 35+ with edge-to-edge: Smooth transition from emoji picker to keyboard
+                // Use the captured height from refs if available, otherwise use current animated height
+                const currentEmojiPickerHeight = emojiPickerHeightRef.current || inputAccessoryViewAnimatedHeight.value;
+                const targetKeyboardHeight = keyboardHeight.value || lastKeyboardHeight || (DEFAULT_INPUT_ACCESSORY_HEIGHT - insets.bottom);
+
+                // When emoji picker search is focused, the emoji picker height includes search bar + extra padding
+                // We should use the keyboard height instead to avoid a gap
+                // If currentEmojiPickerHeight > targetKeyboardHeight, we're coming from emoji search
+                const transitionHeight = (currentEmojiPickerHeight > targetKeyboardHeight) ? targetKeyboardHeight : currentEmojiPickerHeight;
+
+                // Set transition flag FIRST to prevent keyboard handlers from interfering
+                isTransitioningFromCustomView.value = true;
+
+                // Collapse emoji picker instantly
+                inputAccessoryViewAnimatedHeight.value = 0;
+
+                // Set input container position to prevent jump during transition
+                keyboardTranslateY.value = transitionHeight > 0 ? transitionHeight : targetKeyboardHeight;
+
+                // Use runOnUI to disable input accessory view mode atomically
+                runOnUI(() => {
+                    'worklet';
+
+                    // Disable custom view mode to allow keyboard handlers to work
+                    isInputAccessoryViewMode.value = false;
+                })();
+
+                // Clear transition flag synchronously AFTER setting position
+                // This ensures subsequent onFocus calls (including from the same button press) can proceed
+                isTransitioningFromCustomView.value = false;
+
+                // Reset refs immediately after using them
+                // Subsequent onFocus calls will see false and process normally (opening keyboard without transition)
+                wasShowingEmojiPickerRef.current = false;
+                emojiPickerHeightRef.current = 0;
+
+                return;
+            }
+
+            // Android < 35: Original behavior
+            keyboardTranslateY.value = inputAccessoryViewAnimatedHeight.value;
+            inputAccessoryViewAnimatedHeight.value = 0;
+            isInputAccessoryViewMode.value = false;
+
+            // IMPORTANT: Reset isTransitioningFromCustomView when keyboard opens
+            // This ensures emoji picker can be opened again after keyboard appears
+            isTransitioningFromCustomView.value = false;
+
+            // Reset bottomInset and scrollOffset so the scroll restoration can trigger when emoji picker closes
+            bottomInset.value = 0;
+            scrollOffset.value = 0;
+
+            return;
+        }
+
+        // Transition from emoji picker to keyboard
+        if (showInputAccessoryView) {
+            // Use actual keyboard height instead of emoji picker height to ensure consistency
+            // This prevents height accumulation when transitioning multiple times
+            // Use default keyboard height if no keyboard height has been recorded yet
+            // This prevents input container from going to bottom when keyboard hasn't been opened
+            const targetKeyboardHeight = keyboardHeight.value || lastKeyboardHeight || DEFAULT_INPUT_ACCESSORY_HEIGHT;
+
+            // Set transition flag FIRST synchronously to prevent keyboard handlers from interfering
+            // This must be set before disabling input accessory view mode to avoid race conditions
+            isTransitioningFromCustomView.value = true;
+
+            // Collapse emoji picker instantly
+            inputAccessoryViewAnimatedHeight.value = 0;
+
+            // Set input container height to keyboard height to ensure correct final position
+            // This ensures the height always matches the keyboard, preventing accumulation
+            keyboardTranslateY.value = targetKeyboardHeight;
+
+            // Use runOnUI to disable input accessory view mode atomically
+            // This ensures the transition flag is visible when keyboard handlers start processing
+            runOnUI(() => {
+                'worklet';
+
+                // Disable custom view mode to allow keyboard handlers to work
+                // This is done AFTER setting transition flag to prevent race conditions
+                isInputAccessoryViewMode.value = false;
+            })();
+
+            // Safety net: In rare cases (app backgrounding, system interruptions, rapid toggling),
+            // the keyboard onEnd event might not fire, leaving us stuck in transition state.
+            // This timeout ensures we recover after 1 second if that happens.
+            setTimeout(() => {
+                if (isTransitioningFromCustomView.value) {
+                    isTransitioningFromCustomView.value = false;
+                }
+            }, 1000);
+        }
+
+        // Shared values don't need to be in dependencies - they're stable references
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        isDismissingEmojiPicker,
+        focusTimeoutRef,
+        isManuallyFocusingAfterEmojiDismiss,
+        isEmojiSearchFocused,
+        setIsFocused,
+        setIsEmojiSearchFocused,
+        setShowInputAccessoryView,
+        showInputAccessoryView,
+        lastKeyboardHeight,
+    ]);
 
     const checkMessageLength = useCallback((newValue: string) => {
         const valueLength = newValue.trim().length;
@@ -188,10 +386,13 @@ export default function PostInput({
     }, [intl, longMessageAlertShown, maxMessageLength]);
 
     const handlePostDraftSelectionChanged = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData> | null, fromHandleTextChange = false) => {
+        if (showInputAccessoryView && !fromHandleTextChange) {
+            return;
+        }
         const cp = fromHandleTextChange ? cursorPosition : event!.nativeEvent.selection.end;
 
         updateCursorPosition(cp);
-    }, [updateCursorPosition, cursorPosition]);
+    }, [showInputAccessoryView, cursorPosition, updateCursorPosition]);
 
     const handleTextChange = useCallback((newValue: string) => {
         updateValue(newValue);
@@ -268,23 +469,6 @@ export default function PostInput({
     }, [serverUrl, channelId, rootId, value]);
 
     useEffect(() => {
-        let keyboardHideListener: EmitterSubscription | undefined;
-        let keyboardShowListener: EmitterSubscription | undefined;
-        if (Platform.OS === 'android') {
-            keyboardHideListener = Keyboard.addListener('keyboardDidHide', handleAndroidKeyboardHide);
-            keyboardShowListener = Keyboard.addListener('keyboardDidShow', handleAndroidKeyboardShow);
-        }
-
-        return (() => {
-            keyboardShowListener?.remove();
-            keyboardHideListener?.remove();
-        });
-
-        // Only run on mount and unmount
-        //eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    useEffect(() => {
         const listener = AppState.addEventListener('change', onAppStateChange);
 
         return () => {
@@ -306,12 +490,22 @@ export default function PostInput({
             listener.remove();
             updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
         };
-    }, [updateValue, channelId, rootId, value, updateCursorPosition, inputRef, serverUrl]);
+
+    // - updateValue, updateCursorPosition, propagateValue are stable setState/hook functions
+    // - inputRef is a ref (stable reference, doesn't need to be in deps)
+    // - serverUrl, value, lastNativeValue are either stable or we want their latest values when event fires
+    // - We need to recreate the listener when channelId/rootId changes to check the correct source screen
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [updateValue, channelId, rootId]);
 
     useEffect(() => {
         if (value !== lastNativeValue.current) {
             lastNativeValue.current = value;
         }
+
+        // - propagateValue is from useInputPropagation hook (stable reference, doesn't need to be in deps)
+        // - lastNativeValue is a ref (stable reference, doesn't need to be in deps)
+
     }, [value]);
 
     const events = useMemo(() => ({
@@ -330,11 +524,13 @@ export default function PostInput({
             onBlur={onBlur}
             onChangeText={handleTextChange}
             onFocus={onFocus}
+            onPress={Platform.OS === 'android' ? handlePress : undefined}
             onPaste={onPaste}
             onSelectionChange={handlePostDraftSelectionChanged}
             placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
             ref={inputRef}
+            showSoftInputOnFocus={(Platform.OS === 'android' && !isAndroidEdgeToEdge) ? (!showInputAccessoryView || isManuallyFocusingAfterEmojiDismiss) : true}
             smartPunctuation='disable'
             submitBehavior='newline'
             style={pasteInputStyle}
@@ -343,6 +539,7 @@ export default function PostInput({
             textContentType='none'
             value={value}
             autoCapitalize='sentences'
+            nativeID={testID}
         />
     );
 }

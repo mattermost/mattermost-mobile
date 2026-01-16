@@ -40,6 +40,7 @@ describe('ParticipantPlaybooks', () => {
         return {
             currentUserId: 'test-user-id',
             cachedPlaybookRuns: [],
+            currentTeamId: 'test-team-id',
         };
     }
 
@@ -93,7 +94,7 @@ describe('ParticipantPlaybooks', () => {
 
         // Check that fetch was called
         await waitFor(() => {
-            expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 0);
+            expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 'test-team-id', 0);
         });
 
         expect(runList).toHaveProp('loading', true);
@@ -204,7 +205,7 @@ describe('ParticipantPlaybooks', () => {
 
         const {findByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 0);
+        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 'test-team-id', 0);
 
         const runList = await findByTestId('run_list');
         act(() => {
@@ -213,7 +214,7 @@ describe('ParticipantPlaybooks', () => {
         });
 
         await waitFor(() => {
-            expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 1);
+            expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 'test-team-id', 1);
             expect(runList.props.inProgressRuns).toHaveLength(20);
         });
 
@@ -223,7 +224,7 @@ describe('ParticipantPlaybooks', () => {
         });
 
         await waitFor(() => {
-            expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 2);
+            expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 'test-team-id', 2);
             expect(runList.props.inProgressRuns).toHaveLength(30);
         });
     });
@@ -234,7 +235,7 @@ describe('ParticipantPlaybooks', () => {
         jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({runs, hasMore: true});
 
         const {findByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
-        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 0);
+        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 'test-team-id', 0);
 
         jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({error: 'Network error'});
         const runList = await findByTestId('run_list');
@@ -245,7 +246,7 @@ describe('ParticipantPlaybooks', () => {
 
         await waitFor(() => {
             expect(runList.props.fetching).toBe(false);
-            expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 1);
+            expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 'test-team-id', 1);
             expect(runList.props.inProgressRuns).toHaveLength(10);
         });
     });
@@ -256,7 +257,7 @@ describe('ParticipantPlaybooks', () => {
         jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({runs, hasMore: true});
 
         const {findByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
-        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 0);
+        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 'test-team-id', 0);
 
         const runList = await findByTestId('run_list');
         act(() => {
@@ -352,7 +353,7 @@ describe('ParticipantPlaybooks', () => {
         jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({runs, hasMore: false});
 
         const {findByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
-        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 0);
+        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 'test-team-id', 0);
 
         const runList = await findByTestId('run_list');
         act(() => {

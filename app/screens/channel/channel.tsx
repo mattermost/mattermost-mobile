@@ -1,16 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {type LayoutChangeEvent, StyleSheet} from 'react-native';
+import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
-import PostDraft from '@components/post_draft';
-import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {Screens} from '@constants';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
@@ -18,17 +15,16 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import {navigateBack} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {useCurrentScreen} from '@store/navigation_store';
 
-import ChannelPostList from './channel_post_list';
+import ChannelContent from './channel_content';
 import ChannelHeader from './header';
 import useGMasDMNotice from './use_gm_as_dm_notice';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type ChannelProps = {
     channelId: string;
-    componentId?: AvailableScreens;
     showJoinCallBanner: boolean;
     isInACall: boolean;
     isCallsEnabledInChannel: boolean;
@@ -52,7 +48,6 @@ const styles = StyleSheet.create({
 
 const Channel = ({
     channelId,
-    componentId,
     showJoinCallBanner,
     isInACall,
     isCallsEnabledInChannel,
@@ -76,8 +71,27 @@ const Channel = ({
     const defaultHeight = useDefaultHeaderHeight();
     const [containerHeight, setContainerHeight] = useState(0);
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
+    const [isEmojiSearchFocused, setIsEmojiSearchFocused] = useState(false);
+    const currentScreen = useCurrentScreen();
+    const isVisible = useMemo(() => {
+        if (isTablet) {
+            return currentScreen === Screens.CHANNEL_LIST;
+        }
 
-    useAndroidHardwareBackHandler(componentId, navigateBack);
+        return currentScreen === Screens.CHANNEL;
+    }, [currentScreen, isTablet]);
+
+    const safeAreaViewEdges: Edge[] = useMemo(() => {
+        if (isTablet) {
+            return ['left', 'right'];
+        }
+        if (isEmojiSearchFocused) {
+            return ['left', 'right'];
+        }
+        return ['left', 'right', 'bottom'];
+    }, [isTablet, isEmojiSearchFocused]);
+
+    useAndroidHardwareBackHandler(Screens.CHANNEL, navigateBack);
 
     const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
     useEffect(() => {
@@ -109,8 +123,9 @@ const Channel = ({
     const showFloatingCallContainer = showJoinCallBanner || isInACall || showIncomingCalls;
 
     return (
-        <View
+        <SafeAreaView
             style={styles.flex}
+            edges={safeAreaViewEdges}
             testID='channel.screen'
             onLayout={onLayout}
         >
@@ -122,29 +137,16 @@ const Channel = ({
                 shouldRenderBookmarks={shouldRender}
                 shouldRenderChannelBanner={includeChannelBanner}
             />
-            {shouldRender &&
-                <ExtraKeyboardProvider>
-                    <View style={[styles.flex, {marginTop}]}>
-                        <ChannelPostList
-                            channelId={channelId}
-                            nativeID={channelId}
-                        />
-                    </View>
-                    <>
-                        {scheduledPostCount > 0 &&
-                            <ScheduledPostIndicator scheduledPostCount={scheduledPostCount}/>
-                        }
-                    </>
-                    <PostDraft
-                        channelId={channelId}
-                        testID='channel.post_draft'
-                        containerHeight={containerHeight}
-                        isChannelScreen={true}
-                        canShowPostPriority={true}
-                        location={isTablet ? Screens.CHANNEL_LIST : Screens.CHANNEL}
-                    />
-                </ExtraKeyboardProvider>
-            }
+            {shouldRender && (
+                <ChannelContent
+                    channelId={channelId}
+                    marginTop={marginTop}
+                    scheduledPostCount={scheduledPostCount}
+                    containerHeight={containerHeight}
+                    enabled={isVisible || shouldRender}
+                    onEmojiSearchFocusChange={setIsEmojiSearchFocused}
+                />
+            )}
             {showFloatingCallContainer && shouldRender &&
             <FloatingCallContainer
                 channelId={channelId}
@@ -155,7 +157,7 @@ const Channel = ({
                 includeChannelBanner={includeChannelBanner}
             />
             }
-        </View>
+        </SafeAreaView>
     );
 };
 

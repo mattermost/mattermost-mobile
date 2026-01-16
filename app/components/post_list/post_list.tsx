@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent, type ViewToken, FlatList, type ListRenderItemInfo} from 'react-native';
-import {type AnimatedStyle} from 'react-native-reanimated';
+import {DeviceEventEmitter, type GestureResponderEvent, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent, FlatList, type ViewToken} from 'react-native';
+import {useKeyboardState} from 'react-native-keyboard-controller';
+import Animated, {runOnJS, useAnimatedProps, useAnimatedReaction, useAnimatedStyle, useSharedValue, type AnimatedStyle} from 'react-native-reanimated';
 
 import {removePost} from '@actions/local/post';
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -13,10 +14,13 @@ import NewMessagesLine from '@components/post_list/new_message_line';
 import Post from '@components/post_list/post';
 import ThreadOverview from '@components/post_list/thread_overview';
 import {Events, Screens} from '@constants';
+import {isAndroidEdgeToEdge} from '@constants/device';
 import {PostTypes} from '@constants/post';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {PostConfigProvider} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {DEFAULT_INPUT_ACCESSORY_HEIGHT} from '@hooks/useInputAccessoryView';
 import PostListPerformance from '@utils/performance/post_list_performance';
 import {getDateForDateLine, preparePostList} from '@utils/post_list';
 import {getTimezone} from '@utils/user';
@@ -43,7 +47,6 @@ type Props = {
     isPostAcknowledgementEnabled?: boolean;
     lastViewedAt: number;
     location: AvailableScreens;
-    nativeID: string;
     onEndReached?: () => void;
     posts: PostModel[];
     rootId?: string;
@@ -56,6 +59,9 @@ type Props = {
     testID: string;
     currentCallBarVisible?: boolean;
     savedPostIds: Set<string>;
+    listRef?: React.RefObject<FlatList<string | PostModel>>;
+    onTouchMove?: (event: GestureResponderEvent) => void;
+    onTouchEnd?: () => void;
 }
 
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
@@ -102,6 +108,9 @@ const PostList = ({
     showNewMessageLine = true,
     testID,
     savedPostIds,
+    listRef,
+    onTouchMove,
+    onTouchEnd,
 }: Props) => {
     const firstIdInPosts = posts[0]?.id;
 
@@ -110,7 +119,18 @@ const PostList = ({
     const currentUsername = currentUser.username;
     const currentTimezone = useMemo(() => getTimezone(currentUser.timezone), [currentUser.timezone]);
 
-    const listRef = useRef<FlatList<PostListItem | PostListOtherItem>>(null);
+    const {
+        keyboardTranslateY: keyboardHeightValue,
+        bottomInset: contentInset,
+        onScroll: onScrollProp,
+        postInputContainerHeight,
+        keyboardHeight,
+        isKeyboardFullyOpen,
+        isKeyboardFullyClosed,
+        inputAccessoryViewAnimatedHeight,
+        isInputAccessoryViewMode,
+    } = useKeyboardAnimationContext();
+
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const scrolledToHighlighted = useRef(false);
@@ -118,9 +138,38 @@ const PostList = ({
     const viewableItemsDebounceTimer = useRef<NodeJS.Timeout | null>(null);
     const [refreshing, setRefreshing] = useState(false);
     const [showScrollToEndBtn, setShowScrollToEndBtn] = useState(false);
-    const [lastPostId, setLastPostId] = useState<string | undefined>(() => firstIdInPosts);
+    const [lastPostId, setLastPostId] = useState<string | undefined>(firstIdInPosts);
+    const [progressViewOffset, setProgressViewOffset] = useState(postInputContainerHeight);
+    const [emojiPickerPadding, setEmojiPickerPadding] = useState(0);
     const theme = useTheme();
     const serverUrl = useServerUrl();
+    const {isVisible: isKeyboardVisible} = useKeyboardState();
+
+    // Update progressViewOffset to position RefreshControl correctly when keyboard-aware props are applied.
+    // Only update when keyboard state changes (fully open ↔ fully closed) to prevent flickering during animation.
+    const prevIsFullyOpen = useSharedValue(false);
+    const prevIsFullyClosed = useSharedValue(true);
+    useAnimatedReaction(
+        () => ({
+            isFullyOpen: isKeyboardFullyOpen.value,
+            isFullyClosed: isKeyboardFullyClosed.value,
+            keyboardTranslateY: keyboardHeightValue.value,
+        }),
+        ({isFullyOpen, isFullyClosed, keyboardTranslateY}) => {
+            // Only update when state actually changes (transition detected)
+            const stateChanged = (prevIsFullyClosed.value !== isFullyClosed) || (prevIsFullyOpen.value !== isFullyOpen);
+
+            if (stateChanged && (isFullyOpen || isFullyClosed)) {
+                const offset = postInputContainerHeight + keyboardTranslateY;
+                if (!isAndroidEdgeToEdge) {
+                    runOnJS(setProgressViewOffset)(offset);
+                }
+            }
+            prevIsFullyOpen.value = isFullyOpen;
+            prevIsFullyClosed.value = isFullyClosed;
+        },
+        [postInputContainerHeight],
+    );
 
     // Progressive loading: start with 10 items, then add the rest after initial render
     // The remaining posts are loaded in trackInitialRenderMetrics when viewable items are detected
@@ -144,8 +193,16 @@ const PostList = ({
     const isNewMessage = lastPostId ? firstIdInPosts !== lastPostId : false;
 
     const scrollToEnd = useCallback(() => {
-        listRef.current?.scrollToOffset({offset: 0, animated: true});
-    }, []);
+        const activeHeight = Math.max(keyboardHeight.value, inputAccessoryViewAnimatedHeight.value);
+        const targetOffset = -activeHeight;
+
+        listRef?.current?.scrollToOffset({offset: targetOffset, animated: true});
+
+        setShowScrollToEndBtn(false);
+
+        // Shared values don't need to be in dependencies - they're stable references
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [listRef]);
 
     useEffect(() => {
         const scrollToBottom = (screen: string) => {
@@ -208,15 +265,19 @@ const PostList = ({
     }, [disablePullToRefresh, location, channelId, rootId, posts, serverUrl]);
 
     const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
-        listRef.current?.scrollToIndex({
+        if (index < 0 || !listRef?.current) {
+            return;
+        }
+
+        listRef.current.scrollToIndex({
             animated,
             index,
             viewOffset: applyOffset ? Platform.select({ios: -45, default: 0}) : 0,
             viewPosition: 1, // 0 is at bottom
         });
-    }, []);
+    }, [listRef]);
 
-    const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const internalOnScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const {y} = event.nativeEvent.contentOffset;
         const isThresholdReached = y > CONTENT_OFFSET_THRESHOLD;
 
@@ -407,7 +468,7 @@ const PostList = ({
                 scrolledToHighlighted.current = true;
                 // eslint-disable-next-line max-nested-callbacks
                 const index = orderedPosts.findIndex((p) => p.type === 'post' && p.value.currentPost.id === highlightedId);
-                if (index >= 0 && listRef.current) {
+                if (index >= 0 && listRef?.current) {
                     listRef.current?.scrollToIndex({
                         animated: true,
                         index,
@@ -419,12 +480,60 @@ const PostList = ({
         }, 500);
 
         return () => clearTimeout(t);
+
+    // - listRef is a ref (stable reference, doesn't need to be in deps)
+    // - scrolledToHighlighted is a ref (stable reference, doesn't need to be in deps)
+    // - We only need to re-run when the posts list changes or the highlighted post changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orderedPosts, highlightedId]);
+
+    // Sync emoji picker padding from SharedValue to React state
+    // This ensures the padding updates when SharedValues change
+    useAnimatedReaction(
+        () => {
+            const shouldAddEmojiPickerPadding = Platform.OS === 'android' && !isAndroidEdgeToEdge && !isKeyboardVisible && isInputAccessoryViewMode.value;
+            const emojiPickerHeight = shouldAddEmojiPickerPadding ? (inputAccessoryViewAnimatedHeight.value || DEFAULT_INPUT_ACCESSORY_HEIGHT) : 0;
+            return emojiPickerHeight;
+        },
+        (emojiPickerHeight) => {
+            runOnJS(setEmojiPickerPadding)(emojiPickerHeight);
+        },
+        [isKeyboardVisible],
+    );
+
+    // Combine contentContainerStyle with padding style
+    // Use regular style with state value synced from SharedValues
+    const contentContainerStyleWithPadding = useMemo(() => {
+        return {paddingTop: location === Screens.PERMALINK ? 0 : postInputContainerHeight + emojiPickerPadding};
+    }, [location, postInputContainerHeight, emojiPickerPadding]);
+
+    // contentInset only for dynamic keyboard height
+    const animatedProps = useAnimatedProps(
+        () => ({
+            contentInset: {
+                top: contentInset.value, // For inverted FlatList, applies to visual bottom
+            },
+        }),
+        [contentInset],
+    );
+
+    const androidExtra = useAnimatedStyle(() => {
+        if (isAndroidEdgeToEdge) {
+            return {
+                marginBottom: keyboardHeight.value || contentInset.value,
+            };
+        }
+        return {};
+    }, []);
 
     return (
         <>
             <PostConfigProvider>
-                <FlatList
+                <Animated.FlatList
+                    animatedProps={animatedProps}
+                    automaticallyAdjustContentInsets={false}
+                    contentInsetAdjustmentBehavior='never'
+                    contentContainerStyle={contentContainerStyleWithPadding}
                     data={orderedPosts}
                     keyboardDismissMode='interactive'
                     keyboardShouldPersistTaps='handled'
@@ -436,9 +545,13 @@ const PostList = ({
                     ListFooterComponent={footer}
                     onEndReached={onEndReached}
                     onEndReachedThreshold={0.9}
-                    onScroll={onScroll}
+                    onMomentumScrollEnd={internalOnScroll}
+                    onScroll={onScrollProp}
                     onScrollToIndexFailed={onScrollToIndexFailed}
                     onViewableItemsChanged={onViewableItemsChanged}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
+                    progressViewOffset={progressViewOffset}
                     ref={listRef}
                     renderItem={renderItem}
                     testID={`${testID}.flat_list`}
@@ -447,6 +560,7 @@ const PostList = ({
                     onRefresh={onRefresh}
                     maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                     removeClippedSubviews={true}
+                    style={[styles.flex, androidExtra]}
                     windowSize={10}
                 />
             </PostConfigProvider>

@@ -11,7 +11,7 @@ import ProfilePicture from '@components/profile_picture';
 import {View as ViewConstant} from '@constants';
 import {useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {openUserProfileModal} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 import {ensureString} from '@utils/types';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -85,11 +85,11 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
         );
     }
 
-    const openUserProfile = usePreventDoubleTap(useCallback(() => {
+    const openProfile = usePreventDoubleTap(useCallback(() => {
         if (!author) {
             return;
         }
-        openUserProfileModal({
+        openUserProfile({
             location,
             userId: author.id,
             channelId: post.channelId,
@@ -110,7 +110,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
 
     if (!fromWebHook) {
         component = (
-            <TouchableOpacity onPress={openUserProfile}>
+            <TouchableOpacity onPress={openProfile}>
                 {component}
             </TouchableOpacity>
         );

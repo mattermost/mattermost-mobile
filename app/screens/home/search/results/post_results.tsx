@@ -9,7 +9,6 @@ import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import {Events, Screens} from '@constants';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {PostConfigProvider} from '@context/post_config';
 import {useTheme} from '@context/theme';
 import {convertSearchTermToRegex, parseSearchTerms} from '@utils/markdown';
@@ -120,38 +119,36 @@ const PostResults = ({
     }, []);
 
     return (
-        <ExtraKeyboardProvider>
-            <PostConfigProvider>
-                <FlatList
-                    ListHeaderComponent={
-                        <FormattedText
-                            style={styles.resultsNumber}
-                            id='mobile.search.results'
-                            defaultMessage='{count} search {count, plural, one {result} other {results}}'
-                            values={{count: posts.length}}
-                        />
-                    }
-                    ListEmptyComponent={noResults}
-                    contentContainerStyle={containerStyle}
-                    data={orderedPosts}
-                    indicatorStyle='black'
-                    initialNumToRender={5}
+        <PostConfigProvider>
+            <FlatList
+                ListHeaderComponent={
+                    <FormattedText
+                        style={styles.resultsNumber}
+                        id='mobile.search.results'
+                        defaultMessage='{count} search {count, plural, one {result} other {results}}'
+                        values={{count: posts.length}}
+                    />
+                }
+                ListEmptyComponent={noResults}
+                contentContainerStyle={containerStyle}
+                data={orderedPosts}
+                indicatorStyle='black'
+                initialNumToRender={5}
 
-                    //@ts-expect-error key not defined in types
-                    listKey={'posts'}
-                    maxToRenderPerBatch={5}
-                    nestedScrollEnabled={true}
-                    refreshing={false}
-                    removeClippedSubviews={true}
-                    renderItem={renderItem}
-                    scrollEventThrottle={16}
-                    scrollToOverflowEnabled={true}
-                    showsVerticalScrollIndicator={true}
-                    onViewableItemsChanged={onViewableItemsChanged}
-                    testID='search_results.post_list.flat_list'
-                />
-            </PostConfigProvider>
-        </ExtraKeyboardProvider>
+                //@ts-expect-error key not defined in types
+                listKey={'posts'}
+                maxToRenderPerBatch={5}
+                nestedScrollEnabled={true}
+                refreshing={false}
+                removeClippedSubviews={true}
+                renderItem={renderItem}
+                scrollEventThrottle={16}
+                scrollToOverflowEnabled={true}
+                showsVerticalScrollIndicator={true}
+                onViewableItemsChanged={onViewableItemsChanged}
+                testID='search_results.post_list.flat_list'
+            />
+        </PostConfigProvider>
     );
 };
 

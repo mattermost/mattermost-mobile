@@ -3,11 +3,20 @@
 
 import {Alert} from 'react-native';
 
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens, ServerErrors} from '@constants';
+import AttachmentOptions from '@screens/attachment_options';
+import {bottomSheet, navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {isErrorWithMessage, isServerError} from '@utils/errors';
+import {bottomSheetSnapPoint} from '@utils/helpers';
+import {dismissKeyboard} from '@utils/keyboard';
 
+import type {UserProfileProps} from '@screens/user_profile';
+import type {GalleryItemType} from '@typings/screens/gallery';
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {IntlShape} from 'react-intl';
+import type {Asset} from 'react-native-image-picker';
 
 export const appearanceControlledScreens = new Set<AvailableScreens>([
     Screens.ONBOARDING,
@@ -87,4 +96,37 @@ export function alertTeamAddError(error: unknown, intl: IntlShape) {
         intl.formatMessage({id: 'join_team.error.title', defaultMessage: 'Error joining a team'}),
         errMsg,
     );
+}
+
+export function previewPdf(item: FileInfo | GalleryItemType, path: string, theme: Theme, onDismiss?: () => void) {
+    CallbackStore.setCallback(onDismiss);
+    navigateToScreen(Screens.PDF_VIEWER, {
+        title: item.name,
+        allowPdfLinkNavigation: false,
+        fileId: item.id,
+        filePath: path,
+    });
+}
+
+export async function openUserProfile(props: UserProfileProps) {
+    const screen = Screens.USER_PROFILE;
+
+    await dismissKeyboard();
+    navigateToScreen(screen, props);
+}
+
+export function openAttachmentOptions(
+    props: {
+        onUploadFiles: (files: Asset[]) => void;
+        maxFilesReached: boolean;
+        canUploadFiles: boolean;
+        testID?: string;
+        fileCount?: number;
+        maxFileCount?: number;
+    }) {
+
+    const TITLE_HEIGHT = 54;
+    const renderContent = () => (<AttachmentOptions {...props}/>);
+    const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(4, ITEM_HEIGHT);
+    bottomSheet(renderContent, [1, componentHeight]);
 }

@@ -30,6 +30,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 32,
         paddingHorizontal: 20,
+        gap: 16,
     },
 });
 
@@ -40,6 +41,7 @@ const AddChecklistItemBottomSheet = () => {
     const theme = useTheme();
 
     const [title, setTitle] = useState<string>('');
+    const [description, setDescription] = useState<string>('');
 
     const canSave = useMemo(() => {
         return Boolean(title.trim().length);
@@ -47,11 +49,14 @@ const AddChecklistItemBottomSheet = () => {
 
     const handleSave = useCallback(() => {
         if (canSave) {
-            const onSave = CallbackStore.getCallback<(title: string) => void>();
-            onSave?.(title.trim());
+            const onSave = CallbackStore.getCallback<(item: ChecklistItemInput) => void>();
+            onSave?.({
+                title: title.trim(),
+                ...(description.trim() && {description: description.trim()}),
+            });
             close();
         }
-    }, [canSave, title]);
+    }, [canSave, title, description]);
 
     useEffect(() => {
         navigation.setOptions({
@@ -69,17 +74,27 @@ const AddChecklistItemBottomSheet = () => {
     useBackNavigation(removeCallback);
     useAndroidHardwareBackHandler(Screens.PLAYBOOK_ADD_CHECKLIST_ITEM, close);
 
-    const label = formatMessage({id: 'playbooks.checklist_item.add.label', defaultMessage: 'Task name'});
+    const titleLabel = formatMessage({id: 'playbooks.checklist_item.add.label', defaultMessage: 'Task name'});
+    const descriptionLabel = formatMessage({id: 'playbooks.checklist_item.add.description_label', defaultMessage: 'Description'});
 
     return (
         <View style={styles.container}>
             <FloatingTextInput
-                label={label}
+                label={titleLabel}
                 onChangeText={setTitle}
                 testID='playbooks.checklist_item.add.input'
                 value={title}
                 theme={theme}
                 autoFocus={true}
+            />
+            <FloatingTextInput
+                label={descriptionLabel}
+                onChangeText={setDescription}
+                testID='playbooks.checklist_item.add.description_input'
+                value={description}
+                theme={theme}
+                multiline={true}
+                multilineInputHeight={100}
             />
         </View>
     );

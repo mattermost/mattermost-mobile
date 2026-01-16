@@ -313,7 +313,7 @@ const CallScreen = ({
     const {EnableRecordings, EnableTranscriptions} = useCallsConfig(serverUrl);
     usePermissionsChecker(micPermissionsGranted);
     const incomingCalls = useIncomingCalls();
-    const {hostControlsAvailable, onPress, openUserProfile} = useHostMenus();
+    const {hostControlsAvailable, onPress, openProfile} = useHostMenus();
 
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
     const [showReactions, setShowReactions] = useState(false);
@@ -532,9 +532,9 @@ const CallScreen = ({
         if (hostControlsAvailable) {
             onPress(session)();
         } else {
-            openUserProfile(session);
+            openProfile(session);
         }
-    }, [hostControlsAvailable, onPress, openUserProfile]);
+    }, [hostControlsAvailable, onPress, openProfile]);
 
     if (!currentCall || !mySession) {
         return null;

@@ -17,8 +17,9 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {restoreChecklistItem, runChecklistItem, skipChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
 import {isDueSoon, isOverdue} from '@playbooks/utils/run';
-import {bottomSheet, dismissAllRoutesAndPopToScreen, openUserProfileModal} from '@screens/navigation';
+import {bottomSheet, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
 import {logDebug} from '@utils/log';
+import {openUserProfile} from '@utils/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -133,7 +134,7 @@ const ChecklistItem = ({
     const dueSoon = isDueSoon(item);
 
     const onUserChipPress = useCallback((userId: string) => {
-        openUserProfileModal({
+        openUserProfile({
             userId,
             channelId,
             location: Screens.PLAYBOOK_RUN,

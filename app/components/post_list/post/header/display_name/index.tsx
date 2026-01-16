@@ -7,7 +7,7 @@ import {Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {openUserProfileModal} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -70,7 +70,7 @@ const HeaderDisplayName = ({
     const style = getStyleSheet(theme);
 
     const onPress = usePreventDoubleTap(useCallback(() => {
-        openUserProfileModal({
+        openUserProfile({
             location,
             userId,
             channelId,

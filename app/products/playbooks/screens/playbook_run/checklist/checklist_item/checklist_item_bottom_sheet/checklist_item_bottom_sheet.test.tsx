@@ -11,11 +11,12 @@ import OptionBox from '@components/option_box';
 import OptionItem from '@components/option_item';
 import {Preferences, Screens} from '@constants';
 import {useIsTablet} from '@hooks/device';
-import {setAssignee, setChecklistItemCommand, setDueDate, deleteChecklistItem} from '@playbooks/actions/remote/checklist';
-import {goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
-import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {setAssignee, setChecklistItemCommand, setDueDate, deleteChecklistItem, updateChecklistItemTitleAndDescription} from '@playbooks/actions/remote/checklist';
+import {goToEditChecklistItem, goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {openUserProfile} from '@utils/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import ChecklistItemBottomSheet from './checklist_item_bottom_sheet';
@@ -45,6 +46,7 @@ jest.mock('@context/server', () => ({
 jest.mock('@playbooks/screens/navigation');
 jest.mock('@utils/snack_bar');
 jest.mock('@screens/navigation');
+jest.mock('@utils/navigation');
 
 describe('ChecklistItemBottomSheet', () => {
     const mockOnCheck = jest.fn();
@@ -479,7 +481,7 @@ describe('ChecklistItemBottomSheet', () => {
             onPress('user-1');
         });
 
-        expect(openUserProfileModal).toHaveBeenCalledWith(
+        expect(openUserProfile).toHaveBeenCalledWith(
             {
                 userId: 'user-1',
                 location: Screens.PLAYBOOK_RUN,
@@ -824,6 +826,108 @@ describe('ChecklistItemBottomSheet', () => {
 
             await act(async () => {
                 deleteButtonConfig?.onPress?.();
+            });
+
+            await waitFor(() => {
+                expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe('edit button', () => {
+        it('should render edit button when isDisabled is false', () => {
+            const props = getBaseProps();
+            props.isDisabled = false;
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            expect(getByTestId('checklist_item.edit_button')).toBeVisible();
+        });
+
+        it('should not render edit button when isDisabled is true', () => {
+            const props = getBaseProps();
+            props.isDisabled = true;
+            const {queryByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            expect(queryByTestId('checklist_item.edit_button')).toBeNull();
+        });
+
+        it('should open edit modal when edit button is pressed', () => {
+            const props = getBaseProps();
+            props.item = TestHelper.fakePlaybookChecklistItemModel({
+                id: 'item-1',
+                title: 'Test Checklist Item',
+                description: 'This is a test description',
+                state: '',
+                command: 'test command',
+            });
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const editButton = getByTestId('checklist_item.edit_button');
+            fireEvent.press(editButton);
+
+            expect(goToEditChecklistItem).toHaveBeenCalledWith(
+                'Run 1',
+                'Test Checklist Item',
+                'This is a test description',
+                expect.any(Function),
+            );
+        });
+
+        it('should open edit modal with undefined description when item has no description', () => {
+            const props = getBaseProps();
+            props.item = TestHelper.fakePlaybookChecklistItemModel({
+                ...mockItem,
+                description: '',
+            });
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const editButton = getByTestId('checklist_item.edit_button');
+            fireEvent.press(editButton);
+
+            expect(goToEditChecklistItem).toHaveBeenCalledWith(
+                'Run 1',
+                'Test Checklist Item',
+                undefined,
+                expect.any(Function),
+            );
+        });
+
+        it('should call updateChecklistItemTitleAndDescription when edit is saved', async () => {
+            jest.mocked(updateChecklistItemTitleAndDescription).mockResolvedValue({data: true});
+            const props = getBaseProps();
+            props.checklistNumber = 2;
+            props.itemNumber = 3;
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const editButton = getByTestId('checklist_item.edit_button');
+            fireEvent.press(editButton);
+
+            const handleEditItem = jest.mocked(goToEditChecklistItem).mock.calls[0][3];
+            await act(async () => {
+                handleEditItem({title: 'New Title', description: 'New Description'});
+            });
+
+            expect(updateChecklistItemTitleAndDescription).toHaveBeenCalledWith(
+                'server-url',
+                'run-1',
+                'item-1',
+                2,
+                3,
+                {title: 'New Title', description: 'New Description'},
+            );
+        });
+
+        it('should show error snackbar when updateChecklistItemTitleAndDescription fails', async () => {
+            jest.mocked(updateChecklistItemTitleAndDescription).mockResolvedValue({error: 'Update failed'});
+            const props = getBaseProps();
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const editButton = getByTestId('checklist_item.edit_button');
+            fireEvent.press(editButton);
+
+            const handleEditItem = jest.mocked(goToEditChecklistItem).mock.calls[0][3];
+            await act(async () => {
+                handleEditItem({title: 'New Title', description: 'New Description'});
             });
 
             await waitFor(() => {

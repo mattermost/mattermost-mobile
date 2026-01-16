@@ -2,18 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {router} from 'expo-router';
-import {DeviceEventEmitter, Keyboard} from 'react-native';
+import {DeviceEventEmitter} from 'react-native';
 
 import {Events, Screens} from '@constants';
 import {UNAUTHENTICATED_SCREENS, HOME_TAB_SCREENS, SCREENS_AS_BOTTOM_SHEET, MODAL_SCREENS} from '@constants/screens';
 import BottomSheetStore from '@store/bottom_sheet_store';
-import CallbackStore from '@store/callback_store';
 import {NavigationStore} from '@store/navigation_store';
 import {logError} from '@utils/log';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
-import type {UserProfileProps} from '@screens/user_profile';
-import type {GalleryItemType} from '@typings/screens/gallery';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 export function propsToParams(props: any): Record<string, string> {
@@ -177,17 +174,6 @@ export async function dismissAllRoutesAndPopToScreen(screenId: AvailableScreens,
     }
 }
 
-export async function openUserProfileModal(
-    props: UserProfileProps,
-) {
-    const screen = Screens.USER_PROFILE;
-
-    if (Keyboard.isVisible()) {
-        Keyboard.dismiss();
-    }
-    navigateToScreen(screen, props);
-}
-
 export function navigateToSettingsScreen(screen: AvailableScreens, props?: Record<string, unknown>) {
     navigateToScreenWithBaseRoute(`/(modals)/${Screens.SETTINGS}`, screen, props);
 }
@@ -196,12 +182,3 @@ export function navigateToChannelInfoScreen(screen: AvailableScreens, props?: Re
     navigateToScreenWithBaseRoute(`/(modals)/${Screens.CHANNEL_INFO}`, screen, props);
 }
 
-export function previewPdf(item: FileInfo | GalleryItemType, path: string, theme: Theme, onDismiss?: () => void) {
-    CallbackStore.setCallback(onDismiss);
-    navigateToScreen(Screens.PDF_VIEWER, {
-        title: item.name,
-        allowPdfLinkNavigation: false,
-        fileId: item.id,
-        filePath: path,
-    });
-}

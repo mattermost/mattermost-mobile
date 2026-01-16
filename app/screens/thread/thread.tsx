@@ -1,25 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useIsFocused} from '@react-navigation/native';
 import {useNavigation} from 'expo-router';
-import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {type LayoutChangeEvent, StyleSheet} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
-import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {Screens} from '@constants';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 
+import ThreadContent from './thread_content';
 import ThreadFollowButton from './thread_follow_button';
-import ThreadPostList from './thread_post_list';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -32,8 +31,6 @@ type ThreadProps = {
     rootPost?: PostModel;
     scheduledPostCount: number;
 };
-
-const edges: Edge[] = ['left', 'right'];
 
 const styles = StyleSheet.create({
     flex: {flex: 1},
@@ -50,6 +47,22 @@ const Thread = ({
 }: ThreadProps) => {
     const [containerHeight, setContainerHeight] = useState(0);
     const navigation = useNavigation();
+    const isVisible = useIsFocused();
+    const isTablet = useIsTablet();
+    const [isEmojiSearchFocused, setIsEmojiSearchFocused] = useState(false);
+
+    // Remove bottom safe area when emoji search is focused OR keyboard is open (Android 35+ only)
+    // This prevents gap between input and keyboard on Android edge-to-edge
+    const safeAreaViewEdges: Edge[] = useMemo(() => {
+        if (isTablet) {
+            return ['left', 'right'];
+        }
+        if (isEmojiSearchFocused) {
+            return ['left', 'right'];
+        }
+
+        return ['left', 'right', 'bottom'];
+    }, [isTablet, isEmojiSearchFocused]);
 
     useAndroidHardwareBackHandler(Screens.THREAD, navigation.goBack);
 
@@ -104,37 +117,21 @@ const Thread = ({
         <SafeAreaView
             style={styles.flex}
             mode='margin'
-            edges={edges}
+            edges={safeAreaViewEdges}
             testID='thread.screen'
             onLayout={onLayout}
         >
             <RoundedHeaderContext/>
-            {Boolean(rootPost) &&
-                <ExtraKeyboardProvider>
-                    <View style={styles.flex}>
-                        <ThreadPostList
-                            nativeID={rootId}
-                            rootPost={rootPost!}
-                        />
-                    </View>
-                    <>
-                        {scheduledPostCount > 0 &&
-                            <ScheduledPostIndicator
-                                isThread={true}
-                                scheduledPostCount={scheduledPostCount}
-                            />
-                        }
-                    </>
-                    <PostDraft
-                        channelId={rootPost!.channelId}
-                        rootId={rootId}
-                        testID='thread.post_draft'
-                        containerHeight={containerHeight}
-                        isChannelScreen={false}
-                        location={Screens.THREAD}
-                    />
-                </ExtraKeyboardProvider>
-            }
+            {Boolean(rootPost) && (
+                <ThreadContent
+                    rootId={rootId}
+                    rootPost={rootPost!}
+                    scheduledPostCount={scheduledPostCount}
+                    containerHeight={containerHeight}
+                    enabled={isVisible}
+                    onEmojiSearchFocusChange={setIsEmojiSearchFocused}
+                />
+            )}
             {showFloatingCallContainer &&
             <FloatingCallContainer
                 channelId={rootPost!.channelId}

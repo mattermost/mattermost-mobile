@@ -6,7 +6,8 @@ import React, {useEffect} from 'react';
 import {fetchUsersByIds} from '@actions/remote/user';
 import UserItem from '@components/user_item';
 import {useServerUrl} from '@context/server';
-import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';
@@ -21,10 +22,10 @@ type Props = {
 
 const Reactor = ({channelId, location, reaction, user}: Props) => {
     const serverUrl = useServerUrl();
-    const openUserProfile = async () => {
+    const openProfile = async () => {
         if (user) {
             await dismissBottomSheet();
-            openUserProfileModal({
+            openUserProfile({
                 userId: user.id,
                 channelId,
                 location,
@@ -45,7 +46,7 @@ const Reactor = ({channelId, location, reaction, user}: Props) => {
         <UserItem
             user={user}
             testID='reactions.reactor_item'
-            onUserPress={openUserProfile}
+            onUserPress={openProfile}
         />
     );
 };

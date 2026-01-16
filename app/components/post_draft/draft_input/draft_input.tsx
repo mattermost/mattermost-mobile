@@ -1,12 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
-import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {runOnJS, useAnimatedReaction} from 'react-native-reanimated';
+import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
+import {isAndroidEdgeToEdge} from '@constants/device';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -24,8 +27,6 @@ import Typing from '../typing';
 import Uploads from '../uploads';
 
 import Header from './header';
-
-import type {PasteTextInputInstance} from '@mattermost/react-native-paste-input';
 
 export type Props = {
     testID?: string;
@@ -62,7 +63,7 @@ export type Props = {
     scheduledPostsEnabled: boolean;
 }
 
-const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right', 'bottom'];
+const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -140,6 +141,10 @@ function DraftInput({
     const theme = useTheme();
     const isTablet = useIsTablet();
     const currentScreen = useCurrentScreen();
+    const [layoutHeight, setLayoutHeight] = React.useState(0);
+    const {bottom} = useSafeAreaInsets();
+
+    const {inputRef, focusInput: focus, keyboardHeight} = useKeyboardAnimationContext();
 
     const edges = useMemo<Edge[]>(() => {
         if (isTablet && currentScreen === Screens.CHANNEL_LIST) {
@@ -150,13 +155,12 @@ function DraftInput({
     }, [isTablet, currentScreen]);
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
-        updatePostInputTop(e.nativeEvent.layout.height);
-    }, [updatePostInputTop]);
-
-    const inputRef = useRef<PasteTextInputInstance | null>(null);
-    const focus = useCallback(() => {
-        inputRef.current?.focus();
-    }, []);
+        const {height} = e.nativeEvent.layout;
+        setLayoutHeight(height);
+        if (!isAndroidEdgeToEdge) {
+            updatePostInputTop(height + bottom);
+        }
+    }, [bottom, updatePostInputTop]);
 
     // Render
     const postInputTestID = `${testID}.post.input`;
@@ -192,6 +196,15 @@ function DraftInput({
     }, [handleSendMessage, scheduledPostsEnabled]);
 
     const sendActionDisabled = !canSend || noMentionsError;
+    useAnimatedReaction(
+        () => keyboardHeight.value,
+        (kbHeight) => {
+            if (isAndroidEdgeToEdge) {
+                runOnJS(updatePostInputTop)(layoutHeight + kbHeight + (2 * bottom));
+            }
+        },
+        [layoutHeight, updatePostInputTop, bottom],
+    );
 
     return (
         <>

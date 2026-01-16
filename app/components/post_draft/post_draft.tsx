@@ -5,10 +5,8 @@ import React, {useEffect, useState} from 'react';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
-import {ExtraKeyboard} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {useKeyboardHeight} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 
 import Archived from './archived';
@@ -55,7 +53,6 @@ function PostDraft({
     const [cursorPosition, setCursorPosition] = useState(message.length);
     const [postInputTop, setPostInputTop] = useState(0);
     const [isFocused, setIsFocused] = useState(false);
-    const keyboardHeight = useKeyboardHeight();
     const headerHeight = useDefaultHeaderHeight();
     const serverUrl = useServerUrl();
     const {bottom} = useSafeAreaInsets();
@@ -68,7 +65,7 @@ function PostDraft({
         //eslint-disable-next-line react-hooks/exhaustive-deps
     }, [channelId, rootId]);
 
-    const autocompletePosition = AUTOCOMPLETE_ADJUST + keyboardHeight + (postInputTop - bottom);
+    const autocompletePosition = (postInputTop - bottom) + AUTOCOMPLETE_ADJUST;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
@@ -122,6 +119,7 @@ function PostDraft({
             shouldDirectlyReact={!Boolean(files?.length)}
             availableSpace={animatedAutocompleteAvailableSpace}
             serverUrl={serverUrl}
+            usePortal={true}
         />
     ) : null;
 
@@ -129,7 +127,6 @@ function PostDraft({
         <>
             {draftHandler}
             {autoComplete}
-            <ExtraKeyboard location={location}/>
         </>
     );
 }

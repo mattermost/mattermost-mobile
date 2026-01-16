@@ -71,6 +71,7 @@ export default function EmojiRow({emojis, file, imageUrl, onEmojiPress}: EmojiRo
                         name={emoji.name}
                         onEmojiPress={onEmojiPress}
                         category={emoji.category}
+                        preventDoubleTap={false}
                     />
                 );
             })}

@@ -4,8 +4,8 @@
 import AgentPost from '@agents/components/agent_post';
 import {isAgentPost} from '@agents/utils';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {Keyboard, Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
+import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
+import {KeyboardController} from 'react-native-keyboard-controller';
 
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
@@ -17,11 +17,11 @@ import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {Screens} from '@constants';
 import {POST_TIME_TO_FAIL} from '@constants/post';
-import {useHideExtraKeyboardIfNeeded} from '@context/extra_keyboard';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {usePostConfig} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
@@ -154,10 +154,9 @@ const Post = ({
     isLastPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
-    const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const isTablet = useIsTablet();
+    const {blurAndDismissKeyboard, closeInputAccessoryView, showInputAccessoryView} = useKeyboardAnimationContext();
     const styles = getStyleSheet(theme);
     const postConfig = usePostConfig();
     const isAutoResponder = fromAutoResponder(post);
@@ -201,6 +200,7 @@ const Post = ({
         } else if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
             // BoR posts cannot have replies, so don't open threads screen for them
             if (!borPost && ([Screens.CHANNEL, Screens.PERMALINK] as AvailableScreens[]).includes(location)) {
+                await blurAndDismissKeyboard();
                 if (location === Screens.PERMALINK) {
                     await navigateBack();
                 }
@@ -212,17 +212,19 @@ const Post = ({
         setTimeout(() => {
             pressDetected.current = false;
         }, 300);
-    }, [location, isAutoResponder, isSystemPost, isEphemeral, hasBeenDeleted, isPendingOrFailed, serverUrl, post, borPost]);
+    }, [location, isAutoResponder, isSystemPost, isEphemeral, hasBeenDeleted, isPendingOrFailed, serverUrl, post, borPost, blurAndDismissKeyboard]);
 
-    const handlePress = useHideExtraKeyboardIfNeeded(() => {
+    const handlePress = usePreventDoubleTap(useCallback(() => {
         pressDetected.current = true;
+
+        KeyboardController.dismiss();
 
         if (post) {
             setTimeout(handlePostPress, 300);
         }
-    }, [handlePostPress, post]);
+    }, [handlePostPress, post]));
 
-    const showPostOptions = useHideExtraKeyboardIfNeeded(() => {
+    const showPostOptions = useCallback(async () => {
         if (!post) {
             return;
         }
@@ -235,14 +237,14 @@ const Post = ({
             return;
         }
 
-        Keyboard.dismiss();
+        if (showInputAccessoryView) {
+            closeInputAccessoryView();
+        }
+
+        await blurAndDismissKeyboard();
         const passProps = {sourceScreen: location, postId: post.id, showAddReaction};
         navigateToScreen(Screens.POST_OPTIONS, passProps);
-    }, [
-        canDelete, hasBeenDeleted, intl,
-        isEphemeral, isPendingOrFailed, isTablet, isSystemPost,
-        location, post, showAddReaction, theme,
-    ]);
+    }, [post, isSystemPost, canDelete, hasBeenDeleted, isPendingOrFailed, isEphemeral, showInputAccessoryView, blurAndDismissKeyboard, location, showAddReaction, closeInputAccessoryView]);
 
     const [, rerender] = useState(false);
     useEffect(() => {

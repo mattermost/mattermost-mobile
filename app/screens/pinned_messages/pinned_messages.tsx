@@ -10,7 +10,6 @@ import Loading from '@components/loading';
 import DateSeparator from '@components/post_list/date_separator';
 import Post from '@components/post_list/post';
 import {Events, Screens} from '@constants';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {PostConfigProvider} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -152,21 +151,19 @@ function SavedMessages({
             style={styles.flex}
             testID='pinned_messages.screen'
         >
-            <ExtraKeyboardProvider>
-                <PostConfigProvider>
-                    <FlatList
-                        contentContainerStyle={data.length ? styles.list : [styles.empty]}
-                        ListEmptyComponent={emptyList}
-                        data={data}
-                        onRefresh={handleRefresh}
-                        refreshing={refreshing}
-                        renderItem={renderItem}
-                        scrollToOverflowEnabled={true}
-                        onViewableItemsChanged={onViewableItemsChanged}
-                        testID='pinned_messages.post_list.flat_list'
-                    />
-                </PostConfigProvider>
-            </ExtraKeyboardProvider>
+            <PostConfigProvider>
+                <FlatList
+                    contentContainerStyle={data.length ? styles.list : [styles.empty]}
+                    ListEmptyComponent={emptyList}
+                    data={data}
+                    onRefresh={handleRefresh}
+                    refreshing={refreshing}
+                    renderItem={renderItem}
+                    scrollToOverflowEnabled={true}
+                    onViewableItemsChanged={onViewableItemsChanged}
+                    testID='pinned_messages.post_list.flat_list'
+                />
+            </PostConfigProvider>
         </SafeAreaView>
     );
 }

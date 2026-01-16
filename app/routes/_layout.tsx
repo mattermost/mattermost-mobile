@@ -15,6 +15,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import tinycolor from 'tinycolor2';
 
 import {Screens} from '@constants';
+import {isAndroidEdgeToEdge} from '@constants/device';
 import {useThemeByAppearanceWithDefault} from '@context/theme';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {cleanup, initialize} from '@init/app';
@@ -158,7 +159,7 @@ export default function RootLayout() {
         return unsubscribe;
     }, [navigationRef]);
 
-    const isEdgeToEdge = (Platform.OS === 'android' && Platform.Version >= 35) || Platform.OS === 'ios';
+    const isEdgeToEdge = isAndroidEdgeToEdge || Platform.OS === 'ios';
 
     const stackScreenOptions = useMemo<NativeStackNavigationOptions>(() => ({
         headerShown: false,
@@ -199,6 +200,7 @@ export default function RootLayout() {
                                 statusBarTranslucent={isEdgeToEdge}
                                 navigationBarTranslucent={isEdgeToEdge}
                                 preserveEdgeToEdge={isEdgeToEdge}
+                                preload={true}
                             >
                                 <Stack screenOptions={stackScreenOptions}>
                                     <Stack.Screen name='(unauthenticated)'/>

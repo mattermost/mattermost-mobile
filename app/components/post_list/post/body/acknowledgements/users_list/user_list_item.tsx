@@ -6,7 +6,8 @@ import React, {useCallback} from 'react';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import UserItem from '@components/user_item';
 import {useTheme} from '@context/theme';
-import {dismissBottomSheet, openUserProfileModal as openUserProfileBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -51,7 +52,7 @@ const UserListItem = ({
     const handleUserPress = useCallback(async (userProfile: UserProfile) => {
         if (userProfile) {
             await dismissBottomSheet();
-            await openUserProfileBottomSheet({
+            await openUserProfile({
                 userId: userProfile.id,
                 channelId,
                 location,

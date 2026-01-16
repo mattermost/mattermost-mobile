@@ -15,7 +15,6 @@ import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
 import {SCREENS_AS_BOTTOM_SHEET} from '@constants/screens';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
@@ -172,45 +171,43 @@ const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, menti
     }, [appsEnabled, currentTimezone, currentUser, customEmojiNames]);
 
     return (
-        <ExtraKeyboardProvider>
-            <SafeAreaView
-                style={styles.flex}
-                edges={EDGES}
-                testID='recent_mentions.screen'
-            >
-                <NavigationHeader
-                    isLargeTitle={true}
-                    showBackButton={false}
-                    subtitle={subtitle}
-                    title={title}
-                    hasSearch={false}
-                    scrollValue={scrollValue}
-                />
-                <Animated.View style={[styles.flex, animated]}>
-                    <Animated.View style={top}>
-                        <RoundedHeaderContext/>
-                    </Animated.View>
-                    <Animated.FlatList
-                        ref={scrollRef}
-                        contentContainerStyle={paddingTop}
-                        ListEmptyComponent={renderEmptyList()}
-                        data={posts}
-                        scrollToOverflowEnabled={true}
-                        showsVerticalScrollIndicator={false}
-                        progressViewOffset={scrollPaddingTop}
-                        scrollEventThrottle={16}
-                        indicatorStyle='black'
-                        onScroll={onScroll}
-                        onRefresh={handleRefresh}
-                        refreshing={refreshing}
-                        renderItem={renderItem}
-                        removeClippedSubviews={true}
-                        onViewableItemsChanged={onViewableItemsChanged}
-                        testID='recent_mentions.post_list.flat_list'
-                    />
+        <SafeAreaView
+            style={styles.flex}
+            edges={EDGES}
+            testID='recent_mentions.screen'
+        >
+            <NavigationHeader
+                isLargeTitle={true}
+                showBackButton={false}
+                subtitle={subtitle}
+                title={title}
+                hasSearch={false}
+                scrollValue={scrollValue}
+            />
+            <Animated.View style={[styles.flex, animated]}>
+                <Animated.View style={top}>
+                    <RoundedHeaderContext/>
                 </Animated.View>
-            </SafeAreaView>
-        </ExtraKeyboardProvider>
+                <Animated.FlatList
+                    ref={scrollRef}
+                    contentContainerStyle={paddingTop}
+                    ListEmptyComponent={renderEmptyList()}
+                    data={posts}
+                    scrollToOverflowEnabled={true}
+                    showsVerticalScrollIndicator={false}
+                    progressViewOffset={scrollPaddingTop}
+                    scrollEventThrottle={16}
+                    indicatorStyle='black'
+                    onScroll={onScroll}
+                    onRefresh={handleRefresh}
+                    refreshing={refreshing}
+                    renderItem={renderItem}
+                    removeClippedSubviews={true}
+                    onViewableItemsChanged={onViewableItemsChanged}
+                    testID='recent_mentions.post_list.flat_list'
+                />
+            </Animated.View>
+        </SafeAreaView>
     );
 };
 
