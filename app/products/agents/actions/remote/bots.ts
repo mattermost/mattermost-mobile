@@ -1,0 +1,41 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
+
+import type {LLMBot} from '@agents/types';
+
+/**
+ * Fetch all AI bots from the server and store them in the database
+ * @param serverUrl The server URL
+ * @returns {bots, searchEnabled, allowUnsafeLinks, error} - Bot configuration on success, error on failure
+ */
+export async function fetchAIBots(
+    serverUrl: string,
+): Promise<{bots?: LLMBot[]; searchEnabled?: boolean; allowUnsafeLinks?: boolean; error?: unknown}> {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const response = await client.getAIBots();
+
+        // Store bots in database
+        if (response.bots?.length) {
+            const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            await operator.handleAIBots({
+                bots: response.bots,
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {
+            bots: response.bots,
+            searchEnabled: response.searchEnabled,
+            allowUnsafeLinks: response.allowUnsafeLinks,
+        };
+    } catch (error) {
+        logError('[fetchAIBots] Failed to fetch AI bots', error);
+        return {error: getFullErrorMessage(error)};
+    }
+}

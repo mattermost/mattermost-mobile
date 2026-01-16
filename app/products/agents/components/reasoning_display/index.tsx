@@ -18,6 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         minimalContainer: {
             marginBottom: 4,
             minHeight: TOUCH_TARGET_SIZE,
+            marginLeft: -14,
         },
         minimalContent: {
             flexDirection: 'row',
@@ -32,6 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         expandedContainer: {
             marginBottom: 16,
+            marginLeft: -15,
         },
         expandedHeader: {
             flexDirection: 'row',
