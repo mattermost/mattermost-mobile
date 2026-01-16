@@ -21,5 +21,6 @@ export default tableSchema({
         {name: 'attribute_id', type: 'string', isIndexed: true},
         {name: 'run_id', type: 'string', isIndexed: true},
         {name: 'value', type: 'string'},
+        {name: 'update_at', type: 'number'},
     ],
 });
