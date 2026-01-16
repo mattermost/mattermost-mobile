@@ -7,14 +7,7 @@ import {BehaviorSubject} from 'rxjs';
 import {Events} from '@constants';
 import {toMilliseconds} from '@utils/datetime';
 
-import type {AIAgent} from '@ai/rewrite/types';
-
 const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
-
-export type AIRewriteState = {
-    isProcessing: boolean;
-    serverUrl: string;
-};
 
 class EphemeralStoreSingleton {
     theme: Theme | undefined;
@@ -25,8 +18,6 @@ class EphemeralStoreSingleton {
 
     private pushProxyVerification: {[serverUrl: string]: string | undefined} = {};
     private canJoinOtherTeams: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
-    private aiAgents: {[serverUrl: string]: BehaviorSubject<AIAgent[]>} = {};
-    private aiRewriteState = new BehaviorSubject<AIRewriteState>({isProcessing: false, serverUrl: ''});
 
     private loadingMessagesForChannel: {[serverUrl: string]: Set<string>} = {};
 
@@ -260,43 +251,6 @@ class EphemeralStoreSingleton {
 
     setCanJoinOtherTeams = (serverUrl: string, value: boolean) => {
         this.getCanJoinOtherTeamsSubject(serverUrl).next(value);
-    };
-
-    private getAIAgentsSubject = (serverUrl: string) => {
-        if (!this.aiAgents[serverUrl]) {
-            this.aiAgents[serverUrl] = new BehaviorSubject<AIAgent[]>([]);
-        }
-
-        return this.aiAgents[serverUrl];
-    };
-
-    observeAIAgents = (serverUrl: string) => {
-        return this.getAIAgentsSubject(serverUrl).asObservable();
-    };
-
-    setAIAgents = (serverUrl: string, agents: AIAgent[]) => {
-        this.getAIAgentsSubject(serverUrl).next(agents);
-    };
-
-    getAIAgents = (serverUrl: string) => {
-        return this.getAIAgentsSubject(serverUrl).getValue();
-    };
-
-    // AI Rewrite state management
-    observeAIRewriteState = () => {
-        return this.aiRewriteState.asObservable();
-    };
-
-    setAIRewriteProcessing = (isProcessing: boolean, serverUrl: string) => {
-        this.aiRewriteState.next({isProcessing, serverUrl});
-    };
-
-    getAIRewriteState = () => {
-        return this.aiRewriteState.getValue();
-    };
-
-    isAIRewriteProcessing = () => {
-        return this.aiRewriteState.getValue().isProcessing;
     };
 
     setNotificationTapped = (value: boolean) => {

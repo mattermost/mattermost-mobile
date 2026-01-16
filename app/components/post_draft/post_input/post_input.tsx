@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useAIRewrite} from '@ai/rewrite';
+import {useRewrite} from '@agents/hooks';
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import PasteableTextInput, {type PastedFile, type PasteInputRef} from '@mattermost/react-native-paste-input';
@@ -162,7 +162,7 @@ export default function PostInput({
     }, [registerPostInputCallbacks, updateValue, updateCursorPosition]);
 
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
-    const {isProcessing} = useAIRewrite();
+    const {isProcessing} = useRewrite();
 
     const lastTypingEventSent = useRef(0);
 

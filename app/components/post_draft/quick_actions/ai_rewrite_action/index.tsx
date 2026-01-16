@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useAIRewrite} from '@ai/rewrite';
+import {useRewrite} from '@agents/hooks';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard} from 'react-native';
@@ -40,7 +40,7 @@ export default function AIRewriteAction({
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
-    const {isProcessing} = useAIRewrite();
+    const {isProcessing} = useRewrite();
 
     const handlePress = useCallback(() => {
         Keyboard.dismiss();
@@ -48,7 +48,7 @@ export default function AIRewriteAction({
 
         openAsBottomSheet({
             closeButtonId: 'close-ai-rewrite',
-            screen: Screens.AI_REWRITE_OPTIONS,
+            screen: Screens.AGENTS_REWRITE_OPTIONS,
             theme,
             title,
             props: {

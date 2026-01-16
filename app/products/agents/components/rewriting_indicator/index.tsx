@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useRewrite} from '@agents/hooks';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
@@ -11,11 +12,9 @@ import {useTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {useAIRewrite} from '../hooks';
-
 const SPINNER_SIZE = 10;
 
-const getStyles = (theme: Theme) => StyleSheet.create({
+const getStyleSheet = (theme: Theme) => StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -38,11 +37,11 @@ const getStyles = (theme: Theme) => StyleSheet.create({
     },
 });
 
-function AIRewriting() {
-    const {isProcessing} = useAIRewrite();
+function RewritingIndicator() {
+    const {isProcessing} = useRewrite();
     const theme = useTheme();
     const intl = useIntl();
-    const styles = getStyles(theme);
+    const styles = getStyleSheet(theme);
     const rotation = useSharedValue(0);
 
     const spinnerAnimatedStyle = useAnimatedStyle(() => ({
@@ -80,5 +79,4 @@ function AIRewriting() {
     );
 }
 
-export default React.memo(AIRewriting);
-
+export default React.memo(RewritingIndicator);

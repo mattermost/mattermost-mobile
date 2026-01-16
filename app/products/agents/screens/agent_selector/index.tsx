@@ -14,15 +14,15 @@ import {dismissModal} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {AIAgent} from '../../types';
+import type {Agent} from '@agents/types';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     componentId: AvailableScreens;
     closeButtonId: string;
-    agents: AIAgent[];
+    agents: Agent[];
     selectedAgentId: string;
-    onSelectAgent: (agent: AIAgent) => void;
+    onSelectAgent: (agent: Agent) => void;
 };
 
 const OPTIONS_PADDING = 12;
@@ -53,7 +53,7 @@ const AgentSelector = ({
     useNavButtonPressed(closeButtonId, componentId, close, []);
     useAndroidHardwareBackHandler(componentId, close);
 
-    const handleSelectAgent = useCallback((agent: AIAgent) => {
+    const handleSelectAgent = useCallback((agent: Agent) => {
         onSelectAgent(agent);
         close();
     }, [onSelectAgent, close]);
@@ -92,7 +92,7 @@ const AgentSelector = ({
         <BottomSheet
             renderContent={renderContent}
             closeButtonId={closeButtonId}
-            componentId={Screens.AI_AGENT_SELECTOR}
+            componentId={Screens.AGENTS_SELECTOR}
             initialSnapIndex={1}
             snapPoints={snapPoints}
             scrollable={true}
@@ -102,4 +102,3 @@ const AgentSelector = ({
 };
 
 export default AgentSelector;
-

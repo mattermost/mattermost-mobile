@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fetchAgents} from '@agents/actions/remote/agents';
+
 import {setLastServerVersionCheck} from '@actions/local/systems';
-import {fetchAIAgents} from '@actions/remote/ai';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
@@ -36,8 +37,8 @@ export async function appEntry(serverUrl: string, since = 0) {
 
     verifyPushProxy(serverUrl);
 
-    // Fetch AI agents to determine if AI features are available
-    fetchAIAgents(serverUrl);
+    // Fetch agents to determine if AI features are available
+    fetchAgents(serverUrl);
 
     return {};
 }

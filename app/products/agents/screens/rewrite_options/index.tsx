@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useRewrite} from '@agents/hooks';
+import {rewriteStore} from '@agents/store';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Alert, Keyboard, Platform, TextInput, View} from 'react-native';
@@ -15,14 +17,11 @@ import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import {useAIRewrite} from '../../hooks';
-
-import type {AIAgent, AIRewriteAction} from '../../types';
+import type {Agent, RewriteAction} from '@agents/types';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const messages = defineMessages({
@@ -139,17 +138,17 @@ const RewriteOptions = ({
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
-    const {startRewrite} = useAIRewrite();
+    const {startRewrite} = useRewrite();
 
     const [customPrompt, setCustomPrompt] = useState('');
-    const [agents, setAgents] = useState<AIAgent[]>([]);
-    const [selectedAgent, setSelectedAgent] = useState<AIAgent | null>(null);
+    const [agents, setAgents] = useState<Agent[]>([]);
+    const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
     const textInputRef = useRef<TextInput>(null);
 
-    // Get agents from EphemeralStore on mount and subscribe to changes
+    // Get agents from rewriteStore on mount and subscribe to changes
     useEffect(() => {
-        const availableAgents = EphemeralStore.getAIAgents(serverUrl);
+        const availableAgents = rewriteStore.getAgents(serverUrl);
         setAgents(availableAgents);
 
         // Set default agent (first one)
@@ -157,7 +156,7 @@ const RewriteOptions = ({
             setSelectedAgent(availableAgents[0]);
         }
 
-        const handleAgentsUpdate = (updatedAgents: AIAgent[]) => {
+        const handleAgentsUpdate = (updatedAgents: Agent[]) => {
             setAgents(updatedAgents);
 
             // Auto-select first agent if none selected
@@ -167,17 +166,17 @@ const RewriteOptions = ({
         };
 
         // Subscribe to agent updates
-        const subscription = EphemeralStore.observeAIAgents(serverUrl).subscribe(handleAgentsUpdate);
+        const subscription = rewriteStore.observeAgents(serverUrl).subscribe(handleAgentsUpdate);
 
         return () => subscription.unsubscribe();
     }, [serverUrl]);
 
     const closeBottomSheet = useCallback(async () => {
         try {
-            await dismissBottomSheet(Screens.AI_REWRITE_OPTIONS);
+            await dismissBottomSheet(Screens.AGENTS_REWRITE_OPTIONS);
         } catch (e) {
             // If dismissal fails, log but don't throw
-            logWarning('Failed to dismiss AI rewrite bottom sheet:', e);
+            logWarning('[RewriteOptions] Failed to dismiss bottom sheet:', e);
         }
     }, []);
 
@@ -215,7 +214,7 @@ const RewriteOptions = ({
         );
     }, [intl]);
 
-    const handleRewrite = useCallback((action: AIRewriteAction, prompt?: string) => {
+    const handleRewrite = useCallback((action: RewriteAction, prompt?: string) => {
         // Only dismiss keyboard if it's actually visible to prevent unwanted animations
         if (isKeyboardVisible) {
             Keyboard.dismiss();
@@ -226,7 +225,7 @@ const RewriteOptions = ({
 
         // For content generation, we need a custom prompt
         if (isGenerating && (!prompt || !prompt.trim())) {
-            logWarning('AI content generation called without prompt');
+            logWarning('[RewriteOptions] Content generation called without prompt');
             return;
         }
 
@@ -248,7 +247,7 @@ const RewriteOptions = ({
 
         // Close the bottom sheet first, then start rewrite
         closeBottomSheet().then(triggerRewrite).catch((e) => {
-            logWarning('Error closing bottom sheet:', e);
+            logWarning('[RewriteOptions] Error closing bottom sheet:', e);
 
             // Still try to start the rewrite even if sheet close failed
             triggerRewrite();
@@ -288,21 +287,21 @@ const RewriteOptions = ({
 
         openAsBottomSheet({
             closeButtonId: 'close-agent-selector',
-            screen: Screens.AI_AGENT_SELECTOR,
+            screen: Screens.AGENTS_SELECTOR,
             theme,
             title,
             props: {
                 closeButtonId: 'close-agent-selector',
                 agents,
                 selectedAgentId: selectedAgent?.id || '',
-                onSelectAgent: (agent: AIAgent) => {
+                onSelectAgent: (agent: Agent) => {
                     setSelectedAgent(agent);
                 },
             },
         });
     }, [theme, intl, agents, selectedAgent, isTablet]);
 
-    const options: Array<{action: AIRewriteAction; message: typeof messages.shorten; icon: string}> = [
+    const options: Array<{action: RewriteAction; message: typeof messages.shorten; icon: string}> = [
         {action: 'shorten', message: messages.shorten, icon: 'text-short'},
         {action: 'elaborate', message: messages.elaborate, icon: 'text-long'},
         {action: 'improve_writing', message: messages.improveWriting, icon: 'auto-fix'},
@@ -383,7 +382,7 @@ const RewriteOptions = ({
         <BottomSheet
             renderContent={renderContent}
             closeButtonId={closeButtonId}
-            componentId={Screens.AI_REWRITE_OPTIONS}
+            componentId={Screens.AGENTS_REWRITE_OPTIONS}
             initialSnapIndex={1}
             snapPoints={snapPoints}
             scrollable={true}
@@ -396,4 +395,3 @@ const RewriteOptions = ({
 };
 
 export default RewriteOptions;
-

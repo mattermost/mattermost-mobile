@@ -1,23 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {rewriteStore} from '@agents/store';
+
 import NetworkManager from '@managers/network_manager';
-import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
-export const fetchAIAgents = async (serverUrl: string) => {
+/**
+ * Fetch available agents from the server and store them in the rewrite store
+ */
+export const fetchAgents = async (serverUrl: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const agents = await client.getAIAgents();
+        const agents = await client.getAgents();
 
-        // Store agents in EphemeralStore
-        EphemeralStore.setAIAgents(serverUrl, agents);
+        // Store agents in rewriteStore
+        rewriteStore.setAgents(serverUrl, agents);
 
         return {agents};
     } catch (error) {
-        logDebug('error on fetchAIAgents', getFullErrorMessage(error));
+        logDebug('[fetchAgents] Error:', getFullErrorMessage(error));
         return {error};
     }
 };
-

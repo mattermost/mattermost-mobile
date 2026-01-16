@@ -1,42 +1,44 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {rewriteStore} from '@agents/store';
 import {useCallback, useEffect, useRef, useState} from 'react';
 
 import NetworkManager from '@managers/network_manager';
-import EphemeralStore from '@store/ephemeral_store';
 import {logWarning} from '@utils/log';
 
-import type {AIRewriteAction} from './types';
+import type {RewriteAction} from '@agents/types';
 
 const TIMEOUT_MS = 30000; // 30 seconds
 
 type StartRewriteCallback = (
     serverUrl: string,
     message: string,
-    action: AIRewriteAction,
+    action: RewriteAction,
     customPrompt: string | undefined,
     agentId: string | undefined,
     onSuccess: (rewrittenText: string) => void,
     onError: (error: string) => void,
 ) => void;
 
-type UseAIRewriteReturn = {
+type UseRewriteReturn = {
     isProcessing: boolean;
     startRewrite: StartRewriteCallback;
     cancelRewrite: () => void;
 };
 
-// Hook that uses EphemeralStore for cross-screen state
-export const useAIRewrite = (): UseAIRewriteReturn => {
-    const [isProcessing, setIsProcessing] = useState(EphemeralStore.isAIRewriteProcessing());
+/**
+ * Hook that manages AI rewrite state across screens
+ */
+export const useRewrite = (): UseRewriteReturn => {
+    const [isProcessing, setIsProcessing] = useState(rewriteStore.isRewriteProcessing());
     const currentPromiseRef = useRef<Promise<string> | null>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const isCancelledRef = useRef(false);
 
-    // Subscribe to EphemeralStore changes
+    // Subscribe to rewrite store changes
     useEffect(() => {
-        const subscription = EphemeralStore.observeAIRewriteState().subscribe((state) => {
+        const subscription = rewriteStore.observeRewriteState().subscribe((state) => {
             setIsProcessing(state.isProcessing);
         });
 
@@ -46,7 +48,7 @@ export const useAIRewrite = (): UseAIRewriteReturn => {
     const cancelRewrite = useCallback(() => {
         isCancelledRef.current = true;
         currentPromiseRef.current = null;
-        EphemeralStore.setAIRewriteProcessing(false, '');
+        rewriteStore.setRewriteProcessing(false, '');
 
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
@@ -57,18 +59,18 @@ export const useAIRewrite = (): UseAIRewriteReturn => {
     const startRewrite = useCallback((
         serverUrl: string,
         message: string,
-        action: AIRewriteAction,
+        action: RewriteAction,
         customPrompt: string | undefined,
         agentId: string | undefined,
         onSuccess: (rewrittenText: string) => void,
         onError: (error: string) => void,
     ) => {
-        if (EphemeralStore.isAIRewriteProcessing()) {
-            logWarning('AI rewrite already in progress');
+        if (rewriteStore.isRewriteProcessing()) {
+            logWarning('[useRewrite] Rewrite already in progress');
             return;
         }
 
-        EphemeralStore.setAIRewriteProcessing(true, serverUrl);
+        rewriteStore.setRewriteProcessing(true, serverUrl);
         isCancelledRef.current = false;
 
         // Create timeout promise
@@ -81,7 +83,7 @@ export const useAIRewrite = (): UseAIRewriteReturn => {
         const runRewrite = async () => {
             try {
                 const client = NetworkManager.getClient(serverUrl);
-                const rewritePromise = client.getAIRewrittenMessage(message, action, customPrompt, agentId);
+                const rewritePromise = client.getRewrittenMessage(message, action, customPrompt, agentId);
                 currentPromiseRef.current = rewritePromise;
 
                 const response = await Promise.race([rewritePromise, timeoutPromise]);
@@ -102,22 +104,22 @@ export const useAIRewrite = (): UseAIRewriteReturn => {
                             try {
                                 formattedResponse = JSON.parse(response);
                             } catch (e) {
-                                logWarning('Failed to parse JSON-encoded response, using raw:', e);
+                                logWarning('[useRewrite] Failed to parse JSON-encoded response, using raw:', e);
                             }
                         }
 
-                        EphemeralStore.setAIRewriteProcessing(false, '');
+                        rewriteStore.setRewriteProcessing(false, '');
                         currentPromiseRef.current = null;
                         onSuccess(formattedResponse);
                     } else {
-                        logWarning('Invalid or empty AI response received:', response);
-                        EphemeralStore.setAIRewriteProcessing(false, '');
+                        logWarning('[useRewrite] Invalid or empty response received:', response);
+                        rewriteStore.setRewriteProcessing(false, '');
                         currentPromiseRef.current = null;
                         onError('Received an invalid response from AI. Please try again.');
                     }
                 } else if (isCancelledRef.current) {
                     // Operation was cancelled, just cleanup
-                    EphemeralStore.setAIRewriteProcessing(false, '');
+                    rewriteStore.setRewriteProcessing(false, '');
                     currentPromiseRef.current = null;
                 }
             } catch (error) {
@@ -129,19 +131,19 @@ export const useAIRewrite = (): UseAIRewriteReturn => {
 
                 // Only handle error if this is still the current promise and not cancelled
                 if (currentPromiseRef.current && !isCancelledRef.current) {
-                    logWarning('AI rewrite error:', error);
+                    logWarning('[useRewrite] Error:', error);
 
                     let errorMsg = 'An error occurred while rewriting your message. Please try again.';
                     if (error instanceof Error && error.message === 'timeout') {
                         errorMsg = 'The AI request timed out. Please try again.';
                     }
 
-                    EphemeralStore.setAIRewriteProcessing(false, '');
+                    rewriteStore.setRewriteProcessing(false, '');
                     currentPromiseRef.current = null;
                     onError(errorMsg);
                 } else if (isCancelledRef.current) {
                     // Operation was cancelled, just cleanup
-                    EphemeralStore.setAIRewriteProcessing(false, '');
+                    rewriteStore.setRewriteProcessing(false, '');
                     currentPromiseRef.current = null;
                 }
             }
@@ -157,3 +159,5 @@ export const useAIRewrite = (): UseAIRewriteReturn => {
     };
 };
 
+// Backward compatibility alias
+export const useAIRewrite = useRewrite;
