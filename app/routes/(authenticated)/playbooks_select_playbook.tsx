@@ -7,14 +7,14 @@ import NavigationHeaderTitle from '@components/navigation_header_title';
 import {useTheme} from '@context/theme';
 import {getHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
-import PlaybookSelectPlaybooksScreen from '@playbooks/screens/select_playbook';
+import PlaybooksSelectPlaybooksScreen from '@playbooks/screens/select_playbook';
 
 type Props = {
     channelId?: string;
     subtitle: string;
 }
 
-export default function PlaybookSelectPlaybookRoute() {
+export default function PlaybooksSelectPlaybookRoute() {
     const intl = useIntl();
     const theme = useTheme();
     const {subtitle, ...props} = usePropsFromParams<Props>();
@@ -34,5 +34,5 @@ export default function PlaybookSelectPlaybookRoute() {
         },
     });
 
-    return <PlaybookSelectPlaybooksScreen {...props}/>;
+    return <PlaybooksSelectPlaybooksScreen {...props}/>;
 }

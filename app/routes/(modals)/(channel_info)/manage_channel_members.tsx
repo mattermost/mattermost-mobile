@@ -7,17 +7,17 @@ import NavigationHeaderTitle from '@components/navigation_header_title';
 import {useTheme} from '@context/theme';
 import {getHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
-import ChannelManageMembersScreen from '@screens/manage_channel_members';
+import ManageChannelMembersScreen from '@screens/manage_channel_members';
 
-type ChannelManageMembersProps = {
+type ManageChannelMembersProps = {
     channelId: string;
     displayName?: string;
 }
 
-export default function ChannelManageMembersRoute() {
+export default function ManageChannelMembersRoute() {
     const theme = useTheme();
     const intl = useIntl();
-    const {channelId, displayName} = usePropsFromParams<ChannelManageMembersProps>();
+    const {channelId, displayName} = usePropsFromParams<ManageChannelMembersProps>();
 
     useNavigationHeader({
         showWhenPushed: true,
@@ -32,5 +32,5 @@ export default function ChannelManageMembersRoute() {
         },
     });
 
-    return <ChannelManageMembersScreen channelId={channelId}/>;
+    return <ManageChannelMembersScreen channelId={channelId}/>;
 }

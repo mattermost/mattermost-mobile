@@ -6,9 +6,9 @@ import React from 'react';
 import {useThemeByAppearanceWithDefault} from '@context/theme';
 import {useNavigationHeader, getLoginFlowHeaderOptions} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
-import MfaComponent, {type MFAProps} from '@screens/mfa';
+import MfaScreen, {type MFAProps} from '@screens/mfa';
 
-export default function MfaScreen() {
+export default function MfaRoute() {
     const {theme: themeProp, serverUrl, ...props} = usePropsFromParams<MFAProps>();
     const theme = useThemeByAppearanceWithDefault(themeProp);
 
@@ -24,5 +24,5 @@ export default function MfaScreen() {
         ...props,
     };
 
-    return <MfaComponent {...screenProps}/>;
+    return <MfaScreen {...screenProps}/>;
 }

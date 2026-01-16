@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {Stack, Redirect} from 'expo-router';
-import {useEffect, useMemo, useState} from 'react';
+import {useMemo} from 'react';
 import {Platform, StyleSheet} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 import tinycolor from 'tinycolor2';
 
 import {Screens} from '@constants';
 import {useThemeByAppearanceWithDefault} from '@context/theme';
-import {getAllServerCredentials} from '@init/credentials';
+import {useHasCredentials} from '@hooks/use_has_credentials';
 
 import type {NativeStackNavigationOptions} from '@react-navigation/native-stack';
 
@@ -22,16 +22,8 @@ const styles = StyleSheet.create({
 });
 
 export default function UnauthenticatedLayout() {
-    const [hasCredentials, setHasCredentials] = useState<boolean | null>(null);
+    const hasCredentials = useHasCredentials();
     const theme = useThemeByAppearanceWithDefault();
-
-    useEffect(() => {
-        async function checkAuth() {
-            const credentials = await getAllServerCredentials();
-            setHasCredentials(credentials.length > 0);
-        }
-        checkAuth();
-    }, []);
 
     const stackScreenOptions = useMemo<NativeStackNavigationOptions>(() => ({
         headerShown: false,

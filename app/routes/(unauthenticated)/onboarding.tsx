@@ -5,11 +5,11 @@ import React from 'react';
 
 import {useThemeByAppearanceWithDefault} from '@context/theme';
 import {usePropsFromParams} from '@hooks/props_from_params';
-import OnboardingComponent from '@screens/onboarding';
+import OnboardingScreen from '@screens/onboarding';
 
 import type {LaunchProps} from '@typings/launch';
 
-export default function OnboardingScreen() {
+export default function OnboardingRoute() {
     const {theme: themeProp, ...props} = usePropsFromParams<LaunchProps & {theme: Theme}>();
     const theme = useThemeByAppearanceWithDefault(themeProp);
 
@@ -19,5 +19,5 @@ export default function OnboardingScreen() {
         ...props,
     };
 
-    return <OnboardingComponent {...screenProps}/>;
+    return <OnboardingScreen {...screenProps}/>;
 }

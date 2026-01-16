@@ -7,7 +7,7 @@ import NavigationHeaderTitle from '@components/navigation_header_title';
 import {useTheme} from '@context/theme';
 import {getHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
-import PlaybookSelectDateScreen from '@playbooks/screens/select_date';
+import PlaybooksSelectDateScreen from '@playbooks/screens/select_date';
 
 type Props = {
     selectedDate?: number;
@@ -34,5 +34,5 @@ export default function PlaybooksSelectDateRoute() {
         },
     });
 
-    return <PlaybookSelectDateScreen {...props}/>;
+    return <PlaybooksSelectDateScreen {...props}/>;
 }

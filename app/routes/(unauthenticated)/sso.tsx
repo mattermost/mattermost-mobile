@@ -9,9 +9,9 @@ import {useNavigationHeader, getLoginFlowHeaderOptions, getLoginModalHeaderOptio
 import {usePropsFromParams} from '@hooks/props_from_params';
 import NetworkManager from '@managers/network_manager';
 import {navigateBack} from '@screens/navigation';
-import SsoComponent, {type SSOProps} from '@screens/sso';
+import SsoScreen, {type SSOProps} from '@screens/sso';
 
-export default function SsoScreen() {
+export default function SsoRoute() {
     const navigation = useNavigation();
     const {isModal, isStackRoot, theme: themeProp, serverUrl, ...props} = usePropsFromParams<SSOProps & {isStackRoot?: boolean}>();
     const theme = useThemeByAppearanceWithDefault(themeProp);
@@ -42,5 +42,5 @@ export default function SsoScreen() {
         ...props,
     };
 
-    return <SsoComponent {...screenProps}/>;
+    return <SsoScreen {...screenProps}/>;
 }

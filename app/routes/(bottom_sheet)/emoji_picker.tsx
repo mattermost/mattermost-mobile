@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {usePropsFromParams} from '@hooks/props_from_params';
-import EmojiPickereScreen, {type EmojiPickerProps} from '@screens/emoji_picker';
+import EmojiPickerScreen, {type EmojiPickerProps} from '@screens/emoji_picker';
 
-export default function EmojiPickereRoute() {
+export default function EmojiPickerRoute() {
     const props = usePropsFromParams<EmojiPickerProps>();
 
-    return <EmojiPickereScreen {...props}/>;
+    return <EmojiPickerScreen {...props}/>;
 }

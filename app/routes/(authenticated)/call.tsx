@@ -7,7 +7,7 @@ import CallScreen from '@calls/screens/call_screen';
 import {useTheme} from '@context/theme';
 import {getHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 
-export default function IntegrationSelectorRoute() {
+export default function CallRoute() {
     const intl = useIntl();
     const theme = useTheme();
 
