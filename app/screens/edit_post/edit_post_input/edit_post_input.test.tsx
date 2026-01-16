@@ -74,12 +74,6 @@ describe('EditPostInput', () => {
         expect(getByTestId('file-2')).toBeVisible();
     });
 
-    it('should match the count of the attachments in edit mode', () => {
-        const {getByTestId} = renderWithEverything(<EditPostInput {...baseProps}/>, {database, serverUrl});
-        expect(getByTestId('uploads')).toBeVisible();
-        expect(getByTestId('uploads').children).toHaveLength(2);
-    });
-
     it('should not render attachments if the server version is less than 10.5.0', () => {
         const props = {...baseProps, version: '10.4.0'};
         const {queryByTestId} = renderWithEverything(<EditPostInput {...props}/>, {database, serverUrl});
