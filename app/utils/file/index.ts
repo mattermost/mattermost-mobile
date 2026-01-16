@@ -508,6 +508,25 @@ export function uploadDisabledWarning(intl: IntlShape) {
     });
 }
 
+export function getUploadErrorMessage(intl: IntlShape, errorMessage: string) {
+    // Map iOS network errors to user-friendly messages
+    if (errorMessage.includes('network connection is not available')) {
+        return intl.formatMessage({
+            id: 'mobile.file_upload.network_unavailable',
+            defaultMessage: "File couldn't be uploaded. Check your connection and try again.",
+        });
+    }
+
+    if (errorMessage.includes('network connection was lost')) {
+        return intl.formatMessage({
+            id: 'mobile.file_upload.connection_lost',
+            defaultMessage: 'Upload interrupted. Check your connection and try again.',
+        });
+    }
+
+    return errorMessage;
+}
+
 export const fileExists = async (path: string) => {
     try {
         const file = await getInfoAsync(path);

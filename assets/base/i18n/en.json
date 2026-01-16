@@ -712,6 +712,8 @@
   "mobile.file_upload.disabled2": "File uploads from mobile are disabled.",
   "mobile.file_upload.library": "Choose from photo library",
   "mobile.file_upload.max_warning": "Uploads limited to {count} files maximum.",
+  "mobile.file_upload.network_unavailable": "File couldn't be uploaded. Check your connection and try again.",
+  "mobile.file_upload.connection_lost": "Upload interrupted. Check your connection and try again.",
   "mobile.files_paste.error_description": "An error occurred while pasting the file(s). Please try again.",
   "mobile.files_paste.error_dismiss": "Dismiss",
   "mobile.files_paste.error_title": "Paste failed",
