@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {Stack, Redirect} from 'expo-router';
-import {useEffect, useMemo, useState} from 'react';
+import {useMemo} from 'react';
 
 import {useTheme} from '@context/theme';
 import {withServerDatabase} from '@database/components';
-import {getAllServerCredentials} from '@init/credentials';
+import {useHasCredentials} from '@hooks/use_has_credentials';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -23,17 +23,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 function AuthenticatedLayout() {
-    const [hasCredentials, setHasCredentials] = useState<boolean | null>(null);
+    const hasCredentials = useHasCredentials();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-
-    useEffect(() => {
-        async function checkAuth() {
-            const credentials = await getAllServerCredentials();
-            setHasCredentials(credentials.length > 0);
-        }
-        checkAuth();
-    }, []);
 
     const stackScreenOptions = useMemo<NativeStackNavigationOptions>(() => ({
         headerShown: false,

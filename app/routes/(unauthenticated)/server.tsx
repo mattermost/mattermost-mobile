@@ -7,11 +7,11 @@ import {useThemeByAppearanceWithDefault} from '@context/theme';
 import {useNavigationHeader, getLoginFlowHeaderOptions, getLoginModalHeaderOptions} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
 import {navigateBack} from '@screens/navigation';
-import ServerComponent from '@screens/server';
+import ServerScreen from '@screens/server';
 
 import type {LaunchProps} from '@typings/launch';
 
-export default function ServerScreen() {
+export default function ServerRoute() {
     const {theme: themeProp, isModal, isStackRoot, ...props} = usePropsFromParams<LaunchProps & {theme: Theme; isModal?: boolean; isStackRoot?: boolean}>();
     const theme = useThemeByAppearanceWithDefault(themeProp);
 
@@ -29,5 +29,5 @@ export default function ServerScreen() {
         ...props,
     };
 
-    return <ServerComponent {...screenProps}/>;
+    return <ServerScreen {...screenProps}/>;
 }

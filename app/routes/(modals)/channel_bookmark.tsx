@@ -9,7 +9,7 @@ import {usePropsFromParams} from '@hooks/props_from_params';
 import ChannelBookmarkScreen, {type ChannelBookmarkScreenProps} from '@screens/channel_bookmark';
 import {navigateBack} from '@screens/navigation';
 
-export default function CreateOrEditChannelRoute() {
+export default function ChannelBookmarkRoute() {
     const intl = useIntl();
     const theme = useTheme();
     const {title, ...props} = usePropsFromParams<ChannelBookmarkScreenProps & {title?: string}>();

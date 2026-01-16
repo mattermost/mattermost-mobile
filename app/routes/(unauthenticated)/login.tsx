@@ -8,10 +8,10 @@ import {useThemeByAppearanceWithDefault} from '@context/theme';
 import {useNavigationHeader, getLoginFlowHeaderOptions, getLoginModalHeaderOptions} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
 import NetworkManager from '@managers/network_manager';
-import LoginComponent, {type LoginOptionsProps} from '@screens/login';
+import LoginScreen, {type LoginOptionsProps} from '@screens/login';
 import {navigateBack} from '@screens/navigation';
 
-export default function LoginScreen() {
+export default function LoginRoute() {
     const navigation = useNavigation();
     const {theme: themeProp, isModal, isStackRoot, serverUrl, ...props} = usePropsFromParams<LoginOptionsProps & {isStackRoot?: boolean; isModal?: boolean}>();
     const theme = useThemeByAppearanceWithDefault(themeProp);
@@ -44,5 +44,5 @@ export default function LoginScreen() {
         ...props,
     };
 
-    return <LoginComponent {...screenProps}/>;
+    return <LoginScreen {...screenProps}/>;
 }

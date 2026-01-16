@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {usePropsFromParams} from '@hooks/props_from_params';
-import PostOptions, {type PostOptionsProps} from '@screens/post_options';
+import PostOptionsScreen, {type PostOptionsProps} from '@screens/post_options';
 
 export default function PostOptionsRoute() {
     const props = usePropsFromParams<PostOptionsProps>();
 
-    return <PostOptions {...props}/>;
+    return <PostOptionsScreen {...props}/>;
 }

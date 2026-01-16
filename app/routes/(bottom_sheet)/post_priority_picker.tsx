@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {usePropsFromParams} from '@hooks/props_from_params';
-import PostPriorityScreen, {type PostPriorityPickerProps} from '@screens/post_priority_picker';
+import PostPriorityPickerScreen, {type PostPriorityPickerProps} from '@screens/post_priority_picker';
 
-function PostPriorityRoute() {
+function PostPriorityPickerRoute() {
     const props = usePropsFromParams<PostPriorityPickerProps>();
 
-    return <PostPriorityScreen {...props}/>;
+    return <PostPriorityPickerScreen {...props}/>;
 }
 
-export default PostPriorityRoute;
+export default PostPriorityPickerRoute;

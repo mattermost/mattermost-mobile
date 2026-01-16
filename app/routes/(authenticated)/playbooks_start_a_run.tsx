@@ -7,9 +7,9 @@ import NavigationHeaderTitle from '@components/navigation_header_title';
 import {useTheme} from '@context/theme';
 import {getHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
-import PlaybookStartARunScreen, {type Props} from '@playbooks/screens/start_a_run';
+import PlaybooksStartARunScreen, {type Props} from '@playbooks/screens/start_a_run';
 
-export default function PlaybookStartARunRoute() {
+export default function PlaybooksStartARunRoute() {
     const intl = useIntl();
     const theme = useTheme();
     const {subtitle, ...props} = usePropsFromParams<Props & {subtitle: string}>();
@@ -29,5 +29,5 @@ export default function PlaybookStartARunRoute() {
         },
     });
 
-    return <PlaybookStartARunScreen {...props}/>;
+    return <PlaybooksStartARunScreen {...props}/>;
 }

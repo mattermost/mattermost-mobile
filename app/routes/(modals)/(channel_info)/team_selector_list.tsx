@@ -6,16 +6,16 @@ import {useIntl} from 'react-intl';
 import {useTheme} from '@context/theme';
 import {getHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
-import TeamSelectorScreen from '@screens/convert_gm_to_channel/team_selector_list';
+import TeamSelectorListScreen from '@screens/convert_gm_to_channel/team_selector_list';
 
-type TeamSelectorProps = {
+type TeamSelectorListProps = {
     teams: Team[];
 }
 
-export default function ConvertGMToChannelRoute() {
+export default function TeamSelectorListRoute() {
     const theme = useTheme();
     const intl = useIntl();
-    const props = usePropsFromParams<TeamSelectorProps>();
+    const props = usePropsFromParams<TeamSelectorListProps>();
 
     useNavigationHeader({
         showWhenPushed: true,
@@ -25,5 +25,5 @@ export default function ConvertGMToChannelRoute() {
         },
     });
 
-    return <TeamSelectorScreen {...props}/>;
+    return <TeamSelectorListScreen {...props}/>;
 }

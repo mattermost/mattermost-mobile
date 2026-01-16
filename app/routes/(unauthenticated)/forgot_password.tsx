@@ -6,9 +6,9 @@ import React from 'react';
 import {useThemeByAppearanceWithDefault} from '@context/theme';
 import {useNavigationHeader, getLoginFlowHeaderOptions} from '@hooks/navigation_header';
 import {usePropsFromParams} from '@hooks/props_from_params';
-import ForgotPasswordComponent, {type ForgotPasswordProps} from '@screens/forgot_password';
+import ForgotPasswordScreen, {type ForgotPasswordProps} from '@screens/forgot_password';
 
-export default function ForgotPasswordScreen() {
+export default function ForgotPasswordRoute() {
     const {theme: themeProp, serverUrl, ...props} = usePropsFromParams<ForgotPasswordProps>();
     const theme = useThemeByAppearanceWithDefault(themeProp);
 
@@ -24,5 +24,5 @@ export default function ForgotPasswordScreen() {
         ...props,
     };
 
-    return <ForgotPasswordComponent {...screenProps}/>;
+    return <ForgotPasswordScreen {...screenProps}/>;
 }
