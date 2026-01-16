@@ -26,6 +26,7 @@ import type {LaunchProps} from '@typings/launch';
 import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
 import type {ComponentProps} from 'react';
 import type {IntlShape} from 'react-intl';
+import type {Asset} from 'react-native-image-picker';
 
 const alpha = {
     from: 0,
@@ -911,6 +912,28 @@ export function openAsBottomSheet({closeButtonId, screen, theme, title, props}: 
     } else {
         showModalOverCurrentContext(screen, props, bottomSheetModalOptions(theme));
     }
+}
+
+export function openAttachmentOptions(
+    intl: IntlShape,
+    theme: Theme,
+    props: {
+        onUploadFiles: (files: Asset[]) => void;
+        maxFilesReached: boolean;
+        canUploadFiles: boolean;
+        testID?: string;
+        fileCount?: number;
+        maxFileCount?: number;
+    },
+) {
+    const title = intl.formatMessage({id: 'mobile.file_attachment.title', defaultMessage: 'Files and media'});
+    openAsBottomSheet({
+        closeButtonId: 'attachment-close-id',
+        screen: Screens.ATTACHMENT_OPTIONS,
+        theme,
+        title,
+        props,
+    });
 }
 
 export const showAppForm = async (form: AppForm, context: AppContext) => {

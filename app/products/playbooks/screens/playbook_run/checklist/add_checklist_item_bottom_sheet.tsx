@@ -16,7 +16,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     componentId: AvailableScreens;
-    onSave: (title: string) => void;
+    onSave: (item: ChecklistItemInput) => void;
 }
 
 const SAVE_BUTTON_ID = 'add-checklist-item';
@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 32,
         paddingHorizontal: 20,
+        gap: 16,
     },
 });
 
@@ -43,6 +44,7 @@ const AddChecklistItemBottomSheet = ({
     const theme = useTheme();
 
     const [title, setTitle] = useState<string>('');
+    const [description, setDescription] = useState<string>('');
 
     const canSave = useMemo(() => {
         return Boolean(title.trim().length);
@@ -72,15 +74,19 @@ const AddChecklistItemBottomSheet = ({
 
     const handleSave = useCallback(() => {
         if (canSave) {
-            onSave(title.trim());
+            onSave({
+                title: title.trim(),
+                ...(description.trim() && {description: description.trim()}),
+            });
             close(componentId);
         }
-    }, [canSave, title, componentId, onSave]);
+    }, [canSave, title, description, componentId, onSave]);
 
     useNavButtonPressed(SAVE_BUTTON_ID, componentId, handleSave, [handleSave]);
     useAndroidHardwareBackHandler(componentId, handleClose);
 
-    const label = formatMessage({id: 'playbooks.checklist_item.add.label', defaultMessage: 'Task name'});
+    const titleLabel = formatMessage({id: 'playbooks.checklist_item.add.label', defaultMessage: 'Task name'});
+    const descriptionLabel = formatMessage({id: 'playbooks.checklist_item.add.description_label', defaultMessage: 'Description'});
 
     return (
         <View
@@ -88,12 +94,21 @@ const AddChecklistItemBottomSheet = ({
             style={styles.container}
         >
             <FloatingTextInput
-                label={label}
+                label={titleLabel}
                 onChangeText={setTitle}
                 testID='playbooks.checklist_item.add.input'
                 value={title}
                 theme={theme}
                 autoFocus={true}
+            />
+            <FloatingTextInput
+                label={descriptionLabel}
+                onChangeText={setDescription}
+                testID='playbooks.checklist_item.add.description_input'
+                value={description}
+                theme={theme}
+                multiline={true}
+                multilineInputHeight={100}
             />
         </View>
     );
