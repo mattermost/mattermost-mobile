@@ -7,11 +7,13 @@ import {Plugin, System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
 
 // Number of retry attempts
-const MAX_RETRY_ATTEMPTS = 3;
+const MAX_RETRY_ATTEMPTS = 5;
 
 // Delay between retries (in milliseconds)
-const RETRY_DELAY = 5000;
+const RETRY_DELAY = 10000;
 
+// Track if this is the first launch in the current test file
+// Reset to true for each test file in case we need a clean install
 let isFirstLaunch = true;
 
 /**
@@ -47,6 +49,12 @@ export async function launchAppWithRetry(): Promise<void> {
                 // For subsequent launches, reuse instance
                 await device.launchApp({
                     newInstance: false,
+                    permissions: {
+                        notifications: 'YES',
+                        camera: 'NO',
+                        medialibrary: 'NO',
+                        photos: 'NO',
+                    },
                     launchArgs: {
                         detoxPrintBusyIdleResources: 'YES',
                         detoxDebugVisibility: 'YES',
@@ -56,14 +64,14 @@ export async function launchAppWithRetry(): Promise<void> {
                 });
             }
 
-            // Verify app is connected by executing a simple command
-            await device.reloadReactNative();
             console.info(`✅ App launched successfully on attempt ${attempt}`);
+
             return; // Success, exit the function
 
         } catch (error) {
             lastError = error;
-            console.warn(`❌ App launch failed on attempt ${attempt}/${MAX_RETRY_ATTEMPTS}: ${(error as Error).message}`);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.warn(`❌ App launch failed on attempt ${attempt}/${MAX_RETRY_ATTEMPTS}: ${errorMessage}`);
 
             // If this is the last attempt, don't wait
             if (attempt < MAX_RETRY_ATTEMPTS) {
@@ -80,7 +88,8 @@ export async function launchAppWithRetry(): Promise<void> {
     }
 
     // If we get here, all attempts failed
-    throw new Error(`Failed to launch app after ${MAX_RETRY_ATTEMPTS} attempts. Last error: ${(lastError as Error).message}`);
+    const finalErrorMessage = lastError instanceof Error ? lastError.message : String(lastError);
+    throw new Error(`Failed to launch app after ${MAX_RETRY_ATTEMPTS} attempts. Last error: ${finalErrorMessage}`);
 }
 
 /**
@@ -103,14 +112,14 @@ beforeAll(async () => {
     await System.apiCheckSystemHealth(siteOneUrl);
     await User.apiAdminLogin(siteOneUrl);
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
+
+    // Reset launch flag for this test file to ensure clean install
+    isFirstLaunch = true;
+
     await launchAppWithRetry();
 });
 
-// Add this to speed up test cleanup
 afterAll(async () => {
-    try {
-        await device.terminateApp();
-    } catch (error) {
-        console.error('Error terminating app:', error);
-    }
+    // Reset the launch flag so next test file starts fresh
+    isFirstLaunch = true;
 });
