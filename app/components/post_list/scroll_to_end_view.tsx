@@ -3,14 +3,13 @@
 
 import React, {useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, Pressable, Text, useWindowDimensions, View, type ViewStyle} from 'react-native';
+import {Pressable, Text, View, type ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
-import {useIsTablet, useKeyboardHeight, useViewPosition} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -25,7 +24,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         buttonStyle: {
             position: 'absolute',
             alignSelf: 'center',
-            bottom: -100,
+            bottom: 0,
             flexDirection: 'row',
         },
         shadow: {
@@ -65,6 +64,10 @@ type Props = {
     testID?: string;
 };
 
+const SCROLL_TO_END_BOTTOM_OFFSET = 15;
+const SCROLL_TO_END_BUTTON_WIDTH = 40;
+const SCROLL_TO_END_BADGE_MAX_WIDTH = 169;
+
 const ScrollToEndView = ({
     onPress,
     isNewMessage,
@@ -74,36 +77,31 @@ const ScrollToEndView = ({
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const styles = getStyleFromTheme(theme);
+
+    const {keyboardTranslateY, postInputContainerHeight, inputAccessoryViewAnimatedHeight} = useKeyboardAnimationContext();
 
     // On iOS we have to take account of the keyboard.
     // We cannot use `useKeyboardOverlap` here because of the positioning of the element.
     const guidingViewRef = useRef<View>(null);
-    const keyboardHeight = useKeyboardHeight();
-    const viewPosition = useViewPosition(guidingViewRef, []);
-    const dimensions = useWindowDimensions();
-    const bottomSpace = (dimensions.height - viewPosition);
-    const keyboardOverlap = Platform.select({ios: Math.max(0, keyboardHeight - bottomSpace), default: 0});
-
-    // Thread view on iPads has to take into account the insets
-    const insets = useSafeAreaInsets();
-    const shouldAdjustBottom = (Platform.OS === 'ios') && isTablet && (location === Screens.THREAD) && !keyboardHeight;
-    const bottomAdjustment = shouldAdjustBottom ? insets.bottom : 0;
 
     const message = location === Screens.THREAD ? intl.formatMessage({id: 'postList.scrollToBottom.newReplies', defaultMessage: 'New replies'}) : intl.formatMessage({id: 'postList.scrollToBottom.newMessages', defaultMessage: 'New messages'});
 
     const animatedStyle = useAnimatedStyle(
-        () => ({
-            transform: [
-                {
-                    translateY: withTiming(showScrollToEndBtn ? -100 - keyboardOverlap - bottomAdjustment : -15, {duration: 300}),
-                },
-            ],
-            maxWidth: withTiming(isNewMessage ? 169 : 40, {duration: 300}),
-            opacity: withTiming(showScrollToEndBtn ? 1 : 0),
-        }),
-        [showScrollToEndBtn, isNewMessage, keyboardOverlap, bottomAdjustment],
+        () => {
+            const activeHeight = Math.max(keyboardTranslateY.value, inputAccessoryViewAnimatedHeight.value);
+
+            return {
+                transform: [
+                    {
+                        translateY: showScrollToEndBtn ? -postInputContainerHeight - activeHeight - SCROLL_TO_END_BOTTOM_OFFSET : -SCROLL_TO_END_BOTTOM_OFFSET,
+                    },
+                ],
+                maxWidth: withTiming(isNewMessage ? SCROLL_TO_END_BADGE_MAX_WIDTH : SCROLL_TO_END_BUTTON_WIDTH, {duration: 300}),
+                opacity: withTiming(showScrollToEndBtn ? 1 : 0),
+            };
+        },
+        [showScrollToEndBtn, isNewMessage, keyboardTranslateY, inputAccessoryViewAnimatedHeight, postInputContainerHeight],
     );
 
     const scrollButtonStyles = isNewMessage ? styles.scrollToEndBadge : styles.scrollToEndButton;

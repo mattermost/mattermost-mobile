@@ -4,6 +4,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Keyboard, type LayoutChangeEvent, Platform, View, StyleSheet} from 'react-native';
+import {KeyboardProvider} from 'react-native-keyboard-controller';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {deletePost, editPost} from '@actions/remote/post';
@@ -123,6 +124,9 @@ const EditPost = ({
 
     useEffect(() => {
         toggleSaveButton(false);
+
+        // No dependencies to avoid unnecessary re-renders since this is a one-time effect
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -450,44 +454,88 @@ const EditPost = ({
                 onLayout={onLayout}
                 nativeID={SecurityManager.getShieldScreenId(componentId)}
             >
-                <ExtraKeyboardProvider>
-                    <View
-                        style={styles.body}
-                        ref={mainView}
-                    >
-                        {Boolean((errorLine || errorExtra)) &&
-                            <PostError
-                                errorExtra={errorExtra}
-                                errorLine={errorLine}
-                            />
-                        }
-                        <View style={styles.inputContainer}>
-                            <EditPostInput
-                                hasError={Boolean(errorLine || errorExtra)}
-                                message={postMessage}
-                                onChangeText={onInputChangeText}
-                                onTextSelectionChange={onTextSelectionChange}
-                                inputRef={postInputRef}
-                                post={post}
-                                postFiles={postFiles}
-                                addFiles={addFiles}
-                            />
-                        </View>
-                    </View>
-                </ExtraKeyboardProvider>
+                {Platform.OS === 'ios' ? (
+                    <KeyboardProvider>
+                        <ExtraKeyboardProvider>
+                            <View
+                                style={styles.body}
+                                ref={mainView}
+                            >
+                                {Boolean((errorLine || errorExtra)) &&
+                                    <PostError
+                                        errorExtra={errorExtra}
+                                        errorLine={errorLine}
+                                    />
+                                }
+                                <View style={styles.inputContainer}>
+                                    <EditPostInput
+                                        hasError={Boolean(errorLine || errorExtra)}
+                                        message={postMessage}
+                                        onChangeText={onInputChangeText}
+                                        onTextSelectionChange={onTextSelectionChange}
+                                        inputRef={postInputRef}
+                                        post={post}
+                                        postFiles={postFiles}
+                                        addFiles={addFiles}
+                                    />
+                                </View>
+                            </View>
+                        </ExtraKeyboardProvider>
+                        <Autocomplete
+                            channelId={post.channelId}
+                            shouldDirectlyReact={false}
+                            nestedScrollEnabled={true}
+                            rootId={post.rootId}
+                            updateValue={onAutocompleteChangeText}
+                            value={postMessage}
+                            cursorPosition={cursorPosition}
+                            position={animatedAutocompletePosition}
+                            availableSpace={animatedAutocompleteAvailableSpace}
+                            serverUrl={serverUrl}
+                        />
+                    </KeyboardProvider>
+                ) : (
+                    <>
+                        <ExtraKeyboardProvider>
+                            <View
+                                style={styles.body}
+                                ref={mainView}
+                            >
+                                {Boolean((errorLine || errorExtra)) &&
+                                    <PostError
+                                        errorExtra={errorExtra}
+                                        errorLine={errorLine}
+                                    />
+                                }
+                                <View style={styles.inputContainer}>
+                                    <EditPostInput
+                                        hasError={Boolean(errorLine || errorExtra)}
+                                        message={postMessage}
+                                        onChangeText={onInputChangeText}
+                                        onTextSelectionChange={onTextSelectionChange}
+                                        inputRef={postInputRef}
+                                        post={post}
+                                        postFiles={postFiles}
+                                        addFiles={addFiles}
+                                    />
+                                </View>
+                            </View>
+                        </ExtraKeyboardProvider>
+                        <Autocomplete
+                            channelId={post.channelId}
+                            shouldDirectlyReact={false}
+                            nestedScrollEnabled={true}
+                            rootId={post.rootId}
+                            updateValue={onAutocompleteChangeText}
+                            value={postMessage}
+                            cursorPosition={cursorPosition}
+                            position={animatedAutocompletePosition}
+                            availableSpace={animatedAutocompleteAvailableSpace}
+                            serverUrl={serverUrl}
+                        />
+                    </>
+                )}
             </SafeAreaView>
-            <Autocomplete
-                channelId={post.channelId}
-                shouldDirectlyReact={false}
-                nestedScrollEnabled={true}
-                rootId={post.rootId}
-                updateValue={onAutocompleteChangeText}
-                value={postMessage}
-                cursorPosition={cursorPosition}
-                position={animatedAutocompletePosition}
-                availableSpace={animatedAutocompleteAvailableSpace}
-                serverUrl={serverUrl}
-            />
         </EditPostProvider>
     );
 };

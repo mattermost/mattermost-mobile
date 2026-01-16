@@ -5,12 +5,13 @@ import {OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
+import {logError} from '@utils/log';
 
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
-import type PlaybookRunAttributeModel from '@playbooks/types/database/models/playbook_run_attribute';
-import type PlaybookRunAttributeValueModel from '@playbooks/types/database/models/playbook_run_attribute_value';
+import type PlaybookRunPropertyFieldModel from '@playbooks/types/database/models/playbook_run_attribute';
+import type PlaybookRunPropertyValueModel from '@playbooks/types/database/models/playbook_run_attribute_value';
 import type{TransformerArgs} from '@typings/database/database';
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
@@ -146,13 +147,13 @@ export const transformPlaybookChecklistItemRecord = ({action, database, value}: 
 };
 
 /**
- * transformPlaybookRunAttributeRecord: Prepares a record of the SERVER database 'PlaybookRunAttribute' table for update or create actions.
+ * transformPlaybookRunPropertyFieldRecord: Prepares a record of the SERVER database 'PlaybookRunAttribute' table for update or create actions.
  * @param {TransformerArgs} transformerArgs
  * @param {Database} transformerArgs.database
  * @param {RecordPair} transformerArgs.value
  * @returns {Promise<PlaybookRunAttributeModel>}
  */
-export const transformPlaybookRunAttributeRecord = ({action, database, value}: TransformerArgs<PlaybookRunAttributeModel, PartialPlaybookRunAttribute>): Promise<PlaybookRunAttributeModel> => {
+export const transformPlaybookRunPropertyFieldRecord = ({action, database, value}: TransformerArgs<PlaybookRunPropertyFieldModel, PartialPlaybookRunPropertyField>): Promise<PlaybookRunPropertyFieldModel> => {
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
@@ -160,7 +161,7 @@ export const transformPlaybookRunAttributeRecord = ({action, database, value}: T
         return Promise.reject(new Error('Record not found for non create action'));
     }
 
-    const fieldsMapper = (attribute: PlaybookRunAttributeModel) => {
+    const fieldsMapper = (attribute: PlaybookRunPropertyFieldModel) => {
         attribute._raw.id = isCreateAction ? (raw?.id ?? attribute.id) : record!.id;
         attribute.groupId = raw.group_id ?? record?.groupId ?? '';
         attribute.name = raw.name ?? record?.name ?? '';
@@ -170,7 +171,13 @@ export const transformPlaybookRunAttributeRecord = ({action, database, value}: T
         attribute.createAt = raw.create_at ?? record?.createAt ?? 0;
         attribute.updateAt = raw.update_at ?? record?.updateAt ?? 0;
         attribute.deleteAt = raw.delete_at ?? record?.deleteAt ?? 0;
-        attribute.attrs = raw.attrs ?? record?.attrs ?? '';
+
+        // API sends attrs as object, but DB expects string - serialize it
+        if (raw.attrs) {
+            attribute.attrs = typeof raw.attrs === 'string' ? raw.attrs : JSON.stringify(raw.attrs);
+        } else {
+            attribute.attrs = record?.attrs ?? '';
+        }
     };
 
     return prepareBaseRecord({
@@ -183,13 +190,13 @@ export const transformPlaybookRunAttributeRecord = ({action, database, value}: T
 };
 
 /**
- * transformPlaybookRunAttributeValueRecord: Prepares a record of the SERVER database 'PlaybookRunAttributeValue' table for update or create actions.
+ * transformPlaybookRunPropertyValueRecord: Prepares a record of the SERVER database 'PlaybookRunAttributeValue' table for update or create actions.
  * @param {TransformerArgs} transformerArgs
  * @param {Database} transformerArgs.database
  * @param {RecordPair} transformerArgs.value
  * @returns {Promise<PlaybookRunAttributeValueModel>}
  */
-export const transformPlaybookRunAttributeValueRecord = ({action, database, value}: TransformerArgs<PlaybookRunAttributeValueModel, PartialPlaybookRunAttributeValue>): Promise<PlaybookRunAttributeValueModel> => {
+export const transformPlaybookRunPropertyValueRecord = ({action, database, value}: TransformerArgs<PlaybookRunPropertyValueModel, PartialPlaybookRunPropertyValue>): Promise<PlaybookRunPropertyValueModel> => {
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
@@ -197,11 +204,27 @@ export const transformPlaybookRunAttributeValueRecord = ({action, database, valu
         return Promise.reject(new Error('Record not found for non create action'));
     }
 
-    const fieldsMapper = (attribute: PlaybookRunAttributeValueModel) => {
+    const fieldsMapper = (attribute: PlaybookRunPropertyValueModel) => {
         attribute._raw.id = isCreateAction ? (raw?.id ?? attribute.id) : record!.id;
-        attribute.attributeId = raw.attribute_id ?? record?.attributeId ?? '';
-        attribute.runId = raw.run_id ?? record?.runId ?? '';
-        attribute.value = raw.value ?? record?.value ?? '';
+        attribute.attributeId = raw.field_id ?? record?.attributeId ?? ''; // API field_id → DB attributeId
+        attribute.runId = raw.target_id ?? record?.runId ?? ''; // API target_id → DB runId
+
+        // Handle value: convert array to JSON string if needed (for multiselect fields)
+        // Check if 'value' field is present in raw to distinguish between "not sent" and "sent as empty"
+        const hasValueField = raw && 'value' in raw;
+        let valueToStore = hasValueField ? (raw.value ?? '') : (record?.value ?? '');
+
+        if (Array.isArray(valueToStore)) {
+            try {
+                valueToStore = JSON.stringify(valueToStore);
+            } catch (e) {
+                // If JSON stringify fails, log the error and store empty string
+                logError('Failed to stringify value array in transformPlaybookRunPropertyValueRecord:', valueToStore);
+                valueToStore = '';
+            }
+        }
+        attribute.value = valueToStore;
+        attribute.updateAt = raw.update_at ?? record?.updateAt ?? 0;
     };
 
     return prepareBaseRecord({

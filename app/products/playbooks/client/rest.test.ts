@@ -712,7 +712,6 @@ describe('fetchPlaybooks', () => {
         jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
 
         const result = await client.fetchPlaybooks(params);
-
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
         expect(result).toEqual(mockResponse);
     });
@@ -814,7 +813,6 @@ describe('createPlaybookRun', () => {
             name,
             description,
         );
-
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
         expect(result).toEqual(mockResponse);
     });
@@ -892,7 +890,6 @@ describe('createPlaybookRun', () => {
             name,
             playbook_id,
         };
-
         jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
 
         const result = await client.createPlaybookRun(
@@ -935,7 +932,6 @@ describe('createPlaybookRun', () => {
         };
 
         jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
-
         const result = await client.createPlaybookRun(
             playbook_id,
             owner_user_id,
@@ -945,7 +941,6 @@ describe('createPlaybookRun', () => {
             undefined,
             create_public_run,
         );
-
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
         expect(result).toEqual(mockResponse);
     });
@@ -1045,16 +1040,30 @@ describe('renameChecklist', () => {
 });
 
 describe('addChecklistItem', () => {
-    test('should add item successfully', async () => {
+    test('should add item with title only', async () => {
         const playbookRunId = 'run123';
         const checklistNum = 1;
-        const title = 'New Item';
+        const item: ChecklistItemInput = {title: 'New Item'};
         const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/add`;
-        const expectedOptions = {method: 'post', body: {title}};
+        const expectedOptions = {method: 'post', body: item};
 
         jest.mocked(client.doFetch).mockResolvedValue(undefined);
 
-        await client.addChecklistItem(playbookRunId, checklistNum, title);
+        await client.addChecklistItem(playbookRunId, checklistNum, item);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should add item with title and description', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const item: ChecklistItemInput = {title: 'New Item', description: 'Item description'};
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/add`;
+        const expectedOptions = {method: 'post', body: item};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.addChecklistItem(playbookRunId, checklistNum, item);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
@@ -1062,24 +1071,350 @@ describe('addChecklistItem', () => {
     test('should handle network errors', async () => {
         const playbookRunId = 'run123';
         const checklistNum = 1;
-        const title = 'New Item';
+        const item: ChecklistItemInput = {title: 'New Item'};
 
         jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
 
-        await expect(client.addChecklistItem(playbookRunId, checklistNum, title)).rejects.toThrow('Network error');
+        await expect(client.addChecklistItem(playbookRunId, checklistNum, item)).rejects.toThrow('Network error');
     });
 
     test('should handle invalid checklist number', async () => {
         const playbookRunId = 'run123';
         const checklistNum = -1;
-        const title = 'New Item';
+        const item: ChecklistItemInput = {title: 'New Item'};
         const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/add`;
-        const expectedOptions = {method: 'post', body: {title}};
+        const expectedOptions = {method: 'post', body: item};
 
         jest.mocked(client.doFetch).mockResolvedValue(undefined);
 
-        await client.addChecklistItem(playbookRunId, checklistNum, title);
+        await client.addChecklistItem(playbookRunId, checklistNum, item);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+});
+
+describe('updateChecklistItem', () => {
+    test('should update item with title only', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const item: ChecklistItemInput = {title: 'Updated Title'};
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/item/${itemNum}`;
+        const expectedOptions = {method: 'put', body: item};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.updateChecklistItem(playbookRunId, checklistNum, itemNum, item);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should update item with title and description', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const item: ChecklistItemInput = {title: 'Updated Title', description: 'Updated description'};
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/item/${itemNum}`;
+        const expectedOptions = {method: 'put', body: item};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.updateChecklistItem(playbookRunId, checklistNum, itemNum, item);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should handle zero indices', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 0;
+        const itemNum = 0;
+        const item: ChecklistItemInput = {title: 'Updated Title'};
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/item/${itemNum}`;
+        const expectedOptions = {method: 'put', body: item};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.updateChecklistItem(playbookRunId, checklistNum, itemNum, item);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should handle network errors', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const item: ChecklistItemInput = {title: 'Updated Title'};
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.updateChecklistItem(playbookRunId, checklistNum, itemNum, item)).rejects.toThrow('Network error');
+    });
+});
+
+describe('fetchRunPropertyFields', () => {
+    test('should fetch property fields without updatedSince parameter', async () => {
+        const runId = 'run123';
+        const expectedUrl = '/plugins/playbooks/api/v0/runs/run123/property_fields';
+        const expectedOptions = {method: 'get'};
+        const mockResponse: PlaybookRunPropertyField[] = [
+            {
+                id: 'field1',
+                group_id: 'group1',
+                name: 'Priority',
+                type: 'select',
+                target_id: 'run123',
+                target_type: 'run',
+                create_at: 1234567890,
+                update_at: 1234567890,
+                delete_at: 0,
+                attrs: '{"options":[{"id":"opt1","name":"High"}]}',
+            },
+        ];
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.fetchRunPropertyFields(runId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should fetch property fields with updatedSince parameter', async () => {
+        const runId = 'run123';
+        const updatedSince = 1234567890;
+        const queryParams = buildQueryString({updated_since: updatedSince});
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/run123/property_fields${queryParams}`;
+        const expectedOptions = {method: 'get'};
+        const mockResponse: PlaybookRunPropertyField[] = [];
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.fetchRunPropertyFields(runId, updatedSince);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should return empty array when doFetch returns null', async () => {
+        const runId = 'run123';
+
+        jest.mocked(client.doFetch).mockResolvedValue(null);
+
+        const result = await client.fetchRunPropertyFields(runId);
+
+        expect(result).toEqual([]);
+    });
+
+    test('should handle error when fetching property fields', async () => {
+        const runId = 'run123';
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.fetchRunPropertyFields(runId)).rejects.toThrow('Network error');
+    });
+});
+
+describe('fetchRunPropertyValues', () => {
+    test('should fetch property values without updatedSince parameter', async () => {
+        const runId = 'run123';
+        const expectedUrl = '/plugins/playbooks/api/v0/runs/run123/property_values';
+        const expectedOptions = {method: 'get'};
+        const mockResponse: PlaybookRunPropertyValue[] = [
+            {
+                id: 'value1',
+                field_id: 'field1',
+                target_id: 'run123',
+                update_at: 1234567890,
+                value: 'opt1',
+            },
+        ];
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.fetchRunPropertyValues(runId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should fetch property values with updatedSince parameter', async () => {
+        const runId = 'run123';
+        const updatedSince = 1234567890;
+        const queryParams = buildQueryString({updated_since: updatedSince});
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/run123/property_values${queryParams}`;
+        const expectedOptions = {method: 'get'};
+        const mockResponse: PlaybookRunPropertyValue[] = [];
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.fetchRunPropertyValues(runId, updatedSince);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should return empty array when doFetch returns null', async () => {
+        const runId = 'run123';
+
+        jest.mocked(client.doFetch).mockResolvedValue(null);
+
+        const result = await client.fetchRunPropertyValues(runId);
+
+        expect(result).toEqual([]);
+    });
+
+    test('should handle error when fetching property values', async () => {
+        const runId = 'run123';
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.fetchRunPropertyValues(runId)).rejects.toThrow('Network error');
+    });
+
+});
+
+describe('setRunPropertyValue', () => {
+    test('should set property value for text field', async () => {
+        const runId = 'run123';
+        const fieldId = 'field1';
+        const value = 'New text value';
+        const expectedUrl = '/plugins/playbooks/api/v0/runs/run123/property_fields/field1/value';
+        const expectedOptions = {method: 'put', body: {value}};
+        const mockResponse: PlaybookRunPropertyValue = {
+            id: 'value1',
+            field_id: fieldId,
+            target_id: runId,
+            update_at: 1234567890,
+            value,
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.setRunPropertyValue(runId, fieldId, value);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should set property value for select field', async () => {
+        const runId = 'run123';
+        const fieldId = 'field2';
+        const value = 'opt1';
+        const expectedUrl = '/plugins/playbooks/api/v0/runs/run123/property_fields/field2/value';
+        const expectedOptions = {method: 'put', body: {value}};
+        const mockResponse: PlaybookRunPropertyValue = {
+            id: 'value2',
+            field_id: fieldId,
+            target_id: runId,
+            update_at: 1234567890,
+            value,
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.setRunPropertyValue(runId, fieldId, value);
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should set property value for multiselect field with multiple values', async () => {
+        const runId = 'run123';
+        const fieldId = 'field3';
+        const value = 'opt1,opt2';
+        const fieldType = 'multiselect';
+        const expectedUrl = '/plugins/playbooks/api/v0/runs/run123/property_fields/field3/value';
+        const expectedOptions = {method: 'put', body: {value: ['opt1', 'opt2']}};
+        const mockResponse: PlaybookRunPropertyValue = {
+            id: 'value3',
+            field_id: fieldId,
+            target_id: runId,
+            update_at: 1234567890,
+            value: '["opt1","opt2"]',
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.setRunPropertyValue(runId, fieldId, value, fieldType);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should set property value for multiselect field with single value', async () => {
+        const runId = 'run123';
+        const fieldId = 'field3';
+        const value = 'opt1';
+        const fieldType = 'multiselect';
+        const expectedUrl = '/plugins/playbooks/api/v0/runs/run123/property_fields/field3/value';
+        const expectedOptions = {method: 'put', body: {value: ['opt1']}};
+        const mockResponse: PlaybookRunPropertyValue = {
+            id: 'value3',
+            field_id: fieldId,
+            target_id: runId,
+            update_at: 1234567890,
+            value: '["opt1"]',
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.setRunPropertyValue(runId, fieldId, value, fieldType);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should set property value for multiselect field with empty value', async () => {
+        const runId = 'run123';
+        const fieldId = 'field3';
+        const value = '';
+        const fieldType = 'multiselect';
+        const expectedUrl = '/plugins/playbooks/api/v0/runs/run123/property_fields/field3/value';
+        const expectedOptions = {method: 'put', body: {value: []}};
+        const mockResponse: PlaybookRunPropertyValue = {
+            id: 'value3',
+            field_id: fieldId,
+            target_id: runId,
+            update_at: 1234567890,
+            value: '[]',
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.setRunPropertyValue(runId, fieldId, value, fieldType);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should set property value with empty string', async () => {
+        const runId = 'run123';
+        const fieldId = 'field1';
+        const value = '';
+        const expectedUrl = '/plugins/playbooks/api/v0/runs/run123/property_fields/field1/value';
+        const expectedOptions = {method: 'put', body: {value}};
+        const mockResponse: PlaybookRunPropertyValue = {
+            id: 'value1',
+            field_id: fieldId,
+            target_id: runId,
+            update_at: 1234567890,
+            value,
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.setRunPropertyValue(runId, fieldId, value);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should handle error when setting property value', async () => {
+        const runId = 'run123';
+        const fieldId = 'field1';
+        const value = 'test';
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.setRunPropertyValue(runId, fieldId, value)).rejects.toThrow('Network error');
     });
 });

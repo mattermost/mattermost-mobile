@@ -7,6 +7,7 @@ import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
+import {useKeyboardState} from 'react-native-keyboard-controller';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
 import {autoUpdateTimezone} from '@actions/remote/user';
@@ -66,10 +67,17 @@ export function HomeScreen(props: HomeProps) {
     const theme = useTheme();
     const intl = useIntl();
     const appState = useAppState();
+    const keyboardState = useKeyboardState();
+    const [isEmojiSearchFocused, setIsEmojiSearchFocused] = React.useState(false);
 
     useEffect(() => {
         SecurityManager.start();
     }, []);
+
+    useEffect(() => {
+        // Hide tab bar when keyboard opens, show when it closes
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, !keyboardState.isVisible);
+    }, [keyboardState.isVisible]);
 
     const handleFindChannels = useCallback(() => {
         if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS)) {
@@ -147,6 +155,28 @@ export function HomeScreen(props: HomeProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.EMOJI_PICKER_SEARCH_FOCUSED, (focused: boolean) => {
+            setIsEmojiSearchFocused(focused);
+        });
+
+        return () => listener.remove();
+    }, []);
+
+    const TabBarComponent = (tabProps: BottomTabBarProps) => {
+        if (isEmojiSearchFocused) {
+            return null;
+        }
+
+        return (
+            <TabBar
+                {...tabProps}
+                theme={theme}
+            />
+        );
+    };
+    TabBarComponent.displayName = 'TabBarComponent';
+
     return (
         <View
             style={styles.flex}
@@ -170,11 +200,7 @@ export function HomeScreen(props: HomeProps) {
                 <Tab.Navigator
                     screenOptions={{headerShown: false, freezeOnBlur: false, lazy: true}}
                     backBehavior='none'
-                    tabBar={(tabProps: BottomTabBarProps) => (
-                        <TabBar
-                            {...tabProps}
-                            theme={theme}
-                        />)}
+                    tabBar={TabBarComponent}
                 >
                     <Tab.Screen
                         name={Screens.HOME}
