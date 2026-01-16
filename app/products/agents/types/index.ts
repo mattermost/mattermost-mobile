@@ -67,3 +67,46 @@ export interface StreamingState {
     annotations: Annotation[]; // Citations/annotations for the post
 }
 
+// ============================================================================
+// Rewrite Types
+// ============================================================================
+
+/**
+ * Available rewrite action types
+ */
+export type RewriteAction = 'shorten' | 'elaborate' | 'improve_writing' | 'fix_spelling' | 'simplify' | 'summarize' | 'custom';
+
+/**
+ * Agent that can perform rewrites
+ */
+export interface Agent {
+    id: string;
+    displayName: string;
+    username: string;
+    service_id: string;
+    service_type: string;
+}
+
+/**
+ * Request payload for rewriting a message
+ */
+export interface RewriteRequest {
+    agent_id?: string;
+    message: string;
+    action?: string;
+    custom_prompt?: string;
+}
+
+/**
+ * Response from a rewrite request
+ */
+export interface RewriteResponse {
+    rewritten_text: string;
+}
+
+// Backward compatibility aliases (prefix with AI)
+export type AIRewriteAction = RewriteAction;
+export type AIAgent = Agent;
+export type AIRewriteRequest = RewriteRequest;
+export type AIRewriteResponse = RewriteResponse;
+

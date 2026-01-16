@@ -4,6 +4,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
+import AIRewriteAction from './ai_rewrite_action';
 import AttachmentAction from './attachment_quick_action';
 import EmojiAction from './emoji_quick_action';
 import InputAction from './input_quick_action';
@@ -13,6 +14,7 @@ type Props = {
     testID?: string;
     canUploadFiles: boolean;
     fileCount: number;
+    isAIEnabled: boolean;
     isPostPriorityEnabled: boolean;
     canShowPostPriority?: boolean;
     canShowSlashCommands?: boolean;
@@ -44,6 +46,7 @@ export default function QuickActions({
     canUploadFiles,
     value,
     fileCount,
+    isAIEnabled,
     isPostPriorityEnabled,
     canShowSlashCommands = true,
     canShowPostPriority,
@@ -55,13 +58,14 @@ export default function QuickActions({
     updatePostPriority,
     focus,
 }: Props) {
-    const atDisabled = value[value.length - 1] === '@';
-    const slashDisabled = value.length > 0;
+    const atDisabled = value ? value[value.length - 1] === '@' : false;
+    const slashDisabled = value ? value.length > 0 : false;
 
     const atInputActionTestID = `${testID}.at_input_action`;
     const slashInputActionTestID = `${testID}.slash_input_action`;
     const emojiActionTestID = `${testID}.emoji_action`;
     const attachmentActionTestID = `${testID}.attachment_action`;
+    const aiRewriteActionTestID = `${testID}.ai_rewrite_action`;
     const postPriorityActionTestID = `${testID}.post_priority_action`;
 
     const uploadProps = {
@@ -100,6 +104,13 @@ export default function QuickActions({
             {canShowEmojiPicker && (
                 <EmojiAction
                     testID={emojiActionTestID}
+                />
+            )}
+            {isAIEnabled && (
+                <AIRewriteAction
+                    testID={aiRewriteActionTestID}
+                    value={value}
+                    updateValue={updateValue}
                 />
             )}
             {isPostPriorityEnabled && canShowPostPriority && (
