@@ -5,6 +5,7 @@ import {getInfoAsync, deleteAsync} from 'expo-file-system';
 import {Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
+import {IOS_NSURL_ERROR} from '@constants/network';
 import {getIntlShape} from '@utils/general';
 import {logError} from '@utils/log';
 import {urlSafeBase64Encode} from '@utils/security';
@@ -274,13 +275,13 @@ describe('Image utils', () => {
     });
 
     describe('getUploadErrorMessage', () => {
-        it('should map network unavailable error to user-friendly message', () => {
-            const msg = getUploadErrorMessage(intl, 'URLSessionTask failed with error: A network connection is not available.');
+        it('should map network unavailable error code to user-friendly message', () => {
+            const msg = getUploadErrorMessage(intl, 'Any localized message', IOS_NSURL_ERROR.NOT_CONNECTED_TO_INTERNET);
             expect(msg).toBe("File couldn't be uploaded. Check your connection and try again.");
         });
 
-        it('should map connection lost error to user-friendly message', () => {
-            const msg = getUploadErrorMessage(intl, 'URLSessionTask failed with error: The network connection was lost.');
+        it('should map connection lost error code to user-friendly message', () => {
+            const msg = getUploadErrorMessage(intl, 'Any localized message', IOS_NSURL_ERROR.NETWORK_CONNECTION_LOST);
             expect(msg).toBe('Upload interrupted. Check your connection and try again.');
         });
 

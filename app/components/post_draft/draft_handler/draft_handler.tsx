@@ -57,8 +57,8 @@ export default function DraftHandler(props: Props) {
     const uploadErrorHandlers = useRef<ErrorHandlers>({});
     const {uploadError, newUploadError} = useFileUploadError();
 
-    const handleUploadError = useCallback((errorMessage: string) => {
-        newUploadError(getUploadErrorMessage(intl, errorMessage));
+    const handleUploadError = useCallback((errorMessage: string, errorCode?: number) => {
+        newUploadError(getUploadErrorMessage(intl, errorMessage, errorCode));
     }, [intl, newUploadError]);
 
     const clearDraft = useCallback(() => {

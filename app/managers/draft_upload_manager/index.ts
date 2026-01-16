@@ -18,7 +18,7 @@ type FileHandler = {
         channelId: string;
         rootId: string;
         lastTimeStored: number;
-        onError: Array<(msg: string) => void>;
+        onError: Array<(msg: string, code?: number) => void>;
         onProgress: Array<(p: number, b: number) => void>;
         isEditPost?: boolean;
         updateFileCallback?: (fileInfo: FileInfo) => void;
@@ -64,8 +64,8 @@ class DraftEditPostUploadManagerSingleton {
         };
 
         const onError = (response: ClientResponseError) => {
-            const message = response.message || 'Unkown error';
-            this.handleError(message, file.clientId!);
+            const message = response.message || 'Unknown error';
+            this.handleError(message, file.clientId!, response.code);
         };
 
         const {error, cancel} = uploadFile(serverUrl, file, channelId, onProgress, onComplete, onError, skipBytes);
@@ -102,7 +102,7 @@ class DraftEditPostUploadManagerSingleton {
         };
     };
 
-    public registerErrorHandler = (clientId: string, callback: (errMessage: string) => void) => {
+    public registerErrorHandler = (clientId: string, callback: (errMessage: string, errCode?: number) => void) => {
         if (!this.handlers[clientId]) {
             return undefined;
         }
@@ -160,7 +160,7 @@ class DraftEditPostUploadManagerSingleton {
         await this.handleUpdateDraftFile(h, fileInfo, h.isEditPost || false);
     };
 
-    private handleError = async (errorMessage: string, clientId: string) => {
+    private handleError = async (errorMessage: string, clientId: string, errorCode?: number) => {
         const h = this.handlers[clientId];
         if (!h) {
             return;
@@ -168,7 +168,7 @@ class DraftEditPostUploadManagerSingleton {
 
         delete this.handlers[clientId];
 
-        h.onError.forEach((c) => c(errorMessage));
+        h.onError.forEach((c) => c(errorMessage, errorCode));
 
         const fileInfo = {...h.fileInfo};
         fileInfo.failed = true;
