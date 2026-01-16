@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {RUNNING_E2E} from '@env';
 import BottomSheetM, {BottomSheetBackdrop, BottomSheetScrollView, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
 import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, ScrollView, type StyleProp, View, type ViewStyle} from 'react-native';
@@ -254,6 +255,7 @@ const BottomSheet = ({
 
     return (
         <BottomSheetM
+            accessible={RUNNING_E2E !== 'true'}
             ref={sheetRef}
             index={initialSnapIndex}
             snapPoints={snapPoints}
