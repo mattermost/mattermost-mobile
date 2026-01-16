@@ -20,7 +20,7 @@ import UploadItem from './upload_item/upload_item_wrapper';
 
 const CONTAINER_HEIGHT_MAX = 80;
 const CONTAINER_HEIGHT_MIN = 0;
-const ERROR_HEIGHT_MAX = 20;
+const ERROR_HEIGHT_MAX = 60;
 const ERROR_HEIGHT_MIN = 0;
 
 type Props = {
