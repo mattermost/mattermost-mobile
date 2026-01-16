@@ -3,7 +3,7 @@
 
 import React, {useCallback, useRef} from 'react';
 import {Platform, StyleSheet} from 'react-native';
-import {runOnJS, runOnUI, withTiming} from 'react-native-reanimated';
+import {runOnJS, runOnUI} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -92,38 +92,39 @@ export default function EmojiQuickAction({
         }
 
         if (Platform.OS === 'android' && isKeyboardVisible()) {
-            // Android 35+ with edge-to-edge: Use same flow as iOS to prevent input jumping
+            // Android 30+ with edge-to-edge: Use same flow as iOS to prevent input jumping
             // Set emoji picker state BEFORE dismissing keyboard so input stays in place
             if (isAndroidEdgeToEdge) {
-                // Android 35+ with edge-to-edge: Set height FIRST, then mount component
+                // Android 30+ with edge-to-edge: Set height FIRST, then mount component
                 // This ensures the useEffect (line 394) reads the correct height immediately
                 const currentKeyboardHeight = keyboardHeight.value;
                 const targetHeight = currentKeyboardHeight || lastKeyboardHeight || DEFAULT_INPUT_ACCESSORY_HEIGHT;
 
-                // STEP 1: Dismiss keyboard first (async, non-blocking)
-                dismissKeyboard();
-
-                // STEP 2: Immediately set all shared values on UI thread
-                // By the time keyboard actually starts dismissing, these will be set
+                // Fabric: Execute on UI thread with instant transition (duration: 0)
                 runOnUI(() => {
                     'worklet';
 
-                    // Set emoji picker height BEFORE mounting component
-                    inputAccessoryViewAnimatedHeight.value = targetHeight;
-
-                    // Enable custom view mode to prevent keyboard handlers from interfering
+                    // STEP 1: Enable custom view mode to block keyboard dismiss handlers
                     isInputAccessoryViewMode.value = true;
 
-                    // Move input container to bottom immediately
-                    keyboardTranslateY.value = withTiming(0, {duration: 0});
-                })();
+                    // STEP 2: Set emoji picker height
+                    inputAccessoryViewAnimatedHeight.value = targetHeight;
 
-                // STEP 3: Mount emoji picker component
-                setShowInputAccessoryView(true);
+                    // STEP 3: Move container to bottom instantly
+                    // The brief flicker is unavoidable with Fabric's synchronous updates
+                    // But it's better than the slow animation or "above keyboard" issue
+                    keyboardTranslateY.value = 0;
+
+                    // STEP 4: Mount emoji picker component at bottom
+                    runOnJS(setShowInputAccessoryView)(true);
+
+                    // STEP 5: Dismiss keyboard (events blocked by isInputAccessoryViewMode)
+                    runOnJS(dismissKeyboard)();
+                })();
                 return;
             }
 
-            // Android < 35: Original behavior - dismiss keyboard first, then show emoji picker
+            // Android < 30: Original behavior - dismiss keyboard first, then show emoji picker
             dismissKeyboard();
 
             // Wait for keyboard to be fully dismissed before showing emoji picker

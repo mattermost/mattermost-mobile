@@ -22,8 +22,8 @@ import type PostModel from '@typings/database/models/servers/post';
  */
 const DEFAULT_POST_INPUT_HEIGHT = 91;
 
-// Enable keyboard animations for iOS and Android 35+ (with edge-to-edge)
-// Android < 35 uses native adjustResize behavior
+// Enable keyboard animations for iOS and Android 30+ (with edge-to-edge)
+// Android < 30 uses native adjustResize behavior
 const isEdgeToEdge = Platform.OS === 'ios' || isAndroidEdgeToEdge;
 
 export const useKeyboardAwarePostDraft = (isThreadView = false, enabled = true) => {
@@ -46,8 +46,8 @@ export const useKeyboardAwarePostDraft = (isThreadView = false, enabled = true) 
         isTransitioningFromCustomView,
     } = useKeyboardAnimation(postInputContainerHeight, isEdgeToEdge, isTablet, insets.bottom, isThreadView, enabled);
 
-    // Apply scroll adjustment on iOS and Android 35+ (with edge-to-edge)
-    // Android < 35 uses native keyboard handling with adjustResize
+    // Apply scroll adjustment on iOS and Android 30+ (with edge-to-edge)
+    // Android < 30 uses native keyboard handling with adjustResize
     // Also pass isInputAccessoryViewMode and isTransitioningFromCustomView to control scroll behavior
     useKeyboardScrollAdjustment(listRef, scrollPosition, scrollOffset, Platform.OS === 'ios', isInputAccessoryViewMode, isTransitioningFromCustomView);
 

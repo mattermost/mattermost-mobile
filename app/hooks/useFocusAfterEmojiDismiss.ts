@@ -67,8 +67,8 @@ export const useFocusAfterEmojiDismiss = (
 
     // Wrapped focus function that handles emoji picker dismissal
     const focusWithEmojiDismiss = useCallback(() => {
-        // Android < 35: Use complex dismissal logic with delays
-        // Android >= 35 (EdgeToEdge): Use simple focus like iOS - onFocus will handle transition
+        // Android < 30: Use complex dismissal logic with delays
+        // Android >= 30 (EdgeToEdge): Use simple focus like iOS - onFocus will handle transition
         if (Platform.OS === 'android' && !isAndroidEdgeToEdge && showInputAccessoryView) {
             isDismissingEmojiPicker.current = true;
             setIsManuallyFocusingAfterEmojiDismiss(true);

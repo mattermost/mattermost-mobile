@@ -15,8 +15,8 @@ import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {useInputAccessoryView} from '@hooks/useInputAccessoryView';
 import {useKeyboardAwarePostDraft} from '@hooks/useKeyboardAwarePostDraft';
 
-// Use KeyboardGestureArea on iOS and Android 35+ (with edge-to-edge)
-// Android < 35 uses native keyboard handling with adjustResize
+// Use KeyboardGestureArea on iOS and Android 30+ (with edge-to-edge)
+// Android < 30 uses native keyboard handling with adjustResize
 const useKeyboardGestureArea = Platform.OS === 'ios' || isAndroidEdgeToEdge;
 const Wrapper = useKeyboardGestureArea ? KeyboardGestureArea : View;
 
@@ -383,8 +383,7 @@ export const KeyboardAwarePostDraftContainer = ({
 
     // On iOS, we set keyboardHeight to 0 to prevent the KeyboardGestureArea from interfering
     // with the emoji picker's custom gesture handling
-    // On Android 35+, we DON'T set it to 0 because that causes the input to animate down
-    // Instead, we keep the keyboard height value so the input stays in place during transition
+    // On Android 30+, keyboardTranslateY is already set to 0 in emoji_quick_action before mounting
     useLayoutEffect(() => {
         if (showInputAccessoryView && useKeyboardGestureArea && Platform.OS === 'ios') {
             keyboardHeight.value = 0;
@@ -455,16 +454,15 @@ export const KeyboardAwarePostDraftContainer = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Android < 35: Watch for emoji picker closing and restore scroll position when both height and bottomInset reach 0
-    // Android 35+ with edge-to-edge uses marginBottom and doesn't need scroll restoration
-    const isAndroidWithoutEdgeToEdge = Platform.OS === 'android' && Platform.Version < 35;
+    // Android < 30: Watch for emoji picker closing and restore scroll position when both height and bottomInset reach 0
+    // Android 30+ with edge-to-edge uses marginBottom and doesn't need scroll restoration
     useAnimatedReaction(
         () => ({
             height: inputAccessoryViewAnimatedHeight.value,
             bottomInset: bottomInset.value,
         }),
         (current, previous) => {
-            if (!isAndroidWithoutEdgeToEdge) {
+            if (isAndroidEdgeToEdge) {
                 return;
             }
 
@@ -550,9 +548,9 @@ export const KeyboardAwarePostDraftContainer = ({
         return {style: styles.gestureArea};
     }, [textInputNativeID, postInputContainerHeight]);
 
-    // On iOS and Android 35+, use KeyboardGestureArea for proper keyboard handling
+    // On iOS and Android 30+, use KeyboardGestureArea for proper keyboard handling
     // KeyboardGestureArea requires Android 11+ and works with edge-to-edge mode
-    // Android < 35 uses native behavior with adjustResize
+    // Android < 30 uses native behavior with adjustResize
     const content = (
         <>
             <View style={containerStyle}>

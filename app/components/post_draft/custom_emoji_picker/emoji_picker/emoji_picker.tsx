@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
@@ -78,6 +78,8 @@ const EmojiPicker: React.FC<Props> = ({
         onEmojiPress(emojiName);
     }, [onEmojiPress]);
 
+    const keyboardAppearance = useMemo(() => getKeyboardAppearanceFromTheme(theme), [theme]);
+
     const EmojiList = (
         <EmojiFiltered
             customEmojis={customEmojis}
@@ -105,7 +107,7 @@ const EmojiPicker: React.FC<Props> = ({
         >
             <EmojiPickerHeader
                 autoCapitalize='none'
-                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                keyboardAppearance={keyboardAppearance}
                 onCancel={onCancelSearch}
                 onChangeText={onChangeSearchTerm}
                 testID={`${testID}.search_bar`}

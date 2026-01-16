@@ -122,7 +122,7 @@ const EmojiPickerHeader: React.FC<Props> = ({
 
                 // Calculate total height: keyboardHeight + search bar height + search container padding + visibility offset
                 // iOS and Android EdgeToEdge: expand emoji picker to include keyboard
-                // Android < 35: collapse to just search bar (old behavior)
+                // Android < 30: collapse to just search bar (old behavior)
                 const visibilityOffset = isAndroidEdgeToEdge ? SEARCH_VISIBILITY_OFFSET_ANDROID : SEARCH_VISIBILITY_OFFSET;
                 const targetHeight = (Platform.OS === 'ios' || isAndroidEdgeToEdge) ? currentKeyboardH + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + visibilityOffset : SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + visibilityOffset;
 
@@ -169,7 +169,7 @@ const EmojiPickerHeader: React.FC<Props> = ({
     }, [emojiPickerHeight, isSearching, setIsEmojiSearchFocused, contextLastKeyboardHeight, showInputAccessoryView, isSelectingEmojiRef]);
 
     const onFocus = useCallback(() => {
-        // Android < 35: Skip if keyboard is already showing (handled by timeout)
+        // Android < 30: Skip if keyboard is already showing (handled by timeout)
         if (!isAndroidEdgeToEdge && Platform.OS === 'android' && showKeyboard) {
             isReducingHeight.current = false;
             return;
@@ -184,11 +184,11 @@ const EmojiPickerHeader: React.FC<Props> = ({
         const keyboardH = contextLastKeyboardHeight > 0 ? contextLastKeyboardHeight : DEFAULT_INPUT_ACCESSORY_HEIGHT;
 
         // iOS and Android EdgeToEdge: expand emoji picker to include keyboard
-        // Android < 35: collapse to just search bar (old behavior)
+        // Android < 30: collapse to just search bar (old behavior)
         const visibilityOffset = isAndroidEdgeToEdge ? SEARCH_VISIBILITY_OFFSET_ANDROID : SEARCH_VISIBILITY_OFFSET;
         const targetHeight = (Platform.OS === 'ios' || isAndroidEdgeToEdge) ? keyboardH + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + visibilityOffset : SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + visibilityOffset;
 
-        // Android < 35: Use delayed keyboard opening pattern
+        // Android < 30: Use delayed keyboard opening pattern
         if (!isAndroidEdgeToEdge && Platform.OS === 'android') {
             setShowKeyboard(false);
             isReducingHeight.current = true;
@@ -198,7 +198,7 @@ const EmojiPickerHeader: React.FC<Props> = ({
         emojiPickerHeight.value = withTiming(targetHeight, {duration: 250});
         isSearching.value = true;
 
-        // On Android < 35, delay keyboard opening to allow height reduction to render first
+        // On Android < 30, delay keyboard opening to allow height reduction to render first
         if (!isAndroidEdgeToEdge && Platform.OS === 'android') {
             if (keyboardTimeoutRef.current) {
                 clearTimeout(keyboardTimeoutRef.current);
@@ -237,13 +237,11 @@ const EmojiPickerHeader: React.FC<Props> = ({
                     showSoftInputOnFocus={Platform.OS === 'ios' || isAndroidEdgeToEdge || showKeyboard}
                 />
             </View>
-            {Platform.OS !== 'android' &&
-                <SkinToneSelector
-                    skinTone={skinTone}
-                    containerWidth={containerWidth}
-                    isSearching={isSearching}
-                />
-            }
+            <SkinToneSelector
+                skinTone={skinTone}
+                containerWidth={containerWidth}
+                isSearching={isSearching}
+            />
         </View>
     );
 };

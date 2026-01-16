@@ -227,7 +227,7 @@ export default function PostInput({
 
         // On Android, ignore focus events when emoji search is focused
         // This prevents the emoji picker from closing when the search bar gets focus
-        if (Platform.OS === 'android' && isEmojiSearchFocused) {
+        if (Platform.OS === 'android' && !isAndroidEdgeToEdge && isEmojiSearchFocused) {
             return;
         }
 
@@ -251,7 +251,7 @@ export default function PostInput({
         // Reset ref after processing (for next time)
         if (Platform.OS === 'android') {
             if (isAndroidEdgeToEdge && wasShowingEmojiPicker) {
-                // Android 35+ with edge-to-edge: Smooth transition from emoji picker to keyboard
+                // Android 30+ with edge-to-edge: Smooth transition from emoji picker to keyboard
                 // Use the captured height from refs if available, otherwise use current animated height
                 const currentEmojiPickerHeight = emojiPickerHeightRef.current || inputAccessoryViewAnimatedHeight.value;
                 const targetKeyboardHeight = keyboardHeight.value || lastKeyboardHeight || (DEFAULT_INPUT_ACCESSORY_HEIGHT - insets.bottom);
@@ -290,7 +290,7 @@ export default function PostInput({
                 return;
             }
 
-            // Android < 35: Original behavior
+            // Android < 30: Original behavior
             keyboardTranslateY.value = inputAccessoryViewAnimatedHeight.value;
             inputAccessoryViewAnimatedHeight.value = 0;
             isInputAccessoryViewMode.value = false;

@@ -51,7 +51,7 @@ const Thread = ({
     const isTablet = useIsTablet();
     const [isEmojiSearchFocused, setIsEmojiSearchFocused] = useState(false);
 
-    // Remove bottom safe area when emoji search is focused OR keyboard is open (Android 35+ only)
+    // Remove bottom safe area when emoji search is focused OR keyboard is open (Android 30+ only)
     // This prevents gap between input and keyboard on Android edge-to-edge
     const safeAreaViewEdges: Edge[] = useMemo(() => {
         if (isTablet) {

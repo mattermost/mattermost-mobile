@@ -99,7 +99,7 @@ describe('useKeyboardAwarePostDraft', () => {
 
             expect(result.current.postInputContainerHeight).toBe(91);
             expect(result.current.listRef.current).toBeNull();
-            expect(result.current.inputRef.current).toBeUndefined();
+            expect(result.current.inputRef.current).toBeNull();
             expect(result.current.keyboardTranslateY).toBe(mockKeyboardAnimationReturn.keyboardTranslateY);
             expect(result.current.contentInset).toBe(mockKeyboardAnimationReturn.bottomInset);
             expect(result.current.onScroll).toBe(mockKeyboardAnimationReturn.onScroll);
