@@ -12,6 +12,7 @@ import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
+import {fetchPlaybookRunPropertyFields} from './property_fields';
 import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel, fetchPlaybookRunsPageForParticipant, setOwner, finishRun, renamePlaybookRun, createPlaybookRun, fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from './runs';
 
 const serverUrl = 'baseHandler.test.com';
@@ -34,6 +35,7 @@ const mockClient = {
 jest.mock('@playbooks/database/queries/run');
 jest.mock('@playbooks/actions/local/run');
 jest.mock('@playbooks/actions/local/channel');
+jest.mock('./property_fields');
 
 const throwFunc = () => {
     throw Error('error');
@@ -239,6 +241,106 @@ describe('fetchFinishedRunsForChannel', () => {
     });
 });
 
+describe('fetchPlaybookRun', () => {
+    const runId = 'run-id-123';
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        jest.mocked(handlePlaybookRuns).mockResolvedValue({data: []});
+        jest.mocked(fetchPlaybookRunPropertyFields).mockResolvedValue({});
+    });
+
+    it('should fetch playbook run successfully', async () => {
+        const mockRun = TestHelper.fakePlaybookRun({id: runId});
+        mockClient.fetchPlaybookRun.mockResolvedValueOnce(mockRun);
+
+        const result = await fetchPlaybookRun(serverUrl, runId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.run).toEqual(mockRun);
+        expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(runId);
+        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true);
+        expect(fetchPlaybookRunPropertyFields).toHaveBeenCalledWith(serverUrl, runId, false);
+    });
+
+    it('should handle fetchOnly mode without storing in DB', async () => {
+        const mockRun = TestHelper.fakePlaybookRun({id: runId});
+        mockClient.fetchPlaybookRun.mockResolvedValueOnce(mockRun);
+
+        const result = await fetchPlaybookRun(serverUrl, runId, true);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.run).toEqual(mockRun);
+        expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(runId);
+        expect(handlePlaybookRuns).not.toHaveBeenCalled();
+        expect(fetchPlaybookRunPropertyFields).not.toHaveBeenCalled();
+    });
+
+    it('should fetch property fields after fetching run', async () => {
+        const mockRun = TestHelper.fakePlaybookRun({id: runId});
+        mockClient.fetchPlaybookRun.mockResolvedValueOnce(mockRun);
+
+        await fetchPlaybookRun(serverUrl, runId);
+
+        expect(fetchPlaybookRunPropertyFields).toHaveBeenCalledWith(serverUrl, runId, false);
+        expect(handlePlaybookRuns).toHaveBeenCalled();
+    });
+
+    it('should continue even if property fields fetch fails', async () => {
+        const mockRun = TestHelper.fakePlaybookRun({id: runId});
+        mockClient.fetchPlaybookRun.mockResolvedValueOnce(mockRun);
+        jest.mocked(fetchPlaybookRunPropertyFields).mockResolvedValueOnce({error: new Error('Property fields error')});
+
+        const result = await fetchPlaybookRun(serverUrl, runId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.run).toEqual(mockRun);
+        expect(fetchPlaybookRunPropertyFields).toHaveBeenCalledWith(serverUrl, runId, false);
+    });
+
+    it('should handle client error on fetchPlaybookRun', async () => {
+        mockClient.fetchPlaybookRun.mockRejectedValueOnce(new Error('Client error'));
+
+        const result = await fetchPlaybookRun(serverUrl, runId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.run).toBeUndefined();
+        expect(handlePlaybookRuns).not.toHaveBeenCalled();
+        expect(fetchPlaybookRunPropertyFields).not.toHaveBeenCalled();
+    });
+
+    it('should handle network manager error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await fetchPlaybookRun(serverUrl, runId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.run).toBeUndefined();
+        expect(handlePlaybookRuns).not.toHaveBeenCalled();
+        expect(fetchPlaybookRunPropertyFields).not.toHaveBeenCalled();
+    });
+
+    it('should handle handlePlaybookRuns error', async () => {
+        const mockRun = TestHelper.fakePlaybookRun({id: runId});
+        mockClient.fetchPlaybookRun.mockResolvedValueOnce(mockRun);
+        jest.mocked(handlePlaybookRuns).mockResolvedValueOnce({error: new Error('DB error')});
+
+        const result = await fetchPlaybookRun(serverUrl, runId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.run).toBeUndefined();
+        expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(runId);
+        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true);
+        expect(fetchPlaybookRunPropertyFields).not.toHaveBeenCalled();
+    });
+});
+
 describe('setOwner', () => {
     const playbookRunId = 'playbook-run-id-1';
     const ownerId = 'owner-user-id-1';
@@ -347,6 +449,7 @@ describe('finishRun', () => {
 
 describe('fetchPlaybookRunsPageForParticipant', () => {
     const participantId = 'participant-id-1';
+    const teamId = 'team-id-1';
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -359,7 +462,7 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             has_more: false,
         });
 
-        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId);
+        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId, teamId);
 
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
@@ -371,6 +474,7 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             participant_id: participantId,
             sort: 'create_at',
             direction: 'desc',
+            team_id: teamId,
         });
     });
 
@@ -381,7 +485,7 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             has_more: true,
         });
 
-        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId, 2);
+        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId, teamId, 2);
 
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
@@ -393,13 +497,14 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             participant_id: participantId,
             sort: 'create_at',
             direction: 'desc',
+            team_id: teamId,
         });
     });
 
     it('should handle network error', async () => {
         mockClient.fetchPlaybookRuns.mockRejectedValue(new Error('Network error'));
 
-        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId);
+        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId, teamId);
 
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
@@ -413,7 +518,7 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             has_more: false,
         });
 
-        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId);
+        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId, teamId);
 
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
@@ -428,7 +533,7 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             has_more: false,
         });
 
-        await fetchPlaybookRunsPageForParticipant(serverUrl, participantId);
+        await fetchPlaybookRunsPageForParticipant(serverUrl, participantId, teamId);
 
         expect(mockClient.fetchPlaybookRuns).toHaveBeenCalledWith({
             page: 0,
@@ -436,6 +541,7 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             participant_id: participantId,
             sort: 'create_at',
             direction: 'desc',
+            team_id: teamId,
         });
     });
 });

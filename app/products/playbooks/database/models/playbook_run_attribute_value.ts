@@ -7,16 +7,16 @@ import Model, {type Associations} from '@nozbe/watermelondb/Model';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 
 import type PlaybookRunModel from './playbook_run';
-import type PlaybookRunAttributeModel from './playbook_run_attribute';
+import type PlaybookRunPropertyFieldModel from './playbook_run_attribute';
 import type {Relation} from '@nozbe/watermelondb';
 import type PlaybookRunAttributeValueModelInterface from '@playbooks/types/database/models/playbook_run_attribute_value';
 
 const {PLAYBOOK_RUN, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 
 /**
- * The PlaybookRunAttributeValue model represents a playbook run attribute value in the Mattermost app.
+ * The PlaybookRunPropertyValue model represents a playbook run property value in the Mattermost app.
  */
-export default class PlaybookRunAttributeValueModel extends Model implements PlaybookRunAttributeValueModelInterface {
+export default class PlaybookRunPropertyValueModel extends Model implements PlaybookRunAttributeValueModelInterface {
     /** table (name) : PlaybookRunAttributeValue */
     static table = PLAYBOOK_RUN_ATTRIBUTE_VALUE;
 
@@ -39,8 +39,11 @@ export default class PlaybookRunAttributeValueModel extends Model implements Pla
     /** value : The value of the attribute */
     @field('value') value!: string;
 
+    /** updateAt : The timestamp when this attribute value was last updated */
+    @field('update_at') updateAt!: number;
+
     /** attribute : The attribute this attribute value belongs to */
-    @immutableRelation(PLAYBOOK_RUN_ATTRIBUTE, 'attribute_id') attribute!: Relation<PlaybookRunAttributeModel>;
+    @immutableRelation(PLAYBOOK_RUN_ATTRIBUTE, 'attribute_id') attribute!: Relation<PlaybookRunPropertyFieldModel>;
 
     /** run : The playbook run this attribute belongs to */
     @immutableRelation(PLAYBOOK_RUN, 'run_id') run!: Relation<PlaybookRunModel>;
