@@ -813,6 +813,69 @@ describe('*** Operator: Post Handlers tests ***', () => {
             }),
         );
     });
+
+    it('=> HandlePosts: should update burn-on-read post when its read receipts change', async () => {
+        const spyOnProcessRecords = jest.spyOn(operator, 'processRecords');
+
+        const now = Date.now();
+
+        // Create an unrevealed burn-on-read post
+        const existingPost: Post = {
+            id: 'bor_post_id',
+            create_at: 1596032651747,
+            update_at: 1596032651747,
+            edit_at: 0,
+            delete_at: 0,
+            is_pinned: false,
+            is_following: false,
+            user_id: 'user_id',
+            channel_id: 'channel_id',
+            root_id: '',
+            original_id: '',
+            message: 'This is the revealed message',
+            type: 'burn_on_read',
+            props: {expire_at: now + 1000000},
+            hashtags: '',
+            pending_post_id: '',
+            reply_count: 0,
+            last_reply_at: 0,
+            participants: null,
+            metadata: {expire_at: now + 1000000},
+        };
+
+        // First, create the existing post
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [existingPost.id],
+            posts: [existingPost],
+            prepareRecordsOnly: false,
+        });
+
+        // Now create an updated version of the same post
+        const updatedPost: Post = {
+            ...existingPost,
+            metadata: {
+                ...existingPost.metadata,
+                recipients: ['receipt_id_1'],
+            },
+        };
+
+        // Handle the updated post
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [updatedPost.id],
+            posts: [updatedPost],
+            prepareRecordsOnly: false,
+        });
+
+        // Verify that processRecords was called with the shouldUpdate function that handles BoR posts
+        expect(spyOnProcessRecords).toHaveBeenCalledWith(
+            expect.objectContaining({
+                createOrUpdateRawValues: [updatedPost],
+                shouldUpdate: expect.any(Function),
+            }),
+        );
+    });
 });
 
 describe('*** Operator: merge chunks ***', () => {
