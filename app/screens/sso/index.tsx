@@ -173,6 +173,7 @@ const SSO = ({
         doSSOCodeExchange,
         loginError,
         loginUrl,
+        serverUrl: serverUrl!,
         setLoginError,
         theme,
     };
