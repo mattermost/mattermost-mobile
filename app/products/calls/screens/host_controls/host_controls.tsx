@@ -3,7 +3,8 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, View} from 'react-native';
+import {View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {hostLowerHand, hostMake, hostMuteSession, hostStopScreenshare} from '@calls/actions/calls';
 import {removeFromCall} from '@calls/alerts';
@@ -23,11 +24,9 @@ import type {CallSession, CurrentCall} from '@calls/types/calls';
 const TITLE_HEIGHT = 118;
 const ITEM_HEIGHT = 48;
 const SEPARATOR_HEIGHT = 17;
-const ANDROID_BUMP_HEIGHT = 20;
 
 type Props = {
     currentCall: CurrentCall;
-    closeButtonId: string;
     session: CallSession;
     teammateNameDisplay: string;
     hideGuestTags: boolean;
@@ -48,14 +47,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
 
 export const HostControls = ({
     currentCall,
-    closeButtonId,
     session,
     teammateNameDisplay,
     hideGuestTags,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const {openUserProfile} = useHostMenus();
+    const {bottom} = useSafeAreaInsets();
+    const {openProfile} = useHostMenus();
     const styles = getStyleFromTheme(theme);
 
     const sharingScreen = currentCall.screenOn === session.sessionId;
@@ -82,8 +81,8 @@ export const HostControls = ({
 
     const profilePress = useCallback(async () => {
         await dismissBottomSheet();
-        openUserProfile(session);
-    }, [openUserProfile, session]);
+        openProfile(session);
+    }, [openProfile, session]);
 
     const removePress = useCallback(async () => {
         const displayName = displayUsername(session.userModel, intl.locale, teammateNameDisplay, true);
@@ -94,17 +93,14 @@ export const HostControls = ({
         const items = 3 + (session.muted ? 0 : 1) + (sharingScreen ? 1 : 0) + (session.raisedHand ? 1 : 0);
         return [
             1,
-            bottomSheetSnapPoint(items, ITEM_HEIGHT) + TITLE_HEIGHT + SEPARATOR_HEIGHT + (Platform.OS === 'android' ? ANDROID_BUMP_HEIGHT : 0),
+            bottomSheetSnapPoint(items, ITEM_HEIGHT) + TITLE_HEIGHT + SEPARATOR_HEIGHT + bottom,
         ];
-    }, [session.muted, sharingScreen, session.raisedHand]);
+    }, [session.muted, session.raisedHand, sharingScreen, bottom]);
 
     const makeHostText = intl.formatMessage({id: 'mobile.calls_make_host', defaultMessage: 'Make host'});
     const muteText = intl.formatMessage({id: 'mobile.calls_mute_participant', defaultMessage: 'Mute participant'});
     const lowerHandText = intl.formatMessage({id: 'mobile.calls_lower_hand', defaultMessage: 'Lower hand'});
-    const stopScreenshareText = intl.formatMessage({
-        id: 'mobile.calls_stop_screenshare',
-        defaultMessage: 'Stop screen share',
-    });
+    const stopScreenshareText = intl.formatMessage({id: 'mobile.calls_stop_screenshare', defaultMessage: 'Stop screen share'});
     const profileText = intl.formatMessage({id: 'mobile.calls_view_profile', defaultMessage: 'View profile'});
     const removeText = intl.formatMessage({id: 'mobile.calls_remove_participant', defaultMessage: 'Remove from call'});
 
@@ -176,8 +172,7 @@ export const HostControls = ({
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId={closeButtonId}
-            componentId={Screens.CALL_HOST_CONTROLS}
+            screen={Screens.CALL_HOST_CONTROLS}
             initialSnapIndex={1}
             snapPoints={snapPoints}
         />

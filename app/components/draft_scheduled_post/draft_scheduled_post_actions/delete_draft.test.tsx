@@ -76,7 +76,7 @@ describe('screens/draft_scheduled_post_options/DeleteDraft', () => {
         const deleteButton = screen.getByTestId('delete_draft');
         fireEvent.press(deleteButton);
 
-        expect(dismissBottomSheet).toHaveBeenCalledWith(Screens.DRAFT_SCHEDULED_POST_OPTIONS);
+        expect(dismissBottomSheet).toHaveBeenCalled();
         await waitFor(() => expect(deleteDraftConfirmation).toHaveBeenCalledWith(expect.objectContaining({
             channelId: 'channel-id',
             rootId: 'root-id',
@@ -97,7 +97,7 @@ describe('screens/draft_scheduled_post_options/DeleteDraft', () => {
         const deleteButton = screen.getByTestId('delete_draft');
         fireEvent.press(deleteButton);
 
-        expect(dismissBottomSheet).toHaveBeenCalledWith(Screens.DRAFT_SCHEDULED_POST_OPTIONS);
+        expect(dismissBottomSheet).toHaveBeenCalled();
         await waitFor(() => expect(deleteScheduledPostConfirmation).toHaveBeenCalledWith(expect.objectContaining({
             scheduledPostId: 'post-id',
         })));

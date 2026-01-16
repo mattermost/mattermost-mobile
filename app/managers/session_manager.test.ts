@@ -9,7 +9,7 @@ import {logout, scheduleSessionNotification} from '@actions/remote/session';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
-import {relaunchApp} from '@init/launch';
+import {determineRouteFromLaunchProps} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
 import IntuneManager from '@managers/intune_manager';
 import NetworkManager from '@managers/network_manager';
@@ -202,7 +202,7 @@ describe('SessionManager', () => {
             expect(logout).toHaveBeenCalledWith(mockServerUrl, undefined, {skipEvents: true, skipServerLogout: true});
             expect(SecurityManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
             expect(IntuneManager.unenrollServer).toHaveBeenCalledWith(mockServerUrl, true);
-            expect(relaunchApp).toHaveBeenCalled();
+            expect(determineRouteFromLaunchProps).toHaveBeenCalled();
         });
     });
 

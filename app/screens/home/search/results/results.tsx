@@ -134,4 +134,4 @@ const Results = ({
     );
 };
 
-export default Results;
+export default React.memo(Results);

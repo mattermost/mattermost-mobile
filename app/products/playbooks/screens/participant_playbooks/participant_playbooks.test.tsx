@@ -4,11 +4,12 @@
 import React, {act, type ComponentProps} from 'react';
 import {of as of$} from 'rxjs';
 
+import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {fetchPlaybookRunsPageForParticipant} from '@playbooks/actions/remote/runs';
 import RunList from '@playbooks/components/run_list';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -18,6 +19,7 @@ import type {Database} from '@nozbe/watermelondb';
 
 jest.mock('@hooks/android_back_handler');
 jest.mock('@playbooks/actions/remote/runs');
+jest.mock('@screens/navigation');
 
 jest.mock('@playbooks/components/run_list', () => ({
     __esModule: true,
@@ -37,7 +39,6 @@ describe('ParticipantPlaybooks', () => {
     function getBaseProps(): ComponentProps<typeof ParticipantPlaybooks> {
         return {
             currentUserId: 'test-user-id',
-            componentId: 'ParticipantPlaybooks',
             cachedPlaybookRuns: [],
             currentTeamId: 'test-team-id',
         };
@@ -161,7 +162,7 @@ describe('ParticipantPlaybooks', () => {
         const {getByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
         const runList = getByTestId('run_list');
-        expect(runList).toHaveProp('componentId', props.componentId);
+        expect(runList).toHaveProp('location', Screens.PARTICIPANT_PLAYBOOKS);
         expect(runList).toHaveProp('inProgressRuns', []);
         expect(runList).toHaveProp('finishedRuns', []);
 
@@ -336,14 +337,14 @@ describe('ParticipantPlaybooks', () => {
 
         renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(props.componentId, expect.any(Function));
+        expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(Screens.PARTICIPANT_PLAYBOOKS, expect.any(Function));
 
         const closeHandler = jest.mocked(useAndroidHardwareBackHandler).mock.calls[0][1];
         await act(async () => {
             closeHandler();
         });
 
-        expect(popTopScreen).toHaveBeenCalledWith(props.componentId);
+        expect(navigateBack).toHaveBeenCalled();
     });
 
     it('should not load more if there are no more runs', async () => {

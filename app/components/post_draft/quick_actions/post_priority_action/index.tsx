@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -11,8 +10,8 @@ import {Screens} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
-import {openAsBottomSheet} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {dismissKeyboard} from '@utils/keyboard';
 import {changeOpacity} from '@utils/theme';
 
@@ -30,36 +29,22 @@ const style = StyleSheet.create({
     },
 });
 
-const POST_PRIORITY_PICKER_BUTTON = 'close-post-priority-picker';
-
 export default function PostPriorityAction({
     testID,
     postPriority,
     updatePostPriority,
 }: Props) {
-    const intl = useIntl();
-    const isTablet = useIsTablet();
     const theme = useTheme();
     const {closeInputAccessoryView} = useKeyboardAnimationContext();
 
     const onPress = useCallback(async () => {
         closeInputAccessoryView();
         await dismissKeyboard();
-
-        const title = isTablet ? intl.formatMessage({id: 'post_priority.picker.title', defaultMessage: 'Message priority'}) : '';
-
-        openAsBottomSheet({
-            closeButtonId: POST_PRIORITY_PICKER_BUTTON,
-            screen: Screens.POST_PRIORITY_PICKER,
-            theme,
-            title,
-            props: {
-                postPriority,
-                updatePostPriority,
-                closeButtonId: POST_PRIORITY_PICKER_BUTTON,
-            },
+        CallbackStore.setCallback(updatePostPriority);
+        navigateToScreen(Screens.POST_PRIORITY_PICKER, {
+            postPriority,
         });
-    }, [closeInputAccessoryView, isTablet, intl, theme, postPriority, updatePostPriority]);
+    }, [closeInputAccessoryView, postPriority, updatePostPriority]);
 
     const iconName = 'alert-circle-outline';
     const iconColor = changeOpacity(theme.centerChannelColor, 0.64);

@@ -48,9 +48,7 @@ describe('EnhancedRescheduledDraft', () => {
         await operator.handleUsers({users: [TestHelper.fakeUser({id: 'user1', timezone: {useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}})], prepareRecordsOnly: false});
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedScheduledPostPicker
-                onSchedule={jest.fn()}
-            />,
+            <EnhancedScheduledPostPicker/>,
             {database},
         );
 
@@ -66,9 +64,7 @@ describe('EnhancedRescheduledDraft', () => {
         await operator.handleUsers({users: [TestHelper.fakeUser({id: 'user1', timezone: undefined})], prepareRecordsOnly: false});
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedScheduledPostPicker
-                onSchedule={jest.fn()}
-            />,
+            <EnhancedScheduledPostPicker/>,
             {database},
         );
 

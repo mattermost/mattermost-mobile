@@ -13,13 +13,14 @@ import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SettingContainer from '@components/settings/container';
+import {Screens} from '@constants';
 import AboutLinks from '@constants/about_links';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -30,8 +31,6 @@ import LearnMore from './learn_more';
 import Subtitle from './subtitle';
 import Title from './title';
 import TosPrivacyContainer from './tos_privacy';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
 
@@ -112,11 +111,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type AboutProps = {
-    componentId: AvailableScreens;
     config: ClientConfig;
     license?: ClientLicense;
 }
-const About = ({componentId, config, license}: AboutProps) => {
+const About = ({config, license}: AboutProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -176,11 +174,7 @@ const About = ({componentId, config, license}: AboutProps) => {
         return intl.formatMessage({id: 'settings.about.server.version.value', defaultMessage: '{version} (Build {buildNumber})'}, {version, buildNumber});
     }, [config, intl]);
 
-    const close = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.ABOUT, navigateBack);
 
     const copyToClipboard = useCallback(
         () => {
@@ -198,9 +192,9 @@ const About = ({componentId, config, license}: AboutProps) => {
             }
 
             Clipboard.setString(copiedString);
-            showSnackBar({barType: SNACK_BAR_TYPE.INFO_COPIED, sourceScreen: componentId});
+            showSnackBar({barType: SNACK_BAR_TYPE.INFO_COPIED, sourceScreen: Screens.ABOUT});
         },
-        [intl, config.BuildNumber, config.Version, config.SQLDriverName, config.SchemaVersion, loadMetric, componentId],
+        [intl, config.BuildNumber, config.Version, config.SQLDriverName, config.SchemaVersion, loadMetric],
     );
 
     return (

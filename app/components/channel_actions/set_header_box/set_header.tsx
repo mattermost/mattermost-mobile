@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 
 import OptionBox from '@components/option_box';
 import {Screens} from '@constants';
-import {dismissBottomSheet, goToScreen, showModal} from '@screens/navigation';
+import {dismissBottomSheet, navigateToScreenWithBaseRoute} from '@screens/navigation';
 
 import type {StyleProp, ViewStyle} from 'react-native';
 
@@ -24,13 +24,13 @@ const SetHeaderBox = ({channelId, containerStyle, isHeaderSet, inModal, testID}:
     const onSetHeader = useCallback(async () => {
         const title = intl.formatMessage({id: 'screens.channel_edit_header', defaultMessage: 'Edit Channel Header'});
         if (inModal) {
-            goToScreen(Screens.CREATE_OR_EDIT_CHANNEL, title, {channelId, headerOnly: true});
+            navigateToScreenWithBaseRoute(`(modals)/${Screens.BROWSE_CHANNELS}`, Screens.CREATE_OR_EDIT_CHANNEL, {channelId, headerOnly: true, title});
             return;
         }
 
         await dismissBottomSheet();
-        showModal(Screens.CREATE_OR_EDIT_CHANNEL, title, {channelId, headerOnly: true});
-    }, [intl, channelId]);
+        navigateToScreenWithBaseRoute('(modals)', Screens.CREATE_OR_EDIT_CHANNEL, {channelId, headerOnly: true, title});
+    }, [intl, inModal, channelId]);
 
     let text;
     if (isHeaderSet) {

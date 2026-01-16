@@ -9,13 +9,13 @@ import React, {type ComponentProps} from 'react';
 import CompassIcon from '@components/compass_icon';
 import FloatingAutocompleteSelector from '@components/floating_input/floating_autocomplete_selector';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
+import NavigationButton from '@components/navigation_button';
 import OptionItem from '@components/option_item';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {createPlaybookRun} from '@playbooks/actions/remote/runs';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
-import {getLastCall, getLastCallForButton} from '@test/mock_helpers';
 import TestHelper from '@test/test_helper';
 
 import StartARun from './start_a_run';
@@ -44,13 +44,14 @@ jest.mock('@components/option_item', () => ({
 }));
 jest.mocked(OptionItem).mockImplementation((props) => React.createElement('OptionItem', props));
 
-jest.mock('@context/server', () => ({
-    useServerUrl: jest.fn(() => 'https://server-url.com'),
-}));
-
-jest.mock('@hooks/navigation_button_pressed', () => ({
+jest.mock('@components/navigation_button', () => ({
     __esModule: true,
     default: jest.fn(),
+}));
+jest.mocked(NavigationButton).mockImplementation((props) => React.createElement('NavigationButton', {...props}));
+
+jest.mock('@context/server', () => ({
+    useServerUrl: jest.fn(() => 'https://server-url.com'),
 }));
 
 jest.mock('@hooks/android_back_handler', () => ({
@@ -63,30 +64,64 @@ jest.mock('@playbooks/actions/remote/runs', () => ({
 }));
 
 jest.mock('@screens/navigation', () => ({
-    popTopScreen: jest.fn(),
-    setButtons: jest.fn(),
+    navigateBack: jest.fn(),
+    goToScreen: jest.fn(),
+    showModal: jest.fn(),
+    dismissModal: jest.fn(),
+    bottomSheet: jest.fn(),
 }));
 
 jest.mock('@utils/snack_bar', () => ({
     showPlaybookErrorSnackbar: jest.fn(),
 }));
 
+jest.mock('react-native-keyboard-controller', () => {
+    const RN = jest.requireActual('react-native');
+    return {
+        KeyboardAwareScrollView: RN.ScrollView,
+        useAnimatedKeyboard: jest.fn(() => ({
+            height: {value: 0},
+            progress: {value: 0},
+            state: {value: 0},
+        })),
+        KeyboardController: {
+            setInputMode: jest.fn(),
+            setDefaultMode: jest.fn(),
+        },
+    };
+});
+
+// Mock expo-router navigation
+const mockSetOptions = jest.fn();
+const mockRemoveListener = jest.fn();
+const mockAddListener = jest.fn(() => mockRemoveListener);
+const mockNavigation = {
+    setOptions: mockSetOptions,
+    addListener: mockAddListener,
+};
+
+jest.mock('expo-router', () => ({
+    useNavigation: jest.fn(() => mockNavigation),
+}));
+
 describe('StartARun', () => {
+    const mockOnRunCreated = jest.fn();
+
     function getBaseProps(): ComponentProps<typeof StartARun> {
         return {
-            componentId: 'PlaybooksStartARun',
             playbook: TestHelper.fakePlaybook({
                 id: 'playbook-id',
                 title: 'Test Playbook',
             }),
             currentUserId: 'user-id',
             currentTeamId: 'team-id',
-            onRunCreated: jest.fn(),
         };
     }
 
     beforeEach(() => {
         jest.clearAllMocks();
+        CallbackStore.removeCallback();
+        CallbackStore.setCallback(mockOnRunCreated);
         jest.mocked(CompassIcon.getImageSource).mockResolvedValue({uri: 'close-icon'});
         jest.mocked(createPlaybookRun).mockResolvedValue({
             data: TestHelper.fakePlaybookRun({id: 'run-id'}),
@@ -258,12 +293,13 @@ describe('StartARun', () => {
         renderWithIntlAndTheme(<StartARun {...props}/>);
 
         await waitFor(() => {
-            expect(setButtons).toHaveBeenCalled();
+            expect(mockSetOptions).toHaveBeenCalled();
         });
 
-        const lastCall = getLastCall(jest.mocked(setButtons));
-        const rightButton = lastCall[1]?.rightButtons?.[0];
-        expect(rightButton?.enabled).toBe(false);
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{disabled: boolean}>;
+        expect(navigationButton.props.disabled).toBe(true);
     });
 
     it('should enable create button when run name is provided', async () => {
@@ -276,12 +312,13 @@ describe('StartARun', () => {
         });
 
         await waitFor(() => {
-            expect(setButtons).toHaveBeenCalled();
+            expect(mockSetOptions).toHaveBeenCalled();
         });
 
-        const lastCall = getLastCall(jest.mocked(setButtons));
-        const rightButton = lastCall[1]?.rightButtons?.[0];
-        expect(rightButton?.enabled).toBe(true);
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{disabled: boolean}>;
+        expect(navigationButton.props.disabled).toBe(false);
     });
 
     it('should show error message when run name is empty', () => {
@@ -323,8 +360,10 @@ describe('StartARun', () => {
         });
 
         // Get the create button handler
-        const lastCall = getLastCallForButton(jest.mocked(useNavButtonPressed), 'create-run');
-        const createHandler = lastCall[2];
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const createHandler = navigationButton.props.onPress;
 
         // Simulate create button press
         await act(async () => {
@@ -342,8 +381,8 @@ describe('StartARun', () => {
                 undefined,
                 undefined,
             );
-            expect(popTopScreen).toHaveBeenCalledWith('PlaybooksStartARun');
-            expect(props.onRunCreated).toHaveBeenCalledWith(mockRun);
+            expect(navigateBack).toHaveBeenCalled();
+            expect(mockOnRunCreated).toHaveBeenCalledWith(mockRun);
         });
     });
 
@@ -381,8 +420,10 @@ describe('StartARun', () => {
         });
 
         // Get the create button handler
-        const lastCall = getLastCallForButton(jest.mocked(useNavButtonPressed), 'create-run');
-        const createHandler = lastCall[2];
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const createHandler = navigationButton.props.onPress;
 
         // Simulate create button press
         await act(async () => {
@@ -437,8 +478,10 @@ describe('StartARun', () => {
         });
 
         // Get the create button handler
-        const lastCall = getLastCallForButton(jest.mocked(useNavButtonPressed), 'create-run');
-        const createHandler = lastCall[2];
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const createHandler = navigationButton.props.onPress;
 
         // Simulate create button press
         await act(async () => {
@@ -474,8 +517,10 @@ describe('StartARun', () => {
         });
 
         // Get the create button handler
-        const lastCall = getLastCallForButton(jest.mocked(useNavButtonPressed), 'create-run');
-        const createHandler = lastCall[2];
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const createHandler = navigationButton.props.onPress;
 
         // Simulate create button press
         await act(async () => {
@@ -485,8 +530,8 @@ describe('StartARun', () => {
         await waitFor(() => {
             expect(createPlaybookRun).toHaveBeenCalled();
             expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
-            expect(popTopScreen).not.toHaveBeenCalled();
-            expect(props.onRunCreated).not.toHaveBeenCalled();
+            expect(navigateBack).not.toHaveBeenCalled();
+            expect(mockOnRunCreated).not.toHaveBeenCalled();
         });
     });
 
@@ -506,8 +551,10 @@ describe('StartARun', () => {
         });
 
         // Get the create button handler
-        const lastCall = getLastCallForButton(jest.mocked(useNavButtonPressed), 'create-run');
-        const createHandler = lastCall[2];
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const createHandler = navigationButton.props.onPress;
 
         // Simulate create button press
         await act(async () => {
@@ -529,27 +576,12 @@ describe('StartARun', () => {
         });
     });
 
-    it('should handle close button press', () => {
-        const props = getBaseProps();
-        renderWithIntlAndTheme(<StartARun {...props}/>);
-
-        // Get the close button handler
-        const lastCall = getLastCallForButton(jest.mocked(useNavButtonPressed), 'close-start-a-run');
-        const closeHandler = lastCall[2];
-
-        act(() => {
-            closeHandler();
-        });
-
-        expect(popTopScreen).toHaveBeenCalledWith('PlaybooksStartARun');
-    });
-
     it('should handle Android back button press', () => {
         const props = getBaseProps();
         renderWithIntlAndTheme(<StartARun {...props}/>);
 
         expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(
-            'PlaybooksStartARun',
+            expect.any(String),
             expect.any(Function),
         );
 
@@ -560,7 +592,7 @@ describe('StartARun', () => {
             backHandler();
         });
 
-        expect(popTopScreen).toHaveBeenCalledWith('PlaybooksStartARun');
+        expect(navigateBack).toHaveBeenCalled();
     });
 
     it('should create run with existing channel and channel ID', async () => {
@@ -592,8 +624,10 @@ describe('StartARun', () => {
         });
 
         // Get the create button handler
-        const lastCall = getLastCallForButton(jest.mocked(useNavButtonPressed), 'create-run');
-        const createHandler = lastCall[2];
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const createHandler = navigationButton.props.onPress;
 
         // Simulate create button press
         await act(async () => {
@@ -614,20 +648,20 @@ describe('StartARun', () => {
         });
     });
 
-    it('should call setButtons with correct button configuration', async () => {
+    it('should set up navigation header with create button', async () => {
         const props = getBaseProps();
         renderWithIntlAndTheme(<StartARun {...props}/>);
 
         await waitFor(() => {
-            expect(setButtons).toHaveBeenCalled();
+            expect(mockSetOptions).toHaveBeenCalled();
         });
 
-        const lastCall = getLastCall(jest.mocked(setButtons));
-        expect(lastCall[0]).toBe('PlaybooksStartARun');
-        expect(lastCall[1]?.leftButtons).toBeDefined();
-        expect(lastCall[1]?.rightButtons).toBeDefined();
-        expect(lastCall[1]?.leftButtons?.[0]?.id).toBe('close-start-a-run');
-        expect(lastCall[1]?.rightButtons?.[0]?.id).toBe('create-run');
+        const setOptionsCall = mockSetOptions.mock.calls[0][0];
+        expect(setOptionsCall.headerRight).toBeDefined();
+
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{testID: string}>;
+        expect(navigationButton.props.testID).toBe('start_a_run.create.button');
     });
 
     it('should hide existing channel selector when new channel option is selected', async () => {

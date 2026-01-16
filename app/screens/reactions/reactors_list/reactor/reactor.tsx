@@ -2,14 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
-import {useIntl} from 'react-intl';
 
 import {fetchUsersByIds} from '@actions/remote/user';
 import UserItem from '@components/user_item';
-import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
-import {openUserProfileModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';
@@ -23,16 +21,15 @@ type Props = {
 }
 
 const Reactor = ({channelId, location, reaction, user}: Props) => {
-    const intl = useIntl();
-    const theme = useTheme();
     const serverUrl = useServerUrl();
-    const openUserProfile = async () => {
+    const openProfile = async () => {
         if (user) {
-            openUserProfileModal(intl, theme, {
+            await dismissBottomSheet();
+            openUserProfile({
                 userId: user.id,
                 channelId,
                 location,
-            }, Screens.REACTIONS);
+            });
         }
     };
 
@@ -40,13 +37,16 @@ const Reactor = ({channelId, location, reaction, user}: Props) => {
         if (!user) {
             fetchUsersByIds(serverUrl, [reaction.userId]);
         }
+
+    // Only needed on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
         <UserItem
             user={user}
             testID='reactions.reactor_item'
-            onUserPress={openUserProfile}
+            onUserPress={openProfile}
         />
     );
 };

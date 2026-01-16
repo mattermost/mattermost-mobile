@@ -5,7 +5,7 @@ import {Alert} from 'react-native';
 
 import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
 
-import {normalizeProtocol, tryOpenURL} from '.';
+import {normalizeProtocol, tryOpenURL} from './index';
 
 import type {IntlShape} from 'react-intl';
 

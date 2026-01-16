@@ -6,43 +6,75 @@ import React, {type ComponentProps} from 'react';
 import {Keyboard} from 'react-native';
 
 import DateTimeSelector from '@components/data_time_selector';
+import NavigationButton from '@components/navigation_button';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {act, fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import SelectDate from './select_date';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 // Mock dependencies
-jest.mock('@components/data_time_selector');
+jest.mock('@components/data_time_selector', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
 jest.mocked(DateTimeSelector).mockImplementation(
     (props) => React.createElement('DateTimeSelector', {testID: 'date-time-selector', ...props}),
 );
 
-jest.mock('@hooks/navigation_button_pressed');
+jest.mock('@components/navigation_button', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(NavigationButton).mockImplementation((props) => React.createElement('NavigationButton', {...props}));
+
 jest.mock('@hooks/android_back_handler');
+
+jest.mock('@screens/navigation', () => ({
+    navigateBack: jest.fn(),
+    goToScreen: jest.fn(),
+    showModal: jest.fn(),
+    dismissModal: jest.fn(),
+    bottomSheet: jest.fn(),
+}));
+
+jest.mock('react-native', () => {
+    const RN = jest.requireActual('react-native');
+    RN.Keyboard = {
+        dismiss: jest.fn(),
+    };
+    return RN;
+});
+
+// Mock expo-router navigation
+const mockSetOptions = jest.fn();
+const mockRemoveListener = jest.fn();
+const mockAddListener = jest.fn(() => mockRemoveListener);
+const mockNavigation = {
+    setOptions: mockSetOptions,
+    addListener: mockAddListener,
+};
+
+jest.mock('expo-router', () => ({
+    useNavigation: jest.fn(() => mockNavigation),
+}));
 
 describe('SelectDate', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        CallbackStore.removeCallback();
     });
 
     function getBaseProps(): ComponentProps<typeof SelectDate> {
-        const mockOnSave = jest.fn();
-
-        const mockComponentId: AvailableScreens = 'PlaybooksSelectDate';
         const mockCurrentUserTimezone: UserTimezone = {
             automaticTimezone: 'UTC',
             manualTimezone: '',
             useAutomaticTimezone: true,
         };
         return {
-            componentId: mockComponentId,
             selectedDate: undefined,
             currentUserTimezone: mockCurrentUserTimezone,
-            onSave: mockOnSave,
         };
     }
 
@@ -82,26 +114,31 @@ describe('SelectDate', () => {
         expect(getByText('Saturday, November 11 at 12:24 PM')).toBeTruthy();
     });
 
-    it('sets up navigation buttons correctly', () => {
+    it('sets up navigation header with disabled save button initially', () => {
         const props = getBaseProps();
         renderWithIntlAndTheme(<SelectDate {...props}/>);
 
-        expect(setButtons).toHaveBeenCalledWith(props.componentId, {
-            rightButtons: [expect.objectContaining({
-                id: 'save-due-date',
-                text: 'Save',
-                enabled: false,
-                showAsAction: 'always',
-                color: '#ffffff',
-            })],
-        });
+        // navigation.setOptions should be called with headerRight
+        expect(mockSetOptions).toHaveBeenCalled();
+
+        const setOptionsCall = mockSetOptions.mock.calls[0][0];
+        expect(setOptionsCall.headerRight).toBeDefined();
+
+        // Call the headerRight component to get the NavigationButton element
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{disabled: boolean; testID: string}>;
+
+        // Verify it's a NavigationButton with the correct props (disabled because no date change)
+        expect(navigationButton.props.testID).toBe('playbooks.select_date.save.button');
+        expect(navigationButton.props.disabled).toBe(true);
     });
 
-    it('sets up navigation button pressed handler', async () => {
+    it('calls callback and closes when save button is pressed', async () => {
+        const mockOnSave = jest.fn();
+        CallbackStore.setCallback(mockOnSave);
+
         const props = getBaseProps();
         const {getByTestId} = renderWithIntlAndTheme(<SelectDate {...props}/>);
-
-        jest.clearAllMocks();
 
         // Change the date to enable the save button
         const dateTimeSelector = getByTestId('date-time-selector');
@@ -110,18 +147,18 @@ describe('SelectDate', () => {
             dateTimeSelector.props.handleChange(moment(1234567890));
         });
 
-        expect(useNavButtonPressed).toHaveBeenCalledWith(
-            'save-due-date',
-            props.componentId,
-            expect.any(Function),
-            [expect.any(Function)],
-        );
+        // Get the headerRight component and call its onPress handler
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const onPress = navigationButton.props.onPress;
 
-        const saveHandler = jest.mocked(useNavButtonPressed).mock.calls[0][2];
-        saveHandler();
+        // Trigger save button press
+        onPress();
 
-        expect(props.onSave).toHaveBeenCalledWith(expect.any(Number));
-        expect(popTopScreen).toHaveBeenCalledWith(props.componentId);
+        expect(mockOnSave).toHaveBeenCalledWith(expect.any(Number));
+        expect(Keyboard.dismiss).toHaveBeenCalled();
+        expect(navigateBack).toHaveBeenCalled();
     });
 
     it('sets up Android back handler', () => {
@@ -129,14 +166,14 @@ describe('SelectDate', () => {
         renderWithIntlAndTheme(<SelectDate {...props}/>);
 
         expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(
-            props.componentId,
+            expect.any(String),
             expect.any(Function),
         );
 
         const closeHandler = jest.mocked(useAndroidHardwareBackHandler).mock.calls[0][1];
         closeHandler();
 
-        expect(popTopScreen).toHaveBeenCalledWith(props.componentId);
+        expect(navigateBack).toHaveBeenCalled();
         expect(Keyboard.dismiss).toHaveBeenCalled();
     });
 
@@ -151,11 +188,11 @@ describe('SelectDate', () => {
                 dateTimeSelector.props.handleChange(undefined);
             });
 
-            expect(setButtons).toHaveBeenCalledWith(props.componentId, {
-                rightButtons: [expect.objectContaining({
-                    enabled: false,
-                })],
-            });
+            const lastCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1];
+            const setOptionsCall = lastCall[0];
+            const headerRight = setOptionsCall.headerRight;
+            const navigationButton = headerRight() as React.ReactElement<{disabled: boolean}>;
+            expect(navigationButton.props.disabled).toBe(true);
         });
 
         it('returns true when date changes from undefined to defined', async () => {
@@ -169,11 +206,11 @@ describe('SelectDate', () => {
                 dateTimeSelector.props.handleChange(newDate);
             });
 
-            expect(setButtons).toHaveBeenCalledWith(props.componentId, {
-                rightButtons: [expect.objectContaining({
-                    enabled: true,
-                })],
-            });
+            const lastCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1];
+            const setOptionsCall = lastCall[0];
+            const headerRight = setOptionsCall.headerRight;
+            const navigationButton = headerRight() as React.ReactElement<{disabled: boolean}>;
+            expect(navigationButton.props.disabled).toBe(false);
         });
 
         it('returns true when date changes from defined to undefined', async () => {
@@ -188,11 +225,11 @@ describe('SelectDate', () => {
                 dateTimeSelector.props.handleChange(undefined);
             });
 
-            expect(setButtons).toHaveBeenCalledWith(props.componentId, {
-                rightButtons: [expect.objectContaining({
-                    enabled: true,
-                })],
-            });
+            const lastCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1];
+            const setOptionsCall = lastCall[0];
+            const headerRight = setOptionsCall.headerRight;
+            const navigationButton = headerRight() as React.ReactElement<{disabled: boolean}>;
+            expect(navigationButton.props.disabled).toBe(false);
         });
 
         it('returns true when date is different from selectedDate', async () => {
@@ -208,11 +245,11 @@ describe('SelectDate', () => {
                 dateTimeSelector.props.handleChange(newDate);
             });
 
-            expect(setButtons).toHaveBeenCalledWith(props.componentId, {
-                rightButtons: [expect.objectContaining({
-                    enabled: true,
-                })],
-            });
+            const lastCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1];
+            const setOptionsCall = lastCall[0];
+            const headerRight = setOptionsCall.headerRight;
+            const navigationButton = headerRight() as React.ReactElement<{disabled: boolean}>;
+            expect(navigationButton.props.disabled).toBe(false);
         });
 
         it('returns false when date is same as selectedDate', async () => {
@@ -228,11 +265,11 @@ describe('SelectDate', () => {
                 dateTimeSelector.props.handleChange(sameDate);
             });
 
-            expect(setButtons).toHaveBeenCalledWith(props.componentId, {
-                rightButtons: [expect.objectContaining({
-                    enabled: false,
-                })],
-            });
+            const lastCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1];
+            const setOptionsCall = lastCall[0];
+            const headerRight = setOptionsCall.headerRight;
+            const navigationButton = headerRight() as React.ReactElement<{disabled: boolean}>;
+            expect(navigationButton.props.disabled).toBe(true);
         });
     });
 

@@ -5,6 +5,7 @@ import React, {useEffect, useState} from 'react';
 import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation, Screens} from '@constants';
+import ParticipantPlaybooks from '@playbooks/screens/participant_playbooks';
 import Channel from '@screens/channel';
 import GlobalDraftsAndScheduledPosts from '@screens/global_drafts';
 import GlobalThreads from '@screens/global_threads';
@@ -28,16 +29,19 @@ const ComponentsList: Record<string, React.ComponentType<any>> = {
     [Screens.CHANNEL]: Channel,
     [Screens.GLOBAL_THREADS]: GlobalThreads,
     [Screens.GLOBAL_DRAFTS]: GlobalDraftsAndScheduledPosts,
+    [Screens.PARTICIPANT_PLAYBOOKS]: ParticipantPlaybooks,
 };
 
 const channelScreen: SelectedView = {id: Screens.CHANNEL, Component: Channel};
 const globalThreadsScreen: SelectedView = {id: Screens.GLOBAL_THREADS, Component: GlobalThreads};
 const globalDraftsScreen: SelectedView = {id: Screens.GLOBAL_DRAFTS, Component: GlobalDraftsAndScheduledPosts};
+const participantsPlaybooksScreen: SelectedView = {id: Screens.PARTICIPANT_PLAYBOOKS, Component: ParticipantPlaybooks};
 
 const views = new Map([
     [Screens.CHANNEL, channelScreen],
     [Screens.GLOBAL_THREADS, globalThreadsScreen],
     [Screens.GLOBAL_DRAFTS, globalDraftsScreen],
+    [Screens.PARTICIPANT_PLAYBOOKS, participantsPlaybooksScreen],
 ]);
 
 const AdditionalTabletView = ({onTeam, intialView}: Props) => {
@@ -71,7 +75,7 @@ const AdditionalTabletView = ({onTeam, intialView}: Props) => {
         return null;
     }
 
-    return React.createElement(selected.Component, {componentId: selected.id, isTabletView: true, ...(selected.params || {})});
+    return React.createElement(selected.Component, {isTabletView: true, ...(selected.params || {})});
 };
 
 export default AdditionalTabletView;

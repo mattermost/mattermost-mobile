@@ -3,12 +3,10 @@
 
 import {Alert, type AlertButton} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
 import {Screens, Sso, SupportedServer, Launch} from '@constants';
-import {dismissBottomSheet, showModal} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import {getErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {changeOpacity} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 import type ServersModel from '@typings/database/models/app/servers';
@@ -40,19 +38,16 @@ export function semverFromServerVersion(value: string) {
 }
 
 export async function addNewServer(theme: Theme, serverUrl?: string, displayName?: string, deepLinkProps?: DeepLinkWithData) {
-    await dismissBottomSheet();
-    const closeButtonId = 'close-server';
     const props = {
-        closeButtonId,
         displayName,
         launchType: deepLinkProps ? Launch.AddServerFromDeepLink : Launch.AddServer,
         serverUrl,
         theme,
         extra: deepLinkProps,
+        isModal: true,
+        isStackRoot: true,
     };
-    const options = buildServerModalOptions(theme, closeButtonId);
-
-    showModal(Screens.SERVER, '', props, options);
+    navigateToScreen(Screens.SERVER, props);
 }
 
 export function loginOptions(config: ClientConfig, license: ClientLicense) {
@@ -93,11 +88,8 @@ export function loginOptions(config: ClientConfig, license: ClientLicense) {
 }
 
 export async function loginToServer(theme: Theme, serverUrl: string, displayName: string, config: ClientConfig, license: ClientLicense) {
-    await dismissBottomSheet();
-    const closeButtonId = 'close-server';
     const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
     const props = {
-        closeButtonId,
         config,
         hasLoginForm,
         launchType: Launch.AddServer,
@@ -106,6 +98,8 @@ export async function loginToServer(theme: Theme, serverUrl: string, displayName
         serverUrl,
         ssoOptions,
         theme,
+        isModal: true,
+        isStackRoot: true,
     };
 
     const redirectSSO = !hasLoginForm && numberSSOs === 1;
@@ -115,21 +109,16 @@ export async function loginToServer(theme: Theme, serverUrl: string, displayName
         props.ssoType = enabledSSOs[0];
     }
 
-    const options = buildServerModalOptions(theme, closeButtonId);
-
-    showModal(screen, '', props, options);
+    navigateToScreen(screen, props);
 }
 
-export async function editServer(theme: Theme, server: ServersModel) {
-    const closeButtonId = 'close-server-edit';
+export async function editServer(theme: Theme, serverId: string) {
     const props = {
-        closeButtonId,
-        server,
+        serverId,
         theme,
     };
-    const options = buildServerModalOptions(theme, closeButtonId);
 
-    showModal(Screens.EDIT_SERVER, '', props, options);
+    navigateToScreen(Screens.EDIT_SERVER, props);
 }
 
 export async function alertServerLogout(displayName: string, onPress: () => void, intl: IntlShape) {
@@ -242,35 +231,4 @@ function unsupportedServerAdminAlert(serverDisplayName: string, intl: IntlShape,
     const options = {cancelable: false};
 
     Alert.alert(title, message, buttons, options);
-}
-
-function buildServerModalOptions(theme: Theme, closeButtonId: string) {
-    const closeButton = CompassIcon.getImageSourceSync('close', 24, changeOpacity(theme.centerChannelColor, 0.56));
-    const closeButtonTestId = `${closeButtonId.replace('close-', 'close.').replace(/-/g, '_')}.button`;
-    return {
-        layout: {
-            backgroundColor: theme.centerChannelBg,
-            componentBackgroundColor: theme.centerChannelBg,
-        },
-        topBar: {
-            visible: true,
-            drawBehind: true,
-            translucient: true,
-            noBorder: true,
-            elevation: 0,
-            background: {color: 'transparent'},
-            leftButtons: [{
-                id: closeButtonId,
-                icon: closeButton,
-                testID: closeButtonTestId,
-            }],
-            leftButtonColor: undefined,
-            title: {color: theme.sidebarHeaderTextColor},
-            scrollEdgeAppearance: {
-                active: true,
-                noBorder: true,
-                translucid: true,
-            },
-        },
-    };
 }

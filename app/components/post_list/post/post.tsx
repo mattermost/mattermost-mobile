@@ -4,7 +4,6 @@
 import AgentPost from '@agents/components/agent_post';
 import {isAgentPost} from '@agents/utils';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
 import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
 import {KeyboardController} from 'react-native-keyboard-controller';
 
@@ -16,14 +15,14 @@ import {isCallsCustomMessage} from '@calls/utils';
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
+import {Screens} from '@constants';
 import {POST_TIME_TO_FAIL} from '@constants/post';
-import * as Screens from '@constants/screens';
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
-import {openAsBottomSheet} from '@screens/navigation';
+import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
@@ -152,10 +151,8 @@ const Post = ({
     isLastPost,
 }: PostProps) => {
     const pressDetected = useRef(false);
-    const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const {blurAndDismissKeyboard, closeInputAccessoryView, showInputAccessoryView} = useKeyboardAnimationContext();
     const styles = getStyleSheet(theme);
     const isAutoResponder = fromAutoResponder(post);
@@ -188,7 +185,7 @@ const Post = ({
     }, [customEmojiNames, post.message]);
 
     const handlePostPress = useCallback(async () => {
-        if ([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {
+        if (([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES] as AvailableScreens[]).includes(location)) {
             showPermalink(serverUrl, '', post.id);
             return;
         }
@@ -198,8 +195,11 @@ const Post = ({
             removePost(serverUrl, post);
         } else if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
             // BoR posts cannot have replies, so don't open threads screen for them
-            if (!borPost && [Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
+            if (!borPost && ([Screens.CHANNEL, Screens.PERMALINK] as AvailableScreens[]).includes(location)) {
                 await blurAndDismissKeyboard();
+                if (location === Screens.PERMALINK) {
+                    await navigateBack();
+                }
                 const postRootId = post.rootId || post.id;
                 fetchAndSwitchToThread(serverUrl, postRootId);
             }
@@ -210,7 +210,7 @@ const Post = ({
         }, 300);
     }, [location, isAutoResponder, isSystemPost, isEphemeral, hasBeenDeleted, isPendingOrFailed, serverUrl, post, borPost, blurAndDismissKeyboard]);
 
-    const handlePress = useCallback(() => {
+    const handlePress = usePreventDoubleTap(useCallback(() => {
         pressDetected.current = true;
 
         KeyboardController.dismiss();
@@ -218,7 +218,7 @@ const Post = ({
         if (post) {
             setTimeout(handlePostPress, 300);
         }
-    }, [handlePostPress, post]);
+    }, [handlePostPress, post]));
 
     const showPostOptions = useCallback(async () => {
         if (!post) {
@@ -238,17 +238,9 @@ const Post = ({
         }
 
         await blurAndDismissKeyboard();
-        const passProps = {sourceScreen: location, post, showAddReaction, serverUrl};
-        const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
-
-        openAsBottomSheet({
-            closeButtonId: 'close-post-options',
-            screen: Screens.POST_OPTIONS,
-            theme,
-            title,
-            props: passProps,
-        });
-    }, [post, isSystemPost, canDelete, hasBeenDeleted, isPendingOrFailed, isEphemeral, blurAndDismissKeyboard, closeInputAccessoryView, showInputAccessoryView, location, showAddReaction, serverUrl, isTablet, intl, theme]);
+        const passProps = {sourceScreen: location, postId: post.id, showAddReaction};
+        navigateToScreen(Screens.POST_OPTIONS, passProps);
+    }, [post, isSystemPost, canDelete, hasBeenDeleted, isPendingOrFailed, isEphemeral, showInputAccessoryView, blurAndDismissKeyboard, location, showAddReaction, closeInputAccessoryView]);
 
     const [, rerender] = useState(false);
     useEffect(() => {
@@ -271,11 +263,11 @@ const Post = ({
             return;
         }
 
-        if (location !== 'Channel' && location !== 'Thread') {
+        if (location !== Screens.CHANNEL && location !== Screens.THREAD) {
             return;
         }
 
-        PerformanceMetricsManager.finishLoad(location === 'Thread' ? 'THREAD' : 'CHANNEL', serverUrl);
+        PerformanceMetricsManager.finishLoad(location === Screens.THREAD ? 'THREAD' : 'CHANNEL', serverUrl);
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Performance metrics should only run once on mount

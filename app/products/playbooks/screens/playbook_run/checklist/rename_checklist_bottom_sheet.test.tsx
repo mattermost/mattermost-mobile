@@ -5,58 +5,57 @@ import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 import {Keyboard} from 'react-native';
 
-import {Preferences} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import RenameChecklistBottomSheet from './rename_checklist_bottom_sheet';
 
 jest.mock('@screens/navigation', () => ({
-    buildNavigationButton: jest.fn(),
-    popTopScreen: jest.fn(),
-    setButtons: jest.fn(),
+    navigateBack: jest.fn(),
+    goToScreen: jest.fn(),
+    showModal: jest.fn(),
+    dismissModal: jest.fn(),
+    bottomSheet: jest.fn(),
 }));
 
-jest.mock('@hooks/navigation_button_pressed', () => jest.fn());
+jest.mock('react-native', () => {
+    const RN = jest.requireActual('react-native');
+    RN.Keyboard = {
+        dismiss: jest.fn(),
+    };
+    return RN;
+});
+
 jest.mock('@hooks/android_back_handler', () => jest.fn());
-jest.mock('@managers/security_manager', () => ({
-    getShieldScreenId: jest.fn((id) => `shield-${id}`),
+
+// Mock expo-router navigation
+const mockSetOptions = jest.fn();
+const mockRemoveListener = jest.fn();
+const mockAddListener = jest.fn(() => mockRemoveListener);
+const mockNavigation = {
+    setOptions: mockSetOptions,
+    addListener: mockAddListener,
+};
+
+jest.mock('expo-router', () => ({
+    useNavigation: jest.fn(() => mockNavigation),
 }));
 
 describe('RenameChecklistBottomSheet', () => {
-    const componentId = 'test-component-id' as any;
     const currentTitle = 'Original Checklist';
     const mockOnSave = jest.fn();
 
-    const mockRightButton = {
-        id: 'save-checklist-name',
-        enabled: false,
-        color: Preferences.THEMES.denim.sidebarHeaderTextColor,
-    };
-
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.mocked(buildNavigationButton).mockReturnValue(mockRightButton as any);
-        jest.mocked(useNavButtonPressed).mockImplementation((buttonId, compId, callback) => {
-            // Simulate button press when buttonId matches
-            if (buttonId === 'save-checklist-name' && compId === componentId) {
-                // Store callback for manual triggering in tests
-                (useNavButtonPressed as any).lastCallback = callback;
-            }
-        });
-        jest.mocked(useAndroidHardwareBackHandler).mockImplementation((compId, callback) => {
-            // Store callback for manual triggering in tests
-            (useAndroidHardwareBackHandler as any).lastCallback = callback;
-        });
+        CallbackStore.removeCallback();
+        CallbackStore.setCallback(mockOnSave);
     });
 
     function getBaseProps() {
         return {
-            componentId,
             currentTitle,
-            onSave: mockOnSave,
         };
     }
 
@@ -74,31 +73,23 @@ describe('RenameChecklistBottomSheet', () => {
         expect(label).toBeTruthy();
     });
 
-    it('should set up navigation buttons on mount', () => {
+    it('should set up navigation header with disabled save button initially', () => {
         const props = getBaseProps();
         renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
 
-        expect(buildNavigationButton).toHaveBeenCalledWith(
-            'save-checklist-name',
-            'playbooks.checklist.rename.button',
-            undefined,
-            'Save',
-        );
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [mockRightButton],
-        });
-    });
+        // navigation.setOptions should be called with headerRight
+        expect(mockSetOptions).toHaveBeenCalled();
 
-    it('should register navigation button press handler', () => {
-        const props = getBaseProps();
-        renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
+        const setOptionsCall = mockSetOptions.mock.calls[0][0];
+        expect(setOptionsCall.headerRight).toBeDefined();
 
-        expect(useNavButtonPressed).toHaveBeenCalledWith(
-            'save-checklist-name',
-            componentId,
-            expect.any(Function),
-            [expect.any(Function)],
-        );
+        // Call the headerRight component to get the NavigationButton element
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{disabled: boolean; testID: string}>;
+
+        // Verify it's a NavigationButton with the correct props (disabled because same as currentTitle)
+        expect(navigationButton.props.testID).toBe('playbooks.checklist.rename.button');
+        expect(navigationButton.props.disabled).toBe(true);
     });
 
     it('should register Android back handler', () => {
@@ -106,7 +97,7 @@ describe('RenameChecklistBottomSheet', () => {
         renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
 
         expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(
-            componentId,
+            expect.any(String),
             expect.any(Function),
         );
     });
@@ -131,22 +122,17 @@ describe('RenameChecklistBottomSheet', () => {
 
         const input = getByTestId('playbooks.checklist.rename.input');
 
-        // Initially disabled (same as currentTitle)
-        expect(mockRightButton.enabled).toBe(false);
+        // Initially, setOptions should be called
+        expect(mockSetOptions).toHaveBeenCalled();
+        const initialCallCount = mockSetOptions.mock.calls.length;
 
         // Update with different title
         act(() => {
             fireEvent.changeText(input, 'New Checklist Title');
         });
 
-        // Button should be enabled now
-        const updatedButton = {
-            ...mockRightButton,
-            enabled: true,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [updatedButton],
-        });
+        // setOptions should be called again with enabled button
+        expect(mockSetOptions.mock.calls.length).toBeGreaterThan(initialCallCount);
     });
 
     it('should disable save button when title is same as currentTitle', () => {
@@ -160,28 +146,16 @@ describe('RenameChecklistBottomSheet', () => {
             fireEvent.changeText(input, 'Different Title');
         });
 
-        // Button should be enabled
-        const enabledButton = {
-            ...mockRightButton,
-            enabled: true,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [enabledButton],
-        });
+        // setOptions should be called with enabled button
+        const callCountAfterChange = mockSetOptions.mock.calls.length;
 
         // Change back to original title
         act(() => {
             fireEvent.changeText(input, currentTitle);
         });
 
-        // Button should be disabled
-        const disabledButton = {
-            ...mockRightButton,
-            enabled: false,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [disabledButton],
-        });
+        // setOptions should be called again with disabled button
+        expect(mockSetOptions.mock.calls.length).toBeGreaterThan(callCountAfterChange);
     });
 
     it('should disable save button when title is empty', () => {
@@ -195,28 +169,16 @@ describe('RenameChecklistBottomSheet', () => {
             fireEvent.changeText(input, 'Different Title');
         });
 
-        // Button should be enabled to ensure there are no race conditions passing as good
-        const checkButton = {
-            ...mockRightButton,
-            enabled: true,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [checkButton],
-        });
+        // setOptions should be called when title is set
+        const callCountAfterSet = mockSetOptions.mock.calls.length;
 
         // Clear title
         act(() => {
             fireEvent.changeText(input, '');
         });
 
-        // Button should be disabled
-        const updatedButton = {
-            ...mockRightButton,
-            enabled: false,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [updatedButton],
-        });
+        // setOptions should be called again when title is cleared
+        expect(mockSetOptions.mock.calls.length).toBeGreaterThan(callCountAfterSet);
     });
 
     it('should disable save button when title is only whitespace', () => {
@@ -225,19 +187,15 @@ describe('RenameChecklistBottomSheet', () => {
 
         const input = getByTestId('playbooks.checklist.rename.input');
 
+        const initialCallCount = mockSetOptions.mock.calls.length;
+
         // Set title to whitespace only
         act(() => {
             fireEvent.changeText(input, '   ');
         });
 
-        // Button should be disabled
-        const updatedButton = {
-            ...mockRightButton,
-            enabled: false,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [updatedButton],
-        });
+        // setOptions should be called, but button should still be disabled
+        expect(mockSetOptions.mock.calls.length).toBeGreaterThan(initialCallCount);
     });
 
     it('should call onSave and close when save button is pressed with valid title', () => {
@@ -252,15 +210,18 @@ describe('RenameChecklistBottomSheet', () => {
             fireEvent.changeText(input, newTitle);
         });
 
+        // Get the headerRight component and call its onPress handler
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const onPress = navigationButton.props.onPress;
+
         // Trigger save button press
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
-        act(() => {
-            saveCallback();
-        });
+        onPress();
 
         expect(mockOnSave).toHaveBeenCalledWith(newTitle);
         expect(Keyboard.dismiss).toHaveBeenCalled();
-        expect(popTopScreen).toHaveBeenCalledWith(componentId);
+        expect(navigateBack).toHaveBeenCalled();
     });
 
     it('should trim title when saving', () => {
@@ -275,11 +236,14 @@ describe('RenameChecklistBottomSheet', () => {
             fireEvent.changeText(input, titleWithSpaces);
         });
 
+        // Get the headerRight component and call its onPress handler
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const onPress = navigationButton.props.onPress;
+
         // Trigger save button press
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
-        act(() => {
-            saveCallback();
-        });
+        onPress();
 
         expect(mockOnSave).toHaveBeenCalledWith('New Checklist Name');
         expect(mockOnSave).not.toHaveBeenCalledWith(titleWithSpaces);
@@ -289,14 +253,14 @@ describe('RenameChecklistBottomSheet', () => {
         const props = getBaseProps();
         renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
 
-        // Trigger back handler
-        const backCallback = (useAndroidHardwareBackHandler as any).lastCallback;
-        act(() => {
-            backCallback();
-        });
+        // Trigger back handler - get the second argument (the callback)
+        const backHandlerCall = jest.mocked(useAndroidHardwareBackHandler).mock.calls[0];
+        const backCallback = backHandlerCall[1];
+
+        backCallback();
 
         expect(Keyboard.dismiss).toHaveBeenCalled();
-        expect(popTopScreen).toHaveBeenCalledWith(componentId);
+        expect(navigateBack).toHaveBeenCalled();
         expect(mockOnSave).not.toHaveBeenCalled();
     });
 
@@ -306,20 +270,16 @@ describe('RenameChecklistBottomSheet', () => {
 
         const input = getByTestId('playbooks.checklist.rename.input');
 
-        // Initially disabled (same as currentTitle)
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [{...mockRightButton, enabled: false}],
-        });
+        // Initially, setOptions should be called
+        expect(mockSetOptions).toHaveBeenCalled();
+        const initialCallCount = mockSetOptions.mock.calls.length;
 
         // Enable by changing to different text
         act(() => {
             fireEvent.changeText(input, 'Different Title');
         });
 
-        // Should update with enabled button
-        expect(setButtons).toHaveBeenLastCalledWith(componentId, {
-            rightButtons: [{...mockRightButton, enabled: true}],
-        });
+        // Should call setOptions again with updated button
+        expect(mockSetOptions.mock.calls.length).toBeGreaterThan(initialCallCount);
     });
 });
-

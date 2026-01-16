@@ -1,21 +1,76 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 
-import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
-import {observeConfigBooleanValue} from '@queries/servers/system';
+import {showPermalink} from '@actions/remote/permalink';
+import OptionItem from '@components/option_item';
+import {useServerUrl} from '@context/server';
 
-import OptionMenus from './option_menus';
+import type {GalleryAction} from '@typings/screens/gallery';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
+type Props = {
+    canDownloadFiles?: boolean;
+    enablePublicLink?: boolean;
+    enableSecureFilePreview: boolean;
+    fileInfo: FileInfo;
+    setAction: (action: GalleryAction) => void;
+}
+const OptionMenus = ({
+    canDownloadFiles,
+    enablePublicLink,
+    enableSecureFilePreview,
+    fileInfo,
+    setAction,
+}: Props) => {
+    const serverUrl = useServerUrl();
+    const intl = useIntl();
 
-const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
-    return {
-        canDownloadFiles: observeCanDownloadFiles(database),
-        enablePublicLink: observeConfigBooleanValue(database, 'EnablePublicLink'),
-        enableSecureFilePreview: observeEnableSecureFilePreview(database),
-    };
-});
+    const handleDownload = useCallback(async () => {
+        setAction('downloading');
+    }, [setAction]);
 
-export default withDatabase(enhance(OptionMenus));
+    const handleCopyLink = useCallback(async () => {
+        setAction('copying');
+    }, [setAction]);
+
+    const handlePermalink = useCallback(async () => {
+        if (fileInfo.post_id) {
+            showPermalink(serverUrl, '', fileInfo.post_id);
+            setAction('opening');
+        }
+    }, [fileInfo.post_id, serverUrl, setAction]);
+
+    return (
+        <>
+            {canDownloadFiles &&
+                <OptionItem
+                    key={'download'}
+                    action={handleDownload}
+                    label={intl.formatMessage({id: 'screen.search.results.file_options.download', defaultMessage: 'Download'})}
+                    icon={'download-outline'}
+                    type='default'
+                />
+            }
+            <OptionItem
+                key={'permalink'}
+                action={handlePermalink}
+                label={intl.formatMessage({id: 'screen.search.results.file_options.open_in_channel', defaultMessage: 'Open in channel'})}
+                icon={'globe'}
+                type='default'
+            />
+            {(!enableSecureFilePreview && enablePublicLink) &&
+                <OptionItem
+                    key={'copylink'}
+                    action={handleCopyLink}
+                    label={intl.formatMessage({id: 'screen.search.results.file_options.copy_link', defaultMessage: 'Copy link'})}
+                    icon={'link-variant'}
+                    type='default'
+                />
+            }
+        </>
+    );
+};
+
+export default OptionMenus;

@@ -3,10 +3,11 @@
 
 import React, {useCallback, useRef} from 'react';
 import {Platform, StyleSheet} from 'react-native';
-import {runOnJS, runOnUI} from 'react-native-reanimated';
+import {runOnJS, runOnUI, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {isAndroidEdgeToEdge} from '@constants/device';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
@@ -37,6 +38,7 @@ export default function EmojiQuickAction({
         isInputAccessoryViewMode,
         isTransitioningFromCustomView,
         keyboardHeight,
+        keyboardTranslateY,
         lastKeyboardHeight,
         inputAccessoryViewAnimatedHeight,
         showInputAccessoryView,
@@ -50,25 +52,30 @@ export default function EmojiQuickAction({
 
     const checkCallbackRef = useRef<(() => void) | null>(null);
 
+    const checkKeyboardClosed = useCallback(() => {
+        'worklet';
+        const currentKeyboardHeight = keyboardHeight.value;
+        const targetHeight = currentKeyboardHeight || lastKeyboardHeight || DEFAULT_INPUT_ACCESSORY_HEIGHT;
+
+        if (isKeyboardFullyClosed.value || keyboardHeight.value === 0) {
+            // Match iOS order: Set SharedValues first, then trigger React render
+            // This ensures values are set before emoji picker component mounts
+            isInputAccessoryViewMode.value = true;
+            inputAccessoryViewAnimatedHeight.value = targetHeight;
+
+            // Trigger React render to mount emoji picker component
+            runOnJS(showEmojiPicker)();
+        } else if (checkCallbackRef.current) {
+            runOnJS(checkCallbackRef.current)();
+        }
+
+        // Shared values don't need to be in dependencies - they're stable references
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [lastKeyboardHeight, showEmojiPicker]);
+
     const scheduleKeyboardCheck = useCallback(() => {
         const checkKeyboard = () => {
-            runOnUI(() => {
-                'worklet';
-                const currentKeyboardHeight = keyboardHeight.value;
-                const targetHeight = currentKeyboardHeight || lastKeyboardHeight || DEFAULT_INPUT_ACCESSORY_HEIGHT;
-
-                if (isKeyboardFullyClosed.value || keyboardHeight.value === 0) {
-                    // Match iOS order: Set SharedValues first, then trigger React render
-                    // This ensures values are set before emoji picker component mounts
-                    isInputAccessoryViewMode.value = true;
-                    inputAccessoryViewAnimatedHeight.value = targetHeight;
-
-                    // Trigger React render to mount emoji picker component
-                    runOnJS(showEmojiPicker)();
-                } else if (checkCallbackRef.current) {
-                    runOnJS(checkCallbackRef.current)();
-                }
-            })();
+            runOnUI(checkKeyboardClosed)();
         };
 
         checkCallbackRef.current = () => {
@@ -76,10 +83,7 @@ export default function EmojiQuickAction({
         };
 
         checkKeyboard();
-
-        // Shared values don't need to be in dependencies - they're stable references
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [lastKeyboardHeight, showEmojiPicker]);
+    }, [checkKeyboardClosed]);
 
     const handleButtonPress = usePreventDoubleTap(useCallback(() => {
         // Prevent opening if already showing or transitioning
@@ -88,6 +92,38 @@ export default function EmojiQuickAction({
         }
 
         if (Platform.OS === 'android' && isKeyboardVisible()) {
+            // Android 35+ with edge-to-edge: Use same flow as iOS to prevent input jumping
+            // Set emoji picker state BEFORE dismissing keyboard so input stays in place
+            if (isAndroidEdgeToEdge) {
+                // Android 35+ with edge-to-edge: Set height FIRST, then mount component
+                // This ensures the useEffect (line 394) reads the correct height immediately
+                const currentKeyboardHeight = keyboardHeight.value;
+                const targetHeight = currentKeyboardHeight || lastKeyboardHeight || DEFAULT_INPUT_ACCESSORY_HEIGHT;
+
+                // STEP 1: Dismiss keyboard first (async, non-blocking)
+                dismissKeyboard();
+
+                // STEP 2: Immediately set all shared values on UI thread
+                // By the time keyboard actually starts dismissing, these will be set
+                runOnUI(() => {
+                    'worklet';
+
+                    // Set emoji picker height BEFORE mounting component
+                    inputAccessoryViewAnimatedHeight.value = targetHeight;
+
+                    // Enable custom view mode to prevent keyboard handlers from interfering
+                    isInputAccessoryViewMode.value = true;
+
+                    // Move input container to bottom immediately
+                    keyboardTranslateY.value = withTiming(0, {duration: 0});
+                })();
+
+                // STEP 3: Mount emoji picker component
+                setShowInputAccessoryView(true);
+                return;
+            }
+
+            // Android < 35: Original behavior - dismiss keyboard first, then show emoji picker
             dismissKeyboard();
 
             // Wait for keyboard to be fully dismissed before showing emoji picker

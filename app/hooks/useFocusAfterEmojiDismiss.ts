@@ -5,6 +5,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {Platform} from 'react-native';
 import {runOnUI} from 'react-native-reanimated';
 
+import {isAndroidEdgeToEdge} from '@constants/device';
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
@@ -66,7 +67,9 @@ export const useFocusAfterEmojiDismiss = (
 
     // Wrapped focus function that handles emoji picker dismissal
     const focusWithEmojiDismiss = useCallback(() => {
-        if (Platform.OS === 'android' && showInputAccessoryView) {
+        // Android < 35: Use complex dismissal logic with delays
+        // Android >= 35 (EdgeToEdge): Use simple focus like iOS - onFocus will handle transition
+        if (Platform.OS === 'android' && !isAndroidEdgeToEdge && showInputAccessoryView) {
             isDismissingEmojiPicker.current = true;
             setIsManuallyFocusingAfterEmojiDismiss(true);
 

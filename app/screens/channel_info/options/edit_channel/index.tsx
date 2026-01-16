@@ -8,7 +8,7 @@ import {Platform} from 'react-native';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {goToScreen} from '@screens/navigation';
+import {navigateToChannelInfoScreen} from '@screens/navigation';
 
 type Props = {
     channelId: string;
@@ -19,7 +19,7 @@ const EditChannel = ({channelId}: Props) => {
     const title = formatMessage({id: 'screens.channel_edit', defaultMessage: 'Edit Channel'});
 
     const goToEditChannel = usePreventDoubleTap(useCallback(async () => {
-        goToScreen(Screens.CREATE_OR_EDIT_CHANNEL, title, {channelId});
+        navigateToChannelInfoScreen(Screens.CREATE_OR_EDIT_CHANNEL, {channelId, title});
     }, [channelId, title]));
 
     return (

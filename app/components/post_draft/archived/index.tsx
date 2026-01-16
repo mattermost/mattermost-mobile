@@ -12,7 +12,7 @@ import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {popToRoot} from '@screens/navigation';
+import {dismissAllRoutesAndResetToRootRoute} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -82,7 +82,7 @@ export default function Archived({
         if (isTablet) {
             switchToPenultimateChannel(serverUrl);
         } else {
-            popToRoot();
+            dismissAllRoutesAndResetToRootRoute();
         }
     }, [serverUrl, isTablet]);
 

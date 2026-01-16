@@ -2,14 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl, type MessageDescriptor} from 'react-intl';
-import {Platform, type StyleProp, Text, type TextStyle, TouchableOpacity, View, type ViewStyle} from 'react-native';
+import {type MessageDescriptor} from 'react-intl';
+import {type StyleProp, Text, type TextStyle, TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -104,20 +102,16 @@ const UserAvatarsStack = ({
 }: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const intl = useIntl();
-    const isTablet = useIsTablet();
 
     const showParticipantsList = usePreventDoubleTap(useCallback(() => {
         const renderContent = () => (
             <>
-                {!isTablet && (
-                    <View style={style.listHeader}>
-                        <FormattedText
-                            {...bottomSheetTitle}
-                            style={style.listHeaderText}
-                        />
-                    </View>
-                )}
+                <View style={style.listHeader}>
+                    <FormattedText
+                        {...bottomSheetTitle}
+                        style={style.listHeaderText}
+                    />
+                </View>
                 <UsersList
                     channelId={channelId}
                     location={location}
@@ -126,25 +120,15 @@ const UserAvatarsStack = ({
             </>
         );
 
-        let height = bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT) + TITLE_HEIGHT;
-        if (Platform.OS === 'android') {
-            height += BOTTOM_SHEET_ANDROID_OFFSET;
-        }
+        const height = bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT) + TITLE_HEIGHT;
 
         const snapPoints: Array<string | number> = [1, height];
         if (users.length > 5) {
             snapPoints.push('80%');
         }
 
-        bottomSheet({
-            closeButtonId: 'close-set-user-status',
-            renderContent,
-            initialSnapIndex: 1,
-            snapPoints,
-            title: intl.formatMessage(bottomSheetTitle),
-            theme,
-        });
-    }, [users, intl, bottomSheetTitle, theme, isTablet, style.listHeader, style.listHeaderText, channelId, location]));
+        bottomSheet(renderContent, snapPoints);
+    }, [users, style.listHeader, style.listHeaderText, bottomSheetTitle, channelId, location]));
 
     const displayUsers = users.slice(0, breakAt);
     const overflowUsersCount = Math.min(users.length - displayUsers.length, OVERFLOW_DISPLAY_LIMIT);

@@ -30,7 +30,7 @@ jest.mock('@playbooks/screens/navigation', () => ({
 }));
 
 describe('RunList', () => {
-    const componentId = 'TestScreen' as AvailableScreens;
+    const location = 'TestScreen' as AvailableScreens;
     const inProgressRun = TestHelper.fakePlaybookRunModel({
         id: 'in-progress-1',
         name: 'In Progress Run',
@@ -43,7 +43,7 @@ describe('RunList', () => {
 
     function getBaseProps(): ComponentProps<typeof RunList> {
         return {
-            componentId,
+            location,
             inProgressRuns: [],
             finishedRuns: [],
             fetchMoreRuns: jest.fn(),
@@ -243,7 +243,6 @@ describe('RunList', () => {
             expect.objectContaining({
                 formatMessage: expect.any(Function),
             }),
-            expect.anything(),
             undefined,
         );
     });
@@ -352,6 +351,6 @@ describe('RunList', () => {
         });
 
         expect(goToSelectPlaybook).toHaveBeenCalledTimes(1);
-        expect(goToSelectPlaybook).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'channel-id-1');
+        expect(goToSelectPlaybook).toHaveBeenCalledWith(expect.anything(), 'channel-id-1');
     });
 });

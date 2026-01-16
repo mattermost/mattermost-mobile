@@ -7,21 +7,14 @@ import {Alert, View} from 'react-native';
 import {type CameraOptions} from 'react-native-image-picker';
 
 import FormattedText from '@components/formatted_text';
-import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Screens} from '@constants';
+import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
-import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet} from '@screens/navigation';
 import {fileMaxWarning, uploadDisabledWarning} from '@utils/file';
 import PickerUtil from '@utils/file/file_picker';
-import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
-const TITLE_HEIGHT = 54;
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     title: {
         color: theme.centerChannelColor,
@@ -31,8 +24,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
-    componentId: AvailableScreens;
-    closeButtonId?: string;
     onUploadFiles: (files: ExtractedFileInfo[]) => void;
     maxFileCount?: number;
     fileCount?: number;
@@ -42,8 +33,6 @@ type Props = {
 }
 
 const AttachmentOptions: React.FC<Props> = ({
-    componentId,
-    closeButtonId = 'attachment-close-id',
     onUploadFiles,
     maxFileCount,
     fileCount = 0,
@@ -52,7 +41,6 @@ const AttachmentOptions: React.FC<Props> = ({
     testID,
 }) => {
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const intl = useIntl();
     const styles = getStyleSheet(theme);
 
@@ -87,7 +75,7 @@ const AttachmentOptions: React.FC<Props> = ({
     };
 
     const onChooseFromPhotoLibrary = async () => {
-        await dismissBottomSheet(Screens.ATTACHMENT_OPTIONS);
+        await dismissBottomSheet();
         if (!checkCanUpload() || checkMaxFiles()) {
             return;
         }
@@ -96,7 +84,7 @@ const AttachmentOptions: React.FC<Props> = ({
     };
 
     const onTakePhoto = async () => {
-        await dismissBottomSheet(Screens.ATTACHMENT_OPTIONS);
+        await dismissBottomSheet();
         if (!checkCanUpload() || checkMaxFiles()) {
             return;
         }
@@ -109,7 +97,7 @@ const AttachmentOptions: React.FC<Props> = ({
     };
 
     const onTakeVideo = async () => {
-        await dismissBottomSheet(Screens.ATTACHMENT_OPTIONS);
+        await dismissBottomSheet();
         if (!checkCanUpload() || checkMaxFiles()) {
             return;
         }
@@ -123,64 +111,45 @@ const AttachmentOptions: React.FC<Props> = ({
     };
 
     const onAttachFile = async () => {
-        await dismissBottomSheet(Screens.ATTACHMENT_OPTIONS);
+        await dismissBottomSheet();
         if (!checkCanUpload() || checkMaxFiles()) {
             return;
         }
         picker.attachFileFromFiles(undefined, true);
     };
 
-    const renderContent = () => {
-        return (
-            <View>
-                {!isTablet &&
-                <FormattedText
-                    id='mobile.file_attachment.title'
-                    defaultMessage='Files and media'
-                    style={styles.title}
-                />
-                }
-                <SlideUpPanelItem
-                    leftIcon='image-outline'
-                    onPress={onChooseFromPhotoLibrary}
-                    testID='file_attachment.photo_library'
-                    text={intl.formatMessage({id: 'mobile.file_upload.library', defaultMessage: 'Choose from photo library'})}
-                />
-                <SlideUpPanelItem
-                    leftIcon='camera-outline'
-                    onPress={onTakePhoto}
-                    testID='file_attachment.take_photo'
-                    text={intl.formatMessage({id: 'mobile.file_upload.camera_photo', defaultMessage: 'Take a photo'})}
-                />
-                <SlideUpPanelItem
-                    leftIcon='video-outline'
-                    onPress={onTakeVideo}
-                    testID='file_attachment.take_video'
-                    text={intl.formatMessage({id: 'mobile.file_upload.camera_video', defaultMessage: 'Take a video'})}
-                />
-                <SlideUpPanelItem
-                    leftIcon='paperclip'
-                    onPress={onAttachFile}
-                    testID='file_attachment.attach_file'
-                    text={intl.formatMessage({id: 'mobile.file_upload.browse', defaultMessage: 'Attach a file'})}
-                />
-            </View>
-        );
-    };
-
-    const snapPoints = useMemo(() => {
-        const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(4, ITEM_HEIGHT);
-        return [1, componentHeight];
-    }, []);
-
     return (
-        <BottomSheet
-            componentId={componentId}
-            renderContent={renderContent}
-            closeButtonId={closeButtonId}
-            snapPoints={snapPoints}
-            testID={testID}
-        />
+        <View testID={testID}>
+            <FormattedText
+                id='mobile.file_attachment.title'
+                defaultMessage='Files and media'
+                style={styles.title}
+            />
+            <SlideUpPanelItem
+                leftIcon='image-outline'
+                onPress={onChooseFromPhotoLibrary}
+                testID='file_attachment.photo_library'
+                text={intl.formatMessage({id: 'mobile.file_upload.library', defaultMessage: 'Choose from photo library'})}
+            />
+            <SlideUpPanelItem
+                leftIcon='camera-outline'
+                onPress={onTakePhoto}
+                testID='file_attachment.take_photo'
+                text={intl.formatMessage({id: 'mobile.file_upload.camera_photo', defaultMessage: 'Take a photo'})}
+            />
+            <SlideUpPanelItem
+                leftIcon='video-outline'
+                onPress={onTakeVideo}
+                testID='file_attachment.take_video'
+                text={intl.formatMessage({id: 'mobile.file_upload.camera_video', defaultMessage: 'Take a video'})}
+            />
+            <SlideUpPanelItem
+                leftIcon='paperclip'
+                onPress={onAttachFile}
+                testID='file_attachment.attach_file'
+                text={intl.formatMessage({id: 'mobile.file_upload.browse', defaultMessage: 'Attach a file'})}
+            />
+        </View>
     );
 };
 

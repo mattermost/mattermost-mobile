@@ -105,18 +105,8 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
             );
         };
 
-        bottomSheet({
-            closeButtonId: 'close-other-actions',
-            renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(available.length + 1, ITEM_HEIGHT)],
-            title: intl.formatMessage({id: 'mobile.calls_audio_device', defaultMessage: 'Select audio device'}),
-            theme,
-        });
-    }, [
-        audioDeviceInfo.selectedAudioDevice, audioDeviceInfo.availableAudioDeviceList,
-        intl, theme, isTablet, tabletLabel, style.checkIcon,
-        phoneLabel, speakerLabel, bluetoothLabel, headsetLabel,
-    ]);
+        bottomSheet(renderContent, [1, bottomSheetSnapPoint(available.length + 1, ITEM_HEIGHT)]);
+    }, [audioDeviceInfo.selectedAudioDevice, audioDeviceInfo.availableAudioDeviceList, isTablet, tabletLabel, style.checkIcon, phoneLabel, speakerLabel, bluetoothLabel, headsetLabel]);
 
     let icon = 'volume-high';
     let label = speakerLabel;

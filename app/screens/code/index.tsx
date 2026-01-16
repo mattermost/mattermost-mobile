@@ -3,41 +3,34 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
+import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect} from 'react';
-import {StyleSheet, type TextStyle} from 'react-native';
-import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
+import {StyleSheet, View, type TextStyle} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import NavigationButton from '@components/navigation_button';
 import SyntaxHiglight from '@components/syntax_highlight';
+import {Screens} from '@constants';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
-type Props = {
-    componentId: AvailableScreens;
+export type CodeScreenProps = {
     code: string;
     language: string;
     textStyle: TextStyle;
 }
 
-const COPY_CODE_BUTTON = 'copy-code';
-
-const edges: Edge[] = ['left', 'right'];
-
 const styles = StyleSheet.create({
     flex: {flex: 1},
 });
 
-const Code = ({code, componentId, language, textStyle}: Props) => {
+const CodeScreen = ({code, language, textStyle}: CodeScreenProps) => {
+    const navigation = useNavigation();
     const theme = useTheme();
     const managedConfig = useManagedConfig<ManagedConfig>();
-    useAndroidHardwareBackHandler(componentId, popTopScreen);
+    useAndroidHardwareBackHandler(Screens.CODE, navigateBack);
 
     const copyToClipboard = useCallback(() => {
         if (!code) {
@@ -45,36 +38,33 @@ const Code = ({code, componentId, language, textStyle}: Props) => {
         }
 
         Clipboard.setString(code);
-        showSnackBar({barType: SNACK_BAR_TYPE.CODE_COPIED, sourceScreen: componentId});
-    }, [code, componentId]);
-
-    useNavButtonPressed(COPY_CODE_BUTTON, componentId, copyToClipboard, [componentId, copyToClipboard]);
+        showSnackBar({barType: SNACK_BAR_TYPE.CODE_COPIED, sourceScreen: Screens.CODE});
+    }, [code]);
 
     useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [
-                {
-                    id: COPY_CODE_BUTTON,
-                    icon: CompassIcon.getImageSourceSync('content-copy', 24, theme.centerChannelColor),
-                },
-            ],
+        navigation.setOptions({
+            headerRight: () => (
+                <NavigationButton
+                    iconName='content-copy'
+                    iconSize={24}
+                    color={theme.centerChannelColor}
+                    onPress={copyToClipboard}
+                    testID='copy-code'
+                />
+            ),
         });
-    }, [theme.centerChannelColor, componentId]);
+    }, [copyToClipboard, navigation, theme.centerChannelColor]);
 
     return (
-        <SafeAreaView
-            edges={edges}
-            style={styles.flex}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-        >
+        <View style={styles.flex}>
             <SyntaxHiglight
                 code={code}
                 language={language}
                 selectable={managedConfig.copyAndPasteProtection !== 'true'}
                 textStyle={textStyle}
             />
-        </SafeAreaView>
+        </View>
     );
 };
 
-export default Code;
+export default CodeScreen;

@@ -6,7 +6,7 @@ import React from 'react';
 import {Alert} from 'react-native';
 
 import {Screens} from '@constants';
-import {goToScreen} from '@screens/navigation';
+import {navigateToSettingsScreen} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import {deleteFileCache, getAllFilesInCachesDirectory} from '@utils/file';
 
@@ -29,7 +29,7 @@ jest.mock('@hooks/utils', () => ({
 
 const mockGetAllFilesInCachesDirectory = getAllFilesInCachesDirectory as jest.Mock;
 const mockDeleteFileCache = deleteFileCache as jest.Mock;
-const mockGoToScreen = goToScreen as jest.Mock;
+const mockNavigateToSettingsScreen = navigateToSettingsScreen as jest.Mock;
 
 describe('AdvancedSettings', () => {
     const defaultProps = {
@@ -238,9 +238,8 @@ describe('AdvancedSettings', () => {
             fireEvent.press(componentLibraryOption);
 
             await waitFor(() => {
-                expect(mockGoToScreen).toHaveBeenCalledWith(
+                expect(mockNavigateToSettingsScreen).toHaveBeenCalledWith(
                     Screens.COMPONENT_LIBRARY,
-                    'Component library',
                 );
             });
         });
@@ -256,7 +255,7 @@ describe('AdvancedSettings', () => {
                 expect(screen.queryByTestId('advanced_settings.component_library.option')).toBeNull();
             });
 
-            expect(mockGoToScreen).not.toHaveBeenCalled();
+            expect(mockNavigateToSettingsScreen).not.toHaveBeenCalled();
         });
     });
 

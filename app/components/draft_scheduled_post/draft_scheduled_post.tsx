@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
-import {Keyboard, TouchableHighlight, View} from 'react-native';
+import {Keyboard, View} from 'react-native';
+import {Pressable} from 'react-native-gesture-handler';
 
 import {switchToThread} from '@actions/local/thread';
 import {switchToChannelById} from '@actions/remote/channel';
@@ -11,11 +11,10 @@ import BoRLabel from '@components/burn_on_read_label';
 import DraftAndScheduledPostHeader from '@components/draft_scheduled_post_header';
 import Header from '@components/post_draft/draft_input/header';
 import {Screens} from '@constants';
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
+import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {DRAFT_OPTIONS_BUTTON} from '@screens/draft_scheduled_post_options';
-import {openAsBottomSheet} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import {isBoRPost} from '@utils/bor';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -93,7 +92,6 @@ const DraftAndScheduledPost: React.FC<Props> = ({
     firstItem,
     borUserTimeLimit,
 }) => {
-    const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -101,20 +99,14 @@ const DraftAndScheduledPost: React.FC<Props> = ({
 
     const onLongPress = useCallback(() => {
         Keyboard.dismiss();
-        let title;
-        if (draftType === DRAFT_TYPE_DRAFT) {
-            title = intl.formatMessage({id: 'draft.options.title', defaultMessage: 'Draft Options'});
-        } else {
-            title = intl.formatMessage({id: 'scheduled_post.options.title', defaultMessage: 'Message actions'});
-        }
-        openAsBottomSheet({
-            closeButtonId: DRAFT_OPTIONS_BUTTON,
-            screen: Screens.DRAFT_SCHEDULED_POST_OPTIONS,
-            theme,
-            title,
-            props: {channel, rootId: post.rootId, draftType, draft: post, draftReceiverUserName: postReceiverUser?.username},
+        navigateToScreen(Screens.DRAFT_SCHEDULED_POST_OPTIONS, {
+            channelId: channel.id,
+            rootId: post.rootId,
+            draftType,
+            draftId: post.id,
+            draftReceiverUserName: postReceiverUser?.username,
         });
-    }, [intl, draftType, theme, channel, post, postReceiverUser?.username]);
+    }, [draftType, channel, post, postReceiverUser?.username]);
 
     const onPress = useCallback(() => {
         if (post.rootId) {
@@ -127,10 +119,10 @@ const DraftAndScheduledPost: React.FC<Props> = ({
     const borPost = useMemo(() => isBoRPost(post), [post]);
 
     return (
-        <TouchableHighlight
+        <Pressable
             onLongPress={onLongPress}
             onPress={onPress}
-            underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
+            style={({pressed}) => (pressed ? {backgroundColor: changeOpacity(theme.centerChannelColor, 0.1)} : undefined)}
             testID='draft_post'
         >
             <View style={style.container}>
@@ -185,7 +177,7 @@ const DraftAndScheduledPost: React.FC<Props> = ({
                 </View>
             </View>
 
-        </TouchableHighlight>
+        </Pressable>
     );
 };
 

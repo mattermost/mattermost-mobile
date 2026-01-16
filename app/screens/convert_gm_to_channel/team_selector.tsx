@@ -9,7 +9,8 @@ import MenuDivider from '@components/menu_divider';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {dismissBottomSheet, goToScreen} from '@screens/navigation';
+import {dismissBottomSheet, navigateToChannelInfoScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 
 type Props = {
     commonTeams: Team[];
@@ -30,13 +31,14 @@ export const TeamSelector = ({commonTeams, onSelectTeam, selectedTeamId}: Props)
         if (team) {
             onSelectTeam(team);
         }
+        CallbackStore.removeCallback();
     }, [commonTeams, onSelectTeam]);
 
     const goToTeamSelectorList = usePreventDoubleTap(useCallback(async () => {
         await dismissBottomSheet();
-        const title = formatMessage({id: 'channel_info.convert_gm_to_channel.team_selector_list.title', defaultMessage: 'Select Team'});
-        goToScreen(Screens.TEAM_SELECTOR_LIST, title, {teams: commonTeams, selectTeam, selectedTeamId});
-    }, [commonTeams, formatMessage, selectTeam, selectedTeamId]));
+        CallbackStore.setCallback(selectTeam);
+        navigateToChannelInfoScreen(Screens.TEAM_SELECTOR_LIST, {teams: commonTeams, selectedTeamId});
+    }, [commonTeams, selectTeam, selectedTeamId]));
 
     return (
         <View>

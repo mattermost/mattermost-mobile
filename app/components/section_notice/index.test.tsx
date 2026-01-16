@@ -7,7 +7,7 @@ import {Screens} from '@constants';
 import {fireEvent, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import SectionNotice from '.';
+import SectionNotice from './index';
 
 import type Database from '@nozbe/watermelondb/Database';
 

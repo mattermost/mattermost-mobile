@@ -12,20 +12,17 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {goToScreen, popTopScreen} from '@screens/navigation';
+import {navigateBack, navigateToSettingsScreen} from '@screens/navigation';
 import {deleteFileCache, getAllFilesInCachesDirectory, getFormattedFileSize} from '@utils/file';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
 import type {FileInfo} from 'expo-file-system';
 
 const EMPTY_FILES: FileInfo[] = [];
 
 type AdvancedSettingsProps = {
-    componentId: AvailableScreens;
     isDevMode: boolean;
 };
 const AdvancedSettings = ({
-    componentId,
     isDevMode,
 }: AdvancedSettingsProps) => {
     const intl = useIntl();
@@ -70,21 +67,17 @@ const AdvancedSettings = ({
     }, [files.length, getAllCachedFiles, intl, serverUrl]));
 
     const onPressComponentLibrary = useCallback(() => {
-        const screen = Screens.COMPONENT_LIBRARY;
-        const title = intl.formatMessage({id: 'settings.advanced_settings.component_library', defaultMessage: 'Component library'});
-
-        goToScreen(screen, title);
-    }, [intl]);
+        navigateToSettingsScreen(Screens.COMPONENT_LIBRARY);
+    }, []);
 
     useEffect(() => {
         getAllCachedFiles();
+
+        // Only need to run on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const close = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_ADVANCED, navigateBack);
 
     const hasData = Boolean(dataSize && dataSize > 0);
 

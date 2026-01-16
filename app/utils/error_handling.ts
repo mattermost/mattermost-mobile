@@ -6,7 +6,7 @@ import {Alert} from 'react-native';
 import {setJSExceptionHandler} from 'react-native-exception-handler';
 
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
-import {dismissAllModals, dismissAllOverlays} from '@screens/navigation';
+import {dismissAllRoutesAndResetToRootRoute} from '@screens/navigation';
 import {isBetaApp} from '@utils/general';
 import {
     captureException,
@@ -67,8 +67,7 @@ class JavascriptAndNativeErrorHandlerSingleton {
                 [{
                     text: translations[messages.button.id],
                     onPress: async () => {
-                        await dismissAllModals();
-                        await dismissAllOverlays();
+                        await dismissAllRoutesAndResetToRootRoute();
                     },
                 }],
                 {cancelable: false},

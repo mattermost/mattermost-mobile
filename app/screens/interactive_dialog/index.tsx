@@ -1,29 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
+import {useNavigation} from 'expo-router';
+import React, {useCallback, useEffect, useReducer, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {type ImageResource, Navigation} from 'react-native-navigation';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {KeyboardAwareScrollView, type KeyboardAwareScrollViewRef} from 'react-native-keyboard-controller';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {submitInteractiveDialog} from '@actions/remote/integrations';
-import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
+import NavigationButton from '@components/navigation_button';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import SecurityManager from '@managers/security_manager';
-import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
+import useBackNavigation from '@hooks/navigate_back';
+import {navigateBack} from '@screens/navigation';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
 import DialogElement from './dialog_element';
 import DialogIntroductionText from './dialog_introduction_text';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -38,28 +37,22 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             fontWeight: 'bold',
         },
         scrollView: {
-            marginBottom: 20,
-            marginTop: 10,
+            paddingBottom: 20,
+            paddingTop: 10,
         },
     };
 });
 
-type Props = {
+export type InteractiveDialogScreenProps = {
     config: InteractiveDialogConfig;
-    componentId: AvailableScreens;
 }
 
 const close = () => {
     Keyboard.dismiss();
-    dismissModal();
+    navigateBack();
 };
 
-const makeCloseButton = (icon: ImageResource) => {
-    return buildNavigationButton(CLOSE_BUTTON_ID, 'close.more_direct_messages.button', icon);
-};
-
-const CLOSE_BUTTON_ID = 'close-interactive-dialog';
-const SUBMIT_BUTTON_ID = 'submit-interactive-dialog';
+const edges: Edge[] = ['right', 'bottom', 'left'];
 
 type Errors = {[name: string]: string}
 const emptyErrorsState: Errors = {};
@@ -97,8 +90,8 @@ function InteractiveDialog({
             submit_label: submitLabel,
         },
     },
-    componentId,
-}: Props) {
+}: InteractiveDialogScreenProps) {
+    const navigation = useNavigation();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const [error, setError] = useState('');
@@ -107,38 +100,22 @@ function InteractiveDialog({
     const [submitting, setSubmitting] = useState(false);
     const serverUrl = useServerUrl();
     const intl = useIntl();
-
-    const scrollView = useRef<KeyboardAwareScrollView>(null);
+    const scrollView = React.useRef<KeyboardAwareScrollViewRef>(null);
 
     const onChange = useCallback((name: string, value: string | number | boolean) => {
         dispatchValues({name, value});
     }, []);
 
-    const rightButton = useMemo(() => {
-        const base = buildNavigationButton(
-            SUBMIT_BUTTON_ID,
-            'interactive_dialog.submit.button',
-            undefined,
-            submitLabel || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'}),
-        );
-        base.enabled = !submitting;
-        base.showAsAction = 'always';
-        base.color = theme.sidebarHeaderTextColor;
-        return base;
-    }, [intl, submitLabel, submitting, theme.sidebarHeaderTextColor]);
-
-    useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [rightButton],
-        });
-    }, [rightButton, componentId]);
-
-    useEffect(() => {
-        const icon = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        setButtons(componentId, {
-            leftButtons: [makeCloseButton(icon)],
-        });
-    }, [componentId, theme]);
+    const onBackPress = useCallback(() => {
+        if (notifyOnCancel) {
+            submitInteractiveDialog(serverUrl, {
+                url,
+                callback_id: callbackId,
+                state,
+                cancelled: true,
+            } as DialogSubmission);
+        }
+    }, [notifyOnCancel, serverUrl, url, callbackId, state]);
 
     const handleSubmit = useCallback(async () => {
         const newErrors: Errors = {};
@@ -187,7 +164,7 @@ function InteractiveDialog({
             if (data.error) {
                 hasErrors = true;
                 setError(data.error);
-                scrollView.current?.scrollToPosition(0, 0, true);
+                scrollView.current?.scrollTo({x: 0, y: 0, animated: true});
             } else {
                 setError('');
             }
@@ -201,53 +178,32 @@ function InteractiveDialog({
     }, [elements, url, callbackId, state, values, serverUrl, intl]);
 
     useEffect(() => {
-        const unsubscribe = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                switch (buttonId) {
-                    case CLOSE_BUTTON_ID:
-                        if (notifyOnCancel) {
-                            submitInteractiveDialog(serverUrl, {
-                                url,
-                                callback_id: callbackId,
-                                state,
-                                cancelled: true,
-                            } as DialogSubmission);
-                        }
-                        close();
-                        break;
-                    case SUBMIT_BUTTON_ID: {
-                        if (!submitting) {
-                            handleSubmit();
-                        }
-                        break;
-                    }
-                }
-            },
-        }, componentId);
-        return () => {
-            unsubscribe.remove();
-        };
-    }, [serverUrl, url, callbackId, state, handleSubmit, submitting, componentId, notifyOnCancel]);
+        navigation.setOptions({
+            headerRight: () => (
+                <NavigationButton
+                    onPress={handleSubmit}
+                    disabled={submitting}
+                    testID='interactive_dialog.submit.button'
+                    text={submitLabel || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'})}
+                />
+            ),
+        });
+    }, [navigation, handleSubmit, submitting, submitLabel, intl]);
 
-    useAndroidHardwareBackHandler(componentId, close);
+    useBackNavigation(onBackPress);
+    useAndroidHardwareBackHandler(Screens.INTERACTIVE_DIALOG, close);
 
     return (
         <SafeAreaView
             testID='interactive_dialog.screen'
             style={style.container}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
+            edges={edges}
         >
             <KeyboardAwareScrollView
                 ref={scrollView}
                 bounces={false}
-                style={style.scrollView}
-                enableAutomaticScroll={true}
-                enableOnAndroid={true}
-                noPaddingBottomOnAndroid={true}
+                contentContainerStyle={style.scrollView}
                 scrollToOverflowEnabled={true}
-                enableResetScrollToCoords={true}
-                extraScrollHeight={0}
-                extraHeight={0}
                 keyboardDismissMode='interactive'
                 keyboardShouldPersistTaps='handled'
             >

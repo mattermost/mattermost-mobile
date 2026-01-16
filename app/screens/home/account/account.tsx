@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useIsFocused, useRoute} from '@react-navigation/native';
+import {useRoute} from '@react-navigation/native';
 import React, {useCallback, useState} from 'react';
-import {Freeze} from 'react-freeze';
 import {ScrollView, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {View as ViewConstants} from '@constants';
 import {useTheme} from '@context/theme';
@@ -24,8 +23,6 @@ type AccountScreenProps = {
     enableCustomUserStatuses: boolean;
     showFullName: boolean;
 };
-
-const edges: Edge[] = ['left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -59,7 +56,6 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
     const route = useRoute();
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
-    const isFocused = useIsFocused();
 
     let tabletSidebarStyle;
     if (isTablet) {
@@ -111,29 +107,26 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
     ) : null;
 
     return (
-        <Freeze freeze={!isFocused}>
-            <SafeAreaView
-                edges={edges}
-                style={styles.flex}
-                testID='account.screen'
+        <View
+            style={styles.flex}
+            testID='account.screen'
+        >
+            <View style={[{height: insets.top, flexDirection: 'row', backgroundColor: theme.sidebarBg}]}>
+                <View style={[styles.flex, tabletSidebarStyle]}/>
+                {isTablet && <View style={styles.tabletContainer}/>}
+            </View>
+            <Animated.View
+                onLayout={onLayout}
+                style={[styles.flexRow, animated]}
             >
-                <View style={[{height: insets.top, flexDirection: 'row'}]}>
-                    <View style={[styles.flex, tabletSidebarStyle]}/>
-                    {isTablet && <View style={styles.tabletContainer}/>}
-                </View>
-                <Animated.View
-                    onLayout={onLayout}
-                    style={[styles.flexRow, animated]}
-                >
-                    {content}
-                    {isTablet &&
+                {content}
+                {isTablet &&
                     <View style={[styles.tabletContainer, styles.tabletDivider]}>
                         <AccountTabletView/>
                     </View>
-                    }
-                </Animated.View>
-            </SafeAreaView>
-        </Freeze>
+                }
+            </Animated.View>
+        </View>
     );
 };
 

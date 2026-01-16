@@ -1,26 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useNavigation} from 'expo-router';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {DeviceEventEmitter, Pressable, StyleSheet, View} from 'react-native';
+import {KeyboardAwareScrollView, KeyboardController} from 'react-native-keyboard-controller';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalUser} from '@actions/local/user';
 import {fetchCustomProfileAttributes, updateCustomProfileAttributes} from '@actions/remote/custom_profile';
 import {setDefaultProfileImage, updateMe, uploadUserProfileImage} from '@actions/remote/user';
-import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import TabletTitle from '@components/tablet_title';
-import {Events} from '@constants';
+import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {usePreventDoubleTap} from '@hooks/utils';
-import SecurityManager from '@managers/security_manager';
-import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {logError} from '@utils/log';
+import {changeOpacity} from '@utils/theme';
 import {isCustomFieldSamlLinked} from '@utils/user';
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
@@ -45,20 +44,18 @@ const styles = StyleSheet.create({
     },
 });
 
-const CLOSE_BUTTON_ID = 'close-edit-profile';
-const UPDATE_BUTTON_ID = 'update-profile';
 const CUSTOM_ATTRS_PREFIX_NAME = `${CUSTOM_ATTRS_PREFIX}.`;
 
 const EditProfile = ({
-    componentId, currentUser, isModal, isTablet,
+    currentUser, isTablet,
     lockedFirstName, lockedLastName, lockedNickname, lockedPosition, lockedPicture, enableCustomAttributes,
     customAttributesSet, customFields,
 }: EditProfileProps) => {
+    const navigation = useNavigation();
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const changedProfilePicture = useRef<NewProfileImage | undefined>(undefined);
-    const scrollViewRef = useRef<KeyboardAwareScrollView>();
     const hasUpdateUserInfo = useRef<boolean>(false);
     const [userInfo, setUserInfo] = useState<UserInfo>({
         email: currentUser?.email || '',
@@ -75,103 +72,37 @@ const EditProfile = ({
     const [updating, setUpdating] = useState(false);
     const lastRequest = useRef(0);
 
-    const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
-    const rightButton = useMemo(() => {
-        return isTablet ? null : {
-            id: 'update-profile',
-            enabled: false,
-            showAsAction: 'always' as const,
-            testID: 'edit_profile.save.button',
-            color: theme.sidebarHeaderTextColor,
-            text: buttonText,
-        };
-    }, [isTablet, theme.sidebarHeaderTextColor, buttonText]);
-
-    const leftButton = useMemo(() => {
-        return isTablet ? null : {
-            id: CLOSE_BUTTON_ID,
-            icon: CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor),
-            testID: 'close.edit_profile.button',
-        };
-    }, [isTablet, theme.centerChannelColor]);
-
-    useEffect(() => {
-        if (!isTablet) {
-            setButtons(componentId, {
-                rightButtons: [rightButton!],
-                leftButtons: [leftButton!],
-            });
-        }
-    }, [isTablet, componentId, rightButton, leftButton]);
-
     const close = useCallback(() => {
-        if (isModal) {
-            dismissModal({componentId});
-        } else if (isTablet) {
+        if (isTablet) {
             DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
-        } else {
-            popTopScreen(componentId);
+            return;
         }
-    }, [componentId, isModal, isTablet]);
+        navigation.goBack();
+    }, [isTablet, navigation]);
 
-    const enableSaveButton = useCallback((value: boolean) => {
-        if (!isTablet) {
-            const buttons = {
-                rightButtons: [{
-                    ...rightButton!,
-                    enabled: value,
-                }],
-            };
-            setButtons(componentId, buttons);
-        }
-        setCanSave(value);
-    }, [componentId, rightButton, isTablet]);
-
-    useEffect(() => {
-        const loadCustomAttributes = async () => {
-            if (!currentUser) {
-                return;
-            }
-
-            if (enableCustomAttributes) {
-                setUserInfo((prev) => ({
-                    ...prev,
-                    customAttributes: customAttributesSet || {},
-                }));
-            }
-
-            // Then fetch from server for latest data
-            const reqTime = Date.now();
-            lastRequest.current = reqTime;
-            const {error: fetchError, attributes} = await fetchCustomProfileAttributes(serverUrl, currentUser.id);
-            if (!fetchError && attributes && lastRequest.current === reqTime) {
-                setUserInfo((prev) => ({...prev, customAttributes: attributes}));
-            }
-        };
-
-        loadCustomAttributes();
-    }, [currentUser, serverUrl, enableCustomAttributes, customAttributesSet]);
-
-    const resetScreenForProfileError = useCallback((resetError: unknown) => {
+    const resetScreenForProfileError = useCallback(async (resetError: unknown) => {
         setUsernameError(resetError);
-        Keyboard.dismiss();
+        if (KeyboardController.isVisible()) {
+            await KeyboardController.dismiss();
+        }
         setUpdating(false);
-        enableSaveButton(true);
-    }, [enableSaveButton]);
+        setCanSave(true);
+    }, []);
 
-    const resetScreen = useCallback((resetError: unknown) => {
+    const resetScreen = useCallback(async (resetError: unknown) => {
         setError(resetError);
-        Keyboard.dismiss();
+        if (KeyboardController.isVisible()) {
+            await KeyboardController.dismiss();
+        }
         setUpdating(false);
-        enableSaveButton(true);
-        scrollViewRef.current?.scrollToPosition(0, 0, true);
-    }, [enableSaveButton]);
+        setCanSave(true);
+    }, []);
 
     const submitUser = usePreventDoubleTap(useCallback(async () => {
         if (!currentUser) {
             return;
         }
-        enableSaveButton(false);
+        setCanSave(false);
         setError(undefined);
         setUpdating(true);
         try {
@@ -182,16 +113,16 @@ const EditProfile = ({
             if (userInfo.email.trim() !== currentUser.email && !currentUser.authService) {
                 newUserInfo.email = userInfo.email.trim();
             }
-            if (userInfo.firstName.trim() !== currentUser.firstName && !lockedFirstName) {
+            if (userInfo.firstName.trim() !== currentUser.firstName && (!lockedFirstName || !currentUser.authService)) {
                 newUserInfo.first_name = userInfo.firstName.trim();
             }
-            if (userInfo.lastName.trim() !== currentUser.lastName && !lockedLastName) {
+            if (userInfo.lastName.trim() !== currentUser.lastName && (!lockedLastName || !currentUser.authService)) {
                 newUserInfo.last_name = userInfo.lastName.trim();
             }
-            if (userInfo.nickname.trim() !== currentUser.nickname && !lockedNickname) {
+            if (userInfo.nickname.trim() !== currentUser.nickname && (!lockedNickname || !currentUser.authService)) {
                 newUserInfo.nickname = userInfo.nickname.trim();
             }
-            if (userInfo.position.trim() !== currentUser.position && !lockedPosition) {
+            if (userInfo.position.trim() !== currentUser.position && (!lockedPosition || !currentUser.authService)) {
                 newUserInfo.position = userInfo.position.trim();
             }
             if (userInfo.username.trim() !== currentUser.username && !currentUser.authService) {
@@ -258,31 +189,12 @@ const EditProfile = ({
         } catch (e) {
             resetScreen(e);
         }
-    }, [
-        currentUser,
-        enableSaveButton,
-        userInfo,
-        lockedFirstName,
-        lockedLastName,
-        lockedNickname,
-        lockedPosition,
-        enableCustomAttributes,
-        close,
-        serverUrl,
-        resetScreen,
-        resetScreenForProfileError,
-        customFields,
-        customAttributesSet,
-    ]));
-
-    useAndroidHardwareBackHandler(componentId, close);
-    useNavButtonPressed(UPDATE_BUTTON_ID, componentId, submitUser, [userInfo]);
-    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, []);
+    }, [currentUser, userInfo, lockedFirstName, lockedLastName, lockedNickname, lockedPosition, enableCustomAttributes, close, serverUrl, resetScreen, resetScreenForProfileError, customFields, customAttributesSet]));
 
     const onUpdateProfilePicture = useCallback((newProfileImage: NewProfileImage) => {
         changedProfilePicture.current = newProfileImage;
-        enableSaveButton(true);
-    }, [enableSaveButton]);
+        setCanSave(true);
+    }, []);
 
     const onUpdateField = useCallback((fieldKey: string, value: string) => {
         const update = {...userInfo};
@@ -325,22 +237,64 @@ const EditProfile = ({
         }
 
         hasUpdateUserInfo.current = didChange;
-        enableSaveButton(didChange);
-    }, [userInfo, currentUser, enableSaveButton]);
+        setCanSave(didChange);
+    }, [userInfo, currentUser]);
+
+    useEffect(() => {
+        if (!isTablet) {
+            navigation.setOptions({
+                headerRight: () => (
+                    <Pressable
+                        onPress={submitUser}
+                        disabled={!canSave}
+                        testID={'edit_profile.save.button'}
+                    >
+                        <FormattedText
+                            id='mobile.account.settings.save'
+                            defaultMessage='Save'
+                            style={{color: canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.32), fontSize: 16}}
+                        />
+                    </Pressable>
+                ),
+            });
+        }
+    }, [isTablet, navigation, canSave, theme.sidebarHeaderTextColor, submitUser]);
+
+    useEffect(() => {
+        const loadCustomAttributes = async () => {
+            if (!currentUser) {
+                return;
+            }
+
+            if (enableCustomAttributes) {
+                setUserInfo((prev) => ({
+                    ...prev,
+                    customAttributes: customAttributesSet || {},
+                }));
+            }
+
+            // Then fetch from server for latest data
+            const reqTime = Date.now();
+            lastRequest.current = reqTime;
+            const {error: fetchError, attributes} = await fetchCustomProfileAttributes(serverUrl, currentUser.id);
+            if (!fetchError && attributes && lastRequest.current === reqTime) {
+                setUserInfo((prev) => ({...prev, customAttributes: attributes}));
+            }
+        };
+
+        loadCustomAttributes();
+    }, [currentUser, serverUrl, enableCustomAttributes, customAttributesSet]);
+
+    useAndroidHardwareBackHandler(Screens.EDIT_PROFILE, close);
 
     const content = currentUser ? (
         <KeyboardAwareScrollView
-            bounces={false}
-            enableAutomaticScroll={Platform.select({ios: true, default: false})}
-            enableOnAndroid={true}
-            enableResetScrollToCoords={true}
-            extraScrollHeight={Platform.select({ios: 45})}
-            keyboardOpeningTime={0}
+            bounces={true}
             keyboardDismissMode='none'
             keyboardShouldPersistTaps='handled'
             scrollToOverflowEnabled={true}
             testID='edit_profile.scroll_view'
-            style={styles.flex}
+            bottomOffset={62}
         >
             {updating && <Updating/>}
             {Boolean(error) && <ProfileError error={error}/>}
@@ -372,11 +326,10 @@ const EditProfile = ({
     return (
         <View
             style={styles.flex}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             {isTablet &&
                 <TabletTitle
-                    action={buttonText}
+                    action={intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'})}
                     enabled={canSave}
                     onPress={submitUser}
                     testID='edit_profile'

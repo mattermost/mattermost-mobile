@@ -4,7 +4,7 @@
 import Model from '@nozbe/watermelondb/Model';
 import {applicationName} from 'expo-application';
 import {
-    cacheDirectory, deleteAsync, documentDirectory, getInfoAsync,
+    cacheDirectory, deleteAsync, getInfoAsync,
     type FileInfo as ExpoFileInfo,
 } from 'expo-file-system';
 import mimeDB from 'mime-db';
@@ -15,7 +15,7 @@ import {Files} from '@constants';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
-import {deleteEntitiesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
+import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {urlSafeBase64Encode} from '@utils/security';
 
 import type {PastedFile} from '@mattermost/react-native-paste-input';
@@ -66,7 +66,7 @@ const SUPPORTED_DOCS_FORMAT = Platform.select({
     ],
 });
 
-const SUPPORTED_IMAGE_FORMAT = ['png', 'jpg', 'jpeg', 'bmp', 'tiff', 'svg', 'xcf', 'gif'];
+const SUPPORTED_IMAGE_FORMAT = ['png', 'jpg', 'jpeg', 'bmp', 'tiff', 'svg', 'xcf', 'gif', 'webp'];
 
 const SUPPORTED_VIDEO_FORMAT = Platform.select({
     ios: ['video/mp4', 'video/x-m4v', 'video/quicktime'],
@@ -148,29 +148,6 @@ function populateMaps() {
             types[extension] = type;
         }
     });
-}
-
-export async function deleteV1Data() {
-    const dir = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupSharedDirectory : documentDirectory;
-
-    try {
-        const directory = `${dir}/mmkv`;
-        const mmkvDirInfo = await getInfoAsync(directory);
-        if (mmkvDirInfo.exists) {
-            await deleteAsync(directory);
-        }
-    } catch {
-        // do nothing
-    }
-
-    try {
-        const entitiesInfo = await getInfoAsync(`${dir}/entities`);
-        if (entitiesInfo.exists) {
-            deleteEntitiesFile();
-        }
-    } catch (e) {
-        // do nothing
-    }
 }
 
 export async function deleteFileCache(serverUrl: string) {

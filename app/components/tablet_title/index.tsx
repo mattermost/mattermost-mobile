@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
-import TouchableWithFeedback from '@components/touchable_with_feedback';
+import NavigationButton from '@components/navigation_button';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     action?: string;
@@ -24,12 +25,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         bottom: 7,
         position: 'absolute',
     },
-    action: {
-        color: changeOpacity(theme.centerChannelColor, 0.7),
-        fontFamily: 'OpenSans-SemiBold',
-        fontSize: 16,
-        lineHeight: 24,
-    },
     container: {
         backgroundColor: theme.centerChannelBg,
         borderBottomWidth: 1,
@@ -41,7 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingBottom: 5,
     },
     enabled: {
-        color: theme.buttonBg,
+        color: theme.sidebarHeaderTextColor,
     },
     titleContainer: {
         alignItems: 'center',
@@ -50,16 +45,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     title: {
         color: theme.centerChannelColor,
-        fontFamily: 'OpenSans-SemiBold',
-        fontSize: 18,
-        lineHeight: 24,
+        ...typography('Body', 300, 'SemiBold'),
     },
 }));
 
 const TabletTitle = ({action, enabled = true, onPress, testID, title}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const textStyle = [styles.action, enabled && styles.enabled];
 
     return (
         <>
@@ -74,15 +66,14 @@ const TabletTitle = ({action, enabled = true, onPress, testID, title}: Props) =>
                 </View>
                 {Boolean(action) &&
                 <View style={styles.actionContainer}>
-                    <TouchableWithFeedback
+                    <NavigationButton
+                        text={action!}
                         disabled={!enabled}
-                        onPress={onPress}
-                        type={Platform.select({android: 'native', ios: 'opacity'})}
-                        testID={`${testID}.${action?.toLocaleLowerCase()}.button`}
-                        underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
-                    >
-                        <Text style={textStyle}>{action}</Text>
-                    </TouchableWithFeedback>
+                        onPress={onPress!}
+                        testID={`${testID}.${action!.toLocaleLowerCase()}.button`}
+                        count={20}
+                        iconName='plus'
+                    />
                 </View>
                 }
             </View>

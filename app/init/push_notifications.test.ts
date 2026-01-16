@@ -7,12 +7,13 @@ import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {updateThread} from '@actions/local/thread';
 import {openNotification} from '@actions/remote/notifications';
-import {Device, Events, PushNotification} from '@constants';
+import {Device, Events, PushNotification, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import InAppNotificationStore from '@store/in_app_notification_store';
+import {NavigationStore} from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
 
 import PushNotifications from './push_notifications';
@@ -70,8 +71,14 @@ jest.mock('@utils/helpers', () => ({
     isMainActivity: jest.fn(),
 }));
 jest.mock('@store/navigation_store', () => ({
-    getVisibleScreen: jest.fn(() => 'Channel'),
+    NavigationStore: {
+        getVisibleScreen: jest.fn(),
+    },
 }));
+jest.mock('@store/in_app_notification_store');
+
+jest.mocked(NavigationStore.getVisibleScreen).mockReturnValue(Screens.CHANNEL);
+
 jest.mock('@queries/servers/system', () => ({
     getCurrentChannelId: jest.fn(),
 }));
@@ -181,9 +188,8 @@ describe('PushNotifications', () => {
         beforeEach(() => {
             DatabaseManager.serverDatabases = mockServerDatabases as any;
             (isMainActivity as jest.Mock).mockReturnValue(true);
-            (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValue('Channel');
+            (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValue(Screens.CHANNEL);
             AppState.currentState = 'active';
-            jest.spyOn(DeviceEventEmitter, 'emit').mockImplementation();
             mockGetCurrentChannelId.mockResolvedValue('channel1');
             mockGetIsCRTEnabled.mockResolvedValue(false);
         });
@@ -202,7 +208,7 @@ describe('PushNotifications', () => {
 
             await pushNotifications.handleInAppNotification(serverUrl, notification as any);
 
-            expect(DeviceEventEmitter.emit).not.toHaveBeenCalled();
+            expect(InAppNotificationStore.show).not.toHaveBeenCalled();
         });
 
         it('should show notification for different channel when in channel screen', async () => {
@@ -215,7 +221,7 @@ describe('PushNotifications', () => {
 
             await pushNotifications.handleInAppNotification(serverUrl, notification as any);
 
-            expect(DeviceEventEmitter.emit).toHaveBeenCalled();
+            expect(InAppNotificationStore.show).toHaveBeenCalled();
         });
 
         it('should show notification when not in channel screen', async () => {
@@ -225,11 +231,11 @@ describe('PushNotifications', () => {
                     channel_id: 'channel1',
                 },
             };
-            jest.mocked(NavigationStore.getVisibleScreen).mockReturnValue('Settings');
+            jest.mocked(NavigationStore.getVisibleScreen).mockReturnValue(Screens.SETTINGS);
 
             await pushNotifications.handleInAppNotification(serverUrl, notification as any);
 
-            expect(DeviceEventEmitter.emit).toHaveBeenCalled();
+            expect(InAppNotificationStore.show).toHaveBeenCalled();
         });
 
         it('should show notification for thread in CRT mode', async () => {
@@ -244,7 +250,7 @@ describe('PushNotifications', () => {
 
             await pushNotifications.handleInAppNotification(serverUrl, notification as any);
 
-            expect(DeviceEventEmitter.emit).toHaveBeenCalled();
+            expect(InAppNotificationStore.show).toHaveBeenCalled();
         });
 
         it('should not show notification for same thread in thread screen', async () => {
@@ -255,13 +261,13 @@ describe('PushNotifications', () => {
                     root_id: 'thread1',
                 },
             };
-            jest.mocked(NavigationStore.getVisibleScreen).mockReturnValue('Thread');
+            jest.mocked(NavigationStore.getVisibleScreen).mockReturnValue(Screens.THREAD);
             mockGetIsCRTEnabled.mockResolvedValue(true);
             jest.spyOn(EphemeralStore, 'getCurrentThreadId').mockReturnValue('thread1');
 
             await pushNotifications.handleInAppNotification(serverUrl, notification as any);
 
-            expect(DeviceEventEmitter.emit).not.toHaveBeenCalled();
+            expect(InAppNotificationStore.show).not.toHaveBeenCalled();
         });
     });
 

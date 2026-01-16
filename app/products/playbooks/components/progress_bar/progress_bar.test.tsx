@@ -5,15 +5,17 @@ import {render} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
 import {Preferences} from '@constants';
-import {useTheme} from '@context/theme';
+import {getDefaultThemeByAppearance, useTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
 
 import ProgressBar from './progress_bar';
 
 jest.mock('@context/theme', () => ({
     useTheme: jest.fn(),
+    getDefaultThemeByAppearance: jest.fn(),
 }));
 jest.mocked(useTheme).mockReturnValue(Preferences.THEMES.denim);
+jest.mocked(getDefaultThemeByAppearance).mockReturnValue(Preferences.THEMES.denim);
 
 describe('ProgressBar', () => {
     function getBaseProps(): ComponentProps<typeof ProgressBar> {

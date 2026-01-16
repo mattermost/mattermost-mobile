@@ -1,24 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {defineMessages} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
-import {ActionType, Events, General, Navigation, Screens} from '@constants';
+import {ActionType, Events, Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getTranslations} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, type PrepareCommonSystemValuesArgs, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
 import {getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissAllModals, dismissAllModalsAndPopToRoot, dismissAllOverlays, goToScreen} from '@screens/navigation';
+import {navigateToScreen, dismissToStackRoot, dismissAllRoutesAndResetToRootRoute} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
-import {changeOpacity} from '@utils/theme';
 
 import type Model from '@nozbe/watermelondb/Model';
 
@@ -48,7 +45,8 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
         if (isTabletDevice) {
             DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
         } else {
-            goToScreen(Screens.GLOBAL_THREADS, '', {}, {topBar: {visible: false}});
+            await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
+            navigateToScreen(Screens.GLOBAL_THREADS);
         }
 
         return {models};
@@ -57,17 +55,6 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
         return {error};
     }
 };
-
-const threadMessages = defineMessages({
-    thread: {
-        id: 'thread.header.thread',
-        defaultMessage: 'Thread',
-    },
-    threadIn: {
-        id: 'thread.header.thread_in',
-        defaultMessage: 'in {channelName}',
-    },
-});
 
 export const switchToThread = async (serverUrl: string, rootId: string, isFromNotification = false) => {
     try {
@@ -94,12 +81,11 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
         EphemeralStore.setCurrentThreadId(rootId);
         if (isFromNotification) {
             if (currentThreadId && currentThreadId === rootId && NavigationStore.getScreensInStack().includes(Screens.THREAD)) {
-                await dismissAllModals();
-                await dismissAllOverlays();
+                await dismissToStackRoot();
                 return {};
             }
 
-            await dismissAllModalsAndPopToRoot();
+            await dismissAllRoutesAndResetToRootRoute();
             await NavigationStore.waitUntilScreenIsTop(Screens.HOME);
             if (currentTeamId !== teamId && isTabletDevice) {
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
@@ -120,39 +106,9 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             }
         }
 
-        // Get translation by user locale
-        const translations = getTranslations(user.locale);
-
-        // Get title translation or default title message
-        const title = translations[threadMessages.thread.id] || 'Thread';
-
-        let subtitle = '';
-        if (channel?.type === General.DM_CHANNEL) {
-            subtitle = channel.displayName;
-        } else {
-            // Get translation or default message
-            subtitle = translations[threadMessages.threadIn.id] || 'in {channelName}';
-            subtitle = subtitle.replace('{channelName}', channel.displayName);
-        }
-
+        await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
+        navigateToScreen(Screens.THREAD, {rootId, channelName: channel.displayName});
         DeviceEventEmitter.emit(Events.CLOSE_INPUT_ACCESSORY_VIEW);
-
-        goToScreen(Screens.THREAD, '', {rootId}, {
-            topBar: {
-                title: {
-                    text: title,
-                },
-                subtitle: {
-                    color: changeOpacity(EphemeralStore.theme!.sidebarHeaderTextColor, 0.72),
-                    text: subtitle,
-                },
-                noBorder: true,
-                scrollEdgeAppearance: {
-                    noBorder: true,
-                    active: true,
-                },
-            },
-        });
 
         return {};
     } catch (error) {

@@ -11,6 +11,18 @@ const defaultConfig = getDefaultConfig(__dirname);
  *
  * @type {import('metro-config').MetroConfig}
  */
-const config = {};
+const config = {
+    resolver: {
+        blockList: [
+            /.*\.test\.(js|jsx|ts|tsx)$/,
+            /.*\.spec\.(js|jsx|ts|tsx)$/,
+            /__tests__\/.*/,
+            /__mocks__\/.*/,
+        ],
+    },
+    transformer: {
+        unstable_allowRequireContext: true,
+    },
+};
 
 module.exports = mergeConfig(defaultConfig, config);

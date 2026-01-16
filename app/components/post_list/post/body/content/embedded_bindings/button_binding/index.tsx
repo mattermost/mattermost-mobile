@@ -9,12 +9,13 @@ import {map} from 'rxjs/operators';
 
 import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/remote/apps';
 import {handleGotoLocation} from '@actions/remote/command';
+import {Screens} from '@constants';
 import {AppBindingLocations, AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {observeChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
-import {showAppForm} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import {createCallContext} from '@utils/apps';
 import {getStatusColors} from '@utils/message_attachment';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
@@ -105,7 +106,7 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
                 return;
             case AppCallResponseTypes.FORM:
                 if (callResp.form) {
-                    showAppForm(callResp.form, context);
+                    navigateToScreen(Screens.APPS_FORM, {form: callResp.form, context});
                 }
                 return;
             default: {

@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, type GestureResponderEvent, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
+import {DeviceEventEmitter, type GestureResponderEvent, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent, FlatList} from 'react-native';
 import {useKeyboardState} from 'react-native-keyboard-controller';
-import Animated, {runOnJS, useAnimatedProps, useAnimatedReaction, useSharedValue, type AnimatedStyle} from 'react-native-reanimated';
+import Animated, {runOnJS, useAnimatedProps, useAnimatedReaction, useAnimatedStyle, useSharedValue, type AnimatedStyle} from 'react-native-reanimated';
 
 import {removePost} from '@actions/local/post';
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -15,6 +14,7 @@ import NewMessagesLine from '@components/post_list/new_message_line';
 import Post from '@components/post_list/post';
 import ThreadOverview from '@components/post_list/thread_overview';
 import {Events, Screens} from '@constants';
+import {isAndroidEdgeToEdge} from '@constants/device';
 import {PostTypes} from '@constants/post';
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useServerUrl} from '@context/server';
@@ -156,7 +156,9 @@ const PostList = ({
 
             if (stateChanged && (isFullyOpen || isFullyClosed)) {
                 const offset = postInputContainerHeight + keyboardTranslateY;
-                runOnJS(setProgressViewOffset)(offset);
+                if (!isAndroidEdgeToEdge) {
+                    runOnJS(setProgressViewOffset)(offset);
+                }
             }
             prevIsFullyOpen.value = isFullyOpen;
             prevIsFullyClosed.value = isFullyClosed;
@@ -413,7 +415,7 @@ const PostList = ({
     // This ensures the padding updates when SharedValues change
     useAnimatedReaction(
         () => {
-            const shouldAddEmojiPickerPadding = Platform.OS === 'android' && !isKeyboardVisible && isInputAccessoryViewMode.value;
+            const shouldAddEmojiPickerPadding = Platform.OS === 'android' && !isAndroidEdgeToEdge && !isKeyboardVisible && isInputAccessoryViewMode.value;
             const emojiPickerHeight = shouldAddEmojiPickerPadding ? (inputAccessoryViewAnimatedHeight.value || DEFAULT_INPUT_ACCESSORY_HEIGHT) : 0;
             return emojiPickerHeight;
         },
@@ -439,6 +441,15 @@ const PostList = ({
         }),
         [contentInset],
     );
+
+    const androidExtra = useAnimatedStyle(() => {
+        if (isAndroidEdgeToEdge) {
+            return {
+                marginBottom: keyboardHeight.value || contentInset.value,
+            };
+        }
+        return {};
+    }, []);
 
     return (
         <>
@@ -467,7 +478,7 @@ const PostList = ({
                 removeClippedSubviews={true}
                 renderItem={renderItem}
                 scrollEventThrottle={SCROLL_EVENT_THROTTLE}
-                style={styles.flex}
+                style={[styles.flex, androidExtra]}
                 viewabilityConfig={VIEWABILITY_CONFIG}
                 testID={`${testID}.flat_list`}
                 inverted={true}

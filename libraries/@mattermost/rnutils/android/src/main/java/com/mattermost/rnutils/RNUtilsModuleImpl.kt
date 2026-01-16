@@ -233,7 +233,7 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
 
     fun setNavigationBarColor(colorHex: String, lightIcons: Boolean) {
         val currentActivity: Activity = reactContext.currentActivity ?: return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return
         }
 

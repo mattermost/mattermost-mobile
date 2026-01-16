@@ -8,11 +8,9 @@ import SearchBar from '@components/search';
 import TeamList from '@components/team_list';
 import {useTheme} from '@context/theme';
 import {useDebounce, usePreventDoubleTap} from '@hooks/utils';
-import SecurityManager from '@managers/security_manager';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const styles = StyleSheet.create({
     container: {
@@ -24,12 +22,10 @@ const styles = StyleSheet.create({
 });
 
 type Props = {
-    componentId: AvailableScreens;
     teams: Team[];
-    selectTeam: (teamId: string) => void;
 }
 
-const TeamSelectorList = ({componentId, teams, selectTeam}: Props) => {
+const TeamSelectorList = ({teams}: Props) => {
     const theme = useTheme();
     const [filteredTeams, setFilteredTeam] = useState(teams);
     const color = useMemo(() => changeOpacity(theme.centerChannelColor, 0.72), [theme]);
@@ -43,15 +39,13 @@ const TeamSelectorList = ({componentId, teams, selectTeam}: Props) => {
     }, [teams]), 200);
 
     const handleOnPress = usePreventDoubleTap(useCallback((teamId: string) => {
-        selectTeam(teamId);
-        popTopScreen();
-    }, [selectTeam]));
+        const callback = CallbackStore.getCallback<((teamId: string) => void)>();
+        callback?.(teamId);
+        navigateBack();
+    }, []));
 
     return (
-        <View
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-            style={styles.container}
-        >
+        <View style={styles.container}>
             <SearchBar
                 autoCapitalize='none'
                 autoFocus={true}

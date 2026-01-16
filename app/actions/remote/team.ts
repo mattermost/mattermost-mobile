@@ -16,7 +16,7 @@ import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categorie
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, getLastTeam, getTeamById, removeTeamFromTeamHistory, queryMyTeams} from '@queries/servers/team';
-import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
+import {dismissAllRoutesAndResetToRootRoute} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {getFullErrorMessage} from '@utils/errors';
@@ -478,7 +478,7 @@ export async function handleKickFromTeam(serverUrl: string, teamId: string) {
         if (currentServer === serverUrl) {
             const team = await getTeamById(database, teamId);
             DeviceEventEmitter.emit(Events.LEAVE_TEAM, team?.displayName);
-            await dismissAllModalsAndPopToRoot();
+            await dismissAllRoutesAndResetToRootRoute();
         }
 
         await removeTeamFromTeamHistory(operator, teamId);

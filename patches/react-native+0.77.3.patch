@@ -1,0 +1,30 @@
+diff --git a/node_modules/react-native/React/Modules/RCTUIManager.mm b/node_modules/react-native/React/Modules/RCTUIManager.mm
+index e307fad..3e7e115 100644
+--- a/node_modules/react-native/React/Modules/RCTUIManager.mm
++++ b/node_modules/react-native/React/Modules/RCTUIManager.mm
+@@ -1451,7 +1451,11 @@ NSMutableDictionary<NSString *, id> *RCTModuleConstantsForDestructuredComponent(
+       };
+     }
+     directEventTypes[eventName] = directEvents[eventName];
+-    if (RCT_DEBUG && bubblingEvents[eventName]) {
++    // Only warn if THIS component's viewConfig has the same event in both direct and bubbling
++    // (not if it was added to shared dicts by a different component processed earlier)
++    NSArray *bubblingEventsConfig = viewConfig[@"bubblingEvents"];
++    BOOL eventInCurrentComponentBubbling = bubblingEventsConfig && [bubblingEventsConfig containsObject:eventName];
++    if (RCT_DEBUG && bubblingEvents[eventName] && eventInCurrentComponentBubbling) {
+       RCTLogError(
+           @"Component '%@' re-registered bubbling event '%@' as a "
+            "direct event",
+@@ -1472,7 +1476,11 @@ NSMutableDictionary<NSString *, id> *RCTModuleConstantsForDestructuredComponent(
+       };
+     }
+     bubblingEventTypes[eventName] = bubblingEvents[eventName];
+-    if (RCT_DEBUG && directEvents[eventName]) {
++    // Only warn if THIS component's viewConfig has the same event in both direct and bubbling
++    // (not if it was added to shared dicts by a different component processed earlier)
++    NSArray *directEventsConfig = viewConfig[@"directEvents"];
++    BOOL eventInCurrentComponentDirect = directEventsConfig && [directEventsConfig containsObject:eventName];
++    if (RCT_DEBUG && directEvents[eventName] && eventInCurrentComponentDirect) {
+       RCTLogError(
+           @"Component '%@' re-registered direct event '%@' as a "
+            "bubbling event",

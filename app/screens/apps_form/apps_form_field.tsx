@@ -179,7 +179,6 @@ function AppsFormField({
                     helpText={field.description}
                     errorText={errorText}
                     placeholder={placeholder}
-                    showRequiredAsterisk={true}
                     selected={selectedValue}
                     roundedBorders={false}
                     disabled={field.readonly}

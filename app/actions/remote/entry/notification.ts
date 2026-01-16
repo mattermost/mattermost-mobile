@@ -51,7 +51,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         await DatabaseManager.setActiveServerDatabase(serverUrl);
     }
 
-    if (!EphemeralStore.theme) {
+    if (!EphemeralStore.getTheme()) {
         // When opening the app from a push notification the theme may not be set in the EphemeralStore
         // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
         // not match the theme

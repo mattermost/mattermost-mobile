@@ -5,22 +5,23 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, StyleSheet, ToastAndroid, View} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {BackHandler, StyleSheet, ToastAndroid, View} from 'react-native';
+import Animated, {FadeIn, useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {refetchCurrentUser} from '@actions/remote/user';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import AnnouncementBanner from '@components/announcement_banner';
 import ConnectionBanner from '@components/connection_banner';
 import TeamSidebar from '@components/team_sidebar';
-import {Navigation as NavigationConstants, Screens} from '@constants';
+import {Screens} from '@constants';
+import {HOME_TAB_SCREENS} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
-import {resetToTeams, openToS} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
+import {navigateToScreen} from '@screens/navigation';
+import {NavigationStore, useCurrentScreen} from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
 import {tryRunAppReview} from '@utils/reviews';
 import {addSentryContext} from '@utils/sentry';
@@ -44,8 +45,6 @@ type ChannelProps = {
     hasCurrentUser: boolean;
     showIncomingCalls: boolean;
 };
-
-const edges: Edge[] = ['bottom', 'left', 'right'];
 
 const styles = StyleSheet.create({
     content: {
@@ -77,15 +76,15 @@ const ChannelListScreen = (props: ChannelProps) => {
     const route = useRoute();
     const isFocused = useIsFocused();
     const navigation = useNavigation();
+    const currentScreen = useCurrentScreen();
     const insets = useSafeAreaInsets();
     const serverUrl = useServerUrl();
     const params = route.params as {direction: string};
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
+    const isTabScreen = currentScreen && HOME_TAB_SCREENS.has(currentScreen);
 
     const handleBackPress = useCallback(() => {
-        const isHomeScreen = NavigationStore.getVisibleScreen() === Screens.HOME;
-        const homeTab = NavigationStore.getVisibleTab() === Screens.HOME;
-        const focused = navigation.isFocused() && isHomeScreen && homeTab;
+        const focused = navigation.isFocused();
 
         if (isMainActivity()) {
             if (!backPressedCount && focused) {
@@ -103,15 +102,18 @@ const ChannelListScreen = (props: ChannelProps) => {
                     backPressedCount = 0;
                 }, 2000);
                 return true;
-            } else if (isHomeScreen && !homeTab) {
-                DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME);
-                return true;
             }
+            BackHandler.exitApp();
+            return true;
         }
         return false;
     }, [intl, navigation]);
 
     const animated = useAnimatedStyle(() => {
+        if (!isTabScreen) {
+            return {};
+        }
+
         if (!isFocused) {
             let initial = 0;
             if (params?.direction) {
@@ -126,7 +128,7 @@ const ChannelListScreen = (props: ChannelProps) => {
             opacity: withTiming(1, {duration: 150}),
             transform: [{translateX: withTiming(0, {duration: 150})}],
         };
-    }, [isFocused, params]);
+    }, [isFocused, isTabScreen, params]);
 
     const top = useAnimatedStyle(() => {
         return {height: insets.top, backgroundColor: theme.sidebarBg};
@@ -134,7 +136,7 @@ const ChannelListScreen = (props: ChannelProps) => {
 
     useEffect(() => {
         if (!props.hasTeams) {
-            resetToTeams();
+            navigateToScreen(Screens.SELECT_TEAM, undefined, true);
         }
     }, [props.hasTeams]);
 
@@ -149,7 +151,7 @@ const ChannelListScreen = (props: ChannelProps) => {
 
     useEffect(() => {
         if (props.showToS && !NavigationStore.isToSOpen()) {
-            openToS();
+            navigateToScreen(Screens.TERMS_OF_SERVICE);
         }
     }, [props.showToS]);
 
@@ -163,7 +165,6 @@ const ChannelListScreen = (props: ChannelProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.currentUserId, props.hasCurrentUser]);
 
-    // Init the rate app. Only run the effect on the first render if ToS is not open
     useEffect(() => {
         if (hasRendered) {
             return;
@@ -177,48 +178,49 @@ const ChannelListScreen = (props: ChannelProps) => {
     useEffect(() => {
         PerformanceMetricsManager.finishLoad('HOME', serverUrl);
         PerformanceMetricsManager.measureTimeToInteraction();
-    }, [serverUrl]);
+
+        // Only needed on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
-        <>
+        <Animated.View
+            entering={FadeIn.duration(350)}
+            style={styles.flex}
+            testID='channel_list.screen'
+        >
             <Animated.View style={top}/>
-            <SafeAreaView
-                style={styles.flex}
-                edges={edges}
-                testID='channel_list.screen'
-            >
-                <ConnectionBanner/>
-                {props.isLicensed &&
-                    <AnnouncementBanner/>
-                }
-                <View style={styles.content}>
-                    {canAddOtherServers && <Servers/>}
-                    <Animated.View
-                        style={[styles.content, animated]}
-                    >
-                        <TeamSidebar
-                            iconPad={canAddOtherServers}
-                            hasMoreThanOneTeam={props.hasMoreThanOneTeam}
-                        />
-                        <CategoriesList
-                            iconPad={canAddOtherServers && !props.hasMoreThanOneTeam}
-                            isCRTEnabled={props.isCRTEnabled}
-                            moreThanOneTeam={props.hasMoreThanOneTeam}
-                            hasChannels={props.hasChannels}
-                        />
-                        {isTablet && props.hasChannels &&
-                            <AdditionalTabletView/>
-                        }
-                        {props.showIncomingCalls && !isTablet &&
-                            <FloatingCallContainer
-                                showIncomingCalls={props.showIncomingCalls}
-                                channelsScreen={true}
-                            />
-                        }
-                    </Animated.View>
-                </View>
-            </SafeAreaView>
-        </>
+            <ConnectionBanner/>
+            {props.isLicensed &&
+            <AnnouncementBanner/>
+            }
+            <View style={styles.content}>
+                {canAddOtherServers && <Servers/>}
+                <Animated.View
+                    style={[styles.content, animated]}
+                >
+                    <TeamSidebar
+                        iconPad={canAddOtherServers}
+                        hasMoreThanOneTeam={props.hasMoreThanOneTeam}
+                    />
+                    <CategoriesList
+                        iconPad={canAddOtherServers && !props.hasMoreThanOneTeam}
+                        isCRTEnabled={props.isCRTEnabled}
+                        moreThanOneTeam={props.hasMoreThanOneTeam}
+                        hasChannels={props.hasChannels}
+                    />
+                    {isTablet && props.hasChannels &&
+                    <AdditionalTabletView/>
+                    }
+                    {props.showIncomingCalls && !isTablet &&
+                    <FloatingCallContainer
+                        showIncomingCalls={props.showIncomingCalls}
+                        channelsScreen={true}
+                    />
+                    }
+                </Animated.View>
+            </View>
+        </Animated.View>
     );
 };
 

@@ -2,12 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {setLastServerVersionCheck} from '@actions/local/systems';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {prepareCommonSystemValues} from '@queries/servers/system';
-import {deleteV1Data} from '@utils/file';
 
 import {verifyPushProxy} from './common';
 
@@ -36,24 +34,4 @@ export async function appEntry(serverUrl: string, since = 0) {
     verifyPushProxy(serverUrl);
 
     return {};
-}
-
-export async function upgradeEntry(serverUrl: string) {
-    const dt = Date.now();
-
-    try {
-        const configAndLicense = await fetchConfigAndLicense(serverUrl, false);
-        const entryData = await appEntry(serverUrl, 0);
-        const error = configAndLicense.error || entryData.error;
-
-        if (!error) {
-            await DatabaseManager.updateServerIdentifier(serverUrl, configAndLicense.config!.DiagnosticId);
-            await DatabaseManager.setActiveServerDatabase(serverUrl);
-            deleteV1Data();
-        }
-
-        return {error, time: Date.now() - dt};
-    } catch (e) {
-        return {error: e, time: Date.now() - dt};
-    }
 }

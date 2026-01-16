@@ -5,15 +5,13 @@ import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
 import {Screens} from '@constants';
-import {goToScreen} from '@screens/navigation';
+import {navigateToSettingsScreen} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {emailLogs} from '@utils/share_logs';
 
 import ReportProblem from './report_problem';
 
-jest.mock('@screens/navigation', () => ({
-    goToScreen: jest.fn(),
-}));
+jest.mock('@screens/navigation');
 
 jest.mock('@utils/share_logs', () => ({
     emailLogs: jest.fn(),
@@ -69,9 +67,9 @@ describe('screens/settings/report_problem/report_problem', () => {
 
         await act(async () => {
             fireEvent.press(getByTestId('settings.report_problem.option'));
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToSettingsScreen).toHaveBeenCalledWith(
                 Screens.REPORT_PROBLEM,
-                'Report a problem',
+                {title: 'Report a problem'},
             );
         });
     });
@@ -89,9 +87,9 @@ describe('screens/settings/report_problem/report_problem', () => {
 
         await act(async () => {
             fireEvent.press(getByTestId('settings.report_problem.option'));
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToSettingsScreen).toHaveBeenCalledWith(
                 Screens.REPORT_PROBLEM,
-                'Report a problem',
+                {title: 'Report a problem'},
             );
         });
     });
@@ -117,7 +115,7 @@ describe('screens/settings/report_problem/report_problem', () => {
                 props.reportAProblemMail,
                 true,
             );
-            expect(goToScreen).not.toHaveBeenCalled();
+            expect(navigateToSettingsScreen).not.toHaveBeenCalled();
         });
     });
 });

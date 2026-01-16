@@ -4,11 +4,13 @@
 import {BottomSheetFooter, type BottomSheetFooterProps, SHEET_STATE, useBottomSheet, useBottomSheetInternal} from '@gorhom/bottom-sheet';
 import React, {useCallback} from 'react';
 import {Platform} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming, type SharedValue} from 'react-native-reanimated';
+import {useAnimatedKeyboard} from 'react-native-keyboard-controller';
+import Animated, {KeyboardState, useAnimatedReaction, useAnimatedStyle, useSharedValue, type SharedValue} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import EmojiCategoryBar from '@components/emoji_category_bar';
 import {useTheme} from '@context/theme';
-import {useKeyboardHeight} from '@hooks/device';
+import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {selectEmojiCategoryBarSection} from '@hooks/emoji_category_bar';
 
 function waitForSheetExtended(animatedSheetState: SharedValue<number>, callback: () => void, depth = 250) {
@@ -21,7 +23,10 @@ function waitForSheetExtended(animatedSheetState: SharedValue<number>, callback:
 
 const PickerFooter = (props: BottomSheetFooterProps) => {
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const keyboardHeight = useKeyboardHeight();
+    const animatedKeyboard = useAnimatedKeyboard();
+    const insets = useSafeAreaInsets();
     const {animatedSheetState} = useBottomSheetInternal();
     const {expand} = useBottomSheet();
 
@@ -40,33 +45,38 @@ const PickerFooter = (props: BottomSheetFooterProps) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const invalidState = useSharedValue(false);
+
+    useAnimatedReaction(
+        () => animatedKeyboard.state.value,
+        (current, previous) => {
+            if (current !== previous) {
+                const isInvalidTransition = current === KeyboardState.OPEN && previous === KeyboardState.CLOSED;
+
+                if (isInvalidTransition) {
+                    invalidState.value = true;
+                } else if (invalidState.value && (current === KeyboardState.OPENING || current === KeyboardState.CLOSED || current === KeyboardState.UNKNOWN)) {
+                    // Reset invalid flag when we get a valid transition
+                    invalidState.value = false;
+                }
+            }
+        },
+    );
+
     const animatedStyle = useAnimatedStyle(() => {
-        const paddingBottom = withTiming(
-            Platform.OS === 'ios' ? 32 : 0,
-            {duration: 250},
-        );
-        return {backgroundColor: theme.centerChannelBg, paddingBottom};
-    }, [theme]);
-
-    const heightAnimatedStyle = useAnimatedStyle(() => {
-        let height = 55;
-        if (keyboardHeight === 0 && Platform.OS === 'ios') {
-            height -= 10;
-        } else if (keyboardHeight) {
-            height = 0;
-        }
-
-        return {
-            height,
-        };
-    }, [keyboardHeight]);
+        const width = isTablet ? '60%' : '100%';
+        const height = 55 + ((isTablet && Platform.OS === 'ios') || keyboardHeight > 0 ? 0 : insets.bottom);
+        return {height, width, alignSelf: 'center', backgroundColor: theme.centerChannelBg, transform: [{translateY: invalidState.value ? 0 : -animatedKeyboard.height.value}]};
+    }, [theme, insets.bottom, isTablet, keyboardHeight]);
 
     return (
         <BottomSheetFooter
-            style={heightAnimatedStyle}
+
+            // style={heightAnimatedStyle}
+            bottomInset={-insets.bottom}
             {...props}
         >
-            <Animated.View style={[animatedStyle]}>
+            <Animated.View style={animatedStyle}>
                 <EmojiCategoryBar onSelect={scrollToIndex}/>
             </Animated.View>
         </BottomSheetFooter>

@@ -6,12 +6,12 @@ import {FlashList, type ListRenderItemInfo} from '@shopify/flash-list';
 import {chunk} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {View, StyleSheet} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
-import EmojiCategoryBar from '@components/emoji_category_bar';
 import {EMOJI_CATEGORY_ICONS, EMOJI_ROW_MARGIN, EMOJI_SIZE, EMOJIS_PER_PAGE, EMOJIS_PER_ROW, EMOJIS_PER_ROW_TABLET} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
-import {useIsTablet} from '@hooks/device';
+import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {setEmojiCategoryBarIcons, setEmojiCategoryBarSection, useEmojiCategoryBar} from '@hooks/emoji_category_bar';
 import {CategoryNames, EmojiIndicesByCategory, CategoryTranslations, CategoryMessage} from '@utils/emoji';
 import {fillEmoji} from '@utils/emoji/helpers';
@@ -39,8 +39,7 @@ const keyExtractor = (item: SectionListItem) => {
 const getItemType = (item: SectionListItem) => item.type;
 
 const styles = StyleSheet.create({
-    container: {flex: 1, paddingBottom: 20},
-    containerStyle: {paddingBottom: 50},
+    container: {flex: 1},
 });
 
 type Props = {
@@ -70,6 +69,8 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
     const {currentIndex, selectedIndex} = useEmojiCategoryBar();
+    const keyboardHeight = useKeyboardHeight();
+    const {bottom} = useSafeAreaInsets();
 
     const list = useRef<FlashList<SectionListItem> | null>(null);
 
@@ -244,10 +245,14 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedIndex]);
 
+    const containerStyle = useMemo(() => ({
+        paddingBottom: keyboardHeight > 0 ? undefined : bottom,
+    }), [bottom, keyboardHeight]);
+
     return (
         <View style={styles.container}>
             <List
-                contentContainerStyle={styles.containerStyle}
+                contentContainerStyle={containerStyle}
                 data={sections}
                 estimatedItemSize={EMOJI_SIZE + EMOJI_ROW_MARGIN}
                 getItemType={getItemType}
@@ -256,15 +261,13 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
                 onEndReachedThreshold={0.5}
                 onEndReached={loadMoreCustomEmojis}
                 onStickyHeaderIndexChanged={handleStickyHeaderIndexChanged}
+                keyboardShouldPersistTaps='handled'
 
                 //@ts-expect-error type definition for ref
                 ref={list}
                 renderItem={renderItem}
                 stickyHeaderIndices={stickyHeaderIndices}
             />
-            {isTablet &&
-            <EmojiCategoryBar/>
-            }
         </View>
     );
 }

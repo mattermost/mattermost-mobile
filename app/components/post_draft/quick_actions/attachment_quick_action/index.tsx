@@ -2,15 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
-import {openAttachmentOptions} from '@screens/navigation';
 import {dismissKeyboard} from '@utils/keyboard';
+import {openAttachmentOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {QuickActionAttachmentProps} from '@typings/components/post_draft_quick_action';
@@ -42,7 +41,6 @@ export default function AttachmentQuickAction({
     maxFileCount,
     testID = '',
 }: QuickActionAttachmentProps) {
-    const intl = useIntl();
     const theme = useTheme();
     const {closeInputAccessoryView} = useKeyboardAnimationContext();
     const style = getStyleSheet(theme);
@@ -52,7 +50,7 @@ export default function AttachmentQuickAction({
         closeInputAccessoryView();
         await dismissKeyboard();
 
-        openAttachmentOptions(intl, theme, {
+        openAttachmentOptions({
             onUploadFiles,
             maxFilesReached,
             canUploadFiles: !disabled,
@@ -60,7 +58,7 @@ export default function AttachmentQuickAction({
             fileCount,
             maxFileCount,
         });
-    }, [closeInputAccessoryView, intl, theme, onUploadFiles, maxFilesReached, disabled, testID, fileCount, maxFileCount]);
+    }, [closeInputAccessoryView, onUploadFiles, maxFilesReached, disabled, testID, fileCount, maxFileCount]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
 

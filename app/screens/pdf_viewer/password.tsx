@@ -4,7 +4,8 @@
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {forwardRef, useCallback, useImperativeHandle, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {StyleSheet, TextInput, View, type Insets, type NativeSyntheticEvent, type TextInputSubmitEditingEventData} from 'react-native';
+import {StyleSheet, TextInput, type Insets, type NativeSyntheticEvent, type TextInputSubmitEditingEventData} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
@@ -26,12 +27,15 @@ export type PasswordRef = {
 const hitSlop: Insets = {top: 10, bottom: 10, left: 10, right: 10};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
+    keyboardAwareScrollView: {
         ...StyleSheet.absoluteFillObject,
+        backgroundColor: theme.centerChannelBg,
+        zIndex: 1,
+    },
+    container: {
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: 1,
-        backgroundColor: theme.centerChannelBg,
+        flex: 1,
     },
     required: {
         ...typography('Body', 100, 'Regular'),
@@ -150,7 +154,11 @@ const PdfPassword = forwardRef<PasswordRef, Props>(({maxAttempts, remainingAttem
     useHardwareKeyboardEvents({onEnterPressed: onPress});
 
     return (
-        <View style={styles.container}>
+        <KeyboardAwareScrollView
+            contentContainerStyle={styles.container}
+            keyboardShouldPersistTaps='handled'
+            style={styles.keyboardAwareScrollView}
+        >
             <CompassIcon
                 name='lock-outline'
                 size={52}
@@ -200,7 +208,7 @@ const PdfPassword = forwardRef<PasswordRef, Props>(({maxAttempts, remainingAttem
                 text={intl.formatMessage(messages.unlock)}
                 theme={theme}
             />
-        </View>
+        </KeyboardAwareScrollView>
     );
 });
 

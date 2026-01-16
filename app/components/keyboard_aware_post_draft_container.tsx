@@ -9,13 +9,16 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {InputAccessoryViewContainer, InputAccessoryViewContent} from '@components/input_accessory_view';
 import {Events} from '@constants';
+import {isAndroidEdgeToEdge} from '@constants/device';
 import {KeyboardAnimationProvider} from '@context/keyboard_animation';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {useInputAccessoryView} from '@hooks/useInputAccessoryView';
 import {useKeyboardAwarePostDraft} from '@hooks/useKeyboardAwarePostDraft';
 
-const isIOS = Platform.OS === 'ios';
-const Wrapper = isIOS ? KeyboardGestureArea : View;
+// Use KeyboardGestureArea on iOS and Android 35+ (with edge-to-edge)
+// Android < 35 uses native keyboard handling with adjustResize
+const useKeyboardGestureArea = Platform.OS === 'ios' || isAndroidEdgeToEdge;
+const Wrapper = useKeyboardGestureArea ? KeyboardGestureArea : View;
 
 type RenderListProps = {
     listRef: ReturnType<typeof useKeyboardAwarePostDraft>['listRef'];
@@ -378,13 +381,19 @@ export const KeyboardAwarePostDraftContainer = ({
         gestureStartedInEmojiPickerRef.current = false;
     }, [inputAccessoryViewAnimatedHeight, dismissEmojiPicker, bottomInset, scrollPosition, animatedScrollAdjustment]);
 
+    // On iOS, we set keyboardHeight to 0 to prevent the KeyboardGestureArea from interfering
+    // with the emoji picker's custom gesture handling
+    // On Android 35+, we DON'T set it to 0 because that causes the input to animate down
+    // Instead, we keep the keyboard height value so the input stays in place during transition
     useLayoutEffect(() => {
-        if (showInputAccessoryView && Platform.OS === 'ios') {
+        if (showInputAccessoryView && useKeyboardGestureArea && Platform.OS === 'ios') {
             keyboardHeight.value = 0;
         }
     }, [showInputAccessoryView, keyboardHeight]);
 
     // After emoji picker renders, adjust heights and scroll to keep messages visible
+    // On iOS, contentInset changes cause the list to shift, so we need to scroll to compensate
+    // On Android, marginBottom is used instead and doesn't require scroll adjustment
     useEffect(() => {
         if (showInputAccessoryView) {
             // Wait one frame to ensure emoji picker has rendered
@@ -395,16 +404,20 @@ export const KeyboardAwarePostDraftContainer = ({
                 originalScrollBeforeEmojiPicker.value = currentScroll;
                 originalEmojiPickerHeightRef.current = emojiPickerHeight;
 
-                // For inverted list: when bottomInset increases, content shifts UP visually. Scroll UP to compensate.
-                const targetContentOffset = currentScroll - emojiPickerHeight;
-
                 bottomInset.value = emojiPickerHeight;
                 scrollOffset.value = emojiPickerHeight;
 
-                listRef.current?.scrollToOffset({
-                    offset: targetContentOffset,
-                    animated: false,
-                });
+                // Only perform scroll adjustment on iOS
+                // Android uses marginBottom which doesn't require scroll compensation
+                if (Platform.OS === 'ios') {
+                    // For inverted list: when bottomInset increases, content shifts UP visually. Scroll UP to compensate.
+                    const targetContentOffset = currentScroll - emojiPickerHeight;
+
+                    listRef.current?.scrollToOffset({
+                        offset: targetContentOffset,
+                        animated: false,
+                    });
+                }
             });
         }
 
@@ -442,15 +455,16 @@ export const KeyboardAwarePostDraftContainer = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Android: Watch for emoji picker closing and restore scroll position when both height and bottomInset reach 0
-    const isAndroid = Platform.OS === 'android';
+    // Android < 35: Watch for emoji picker closing and restore scroll position when both height and bottomInset reach 0
+    // Android 35+ with edge-to-edge uses marginBottom and doesn't need scroll restoration
+    const isAndroidWithoutEdgeToEdge = Platform.OS === 'android' && Platform.Version < 35;
     useAnimatedReaction(
         () => ({
             height: inputAccessoryViewAnimatedHeight.value,
             bottomInset: bottomInset.value,
         }),
         (current, previous) => {
-            if (!isAndroid) {
+            if (!isAndroidWithoutEdgeToEdge) {
                 return;
             }
 
@@ -526,7 +540,7 @@ export const KeyboardAwarePostDraftContainer = ({
     ]);
 
     const wrapperProps = useMemo(() => {
-        if (isIOS) {
+        if (useKeyboardGestureArea) {
             return {
                 textInputNativeID,
                 offset: postInputContainerHeight,
@@ -536,10 +550,9 @@ export const KeyboardAwarePostDraftContainer = ({
         return {style: styles.gestureArea};
     }, [textInputNativeID, postInputContainerHeight]);
 
-    // On iOS, use KeyboardGestureArea for interactive keyboard dismissal
-    // On Android, KeyboardGestureArea is Android 11+ only, but we want native behavior
-    // So we conditionally use it only on iOS
-    // KeyboardGestureArea will be a no-op on Android if rendered, but we avoid it for clarity
+    // On iOS and Android 35+, use KeyboardGestureArea for proper keyboard handling
+    // KeyboardGestureArea requires Android 11+ and works with edge-to-edge mode
+    // Android < 35 uses native behavior with adjustResize
     const content = (
         <>
             <View style={containerStyle}>
@@ -575,7 +588,10 @@ export const KeyboardAwarePostDraftContainer = ({
 
     return (
         <KeyboardAnimationProvider value={keyboardAnimationValues}>
-            <Wrapper {...wrapperProps}>
+            <Wrapper
+                {...wrapperProps}
+                enableSwipeToDismiss={false} // this applies only to Android
+            >
                 {content}
             </Wrapper>
         </KeyboardAnimationProvider>

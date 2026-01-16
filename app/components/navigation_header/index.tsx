@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {forwardRef} from 'react';
-import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useDerivedValue, type SharedValue} from 'react-native-reanimated';
 
 import {SEARCH_INPUT_HEIGHT, SEARCH_INPUT_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
@@ -10,10 +10,11 @@ import useHeaderHeight, {MAX_OVERSCROLL} from '@hooks/header';
 import {clamp} from '@utils/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import Header, {type HeaderRightButton} from './header';
+import Header from './header';
 import NavigationHeaderLargeTitle from './large';
 import NavigationSearch from './search';
 
+import type {NavigationButtonProps} from '@components/navigation_button';
 import type {SearchProps, SearchRef} from '@components/search';
 
 type Props = SearchProps & {
@@ -22,8 +23,8 @@ type Props = SearchProps & {
     leftComponent?: React.ReactElement;
     onBackPress?: () => void;
     onTitlePress?: () => void;
-    rightButtons?: HeaderRightButton[];
-    scrollValue?: Animated.SharedValue<number>;
+    rightButtons?: NavigationButtonProps[];
+    scrollValue?: SharedValue<number>;
     lockValue?: number;
     hideHeader?: () => void;
     showBackButton?: boolean;

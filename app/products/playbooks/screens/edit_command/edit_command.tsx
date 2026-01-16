@@ -1,32 +1,33 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {useNavigation} from 'expo-router';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
-import {useTheme} from '@context/theme';
+import NavigationButton from '@components/navigation_button';
+import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
+import useBackNavigation from '@hooks/navigate_back';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 
 import EditCommandForm from './edit_command_form';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type Props = {
-    componentId: AvailableScreens;
     savedCommand?: string;
-    updateCommand: (command: string) => void;
     channelId: string;
 }
 
-const SAVE_BUTTON_ID = 'save-command';
+const removeCallback = () => {
+    CallbackStore.removeCallback();
+};
 
-const close = (componentId: AvailableScreens): void => {
+const close = (): void => {
     Keyboard.dismiss();
-    popTopScreen(componentId);
+    removeCallback();
+    navigateBack();
 };
 
 const styles = StyleSheet.create({
@@ -36,57 +37,43 @@ const styles = StyleSheet.create({
 });
 
 const CreateOrEditChannel = ({
-    componentId,
     savedCommand,
-    updateCommand,
     channelId,
 }: Props) => {
+    const navigation = useNavigation();
     const intl = useIntl();
-    const {formatMessage} = intl;
-    const theme = useTheme();
 
     const [canSave, setCanSave] = useState(false);
     const [command, setCommand] = useState<string>(savedCommand || '/');
-
-    const rightButton = useMemo(() => {
-        const base = buildNavigationButton(
-            SAVE_BUTTON_ID,
-            'playbooks.edit_command.save.button',
-            undefined,
-            formatMessage({id: 'playbooks.edit_command.save.button', defaultMessage: 'Save'}),
-        );
-        base.enabled = canSave;
-        base.color = theme.sidebarHeaderTextColor;
-        return base;
-    }, [formatMessage, canSave, theme.sidebarHeaderTextColor]);
-
-    useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [rightButton],
-        });
-    }, [rightButton, componentId]);
 
     useEffect(() => {
         setCanSave(command !== savedCommand);
     }, [command, savedCommand]);
 
-    const handleClose = useCallback(() => {
-        close(componentId);
-    }, [componentId]);
-
     const onEditCommand = useCallback(() => {
-        close(componentId);
-        updateCommand(command);
-    }, [command, componentId, updateCommand]);
+        const updateCommand = CallbackStore.getCallback<((command: string) => void)>();
+        updateCommand?.(command);
+        close();
+    }, [command]);
 
-    useNavButtonPressed(SAVE_BUTTON_ID, componentId, onEditCommand, [onEditCommand]);
-    useAndroidHardwareBackHandler(componentId, handleClose);
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <NavigationButton
+                    onPress={onEditCommand}
+                    testID='playbooks.edit_command.save.button'
+                    text={intl.formatMessage({id: 'playbooks.edit_command.save.button', defaultMessage: 'Save'})}
+                    disabled={!canSave}
+                />
+            ),
+        });
+    }, [navigation, onEditCommand, intl, canSave]);
+
+    useBackNavigation(removeCallback);
+    useAndroidHardwareBackHandler(Screens.PLAYBOOK_EDIT_COMMAND, close);
 
     return (
-        <View
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-            style={styles.container}
-        >
+        <View style={styles.container}>
             <EditCommandForm
                 command={command}
                 onCommandChange={setCommand}

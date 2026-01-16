@@ -1,35 +1,33 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useNavigation} from 'expo-router';
 import React, {useState, useCallback, useEffect} from 'react';
-import {useIntl, type IntlShape} from 'react-intl';
-import {Keyboard, ScrollView} from 'react-native';
+import {useIntl} from 'react-intl';
+import {Keyboard} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
+import NavigationButton from '@components/navigation_button';
+import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {createPlaybookRun, fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-import type {OptionsTopBarButton} from 'react-native-navigation';
-
-type Props = {
-    componentId: AvailableScreens;
+export type PlaybookCreateQuickChecklistScreenProps = {
     channelId: string;
     channelName: string;
     currentUserId: string;
     currentTeamId: string;
-    serverUrl: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -49,38 +47,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const CLOSE_BUTTON_ID = 'close-create-quick-checklist';
-const CREATE_BUTTON_ID = 'create-quick-checklist';
-
-async function makeLeftButton(theme: Theme): Promise<OptionsTopBarButton> {
-    return {
-        id: CLOSE_BUTTON_ID,
-        icon: await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor),
-        testID: 'create_quick_checklist.close.button',
-    };
-}
-
-function makeRightButton(theme: Theme, intl: IntlShape, enabled: boolean): OptionsTopBarButton {
-    return {
-        color: theme.sidebarHeaderTextColor,
-        id: CREATE_BUTTON_ID,
-        text: intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
-        showAsAction: 'always',
-        testID: 'create_quick_checklist.create.button',
-        enabled,
-    };
-}
-
 function CreateQuickChecklist({
-    componentId,
     channelId,
     channelName,
     currentUserId,
     currentTeamId,
-    serverUrl,
-}: Props) {
+}: PlaybookCreateQuickChecklistScreenProps) {
+    const navigation = useNavigation();
     const theme = useTheme();
     const intl = useIntl();
+    const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
     const [checklistName, setChecklistName] = useState(`${channelName} Checklist`);
@@ -106,42 +82,36 @@ function CreateQuickChecklist({
 
         // Pop the create screen first, then navigate to the run
         // This ensures the back button goes back to the channel, not the create screen
-        await popTopScreen(componentId);
+        await navigateBack();
         await fetchPlaybookRunsForChannel(serverUrl, channelId);
-        await goToPlaybookRun(intl, res.data.id);
-    }, [serverUrl, currentUserId, currentTeamId, checklistName, description, channelId, componentId, intl]));
+        await goToPlaybookRun(res.data.id);
+    }, [serverUrl, currentUserId, currentTeamId, checklistName, description, channelId]));
 
     useEffect(() => {
-        async function asyncWrapper() {
-            const leftButton = await makeLeftButton(theme);
-            const rightButton = makeRightButton(theme, intl, canSave);
-
-            setButtons(
-                componentId,
-                {
-                    leftButtons: [leftButton],
-                    rightButtons: [rightButton],
-                },
-            );
-        }
-
-        asyncWrapper();
-    }, [componentId, theme, intl, canSave]);
+        navigation.setOptions({
+            headerRight: () => (
+                <NavigationButton
+                    onPress={handleCreate}
+                    disabled={!canSave}
+                    text={intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'})}
+                    testID='create_quick_checklist.create.button'
+                />
+            )});
+    }, [theme, intl, canSave, navigation, handleCreate]);
 
     const close = useCallback(() => {
         Keyboard.dismiss();
-        popTopScreen(componentId);
-    }, [componentId]);
+        navigateBack();
+    }, []);
 
-    useNavButtonPressed(CREATE_BUTTON_ID, componentId, handleCreate, [handleCreate]);
-    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.PLAYBOOKS_CREATE_QUICK_CHECKLIST, close);
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView
+            <KeyboardAwareScrollView
                 style={styles.content}
                 contentContainerStyle={styles.contentContainer}
+                keyboardShouldPersistTaps='handled'
             >
                 <FloatingTextInput
                     label={intl.formatMessage({
@@ -173,7 +143,7 @@ function CreateQuickChecklist({
                     theme={theme}
                     testID='create_quick_checklist.description_input'
                 />
-            </ScrollView>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 }

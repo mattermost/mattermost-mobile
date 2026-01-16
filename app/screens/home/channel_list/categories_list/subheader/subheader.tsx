@@ -32,7 +32,7 @@ const SubHeader = ({unreadsOnTop}: Props) => {
 
     useEffect(() => {
         showFilter.value = !unreadsOnTop;
-    }, [unreadsOnTop]);
+    }, [showFilter, unreadsOnTop]);
 
     return (
         <View style={style.container}>

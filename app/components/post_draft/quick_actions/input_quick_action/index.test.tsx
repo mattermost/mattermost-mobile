@@ -3,7 +3,7 @@
 
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import InputQuickAction from '.';
+import InputQuickAction from './index';
 
 describe('InputQuickAction', () => {
     it('should add If theres existing text and it doesnt end with a space, add a space before @', () => {

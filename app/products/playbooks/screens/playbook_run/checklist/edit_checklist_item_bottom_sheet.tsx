@@ -1,31 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
+import NavigationButton from '@components/navigation_button';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 
 type Props = {
-    componentId: AvailableScreens;
     currentTitle: string;
     currentDescription?: string;
-    onSave: (item: ChecklistItemInput) => void;
 }
 
-const SAVE_BUTTON_ID = 'save-checklist-item';
-
-const close = (componentId: AvailableScreens): void => {
+const close = (): void => {
     Keyboard.dismiss();
-    popTopScreen(componentId);
+    CallbackStore.removeCallback();
+    navigateBack();
 };
 
 const styles = StyleSheet.create({
@@ -38,11 +35,10 @@ const styles = StyleSheet.create({
 });
 
 const EditChecklistItemBottomSheet = ({
-    componentId,
     currentTitle,
     currentDescription = '',
-    onSave,
 }: Props) => {
+    const navigation = useNavigation();
     const intl = useIntl();
     const {formatMessage} = intl;
     const theme = useTheme();
@@ -51,56 +47,44 @@ const EditChecklistItemBottomSheet = ({
     const [description, setDescription] = useState<string>(currentDescription);
     const [canSave, setCanSave] = useState(false);
 
-    const rightButton = React.useMemo(() => {
-        const base = buildNavigationButton(
-            SAVE_BUTTON_ID,
-            'playbooks.checklist_item.edit.button',
-            undefined,
-            formatMessage({id: 'playbooks.checklist_item.edit.button', defaultMessage: 'Save'}),
-        );
-        base.enabled = canSave;
-        base.color = theme.sidebarHeaderTextColor;
-        return base;
-    }, [formatMessage, canSave, theme.sidebarHeaderTextColor]);
-
-    useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [rightButton],
-        });
-    }, [rightButton, componentId]);
-
     useEffect(() => {
         const titleChanged = title.trim() !== currentTitle.trim();
         const descriptionChanged = description.trim() !== currentDescription.trim();
         setCanSave(title.trim().length > 0 && (titleChanged || descriptionChanged));
     }, [title, description, currentTitle, currentDescription]);
 
-    const handleClose = useCallback(() => {
-        close(componentId);
-    }, [componentId]);
-
     const handleSave = useCallback(() => {
         const saveTitle = title.trim();
         if (saveTitle.length > 0) {
-            onSave({
+            const onSave = CallbackStore.getCallback<(item: ChecklistItemInput) => void>();
+            onSave?.({
                 title: saveTitle,
                 description: description.trim(),
             });
-            close(componentId);
+            close();
         }
-    }, [title, description, componentId, onSave]);
+    }, [title, description]);
 
-    useNavButtonPressed(SAVE_BUTTON_ID, componentId, handleSave, [handleSave]);
-    useAndroidHardwareBackHandler(componentId, handleClose);
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <NavigationButton
+                    onPress={handleSave}
+                    testID='playbooks.checklist_item.edit.save.button'
+                    text={formatMessage({id: 'playbooks.checklist_item.edit.save', defaultMessage: 'Save'})}
+                    disabled={!canSave}
+                />
+            ),
+        });
+    }, [navigation, handleSave, formatMessage, canSave]);
+
+    useAndroidHardwareBackHandler(Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM, close);
 
     const titleLabel = formatMessage({id: 'playbooks.checklist_item.edit.title_label', defaultMessage: 'Task name'});
     const descriptionLabel = formatMessage({id: 'playbooks.checklist_item.edit.description_label', defaultMessage: 'Description'});
 
     return (
-        <View
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-            style={styles.container}
-        >
+        <View style={styles.container}>
             <FloatingTextInput
                 label={titleLabel}
                 onChangeText={setTitle}

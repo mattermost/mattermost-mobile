@@ -7,7 +7,7 @@ import {Preferences} from '@constants';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import ChannelListRow from '.';
+import ChannelListRow from './index';
 
 import type Database from '@nozbe/watermelondb/Database';
 

@@ -20,18 +20,14 @@ import {Screens} from '@constants/index';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import SecurityManager from '@managers/security_manager';
-import {dismissOverlay} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
+import {navigateBack} from '@screens/navigation';
+import {NavigationStore} from '@store/navigation_store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
-type Props = {
+type TermsOfServiceProps = {
     siteName?: string;
     showToS: boolean;
-    componentId: AvailableScreens;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -96,8 +92,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const TermsOfService = ({
     siteName = 'Mattermost',
     showToS,
-    componentId,
-}: Props) => {
+}: TermsOfServiceProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
@@ -124,10 +119,10 @@ const TermsOfService = ({
         }
     }, [serverUrl]);
 
-    const closeTermsAndLogout = useCallback(() => {
-        dismissOverlay(componentId);
+    const closeTermsAndLogout = useCallback(async () => {
+        await navigateBack();
         logout(serverUrl, intl, {logoutOnAlert: true});
-    }, [serverUrl, componentId, intl]);
+    }, [serverUrl, intl]);
 
     const alertError = useCallback((retry: () => void) => {
         Alert.alert(
@@ -205,11 +200,11 @@ const TermsOfService = ({
 
     useEffect(() => {
         if (!showToS) {
-            dismissOverlay(componentId);
+            navigateBack();
         }
-    }, [showToS, componentId]);
+    }, [showToS]);
 
-    useAndroidHardwareBackHandler(componentId, onPressClose);
+    useAndroidHardwareBackHandler(Screens.TERMS_OF_SERVICE, onPressClose);
 
     let content;
     if (loading) {
@@ -290,10 +285,7 @@ const TermsOfService = ({
     }, [styles, insets]);
 
     return (
-        <View
-            style={styles.root}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-        >
+        <View style={styles.root}>
             <View style={containerStyle}>
                 <View style={styles.wrapper}>
                     <Text style={styles.title}>{intl.formatMessage({id: 'terms_of_service.title', defaultMessage: 'Terms of Service'})}</Text>

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {Screens} from '@constants';
 import {SNACK_BAR_TYPE, type SnackBarConfig} from '@constants/snack_bar';
-import {showOverlay} from '@screens/navigation';
+import SnackBarStore from '@store/snackbar_store';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {PrimitiveType} from 'react-intl';
@@ -17,8 +17,7 @@ export type ShowSnackBarArgs = {
 };
 
 export const showSnackBar = (passProps: ShowSnackBarArgs) => {
-    const screen = Screens.SNACK_BAR;
-    showOverlay(screen, passProps);
+    SnackBarStore.show(passProps);
 };
 
 export const showMuteChannelSnackbar = (muted: boolean, onAction: () => void) => {
