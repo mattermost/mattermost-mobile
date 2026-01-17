@@ -265,7 +265,7 @@ export default function PlaybookRun({
             return;
         }
 
-        goToRenamePlaybookRun(intl, theme, playbookRun.name, playbookRun.id);
+        goToRenamePlaybookRun(intl, theme, playbookRun.name, playbookRun.summary, playbookRun.id);
     }, [intl, theme, playbookRun]);
 
     const handleFinishRun = useCallback(() => {
