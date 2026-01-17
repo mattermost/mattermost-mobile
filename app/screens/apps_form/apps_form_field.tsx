@@ -1,16 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import moment, {type Moment} from 'moment-timezone';
 import React, {useCallback, useMemo} from 'react';
-import {View} from 'react-native';
+import {View, Text} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
+import DateTimeSelector from '@components/date_time_selector';
+import FormattedDate from '@components/formatted_date';
+import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
 import BoolSetting from '@components/settings/bool_setting';
+import RadioSetting from '@components/settings/radio_setting';
 import TextSetting from '@components/settings/text_setting';
 import {Screens, View as ViewConstants} from '@constants';
 import {AppFieldTypes, SelectableAppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
+import {isAppSelectOption} from '@utils/dialog_utils';
 import {selectKeyboardType} from '@utils/integrations';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -35,6 +41,16 @@ const appSelectOptionToDialogOption = (option: AppSelectOption): DialogOption =>
     text: option.label || '',
     value: option.value || '',
 });
+
+const extractOptionValue = (v: AppSelectOption) => v.value || '';
+
+const getDateValue = (value: AppFormValue): Moment | undefined => {
+    if (typeof value === 'string' && value) {
+        const parsed = moment(value);
+        return parsed.isValid() ? parsed : undefined;
+    }
+    return undefined;
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -63,14 +79,14 @@ function selectDataSource(fieldType: string): string {
     }
 }
 
-function AppsFormField({
+const AppsFormField = React.memo<Props>(({
     field,
     name,
     errorText,
     value,
     onChange,
     performLookup,
-}: Props) {
+}) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -84,7 +100,7 @@ function AppsFormField({
 
     const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
-            const emptyValue = field.multiselect ? [] : null;
+            const emptyValue = field.multiselect ? [] : '';
             onChange(name, emptyValue);
             return;
         }
@@ -97,6 +113,16 @@ function AppsFormField({
 
         onChange(name, dialogOptionToAppSelectOption(newValue));
     }, [onChange, field, name]);
+
+    const handleDateChange = useCallback((selectedDate: Moment) => {
+        if (field.type === AppFieldTypes.DATE) {
+            // For date-only fields, return YYYY-MM-DD format
+            onChange(name, selectedDate.format('YYYY-MM-DD'));
+        } else if (field.type === AppFieldTypes.DATETIME) {
+            // For datetime fields, return full ISO string
+            onChange(name, selectedDate.toISOString());
+        }
+    }, [name, onChange, field.type]);
 
     const getDynamicOptions = useCallback(async (userInput = ''): Promise<DialogOption[]> => {
         if (!field.name) {
@@ -128,7 +154,7 @@ function AppsFormField({
     }, [field, value]);
 
     const selectedValue = useMemo(() => {
-        if (!value || !SelectableAppFieldTypes.includes(field.type || '')) {
+        if (!SelectableAppFieldTypes.includes(field.type || '')) {
             return undefined;
         }
 
@@ -137,7 +163,12 @@ function AppsFormField({
         }
 
         if (Array.isArray(value)) {
-            return value.map((v) => v.value || '');
+            return value.map(extractOptionValue);
+        }
+
+        // Handle AppSelectOption object
+        if (isAppSelectOption(value)) {
+            return value.value || '';
         }
 
         return value as string;
@@ -205,6 +236,20 @@ function AppsFormField({
                 />
             );
         }
+        case AppFieldTypes.RADIO: {
+            return (
+                <RadioSetting
+                    label={displayName}
+                    helpText={field.description}
+                    errorText={errorText}
+                    options={field.options?.map(appSelectOptionToDialogOption)}
+                    onChange={handleChange}
+                    testID={testID}
+                    value={value as string}
+                    location={Screens.APPS_FORM}
+                />
+            );
+        }
         case AppFieldTypes.MARKDOWN: {
             if (!field.description) {
                 return null;
@@ -224,9 +269,115 @@ function AppsFormField({
                 </View>
             );
         }
+        case AppFieldTypes.DATE:
+        case AppFieldTypes.DATETIME: {
+            const selectedDate = getDateValue(value) || moment();
+            const hasValue = Boolean(value);
+
+            const dateTimeStyles = {
+                container: {
+                    marginBottom: 24,
+                },
+                labelContainer: {
+                    flexDirection: 'row' as const,
+                    marginTop: 15,
+                    marginBottom: 10,
+                    marginLeft: 15,
+                    position: 'relative' as const,
+                    flex: 1,
+                },
+                label: {
+                    fontSize: 14,
+                    color: theme.centerChannelColor,
+                },
+                asterisk: {
+                    color: theme.errorTextColor,
+                    fontSize: 14,
+                },
+                rightPosition: {
+                    position: 'absolute' as const,
+                    right: 14,
+                },
+                dateTimeText: {
+                    color: theme.linkColor,
+                    fontSize: 14,
+                },
+                helpText: {
+                    fontSize: 12,
+                    color: theme.centerChannelColor,
+                    marginLeft: 15,
+                    marginTop: 4,
+                    opacity: 0.64,
+                },
+                errorText: {
+                    fontSize: 12,
+                    color: theme.errorTextColor,
+                    marginLeft: 15,
+                    marginTop: 4,
+                },
+            };
+
+            return (
+                <View style={dateTimeStyles.container}>
+                    <View style={dateTimeStyles.labelContainer}>
+                        <Text style={dateTimeStyles.label}>
+                            {displayName}
+                            {field.is_required && <Text style={dateTimeStyles.asterisk}>{' *'}</Text>}
+                        </Text>
+
+                        {hasValue && (
+                            <View style={dateTimeStyles.rightPosition}>
+                                {field.type === AppFieldTypes.DATE ? (
+                                    <FormattedDate
+                                        value={selectedDate.toDate()}
+                                        format={{dateStyle: 'medium'}}
+                                        style={dateTimeStyles.dateTimeText}
+                                    />
+                                ) : (
+                                    <Text style={dateTimeStyles.dateTimeText}>
+                                        <FormattedDate
+                                            value={selectedDate.toDate()}
+                                            format={{dateStyle: 'medium'}}
+                                        />
+                                        {' at '}
+                                        <FormattedTime
+                                            isMilitaryTime={false}
+                                            timezone={''}
+                                            value={selectedDate.toDate()}
+                                        />
+                                    </Text>
+                                )}
+                            </View>
+                        )}
+                    </View>
+
+                    <DateTimeSelector
+                        timezone={'UTC'}
+                        theme={theme}
+                        handleChange={handleDateChange}
+                        initialDate={selectedDate}
+                        dateOnly={field.type === AppFieldTypes.DATE}
+                        testID={testID}
+                    />
+
+                    {field.description && (
+                        <Text style={dateTimeStyles.helpText}>
+                            {field.description}
+                        </Text>
+                    )}
+                    {errorText && (
+                        <Text style={dateTimeStyles.errorText}>
+                            {errorText}
+                        </Text>
+                    )}
+                </View>
+            );
+        }
     }
 
     return null;
-}
+});
+
+AppsFormField.displayName = 'AppsFormField';
 
 export default AppsFormField;

@@ -35,6 +35,9 @@ export const AppFieldTypes: { [name: string]: AppFieldType } = {
     USER: 'user',
     CHANNEL: 'channel',
     MARKDOWN: 'markdown',
+    RADIO: 'radio',
+    DATE: 'date',
+    DATETIME: 'datetime',
 };
 
 export const SelectableAppFieldTypes = [
