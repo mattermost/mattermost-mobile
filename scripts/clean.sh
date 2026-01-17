@@ -17,4 +17,13 @@ rm -rf android/app/build
 rm assets/fonts/compass-icons.ttf
 rm android/app/src/main/assets/fonts/compass-icons.ttf
 
+# E2EE module cleanup
+echo "Cleaning E2EE module..."
+rm -rf libraries/@mattermost/e2ee/node_modules
+rm -rf libraries/@mattermost/e2ee/rust/target
+rm -rf libraries/@mattermost/e2ee/MattermostE2eeFramework.xcframework
+rm -rf libraries/@mattermost/e2ee/android/src/main/jniLibs
+rm -rf libraries/@mattermost/e2ee/src/generated
+rm -rf libraries/@mattermost/e2ee/cpp/generated
+
 echo Cleanup finished

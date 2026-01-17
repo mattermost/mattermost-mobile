@@ -19,6 +19,11 @@ runs:
         npm run apply-16kb-pagesize-patch
         echo "::endgroup::"
 
+    - name: ci/prepare-rust-toolchain
+      uses: ./.github/actions/prepare-rust-toolchain
+      with:
+        platform: android
+
     - name: ci/setup-java
       uses: actions/setup-java@v4
       with:

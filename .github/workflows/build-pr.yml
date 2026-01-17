@@ -9,6 +9,7 @@ env:
   NODE_VERSION: 22.14.0
   TERM: xterm
   INTUNE_ENABLED: 1
+  E2EE_RELEASE: 1
 
 jobs:
   test:
@@ -75,6 +76,13 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: ci/free-disk-space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          df -h
 
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
