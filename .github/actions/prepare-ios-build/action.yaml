@@ -53,7 +53,6 @@ runs:
       shell: bash
       env:
         INTUNE_ENABLED: ${{ inputs.intune-enabled == 'true' && '1' || '0' }}
-        INTUNE_IOS_SDK_VERSION: '20.9.2'
       run: |
         echo "::group::install-pods-dependencies"
         echo "INTUNE_ENABLED=$INTUNE_ENABLED"
