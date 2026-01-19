@@ -9,7 +9,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 export type FlattenedItem =
     | {type: 'unreads_header'}
     | {type: 'header'; categoryId: string; category: CategoryModel}
-    | {type: 'channel'; categoryId: string; channelId: string; channel: ChannelModel};
+    | {type: 'channel'; categoryId: string; categoryType: string; channelId: string; channel: ChannelModel};
 
 export type CategoryData = {
     category: CategoryModel;
@@ -55,6 +55,7 @@ export const flattenCategories = (
                 result.push({
                     type: 'channel',
                     categoryId: UNREADS_CATEGORY,
+                    categoryType: UNREADS_CATEGORY,
                     channelId: channel.id,
                     channel,
                 });
@@ -75,6 +76,7 @@ export const flattenCategories = (
             result.push({
                 type: 'channel',
                 categoryId: category.id,
+                categoryType: category.type,
                 channelId: channel.id,
                 channel,
             });

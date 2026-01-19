@@ -17,7 +17,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ChannelScreen {
@@ -152,16 +152,29 @@ class ChannelScreen {
         return this.channelScreen;
     };
 
-    open = async (categoryKey: string, channelName: string) => {
-        // # Open channel screen
-        await waitFor(ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName).tap();
+    dismissScheduledPostTooltip = async () => {
+        // Try to close scheduled post tooltip if it exists (try both regular and admin account versions)
         try {
+            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.ONE_SEC);
             await this.scheduledPostTooltipCloseButton.tap();
-        } catch (error) {
-            // eslint-disable-next-line no-console
-            console.log('Element not visible, skipping click');
+            await wait(timeouts.HALF_SEC);
+        } catch {
+            // Try admin account version
+            try {
+                await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.ONE_SEC);
+                await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
+                await wait(timeouts.HALF_SEC);
+            } catch {
+                // Tooltip not visible, continue
+            }
         }
+    };
+
+    open = async (category: string, channelName: any) => {
+        // # Open channel screen
+        await wait(timeouts.FOUR_SEC);
+        await ChannelListScreen.getChannelItemDisplayName(category, channelName).tap();
+        await this.dismissScheduledPostTooltip();
         return this.toBeVisible();
     };
 
@@ -193,12 +206,29 @@ class ChannelScreen {
         }
     };
 
+    dismissKeyboard = async () => {
+        // Explicitly dismiss keyboard before long press
+        if (isAndroid()) {
+            try {
+                await device.pressBack();
+                await wait(timeouts.ONE_SEC);
+            } catch (error) {
+                // Keyboard might not be open, continue
+            }
+        }
+        if (isIos()) {
+            // On iOS, tap outside the input area to dismiss keyboard
+            await this.postInput.tapReturnKey();
+            await wait(timeouts.ONE_SEC);
+        }
+    };
+
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Open post options
-        await postListPostItem.longPress(timeouts.TWO_SEC);
+        await postListPostItem.longPress();
         await PostOptionsScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     };
@@ -217,6 +247,7 @@ class ChannelScreen {
         await this.postInput.clearText();
         await this.postInput.replaceText(message);
         await this.tapSendButton();
+        await wait(timeouts.TWO_SEC);
     };
 
     enterMessageToSchedule = async (message: string) => {
@@ -311,6 +342,12 @@ class ChannelScreen {
             await wait(timeouts.TEN_SEC);
             await this.scheduleDraftInforMessage.tap();
         }
+    };
+
+    channelArchievedButtonCloseChannel = async () => {
+        await waitFor(this.archievedCloseChannelButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.archievedCloseChannelButton.tap();
+        await wait(timeouts.ONE_SEC);
     };
 
     assertPostMessageEdited = async (
