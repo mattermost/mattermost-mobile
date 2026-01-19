@@ -10,6 +10,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {usePreventDoubleTap} from '@hooks/utils';
 import SecurityManager from '@managers/security_manager';
 import {updatePlaybookRun} from '@playbooks/actions/remote/runs';
 import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
@@ -96,7 +97,9 @@ const RenamePlaybookRunBottomSheet = ({
         }
     }, [canSave, title, summary, componentId, serverUrl, playbookRunId]);
 
-    useNavButtonPressed(SAVE_BUTTON_ID, componentId, handleSave, [handleSave]);
+    const onSave = usePreventDoubleTap(handleSave);
+
+    useNavButtonPressed(SAVE_BUTTON_ID, componentId, onSave, [onSave]);
     useAndroidHardwareBackHandler(componentId, handleClose);
 
     const nameLabel = formatMessage({id: 'playbooks.playbook_run.rename.label', defaultMessage: 'Checklist name'});

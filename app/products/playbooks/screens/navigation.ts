@@ -129,7 +129,7 @@ export async function goToEditChecklistItem(
     }, options);
 }
 
-export async function goToRenamePlaybookRun(
+export async function goToEditPlaybookRun(
     intl: IntlShape,
     theme: Theme,
     currentTitle: string,

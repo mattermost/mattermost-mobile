@@ -23,7 +23,7 @@ import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {goToRenamePlaybookRun, goToSelectUser} from '../navigation';
+import {goToEditPlaybookRun, goToSelectUser} from '../navigation';
 
 import ChecklistList from './checklist_list';
 import {PropertyFieldsList} from './components';
@@ -265,7 +265,7 @@ export default function PlaybookRun({
             return;
         }
 
-        goToRenamePlaybookRun(intl, theme, playbookRun.name, playbookRun.summary, playbookRun.id);
+        goToEditPlaybookRun(intl, theme, playbookRun.name, playbookRun.summary, playbookRun.id);
     }, [intl, theme, playbookRun]);
 
     const handleFinishRun = useCallback(() => {

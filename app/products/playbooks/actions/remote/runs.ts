@@ -153,7 +153,11 @@ export const updatePlaybookRun = async (serverUrl: string, playbookRunId: string
 
         // Update local database
         const result = await localUpdatePlaybookRun(serverUrl, playbookRunId, name, summary);
-        return result.error ? result : {data: true};
+        if (result.error) {
+            logDebug('[updatePlaybookRun] local update failed after successful API call', getFullErrorMessage(result.error));
+            return result;
+        }
+        return {data: true};
     } catch (error) {
         logDebug('[updatePlaybookRun]', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);

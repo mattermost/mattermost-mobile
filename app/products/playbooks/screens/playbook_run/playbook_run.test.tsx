@@ -18,7 +18,7 @@ import {fireEvent, renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
-import {goToRenamePlaybookRun, goToSelectUser} from '../navigation';
+import {goToEditPlaybookRun, goToSelectUser} from '../navigation';
 
 import ChecklistList from './checklist_list';
 import ErrorState from './error_state';
@@ -75,7 +75,7 @@ jest.mocked(StatusUpdateIndicator).mockImplementation(
 );
 
 jest.mock('../navigation', () => ({
-    goToRenamePlaybookRun: jest.fn(),
+    goToEditPlaybookRun: jest.fn(),
     goToSelectUser: jest.fn(),
 }));
 
@@ -649,7 +649,7 @@ describe('PlaybookRun', () => {
         act(() => {
             fireEvent.press(editIcon);
         });
-        expect(goToRenamePlaybookRun).toHaveBeenCalledWith(
+        expect(goToEditPlaybookRun).toHaveBeenCalledWith(
             expect.anything(), // intl
             expect.anything(), // theme
             'Test Playbook Run',
