@@ -57,7 +57,6 @@ describe('Messaging - Message Delete', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.dismissKeyboard();
-        await wait(timeouts.ONE_SEC);
 
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -80,7 +79,6 @@ describe('Messaging - Message Delete', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.dismissKeyboard();
-        await wait(timeouts.ONE_SEC);
 
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -103,7 +101,6 @@ describe('Messaging - Message Delete', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.dismissKeyboard();
-        await wait(timeouts.ONE_SEC);
 
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);
@@ -118,7 +115,6 @@ describe('Messaging - Message Delete', () => {
         const replyMessage = `${message} reply`;
         await ThreadScreen.postMessage(replyMessage);
         await ChannelScreen.dismissKeyboard();
-        await wait(timeouts.ONE_SEC);
 
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
@@ -126,6 +122,7 @@ describe('Messaging - Message Delete', () => {
 
         await ThreadScreen.openPostOptionsFor(replyPost.id, replyMessage);
         await PostOptionsScreen.deletePost({confirm: true});
+        await wait(timeouts.TWO_SEC);
 
         // * Verify reply message is deleted
         await waitFor(replyPostListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);

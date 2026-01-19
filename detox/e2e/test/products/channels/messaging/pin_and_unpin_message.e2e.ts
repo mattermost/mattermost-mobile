@@ -58,7 +58,6 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.dismissKeyboard();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify message is posted
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -92,7 +91,6 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         await ChannelScreen.dismissKeyboard();
-        await wait(timeouts.TWO_SEC);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItem).toBeVisible();

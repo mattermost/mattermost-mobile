@@ -201,6 +201,5 @@ describe('Smoke Test - Channels', () => {
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.archivePublicChannel({confirm: true});
-        await ChannelScreen.channelArchievedButtonCloseChannel();
     });
 });

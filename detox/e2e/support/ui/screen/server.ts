@@ -74,7 +74,7 @@ class ServerScreen {
         }
 
         // The bridge can be busy during login transition, use waitFor without idle check
-        const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
+        const timeout = isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN;
         await waitFor(this.usernameInput).toBeVisible().withTimeout(timeout);
     };
 

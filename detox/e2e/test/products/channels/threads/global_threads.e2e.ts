@@ -73,7 +73,6 @@ describe('Threads - Global Threads', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         await ChannelScreen.dismissKeyboard();
-        await wait(timeouts.TWO_SEC);
 
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);

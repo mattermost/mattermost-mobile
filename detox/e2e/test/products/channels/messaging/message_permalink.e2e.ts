@@ -49,9 +49,6 @@ describe('Messaging - Message Permalink Preview', () => {
         await ChannelScreen.postInput.replaceText(text);
         await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.sendButton.tap();
-        await wait(timeouts.TWO_SEC);
-        await ChannelScreen.dismissKeyboard();
-        await wait(timeouts.TWO_SEC);
     };
 
     const expectPermalinkPreviewVisible = async (message: string, channelName: string) => {

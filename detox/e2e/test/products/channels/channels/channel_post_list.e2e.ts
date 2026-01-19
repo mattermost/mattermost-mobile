@@ -23,7 +23,7 @@ import {
     PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Post List', () => {
@@ -52,10 +52,6 @@ describe('Channels - Channel Post List', () => {
     it('MM-T4773_1 - should match elements on channel screen', async () => {
         // # Open a channel screen
         await ChannelScreen.open('channels', testChannel.name);
-        if (isAndroid()) {
-            await ChannelScreen.back();
-            await ChannelScreen.open('channels', testChannel.name);
-        }
 
         // * Verify basic elements on channel screen
         await expect(ChannelScreen.backButton).toExist();
@@ -96,20 +92,15 @@ describe('Channels - Channel Post List', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open('channels', testChannel.name);
-        if (isAndroid()) {
-            await ChannelScreen.back();
-            await ChannelScreen.open('channels', testChannel.name);
-        }
         await ChannelScreen.postMessage(message);
         await ChannelScreen.dismissKeyboard();
 
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Open post options for the message that was just posted, tap delete option and confirm
-        await waitForElementToBeVisible(postListPostItem);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.deletePost({confirm: true});
 

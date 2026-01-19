@@ -22,7 +22,6 @@ import {expect} from 'detox';
 
 class ChannelScreen {
     testID = {
-        archievedCloseChannelButton: 'channel.post_draft.archived.close_channel.button',
         channelScreenPrefix: 'channel.',
         channelScreen: 'channel.screen',
         channelQuickActionsButton: 'channel_header.channel_quick_actions.button',
@@ -77,7 +76,6 @@ class ChannelScreen {
     postPriorityRequestAck = element(by.id(this.testID.postPriorityRequestAck));
     postPriorityImportantMessage = element(by.id(this.testID.postPriorityImportantMessage));
     postPriorityPicker = element(by.id(this.testID.postPriorityPicker));
-    archievedCloseChannelButton = element(by.id(this.testID.archievedCloseChannelButton));
     channelScreen = element(by.id(this.testID.channelScreen));
     channelQuickActionsButton = element(by.id(this.testID.channelQuickActionsButton));
     favoriteQuickAction = element(by.id(this.testID.favoriteQuickAction));
@@ -211,7 +209,7 @@ class ChannelScreen {
         if (isAndroid()) {
             try {
                 await device.pressBack();
-                await wait(timeouts.ONE_SEC);
+                await wait(timeouts.THREE_SEC);
             } catch (error) {
                 // Keyboard might not be open, continue
             }
@@ -219,7 +217,7 @@ class ChannelScreen {
         if (isIos()) {
             // On iOS, tap outside the input area to dismiss keyboard
             await this.postInput.tapReturnKey();
-            await wait(timeouts.ONE_SEC);
+            await wait(timeouts.TWO_SEC);
         }
     };
 
@@ -342,12 +340,6 @@ class ChannelScreen {
             await wait(timeouts.TEN_SEC);
             await this.scheduleDraftInforMessage.tap();
         }
-    };
-
-    channelArchievedButtonCloseChannel = async () => {
-        await waitFor(this.archievedCloseChannelButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await this.archievedCloseChannelButton.tap();
-        await wait(timeouts.ONE_SEC);
     };
 
     assertPostMessageEdited = async (

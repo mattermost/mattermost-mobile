@@ -46,6 +46,11 @@ describe('Messaging - Message Reply', () => {
         await ChannelListScreen.toBeVisible();
     });
 
+    afterEach(async () => {
+        // # Go back to channel list screen
+        await ChannelScreen.back();
+    });
+
     afterAll(async () => {
         // # Log out
         await HomeScreen.logout();
@@ -75,6 +80,7 @@ describe('Messaging - Message Reply', () => {
         // # Reply to parent post
         const replyMessage = `${message} reply`;
         await ThreadScreen.postMessage(replyMessage);
+        await ChannelScreen.dismissKeyboard();
 
         // * Verify reply message is posted
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -83,7 +89,6 @@ describe('Messaging - Message Reply', () => {
 
         // # Go back to channel list screen
         await ThreadScreen.back();
-        await ChannelScreen.back();
     });
 
     it('MM-T4785_2 - should be able to open reply thread by tapping on the post', async () => {
@@ -106,7 +111,6 @@ describe('Messaging - Message Reply', () => {
 
         // # Go back to channel list screen
         await ThreadScreen.back();
-        await ChannelScreen.back();
     });
 
     it('MM-T4785_3 - should not have reply option available on reply thread post options', async () => {
@@ -134,6 +138,5 @@ describe('Messaging - Message Reply', () => {
         // # Go back to channel list screen
         await PostOptionsScreen.close();
         await ThreadScreen.back();
-        await ChannelScreen.back();
     });
 });
