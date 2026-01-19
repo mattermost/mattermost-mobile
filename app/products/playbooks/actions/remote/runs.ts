@@ -206,7 +206,7 @@ export const finishRun = async (serverUrl: string, playbookRunId: string) => {
     }
 };
 
-export const fetchPlaybookRunsPageForParticipant = async (serverUrl: string, participantId: string, page = 0) => {
+export const fetchPlaybookRunsPageForParticipant = async (serverUrl: string, participantId: string, teamId: string, page = 0) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
 
@@ -216,6 +216,7 @@ export const fetchPlaybookRunsPageForParticipant = async (serverUrl: string, par
             participant_id: participantId,
             sort: 'create_at',
             direction: 'desc',
+            team_id: teamId,
         });
 
         return {runs, hasMore: has_more};
