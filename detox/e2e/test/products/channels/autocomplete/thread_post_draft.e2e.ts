@@ -48,7 +48,7 @@ describe('Autocomplete - Thread Post Draft', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await wait(timeouts.ONE_SEC);
+        await wait(timeouts.FOUR_SEC);
         await ChannelScreen.openReplyThreadFor(post.id, message);
     });
 

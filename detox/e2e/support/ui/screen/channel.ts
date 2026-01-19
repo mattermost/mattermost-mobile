@@ -344,6 +344,12 @@ class ChannelScreen {
         }
     };
 
+    channelArchievedButtonCloseChannel = async () => {
+        await waitFor(this.archievedCloseChannelButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.archievedCloseChannelButton.tap();
+        await wait(timeouts.ONE_SEC);
+    };
+
     assertPostMessageEdited = async (
         postId: string,
         updatedMessage: string,

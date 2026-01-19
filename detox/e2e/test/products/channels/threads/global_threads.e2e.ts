@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Threads - Global Threads', () => {
@@ -72,10 +72,14 @@ describe('Threads - Global Threads', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
+        await ChannelScreen.dismissKeyboard();
+        await wait(timeouts.TWO_SEC);
+
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
+        await wait(timeouts.TWO_SEC);
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
 
@@ -117,9 +121,11 @@ describe('Threads - Global Threads', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
+        await wait(timeouts.TWO_SEC);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
+        await wait(timeouts.TWO_SEC);
         await ThreadScreen.followingButton.tap();
 
         // * Verify thread is not followed by the current user
@@ -149,6 +155,7 @@ describe('Threads - Global Threads', () => {
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
+        await wait(timeouts.TWO_SEC);
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
 
@@ -188,6 +195,7 @@ describe('Threads - Global Threads', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
+        await wait(timeouts.TWO_SEC);
         await ThreadScreen.followingButton.tap();
 
         // * Verify thread is not followed by the current user
