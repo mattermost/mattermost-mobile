@@ -18,8 +18,16 @@ export const IOS_NSURL_ERROR = {
     NETWORK_CONNECTION_LOST: -1005,
 } as const;
 
+// Android exception class names (from java.net package)
+export const ANDROID_NET_EXCEPTION = {
+    UNKNOWN_HOST: 'java.net.UnknownHostException',
+    SOCKET_EXCEPTION: 'java.net.SocketException',
+    SOCKET_TIMEOUT: 'java.net.SocketTimeoutException',
+} as const;
+
 export default {
     CERTIFICATE_ERRORS,
     DOWNLOAD_TIMEOUT,
     IOS_NSURL_ERROR,
+    ANDROID_NET_EXCEPTION,
 };

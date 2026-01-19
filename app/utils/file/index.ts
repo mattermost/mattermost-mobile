@@ -12,7 +12,7 @@ import {Alert, Linking, Platform} from 'react-native';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
-import {IOS_NSURL_ERROR} from '@constants/network';
+import {ANDROID_NET_EXCEPTION, IOS_NSURL_ERROR} from '@constants/network';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
@@ -509,7 +509,8 @@ export function uploadDisabledWarning(intl: IntlShape) {
     });
 }
 
-export function getUploadErrorMessage(intl: IntlShape, errorMessage: string, errorCode?: number) {
+export function getUploadErrorMessage(intl: IntlShape, errorMessage: string, errorCode?: number, errorName?: string) {
+    // iOS error codes
     if (errorCode === IOS_NSURL_ERROR.NOT_CONNECTED_TO_INTERNET) {
         return intl.formatMessage({
             id: 'mobile.file_upload.network_unavailable',
@@ -518,6 +519,21 @@ export function getUploadErrorMessage(intl: IntlShape, errorMessage: string, err
     }
 
     if (errorCode === IOS_NSURL_ERROR.NETWORK_CONNECTION_LOST) {
+        return intl.formatMessage({
+            id: 'mobile.file_upload.connection_lost',
+            defaultMessage: 'Upload interrupted. Check your connection and try again.',
+        });
+    }
+
+    // Android exception class names
+    if (errorName === ANDROID_NET_EXCEPTION.UNKNOWN_HOST) {
+        return intl.formatMessage({
+            id: 'mobile.file_upload.network_unavailable',
+            defaultMessage: "File couldn't be uploaded. Check your connection and try again.",
+        });
+    }
+
+    if (errorName === ANDROID_NET_EXCEPTION.SOCKET_EXCEPTION || errorName === ANDROID_NET_EXCEPTION.SOCKET_TIMEOUT) {
         return intl.formatMessage({
             id: 'mobile.file_upload.connection_lost',
             defaultMessage: 'Upload interrupted. Check your connection and try again.',
