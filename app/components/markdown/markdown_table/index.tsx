@@ -163,8 +163,14 @@ function MarkdownTable({children, numColumns}: MarkdownTableProps) {
         const tableStyle = getTableStyle(isFullView);
 
         let rows = React.Children.toArray(children) as React.ReactElement[];
+
+        if (!rows.length) {
+            return null;
+        }
+
         if (isPreview) {
             const prevRowLength = rows.length;
+
             const prevColLength = React.Children.toArray(rows[0].props.children).length;
 
             rows = rows.slice(0, maxPreviewColumns).map((row) => {
