@@ -54,7 +54,7 @@ function getSimulators() {
     return simulators;
 }
 
-function disablePasswordAutofill(udid) {
+function disablePasswordAutofill(udid, simulator) {
     const settingsDir = path.join(
         os.homedir(),
         'Library/Developer/CoreSimulator/Devices',
@@ -203,11 +203,49 @@ function disablePasswordAutofill(udid) {
         }
     }
 
+    // Verify that all keys were actually written to the plist
+    console.log('\nVerifying restriction keys...');
+    let verifiedCount = 0;
+
+    for (const key of keysToSet) {
+        const checkResult = shell.exec(
+            `plutil -extract ${key.path} xml1 -o - "${settingsPlist}" 2>/dev/null`,
+            {silent: true},
+        );
+
+        if (checkResult.code === 0) {
+            // Extract just the value for logging
+            const valueMatch = checkResult.stdout.match(/<(true|false|integer)>([^<]*)<\/(true|false|integer)>/);
+            if (valueMatch) {
+                console.log(`  ✓ ${key.description}: ${valueMatch[0]}`);
+                verifiedCount++;
+            }
+        } else {
+            console.log(`  ✗ ${key.description}: MISSING or FAILED`);
+        }
+    }
+
+    if (verifiedCount === keysToSet.length) {
+        console.log(`\n✅ All ${keysToSet.length} restriction keys verified in plist`);
+    } else {
+        console.error(`\n⚠️  Only ${verifiedCount}/${keysToSet.length} keys verified`);
+    }
+
     if (successCount === keysToSet.length) {
         console.log(`✅ Password autofill disabled successfully (${keysToSet.length} restriction keys set)`);
         return true;
     } else if (successCount > 0) {
         console.log(`⚠️  Partially successful: ${successCount}/${keysToSet.length} keys set`);
+
+        // Check if this is iOS 26+
+        const isIOS26Plus = simulator && simulator.os &&
+                            parseFloat(simulator.os.replace('iOS ', '')) >= 26;
+
+        if (isIOS26Plus) {
+            console.error('⚠️  CRITICAL: iOS 26+ requires ALL 6 keys to fully disable password autofill');
+            console.error('    Missing keys may allow "Strong Password" or iCloud Keychain prompts');
+        }
+
         return false;
     }
     console.error('⚠️  Failed to disable password autofill');
@@ -219,7 +257,6 @@ async function main() {
     console.log('iOS Simulator - Disable Password Autofill\n');
     console.log('This tool disables password autofill on iOS simulators,');
     console.log('which can interfere with Detox E2E test login flows.');
-    console.log('Target: iPhone 17 Pro (iOS 26.2)');
     console.log('Sets 6 iOS restriction keys to fully disable autofill prompts.\n');
 
     // Check if running on macOS
@@ -254,6 +291,7 @@ async function main() {
             process.exit(1);
         }
 
+        console.log(`Target: ${selectedSimulator.name} (${selectedSimulator.os})`);
         console.log(`Using simulator: ${selectedSimulator.name} (${selectedSimulator.os})`);
     } else {
         // Automatically select iPhone 17 Pro with iOS 26.2
@@ -273,19 +311,14 @@ async function main() {
             process.exit(1);
         }
 
+        console.log(`Target: ${selectedSimulator.name} (${selectedSimulator.os})`);
         console.log(`Using simulator: ${selectedSimulator.name} (${selectedSimulator.os})`);
     }
 
     // Apply the setting
-    const success = disablePasswordAutofill(selectedSimulator.udid);
+    const success = disablePasswordAutofill(selectedSimulator.udid, selectedSimulator);
 
-    if (success) {
-        console.log('\nNote: If the simulator is currently running, you may need to restart it');
-        console.log('for all 6 restriction keys to take effect.\n');
-        process.exit(0);
-    } else {
-        process.exit(1);
-    }
+    process.exit(success ? 0 : 1);
 }
 
 main();

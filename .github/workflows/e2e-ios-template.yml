@@ -206,14 +206,21 @@ jobs:
             echo "Created simulator with ID: $SIMULATOR_ID"
           else
             echo "Found existing simulator: $SIMULATOR_ID"
-            # Shut down if already running so we can apply settings
-            xcrun simctl shutdown "$SIMULATOR_ID" 2>/dev/null || true
-            sleep 2
           fi
 
-          echo "Disabling password autofill (before boot)"
+          # Boot simulator first to initialize directory structure
+          echo "Initializing simulator directories (first boot)..."
+          xcrun simctl boot "$SIMULATOR_ID"
+          xcrun simctl bootstatus "$SIMULATOR_ID"
 
-          # Ensure the directory exists (JS utility will create plist if needed)
+          # Shut down to apply password autofill restrictions
+          echo "Shutting down to apply password autofill restrictions..."
+          xcrun simctl shutdown "$SIMULATOR_ID"
+          sleep 3
+
+          echo "Disabling password autofill (simulator is shut down)"
+
+          # Ensure the directory exists (should now exist after first boot)
           SETTINGS_DIR="$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles"
           mkdir -p "$SETTINGS_DIR"
 
@@ -228,8 +235,8 @@ jobs:
 
           cd ..
 
-          echo "Booting simulator: $SIMULATOR_ID"
-          xcrun simctl boot "$SIMULATOR_ID" || echo "Simulator already booted"
+          echo "Booting simulator with password autofill disabled..."
+          xcrun simctl boot "$SIMULATOR_ID"
 
           # Wait for boot to complete
           xcrun simctl bootstatus "$SIMULATOR_ID"
