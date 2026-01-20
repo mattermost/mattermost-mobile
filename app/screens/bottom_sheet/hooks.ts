@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect, useState} from 'react';
+import {useMemo} from 'react';
 import {StyleSheet, type StyleProp, type ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -11,19 +11,11 @@ import {useIsTablet} from '@hooks/device';
 export function useBottomSheetStyle() {
     const theme = useTheme();
     const isTablet = useIsTablet();
-    const [style, setStyle] = useState<StyleProp<ViewStyle>>(() => ({
+    const style = useMemo<StyleProp<ViewStyle>>(() => ({
         width: isTablet ? '60%' : '100%',
         alignSelf: 'center',
         backgroundColor: theme.centerChannelBg,
-    }));
-
-    useEffect(() => {
-        setStyle({
-            width: isTablet ? '60%' : '100%',
-            alignSelf: 'center',
-            backgroundColor: theme.centerChannelBg,
-        });
-    }, [isTablet, theme.centerChannelBg]);
+    }), [isTablet, theme.centerChannelBg]);
 
     return style;
 }
@@ -31,18 +23,10 @@ export function useBottomSheetStyle() {
 export function useBottomSheetFooterStyles() {
     const bStyle = useBottomSheetStyle();
     const {bottom} = useSafeAreaInsets();
-    const [style, setStyle] = useState<StyleProp<ViewStyle>>(() => StyleSheet.flatten([bStyle, {
-        top: bottom,
+    const style = useMemo<StyleProp<ViewStyle>>(() => StyleSheet.flatten([bStyle, {
+        top: bottom, // we need to move it down the same amount as the height
         height: bottom,
-    }]));
-
-    useEffect(() => {
-        setStyle(
-            StyleSheet.flatten([bStyle, {
-                top: bottom,
-                height: bottom,
-            }]));
-    }, [bStyle, bottom]);
+    }]), [bStyle, bottom]);
 
     return style;
 }

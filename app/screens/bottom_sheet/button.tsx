@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -47,6 +47,14 @@ function BottomSheetButton({disabled = false, onPress, icon, iconComponent, isIc
     const containerStyle = useBottomSheetStyle();
     const {bottom} = useSafeAreaInsets();
 
+    const bottomViewStyle = useMemo(() => {
+        return {
+            top: bottom, // we need to move it down the same amount as the height
+            height: bottom,
+            backgroundColor: theme.centerChannelBg,
+        };
+    }, [bottom, theme.centerChannelBg]);
+
     return (
         <View style={[styles.container, containerStyle]}>
             <View style={[styles.separator]}/>
@@ -64,7 +72,7 @@ function BottomSheetButton({disabled = false, onPress, icon, iconComponent, isIc
                     showLoader={showLoader}
                 />
             </View>
-            <View style={{top: bottom, height: bottom, backgroundColor: theme.centerChannelBg}}/>
+            <View style={bottomViewStyle}/>
         </View>
     );
 }
