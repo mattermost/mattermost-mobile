@@ -19,7 +19,7 @@
 	<key>CFBundlePackageType</key>
 	<string>XPC!</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.36.1</string>
+	<string>2.36.2</string>
 	<key>CFBundleVersion</key>
 	<string>708</string>
 	<key>UIAppFonts</key>
