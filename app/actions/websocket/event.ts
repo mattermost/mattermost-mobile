@@ -4,7 +4,7 @@
 import {handleAgentPostUpdate} from '@agents/actions/websocket';
 
 import * as bookmark from '@actions/local/channel_bookmark';
-import {handleBoRPostRevealedEvent} from '@actions/websocket/burn_on_read';
+import {handleBoRPostBurnedEvent, handleBoRPostRevealedEvent} from '@actions/websocket/burn_on_read';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
@@ -315,7 +315,11 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.BOR_POST_REVEALED:
             handleBoRPostRevealedEvent(serverUrl, msg);
             break;
+        case WebsocketEvents.BOR_POST_BURNED:
+            handleBoRPostBurnedEvent(serverUrl, msg);
+            break;
 
+        // Autotranslation
         case WebsocketEvents.POST_TRANSLATION_UPDATED:
             handlePostTranslationUpdatedEvent(serverUrl, msg);
             break;

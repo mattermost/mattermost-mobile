@@ -18,6 +18,7 @@ import Animated, {
 import Files from '@components/files';
 import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
+import ErrorBoundary from '@components/markdown/error_boundary';
 import {Screens} from '@constants';
 import {THREAD} from '@constants/screens';
 import StatusUpdatePost from '@playbooks/components/status_update_post';
@@ -140,12 +141,12 @@ const Body = ({
     theme,
     isChannelAutotranslated,
 }: BodyProps) => {
+    const intl = useIntl();
     const style = getStyleSheet(theme);
     const isEdited = postEdited(post);
     const isFailed = isPostFailed(post);
     const [layoutWidth, setLayoutWidth] = useState(0);
     const hasBeenDeleted = Boolean(post.deleteAt);
-    const intl = useIntl();
     let body;
     let message;
 
@@ -341,19 +342,24 @@ const Body = ({
     }
 
     return (
-        <View
-            style={style.messageContainerWithReplyBar}
-            onLayout={onLayout}
+        <ErrorBoundary
+            error={intl.formatMessage({id: 'post.error', defaultMessage: 'There has been an error rendering this post.'})}
+            theme={theme}
         >
-            <View style={replyBarStyle}/>
-            {body}
-            {isFailed &&
-            <Failed
-                post={post}
-                theme={theme}
-            />
-            }
-        </View>
+            <View
+                style={style.messageContainerWithReplyBar}
+                onLayout={onLayout}
+            >
+                <View style={replyBarStyle}/>
+                {body}
+                {isFailed &&
+                <Failed
+                    post={post}
+                    theme={theme}
+                />
+                }
+            </View>
+        </ErrorBoundary>
     );
 };
 

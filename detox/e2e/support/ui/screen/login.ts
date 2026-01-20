@@ -73,7 +73,26 @@ class LoginScreen {
     };
 
     login = async (user: any = {}) => {
-        await retryWithReload(() => this.loginWithRetryIfStuck(user));
+        const maxAttempts = 3;
+        let attempt = 0;
+        let lastError;
+
+        while (attempt < maxAttempts) {
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                await retryWithReload(() => this.loginWithRetryIfStuck(user));
+                return;
+            } catch (error) {
+                lastError = error;
+                attempt += 1;
+                if (attempt < maxAttempts) {
+                    // eslint-disable-next-line no-await-in-loop
+                    await wait(timeouts.ONE_SEC);
+                }
+            }
+        }
+
+        throw lastError;
     };
 
     loginAsAdmin = async (user: any = {}) => {

@@ -38,4 +38,7 @@ export default keyMirror({
     ACTIVE_SERVER_CHANGED: null,
     FILE_ADD_REMOVED: null,
     POST_DELETED_FOR_CHANNEL: null,
+    KEYBOARD_STATE_CHANGED: null,
+    CLOSE_INPUT_ACCESSORY_VIEW: null,
+    EMOJI_PICKER_SEARCH_FOCUSED: null,
 });

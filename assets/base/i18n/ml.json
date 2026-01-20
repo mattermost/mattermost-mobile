@@ -52,8 +52,6 @@
   "apps.suggestion.no_static": "പൊരുത്തപ്പെടുന്ന ഓപ്ഷനുകളൊന്നുമില്ല.",
   "apps.suggestion.no_suggestion": "പൊരുത്തപ്പെടുന്ന നിർദ്ദേശങ്ങളൊന്നുമില്ല.",
   "archivedChannelMessage": "നിങ്ങൾ **ആർക്കൈവ് ചെയ്‌ത ചാനൽ** കാണുന്നു. പുതിയ സന്ദേശങ്ങൾ പോസ്റ്റ് ചെയ്യാൻ കഴിയില്ല.",
-  "camera_type.photo.option": "ഫോട്ടോ എടുക്കുക",
-  "camera_type.video.option": "വീഡിയോ റെക്കോർഡ് ചെയ്യുക",
   "center_panel.archived.closeChannel": "ചാനൽ അവസാനിപ്പിക്കുക",
   "channel_header.directchannel.you": "{displayname} (നിങ്ങൾ) ",
   "channel_info.header": "തലക്കെട്ട്:",

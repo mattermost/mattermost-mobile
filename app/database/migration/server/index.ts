@@ -26,7 +26,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 16,
+        toVersion: 18,
         steps: [
             addColumns({
                 table: MY_CHANNEL,
@@ -38,6 +38,34 @@ export default schemaMigrations({migrations: [
                 table: CHANNEL,
                 columns: [
                     {name: 'autotranslation', type: 'boolean'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 17,
+        steps: [
+            addColumns({
+                table: PLAYBOOK_RUN_ATTRIBUTE_VALUE,
+                columns: [
+                    {name: 'update_at', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 16,
+        steps: [
+            addColumns({
+                table: SCHEDULED_POST,
+                columns: [
+                    {name: 'type', type: 'string', isOptional: true},
+                ],
+            }),
+            addColumns({
+                table: DRAFT,
+                columns: [
+                    {name: 'type', type: 'string', isOptional: true},
                 ],
             }),
         ],
