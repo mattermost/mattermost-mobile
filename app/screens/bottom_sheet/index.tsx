@@ -37,7 +37,6 @@ type Props = {
 }
 
 const PADDING_TOP_MOBILE = 20;
-const PADDING_TOP_TABLET = 8;
 
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -63,14 +62,6 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
             paddingHorizontal: 20,
             paddingTop: PADDING_TOP_MOBILE,
-        },
-        contentTablet: {
-            paddingTop: PADDING_TOP_TABLET,
-        },
-        separator: {
-            height: 1,
-            borderTopWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
         view: {
             flex: 1,

@@ -339,17 +339,19 @@ function AppsFormComponent({
     }, [form, values, performLookupCall, intl]);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={handleSubmit}
-                    disabled={submitting}
-                    testID='interactive_dialog.submit.button'
-                    text={intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'})}
-                />
-            ),
-        });
-    }, [handleSubmit, intl, navigation, submitting]);
+        if (submitButtons) {
+            navigation.setOptions({
+                headerRight: () => (
+                    <NavigationButton
+                        onPress={handleSubmit}
+                        disabled={submitting}
+                        testID='interactive_dialog.submit.button'
+                        text={intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'})}
+                    />
+                ),
+            });
+        }
+    }, [handleSubmit, intl, navigation, submitButtons, submitting]);
 
     return (
         <SafeAreaView

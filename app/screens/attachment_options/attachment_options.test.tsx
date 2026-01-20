@@ -32,7 +32,6 @@ describe('AttachmentOptions', () => {
     const mockAttachFileFromFiles = jest.fn();
 
     const baseProps = {
-        componentId: 'Channel' as const,
         onUploadFiles: jest.fn(),
         maxFileCount: 10,
         fileCount: 0,
@@ -334,17 +333,6 @@ describe('AttachmentOptions', () => {
     });
 
     describe('edge cases', () => {
-        it('should use default closeButtonId when not provided', () => {
-            const props = {
-                ...baseProps,
-            };
-            delete (props as {closeButtonId?: string}).closeButtonId;
-
-            renderWithIntlAndTheme(<AttachmentOptions {...props}/>);
-
-            // Component should render without errors
-        });
-
         it('should use default fileCount when not provided', async () => {
             const props = {
                 ...baseProps,
