@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect, useRef} from 'react';
 import {useKeyboardHandler} from 'react-native-keyboard-controller';
 import {useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
 
@@ -15,17 +14,6 @@ export const useKeyboardAnimation = (
     isThreadView = false,
     enabled = true,
 ) => {
-    // Create a unique instance ID for this hook to identify stale events from previous screens
-    // Each screen mount gets a new timestamp, allowing us to detect events from unmounted screens
-    const instanceIdRef = useRef(Date.now());
-
-    // Reset instance ID when screen becomes enabled
-    useEffect(() => {
-        if (enabled) {
-            instanceIdRef.current = Date.now();
-        }
-    }, [enabled]);
-
     /**
    * progress: Keyboard animation progress (0 = closed, 1 = fully open)
    * Used for: Tracking keyboard animation state
@@ -129,26 +117,6 @@ export const useKeyboardAnimation = (
    * Prevents height updates during the transition to avoid jumps
    */
     const isTransitioningFromCustomView = useSharedValue(false);
-
-    // Cleanup all shared values on unmount to prevent stale state affecting new screens
-    useEffect(() => {
-        return () => {
-            // Reset all keyboard state to initial values
-            progress.value = 0;
-            keyboardTranslateY.value = 0;
-            bottomInset.value = 0;
-            scrollOffset.value = 0;
-            scrollPosition.value = 0;
-            keyboardHeight.value = 0;
-            isKeyboardClosing.value = false;
-            isInteractiveGesture.value = false;
-            isKeyboardFullyOpen.value = false;
-            isKeyboardFullyClosed.value = true;
-            isKeyboardInTransition.value = false;
-            isInputAccessoryViewMode.value = false;
-            isTransitioningFromCustomView.value = false;
-        };
-    }, [progress, keyboardTranslateY, bottomInset, scrollOffset, scrollPosition, keyboardHeight, isKeyboardClosing, isInteractiveGesture, isKeyboardFullyOpen, isKeyboardFullyClosed, isKeyboardInTransition, isInputAccessoryViewMode, isTransitioningFromCustomView]);
 
     // ------------------------------------------------------------------
     // KEYBOARD EVENT HANDLERS

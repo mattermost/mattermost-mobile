@@ -138,12 +138,10 @@ export const KeyboardAwarePostDraftContainer = ({
     // Ref to track if a layout update is already scheduled
     const layoutUpdateScheduledRef = useRef(false);
     const pendingHeightRef = useRef<number | null>(null);
-    const layoutAnimationFrameRef = useRef<number | null>(null);
 
     // Helper to apply the batched height update
     const applyBatchedHeightUpdate = useCallback(() => {
         layoutUpdateScheduledRef.current = false;
-        layoutAnimationFrameRef.current = null;
 
         if (pendingHeightRef.current !== null) {
             const heightToSet = pendingHeightRef.current;
@@ -176,17 +174,8 @@ export const KeyboardAwarePostDraftContainer = ({
 
         // Schedule update for next frame to batch rapid layout changes during animations
         layoutUpdateScheduledRef.current = true;
-        layoutAnimationFrameRef.current = requestAnimationFrame(applyBatchedHeightUpdate);
+        requestAnimationFrame(applyBatchedHeightUpdate);
     }, [applyBatchedHeightUpdate]);
-
-    // Cancel pending layout animation frame on unmount
-    useEffect(() => {
-        return () => {
-            if (layoutAnimationFrameRef.current !== null) {
-                cancelAnimationFrame(layoutAnimationFrameRef.current);
-            }
-        };
-    }, []);
 
     // Refs for tracking emoji picker swipe-to-dismiss gesture
     const previousTouchYRef = useRef<number | null>(null);
@@ -196,34 +185,11 @@ export const KeyboardAwarePostDraftContainer = ({
     const isGestureActiveRef = useRef<boolean>(false);
     const gestureStartedInEmojiPickerRef = useRef<boolean>(false);
 
-    // Track component mount status to prevent async callbacks from executing on unmounted components
-    const isMountedRef = useRef(true);
-
-    // Cleanup gesture refs and shared values on unmount to prevent stale state persisting across screen transitions
-    useEffect(() => {
-        return () => {
-            isMountedRef.current = false;
-            isGestureActiveRef.current = false;
-            gestureStartedInEmojiPickerRef.current = false;
-
-            // Reset all shared values to clean state
-            isInputAccessoryViewMode.value = false;
-            isTransitioningFromCustomView.value = false;
-            inputAccessoryViewAnimatedHeight.value = 0;
-            bottomInset.value = 0;
-            scrollOffset.value = 0;
-            keyboardHeight.value = 0;
-        };
-    }, [isInputAccessoryViewMode, isTransitioningFromCustomView, inputAccessoryViewAnimatedHeight, bottomInset, scrollOffset, keyboardHeight]);
-
     // Shared value to track scroll adjustment during emoji picker animation
     const animatedScrollAdjustment = useSharedValue(0);
 
     // Callback to perform scroll adjustment
     const performScrollAdjustment = useCallback((targetOffset: number) => {
-        if (!isMountedRef.current) {
-            return;
-        }
         listRef.current?.scrollToOffset({
             offset: targetOffset,
             animated: false,
@@ -297,16 +263,10 @@ export const KeyboardAwarePostDraftContainer = ({
         setIsEmojiSearchFocused(false);
         setShowInputAccessoryView(false);
         isInputAccessoryViewMode.value = false;
-        isTransitioningFromCustomView.value = false;
         bottomInset.value = 0;
         scrollOffset.value = 0;
         keyboardHeight.value = 0;
-        inputAccessoryViewAnimatedHeight.value = 0;
-
-        // Reset gesture refs to prevent stale state
-        isGestureActiveRef.current = false;
-        gestureStartedInEmojiPickerRef.current = false;
-    }, [setShowInputAccessoryView, isInputAccessoryViewMode, isTransitioningFromCustomView, bottomInset, scrollOffset, keyboardHeight, inputAccessoryViewAnimatedHeight, setIsEmojiSearchFocused]);
+    }, [setShowInputAccessoryView, isInputAccessoryViewMode, bottomInset, scrollOffset, keyboardHeight, setIsEmojiSearchFocused]);
 
     const closeInputAccessoryView = useCallback(() => {
         // Reset emoji search focus when closing emoji picker
@@ -319,10 +279,6 @@ export const KeyboardAwarePostDraftContainer = ({
         bottomInset.value = withTiming(0, {duration: 200});
         scrollOffset.value = withTiming(0, {duration: 200});
         keyboardHeight.value = 0;
-
-        // Reset gesture refs to prevent stale state
-        isGestureActiveRef.current = false;
-        gestureStartedInEmojiPickerRef.current = false;
     }, [inputAccessoryViewAnimatedHeight, bottomInset, scrollOffset, keyboardHeight, setShowInputAccessoryView, isInputAccessoryViewMode, isTransitioningFromCustomView, setIsEmojiSearchFocused]);
 
     const scrollToEnd = useCallback(() => {
@@ -432,7 +388,7 @@ export const KeyboardAwarePostDraftContainer = ({
     useEffect(() => {
         if (showInputAccessoryView) {
             // Wait one frame to ensure emoji picker has rendered
-            const frameId = requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
                 const emojiPickerHeight = inputAccessoryViewAnimatedHeight.value;
                 const currentScroll = scrollPosition.value;
 
@@ -450,11 +406,7 @@ export const KeyboardAwarePostDraftContainer = ({
                     animated: false,
                 });
             });
-
-            // Cancel animation frame if component unmounts or showInputAccessoryView changes
-            return () => cancelAnimationFrame(frameId);
         }
-        return undefined;
 
         // Only depend on showInputAccessoryView - the effect should only run when emoji picker visibility changes
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -479,9 +431,6 @@ export const KeyboardAwarePostDraftContainer = ({
 
     // Callback to restore scroll when emoji picker closes (called from worklet)
     const restoreScrollAfterEmojiPickerClose = useCallback((previousHeight: number, currentScroll: number) => {
-        if (!isMountedRef.current) {
-            return;
-        }
         if (listRef.current && previousHeight > 0) {
             listRef.current.scrollToOffset({
                 offset: currentScroll,

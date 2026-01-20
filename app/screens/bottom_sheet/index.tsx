@@ -158,21 +158,15 @@ const BottomSheet = ({
     }, [close]);
 
     const handleChange = useCallback((index: number) => {
-        // Add delay to allow animation to complete before clearing interaction handle
-        // This prevents race conditions where gesture handlers are still active
         timeoutRef.current = setTimeout(() => {
             if (interaction.current) {
                 InteractionManager.clearInteractionHandle(interaction.current);
                 interaction.current = undefined;
             }
-        }, 300); // Match bottom sheet animation duration
+        });
 
         if (index <= 0) {
-            // Delay close until after gesture handlers and animation settle
-            // Use setTimeout to avoid nested callbacks linting error
-            setTimeout(() => {
-                close();
-            }, 0);
+            close();
         }
     }, [close]);
 

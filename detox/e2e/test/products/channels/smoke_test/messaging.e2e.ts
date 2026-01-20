@@ -27,7 +27,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Smoke Test - Messaging', () => {
@@ -136,7 +136,6 @@ describe('Smoke Test - Messaging', () => {
         const message = 'The quick brown fox :fox_face: jumps over the lazy dog :dog:';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
 
         // * Verify message is posted with emojis
         const resolvedMessage = 'The quick brown fox 🦊 jumps over the lazy dog 🐶';
@@ -146,15 +145,10 @@ describe('Smoke Test - Messaging', () => {
 
         // # Open post options for message, open emoji picker screen, and add a reaction
         await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
-
-        // Wait for post options modal to fully open and gesture handlers to settle
-        await wait(timeouts.TWO_SEC);
-
         await EmojiPickerScreen.open(true);
         await EmojiPickerScreen.searchInput.replaceText('clown_face');
         await EmojiPickerScreen.searchInput.tapReturnKey();
         await element(by.text('🤡')).tap();
-        await wait(timeouts.THREE_SEC);
 
         // * Verify reaction is added to the message
         await waitFor(element(by.text('🤡').withAncestor(by.id(`channel.post_list.post.${post.id}`)))).toBeVisible().withTimeout(timeouts.TWO_SEC);
@@ -168,7 +162,6 @@ describe('Smoke Test - Messaging', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.followThreadOption.tap();
@@ -231,7 +224,6 @@ describe('Smoke Test - Messaging', () => {
         const message = `Message @${testUser.username} ~${targetChannel.name}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
 
         // * Verify at-mention is posted as lowercase and channel mention is posted as display name
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -274,7 +266,6 @@ describe('Smoke Test - Messaging', () => {
         const markdown = `#### ${message}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(markdown);
-        await ChannelScreen.dismissKeyboard();
 
         // * Verify message with markdown is posted
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
