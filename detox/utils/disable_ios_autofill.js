@@ -67,147 +67,150 @@ function disablePasswordAutofill(udid) {
 
     // Check if file exists
     if (!shell.test('-f', settingsPlist)) {
-        console.error(`Error: UserSettings.plist not found at ${settingsPlist}`);
-        console.error('\nThe simulator may need to be booted at least once to create this file.');
-        console.error('Try booting the simulator first, then run this command again.');
+        console.log('UserSettings.plist not found, creating it...');
+
+        // Ensure directory exists
+        shell.mkdir('-p', settingsDir);
+
+        // Create empty plist file
+        const result = shell.exec(`plutil -create xml1 "${settingsPlist}"`, {silent: true});
+        if (result.code !== 0) {
+            console.error(`Error: Failed to create UserSettings.plist at ${settingsPlist}`);
+            console.error(result.stderr);
+            return false;
+        }
+    }
+
+    // Define all keys to set
+    const keysToSet = [
+        {
+            path: 'restrictedBool.allowPasswordAutoFill.value',
+            type: 'bool',
+            value: 'NO',
+            description: 'allowPasswordAutoFill',
+        },
+        {
+            path: 'restrictedBool.allowPasswordAutoFillWithStrongPassword.value',
+            type: 'bool',
+            value: 'NO',
+            description: 'allowPasswordAutoFillWithStrongPassword (iOS 26+)',
+        },
+        {
+            path: 'restrictedBool.forceDisablePasswordAutoFill.value',
+            type: 'bool',
+            value: 'YES',
+            description: 'forceDisablePasswordAutoFill',
+        },
+        {
+            path: 'restrictedBool.allowiCloudKeychain.value',
+            type: 'bool',
+            value: 'NO',
+            description: 'allowiCloudKeychain',
+        },
+        {
+            path: 'restrictedValue.passwordAutoFillPasswords.value',
+            type: 'integer',
+            value: '0',
+            description: 'passwordAutoFillPasswords',
+        },
+        {
+            path: 'restrictedValue.allowAutoFillAuthenticationUI.value',
+            type: 'integer',
+            value: '0',
+            description: 'allowAutoFillAuthenticationUI',
+        },
+    ];
+
+    let successCount = 0;
+
+    for (const key of keysToSet) {
+        console.log(`Setting ${key.description}...`);
+
+        // Try to replace the value directly first
+        let result = shell.exec(
+            `plutil -replace ${key.path} -${key.type} ${key.value} "${settingsPlist}"`,
+            {silent: true},
+        );
+
+        if (result.code === 0) {
+            successCount++;
+            continue;
+        }
+
+        // Direct replace failed, need to create the key structure
+        const pathParts = key.path.split('.');
+        const rootKey = pathParts[0]; // restrictedBool or restrictedValue
+        const middleKey = pathParts[1]; // e.g., allowPasswordAutoFill
+
+        // Ensure root dictionary exists (restrictedBool or restrictedValue)
+        const checkRoot = shell.exec(
+            `plutil -extract ${rootKey} xml1 -o - "${settingsPlist}" 2>/dev/null`,
+            {silent: true},
+        );
+
+        if (checkRoot.code !== 0) {
+            result = shell.exec(`plutil -insert ${rootKey} -dictionary "${settingsPlist}"`, {silent: true});
+            if (result.code !== 0) {
+                console.error(`⚠️  Failed to insert ${rootKey} dictionary`);
+                console.error(result.stderr);
+                continue;
+            }
+        }
+
+        // Ensure middle dictionary exists (e.g., allowPasswordAutoFill)
+        const checkMiddle = shell.exec(
+            `plutil -extract ${rootKey}.${middleKey} xml1 -o - "${settingsPlist}" 2>/dev/null`,
+            {silent: true},
+        );
+
+        if (checkMiddle.code !== 0) {
+            result = shell.exec(
+                `plutil -insert ${rootKey}.${middleKey} -dictionary "${settingsPlist}"`,
+                {silent: true},
+            );
+            if (result.code !== 0) {
+                console.error(`⚠️  Failed to insert ${rootKey}.${middleKey} dictionary`);
+                console.error(result.stderr);
+                continue;
+            }
+        }
+
+        // Set the value (insert or replace)
+        const checkValue = shell.exec(
+            `plutil -extract ${key.path} xml1 -o - "${settingsPlist}" 2>/dev/null`,
+            {silent: true},
+        );
+
+        if (checkValue.code === 0) {
+            // Value exists, replace it
+            result = shell.exec(
+                `plutil -replace ${key.path} -${key.type} ${key.value} "${settingsPlist}"`,
+                {silent: true},
+            );
+        } else {
+            // Value doesn't exist, insert it
+            result = shell.exec(
+                `plutil -insert ${key.path} -${key.type} ${key.value} "${settingsPlist}"`,
+                {silent: true},
+            );
+        }
+
+        if (result.code === 0) {
+            successCount++;
+        } else {
+            console.error(`⚠️  Failed to set ${key.description}`);
+            console.error(result.stderr);
+        }
+    }
+
+    if (successCount === keysToSet.length) {
+        console.log(`✅ Password autofill disabled successfully (${keysToSet.length} restriction keys set)`);
+        return true;
+    } else if (successCount > 0) {
+        console.log(`⚠️  Partially successful: ${successCount}/${keysToSet.length} keys set`);
         return false;
-    }
-
-    // Try to replace the value directly - this works if the key structure exists
-    let result = shell.exec(
-        `plutil -replace restrictedBool.allowPasswordAutoFill.value -bool NO "${settingsPlist}"`,
-        {silent: true},
-    );
-
-    if (result.code === 0) {
-        console.log('✅ Password autofill disabled successfully');
-        return true;
-    }
-
-    // If direct replace failed, the key structure might not exist yet
-    console.log('Key structure not found, creating it...');
-
-    // Check if restrictedBool exists
-    const checkRestrictedBool = shell.exec(
-        `plutil -extract restrictedBool xml1 -o - "${settingsPlist}" 2>/dev/null`,
-        {silent: true},
-    );
-
-    if (checkRestrictedBool.code !== 0) {
-        // restrictedBool doesn't exist, create it
-        result = shell.exec(`plutil -insert restrictedBool -dictionary "${settingsPlist}"`, {silent: true});
-        if (result.code !== 0) {
-            console.error('⚠️  Failed to insert restrictedBool dictionary');
-            console.error(result.stderr);
-            return false;
-        }
-    }
-
-    // Check if restrictedBool.allowPasswordAutoFill exists
-    const checkAutoFill = shell.exec(
-        `plutil -extract restrictedBool.allowPasswordAutoFill xml1 -o - "${settingsPlist}" 2>/dev/null`,
-        {silent: true},
-    );
-
-    if (checkAutoFill.code !== 0) {
-        // allowPasswordAutoFill doesn't exist, create it
-        result = shell.exec(`plutil -insert restrictedBool.allowPasswordAutoFill -dictionary "${settingsPlist}"`, {silent: true});
-        if (result.code !== 0) {
-            console.error('⚠️  Failed to insert allowPasswordAutoFill dictionary');
-            console.error(result.stderr);
-            return false;
-        }
-    }
-
-    // Check if restrictedBool.allowPasswordAutoFill.value exists
-    const checkValue = shell.exec(
-        `plutil -extract restrictedBool.allowPasswordAutoFill.value xml1 -o - "${settingsPlist}" 2>/dev/null`,
-        {silent: true},
-    );
-
-    if (checkValue.code === 0) {
-        // value exists, replace it
-        result = shell.exec(`plutil -replace restrictedBool.allowPasswordAutoFill.value -bool NO "${settingsPlist}"`, {silent: true});
-    } else {
-        // value doesn't exist, insert it
-        result = shell.exec(`plutil -insert restrictedBool.allowPasswordAutoFill.value -bool NO "${settingsPlist}"`, {silent: true});
-    }
-
-    if (result.code !== 0) {
-        console.error('⚠️  Failed to set allowPasswordAutoFill');
-        console.error(result.stderr);
-        return false;
-    }
-
-    // Also disable password autofill via restrictedValue.passwordAutoFillPasswords.value
-    console.log('Setting restrictedValue.passwordAutoFillPasswords.value...');
-
-    // Try to replace directly first
-    result = shell.exec(
-        `plutil -replace restrictedValue.passwordAutoFillPasswords.value -integer 0 "${settingsPlist}"`,
-        {silent: true},
-    );
-
-    if (result.code === 0) {
-        console.log('✅ Password autofill disabled successfully (both keys set)');
-        return true;
-    }
-
-    // If direct replace failed, create the key structure
-    console.log('Creating restrictedValue key structure...');
-
-    // Check if restrictedValue exists
-    const checkRestrictedValue = shell.exec(
-        `plutil -extract restrictedValue xml1 -o - "${settingsPlist}" 2>/dev/null`,
-        {silent: true},
-    );
-
-    if (checkRestrictedValue.code !== 0) {
-        // restrictedValue doesn't exist, create it
-        result = shell.exec(`plutil -insert restrictedValue -dictionary "${settingsPlist}"`, {silent: true});
-        if (result.code !== 0) {
-            console.error('⚠️  Failed to insert restrictedValue dictionary');
-            console.error(result.stderr);
-            return false;
-        }
-    }
-
-    // Check if restrictedValue.passwordAutoFillPasswords exists
-    const checkPasswordAutoFillPasswords = shell.exec(
-        `plutil -extract restrictedValue.passwordAutoFillPasswords xml1 -o - "${settingsPlist}" 2>/dev/null`,
-        {silent: true},
-    );
-
-    if (checkPasswordAutoFillPasswords.code !== 0) {
-        // passwordAutoFillPasswords doesn't exist, create it
-        result = shell.exec(`plutil -insert restrictedValue.passwordAutoFillPasswords -dictionary "${settingsPlist}"`, {silent: true});
-        if (result.code !== 0) {
-            console.error('⚠️  Failed to insert passwordAutoFillPasswords dictionary');
-            console.error(result.stderr);
-            return false;
-        }
-    }
-
-    // Check if restrictedValue.passwordAutoFillPasswords.value exists
-    const checkPasswordValue = shell.exec(
-        `plutil -extract restrictedValue.passwordAutoFillPasswords.value xml1 -o - "${settingsPlist}" 2>/dev/null`,
-        {silent: true},
-    );
-
-    if (checkPasswordValue.code === 0) {
-        // value exists, replace it
-        result = shell.exec(`plutil -replace restrictedValue.passwordAutoFillPasswords.value -integer 0 "${settingsPlist}"`, {silent: true});
-    } else {
-        // value doesn't exist, insert it
-        result = shell.exec(`plutil -insert restrictedValue.passwordAutoFillPasswords.value -integer 0 "${settingsPlist}"`, {silent: true});
-    }
-
-    if (result.code === 0) {
-        console.log('✅ Password autofill disabled successfully (both keys set)');
-        return true;
     }
     console.error('⚠️  Failed to disable password autofill');
-    console.error(result.stderr);
     return false;
 
 }
@@ -216,7 +219,8 @@ async function main() {
     console.log('iOS Simulator - Disable Password Autofill\n');
     console.log('This tool disables password autofill on iOS simulators,');
     console.log('which can interfere with Detox E2E test login flows.');
-    console.log('Target: iPhone 17 Pro (iOS 26.2)\n');
+    console.log('Target: iPhone 17 Pro (iOS 26.2)');
+    console.log('Sets 6 iOS restriction keys to fully disable autofill prompts.\n');
 
     // Check if running on macOS
     if (process.platform !== 'darwin') {
@@ -277,7 +281,7 @@ async function main() {
 
     if (success) {
         console.log('\nNote: If the simulator is currently running, you may need to restart it');
-        console.log('for the changes to take effect.\n');
+        console.log('for all 6 restriction keys to take effect.\n');
         process.exit(0);
     } else {
         process.exit(1);

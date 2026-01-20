@@ -212,39 +212,21 @@ jobs:
           fi
 
           echo "Disabling password autofill (before boot)"
-          SETTINGS_DIR="$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles"
-          SETTINGS_PLIST="$SETTINGS_DIR/UserSettings.plist"
 
-          # Ensure the directory exists
+          # Ensure the directory exists (JS utility will create plist if needed)
+          SETTINGS_DIR="$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles"
           mkdir -p "$SETTINGS_DIR"
 
-          if [ -f "$SETTINGS_PLIST" ]; then
-            # File exists, modify it
-            echo "Setting restrictedBool.allowPasswordAutoFill.value..."
-            plutil -replace restrictedBool.allowPasswordAutoFill.value -bool NO "$SETTINGS_PLIST" 2>/dev/null || \
-            (plutil -insert restrictedBool -dictionary "$SETTINGS_PLIST" 2>/dev/null || true && \
-             plutil -insert restrictedBool.allowPasswordAutoFill -dictionary "$SETTINGS_PLIST" 2>/dev/null || true && \
-             plutil -insert restrictedBool.allowPasswordAutoFill.value -bool NO "$SETTINGS_PLIST")
+          # Use the JavaScript utility to disable password autofill
+          cd detox
+          node utils/disable_ios_autofill.js --simulator-id "$SIMULATOR_ID"
 
-            echo "Setting restrictedValue.passwordAutoFillPasswords.value..."
-            plutil -replace restrictedValue.passwordAutoFillPasswords.value -integer 0 "$SETTINGS_PLIST" 2>/dev/null || \
-            (plutil -insert restrictedValue -dictionary "$SETTINGS_PLIST" 2>/dev/null || true && \
-             plutil -insert restrictedValue.passwordAutoFillPasswords -dictionary "$SETTINGS_PLIST" 2>/dev/null || true && \
-             plutil -insert restrictedValue.passwordAutoFillPasswords.value -integer 0 "$SETTINGS_PLIST")
-
-            echo "✅ Password autofill disabled (both keys set)"
-          else
-            # File doesn't exist, create it with the setting
-            echo "⚠️ UserSettings.plist not found, creating with password autofill disabled"
-            plutil -create xml1 "$SETTINGS_PLIST"
-            plutil -insert restrictedBool -dictionary "$SETTINGS_PLIST"
-            plutil -insert restrictedBool.allowPasswordAutoFill -dictionary "$SETTINGS_PLIST"
-            plutil -insert restrictedBool.allowPasswordAutoFill.value -bool NO "$SETTINGS_PLIST"
-            plutil -insert restrictedValue -dictionary "$SETTINGS_PLIST"
-            plutil -insert restrictedValue.passwordAutoFillPasswords -dictionary "$SETTINGS_PLIST"
-            plutil -insert restrictedValue.passwordAutoFillPasswords.value -integer 0 "$SETTINGS_PLIST"
-            echo "✅ Created UserSettings.plist with password autofill disabled (both keys set)"
+          if [ $? -ne 0 ]; then
+            echo "⚠️ Failed to disable password autofill"
+            exit 1
           fi
+
+          cd ..
 
           echo "Booting simulator: $SIMULATOR_ID"
           xcrun simctl boot "$SIMULATOR_ID" || echo "Simulator already booted"
