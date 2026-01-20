@@ -5,7 +5,6 @@ import {getInfoAsync, deleteAsync} from 'expo-file-system';
 import {Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
-import {ANDROID_NET_EXCEPTION, IOS_NSURL_ERROR} from '@constants/network';
 import {getIntlShape} from '@utils/general';
 import {logError} from '@utils/log';
 import {urlSafeBase64Encode} from '@utils/security';
@@ -275,32 +274,17 @@ describe('Image utils', () => {
     });
 
     describe('getUploadErrorMessage', () => {
-        it('should map iOS network unavailable error code to user-friendly message', () => {
-            const msg = getUploadErrorMessage(intl, 'Any localized message', IOS_NSURL_ERROR.NOT_CONNECTED_TO_INTERNET);
+        it('should map iOS network errors to user-friendly message', () => {
+            const msg = getUploadErrorMessage(intl, 'URLSessionTask failed with error: The Internet connection appears to be offline.');
             expect(msg).toBe("File couldn't be uploaded. Check your connection and try again.");
         });
 
-        it('should map iOS connection lost error code to user-friendly message', () => {
-            const msg = getUploadErrorMessage(intl, 'Any localized message', IOS_NSURL_ERROR.NETWORK_CONNECTION_LOST);
-            expect(msg).toBe('Upload interrupted. Check your connection and try again.');
-        });
-
-        it('should map Android UnknownHostException to user-friendly message', () => {
-            const msg = getUploadErrorMessage(intl, 'Any error message', undefined, ANDROID_NET_EXCEPTION.UNKNOWN_HOST);
+        it('should map Android network errors to user-friendly message', () => {
+            const msg = getUploadErrorMessage(intl, 'Network error', 'java.net.UnknownHostException');
             expect(msg).toBe("File couldn't be uploaded. Check your connection and try again.");
         });
 
-        it('should map Android SocketException to user-friendly message', () => {
-            const msg = getUploadErrorMessage(intl, 'Any error message', undefined, ANDROID_NET_EXCEPTION.SOCKET_EXCEPTION);
-            expect(msg).toBe('Upload interrupted. Check your connection and try again.');
-        });
-
-        it('should map Android SocketTimeoutException to user-friendly message', () => {
-            const msg = getUploadErrorMessage(intl, 'Any error message', undefined, ANDROID_NET_EXCEPTION.SOCKET_TIMEOUT);
-            expect(msg).toBe('Upload interrupted. Check your connection and try again.');
-        });
-
-        it('should return original message for unknown errors', () => {
+        it('should return original message for non-network errors', () => {
             const originalMessage = 'Some other error occurred';
             const msg = getUploadErrorMessage(intl, originalMessage);
             expect(msg).toBe(originalMessage);

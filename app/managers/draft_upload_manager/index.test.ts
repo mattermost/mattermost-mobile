@@ -391,7 +391,7 @@ describe('draft upload manager', () => {
         // Wait for other promises (on complete write) to finish
         await new Promise(process.nextTick);
 
-        expect(errorHandler).toHaveBeenCalledWith('error', undefined, undefined);
+        expect(errorHandler).toHaveBeenCalledWith('error', undefined);
 
         // Make sure cancelling after error does not create any problem.
         cancelErrorHandler!();
