@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useCallback} from 'react';
+import {useCallback, useEffect, useRef} from 'react';
 import {runOnJS, useAnimatedReaction, type SharedValue} from 'react-native-reanimated';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -20,9 +20,20 @@ export const useKeyboardScrollAdjustment = (
     isInputAccessoryViewMode?: SharedValue<boolean>,
     isTransitioningFromCustomView?: SharedValue<boolean>,
 ) => {
+    // Track component mount status to prevent async callbacks from executing on unmounted components
+    const isMountedRef = useRef(true);
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
+
     // Callback to scroll the view (needs to be stable reference for runOnJS)
     const scrollToOffset = useCallback(
         (offsetValue: number, scrollValue: number) => {
+            if (!isMountedRef.current) {
+                return;
+            }
             scrollViewRef.current?.scrollToOffset({
                 offset: -offsetValue + scrollValue,
                 animated: false,
