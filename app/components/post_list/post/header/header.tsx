@@ -168,7 +168,7 @@ const Header = ({
                         style={style.time}
                         testID='post_header.date_time'
                     />
-                    {isChannelAutotranslated &&
+                    {isChannelAutotranslated && post.type === '' &&
                         <TranslateIcon translationState={translation?.state}/>
                     }
                     {isEphemeral && (

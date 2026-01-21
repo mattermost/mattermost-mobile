@@ -39,6 +39,7 @@ type Props = {
     teammateNameDisplay: string;
     testID: string;
     thread: ThreadModel;
+    isChannelAutotranslated: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -125,7 +126,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Thread = ({author, channel, location, post, teammateNameDisplay, testID, thread}: Props) => {
+const Thread = ({author, channel, location, post, teammateNameDisplay, testID, thread, isChannelAutotranslated}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
@@ -169,7 +170,7 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
 
     const translation = getPostTranslation(post, intl.locale);
     let message = post.message;
-    if (translation?.state === 'ready') {
+    if (isChannelAutotranslated && post.type === '' && translation?.state === 'ready') {
         message = getPostTranslatedMessage(message, translation);
     }
 
@@ -252,7 +253,7 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                     <View style={styles.header}>
                         <View style={styles.headerInfoContainer}>
                             {name}
-                            {translation?.state === 'ready' && (
+                            {isChannelAutotranslated && post.type === '' && translation?.state === 'ready' && (
                                 <CompassIcon
                                     name='translate'
                                     size={16}

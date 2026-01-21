@@ -56,6 +56,16 @@ function TranslateIcon({
         );
     }
 
+    if (translationState === 'unavailable') {
+        return (
+            <CompassIcon
+                name='translate'
+                size={16}
+                color={theme.dndIndicator}
+            />
+        );
+    }
+
     return null;
 }
 

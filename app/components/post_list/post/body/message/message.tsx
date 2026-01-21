@@ -105,7 +105,7 @@ const Message = ({
 
     const translation = getPostTranslation(post, intl.locale);
     let message = post.message;
-    if (isChannelAutotranslated && translation?.state === 'ready') {
+    if (isChannelAutotranslated && post.type === '' && translation?.state === 'ready') {
         message = getPostTranslatedMessage(post.message, translation);
     }
 

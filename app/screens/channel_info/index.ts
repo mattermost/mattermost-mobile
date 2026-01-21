@@ -155,6 +155,9 @@ const observeHasChannelSettingsActions = (
             if (!ch || !u || isDefaultChannel(ch)) {
                 return of$(false);
             }
+            if (ch.type !== General.OPEN_CHANNEL) {
+                return of$(false);
+            }
             return observePermissionForChannel(database, ch, u, Permissions.CONVERT_PUBLIC_CHANNEL_TO_PRIVATE, false);
         }),
     );

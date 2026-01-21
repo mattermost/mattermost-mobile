@@ -159,7 +159,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         combineLatestWith(currentUser),
         switchMap(([isAutotranslated, user]) => {
             const translation = getPostTranslation(post, user?.locale || DEFAULT_LOCALE);
-            return of$(isAutotranslated && translation?.state === 'ready');
+            return of$(isAutotranslated && post.type === '' && translation?.state === 'ready');
         }),
     );
 
