@@ -2,18 +2,17 @@
 // See LICENSE.txt for license information.
 /* eslint-disable no-await-in-loop, no-console */
 
+import {cleanupAdbReversePorts, resetAdbServer} from '@support/adb_utils';
 import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {Plugin, System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
 
 // Number of retry attempts
-const MAX_RETRY_ATTEMPTS = 5;
+const MAX_RETRY_ATTEMPTS = 3;
 
 // Delay between retries (in milliseconds)
-const RETRY_DELAY = 10000;
+const RETRY_DELAY = 5000;
 
-// Track if this is the first launch in the current test file
-// Reset to true for each test file in case we need a clean install
 let isFirstLaunch = true;
 
 /**
@@ -49,12 +48,6 @@ export async function launchAppWithRetry(): Promise<void> {
                 // For subsequent launches, reuse instance
                 await device.launchApp({
                     newInstance: false,
-                    permissions: {
-                        notifications: 'YES',
-                        camera: 'NO',
-                        medialibrary: 'NO',
-                        photos: 'NO',
-                    },
                     launchArgs: {
                         detoxPrintBusyIdleResources: 'YES',
                         detoxDebugVisibility: 'YES',
@@ -65,31 +58,41 @@ export async function launchAppWithRetry(): Promise<void> {
             }
 
             console.info(`✅ App launched successfully on attempt ${attempt}`);
-
             return; // Success, exit the function
 
         } catch (error) {
             lastError = error;
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            console.warn(`❌ App launch failed on attempt ${attempt}/${MAX_RETRY_ATTEMPTS}: ${errorMessage}`);
+            console.warn(`❌ App launch failed on attempt ${attempt}/${MAX_RETRY_ATTEMPTS}: ${(error as Error).message}`);
 
             // If this is the last attempt, don't wait
             if (attempt < MAX_RETRY_ATTEMPTS) {
+                // Check if this is an ADB port binding issue (Android-specific, common in CI)
+                const errorMessage = (error as Error).message;
+                const isAdbPortError = errorMessage.includes('cannot bind listener') ||
+                                      errorMessage.includes('Address already in use') ||
+                                      errorMessage.includes('adb');
+
+                // Only attempt ADB cleanup if we detect an ADB-related error
+                // These functions are safe no-ops on iOS
+                if (isAdbPortError) {
+                    console.warn('Detected ADB-related error, attempting cleanup...');
+                    await cleanupAdbReversePorts();
+
+                    // On second retry with port issues, also reset ADB server
+                    if (attempt >= 2) {
+                        console.warn('Multiple failures detected, attempting ADB server reset...');
+                        await resetAdbServer();
+                    }
+                }
+
                 console.warn(`Waiting ${RETRY_DELAY}ms before retrying...`);
                 await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-
-                // Force a new instance on retry
-                if (!isFirstLaunch && attempt > 1) {
-                    console.warn('Forcing new instance for next attempt');
-                    isFirstLaunch = true;
-                }
             }
         }
     }
 
     // If we get here, all attempts failed
-    const finalErrorMessage = lastError instanceof Error ? lastError.message : String(lastError);
-    throw new Error(`Failed to launch app after ${MAX_RETRY_ATTEMPTS} attempts. Last error: ${finalErrorMessage}`);
+    throw new Error(`Failed to launch app after ${MAX_RETRY_ATTEMPTS} attempts. Last error: ${(lastError as Error).message}`);
 }
 
 /**
@@ -106,20 +109,34 @@ async function initializeClaudePromptHandler(): Promise<void> {
 }
 
 beforeAll(async () => {
+    // Reset flag to ensure each test file starts with a clean app launch
+    isFirstLaunch = true;
+
     await initializeClaudePromptHandler();
+
+    // Clean up any stale ADB reverse port mappings from previous runs
+    // This is crucial in CI where crashed tests may leave stale connections
+    await cleanupAdbReversePorts();
 
     // Login as sysadmin and reset server configuration
     await System.apiCheckSystemHealth(siteOneUrl);
     await User.apiAdminLogin(siteOneUrl);
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
-
-    // Reset launch flag for this test file to ensure clean install
-    isFirstLaunch = true;
-
     await launchAppWithRetry();
 });
 
+// Add this to speed up test cleanup
 afterAll(async () => {
-    // Reset the launch flag so next test file starts fresh
-    isFirstLaunch = true;
+    try {
+        await device.terminateApp();
+    } catch (error) {
+        console.error('[Teardown] Error terminating app:', error);
+    }
+
+    // Clean up ADB connections after tests complete
+    try {
+        await cleanupAdbReversePorts();
+    } catch (error) {
+        console.error('[Teardown] Error cleaning up ADB ports:', error);
+    }
 });

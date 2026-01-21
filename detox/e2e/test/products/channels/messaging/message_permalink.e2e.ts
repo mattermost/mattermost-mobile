@@ -5,6 +5,7 @@ import {
     Channel,
     Post,
     Setup,
+    Team,
     User,
 } from '@support/server_api';
 import {
@@ -39,7 +40,7 @@ describe('Messaging - Message Permalink Preview', () => {
         await postItem.longPress();
         await PostOptionsScreen.toBeVisible();
         await PostOptionsScreen.copyLinkOption.tap();
-        await wait(timeouts.ONE_SEC);
+        await wait(timeouts.FOUR_SEC);
         await expect(PostOptionsScreen.postOptionsScreen).not.toBeVisible();
     };
 
@@ -64,6 +65,7 @@ describe('Messaging - Message Permalink Preview', () => {
         testUser = user;
 
         ({user: testOtherUser} = await User.apiCreateUser(siteOneUrl));
+        await Team.apiAddUserToTeam(siteOneUrl, testOtherUser.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, testOtherUser.id, testChannel.id);
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -86,6 +88,7 @@ describe('Messaging - Message Permalink Preview', () => {
             userId: testOtherUser.id,
         });
 
+        await wait(timeouts.FOUR_SEC);
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
@@ -112,7 +115,7 @@ describe('Messaging - Message Permalink Preview', () => {
 
         const {channel: otherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
-
+        await wait(timeouts.FOUR_SEC);
         await ChannelScreen.open(channelsCategory, testChannel.name);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
         await copyLinkFromPost(postListPostItem);
@@ -146,7 +149,7 @@ describe('Messaging - Message Permalink Preview', () => {
             message: targetMessage,
             userId: testOtherUser.id,
         });
-
+        await wait(timeouts.FOUR_SEC);
         await ChannelScreen.open(channelsCategory, targetChannel.name);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
         await copyLinkFromPost(postListPostItem);
