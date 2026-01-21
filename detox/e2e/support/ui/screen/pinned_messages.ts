@@ -6,7 +6,7 @@ import {
     ChannelInfoScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 class PinnedMessagesScreen {
@@ -57,10 +57,17 @@ class PinnedMessagesScreen {
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-        await expect(postListPostItem).toBeVisible();
+
+        // Poll for the post to become visible without waiting for idle bridge
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
+
+        // Dismiss keyboard by tapping on the post list (needed after posting a message)
+        const flatList = this.postList.getFlatList();
+        await flatList.scroll(100, 'down');
+        await wait(timeouts.ONE_SEC);
 
         // # Open post options
-        await postListPostItem.longPress();
+        await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     };
@@ -74,6 +81,22 @@ class PinnedMessagesScreen {
         await expect(
             this.getPostMessageAtIndex(index),
         ).toHaveText(postMessage);
+    };
+
+    verifyReplyCount = async (postId: string, replyCount: number) => {
+        const replyCountElement = element(
+            by.id(`pinned_messages.post_list.post.${postId}`).
+                withDescendant(by.text(`${replyCount} repl${replyCount === 1 ? 'y' : 'ies'}`)),
+        );
+        await expect(replyCountElement).toBeVisible();
+    };
+
+    verifyFollowingLabel = async (postId: string, following: boolean = false) => {
+        const followingLabelElement = element(
+            by.id(`pinned_messages.post_list.post.${postId}`).
+                withDescendant(by.text(following? 'Following' : 'Follow')),
+        );
+        await expect(followingLabelElement).toBeVisible();
     };
 }
 

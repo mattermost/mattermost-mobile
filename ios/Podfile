@@ -12,14 +12,11 @@ require File.join(File.dirname(`node --print "require.resolve('expo/package.json
 node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 
-platform :ios, '15.1' #min_ios_version_supported
+platform :ios, '16.0' #min_ios_version_supported
 prepare_react_native_project!
 
-linkage = ENV['USE_FRAMEWORKS']
-if linkage != nil
-  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
-  use_frameworks! :linkage => linkage.to_sym
-end
+Pod::UI.puts "Configuring Pod with statically linked Frameworks".green
+use_frameworks! :linkage => :static
 
 setup_permissions([
   "Camera",
@@ -28,11 +25,19 @@ setup_permissions([
   "PhotoLibrary"
 ])
 
+# Conditional Intune MAM support
+intune_enabled = ENV['INTUNE_ENABLED'] == '1'
+
+if intune_enabled
+  puts "🔐 Intune MAM features enabled"
+end
+
+config = use_native_modules!
+
 target 'Mattermost' do
   # Pods for Mattermost
 
   use_expo_modules!
-  config = use_native_modules!
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -43,31 +48,62 @@ target 'Mattermost' do
   pod 'React-jsi', :path => '../node_modules/react-native/ReactCommon/jsi', :modular_headers => true
   pod 'React-jsc', :path => '../node_modules/react-native/ReactCommon/jsc', :modular_headers => true
   pod 'simdjson', path: '../node_modules/@nozbe/simdjson', :modular_headers => true
+  pod 'Gekidou', :path => './Gekidou'
   pod 'CocoaLumberjack', :modular_headers => true
   pod 'TurboLogIOSNative', :git => 'https://github.com/larkox/react-native-turbo-log-ios-native.git', :modular_headers => true
 
-  post_install do |installer|
+  # Conditional Intune MAM pod (internal builds only)
+  if intune_enabled
+    pod 'mattermost-intune', :path => '../libraries/@mattermost/intune'
+  end
+end
+
+target 'NotificationService' do
+  inherit! :search_paths
+  pod 'TurboLogIOSNative', :git => 'https://github.com/larkox/react-native-turbo-log-ios-native.git', :modular_headers => true
+  pod 'Sentry/HybridSDK', '8.48.0'
+  pod 'Gekidou', :path => './Gekidou'
+end
+
+target 'MattermostShare' do
+  inherit! :search_paths
+  pod 'Sentry/HybridSDK', '8.48.0'
+  pod 'Gekidou', :path => './Gekidou'
+  pod 'OpenGraph', '1.4.1'
+end
+
+post_install do |installer|
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
       installer,
       config[:reactNativePath],
       :mac_catalyst_enabled => false
     )
-  
-    # installer.pods_project.targets.each do |target|
-    #   target.build_configurations.each do |config|
-    #     config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
-    #   end
-    # end
+
+    installer.pods_project.targets.each do |t|
+      t.build_configurations.each do |bc|
+        bc.build_settings['SWIFT_VERSION']        = '5.9'
+        bc.build_settings['OTHER_LDFLAGS']        = ['$(inherited)', '-ObjC']
+        bc.build_settings['STRIP_SWIFT_SYMBOLS']  = 'NO'
+        bc.build_settings['ENABLE_BITCODE']       = 'NO'
+      end
+    end
+
+    # ensure stdlib is embedded for Gekidou to work correctly in extensions
+    %w[NotificationService MattermostShare].each do |ext_name|
+      target = installer.aggregate_targets.flat_map(&:user_project).flat_map(&:targets).find { |x| x.name == ext_name }
+      next unless target
+      target.build_configurations.each do |c|
+        c.build_settings['APPLICATION_EXTENSION_API_ONLY'] = 'YES'
+        c.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
+      end
+    end
+
+    # make sure the main app is NOT extension-only
+    app_target = installer.aggregate_targets.flat_map(&:user_project).flat_map(&:targets).find { |t| t.name == 'Mattermost' }
+    if app_target
+      app_target.build_configurations.each do |c|
+        c.build_settings.delete('APPLICATION_EXTENSION_API_ONLY')
+      end
+    end
   end
-end
-
-target 'NotificationService' do
-  pod 'TurboLogIOSNative', :git => 'https://github.com/larkox/react-native-turbo-log-ios-native.git', :modular_headers => true
-  pod 'Sentry/HybridSDK', '8.48.0'
-end
-
-target 'MattermostShare' do
-  pod 'Sentry/HybridSDK', '8.48.0'
-end
-

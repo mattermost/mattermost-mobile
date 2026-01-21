@@ -20,6 +20,9 @@ interface PlaybookRunAttributeValueModelInterface extends Model {
     /** value : The value of the attribute */
     value: string;
 
+    /** updateAt : The timestamp when this attribute value was last updated */
+    updateAt: number;
+
     /** attribute : The attribute this attribute value belongs to */
     attribute: Relation<PlaybookRunAttributeModel>;
 

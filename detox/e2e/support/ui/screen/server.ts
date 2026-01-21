@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 class ServerScreen {
@@ -72,7 +72,10 @@ class ServerScreen {
                 }
             }
         }
-        await waitFor(this.usernameInput).toExist().withTimeout(isAndroid()? timeouts.ONE_MIN : timeouts.HALF_MIN);
+
+        // The bridge can be busy during login transition, use waitFor without idle check
+        const timeout = isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN;
+        await waitFor(this.usernameInput).toBeVisible().withTimeout(timeout);
     };
 
     close = async () => {
@@ -91,8 +94,8 @@ class ServerScreen {
     };
 
     enterPreauthSecret = async (secret: string) => {
-        await waitFor(this.preauthSecretInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await this.preauthSecretInput.replaceText(secret);
+        await waitFor(this.preauthSecretInput.atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.preauthSecretInput.atIndex(0).replaceText(secret);
     };
 
     connectToServerWithPreauthSecret = async (serverUrl: string, serverDisplayName: string, preauthSecret: string) => {
@@ -123,7 +126,10 @@ class ServerScreen {
                 }
             }
         }
-        await waitFor(this.usernameInput).toExist().withTimeout(isAndroid()? timeouts.ONE_MIN : timeouts.HALF_MIN);
+
+        // The bridge can be busy during login transition, so poll for the element without waiting for idle
+        const timeout = isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN;
+        await waitForElementToBeVisible(this.usernameInput, timeout, timeouts.ONE_SEC);
     };
 }
 

@@ -296,6 +296,7 @@ describe('Files', () => {
             type: 'image',
             uri: file.uri || '',
             width: file.width,
+            cacheKey: file.id || '',
         }));
 
         const {getByTestId} = render(
@@ -342,6 +343,7 @@ describe('Files', () => {
             type: 'image',
             uri: file.uri || '',
             width: file.width,
+            cacheKey: file.id || '',
         }));
 
         const {getByTestId} = render(

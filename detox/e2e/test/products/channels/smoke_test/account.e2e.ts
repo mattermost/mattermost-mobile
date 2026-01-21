@@ -75,6 +75,7 @@ describe('Smoke Test - Account', () => {
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.openEmojiPicker('default', true);
         await EmojiPickerScreen.searchInput.replaceText(customStatusEmojiName);
+        await EmojiPickerScreen.searchInput.tapReturnKey();
         await element(by.text('🤡')).tap();
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
@@ -174,6 +175,7 @@ describe('Smoke Test - Account', () => {
         await DisplaySettingsScreen.open();
         await ThemeDisplaySettingsScreen.open();
         await ThemeDisplaySettingsScreen.denimOption.tap();
+        await ThemeDisplaySettingsScreen.back();
 
         // * Verify on display settings screen and denim is set
         await DisplaySettingsScreen.toBeVisible();

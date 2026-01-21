@@ -35,8 +35,11 @@ export const PostTypes = {
     SYSTEM_AUTO_RESPONDER: 'system_auto_responder',
     CUSTOM_CALLS: 'custom_calls',
     CUSTOM_CALLS_RECORDING: 'custom_calls_recording',
+
     CUSTOM_LLMBOT: 'custom_llmbot',
     CUSTOM_LLM_POSTBACK: 'custom_llm_postback',
+
+    BURN_ON_READ: 'burn_on_read',
 } as const;
 
 export const PostPriorityColors = {
@@ -51,6 +54,8 @@ export enum PostPriorityType {
 }
 
 export const POST_TIME_TO_FAIL = toMilliseconds({seconds: 10});
+
+export const BOR_POST_CLEANUP_MIN_RUN_INTERVAL = toMilliseconds({minutes: 15});
 
 export default {
     POST_COLLAPSE_TIMEOUT: toMilliseconds({minutes: 5}),

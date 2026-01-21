@@ -136,6 +136,7 @@ describe('loginOptions', () => {
         });
     });
 });
+
 describe('loginToServer', () => {
     const theme = Preferences.THEMES.denim;
     const serverUrl = 'https://server.com';

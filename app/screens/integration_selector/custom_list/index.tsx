@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback} from 'react';
+import React, {useCallback, useRef} from 'react';
 import {
-    Platform, FlatList, RefreshControl, View,
+    Platform, RefreshControl, View,
 } from 'react-native';
+import {KeyboardAwareFlatList} from 'react-native-keyboard-aware-scroll-view';
 
+import {useAvoidKeyboard} from '@hooks/device';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -51,9 +53,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                     marginBottom: 20,
                 },
             }),
-        },
-        container: {
-            flexGrow: 1,
         },
         separator: {
             height: 1,
@@ -109,6 +108,8 @@ function CustomList({
     canRefresh = true, testID, refreshing = false, onRefresh,
 }: Props) {
     const style = getStyleFromTheme(theme);
+    const keyboardAwareFlatListRef = useRef<KeyboardAwareFlatList>(null);
+    useAvoidKeyboard(keyboardAwareFlatListRef);
 
     // Renders
     const renderEmptyList = useCallback(() => {
@@ -159,8 +160,8 @@ function CustomList({
     }
 
     return (
-        <FlatList
-            contentContainerStyle={style.container}
+        <KeyboardAwareFlatList
+            ref={keyboardAwareFlatListRef}
             data={data}
             keyboardShouldPersistTaps='always'
             keyExtractor={keyExtractor}

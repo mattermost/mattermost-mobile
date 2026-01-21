@@ -1,17 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image, type ImageSource} from 'expo-image';
+import {type ImageSource} from 'expo-image';
 import React, {useMemo, useRef} from 'react';
 import {TouchableWithoutFeedback, useWindowDimensions} from 'react-native';
 import Animated from 'react-native-reanimated';
 
+import ExpoImage from '@components/expo_image';
 import {View as ViewConstants} from '@constants';
 import {GalleryInit} from '@context/gallery';
 import {useGalleryItem} from '@hooks/gallery';
 import {lookupMimeType} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
-import {generateId} from '@utils/general';
 import {isTablet} from '@utils/helpers';
 import {calculateDimensions} from '@utils/images';
 import {type BestImage, getNearestPoint} from '@utils/opengraph';
@@ -59,7 +59,10 @@ const getViewPostWidth = (isReplyPost: boolean, deviceHeight: number, deviceWidt
 };
 
 const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraphImages, postId, theme}: OpengraphImageProps) => {
-    const fileId = useRef(generateId('uid')).current;
+    const fileId = useRef<string | null>(null);
+    if (fileId.current === null) {
+        fileId.current = `uid-opengraph-image-${postId}`;
+    }
     const dimensions = useWindowDimensions();
     const style = getStyleSheet(theme);
     const galleryIdentifier = `${postId}-OpenGraphImage-${location}`;
@@ -67,7 +70,7 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
     const bestDimensions = useMemo(() => ({
         height: MAX_IMAGE_HEIGHT,
         width: layoutWidth || getViewPostWidth(isReplyPost, dimensions.height, dimensions.width),
-    }), [isReplyPost, dimensions]);
+    }), [layoutWidth, isReplyPost, dimensions.height, dimensions.width]);
     const bestImage = getNearestPoint(bestDimensions, openGraphImages, 'width', 'height');
     const imageUrl = (bestImage.secure_url || bestImage.url)!;
     const imagesMetadata = metadata?.images;
@@ -91,7 +94,7 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
 
     const onPress = () => {
         const item: GalleryItemType = {
-            id: fileId,
+            id: fileId.current!,
             postId,
             uri: imageUrl,
             width: imageDimensions.width,
@@ -100,6 +103,7 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
             mime_type: lookupMimeType(imageUrl) || 'image/png',
             type: 'image',
             lastPictureUpdate: 0,
+            cacheKey: fileId.current!,
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
     };
@@ -120,13 +124,14 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
         <GalleryInit galleryIdentifier={galleryIdentifier}>
             <Animated.View style={[styles, style.imageContainer, dimensionsStyle]}>
                 <TouchableWithoutFeedback onPress={onGestureEvent}>
-                    <Animated.View testID={`OpenGraphImage-${fileId}`}>
-                        <Image
+                    <Animated.View testID={`OpenGraphImage-${fileId.current}`}>
+                        <ExpoImage
+                            id={fileId.current}
                             style={[style.image, dimensionsStyle]}
                             source={source}
                             contentFit='contain'
                             ref={ref}
-                            nativeID={`OpenGraphImage-${fileId}`}
+                            nativeID={`OpenGraphImage-${fileId.current}`}
                         />
                     </Animated.View>
                 </TouchableWithoutFeedback>

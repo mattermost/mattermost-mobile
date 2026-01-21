@@ -15,6 +15,7 @@ env:
   RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
   SNYK_VERSION: "1.1297.2"
   CYCLONEDX_VERSION: "v0.27.2"
+  INTUNE_ENABLED: 1
 
 jobs:
   test:
@@ -26,24 +27,23 @@ jobs:
         uses: ./.github/actions/test
 
   build-ios-unsigned:
-    runs-on: macos-14-large
+    runs-on: macos-15-large
     needs:
       - test
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: ci/setup-ssh-key
+        uses: ./.github/actions/setup-ssh-key
+        with:
+          ssh-private-key: ${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}
+
       - name: ci/prepare-ios-build
         uses: ./.github/actions/prepare-ios-build
-
-      - name: ci/output-ssh-private-key
-        shell: bash
-        run: |
-          SSH_KEY_PATH=~/.ssh/id_ed25519
-          mkdir -p ~/.ssh
-          echo -e '${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}' > ${SSH_KEY_PATH}
-          chmod 0600 ${SSH_KEY_PATH}
-          ssh-keygen -y -f ${SSH_KEY_PATH} > ${SSH_KEY_PATH}.pub
+        with:
+          intune-enabled: 'true'
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: ci/build-ios-unsigned
         env:

@@ -1,7 +1,7 @@
 # Mattermost Mobile v2
 
 - **Minimum Server versions:** Current ESR version (10.11.0+)
-- **Supported iOS versions:** 15.1+
+- **Supported iOS versions:** 16.0+
 - **Supported Android versions:** 7.0+
 
 Mattermost is an open source Slack-alternative used by thousands of companies around the world in 21 languages. Learn more at [https://mattermost.com](https://mattermost.com).
@@ -11,6 +11,34 @@ You can download our apps from the [App Store](https://mattermost.com/mattermost
 We plan on releasing monthly updates with new features - check the [changelog](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md) for what features are currently supported! 
 
 **Important:** If you self-compile the Mattermost Mobile apps you also need to deploy your own [Mattermost Push Notification Service](https://github.com/mattermost/mattermost-push-proxy/releases). 
+
+# Android 16KB Page Size Support
+
+**Temporary Requirement:** To comply with Google Play's 16KB page size requirement for Android devices, this project includes a compatibility patch that must be applied before building for Android.
+
+### When to Apply the Patch
+
+- **CI/CD Builds:** The patch is automatically applied in GitHub Actions for Android builds
+- **Local Development:** If you're building Android locally and encounter 16KB page size related issues, run:
+
+```bash
+npm run apply-16kb-pagesize-patch
+```
+
+This script will:
+1. Update package dependencies to compatible versions
+2. Apply necessary code changes for 16KB page size support
+3. Update patch files for modified dependencies
+4. Regenerate `package-lock.json`
+
+### ⚠️ Important Warnings
+
+- **DO NOT commit the changes** applied by this patch to the repository
+- **These changes will break iOS builds** if committed
+- The patch is designed to be applied only during Android CI builds
+- For local development, revert all changes after building Android
+
+**Note:** This is a temporary solution until all dependencies natively support 16KB page sizes.
 
 # How to Contribute
 

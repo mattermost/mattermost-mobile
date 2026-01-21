@@ -66,6 +66,7 @@ describe('Account - Settings - Theme Display Settings', () => {
     it('MM-T5111_2 - should be able to select a theme and save by tapping navigation back button', async () => {
         // # Tap on a sapphire option and tap on back button
         await ThemeDisplaySettingsScreen.sapphireOption.tap();
+        await ThemeDisplaySettingsScreen.back();
 
         // * Verify on display settings screen and sapphire is set
         await DisplaySettingsScreen.toBeVisible();
@@ -79,6 +80,7 @@ describe('Account - Settings - Theme Display Settings', () => {
 
         // # Tap on denim option and tap on back button
         await ThemeDisplaySettingsScreen.denimOption.tap();
+        await ThemeDisplaySettingsScreen.back();
 
         // * Verify on display settings screen and denim is set
         await DisplaySettingsScreen.toBeVisible();

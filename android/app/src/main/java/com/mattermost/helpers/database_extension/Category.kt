@@ -54,12 +54,14 @@ fun insertCategoriesWithChannels(db: WMDatabase, orderCategories: ReadableMap) {
     val categories = orderCategories.getArray("categories") ?: return
     for (i in 0 until categories.size()) {
         val category = categories.getMap(i)
-        val id = category.getString("id")
-        val teamId = category.getString("team_id")
-        val channelIds = category.getArray("channel_ids")
-        insertCategory(db, category)
-        if (id != null && teamId != null) {
-            channelIds?.let { insertCategoryChannels(db, id, teamId, it) }
+        category?.let { cat ->
+            val id = cat.getString("id")
+            val teamId = cat.getString("team_id")
+            val channelIds = cat.getArray("channel_ids")
+            insertCategory(db, cat)
+            if (id != null && teamId != null) {
+                channelIds?.let { insertCategoryChannels(db, id, teamId, it) }
+            }
         }
     }
 }
@@ -67,19 +69,22 @@ fun insertCategoriesWithChannels(db: WMDatabase, orderCategories: ReadableMap) {
 fun insertChannelToDefaultCategory(db: WMDatabase, categoryChannels: ReadableArray) {
     try {
         for (i in 0 until categoryChannels.size()) {
-            val cc = categoryChannels.getMap(i)
-            val id = cc.getString("id")
-            val categoryId = cc.getString("category_id")
-            val channelId = cc.getString("channel_id")
-            val count = countByColumn(db, "CategoryChannel", "category_id", categoryId)
-            db.execute(
-                    """
-                        INSERT INTO CategoryChannel
-                        (id, category_id, channel_id, sort_order, _changed, _status)
-                        VALUES (?, ?, ?, ?, '', 'created')
-                    """.trimIndent(),
-                    arrayOf(id, categoryId, channelId, if (count > 0) count + 1 else count)
-            )
+            categoryChannels.getMap(i)?.let { cc ->
+                val id = cc.getString("id")
+                val categoryId = cc.getString("category_id")
+                val channelId = cc.getString("channel_id")
+                if (id != null && categoryId != null && channelId != null) {
+                    val count = countByColumn(db, "CategoryChannel", "category_id", categoryId)
+                    db.execute(
+                            """
+                                INSERT INTO CategoryChannel
+                                (id, category_id, channel_id, sort_order, _changed, _status)
+                                VALUES (?, ?, ?, ?, '', 'created')
+                            """.trimIndent(),
+                            arrayOf(id, categoryId, channelId, if (count > 0) count + 1 else count)
+                    )
+                }
+            }
         }
     } catch (e: Exception) {
         e.printStackTrace()

@@ -137,6 +137,9 @@ interface ClientConfig {
     IosAppDownloadLink: string;
     IosLatestVersion: string;
     IosMinVersion: string;
+    IntuneMAMEnabled?: string;
+    IntuneScope?: string;
+    IntuneAuthService?: string;
     LdapFirstNameAttributeSet: string;
     LdapLastNameAttributeSet: string;
     LdapLoginButtonBorderColor: string;
@@ -208,6 +211,7 @@ interface ClientConfig {
     WebsocketPort: string;
     WebsocketSecurePort: string;
     WebsocketURL: string;
+    BurnOnReadDurationSeconds: string;
 }
 
 type SecurityClientConfig = Pick<ClientConfig, 'MobileEnableBiometrics' | 'MobileJailbreakProtection' | 'MobilePreventScreenCapture' | 'SiteName'>

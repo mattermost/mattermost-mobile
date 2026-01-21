@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getReadableTimestamp, isSameDate, isSameMonth, isSameYear, isToday, isYesterday} from './datetime';
+import {formatTime, getReadableTimestamp, isSameDate, isSameMonth, isSameYear, isToday, isYesterday} from './datetime';
 
 describe('Datetime', () => {
     test('isSameDate (isSameMonth / isSameYear)', () => {
@@ -83,5 +83,89 @@ describe('getReadableTimestamp', () => {
 
         const deResult = getReadableTimestamp(timestamp, timeZone, false, 'de-DE');
         expect(deResult).toBe('15. Juni, 8:00 AM');
+    });
+});
+
+describe('formatTime', () => {
+    it('should format seconds only', () => {
+        expect(formatTime(30)).toBe('0:30');
+        expect(formatTime(5)).toBe('0:05');
+        expect(formatTime(59)).toBe('0:59');
+    });
+
+    it('should format minutes and seconds', () => {
+        expect(formatTime(90)).toBe('1:30');
+        expect(formatTime(125)).toBe('2:05');
+        expect(formatTime(3599)).toBe('59:59');
+    });
+
+    it('should format hours, minutes, and seconds', () => {
+        expect(formatTime(3600)).toBe('1:00:00');
+        expect(formatTime(3661)).toBe('1:01:01');
+        expect(formatTime(7325)).toBe('2:02:05');
+        expect(formatTime(36000)).toBe('10:00:00');
+    });
+
+    it('should handle zero seconds', () => {
+        expect(formatTime(0)).toBe('0:00');
+    });
+
+    it('should handle negative values by treating them as zero', () => {
+        expect(formatTime(-30)).toBe('0:00');
+        expect(formatTime(-3600)).toBe('0:00');
+    });
+
+    it('should pad minutes with zero when hours are present', () => {
+        expect(formatTime(3605)).toBe('1:00:05');
+        expect(formatTime(3665)).toBe('1:01:05');
+    });
+
+    it('should not pad minutes with zero when no hours', () => {
+        expect(formatTime(65)).toBe('1:05');
+        expect(formatTime(605)).toBe('10:05');
+    });
+
+    describe('text time format', () => {
+        it('should format seconds only in text time format', () => {
+            expect(formatTime(30, true)).toBe('30s');
+            expect(formatTime(5, true)).toBe('5s');
+            expect(formatTime(59, true)).toBe('59s');
+        });
+
+        it('should format minutes and seconds in text time format', () => {
+            expect(formatTime(90, true)).toBe('1m 30s');
+            expect(formatTime(125, true)).toBe('2m 5s');
+            expect(formatTime(3599, true)).toBe('59m 59s');
+        });
+
+        it('should format hours, minutes, and seconds in text time format', () => {
+            expect(formatTime(3600, true)).toBe('1h');
+            expect(formatTime(3661, true)).toBe('1h 1m 1s');
+            expect(formatTime(7325, true)).toBe('2h 2m 5s');
+            expect(formatTime(36000, true)).toBe('10h');
+        });
+
+        it('should format hours and minutes only in text time format', () => {
+            expect(formatTime(3660, true)).toBe('1h 1m');
+            expect(formatTime(7200, true)).toBe('2h');
+        });
+
+        it('should format hours and seconds only in text time format', () => {
+            expect(formatTime(3605, true)).toBe('1h 5s');
+        });
+
+        it('should format minutes only in text time format', () => {
+            expect(formatTime(60, true)).toBe('1m');
+            expect(formatTime(120, true)).toBe('2m');
+        });
+
+        it('should handle zero seconds in text time format', () => {
+            expect(formatTime(0, true)).toBe('0s');
+        });
+
+        it('should handle negative values in text time format', () => {
+            expect(formatTime(-30, true)).toBe('0s');
+            expect(formatTime(-3600, true)).toBe('0s');
+        });
     });
 });

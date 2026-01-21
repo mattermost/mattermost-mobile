@@ -31,6 +31,9 @@ beforeEach(async () => {
 describe('fetchCustomEmojis', () => {
     it('should fetch custom emojis successfully', async () => {
         const mockClient = {
+            apiClient: {
+                baseUrl: serverUrl,
+            },
             getCustomEmojis: jest.fn().mockResolvedValue(mockEmojis),
             getCustomEmojiImageUrl: jest.fn(),
         };
@@ -45,6 +48,9 @@ describe('fetchCustomEmojis', () => {
 
     it('should handle error during fetch custom emojis', async () => {
         const mockClient = {
+            apiClient: {
+                baseUrl: serverUrl,
+            },
             getCustomEmojis: jest.fn().mockRejectedValue(error),
             getCustomEmojiImageUrl: jest.fn(),
         };
@@ -65,6 +71,9 @@ describe('searchCustomEmojis', () => {
     it('should search custom emojis successfully', async () => {
         const term = 'emoji';
         const mockClient = {
+            apiClient: {
+                baseUrl: serverUrl,
+            },
             searchCustomEmoji: jest.fn().mockResolvedValue(mockEmojis),
             getCustomEmojiImageUrl: jest.fn(),
         };
@@ -80,6 +89,9 @@ describe('searchCustomEmojis', () => {
     it('should handle error during search custom emojis', async () => {
         const term = 'emoji';
         const mockClient = {
+            apiClient: {
+                baseUrl: serverUrl,
+            },
             searchCustomEmoji: jest.fn().mockRejectedValue(error),
             getCustomEmojiImageUrl: jest.fn(),
         };
@@ -99,6 +111,9 @@ describe('searchCustomEmojis', () => {
 describe('fetchEmojisByName', () => {
     it('should fetch emojis by name successfully', async () => {
         const mockClient = {
+            apiClient: {
+                baseUrl: serverUrl,
+            },
             getCustomEmojiByName: jest.fn().mockResolvedValue(emoji),
             getCustomEmojiImageUrl: jest.fn(),
         };
@@ -112,6 +127,9 @@ describe('fetchEmojisByName', () => {
 
     it('should handle no emojis', async () => {
         const mockClient = {
+            apiClient: {
+                baseUrl: serverUrl,
+            },
             getCustomEmojiByName: jest.fn().mockRejectedValue('error message'),
             getCustomEmojiImageUrl: jest.fn(),
         };

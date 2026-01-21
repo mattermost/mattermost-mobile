@@ -61,16 +61,25 @@ describe('Smoke Test - Threads', () => {
         await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem: parentPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
+        await waitFor(parentPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await waitFor(ThreadScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
+
+        // * Verify thread is followed by user by default via thread navigation
+        await expect(ThreadScreen.followingButton).toBeVisible();
+
+        // # Unfollow thread via thread navigation
         await ThreadScreen.followingButton.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify thread is not followed by user via thread navigation
         await expect(ThreadScreen.followButton).toBeVisible();
 
         // # Follow thread via thread navigation
         await ThreadScreen.followButton.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify thread is followed by user via thread navigation
         await expect(ThreadScreen.followingButton).toBeVisible();
@@ -78,7 +87,9 @@ describe('Smoke Test - Threads', () => {
         // # Go back to channel list screen, then go to global threads screen, tap on all your threads button, open thread options for thread, tap on mark as unread option, and tap on unread threads button
         await ThreadScreen.back();
         await ChannelScreen.back();
-        await device.reloadReactNative();
+
+        // Note: Commenting out reloadReactNative as it can cause ANR on Android
+        // await device.reloadReactNative();
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
@@ -86,15 +97,14 @@ describe('Smoke Test - Threads', () => {
         await GlobalThreadsScreen.headerUnreadThreadsButton.tap();
 
         // * Verify thread is displayed in unread threads section
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Open thread options for thread and tap on mark as read option
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
         await ThreadOptionsScreen.markAsReadOption.tap();
 
         // * Verify thread is not displayed anymore in unread threads section
-        await wait(timeouts.ONE_SEC);
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Tap on all your threads button, tap on the thread, and add new reply to thread
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
@@ -116,8 +126,11 @@ describe('Smoke Test - Threads', () => {
         // # Create a thread, go back to channel list screen, then go to global threads screen, open thread options for thread, tap on save option, and tap on thread
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
+        await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem: parentPostItem2} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
+        await waitFor(parentPostItem2).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
@@ -132,12 +145,12 @@ describe('Smoke Test - Threads', () => {
         const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(parentPost.id, parentMessage);
         await expect(postListPostItemPreHeaderText).toHaveText(savedText);
 
-        // # Go back to global threads screen, open thread options for thread, tap on save option, and tap on thread
+        // # Go back to global threads screen, open thread options for thread, tap on unsave option, and tap on thread
         await ThreadScreen.back();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
-        await wait(timeouts.ONE_SEC);
+        await waitFor(ThreadOptionsScreen.unsaveThreadOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ThreadOptionsScreen.unsaveThreadOption.tap();
-        await wait(timeouts.ONE_SEC);
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
         // * Verify saved text is not displayed on the post pre-header
@@ -146,7 +159,9 @@ describe('Smoke Test - Threads', () => {
         // # Go back to global threads screen, open thread options for thread, tap on open in channel option, and jump to recent messages
         await ThreadScreen.back();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
+        await waitFor(ThreadOptionsScreen.openInChannelOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ThreadOptionsScreen.openInChannelOption.tap();
+        await waitFor(PermalinkScreen.permalinkScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await PermalinkScreen.jumpToRecentMessages();
 
         // * Verify on channel screen and thread is displayed

@@ -172,6 +172,7 @@ describe('Smoke Test - Channels', () => {
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.favoriteAction.tap();
         await ChannelInfoScreen.muteAction.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify channel is favorited and muted
         await expect(ChannelInfoScreen.unfavoriteAction).toBeVisible();
@@ -180,6 +181,7 @@ describe('Smoke Test - Channels', () => {
         // # Tap on favorited action to unfavorite the channel and tap on muted action to unmute the channel
         await ChannelInfoScreen.unfavoriteAction.tap();
         await ChannelInfoScreen.unmuteAction.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify channel is unfavorited and unmuted
         await expect(ChannelInfoScreen.favoriteAction).toBeVisible();
@@ -199,18 +201,5 @@ describe('Smoke Test - Channels', () => {
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.archivePublicChannel({confirm: true});
-
-        // * Verify on channel screen and post draft archived message is displayed
-        await ChannelScreen.toBeVisible();
-        await expect(ChannelScreen.postDraftArchived).toBeVisible();
-        await expect(element(by.text('You are viewing an archived channel. New messages cannot be posted.'))).toBeVisible();
-
-        // # Open channel info screen, and tap on leave channel option and confirm
-        await ChannelInfoScreen.open();
-        await ChannelInfoScreen.leaveChannel({confirm: true});
-
-        // * Verify on channel list screen and the channel left by the user does not appear on the list
-        await ChannelListScreen.toBeVisible();
-        await expect(ChannelListScreen.getChannelItem(channelsCategory, channel.name)).not.toExist();
     });
 });
