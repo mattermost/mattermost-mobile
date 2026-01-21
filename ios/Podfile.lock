@@ -2629,6 +2629,7 @@ SPEC CHECKSUMS:
   Gekidou: 94199ed8d31b900f2caeb9d5739c19bed9defc4a
   glog: eb93e2f488219332457c3c4eafd2738ddc7e80b8
   hermes-engine: b2187dbe13edb0db8fcb2a93a69c1987a30d98a4
+  HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
   JitsiWebRTC: b47805ab5668be38e7ee60e2258f49badfe8e1d0
   KituraContracts: e845e60dc8627ad0a76fa55ef20a45451d8f830b
   LoggerAPI: ad9c4a6f1e32f518fdb43a1347ac14d765ab5e3d
@@ -2672,7 +2673,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: 3ffdb92f95177227477077cfebabf429ad4e73a4
   react-native-emm: 0873c06dc36ac2b68b398726e5a8e2a8d47da929
   react-native-image-picker: 1279ed5533ab248197e8a05f928f3d826fe5a31e
-  react-native-keyboard-controller: 925b4fb54b2be8b8b8e555bb87840bbafcf1c173
+  react-native-keyboard-controller: 0aff65ca209dae10cd0ac7c9c2404baabb625d42
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-network-client: 209fc0c5b0bd7e367825fb9ca9bfa610ab5ec797
   react-native-notifications: 3bafa1237ae8a47569a84801f17d80242fe9f6a5
@@ -2741,6 +2742,6 @@ SPEC CHECKSUMS:
   WatermelonDB: 4c846c8cb94eef3cba90fa034d15310163226703
   Yoga: 2b02f3f767761bb4ffd25b1bb56fd264be57bd6b
 
-PODFILE CHECKSUM: ce606f00a54f0a812429faaf884cc4c80a37debb
+PODFILE CHECKSUM: f3442fc727bf29ef7e4eda969e4e598128801d4a
 
 COCOAPODS: 1.16.1
