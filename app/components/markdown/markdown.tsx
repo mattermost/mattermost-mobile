@@ -571,7 +571,7 @@ const Markdown = ({
         return (
             <FormattedText
                 id='markdown.max_nodes.error'
-                defaultMessage='This message is too long to by shown fully on a mobile device. Please view it on desktop or contact an admin to increase this limit.'
+                defaultMessage='This message is too long to be shown fully on a mobile device. Please view it on desktop or contact an admin to increase this limit.'
                 style={styles}
                 testID='max_nodes_warning'
             />

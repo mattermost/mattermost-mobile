@@ -8,14 +8,13 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {View, StyleSheet} from 'react-native';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
+import EmojiCategoryBar from '@components/emoji_category_bar';
 import {EMOJI_CATEGORY_ICONS, EMOJI_ROW_MARGIN, EMOJI_SIZE, EMOJIS_PER_PAGE, EMOJIS_PER_ROW, EMOJIS_PER_ROW_TABLET} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import {setEmojiCategoryBarIcons, setEmojiCategoryBarSection, useEmojiCategoryBar} from '@hooks/emoji_category_bar';
 import {CategoryNames, EmojiIndicesByCategory, CategoryTranslations, CategoryMessage} from '@utils/emoji';
 import {fillEmoji} from '@utils/emoji/helpers';
-
-import EmojiCategoryBar from '../emoji_category_bar';
 
 import EmojiRow, {type EmojiSectionRow} from './emoji_row';
 import SectionFooter from './section_footer';

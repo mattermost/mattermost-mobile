@@ -6,6 +6,7 @@ import PLAYBOOKS_SCREENS from '@playbooks/constants/screens';
 export const ABOUT = 'About';
 export const ACCOUNT = 'Account';
 export const APPS_FORM = 'AppForm';
+export const ATTACHMENT_OPTIONS = 'AttachmentOptions';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CALL = 'Call';
@@ -95,6 +96,7 @@ export default {
     ABOUT,
     ACCOUNT,
     APPS_FORM,
+    ATTACHMENT_OPTIONS,
     BOTTOM_SHEET,
     BROWSE_CHANNELS,
     CALL,
@@ -208,6 +210,7 @@ export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
 ]);
 
 export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
+    ATTACHMENT_OPTIONS,
     BOTTOM_SHEET,
     DRAFT_SCHEDULED_POST_OPTIONS,
     EMOJI_PICKER,
