@@ -21,7 +21,7 @@ import {getConfig, getCurrentChannelId, getCurrentTeamId, setLastFullSync} from 
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import TestHelper from '@test/test_helper';
 
 import {handleFirstConnect, handleReconnect} from './index';
@@ -166,7 +166,7 @@ describe('WebSocket Index Actions', () => {
         });
 
         it('should fetch posts for channel screen', async () => {
-            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['Channel']);
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['channel']);
             await handleReconnect(serverUrl);
 
             expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, currentChannelId, false, false, 'WebSocket Reconnect');
@@ -178,7 +178,7 @@ describe('WebSocket Index Actions', () => {
             const threadId = 'thread-id';
             const lastPost = TestHelper.fakePostModel({id: 'post-id', createAt: 123});
 
-            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['Thread']);
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['thread']);
 
             jest.mocked(getIsCRTEnabled).mockResolvedValue(true);
             jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue(threadId);
@@ -200,7 +200,7 @@ describe('WebSocket Index Actions', () => {
         });
 
         it('should handle notification tapped state', async () => {
-            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['Channel']);
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['channel']);
 
             jest.mocked(EphemeralStore.wasNotificationTapped).mockReturnValue(true);
 

@@ -54,6 +54,7 @@ export function useGalleryControls(bottomInset = 0) {
     }));
 
     const footerStyles = useAnimatedStyle(() => ({
+        backgroundColor: '#000',
         opacity: headerAndFooterHidden.value ? withTiming(0) : withTiming(1),
         transform: [
             {
@@ -107,6 +108,9 @@ export function useGalleryItem(
 
     useEffect(() => {
         gallery.registerItem(index, ref);
+
+        // Avoid registration on every render
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onGestureEvent = () => {

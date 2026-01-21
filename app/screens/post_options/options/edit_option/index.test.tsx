@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import {ActionType, Screens} from '@constants';
+import {ActionType} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
@@ -88,7 +88,6 @@ describe('EditOption', () => {
             <EnhancedEditOption
                 post={post}
                 canDelete={true}
-                bottomSheetId={Screens.EDIT_POST}
             />,
             {database},
         );
@@ -107,7 +106,6 @@ describe('EditOption', () => {
             <EnhancedEditOption
                 post={{id: 'post-2', message: 'test'} as PostModel}
                 canDelete={true}
-                bottomSheetId={Screens.EDIT_POST}
             />,
             {database},
         );

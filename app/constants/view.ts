@@ -12,7 +12,7 @@ export const PROFILE_PICTURE_SIZE = 32;
 export const PROFILE_PICTURE_EMOJI_SIZE = 28;
 
 export const TEAM_SIDEBAR_WIDTH = 72;
-export const TABLET_HEADER_HEIGHT = 44;
+export const TABLET_HEADER_HEIGHT = Platform.select({android: 10, default: 44});
 export const TABLET_SIDEBAR_WIDTH = 320;
 
 export const STATUS_BAR_HEIGHT = 20;

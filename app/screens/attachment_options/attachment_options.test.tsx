@@ -4,7 +4,6 @@
 import {fireEvent, waitFor} from '@testing-library/react-native';
 import {Alert} from 'react-native';
 
-import {Screens} from '@constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import PickerUtil from '@utils/file/file_picker';
@@ -33,7 +32,6 @@ describe('AttachmentOptions', () => {
     const mockAttachFileFromFiles = jest.fn();
 
     const baseProps = {
-        componentId: 'Channel' as const,
         onUploadFiles: jest.fn(),
         maxFileCount: 10,
         fileCount: 0,
@@ -63,7 +61,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(photoLibraryItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(mockAttachFileFromPhotoGallery).toHaveBeenCalledWith(10);
             });
         });
@@ -77,7 +75,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(takePhotoItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(mockAttachFileFromCamera).toHaveBeenCalledWith({
                     quality: 0.8,
                     mediaType: 'photo',
@@ -95,7 +93,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(takeVideoItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(mockAttachFileFromCamera).toHaveBeenCalledWith({
                     quality: 0.8,
                     videoQuality: 'high',
@@ -114,7 +112,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(attachFileItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(mockAttachFileFromFiles).toHaveBeenCalledWith(undefined, true);
             });
         });
@@ -134,7 +132,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(photoLibraryItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'File uploads are disabled',
@@ -156,7 +154,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(takePhotoItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'File uploads are disabled',
@@ -178,7 +176,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(attachFileItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'File uploads are disabled',
@@ -203,7 +201,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(photoLibraryItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'Maximum 10 files allowed',
@@ -226,7 +224,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(takePhotoItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'Maximum 10 files allowed',
@@ -249,7 +247,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(attachFileItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'Maximum 10 files allowed',
@@ -272,7 +270,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(photoLibraryItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).not.toHaveBeenCalled();
                 expect(mockAttachFileFromPhotoGallery).toHaveBeenCalled();
             });
@@ -335,17 +333,6 @@ describe('AttachmentOptions', () => {
     });
 
     describe('edge cases', () => {
-        it('should use default closeButtonId when not provided', () => {
-            const props = {
-                ...baseProps,
-            };
-            delete (props as {closeButtonId?: string}).closeButtonId;
-
-            renderWithIntlAndTheme(<AttachmentOptions {...props}/>);
-
-            // Component should render without errors
-        });
-
         it('should use default fileCount when not provided', async () => {
             const props = {
                 ...baseProps,
@@ -404,7 +391,7 @@ describe('AttachmentOptions', () => {
     });
 
     describe('tablet rendering', () => {
-        it('should not render title when isTablet is true', () => {
+        it('should render title when isTablet is true', () => {
             const useIsTablet = require('@hooks/device').useIsTablet;
             useIsTablet.mockReturnValue(true);
 
@@ -412,7 +399,7 @@ describe('AttachmentOptions', () => {
                 <AttachmentOptions {...baseProps}/>,
             );
 
-            expect(queryByText('Files and media')).toBeNull();
+            expect(queryByText('Files and media')).toBeTruthy();
         });
 
         it('should render title when isTablet is false', () => {

@@ -7,7 +7,7 @@ import {observeIsPostAcknowledgementsEnabled, observePersistentNotificationsEnab
 
 import {observeConfigIntValue} from '../../queries/servers/system';
 
-import PostPriorityPicker from './post_priority_picker';
+import PostPriorityPicker, {type PostPriorityPickerProps} from './post_priority_picker';
 
 import type {Database} from '@nozbe/watermelondb';
 
@@ -20,5 +20,7 @@ const enhanced = withObservables([], ({database}: {database: Database}) => {
         persistentNotificationInterval,
     };
 });
+
+export {type PostPriorityPickerProps};
 
 export default withDatabase(enhanced(PostPriorityPicker));

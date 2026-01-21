@@ -1,4 +1,3 @@
-#import <RNNAppDelegate.h>
 #import <UIKit/UIKit.h>
 #import "RNNotifications.h"
 #import <Expo/Expo.h>

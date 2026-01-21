@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {Alert} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 
@@ -32,16 +34,19 @@ import {
 } from '@calls/state';
 import {type AudioDevice, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
 import {areGroupCallsAllowed} from '@calls/utils';
-import {General, Preferences} from '@constants';
+import {General, Preferences, Screens} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@managers/network_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {getChannelById} from '@queries/servers/channel';
+import {getPostById} from '@queries/servers/post';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getConfig, getLicense} from '@queries/servers/system';
+import {getConfig, getCurrentTeamId, getLicense, setCurrentTeamId} from '@queries/servers/system';
 import {getThreadById} from '@queries/servers/thread';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
+import {dismissAllRoutesAndResetToRootRoute, dismissAllRoutesAndPopToScreen, navigateToScreen} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/user';
@@ -709,5 +714,32 @@ export const hostRemove = async (serverUrl: string, callId: string, sessionId: s
         logDebug('error on hostRemove', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
         return error;
+    }
+};
+
+export const switchToCallThread = async (serverUrl: string, rootId: string, title: string) => {
+    try {
+        const activeUrl = await DatabaseManager.getActiveServerUrl();
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const post = await getPostById(database, rootId);
+        const channel = await getChannelById(database, post?.channelId || '');
+        const currentTeamId = await getCurrentTeamId(database);
+
+        if (channel?.teamId && currentTeamId !== channel.teamId) {
+            await setCurrentTeamId(operator, channel.teamId);
+        }
+        if (activeUrl === serverUrl) {
+            await dismissAllRoutesAndPopToScreen(Screens.THREAD, {rootId, title, channelName: channel?.displayName || ''});
+            return;
+        }
+
+        // TODO: this is a temporary solution until we have a proper cross-team thread view.
+        //  https://mattermost.atlassian.net/browse/MM-45752
+        await dismissAllRoutesAndResetToRootRoute();
+        await DatabaseManager.setActiveServerDatabase(serverUrl);
+        WebsocketManager.initializeClient(serverUrl, 'Server Switch');
+        navigateToScreen(Screens.THREAD, {rootId, title, channelName: channel?.displayName || ''});
+    } catch (error) {
+        logDebug('error on switchToCallThread', getFullErrorMessage(error));
     }
 };

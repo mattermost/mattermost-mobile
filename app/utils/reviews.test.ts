@@ -9,7 +9,7 @@ import LocalConfig from '@assets/config.json';
 import {Launch} from '@constants';
 import {getDontAskForReview, getLastAskedForReview} from '@queries/app/global';
 import {areAllServersSupported} from '@queries/app/servers';
-import {showReviewOverlay} from '@screens/navigation';
+import ReviewAppStore from '@store/review_app_store';
 
 import {tryRunAppReview} from './reviews';
 
@@ -28,9 +28,8 @@ jest.mock('@queries/app/global', () => ({
 jest.mock('@actions/app/global', () => ({
     storeFirstLaunch: jest.fn(),
 }));
-jest.mock('@screens/navigation', () => ({
-    showReviewOverlay: jest.fn(),
-}));
+
+jest.mock('@store/review_app_store');
 
 describe('tryRunAppReview function', () => {
     afterEach(() => {
@@ -75,6 +74,6 @@ describe('tryRunAppReview function', () => {
         expect(getDontAskForReview).toHaveBeenCalled();
         expect(getLastAskedForReview).toHaveBeenCalled();
         expect(storeFirstLaunch).not.toHaveBeenCalled();
-        expect(showReviewOverlay).toHaveBeenCalledWith(true);
+        expect(ReviewAppStore.show).toHaveBeenCalledWith(true);
     });
 });

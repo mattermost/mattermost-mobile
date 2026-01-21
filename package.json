@@ -2,6 +2,7 @@
   "name": "mattermost-mobile",
   "version": "2.37.0",
   "description": "Mattermost Mobile with React Native",
+  "main": "index.tsx",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
   "license": "Apache 2.0",
@@ -23,7 +24,7 @@
     "@mattermost/calls": "github:mattermost/calls-common#ab53c24053b89e4d3d853bbe1244892899517f45",
     "@mattermost/compass-icons": "0.1.48",
     "@mattermost/hardware-keyboard": "file:./libraries/@mattermost/hardware-keyboard",
-    "@mattermost/react-native-emm": "1.6.2",
+    "@mattermost/react-native-emm": "github:mattermost/react-native-emm#a97585e30f7e5998b067c38620280a8f4ddd76f4",
     "@mattermost/react-native-network-client": "1.9.1",
     "@mattermost/react-native-paste-input": "0.8.1",
     "@mattermost/react-native-turbo-log": "0.6.0",
@@ -40,9 +41,10 @@
     "@react-native-community/datetimepicker": "8.3.0",
     "@react-native-community/netinfo": "11.4.1",
     "@react-native-cookies/cookies": "6.2.1",
-    "@react-navigation/bottom-tabs": "7.3.10",
-    "@react-navigation/native": "7.1.6",
-    "@react-navigation/stack": "7.2.10",
+    "@react-navigation/bottom-tabs": "7.8.12",
+    "@react-navigation/native": "7.1.25",
+    "@react-navigation/native-stack": "7.8.6",
+    "@react-navigation/stack": "7.6.12",
     "@rneui/base": "4.0.0-rc.8",
     "@sentry/react-native": "6.10.0",
     "@shopify/flash-list": "1.8.0",
@@ -60,6 +62,8 @@
     "expo-device": "7.0.3",
     "expo-image": "2.0.7",
     "expo-linear-gradient": "14.0.2",
+    "expo-router": "4.0.22",
+    "expo-splash-screen": "0.29.24",
     "expo-store-review": "8.0.1",
     "expo-video-thumbnails": "9.0.3",
     "expo-web-browser": "14.0.2",
@@ -86,17 +90,15 @@
     "react-native-haptic-feedback": "2.3.3",
     "react-native-image-picker": "8.2.0",
     "react-native-incall-manager": "4.2.0",
-    "react-native-keyboard-aware-scroll-view": "0.9.5",
-    "react-native-keyboard-controller": "1.19.3",
+    "react-native-keyboard-controller": "1.20.2",
     "react-native-keychain": "10.0.0",
     "react-native-localize": "3.4.1",
     "react-native-math-view": "3.9.5",
-    "react-native-navigation": "7.45.0",
     "react-native-notifications": "5.1.0",
     "react-native-performance": "5.1.2",
     "react-native-permissions": "5.3.0",
     "react-native-reanimated": "3.17.3",
-    "react-native-safe-area-context": "5.3.0",
+    "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "4.10.0",
     "react-native-section-list-get-item-layout": "2.2.3",
     "react-native-shadow-2": "7.1.1",
@@ -244,13 +246,18 @@
     },
     "refractor": {
       "prismjs": "1.30.0"
+    },
+    "expo-router": {
+      "react": "18.3.1"
+    },
+    "@react-navigation/bottom-tabs": {
+      "@react-navigation/native": "7.1.25"
     }
   },
   "expo": {
     "autolinking": {
       "exclude": [
         "expo-keep-awake",
-        "expo-asset",
         "expo-font"
       ]
     }

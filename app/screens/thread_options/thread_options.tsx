@@ -4,16 +4,14 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
 import {View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import FormattedText from '@components/formatted_text';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
-import {dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -28,7 +26,6 @@ import type TeamModel from '@typings/database/models/servers/team';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
 type ThreadOptionsProps = {
-    componentId: string;
     isSaved: boolean;
     post: PostModel;
     team: TeamModel;
@@ -47,49 +44,35 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const THREAD_OPTIONS_BUTTON = 'close-thread-options';
-
 const ThreadOptions = ({
-    componentId,
     isSaved,
     post,
     team,
     thread,
 }: ThreadOptionsProps) => {
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const style = getStyleSheet(theme);
-
-    const close = () => {
-        return dismissBottomSheet(Screens.THREAD_OPTIONS);
-    };
-
-    useNavButtonPressed(THREAD_OPTIONS_BUTTON, componentId, close, []);
+    const {bottom} = useSafeAreaInsets();
 
     const options = [
         <ReplyOption
-            bottomSheetId={Screens.THREAD_OPTIONS}
             key='reply'
             post={post}
         />,
         <FollowThreadOption
-            bottomSheetId={Screens.THREAD_OPTIONS}
             key='unfollow'
             thread={thread}
         />,
         <OpenInChannelOption
-            bottomSheetId={Screens.THREAD_OPTIONS}
             key='open-in-channel'
             threadId={thread.id}
         />,
         <MarkAsUnreadOption
-            bottomSheetId={Screens.THREAD_OPTIONS}
             key='mark-as-unread'
             teamId={team.id}
             thread={thread}
         />,
         <SaveOption
-            bottomSheetId={Screens.THREAD_OPTIONS}
             key='save'
             isSaved={isSaved}
             postId={thread.id}
@@ -101,7 +84,6 @@ const ThreadOptions = ({
     if (canCopyLink) {
         options.push(
             <CopyPermalinkOption
-                bottomSheetId={Screens.THREAD_OPTIONS}
                 key='copy-link'
                 post={post}
                 sourceScreen={Screens.THREAD_OPTIONS}
@@ -109,19 +91,17 @@ const ThreadOptions = ({
         );
     }
 
-    const snapPoint = useMemo(() => TITLE_HEIGHT + bottomSheetSnapPoint(options.length, ITEM_HEIGHT), [options.length]);
+    const snapPoint = useMemo(() => bottom + TITLE_HEIGHT + bottomSheetSnapPoint(options.length, ITEM_HEIGHT), [options.length, bottom]);
 
     const renderContent = () => (
         <>
-            {!isTablet && (
-                <View style={style.listHeader}>
-                    <FormattedText
-                        id='global_threads.options.title'
-                        defaultMessage={'Thread Actions'}
-                        style={style.listHeaderText}
-                    />
-                </View>
-            )}
+            <View style={style.listHeader}>
+                <FormattedText
+                    id='global_threads.options.title'
+                    defaultMessage={'Thread Actions'}
+                    style={style.listHeaderText}
+                />
+            </View>
             {options}
         </>
     );
@@ -129,8 +109,7 @@ const ThreadOptions = ({
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId={THREAD_OPTIONS_BUTTON}
-            componentId={Screens.THREAD_OPTIONS}
+            screen={Screens.THREAD_OPTIONS}
             initialSnapIndex={1}
             snapPoints={[1, snapPoint]}
             testID='thread_options'

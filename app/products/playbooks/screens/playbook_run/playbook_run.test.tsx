@@ -7,15 +7,16 @@ import {Alert} from 'react-native';
 import UserChip from '@components/chips/user_chip';
 import CompassIcon from '@components/compass_icon';
 import UserAvatarsStack from '@components/user_avatars_stack';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
-import {openUserProfileModal, popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {fireEvent, renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {openUserProfile} from '@utils/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import {goToRenamePlaybookRun, goToSelectUser} from '../navigation';
@@ -85,6 +86,8 @@ jest.mock('@playbooks/actions/remote/runs', () => ({
     setOwner: jest.fn(),
 }));
 
+jest.mock('@screens/navigation');
+jest.mock('@utils/navigation');
 jest.mock('@hooks/android_back_handler');
 
 describe('PlaybookRun', () => {
@@ -135,7 +138,6 @@ describe('PlaybookRun', () => {
             playbookRun: mockPlaybookRun,
             owner: mockOwner,
             participants: mockParticipants,
-            componentId: 'PlaybookRun',
             checklists: mockChecklists,
             overdueCount: 2,
             pendingCount: 3,
@@ -195,16 +197,16 @@ describe('PlaybookRun', () => {
         expect(ownerChip.props.action).toBe(undefined);
 
         ownerChip.props.onPress();
-        expect(openUserProfileModal).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
+        expect(openUserProfile).toHaveBeenCalledWith({
             userId: props.owner!.id,
             channelId: (props.playbookRun as PlaybookRunModel).channelId,
-            location: 'PlaybookRun',
+            location: Screens.PLAYBOOK_RUN,
         });
 
         expect(getByText('Participants')).toBeTruthy();
         const userAvatarsStack = getByTestId('user-avatars-stack');
         expect(userAvatarsStack.props.users).toBe(props.participants);
-        expect(userAvatarsStack.props.location).toBe('PlaybookRun');
+        expect(userAvatarsStack.props.location).toBe(Screens.PLAYBOOK_RUN);
         expect(userAvatarsStack.props.bottomSheetTitle.defaultMessage).toBe('Participants');
 
         props.owner = undefined;
@@ -235,16 +237,15 @@ describe('PlaybookRun', () => {
         ownerChip.props.action.onPress();
 
         expect(goToSelectUser).toHaveBeenCalledWith(
-            expect.anything(),
             'Test Playbook Run',
             'Owner',
             [...props.participants.map((p) => p.id), props.owner!.id],
             props.owner!.id,
             expect.any(Function),
         );
-        expect(openUserProfileModal).not.toHaveBeenCalled();
+        expect(openUserProfile).not.toHaveBeenCalled();
 
-        let handleSelect = jest.mocked(goToSelectUser).mock.calls[0][5];
+        let handleSelect = jest.mocked(goToSelectUser).mock.calls[0][4];
         handleSelect(TestHelper.fakeUser({id: 'user-2'}));
 
         expect(setOwner).toHaveBeenCalledWith(
@@ -261,16 +262,15 @@ describe('PlaybookRun', () => {
         ownerChip.props.onPress();
 
         expect(goToSelectUser).toHaveBeenCalledWith(
-            expect.anything(),
             'Test Playbook Run',
             'Owner',
             [...props.participants.map((p) => p.id), props.owner!.id],
             props.owner!.id,
             expect.any(Function),
         );
-        expect(openUserProfileModal).not.toHaveBeenCalled();
+        expect(openUserProfile).not.toHaveBeenCalled();
 
-        handleSelect = jest.mocked(goToSelectUser).mock.calls[0][5];
+        handleSelect = jest.mocked(goToSelectUser).mock.calls[0][4];
         handleSelect(TestHelper.fakeUser({id: 'user-2'}));
 
         expect(setOwner).toHaveBeenCalledWith(
@@ -290,7 +290,7 @@ describe('PlaybookRun', () => {
         const ownerChip = getByTestId('user-chip');
         ownerChip.props.onPress();
 
-        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][5];
+        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][4];
         handleSelect(TestHelper.fakeUser({id: 'user-2'}));
 
         await waitFor(() => {
@@ -417,12 +417,12 @@ describe('PlaybookRun', () => {
         const props = getBaseProps();
         renderWithEverything(<PlaybookRun {...props}/>, {database});
 
-        expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(props.componentId, expect.any(Function));
+        expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(Screens.PLAYBOOK_RUN, expect.any(Function));
 
         const closeHandler = jest.mocked(useAndroidHardwareBackHandler).mock.calls[0][1];
         closeHandler();
 
-        expect(popTopScreen).toHaveBeenCalled();
+        expect(navigateBack).toHaveBeenCalled();
     });
 
     it('does not render StatusUpdateIndicator for ChannelChecklistType', () => {
@@ -444,7 +444,7 @@ describe('PlaybookRun', () => {
     it('handles openOwnerProfile when owner is undefined', () => {
         const props = getBaseProps();
         props.owner = undefined;
-        jest.mocked(openUserProfileModal).mockClear();
+        jest.mocked(openUserProfile).mockClear();
         const {queryByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
         // Should not crash, but owner chip won't be rendered
@@ -651,8 +651,6 @@ describe('PlaybookRun', () => {
             fireEvent.press(editIcon);
         });
         expect(goToRenamePlaybookRun).toHaveBeenCalledWith(
-            expect.anything(), // intl
-            expect.anything(), // theme
             'Test Playbook Run',
             props.playbookRun!.id,
         );

@@ -15,7 +15,6 @@ import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bottomSheetId: AvailableScreens;
     sourceScreen: AvailableScreens;
     post: PostModel;
     teamName: string;
@@ -28,15 +27,15 @@ const messages = defineMessages({
     },
 });
 
-const CopyPermalinkOption = ({bottomSheetId, teamName, post, sourceScreen}: Props) => {
+const CopyPermalinkOption = ({teamName, post, sourceScreen}: Props) => {
     const serverUrl = useServerUrl();
 
     const handleCopyLink = useCallback(async () => {
         const permalink = `${serverUrl}/${teamName}/pl/${post.id}`;
         Clipboard.setString(permalink);
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         showSnackBar({barType: SNACK_BAR_TYPE.LINK_COPIED, sourceScreen});
-    }, [serverUrl, teamName, post.id, bottomSheetId, sourceScreen]);
+    }, [serverUrl, teamName, post.id, sourceScreen]);
 
     return (
         <BaseOption

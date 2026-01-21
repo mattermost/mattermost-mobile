@@ -43,7 +43,6 @@ describe('ChannelHeader Index', () => {
         function getBaseProps(): ComponentProps<typeof ChannelHeader> {
             return {
                 channelId,
-                componentId: 'Channel' as const,
                 callsEnabledInChannel: false,
                 groupCallsAllowed: false,
                 shouldRenderBookmarks: false,

@@ -5,17 +5,20 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {observeScheduledPostById} from '@queries/servers/scheduled_post';
 import {observeCurrentUser} from '@queries/servers/user';
 
 import RescheduledDraft from './reschedule_draft';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentUserTimezone = observeCurrentUser(database).pipe(switchMap((u) => of$(u?.timezone)));
-    return {
-        currentUserTimezone,
-    };
-});
+export type RescheduleDraftProps = {
+    draftId: string;
+}
+
+const enhance = withObservables([], ({database, draftId}: RescheduleDraftProps & WithDatabaseArgs) => ({
+    currentUserTimezone: observeCurrentUser(database).pipe(switchMap((u) => of$(u?.timezone))),
+    draft: observeScheduledPostById(database, draftId),
+}));
 
 export default withDatabase(enhance(RescheduledDraft));

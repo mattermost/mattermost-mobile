@@ -16,7 +16,6 @@ const MockedNotifications = jest.mocked(require('react-native-notifications').No
 
 function getBaseProps(): ComponentProps<typeof Notifications> {
     return {
-        componentId: 'Settings' as const,
         currentUser: TestHelper.fakeUserModel({id: 'user1', username: 'username1'}),
         emailInterval: '0',
         enableAutoResponder: false,

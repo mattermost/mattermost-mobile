@@ -81,10 +81,6 @@ class WebsocketManagerSingleton {
     };
 
     public createClient = (serverUrl: string, bearerToken: string, preauthSecret?: string) => {
-        if (this.clients[serverUrl]) {
-            this.invalidateClient(serverUrl);
-        }
-
         const client = new WebSocketClient(serverUrl, bearerToken, preauthSecret);
 
         client.setFirstConnectCallback(() => this.onFirstConnect(serverUrl));

@@ -5,10 +5,10 @@ import {fireEvent, waitFor} from '@testing-library/react-native';
 import {KeyboardController} from 'react-native-keyboard-controller';
 
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
-import {openAttachmentOptions} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {openAttachmentOptions} from '@utils/navigation';
 
-import AttachmentQuickAction from '.';
+import AttachmentQuickAction from './index';
 
 jest.mock('react-native-keyboard-controller', () => ({
     KeyboardController: {
@@ -20,9 +20,7 @@ jest.mock('@context/keyboard_animation', () => ({
     useKeyboardAnimationContext: jest.fn(),
 }));
 
-jest.mock('@screens/navigation', () => ({
-    openAttachmentOptions: jest.fn(),
-}));
+jest.mock('@utils/navigation');
 
 describe('AttachmentQuickAction', () => {
     const mockCloseInputAccessoryView = jest.fn();
@@ -127,8 +125,6 @@ describe('AttachmentQuickAction', () => {
             await waitFor(() => {
                 expect(mockOpenAttachmentOptions).toHaveBeenCalledTimes(1);
                 expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
-                    expect.any(Object), // intl
-                    expect.any(Object), // theme
                     expect.objectContaining({
                         onUploadFiles: baseProps.onUploadFiles,
                         maxFilesReached: false,
@@ -160,8 +156,6 @@ describe('AttachmentQuickAction', () => {
 
             await waitFor(() => {
                 expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
-                    expect.any(Object), // intl
-                    expect.any(Object), // theme
                     expect.objectContaining({
                         onUploadFiles,
                         fileCount: 5,
@@ -199,12 +193,6 @@ describe('AttachmentQuickAction', () => {
 
             await waitFor(() => {
                 expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
-                    expect.objectContaining({
-                        formatMessage: expect.any(Function),
-                    }), // intl
-                    expect.objectContaining({
-                        centerChannelColor: expect.anything(),
-                    }), // theme
                     expect.any(Object), // props
                 );
             });
@@ -225,8 +213,6 @@ describe('AttachmentQuickAction', () => {
 
             await waitFor(() => {
                 expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
-                    expect.any(Object), // intl
-                    expect.any(Object), // theme
                     expect.objectContaining({
                         fileCount: 3,
                     }),
@@ -247,8 +233,6 @@ describe('AttachmentQuickAction', () => {
 
             await waitFor(() => {
                 expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
-                    expect.any(Object), // intl
-                    expect.any(Object), // theme
                     expect.objectContaining({
                         maxFilesReached: true,
                     }),
@@ -269,8 +253,6 @@ describe('AttachmentQuickAction', () => {
 
             await waitFor(() => {
                 expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
-                    expect.any(Object), // intl
-                    expect.any(Object), // theme
                     expect.objectContaining({
                         maxFileCount: 20,
                     }),
@@ -293,8 +275,6 @@ describe('AttachmentQuickAction', () => {
 
             await waitFor(() => {
                 expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
-                    expect.any(Object), // intl
-                    expect.any(Object), // theme
                     expect.objectContaining({
                         fileCount: 0,
                     }),

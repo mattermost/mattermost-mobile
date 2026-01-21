@@ -9,10 +9,7 @@ import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type Props = {
-    bottomSheetId: AvailableScreens;
     threadId: string;
 }
 
@@ -22,13 +19,13 @@ const messages = defineMessages({
         defaultMessage: 'Open in Channel',
     },
 });
-const OpenInChannelOption = ({bottomSheetId, threadId}: Props) => {
+const OpenInChannelOption = ({threadId}: Props) => {
     const serverUrl = useServerUrl();
 
     const onHandlePress = useCallback(async () => {
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         showPermalink(serverUrl, '', threadId);
-    }, [bottomSheetId, serverUrl, threadId]);
+    }, [serverUrl, threadId]);
 
     return (
         <BaseOption

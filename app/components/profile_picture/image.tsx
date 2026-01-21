@@ -3,6 +3,7 @@
 
 import {type ImageSource} from 'expo-image';
 import React, {useMemo} from 'react';
+import {Platform} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
@@ -52,8 +53,12 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
             return undefined;
         }
 
+        if (source) {
+            return source;
+        }
+
         const pictureUrl = buildProfileImageUrlFromUser(serverUrl, author);
-        return source ?? {uri: buildAbsoluteUrl(serverUrl, pictureUrl)};
+        return {uri: buildAbsoluteUrl(serverUrl, pictureUrl)};
 
     // We need to pass the lastPictureUpdateAt, because changes in this
     // value are used internally, and may not be followed by a change
@@ -79,13 +84,17 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
     }
 
     if (imgSource?.uri?.startsWith('file://')) {
+        let uri = imgSource.uri;
+        if (Platform.OS === 'ios') {
+            uri = uri.replace('file://', '/');
+        }
         return (
             <ExpoImageAnimated
                 id={id}
                 key={id}
                 ref={forwardRef}
                 style={fIStyle}
-                source={{uri: imgSource.uri}}
+                source={{uri}}
             />
         );
     }

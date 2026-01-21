@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState, useMemo, useRef} from 'react';
+import React, {useCallback, useState, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {
     Keyboard,
@@ -13,7 +13,7 @@ import {
     type ListRenderItemInfo,
     ScrollView,
 } from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
 import SelectedChip from '@components/chips/selected_chip';
@@ -26,8 +26,9 @@ import {Screens} from '@constants';
 import {MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {useAvoidKeyboard, useIsTablet} from '@hooks/device';
-import {goToScreen} from '@screens/navigation';
+import {useIsTablet} from '@hooks/device';
+import {navigateToScreen} from '@screens/navigation';
+import SettingsStore from '@store/settings_store';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 import SelectionSearchBar from './selection_search_bar';
@@ -179,9 +180,6 @@ export default function Selection({
 
     const hasChannelsSelected = selectedChannels.length > 0;
 
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
-    useAvoidKeyboard(keyboardAwareRef);
-
     const onLayoutSelectionTeamBar = useCallback((e: LayoutChangeEvent) => {
         setTeamBarHeight(e.nativeEvent.layout.height);
     }, []);
@@ -288,22 +286,18 @@ export default function Selection({
     }, [theme.buttonBg, onSelectItem]);
 
     const goToSelectorScreen = useCallback((() => {
-        const screen = Screens.INTEGRATION_SELECTOR;
         const title = intl.formatMessage({id: 'invite.selected_channels', defaultMessage: 'Selected channels'});
 
         const handleSelectChannels = (channels: Channel[]) => {
+            SettingsStore.removeIntegrationsSelectCallback();
             onSendOptionsChange((options) => ({
                 ...options,
                 selectedChannels: channels.map(extractChannelId),
             }));
         };
 
-        goToScreen(screen, title, {
-            dataSource: 'channels',
-            handleSelect: handleSelectChannels,
-            selected: selectedChannels,
-            isMultiselect: true,
-        });
+        SettingsStore.setIntegrationsSelectCallback(handleSelectChannels);
+        navigateToScreen(Screens.INTEGRATION_SELECTOR, {title, dataSource: 'channels', selected: selectedChannels, isMultiselect: true});
     }), [intl, selectedChannels, onSendOptionsChange]);
 
     const handleInviteAsGuestChange = useCallback(() => {
@@ -377,8 +371,7 @@ export default function Selection({
                 onClose={onClose}
             />
             <KeyboardAwareScrollView
-                ref={keyboardAwareRef}
-                style={styles.contentContainer}
+                contentContainerStyle={styles.contentContainer}
             >
                 <SelectionSearchBar
                     term={term}

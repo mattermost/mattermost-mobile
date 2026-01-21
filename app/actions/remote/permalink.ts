@@ -8,7 +8,7 @@ import {displayPermalink} from '@utils/permalink';
 
 import type TeamModel from '@typings/database/models/servers/team';
 
-export const showPermalink = async (serverUrl: string, teamName: string, postId: string, openAsPermalink = true) => {
+export const showPermalink = async (serverUrl: string, teamName: string, postId: string) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
@@ -21,7 +21,7 @@ export const showPermalink = async (serverUrl: string, teamName: string, postId:
             }
         }
 
-        await displayPermalink(name, postId, openAsPermalink);
+        await displayPermalink(name, postId);
 
         return {};
     } catch (error) {

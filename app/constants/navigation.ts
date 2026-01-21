@@ -6,7 +6,7 @@ import keyMirror from '@utils/key_mirror';
 const Navigation = keyMirror({
     NAVIGATE_TO_TAB: null,
     NAVIGATION_HOME: null,
-    NAVIGATION_SHOW_OVERLAY: null,
+    TAB_PRESSED: null,
 });
 
 export default Navigation;

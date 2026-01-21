@@ -3,7 +3,6 @@
 
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useState, useEffect, useMemo} from 'react';
-import {Freeze} from 'react-freeze';
 import {useIntl} from 'react-intl';
 import {ActivityIndicator, DeviceEventEmitter, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -15,10 +14,11 @@ import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
+import {SCREENS_AS_BOTTOM_SHEET} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
+import {useCurrentScreen} from '@store/navigation_store';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './components/empty';
@@ -26,7 +26,7 @@ import EmptyState from './components/empty';
 import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
-const EDGES: Edge[] = ['bottom', 'left', 'right'];
+const EDGES: Edge[] = ['left', 'right'];
 
 type Props = {
     appsEnabled: boolean;
@@ -54,6 +54,10 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
     const serverUrl = useServerUrl();
+    const currentScreen = useCurrentScreen();
+    const isBottomSheetOpen = currentScreen && SCREENS_AS_BOTTOM_SHEET.has(currentScreen);
+    const isPemalinkScreen = currentScreen === Screens.PERMALINK;
+    const isGalleryScreen = currentScreen === Screens.GALLERY;
 
     const params = route.params as {direction: string};
     const toLeft = params.direction === 'left';
@@ -71,7 +75,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
     useEffect(() => {
         opacity.value = isFocused ? 1 : 0;
         translateX.value = isFocused ? 0 : translateSide;
-    }, [isFocused]);
+    }, [isFocused, opacity, translateSide, translateX]);
 
     useEffect(() => {
         if (isFocused) {
@@ -84,14 +88,18 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<Animated.FlatList<string>>(true, onSnap);
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
-    const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, currentTimezone, false).reverse(), [mentions]);
+    const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, currentTimezone, false).reverse(), [currentTimezone, mentions]);
 
     const animated = useAnimatedStyle(() => {
+        if (isBottomSheetOpen || isPemalinkScreen || isGalleryScreen) {
+            return {};
+        }
+
         return {
             opacity: withTiming(opacity.value, {duration: 150}),
             transform: [{translateX: withTiming(translateX.value, {duration: 150})}],
         };
-    }, []);
+    }, [isBottomSheetOpen, isPemalinkScreen, isGalleryScreen]);
 
     const top = useAnimatedStyle(() => {
         return {
@@ -131,7 +139,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
                 <EmptyState/>
             )}
         </View>
-    ), [loading, theme, paddingTop]);
+    ), [loading, theme]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
         switch (item.type) {
@@ -157,50 +165,46 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
             default:
                 return null;
         }
-    }, [appsEnabled, customEmojiNames]);
+    }, [appsEnabled, currentTimezone, customEmojiNames]);
 
     return (
-        <Freeze freeze={!isFocused}>
-            <ExtraKeyboardProvider>
-                <SafeAreaView
-                    style={styles.flex}
-                    edges={EDGES}
-                    testID='recent_mentions.screen'
-                >
-                    <NavigationHeader
-                        isLargeTitle={true}
-                        showBackButton={false}
-                        subtitle={subtitle}
-                        title={title}
-                        hasSearch={false}
-                        scrollValue={scrollValue}
-                    />
-                    <Animated.View style={[styles.flex, animated]}>
-                        <Animated.View style={top}>
-                            <RoundedHeaderContext/>
-                        </Animated.View>
-                        <Animated.FlatList
-                            ref={scrollRef}
-                            contentContainerStyle={paddingTop}
-                            ListEmptyComponent={renderEmptyList()}
-                            data={posts}
-                            scrollToOverflowEnabled={true}
-                            showsVerticalScrollIndicator={false}
-                            progressViewOffset={scrollPaddingTop}
-                            scrollEventThrottle={16}
-                            indicatorStyle='black'
-                            onScroll={onScroll}
-                            onRefresh={handleRefresh}
-                            refreshing={refreshing}
-                            renderItem={renderItem}
-                            removeClippedSubviews={true}
-                            onViewableItemsChanged={onViewableItemsChanged}
-                            testID='recent_mentions.post_list.flat_list'
-                        />
-                    </Animated.View>
-                </SafeAreaView>
-            </ExtraKeyboardProvider>
-        </Freeze>
+        <SafeAreaView
+            style={styles.flex}
+            edges={EDGES}
+            testID='recent_mentions.screen'
+        >
+            <NavigationHeader
+                isLargeTitle={true}
+                showBackButton={false}
+                subtitle={subtitle}
+                title={title}
+                hasSearch={false}
+                scrollValue={scrollValue}
+            />
+            <Animated.View style={[styles.flex, animated]}>
+                <Animated.View style={top}>
+                    <RoundedHeaderContext/>
+                </Animated.View>
+                <Animated.FlatList
+                    ref={scrollRef}
+                    contentContainerStyle={paddingTop}
+                    ListEmptyComponent={renderEmptyList()}
+                    data={posts}
+                    scrollToOverflowEnabled={true}
+                    showsVerticalScrollIndicator={false}
+                    progressViewOffset={scrollPaddingTop}
+                    scrollEventThrottle={16}
+                    indicatorStyle='black'
+                    onScroll={onScroll}
+                    onRefresh={handleRefresh}
+                    refreshing={refreshing}
+                    renderItem={renderItem}
+                    removeClippedSubviews={true}
+                    onViewableItemsChanged={onViewableItemsChanged}
+                    testID='recent_mentions.post_list.flat_list'
+                />
+            </Animated.View>
+        </SafeAreaView>
     );
 };
 

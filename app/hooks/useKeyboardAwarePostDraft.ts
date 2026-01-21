@@ -7,6 +7,7 @@ import {KeyboardController} from 'react-native-keyboard-controller';
 import {useAnimatedStyle} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {isAndroidEdgeToEdge} from '@constants/device';
 import {useIsTablet} from '@hooks/device';
 
 import {useKeyboardAnimation} from './keyboardAnimation';
@@ -21,7 +22,9 @@ import type PostModel from '@typings/database/models/servers/post';
  */
 const DEFAULT_POST_INPUT_HEIGHT = 91;
 
-const isIOS = Platform.OS === 'ios';
+// Enable keyboard animations for iOS and Android 35+ (with edge-to-edge)
+// Android < 35 uses native adjustResize behavior
+const isEdgeToEdge = Platform.OS === 'ios' || isAndroidEdgeToEdge;
 
 export const useKeyboardAwarePostDraft = (isThreadView = false, enabled = true) => {
     const [postInputContainerHeight, setPostInputContainerHeight] = useState(DEFAULT_POST_INPUT_HEIGHT);
@@ -41,16 +44,17 @@ export const useKeyboardAwarePostDraft = (isThreadView = false, enabled = true) 
         isKeyboardInTransition,
         isInputAccessoryViewMode,
         isTransitioningFromCustomView,
-    } = useKeyboardAnimation(postInputContainerHeight, isIOS, isTablet, insets.bottom, isThreadView, enabled);
+    } = useKeyboardAnimation(postInputContainerHeight, isEdgeToEdge, isTablet, insets.bottom, isThreadView, enabled);
 
-    // Only apply scroll adjustment on iOS, Android uses native keyboard handling
+    // Apply scroll adjustment on iOS and Android 35+ (with edge-to-edge)
+    // Android < 35 uses native keyboard handling with adjustResize
     // Also pass isInputAccessoryViewMode and isTransitioningFromCustomView to control scroll behavior
-    useKeyboardScrollAdjustment(listRef, scrollPosition, scrollOffset, isIOS, isInputAccessoryViewMode, isTransitioningFromCustomView);
+    useKeyboardScrollAdjustment(listRef, scrollPosition, scrollOffset, Platform.OS === 'ios', isInputAccessoryViewMode, isTransitioningFromCustomView);
 
     const inputContainerAnimatedStyle = useAnimatedStyle(
         () => {
             return {
-                transform: [{translateY: isIOS ? -keyboardTranslateY.value : 0}],
+                transform: [{translateY: isEdgeToEdge ? -keyboardTranslateY.value : 0}],
             };
         },
         [],

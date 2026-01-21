@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {AvailableScreens} from './navigation';
 import type {CustomProfileFieldModel} from '@database/models/server';
 import type {FieldProps} from '@screens/edit_profile/components/field';
 import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
@@ -18,7 +17,6 @@ export interface UserInfo {
 }
 
 export type EditProfileProps = {
-    componentId: AvailableScreens;
     currentUser?: UserModel;
     isModal?: boolean;
     isTablet?: boolean;

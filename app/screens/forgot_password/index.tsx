@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, Platform, Text, View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {Navigation} from 'react-native-navigation';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -15,20 +14,16 @@ import FloatingTextInput from '@components/floating_input/floating_text_input_la
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useAvoidKeyboard} from '@hooks/device';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
-import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
+import {navigateBack} from '@screens/navigation';
 import {isEmail} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import Inbox from './inbox';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
-type Props = {
-    componentId: AvailableScreens;
+export type ForgotPasswordProps = {
     serverUrl: string;
     theme: Theme;
 }
@@ -99,17 +94,14 @@ const messages = defineMessages({
     },
 });
 
-const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
+const ForgotPassword = ({serverUrl, theme}: ForgotPasswordProps) => {
     const [email, setEmail] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isPasswordLinkSent, setIsPasswordLinkSent] = useState<boolean>(false);
     const {formatMessage} = useIntl();
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const styles = getStyleSheet(theme);
 
-    const animatedStyles = useScreenTransitionAnimation(componentId);
-
-    useAvoidKeyboard(keyboardAwareRef);
+    const animatedStyles = useScreenTransitionAnimation();
 
     const changeEmail = useCallback((emailAddress: string) => {
         setEmail(emailAddress);
@@ -117,7 +109,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
     }, []);
 
     const onReturn = useCallback(() => {
-        Navigation.popTo(Screens.LOGIN);
+        navigateBack();
     }, []);
 
     const submitResetPassword = useCallback(async () => {
@@ -150,7 +142,6 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                 <View
                     style={styles.successContainer}
                     testID={'password_send.link.sent'}
-                    nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
                 >
                     <Inbox theme={theme}/>
                     <FormattedText
@@ -183,16 +174,11 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
             <KeyboardAwareScrollView
                 bounces={false}
                 contentContainerStyle={styles.innerContainer}
-                enableAutomaticScroll={false}
-                enableOnAndroid={false}
-                enableResetScrollToCoords={true}
-                extraScrollHeight={0}
+                bottomOffset={62}
                 keyboardDismissMode='on-drag'
                 keyboardShouldPersistTaps='handled'
-                ref={keyboardAwareRef}
                 scrollToOverflowEnabled={true}
                 style={styles.flex}
-                nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
             >
                 <View
                     style={styles.centered}
@@ -240,7 +226,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
         );
     };
 
-    useAndroidHardwareBackHandler(componentId, onReturn);
+    useAndroidHardwareBackHandler(Screens.FORGOT_PASSWORD, onReturn);
 
     return (
         <View style={styles.flex}>

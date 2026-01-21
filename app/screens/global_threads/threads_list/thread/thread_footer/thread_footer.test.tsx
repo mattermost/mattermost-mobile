@@ -4,6 +4,7 @@
 import React, {type ComponentProps} from 'react';
 
 import UserAvatarsStack from '@components/user_avatars_stack';
+import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -54,7 +55,7 @@ describe('ThreadFooter', () => {
 
         return {
             channelId: 'channel-id',
-            location: 'Channel',
+            location: Screens.CHANNEL,
             author: userModels[1],
             participants: userModels,
             testID: 'thread-footer',

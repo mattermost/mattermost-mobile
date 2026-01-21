@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {Animated, DeviceEventEmitter, InteractionManager, Platform, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
-import {Navigation} from 'react-native-navigation';
 
 import {storeMultiServerTutorial} from '@actions/app/global';
 import {switchToServer, switchToServerAndLogin} from '@actions/app/server';
@@ -16,13 +15,13 @@ import Loading from '@components/loading';
 import ServerIcon from '@components/server_icon';
 import TutorialHighlight from '@components/tutorial_highlight';
 import TutorialSwipeLeft from '@components/tutorial_highlight/swipe_left';
-import {Events, Screens} from '@constants';
+import {Events} from '@constants';
 import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {useTheme} from '@context/theme';
 import {subscribeServerUnreadAndMentions, type UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
-import {dismissBottomSheet} from '@screens/navigation';
-import {alertServerLogout, alertServerRemove, editServer} from '@utils/server';
+import {dismissBottomSheet, updateParams} from '@screens/navigation';
+import {alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {removeProtocol, stripTrailingSlashes} from '@utils/url';
@@ -30,6 +29,7 @@ import {removeProtocol, stripTrailingSlashes} from '@utils/url';
 import Options from './options';
 import WebSocket from './websocket';
 
+import type {ConfigAndLicenseRequest} from '@actions/remote/systems';
 import type ServersModel from '@typings/database/models/app/servers';
 import type {Subscription} from 'rxjs';
 
@@ -175,20 +175,20 @@ const ServerItem = ({
     };
 
     const logoutServer = useCallback(async () => {
-        Navigation.updateProps(Screens.HOME, {extra: undefined});
-        await logout(server.url, intl);
-
+        updateParams({extra: undefined});
         if (isActive) {
-            dismissBottomSheet();
+            await dismissBottomSheet();
         } else {
             DeviceEventEmitter.emit(Events.SWIPEABLE, '');
         }
+
+        await logout(server.url, intl);
     }, [intl, isActive, server.url]);
 
     const removeServer = useCallback(async () => {
         const skipServerLogout = server.lastActiveAt === 0;
         await dismissBottomSheet();
-        Navigation.updateProps(Screens.HOME, {extra: undefined});
+        updateParams({extra: undefined});
         await logout(server.url, intl, {skipServerLogout, removeServer: true});
     }, [intl, server.lastActiveAt, server.url]);
 
@@ -259,8 +259,8 @@ const ServerItem = ({
 
     const handleEdit = useCallback(() => {
         DeviceEventEmitter.emit(Events.SWIPEABLE, '');
-        editServer(theme, server);
-    }, [server, theme]);
+        editServer(theme, server.id);
+    }, [server.id, theme]);
 
     const handleLogout = useCallback(async () => {
         alertServerLogout(server.displayName, logoutServer, intl);
@@ -280,12 +280,20 @@ const ServerItem = ({
             return;
         }
 
+        setSwitching(true);
         if (server.lastActiveAt) {
-            setSwitching(true);
             await dismissBottomSheet();
+            await switchToServer(server.url);
+            return;
         }
-        await switchToServer(server.url, theme, intl, () => setSwitching(false));
-    }, [isActive, server.lastActiveAt, server.url, theme, intl]);
+        await switchToServerAndLogin(server.url, theme, intl, async (data?: ConfigAndLicenseRequest) => {
+            setSwitching(false);
+            await dismissBottomSheet();
+            if (data?.config && data.license) {
+                loginToServer(theme, server.url, server.displayName, data.config, data.license);
+            }
+        });
+    }, [intl, isActive, server.displayName, server.lastActiveAt, server.url, theme]);
 
     const onSwipeableWillOpen = useCallback(() => {
         DeviceEventEmitter.emit(Events.SWIPEABLE, server.url);
@@ -302,7 +310,7 @@ const ServerItem = ({
                 server={server}
             />
         );
-    }, [isActive, server, theme, intl]);
+    }, [handleEdit, handleLogin, handleLogout, handleRemove, server]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.SWIPEABLE, (url: string) => {
@@ -329,7 +337,7 @@ const ServerItem = ({
             subscription.current?.unsubscribe();
             subscription.current = undefined;
         };
-    }, [server.lastActiveAt, isActive]);
+    }, [server.lastActiveAt, isActive, server.url]);
 
     const serverItem = `server_list.server_item.${server.displayName.replace(/ /g, '_').toLocaleLowerCase()}`;
     const serverItemTestId = isActive ? `${serverItem}.active` : `${serverItem}.inactive`;
@@ -367,7 +375,7 @@ const ServerItem = ({
                     <RectButton
                         onPress={onServerPressed}
                         style={styles.button}
-                        rippleColor={changeOpacity(theme.centerChannelColor, 0.16)}
+                        rippleColor={changeOpacity(theme.centerChannelColor, 0.16) || 'rgba(0, 0, 0, 0.16)'}
                     >
                         <View style={serverStyle}>
                             {!switching &&

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useNavigation} from 'expo-router';
 import moment, {type Moment} from 'moment';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
@@ -8,29 +9,31 @@ import {Keyboard, Text, View} from 'react-native';
 
 import Button from '@components/button';
 import DateTimeSelector from '@components/data_time_selector';
+import NavigationButton from '@components/navigation_button';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import useBackNavigation from '@hooks/navigate_back';
 import {getDueDateString} from '@playbooks/utils/time';
-import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getTimezone} from '@utils/user';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type Props = {
-    componentId: AvailableScreens;
     selectedDate?: number;
     currentUserTimezone: UserTimezone | null | undefined;
-    onSave: (date: number | undefined) => void;
 }
 
-const SAVE_BUTTON_ID = 'save-due-date';
+function removeCallback() {
+    CallbackStore.removeCallback();
+}
 
-function close (componentId: AvailableScreens) {
+function close () {
     Keyboard.dismiss();
-    popTopScreen(componentId);
+    removeCallback();
+    navigateBack();
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
@@ -46,12 +49,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 }));
 
 export default function SelectDate({
-    componentId,
     selectedDate,
     currentUserTimezone,
-    onSave,
 }: Props) {
     const [date, setDate] = useState<Moment | undefined>(() => (selectedDate ? moment(selectedDate) : undefined));
+    const navigation = useNavigation();
     const theme = useTheme();
     const intl = useIntl();
     const styles = getStyleSheet(theme);
@@ -73,43 +75,34 @@ export default function SelectDate({
         return !date.isSame(selectedDate);
     }, [date, selectedDate]);
 
-    const rightButton = useMemo(() => {
-        const base = buildNavigationButton(
-            SAVE_BUTTON_ID,
-            'playbooks.edit_due_date.save.button',
-            undefined,
-            intl.formatMessage({id: 'playbooks.edit_due_date.save.button', defaultMessage: 'Save'}),
-        );
-        base.enabled = canSave;
-        base.showAsAction = 'always';
-        base.color = theme.sidebarHeaderTextColor;
-        return base;
-    }, [intl, canSave, theme.sidebarHeaderTextColor]);
-
-    useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [rightButton],
-        });
-    }, [componentId, rightButton]);
-
     const handleSave = useCallback(() => {
         if (!canSave) {
             return;
         }
-        onSave(date?.valueOf());
-        close(componentId);
-    }, [canSave, date, onSave, componentId]);
+        const onSave = CallbackStore.getCallback<((date: number | undefined) => void)>();
+        onSave?.(date?.valueOf());
+        close();
+    }, [canSave, date]);
 
     const handleClear = useCallback(() => {
         setDate(undefined);
     }, []);
 
-    const handleClose = useCallback(() => {
-        close(componentId);
-    }, [componentId]);
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <NavigationButton
+                    onPress={handleSave}
+                    testID='playbooks.select_date.save.button'
+                    text={intl.formatMessage({id: 'playbooks.edit_due_date.save.button', defaultMessage: 'Save'})}
+                    disabled={!canSave}
+                />
+            ),
+        });
+    }, [canSave, handleSave, intl, navigation]);
 
-    useNavButtonPressed(SAVE_BUTTON_ID, componentId, handleSave, [handleSave]);
-    useAndroidHardwareBackHandler(componentId, handleClose);
+    useBackNavigation(removeCallback);
+    useAndroidHardwareBackHandler(Screens.PLAYBOOKS_SELECT_DATE, close);
 
     const timezone = getTimezone(currentUserTimezone);
 

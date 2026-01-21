@@ -9,7 +9,6 @@ import {FlatList} from 'react-native-gesture-handler';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
-import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
 import {type FileFilter, FileFilters} from '@utils/file';
@@ -117,7 +116,6 @@ const File_filter = ({initialFilter, setFilter, title}: FilterProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const isTablet = useIsTablet();
     const {enabled, panResponder} = useBottomSheetListsFix();
 
     const handleOnPress = useCallback((fileType: FileFilter) => {
@@ -143,7 +141,7 @@ const File_filter = ({initialFilter, setFilter, title}: FilterProps) => {
     return (
         <BottomSheetContent
             showButton={false}
-            showTitle={!isTablet}
+            showTitle={true}
             testID='search.filters'
             title={title}
         >

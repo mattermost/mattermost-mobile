@@ -8,7 +8,7 @@ import DocumentPicker from 'react-native-document-picker';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {dismissBottomSheet} from '@screens/navigation';
 
-import type PickerUtil from '@utils/file/file_picker';
+import type FilePickerUtil from '@utils/file/file_picker';
 import type {ImageSource} from 'expo-image';
 
 type PanelType = {
@@ -22,7 +22,7 @@ type PanelType = {
 type PanelItemProps = {
     onRemoveProfileImage?: UploadExtractedFile;
     pickerAction: 'takePhoto' | 'browsePhotoLibrary' | 'browseFiles' | 'removeProfilePicture';
-    pictureUtils?: PickerUtil;
+    pictureUtils?: FilePickerUtil;
 };
 
 const PanelItem = ({pickerAction, pictureUtils, onRemoveProfileImage}: PanelItemProps) => {

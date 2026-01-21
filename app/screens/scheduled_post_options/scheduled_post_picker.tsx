@@ -7,12 +7,12 @@ import {Platform, View} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet} from '@screens/navigation';
 import {FOOTER_HEIGHT} from '@screens/post_priority_picker/footer';
 import ScheduledPostCoreOptions from '@screens/scheduled_post_options/core_options';
+import CallbackStore from '@store/callback_store';
 import {logDebug} from '@utils/log';
 import {showScheduledPostCreationErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -56,13 +56,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-type Props = {
+type ScheduledPostOptionsProps = {
     currentUserTimezone?: UserTimezone | null;
-    onSchedule: (schedulingInfo: SchedulingInfo) => Promise<void | {data?: boolean; error?: unknown}>;
 }
 
-export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
-    const isTablet = useIsTablet();
+export function ScheduledPostOptions({currentUserTimezone}: ScheduledPostOptionsProps) {
     const theme = useTheme();
     const [isScheduling, setIsScheduling] = useState(false);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -73,11 +71,11 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
     const style = getStyleSheet(theme);
 
     const snapPoints = useMemo(() => {
-        const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
+        const bottomSheetAdjust = Platform.select({ios: 0, default: 20});
 
         // 9 items to display inline date-time picker, 4 items otherwise
         const iosNumberOfItems = customTimeSelected ? 9 : 4;
-        const andriodNumberOfItems = customTimeSelected ? 4 : 3;
+        const andriodNumberOfItems = customTimeSelected ? 5 : 4;
         const numberOfItems = Platform.select({ios: iosNumberOfItems, default: andriodNumberOfItems});
         const COMPONENT_HEIGHT = TITLE_HEIGHT + (numberOfItems * ITEM_HEIGHT) + FOOTER_HEIGHT + bottomSheetAdjust;
         return [1, COMPONENT_HEIGHT];
@@ -101,7 +99,8 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
             scheduled_at: parseInt(selectedTime, 10),
         };
 
-        const response = await onSchedule(schedulingInfo);
+        const onSchedule = CallbackStore.getCallback<((schedulingInfo: SchedulingInfo) => Promise<void | {data?: boolean; error?: unknown}>)>();
+        const response = await onSchedule?.(schedulingInfo);
         setIsScheduling(false);
 
         if (response?.error) {
@@ -109,22 +108,20 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
             showScheduledPostCreationErrorSnackbar(errorMessage);
             return;
         }
+        CallbackStore.removeCallback();
         dismissBottomSheet();
-    }, [onSchedule, selectedTime]));
+    }, [selectedTime]));
 
     const renderContent = () => {
         return (
             <View style={style.container}>
-                {
-                    !isTablet &&
-                    <View style={style.titleContainer}>
-                        <FormattedText
-                            id='scheduled_post.picker.title'
-                            defaultMessage='Schedule draft'
-                            style={style.title}
-                        />
-                    </View>
-                }
+                <View style={style.titleContainer}>
+                    <FormattedText
+                        id='scheduled_post.picker.title'
+                        defaultMessage='Schedule draft'
+                        style={style.title}
+                    />
+                </View>
                 <View style={style.optionsContainer}>
                     <ScheduledPostCoreOptions
                         userTimezone={userTimezone}
@@ -154,8 +151,7 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
     return (
         <BottomSheet
             renderContent={renderContent}
-            componentId={Screens.SCHEDULED_POST_OPTIONS}
-            closeButtonId={SCHEDULED_POST_OPTIONS_BUTTON}
+            screen={Screens.SCHEDULED_POST_OPTIONS}
             snapPoints={snapPoints}
             testID='scheduled_post_options_bottom_sheet'
             footerComponent={renderFooter}

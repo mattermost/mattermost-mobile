@@ -6,34 +6,35 @@ import React from 'react';
 import {BackHandler} from 'react-native';
 
 import {savePreference} from '@actions/remote/preference';
-import {Preferences} from '@constants';
-import {useTheme} from '@context/theme';
-import {popTopScreen} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
+import {Preferences, Screens} from '@constants';
+import {getDefaultThemeByAppearance, useTheme} from '@context/theme';
+import {navigateBack} from '@screens/navigation';
+import {useCurrentScreen} from '@store/navigation_store';
 import {renderWithIntl} from '@test/intl-test-helper';
 
 import DisplayTheme from './display_theme';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
-jest.mock('@screens/navigation');
+jest.mock('@screens/navigation', () => ({
+    navigateBack: jest.fn(),
+}));
 jest.mock('@context/theme', () => ({
     useTheme: jest.fn(),
+    getDefaultThemeByAppearance: jest.fn(),
 }));
 jest.mock('@actions/remote/preference');
 jest.mock('@store/navigation_store');
 
+jest.mocked(useTheme).mockReturnValue(Preferences.THEMES.denim);
+jest.mocked(getDefaultThemeByAppearance).mockReturnValue(Preferences.THEMES.denim);
+
 const displayThemeOtherProps = {
-    componentId: 'DisplayTheme' as AvailableScreens,
     currentTeamId: '1',
     currentUserId: '1',
 };
 
 describe('DisplayTheme', () => {
-
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'Denim'}));
     });
 
     it('should render with a few themes, denim selected', () => {
@@ -190,11 +191,11 @@ describe('DisplayTheme', () => {
             expect(screen.getByTestId('theme_display_settings.sapphire.option.selected')).toBeTruthy();
         });
 
-        expect(popTopScreen).toHaveBeenCalledTimes(0);
+        expect(navigateBack).toHaveBeenCalledTimes(0);
     });
 
-    it('should call popTopScreen when Android back button is pressed', () => {
-        (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValue('DisplayTheme');
+    it('should call navigateBack when Android back button is pressed', () => {
+        jest.mocked(useCurrentScreen).mockImplementation(() => Screens.SETTINGS_DISPLAY_THEME);
         const androidBackButtonHandler = jest.spyOn(BackHandler, 'addEventListener');
 
         renderWithIntl(
@@ -207,7 +208,7 @@ describe('DisplayTheme', () => {
         // simulate Android back button press
         androidBackButtonHandler.mock.calls[0][1]();
 
-        expect(popTopScreen).toHaveBeenCalledTimes(1);
+        expect(navigateBack).toHaveBeenCalledTimes(1);
     });
 
     it('should allow user to select two different themes using normal interaction', async () => {

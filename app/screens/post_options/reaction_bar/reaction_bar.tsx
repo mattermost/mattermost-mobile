@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
 import {useWindowDimensions, View} from 'react-native';
 
 import {toggleReaction} from '@actions/remote/reactions';
@@ -18,16 +17,14 @@ import {
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import PickReaction from './pick_reaction';
 import Reaction from './reaction';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type QuickReactionProps = {
-    bottomSheetId: AvailableScreens;
     recentEmojis: string[];
     postId: string;
 };
@@ -45,9 +42,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const ReactionBar = ({bottomSheetId, recentEmojis = [], postId}: QuickReactionProps) => {
+const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
     const theme = useTheme();
-    const intl = useIntl();
     const {width} = useWindowDimensions();
     const serverUrl = useServerUrl();
     const isSmallDevice = width < SMALL_ICON_BREAKPOINT;
@@ -56,20 +52,15 @@ const ReactionBar = ({bottomSheetId, recentEmojis = [], postId}: QuickReactionPr
     const isTablet = useIsTablet();
 
     const handleEmojiPress = useCallback(async (emoji: string) => {
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         toggleReaction(serverUrl, postId, emoji);
-    }, [bottomSheetId, postId, serverUrl]);
+    }, [postId, serverUrl]);
 
     const openEmojiPicker = useCallback(async () => {
-        await dismissBottomSheet(bottomSheetId);
-        openAsBottomSheet({
-            closeButtonId: 'close-add-reaction',
-            screen: Screens.EMOJI_PICKER,
-            theme,
-            title: intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
-            props: {onEmojiPress: handleEmojiPress},
-        });
-    }, [bottomSheetId, handleEmojiPress, intl, theme]);
+        await dismissBottomSheet();
+        CallbackStore.setCallback(handleEmojiPress);
+        navigateToScreen(Screens.EMOJI_PICKER);
+    }, [handleEmojiPress]);
 
     let containerSize = LARGE_CONTAINER_SIZE;
     let iconSize = LARGE_ICON_SIZE;

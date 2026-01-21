@@ -1,15 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import RNUtils from '@mattermost/rnutils';
 import {Image} from 'expo-image';
 import React, {type RefObject} from 'react';
-import {DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
-import {Navigation, type Options, type OptionsLayout} from 'react-native-navigation';
+import {Keyboard, View} from 'react-native';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
-import {Events, Screens} from '@constants';
-import {allOrientations, showOverlay} from '@screens/navigation';
+import {Screens} from '@constants';
+import {navigateToScreen} from '@screens/navigation';
 import {isImage, isVideo} from '@utils/file';
 import {generateId} from '@utils/general';
 import {urlSafeBase64Encode} from '@utils/security';
@@ -56,10 +54,6 @@ export const fileToGalleryItem = (file: FileInfo, authorId?: string, postProps?:
         postProps: postProps || file.postProps,
         cacheKey,
     };
-};
-
-export const freezeOtherScreens = (value: boolean) => {
-    DeviceEventEmitter.emit(Events.FREEZE_SCREEN, value);
 };
 
 export const friction = (value: number) => {
@@ -153,42 +147,8 @@ export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: numb
         initialIndex,
         items,
     };
-    const layout: OptionsLayout = {
-        orientation: allOrientations,
-    };
-    const options: Options = {
-        layout,
-        topBar: {
-            background: {
-                color: '#000',
-            },
-            visible: Platform.OS === 'android',
-        },
-        statusBar: {
-            backgroundColor: '#000',
-            style: 'light',
-        },
-        animations: {
-            showModal: {
-                waitForRender: false,
-                enabled: false,
-            },
-            dismissModal: {
-                enabled: false,
-            },
-        },
-    };
 
-    if (Platform.OS === 'ios') {
-        // on iOS we need both the navigation & the module
-        Navigation.setDefaultOptions({layout});
-        RNUtils.unlockOrientation();
-    }
-    showOverlay(Screens.GALLERY, props, options);
-
-    setTimeout(() => {
-        freezeOtherScreens(true);
-    }, 500);
+    navigateToScreen(Screens.GALLERY, props);
 }
 
 export const typedMemo: <T>(c: T) => T = React.memo;

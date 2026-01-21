@@ -9,7 +9,7 @@ import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {renderWithEverything, act, waitFor, screen, waitForElementToBeRemoved} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import Categories from '.';
+import Categories from './index';
 
 import type Database from '@nozbe/watermelondb/Database';
 

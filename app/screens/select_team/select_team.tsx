@@ -9,20 +9,17 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {addCurrentUserToTeam, fetchTeamsForComponent, handleTeamChange} from '@actions/remote/team';
 import Loading from '@components/loading';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import SecurityManager from '@managers/security_manager';
+import {navigateToScreen} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 import {alertTeamAddError} from '@utils/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import {resetToHome} from '../navigation';
-
 import Header from './header';
 import NoTeams from './no_teams';
 import TeamList from './team_list';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -37,7 +34,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
-    componentId: AvailableScreens;
     nTeams: number;
     firstTeamId?: string;
 }
@@ -46,7 +42,6 @@ const safeAreaEdges = ['left' as const, 'right' as const];
 const safeAreaStyle = {flex: 1};
 
 const SelectTeam = ({
-    componentId,
     nTeams,
     firstTeamId,
 }: Props) => {
@@ -115,13 +110,18 @@ const SelectTeam = ({
         if ((nTeams > 0) && firstTeamId) {
             resettingToHome.current = true;
             handleTeamChange(serverUrl, firstTeamId).then(() => {
-                resetToHome();
+                navigateToScreen(Screens.HOME, undefined, true);
             });
         }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [(nTeams > 0) && firstTeamId]);
 
     useEffect(() => {
         loadTeams();
+
+        // Only run on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     let body;
@@ -145,7 +145,6 @@ const SelectTeam = ({
             mode='margin'
             edges={safeAreaEdges}
             style={safeAreaStyle}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             <Animated.View style={top}/>
             <View style={styles.container}>

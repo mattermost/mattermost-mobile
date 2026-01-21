@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState} from 'react';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import {useServerUrl} from '@context/server';
@@ -54,6 +55,7 @@ function PostDraft({
     const [isFocused, setIsFocused] = useState(false);
     const headerHeight = useDefaultHeaderHeight();
     const serverUrl = useServerUrl();
+    const {bottom} = useSafeAreaInsets();
 
     // Update draft in case we switch channels or threads
     useEffect(() => {
@@ -61,7 +63,7 @@ function PostDraft({
         setCursorPosition(message.length);
     }, [channelId, message, rootId]);
 
-    const autocompletePosition = postInputTop + AUTOCOMPLETE_ADJUST;
+    const autocompletePosition = (postInputTop - bottom) + AUTOCOMPLETE_ADJUST;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 

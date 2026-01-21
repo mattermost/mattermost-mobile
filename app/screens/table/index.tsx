@@ -1,24 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, ScrollView, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import SecurityManager from '@managers/security_manager';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
-type Props = {
-    componentId: AvailableScreens;
+export type TableScreenProps = {
     renderAsFlex: boolean;
-    renderRows: (isFullView: boolean) => JSX.Element|null;
     width: number;
 }
 
@@ -28,6 +25,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     fullHeight: {
         height: '100%',
+        paddingHorizontal: 5,
     },
     displayFlex: {
         ...Platform.select({
@@ -48,26 +46,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Table = ({componentId, renderAsFlex, renderRows, width}: Props) => {
+const Table = ({renderAsFlex, width}: TableScreenProps) => {
+    const contentCallback = CallbackStore.getCallback<(isFullView: boolean) => JSX.Element|null>();
+    const content = contentCallback?.(true);
+    const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const content = renderRows(true);
     const viewStyle = renderAsFlex ? styles.displayFlex : {width};
 
-    const intl = useIntl();
+    useEffect(() => {
+        return () => {
+            CallbackStore.removeCallback();
+        };
+    }, []);
 
-    const close = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.TABLE, navigateBack);
 
     if (!content) {
         return (
-            <View
-                style={styles.noTableContainer}
-                nativeID={SecurityManager.getShieldScreenId(componentId)}
-            >
+            <View style={styles.noTableContainer}>
                 <Text style={styles.noTableText}>{intl.formatMessage({id: 'table.cannot_display_table', defaultMessage: 'Cannot display table'})}</Text>
             </View>
         );
@@ -75,10 +72,7 @@ const Table = ({componentId, renderAsFlex, renderRows, width}: Props) => {
 
     if (Platform.OS === 'android') {
         return (
-            <View
-                style={styles.container}
-                nativeID={SecurityManager.getShieldScreenId(componentId)}
-            >
+            <View style={styles.container}>
                 <ScrollView testID='table.screen'>
                     <ScrollView
                         contentContainerStyle={viewStyle}
@@ -96,7 +90,6 @@ const Table = ({componentId, renderAsFlex, renderRows, width}: Props) => {
         <SafeAreaView
             style={styles.container}
             testID='table.screen'
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             <ScrollView
                 style={styles.fullHeight}

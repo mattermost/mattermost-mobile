@@ -469,12 +469,11 @@ const Markdown = ({
             <MarkdownLink
                 href={href}
                 onLinkLongPress={onLinkLongPress}
-                theme={theme}
             >
                 {children}
             </MarkdownLink>
         );
-    }, [isUnsafeLinksPost, onLinkLongPress, renderText, theme]);
+    }, [isUnsafeLinksPost, onLinkLongPress, renderText]);
 
     const renderList = useCallback(({children, start, tight, type}: any) => {
         return (
@@ -529,32 +528,23 @@ const Markdown = ({
             return null;
         }
         return (
-            <MarkdownTable
-                numColumns={numColumns}
-                theme={theme}
-            >
+            <MarkdownTable numColumns={numColumns}>
                 {children}
             </MarkdownTable>
         );
-    }, [disableTables, theme]);
+    }, [disableTables]);
 
     const renderTableCell = useCallback((args: MarkdownTableCellProps) => {
         return (
-            <MarkdownTableCell
-                {...args}
-                theme={theme}
-            />
+            <MarkdownTableCell {...args}/>
         );
-    }, [theme]);
+    }, []);
 
     const renderTableRow = useCallback((args: MarkdownTableRowProps) => {
         return (
-            <MarkdownTableRow
-                {...args}
-                theme={theme}
-            />
+            <MarkdownTableRow {...args}/>
         );
-    }, [theme]);
+    }, []);
 
     const renderThematicBreak = useCallback(() => {
         return (

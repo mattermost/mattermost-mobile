@@ -4,7 +4,7 @@
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
-import {ScrollView} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import CopyTextOption from '@components/copy_text_option';
@@ -12,10 +12,7 @@ import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {REACTION_PICKER_HEIGHT, REACTION_PICKER_MARGIN} from '@constants/reaction_picker';
 import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
-import {useIsTablet} from '@hooks/device';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
-import {dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 
@@ -30,8 +27,6 @@ import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-const POST_OPTIONS_BUTTON = 'close-post-options';
-
 type PostOptionsProps = {
     canAddReaction: boolean;
     canDelete: boolean;
@@ -44,7 +39,6 @@ type PostOptionsProps = {
     sourceScreen: AvailableScreens;
     post: PostModel;
     thread?: ThreadModel;
-    componentId: AvailableScreens;
     bindings: AppBinding[];
     serverUrl: string;
     isBoRPost?: boolean;
@@ -52,21 +46,13 @@ type PostOptionsProps = {
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply,
-    combinedPost, componentId, isSaved,
+    combinedPost, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
     isBoRPost,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const isTablet = useIsTablet();
     const {enabled, panResponder} = useBottomSheetListsFix();
-    const Scroll = useMemo(() => (isTablet ? ScrollView : BottomSheetScrollView), [isTablet]);
-
-    const close = () => {
-        return dismissBottomSheet(Screens.POST_OPTIONS);
-    };
-
-    useNavButtonPressed(POST_OPTIONS_BUTTON, componentId, close, []);
-
+    const {bottom} = useSafeAreaInsets();
     const isSystemPost = isSystemMessage(post);
 
     const canCopyPermalink = !isSystemPost && managedConfig?.copyAndPasteProtection !== 'true';
@@ -84,108 +70,80 @@ const PostOptions = ({
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
 
-        items.push(bottomSheetSnapPoint(optionsCount, ITEM_HEIGHT) + (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0));
+        items.push(bottomSheetSnapPoint(optionsCount, ITEM_HEIGHT) + (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0) + bottom);
 
         if (shouldShowBindings) {
             items.push('80%');
         }
 
         return items;
-    }, [
-        canAddReaction, canCopyPermalink, canCopyText,
-        canDelete, canEdit, shouldRenderFollow, shouldShowBindings,
-        canMarkAsUnread, canPin, canReply, isSystemPost,
-    ]);
+    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, isSystemPost, shouldRenderFollow, shouldShowBindings, canAddReaction, bottom]);
 
     const renderContent = () => {
         return (
-            <Scroll
+            <BottomSheetScrollView
                 bounces={false}
                 scrollEnabled={enabled}
                 {...panResponder.panHandlers}
             >
-                {canAddReaction &&
-                    <ReactionBar
-                        bottomSheetId={Screens.POST_OPTIONS}
-                        postId={post.id}
-                    />
-                }
-                {canReply &&
-                    <ReplyOption
-                        bottomSheetId={Screens.POST_OPTIONS}
-                        post={post}
-                    />
-                }
-                {shouldRenderFollow &&
-                    <FollowThreadOption
-                        bottomSheetId={Screens.POST_OPTIONS}
-                        thread={thread}
-                    />
-                }
+                {canAddReaction && <ReactionBar postId={post.id}/>}
+                {canReply && <ReplyOption post={post}/>}
+                {shouldRenderFollow && <FollowThreadOption thread={thread}/>}
                 {canMarkAsUnread && !isSystemPost &&
                 <MarkAsUnreadOption
-                    bottomSheetId={Screens.POST_OPTIONS}
                     post={post}
                     sourceScreen={sourceScreen}
                 />
                 }
                 {canCopyPermalink &&
                 <CopyPermalinkOption
-                    bottomSheetId={Screens.POST_OPTIONS}
                     post={post}
                     sourceScreen={sourceScreen}
                 />
                 }
                 {!isSystemPost &&
                 <SaveOption
-                    bottomSheetId={Screens.POST_OPTIONS}
                     isSaved={isSaved}
                     postId={post.id}
                 />
                 }
                 {Boolean(canCopyText && post.message) &&
                 <CopyTextOption
-                    bottomSheetId={Screens.POST_OPTIONS}
                     postMessage={post.messageSource || post.message}
                     sourceScreen={sourceScreen}
                 />}
                 {canPin &&
                 <PinChannelOption
-                    bottomSheetId={Screens.POST_OPTIONS}
                     isPostPinned={post.isPinned}
                     postId={post.id}
                 />
                 }
                 {canEdit &&
                 <EditOption
-                    bottomSheetId={Screens.POST_OPTIONS}
                     post={post}
                     canDelete={canDelete}
                 />
                 }
                 {canDelete &&
                 <DeletePostOption
-                    bottomSheetId={Screens.POST_OPTIONS}
                     combinedPost={combinedPost}
                     post={post}
                 />}
                 {shouldShowBindings &&
                 <AppBindingsPostOptions
-                    bottomSheetId={Screens.POST_OPTIONS}
                     post={post}
                     serverUrl={serverUrl}
                     bindings={bindings}
                 />
                 }
-            </Scroll>
+            </BottomSheetScrollView>
         );
     };
 
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId={POST_OPTIONS_BUTTON}
-            componentId={Screens.POST_OPTIONS}
+            screen={Screens.POST_OPTIONS}
             initialSnapIndex={1}
             snapPoints={snapPoints}
             testID='post_options'

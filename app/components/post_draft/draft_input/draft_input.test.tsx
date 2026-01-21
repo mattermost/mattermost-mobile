@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent} from '@testing-library/react-native';
+import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
 import {Screens} from '@constants';
 import {PostPriorityType} from '@constants/post';
 import NetworkManager from '@managers/network_manager';
-import {openAsBottomSheet} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {persistentNotificationsConfirmation} from '@utils/post';
@@ -24,9 +25,7 @@ jest.mock('@context/server', () => ({
     useServerUrl: jest.fn(() => SERVER_URL),
 }));
 
-jest.mock('@screens/navigation', () => ({
-    openAsBottomSheet: jest.fn(),
-}));
+jest.mock('@screens/navigation');
 
 jest.mock('@utils/post', () => ({
     persistentNotificationsConfirmation: jest.fn(),
@@ -123,7 +122,7 @@ describe('DraftInput', () => {
         });
 
         it('opens scheduled post options on long press and verify action', async () => {
-            jest.mocked(openAsBottomSheet).mockImplementation(({props}) => props!.onSchedule({scheduled_at: 100} as SchedulingInfo));
+            jest.mocked(navigateToScreen).mockImplementation(() => {});
 
             // make this a re-usable function
             await operator.handleConfigs({
@@ -136,15 +135,21 @@ describe('DraftInput', () => {
 
             const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
             fireEvent(getByTestId('draft_input.send_action.send.button'), 'longPress');
-            expect(openAsBottomSheet).toHaveBeenCalledWith(expect.objectContaining({
-                screen: Screens.SCHEDULED_POST_OPTIONS,
-                closeButtonId: 'close-scheduled-post-picker',
-            }));
+            expect(navigateToScreen).toHaveBeenCalledWith(Screens.SCHEDULED_POST_OPTIONS);
+
+            // Simulate the scheduled post options screen calling back with a scheduled time
+            const callback = CallbackStore.getCallback<(schedulingInfo: SchedulingInfo) => Promise<void>>();
+            expect(callback).toBeDefined();
+
+            await act(async () => {
+                await callback!({scheduled_at: 100});
+            });
+
             expect(baseProps.sendMessage).toHaveBeenCalledWith({scheduled_at: 100});
         });
 
         it('should not open scheduled post options if scheduled post are disabled', async () => {
-            jest.mocked(openAsBottomSheet).mockImplementation(({props}) => props!.onSchedule({scheduled_at: 100} as SchedulingInfo));
+            jest.mocked(navigateToScreen).mockImplementation(() => {});
             const props = {
                 ...baseProps,
                 scheduledPostsEnabled: false,
@@ -152,7 +157,7 @@ describe('DraftInput', () => {
 
             const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
             fireEvent(getByTestId('draft_input.send_action.send.button'), 'longPress');
-            expect(openAsBottomSheet).not.toHaveBeenCalled();
+            expect(navigateToScreen).not.toHaveBeenCalled();
             expect(baseProps.sendMessage).not.toHaveBeenCalled();
         });
 

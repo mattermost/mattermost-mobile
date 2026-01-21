@@ -29,7 +29,7 @@ import {
     hasSpecialMentions,
     persistentNotificationsConfirmation,
     scheduledPostFromPost,
-} from '.';
+} from './index';
 
 jest.mock('@actions/local/post', () => ({
     getUsersCountFromMentions: jest.fn(),

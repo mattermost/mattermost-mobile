@@ -107,10 +107,7 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
     const renderLink = ({children, href}: {children: ReactElement; href: string}) => {
         const url = href[0] === TARGET_BLANK_URL_PREFIX ? href.substring(1, href.length) : href;
         return (
-            <MarkdownLink
-                href={url}
-                theme={theme}
-            >
+            <MarkdownLink href={url}>
                 {children}
             </MarkdownLink>
         );

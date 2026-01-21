@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {useCallback, useMemo, type ComponentProps} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
@@ -10,7 +11,7 @@ import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from '
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Tabs from '@hooks/use_tabs/tabs';
-import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
+import {TITLE_HEIGHT, TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET} from '@screens/bottom_sheet/content';
 import TeamPicker from '@screens/home/search/team_picker';
 import {bottomSheet} from '@screens/navigation';
 import {type FileFilter, FileFilters} from '@utils/file';
@@ -54,9 +55,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
         },
         teamPickerContainer: {
-            flex: 1,
             flexDirection: 'row',
-            justifyContent: 'flex-end',
+            marginLeft: 20,
         },
         filterContainer: {
             flexDirection: 'row',
@@ -78,11 +78,9 @@ const Header = ({
     tabsProps,
 }: Props) => {
     const theme = useTheme();
-    const styles = getStyleFromTheme(theme);
-    const intl = useIntl();
     const isTablet = useIsTablet();
-
-    const title = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
+    const intl = useIntl();
+    const styles = getStyleFromTheme(theme);
 
     const showFilterIcon = selectedTab === TabTypes.FILES;
     const hasFilters = selectedFilter !== FileFilters.ALL;
@@ -103,18 +101,12 @@ const Header = ({
                 <Filter
                     initialFilter={selectedFilter}
                     setFilter={onFilterChanged}
-                    title={title}
+                    title={intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'})}
                 />
             );
         };
-        bottomSheet({
-            closeButtonId: 'close-search-filters',
-            renderContent,
-            snapPoints,
-            theme,
-            title,
-        });
-    }, [onFilterChanged, selectedFilter, snapPoints, title, theme]);
+        bottomSheet(renderContent, snapPoints);
+    }, [snapPoints, selectedFilter, onFilterChanged, intl]);
 
     return (
         <View style={styles.container}>
@@ -158,4 +150,4 @@ const Header = ({
     );
 };
 
-export default Header;
+export default React.memo(Header);

@@ -21,7 +21,7 @@ import {getPostById, syncPermalinkPreviewsForEditedPost} from '@queries/servers/
 import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import {hasArrayChanged, isTablet} from '@utils/helpers';
 import {logWarning} from '@utils/log';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';

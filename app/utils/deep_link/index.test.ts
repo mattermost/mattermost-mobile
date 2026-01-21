@@ -3,7 +3,6 @@
 
 import {createIntl} from 'react-intl';
 import {Alert} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import {joinIfNeededAndSwitchToChannel, makeDirectChannel} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
@@ -17,15 +16,15 @@ import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {queryUsersByUsername} from '@queries/servers/user';
-import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
+import {dismissAllRoutesAndResetToRootRoute} from '@screens/navigation';
+import {NavigationStore} from '@store/navigation_store';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 import {addNewServer} from '@utils/server';
 
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '../draft';
 
-import {alertInvalidDeepLink, extractServerUrl, getLaunchPropsFromDeepLink, parseAndHandleDeepLink} from '.';
+import {alertInvalidDeepLink, extractServerUrl, getLaunchPropsFromDeepLink, parseAndHandleDeepLink} from './index';
 
 jest.mock('@actions/remote/user', () => ({
     fetchUsersByUsernames: jest.fn(),
@@ -55,11 +54,15 @@ jest.mock('@managers/websocket_manager', () => ({
 }));
 
 jest.mock('@store/navigation_store', () => ({
-    getVisibleScreen: jest.fn(() => 'HOME'),
-    hasModalsOpened: jest.fn(() => false),
-    waitUntilScreenHasLoaded: jest.fn(),
-    getScreensInStack: jest.fn().mockReturnValue([]),
+    NavigationStore: {
+        getVisibleScreen: jest.fn(),
+        hasModalsOpened: jest.fn(() => false),
+        waitUntilScreenHasLoaded: jest.fn(),
+        getScreensInStack: jest.fn().mockReturnValue([]),
+    },
 }));
+
+jest.mocked(NavigationStore.getVisibleScreen).mockReturnValue(Screens.HOME);
 
 jest.mock('@utils/server', () => ({
     addNewServer: jest.fn(),
@@ -90,6 +93,7 @@ jest.mock('@playbooks/database/queries/version');
 jest.mock('@playbooks/database/queries/run');
 jest.mock('@playbooks/actions/remote/runs');
 jest.mock('@playbooks/screens/navigation');
+jest.mock('@screens/navigation');
 
 describe('extractServerUrl', () => {
     it('should extract the sanitized server url', () => {
@@ -135,20 +139,9 @@ describe('parseAndHandleDeepLink', () => {
         jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://currentserver.com');
         jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://existingserver.com');
         const result = await parseAndHandleDeepLink('https://existingserver.com/team/channels/town-square');
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalled();
+        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalled();
         expect(DatabaseManager.setActiveServerDatabase).toHaveBeenCalledWith('https://existingserver.com');
         expect(WebsocketManager.initializeClient).toHaveBeenCalledWith('https://existingserver.com', 'DeepLink');
-        expect(result).toEqual({error: false});
-    });
-
-    it('should update the server url in the server url screen', async () => {
-        jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://currentserver.com');
-        jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce(undefined);
-
-        jest.mocked(NavigationStore.getVisibleScreen).mockReturnValueOnce(Screens.SERVER);
-        const result = await parseAndHandleDeepLink('https://currentserver.com/team/channels/town-square', undefined, undefined, true);
-        const spyOnUpdateProps = jest.spyOn(Navigation, 'updateProps');
-        expect(spyOnUpdateProps).toHaveBeenCalledWith(Screens.SERVER, {serverUrl: 'currentserver.com'});
         expect(result).toEqual({error: false});
     });
 
@@ -259,7 +252,7 @@ describe('parseAndHandleDeepLink', () => {
 
         // Re-import to apply mocks
         await parseAndHandleDeepLink('https://existingserver.com/playbooks/runs/7b35c77a645e1906e03a2c330f', intl);
-        expect(goToPlaybookRun).toHaveBeenCalledWith(intl, '7b35c77a645e1906e03a2c330f');
+        expect(goToPlaybookRun).toHaveBeenCalledWith('7b35c77a645e1906e03a2c330f');
     });
 
     it('should fetch playbook run if not found locally and show error if fetch fails', async () => {

@@ -58,9 +58,10 @@ const Highlighter = ({code, language, textStyle, selectable = false}: SyntaxHigl
                 fontFamily={textStyle.fontFamily || 'monospace'}
                 fontSize={textStyle.fontSize}
                 selectable={selectable}
+                selectionColor={theme.onlineIndicator}
             />
         );
-    }, [textStyle, theme, style]);
+    }, [style.hljs.color, theme.centerChannelColor, theme.onlineIndicator, textStyle.fontFamily, textStyle.fontSize, selectable]);
 
     const preTag = useCallback((info: any) => (
         <View

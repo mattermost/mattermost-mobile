@@ -121,7 +121,7 @@ const ChannelListHeader = ({
     const serverUrl = useServerUrl();
     useEffect(() => {
         marginLeft.value = iconPad ? 50 : 0;
-    }, [iconPad]);
+    }, [iconPad, marginLeft]);
 
     const onPress = usePreventDoubleTap(useCallback(() => {
         const renderContent = () => {
@@ -134,7 +134,6 @@ const ChannelListHeader = ({
             );
         };
 
-        const closeButtonId = 'close-plus-menu';
         let items = 1;
         let separators = 0;
 
@@ -151,14 +150,8 @@ const ChannelListHeader = ({
             separators += 1;
         }
 
-        bottomSheet({
-            closeButtonId,
-            renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT) + (separators * SEPARATOR_HEIGHT)],
-            theme,
-            title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
-        });
-    }, [intl, theme, canCreateChannels, canInvitePeople, canJoinChannels]));
+        bottomSheet(renderContent, [1, bottomSheetSnapPoint(items, ITEM_HEIGHT) + (separators * SEPARATOR_HEIGHT)]);
+    }, [canCreateChannels, canInvitePeople, canJoinChannels]));
 
     const onPushAlertPress = useCallback(() => {
         if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {

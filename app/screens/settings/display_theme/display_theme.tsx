@@ -5,31 +5,26 @@ import React, {useCallback, useState} from 'react';
 
 import {savePreference} from '@actions/remote/preference';
 import SettingContainer from '@components/settings/container';
-import {Preferences} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 
 import CustomTheme from './custom_theme';
 import {ThemeTiles} from './theme_tiles';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type DisplayThemeProps = {
     allowedThemeKeys: string[];
-    componentId: AvailableScreens;
     currentTeamId: string;
     currentUserId: string;
 }
-const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUserId}: DisplayThemeProps) => {
+const DisplayTheme = ({allowedThemeKeys, currentTeamId, currentUserId}: DisplayThemeProps) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const [customTheme, setCustomTheme] = useState(theme.type?.toLowerCase() === 'custom' ? theme : undefined);
-
-    const close = () => popTopScreen(componentId);
 
     const handleThemeChange = usePreventDoubleTap(useCallback(async (themeSelected: string) => {
         const allowedTheme = allowedThemeKeys.find((tk) => tk === themeSelected);
@@ -52,7 +47,7 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
         }
     }, [theme.type]);
 
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_DISPLAY_THEME, navigateBack);
 
     return (
         <SettingContainer testID='theme_display_settings'>

@@ -31,6 +31,7 @@ jest.mock('@actions/remote/notifications', () => {
 jest.mock('@utils/log', () => {
     return {
         logError: jest.fn(),
+        logInfo: jest.fn(),
     };
 });
 

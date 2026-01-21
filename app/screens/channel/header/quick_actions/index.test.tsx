@@ -7,7 +7,7 @@ import PlaybookRunsOption from '@playbooks/components/channel_actions/playbook_r
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import ChannelQuickAction from './index';
+import ChannelQuickActions from './index';
 
 import type {Database} from '@nozbe/watermelondb';
 
@@ -20,7 +20,7 @@ jest.mocked(PlaybookRunsOption).mockImplementation(
 );
 
 describe('ChannelQuickAction', () => {
-    function getBaseProps(): ComponentProps<typeof ChannelQuickAction> {
+    function getBaseProps(): ComponentProps<typeof ChannelQuickActions> {
         return {
             channelId: 'channel-id',
             callsEnabled: false,
@@ -39,7 +39,7 @@ describe('ChannelQuickAction', () => {
     it('does not show playbook runs option when hasPlaybookRuns is false', () => {
         const props = getBaseProps();
         props.hasPlaybookRuns = false;
-        const {queryByTestId} = renderWithEverything(<ChannelQuickAction {...props}/>, {database});
+        const {queryByTestId} = renderWithEverything(<ChannelQuickActions {...props}/>, {database});
 
         expect(queryByTestId('playbook-runs-option')).toBeNull();
     });
@@ -47,7 +47,7 @@ describe('ChannelQuickAction', () => {
     it('shows playbook runs option when hasPlaybookRuns is true', () => {
         const props = getBaseProps();
         props.hasPlaybookRuns = true;
-        const {getByTestId} = renderWithEverything(<ChannelQuickAction {...props}/>, {database});
+        const {getByTestId} = renderWithEverything(<ChannelQuickActions {...props}/>, {database});
 
         const playbookRunsOption = getByTestId('playbook-runs-option');
         expect(playbookRunsOption).toBeTruthy();
@@ -59,7 +59,7 @@ describe('ChannelQuickAction', () => {
         const props = getBaseProps();
         props.isDMorGM = true;
         props.hasPlaybookRuns = true;
-        const {queryByTestId} = renderWithEverything(<ChannelQuickAction {...props}/>, {database});
+        const {queryByTestId} = renderWithEverything(<ChannelQuickActions {...props}/>, {database});
         expect(queryByTestId('playbook-runs-option')).toBeNull();
     });
 });

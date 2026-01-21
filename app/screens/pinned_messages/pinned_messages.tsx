@@ -10,24 +10,20 @@ import Loading from '@components/loading';
 import DateSeparator from '@components/post_list/date_separator';
 import Post from '@components/post_list/post';
 import {Events, Screens} from '@constants';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import SecurityManager from '@managers/security_manager';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './empty';
 
 import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     appsEnabled: boolean;
     channelId: string;
-    componentId: AvailableScreens;
     currentTimezone: string | null;
     customEmojiNames: string[];
     isCRTEnabled: boolean;
@@ -53,7 +49,6 @@ const styles = StyleSheet.create({
 function SavedMessages({
     appsEnabled,
     channelId,
-    componentId,
     currentTimezone,
     customEmojiNames,
     isCRTEnabled,
@@ -64,21 +59,18 @@ function SavedMessages({
     const theme = useTheme();
     const serverUrl = useServerUrl();
 
-    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [posts]);
-
-    const close = useCallback(() => {
-        if (componentId) {
-            popTopScreen(componentId);
-        }
-    }, [componentId]);
+    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [currentTimezone, posts]);
 
     useEffect(() => {
         fetchPinnedPosts(serverUrl, channelId).finally(() => {
             setLoading(false);
         });
+
+        // only run on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.PINNED_MESSAGES, navigateBack);
 
     const onViewableItemsChanged = useCallback(({viewableItems}: ViewableItemsChanged) => {
         if (!viewableItems.length) {
@@ -146,28 +138,25 @@ function SavedMessages({
             default:
                 return null;
         }
-    }, [appsEnabled, currentTimezone, customEmojiNames, theme]);
+    }, [appsEnabled, currentTimezone, customEmojiNames, isCRTEnabled]);
 
     return (
         <SafeAreaView
             edges={edges}
             style={styles.flex}
             testID='pinned_messages.screen'
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            <ExtraKeyboardProvider>
-                <FlatList
-                    contentContainerStyle={data.length ? styles.list : [styles.empty]}
-                    ListEmptyComponent={emptyList}
-                    data={data}
-                    onRefresh={handleRefresh}
-                    refreshing={refreshing}
-                    renderItem={renderItem}
-                    scrollToOverflowEnabled={true}
-                    onViewableItemsChanged={onViewableItemsChanged}
-                    testID='pinned_messages.post_list.flat_list'
-                />
-            </ExtraKeyboardProvider>
+            <FlatList
+                contentContainerStyle={data.length ? styles.list : [styles.empty]}
+                ListEmptyComponent={emptyList}
+                data={data}
+                onRefresh={handleRefresh}
+                refreshing={refreshing}
+                renderItem={renderItem}
+                scrollToOverflowEnabled={true}
+                onViewableItemsChanged={onViewableItemsChanged}
+                testID='pinned_messages.post_list.flat_list'
+            />
         </SafeAreaView>
     );
 }

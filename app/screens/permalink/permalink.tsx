@@ -24,9 +24,8 @@ import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import SecurityManager from '@managers/security_manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
-import {dismissModal} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {closePermalink} from '@utils/permalink';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
@@ -275,14 +274,15 @@ function Permalink({
         if (error?.joinedTeam && error.teamId) {
             removeCurrentUserFromTeam(serverUrl, error.teamId);
         }
-        dismissModal({componentId: Screens.PERMALINK});
+        navigateBack();
         closePermalink();
     }, [error?.joinedTeam, error?.teamId, serverUrl]);
 
     useAndroidHardwareBackHandler(Screens.PERMALINK, handleClose);
 
-    const handlePress = usePreventDoubleTap(useCallback(() => {
+    const handlePress = usePreventDoubleTap(useCallback(async() => {
         if (channel) {
+            await navigateBack();
             switchToChannelById(serverUrl, channel.id, channel.teamId);
         }
     }, [channel, serverUrl]));
@@ -362,7 +362,6 @@ function Permalink({
         <SafeAreaView
             style={containerStyle}
             testID='permalink.screen'
-            nativeID={SecurityManager.getShieldScreenId(Screens.PERMALINK)}
             edges={edges}
         >
             <Animated.View style={style.wrapper}>

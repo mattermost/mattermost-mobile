@@ -14,17 +14,23 @@ PODS:
     - ExpoModulesCore
   - Expo (52.0.47):
     - ExpoModulesCore
+  - ExpoAsset (11.0.5):
+    - ExpoModulesCore
   - ExpoCrypto (14.0.2):
     - ExpoModulesCore
   - ExpoDevice (7.0.3):
     - ExpoModulesCore
   - ExpoFileSystem (18.0.12):
     - ExpoModulesCore
+  - ExpoHead (4.0.22):
+    - ExpoModulesCore
   - ExpoImage (2.0.7):
     - ExpoModulesCore
     - SDWebImage (~> 5.19.1)
     - SDWebImageSVGCoder (~> 1.7.0)
   - ExpoLinearGradient (14.0.2):
+    - ExpoModulesCore
+  - ExpoLinking (7.0.5):
     - ExpoModulesCore
   - ExpoModulesCore (2.2.3):
     - DoubleConversion
@@ -50,6 +56,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - ExpoSplashScreen (0.29.24):
+    - ExpoModulesCore
   - ExpoStoreReview (8.0.1):
     - ExpoModulesCore
   - ExpoVideoThumbnails (9.0.3):
@@ -66,7 +74,6 @@ PODS:
   - hermes-engine (0.77.3):
     - hermes-engine/Pre-built (= 0.77.3)
   - hermes-engine/Pre-built (0.77.3)
-  - HMSegmentedControl (1.5.6)
   - JitsiWebRTC (124.0.2)
   - KituraContracts (1.2.1):
     - LoggerAPI (~> 1.7)
@@ -1289,11 +1296,6 @@ PODS:
     - React-graphics
     - React-rendererdebug
     - React-utils
-  - React-jsc (0.77.3):
-    - React-jsc/Fabric (= 0.77.3)
-    - React-jsi (= 0.77.3)
-  - React-jsc/Fabric (0.77.3):
-    - React-jsi (= 0.77.3)
   - React-jserrorhandler (0.77.3):
     - glog
     - hermes-engine
@@ -1433,7 +1435,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-keyboard-controller (1.19.3):
+  - react-native-keyboard-controller (1.20.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1505,7 +1507,7 @@ PODS:
     - Yoga
   - react-native-performance (5.1.2):
     - React-Core
-  - react-native-safe-area-context (5.3.0):
+  - react-native-safe-area-context (5.4.0):
     - React-Core
   - react-native-video (6.12.0):
     - DoubleConversion
@@ -1846,19 +1848,6 @@ PODS:
     - React-Core
   - ReactNativeIncallManager (4.2.0):
     - React-Core
-  - ReactNativeNavigation (7.45.0):
-    - HMSegmentedControl
-    - React-Core
-    - React-CoreModules
-    - React-RCTImage
-    - React-RCTText
-    - ReactNativeNavigation/Core (= 7.45.0)
-  - ReactNativeNavigation/Core (7.45.0):
-    - HMSegmentedControl
-    - React-Core
-    - React-CoreModules
-    - React-RCTImage
-    - React-RCTText
   - RNCClipboard (1.16.2):
     - React-Core
   - RNDateTimePicker (8.3.0):
@@ -2215,12 +2204,16 @@ DEPENDENCIES:
   - EXApplication (from `../node_modules/expo-application/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - Expo (from `../node_modules/expo`)
+  - ExpoAsset (from `../node_modules/expo-asset/ios`)
   - ExpoCrypto (from `../node_modules/expo-crypto/ios`)
   - ExpoDevice (from `../node_modules/expo-device/ios`)
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
+  - ExpoHead (from `../node_modules/expo-router/ios`)
   - ExpoImage (from `../node_modules/expo-image/ios`)
   - ExpoLinearGradient (from `../node_modules/expo-linear-gradient/ios`)
+  - ExpoLinking (from `../node_modules/expo-linking/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
+  - ExpoSplashScreen (from `../node_modules/expo-splash-screen/ios`)
   - ExpoStoreReview (from `../node_modules/expo-store-review/ios`)
   - ExpoVideoThumbnails (from `../node_modules/expo-video-thumbnails/ios`)
   - ExpoWebBrowser (from `../node_modules/expo-web-browser/ios`)
@@ -2257,7 +2250,6 @@ DEPENDENCIES:
   - React-hermes (from `../node_modules/react-native/ReactCommon/hermes`)
   - React-idlecallbacksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/idlecallbacks`)
   - React-ImageManager (from `../node_modules/react-native/ReactCommon/react/renderer/imagemanager/platform/ios`)
-  - React-jsc (from `../node_modules/react-native/ReactCommon/jsc`)
   - React-jserrorhandler (from `../node_modules/react-native/ReactCommon/jserrorhandler`)
   - React-jsi (from `../node_modules/react-native/ReactCommon/jsi`)
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
@@ -2312,7 +2304,6 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeExceptionHandler (from `../node_modules/react-native-exception-handler`)
   - ReactNativeIncallManager (from `../node_modules/react-native-incall-manager`)
-  - ReactNativeNavigation (from `../node_modules/react-native-navigation`)
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNFileViewer (from `../node_modules/react-native-file-viewer`)
@@ -2342,7 +2333,6 @@ SPEC REPOS:
     - BlueECC
     - BlueRSA
     - CocoaLumberjack
-    - HMSegmentedControl
     - JitsiWebRTC
     - KituraContracts
     - LoggerAPI
@@ -2368,18 +2358,26 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-constants/ios"
   Expo:
     :path: "../node_modules/expo"
+  ExpoAsset:
+    :path: "../node_modules/expo-asset/ios"
   ExpoCrypto:
     :path: "../node_modules/expo-crypto/ios"
   ExpoDevice:
     :path: "../node_modules/expo-device/ios"
   ExpoFileSystem:
     :path: "../node_modules/expo-file-system/ios"
+  ExpoHead:
+    :path: "../node_modules/expo-router/ios"
   ExpoImage:
     :path: "../node_modules/expo-image/ios"
   ExpoLinearGradient:
     :path: "../node_modules/expo-linear-gradient/ios"
+  ExpoLinking:
+    :path: "../node_modules/expo-linking/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
+  ExpoSplashScreen:
+    :path: "../node_modules/expo-splash-screen/ios"
   ExpoStoreReview:
     :path: "../node_modules/expo-store-review/ios"
   ExpoVideoThumbnails:
@@ -2447,8 +2445,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/idlecallbacks"
   React-ImageManager:
     :path: "../node_modules/react-native/ReactCommon/react/renderer/imagemanager/platform/ios"
-  React-jsc:
-    :path: "../node_modules/react-native/ReactCommon/jsc"
   React-jserrorhandler:
     :path: "../node_modules/react-native/ReactCommon/jserrorhandler"
   React-jsi:
@@ -2557,8 +2553,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-exception-handler"
   ReactNativeIncallManager:
     :path: "../node_modules/react-native-incall-manager"
-  ReactNativeNavigation:
-    :path: "../node_modules/react-native-navigation"
   RNCClipboard:
     :path: "../node_modules/@react-native-clipboard/clipboard"
   RNDateTimePicker:
@@ -2616,12 +2610,16 @@ SPEC CHECKSUMS:
   EXApplication: 4c72f6017a14a65e338c5e74fca418f35141e819
   EXConstants: fcfc75800824ac2d5c592b5bc74130bad17b146b
   Expo: 1687edb10c76b0c0f135306d6ae245379f50ed54
+  ExpoAsset: 48386d40d53a8c1738929b3ed509bcad595b5516
   ExpoCrypto: e97e864c8d7b9ce4a000bca45dddb93544a1b2b4
   ExpoDevice: d36ab4186b6799a28fd449bb9a1c77455f23fd1a
   ExpoFileSystem: 42d363d3b96f9afab980dcef60d5657a4443c655
+  ExpoHead: 2a14db58219c0a506e4a409ea83f884eab23f555
   ExpoImage: 043fcf882697fbcf4f50da1233b373d281f0456d
   ExpoLinearGradient: 35ebd83b16f80b3add053a2fd68cc328ed927f60
+  ExpoLinking: 8d12bee174ba0cdf31239706578e29e74a417402
   ExpoModulesCore: 448ba65761356ee2bf761fc23ccf998bd90eda61
+  ExpoSplashScreen: 399ee9f85b6c8a61b965e13a1ecff8384db591c2
   ExpoStoreReview: 92ad323dd14485e7aa67d5b47248fb22876ffaee
   ExpoVideoThumbnails: 7e9cd967393af9af0f7b0c62a4a00549f1860cab
   ExpoWebBrowser: a212e6b480d8857d3e441fba51e0c968333803b3
@@ -2661,7 +2659,6 @@ SPEC CHECKSUMS:
   React-hermes: 67f3ee00fdbe085e722fd89811073678ba28c10a
   React-idlecallbacksnativemodule: 580656d582975ee2765532f7ea11fd92a354afaf
   React-ImageManager: 1311d89c121b49633649fe000461603f61357d26
-  React-jsc: c9700bc882ea61541d234ec0dc5cd0cf19f9bb54
   React-jserrorhandler: 93e9b00bcb09bd4f40572bd572ab1a66f7ac75fa
   React-jsi: d5332d79759159a0127348d9b20cc90527dd40e8
   React-jsiexecutor: 72c8df1af2c18736f6685cce4205c480f3783039
@@ -2682,7 +2679,7 @@ SPEC CHECKSUMS:
   react-native-notifications: 3bafa1237ae8a47569a84801f17d80242fe9f6a5
   react-native-paste-input: c8fdbe9366a5d93a503848ba19fc335ae532c63b
   react-native-performance: 125a96c145e29918b55b45ce25cbba54f1e24dcd
-  react-native-safe-area-context: fdb0a66feac038cb6eb1edafcf2ccee2b5cf0284
+  react-native-safe-area-context: 9d72abf6d8473da73033b597090a80b709c0b2f1
   react-native-video: a14da2187cff9998fbb8fa94e0e04f41e5d9f794
   react-native-webrtc: 62659d18a13f6b50ad95c99a9a48cf9872a15815
   React-nativeconfig: 29f53f7caa03e1d3f49396320f4f055ae42ab8db
@@ -2716,7 +2713,6 @@ SPEC CHECKSUMS:
   ReactCommon: 06cde9e035d27f37e0e5d2bb23606e10aedd866b
   ReactNativeExceptionHandler: a23922ca00122b050ae9412f960061791c232c47
   ReactNativeIncallManager: ef7b845e166f04cf8ddf433d8a23227b01cef87a
-  ReactNativeNavigation: 6cef83673a08a51d426ff041c015da7c2a178a77
   RNCClipboard: e1d17c9d093d8129ef50b39b63a17a0e8ccd0ade
   RNDateTimePicker: 29264364ea7b8cc0fb355b3843cf276a4ff78966
   RNFileViewer: 4b5d83358214347e4ab2d4ca8d5c1c90d869e251

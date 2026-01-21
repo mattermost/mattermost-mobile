@@ -1,27 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, Text, useWindowDimensions, View, type LayoutChangeEvent} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {Navigation} from 'react-native-navigation';
+import {Text, useWindowDimensions, View, type LayoutChangeEvent} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import Animated from 'react-native-reanimated';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {usePreventDoubleTap} from '@hooks/utils';
 import IntuneManager from '@managers/intune_manager';
-import NetworkManager from '@managers/network_manager';
-import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
-import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
+import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -31,13 +26,11 @@ import LoginOptionsSeparator from './login_options_separator';
 import SsoOptions from './sso_options';
 
 import type {LaunchProps} from '@typings/launch';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 export interface LoginOptionsProps extends LaunchProps {
-    closeButtonId?: string;
-    componentId: AvailableScreens;
     config: ClientConfig;
     hasLoginForm: boolean;
+    isModal?: boolean;
     license: ClientLicense;
     serverDisplayName: string;
     serverUrl: string;
@@ -49,14 +42,10 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     centered: {
         width: '100%',
         maxWidth: 600,
+        paddingHorizontal: 5,
     },
     container: {
-        flex: 1,
-        ...Platform.select({
-            android: {
-                marginTop: 56,
-            },
-        }),
+        flexGrow: 1,
     },
     flex: {
         flex: 1,
@@ -91,15 +80,12 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
-
 const LoginOptions = ({
-    closeButtonId, componentId, config, extra,
-    hasLoginForm, launchType, launchError, license,
+    config, extra,
+    hasLoginForm, isModal, launchType, launchError, license,
     serverDisplayName, serverUrl, ssoOptions, theme,
 }: LoginOptionsProps) => {
     const styles = getStyles(theme);
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const dimensions = useWindowDimensions();
     const defaultHeaderHeight = useDefaultHeaderHeight();
     const isTablet = useIsTablet();
@@ -143,8 +129,8 @@ const LoginOptions = ({
     }, [hasLoginForm, numberSSOs, styles.subheader]);
 
     const goToSso = usePreventDoubleTap(useCallback((ssoType: string) => {
-        goToScreen(Screens.SSO, '', {config, extra, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl}, loginAnimationOptions());
-    }, [config, extra, launchError, launchType, license, serverDisplayName, serverUrl, theme]));
+        navigateToScreen(Screens.SSO, {config, extra, isModal, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl});
+    }, [config, extra, isModal, launchError, launchType, license, serverDisplayName, serverUrl, theme]));
 
     const optionsSeparator = hasLoginForm && Boolean(numberSSOs) && (
         <LoginOptionsSeparator
@@ -152,34 +138,14 @@ const LoginOptions = ({
         />
     );
 
-    const dismiss = () => {
-        dismissModal({componentId});
-    };
-
-    const pop = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         const {height} = e.nativeEvent.layout;
         setContentFillScreen(dimensions.height < height + defaultHeaderHeight);
     }, [dimensions.height, defaultHeaderHeight]);
 
-    useEffect(() => {
-        const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
-            if (closeButtonId && buttonId === closeButtonId) {
-                NetworkManager.invalidateClient(serverUrl);
-                dismissModal({componentId});
-            }
-        });
+    const animatedStyles = useScreenTransitionAnimation(!isModal);
 
-        return () => navigationEvents.remove();
-    }, [closeButtonId, componentId, serverUrl]);
-
-    const animatedStyles = useScreenTransitionAnimation(Screens.LOGIN);
-
-    useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
-    useAndroidHardwareBackHandler(componentId, pop);
+    useAndroidHardwareBackHandler(Screens.LOGIN, navigateBack);
 
     let additionalContainerStyle;
     if (!contentFillScreen && (numberSSOs < 3 || !hasLoginForm || (isTablet && dimensions.height > dimensions.width))) {
@@ -225,20 +191,15 @@ const LoginOptions = ({
         <View
             style={styles.flex}
             testID='login.screen'
-            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
         >
             <Background theme={theme}/>
-            <AnimatedSafeArea style={[styles.container, animatedStyles]}>
+            <Animated.View style={[styles.container, animatedStyles]}>
                 <KeyboardAwareScrollView
-                    bounces={true}
+                    bounces={false}
                     contentContainerStyle={[styles.innerContainer, additionalContainerStyle]}
-                    enableAutomaticScroll={false}
-                    enableOnAndroid={false}
-                    enableResetScrollToCoords={true}
-                    extraScrollHeight={20}
+                    bottomOffset={62}
                     keyboardDismissMode='on-drag'
                     keyboardShouldPersistTaps='handled'
-                    ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
                     style={styles.flex}
                 >
@@ -252,7 +213,7 @@ const LoginOptions = ({
                         <Form
                             config={config}
                             extra={extra}
-                            keyboardAwareRef={keyboardAwareRef}
+                            isModal={isModal}
                             license={license}
                             launchError={launchError}
                             launchType={launchType}
@@ -275,7 +236,7 @@ const LoginOptions = ({
                         }
                     </View>
                 </KeyboardAwareScrollView>
-            </AnimatedSafeArea>
+            </Animated.View>
         </View>
     );
 };

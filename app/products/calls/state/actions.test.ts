@@ -109,15 +109,6 @@ jest.mock('@queries/servers/user', () => ({
 const user5 = TestHelper.fakeUserModel({username: 'user-5'});
 jest.mocked(getUserById).mockResolvedValue(user5);
 
-jest.mock('react-native-navigation', () => ({
-    Navigation: {
-        pop: jest.fn(() => Promise.resolve({
-            catch: jest.fn(),
-        })),
-        setDefaultOptions: jest.fn(),
-    },
-}));
-
 const call1: Call = {
     id: 'call1',
     sessions: {

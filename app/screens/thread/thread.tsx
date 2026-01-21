@@ -1,33 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {uniqueId} from 'lodash';
+import {useIsFocused} from '@react-navigation/native';
+import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Platform, type LayoutChangeEvent, StyleSheet} from 'react-native';
-import {KeyboardProvider} from 'react-native-keyboard-controller';
+import {type LayoutChangeEvent, StyleSheet} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
-import FreezeScreen from '@components/freeze_screen';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
-import {useIsScreenVisible} from '@hooks/use_screen_visibility';
-import SecurityManager from '@managers/security_manager';
-import {popTopScreen, setButtons} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 
 import ThreadContent from './thread_content';
+import ThreadFollowButton from './thread_follow_button';
 
 import type PostModel from '@typings/database/models/servers/post';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type ThreadProps = {
-    componentId: AvailableScreens;
     isCRTEnabled: boolean;
     showJoinCallBanner: boolean;
     isInACall: boolean;
@@ -42,7 +37,6 @@ const styles = StyleSheet.create({
 });
 
 const Thread = ({
-    componentId,
     isCRTEnabled,
     rootId,
     rootPost,
@@ -52,11 +46,13 @@ const Thread = ({
     scheduledPostCount,
 }: ThreadProps) => {
     const [containerHeight, setContainerHeight] = useState(0);
-    const isVisible = useIsScreenVisible(componentId);
+    const navigation = useNavigation();
+    const isVisible = useIsFocused();
     const isTablet = useIsTablet();
     const [isEmojiSearchFocused, setIsEmojiSearchFocused] = useState(false);
 
-    // Remove bottom safe area when emoji search is focused to eliminate gap between emoji picker and keyboard
+    // Remove bottom safe area when emoji search is focused OR keyboard is open (Android 35+ only)
+    // This prevents gap between input and keyboard on Android edge-to-edge
     const safeAreaViewEdges: Edge[] = useMemo(() => {
         if (isTablet) {
             return ['left', 'right'];
@@ -64,32 +60,25 @@ const Thread = ({
         if (isEmojiSearchFocused) {
             return ['left', 'right'];
         }
+
         return ['left', 'right', 'bottom'];
     }, [isTablet, isEmojiSearchFocused]);
 
-    const close = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.THREAD, navigation.goBack);
 
     useEffect(() => {
         if (isCRTEnabled && rootId) {
-            const id = `${componentId}-${rootId}-${uniqueId()}`;
-            const name = Screens.THREAD_FOLLOW_BUTTON;
-            setButtons(componentId, {rightButtons: [{
-                id,
-                component: {
-                    name,
-                    passProps: {
-                        threadId: rootId,
-                    },
-                },
-            }]});
+            navigation.setOptions({
+                headerRight: () => (
+                    <ThreadFollowButton threadId={rootId}/>
+                ),
+            });
         } else {
-            setButtons(componentId, {rightButtons: []});
+            navigation.setOptions({
+                headerRight: undefined,
+            });
         }
-    }, [componentId, rootId, isCRTEnabled]);
+    }, [rootId, isCRTEnabled, navigation]);
 
     useEffect(() => {
         // when opened from notification, first screen in stack is HOME
@@ -106,15 +95,17 @@ const Thread = ({
             if (rootId === EphemeralStore.getCurrentThreadId()) {
                 EphemeralStore.setCurrentThreadId('');
             }
-            setButtons(componentId, {rightButtons: []});
+            navigation.setOptions({
+                headerRight: undefined,
+            });
         };
-    }, [rootId, componentId, isCRTEnabled]);
+    }, [isCRTEnabled, navigation, rootId]);
 
     useDidUpdate(() => {
         if (!rootPost) {
-            close();
+            navigation.goBack();
         }
-    }, [componentId, rootPost]);
+    }, [rootPost]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
@@ -123,50 +114,34 @@ const Thread = ({
     const showFloatingCallContainer = showJoinCallBanner || isInACall || showIncomingCalls;
 
     return (
-        <FreezeScreen>
-            <SafeAreaView
-                style={styles.flex}
-                mode='margin'
-                edges={safeAreaViewEdges}
-                testID='thread.screen'
-                onLayout={onLayout}
-                nativeID={SecurityManager.getShieldScreenId(componentId)}
-            >
-                <RoundedHeaderContext/>
-                {Boolean(rootPost) &&
-                (Platform.OS === 'ios' ? (
-                    <KeyboardProvider>
-                        <ThreadContent
-                            rootId={rootId}
-                            rootPost={rootPost!}
-                            scheduledPostCount={scheduledPostCount}
-                            containerHeight={containerHeight}
-                            enabled={isVisible}
-                            onEmojiSearchFocusChange={setIsEmojiSearchFocused}
-                        />
-                    </KeyboardProvider>
-                ) : (
-                    <ThreadContent
-                        rootId={rootId}
-                        rootPost={rootPost!}
-                        scheduledPostCount={scheduledPostCount}
-                        containerHeight={containerHeight}
-                        enabled={isVisible}
-                        onEmojiSearchFocusChange={setIsEmojiSearchFocused}
-                    />
-                ))
-                }
-                {showFloatingCallContainer &&
-                    <FloatingCallContainer
-                        channelId={rootPost!.channelId}
-                        showJoinCallBanner={showJoinCallBanner}
-                        showIncomingCalls={showIncomingCalls}
-                        isInACall={isInACall}
-                        threadScreen={true}
-                    />
-                }
-            </SafeAreaView>
-        </FreezeScreen>
+        <SafeAreaView
+            style={styles.flex}
+            mode='margin'
+            edges={safeAreaViewEdges}
+            testID='thread.screen'
+            onLayout={onLayout}
+        >
+            <RoundedHeaderContext/>
+            {Boolean(rootPost) && (
+                <ThreadContent
+                    rootId={rootId}
+                    rootPost={rootPost!}
+                    scheduledPostCount={scheduledPostCount}
+                    containerHeight={containerHeight}
+                    enabled={isVisible}
+                    onEmojiSearchFocusChange={setIsEmojiSearchFocused}
+                />
+            )}
+            {showFloatingCallContainer &&
+            <FloatingCallContainer
+                channelId={rootPost!.channelId}
+                showJoinCallBanner={showJoinCallBanner}
+                showIncomingCalls={showIncomingCalls}
+                isInACall={isInACall}
+                threadScreen={true}
+            />
+            }
+        </SafeAreaView>
     );
 };
 

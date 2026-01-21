@@ -9,10 +9,7 @@ import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type CopyTextProps = {
-    bottomSheetId: AvailableScreens;
     isSaved: boolean;
     postId: string;
 }
@@ -28,14 +25,14 @@ const messages = defineMessages({
     },
 });
 
-const SaveOption = ({bottomSheetId, isSaved, postId}: CopyTextProps) => {
+const SaveOption = ({isSaved, postId}: CopyTextProps) => {
     const serverUrl = useServerUrl();
 
     const onHandlePress = useCallback(async () => {
         const remoteAction = isSaved ? deleteSavedPost : savePostPreference;
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         remoteAction(serverUrl, postId);
-    }, [bottomSheetId, isSaved, postId, serverUrl]);
+    }, [isSaved, postId, serverUrl]);
 
     const message = isSaved ? messages.unsave : messages.save;
 

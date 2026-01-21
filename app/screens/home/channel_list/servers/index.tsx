@@ -3,14 +3,14 @@
 
 import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Dimensions, StyleSheet} from 'react-native';
+import {StyleSheet} from 'react-native';
 
 import ServerIcon from '@components/server_icon';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer, type UnreadObserverArgs} from '@database/subscription/unreads';
-import {useIsTablet} from '@hooks/device';
+import {useWindowDimensions} from '@hooks/device';
 import {BUTTON_HEIGHT, TITLE_HEIGHT} from '@screens/bottom_sheet';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -47,7 +47,7 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
     const registeredServers = useRef<ServersModel[]|undefined>();
     const currentServerUrl = useServerUrl();
-    const isTablet = useIsTablet();
+    const dimensions = useWindowDimensions();
     const theme = useTheme();
 
     const updateTotal = () => {
@@ -114,7 +114,7 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
                     <ServerList servers={registeredServers.current!}/>
                 );
             };
-            const maxScreenHeight = Math.ceil(0.6 * Dimensions.get('window').height);
+            const maxScreenHeight = Math.ceil(0.6 * dimensions.height);
             const maxSnapPoint = Math.min(
                 maxScreenHeight,
                 bottomSheetSnapPoint(registeredServers.current.length, SERVER_ITEM_HEIGHT) + TITLE_HEIGHT + BUTTON_HEIGHT +
@@ -129,17 +129,9 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
                 snapPoints.push('80%');
             }
 
-            const closeButtonId = 'close-your-servers';
-            bottomSheet({
-                closeButtonId,
-                renderContent,
-                footerComponent: isTablet ? undefined : AddServerButton,
-                snapPoints,
-                theme,
-                title: intl.formatMessage({id: 'your.servers', defaultMessage: 'Your servers'}),
-            });
+            bottomSheet(renderContent, snapPoints, AddServerButton);
         }
-    }, [intl, isTablet, theme]);
+    }, [dimensions.height]);
 
     useImperativeHandle(ref, () => ({
         openServers: onPress,
@@ -155,6 +147,7 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
             });
             subscriptions.clear();
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

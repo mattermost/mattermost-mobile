@@ -22,15 +22,15 @@ import {markChannelAsViewed} from '@actions/local/channel';
 import {updateThread} from '@actions/local/thread';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
 import {isCallsStartedMessage} from '@calls/utils';
-import {Device, Events, Navigation, PushNotification, Screens} from '@constants';
+import {Device, Events, PushNotification, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage} from '@i18n';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
-import {showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import InAppNotificationStore from '@store/in_app_notification_store';
+import {NavigationStore} from '@store/navigation_store';
 import {isBetaApp} from '@utils/general';
 import {isMainActivity, isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
@@ -69,6 +69,11 @@ class PushNotificationsSingleton {
         if (register) {
             this.registerIfNeeded();
         }
+    }
+
+    cleanup() {
+        this.subscriptions?.forEach((v) => v.remove());
+        this.subscriptions = [];
     }
 
     async registerIfNeeded() {
@@ -154,7 +159,7 @@ class PushNotificationsSingleton {
 
             let isInChannelScreen = NavigationStore.getVisibleScreen() === Screens.CHANNEL;
             if (isTabletDevice) {
-                isInChannelScreen = NavigationStore.getVisibleTab() === Screens.HOME;
+                isInChannelScreen = NavigationStore.getVisibleScreen() === Screens.CHANNEL_LIST;
             }
             const isInThreadScreen = NavigationStore.getVisibleScreen() === Screens.THREAD;
 
@@ -173,17 +178,7 @@ class PushNotificationsSingleton {
             const condition3 = isInThreadScreen && !isSameThreadNotification;
 
             if (condition1 || condition2 || condition3) {
-                // Dismiss the screen if it's already visible or else it blocks the navigation
-                DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
-
-                const screen = Screens.IN_APP_NOTIFICATION;
-                const passProps = {
-                    notification,
-                    serverName,
-                    serverUrl,
-                };
-
-                showOverlay(screen, passProps);
+                InAppNotificationStore.show(notification, serverUrl, serverName);
             }
         }
     };

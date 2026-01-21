@@ -5,7 +5,7 @@ import React, {type ComponentProps} from 'react';
 
 import {fetchUsersByIds} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
-import {Preferences} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -59,7 +59,7 @@ describe('StatusUpdatePost', () => {
         });
 
         return {
-            location: 'Channel',
+            location: Screens.CHANNEL,
             post,
             theme: Preferences.THEMES.denim,
         };

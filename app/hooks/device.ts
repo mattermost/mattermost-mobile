@@ -8,8 +8,6 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {DeviceContext} from '@context/device';
 
-import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-
 let utilsEmitter = new NativeEventEmitter(RNUtils);
 
 export function testSetUtilsEmitter(emitter: NativeEventEmitter) {
@@ -108,6 +106,7 @@ export function useViewPosition(viewRef: RefObject<View>, deps: React.Dependency
                 }
             });
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [...deps, isTablet, height, viewRef, modalPosition]);
 
     return modalPosition;
@@ -123,23 +122,6 @@ export function useKeyboardOverlap(viewRef: RefObject<View>, containerHeight: nu
     const bottomSpace = (dimensions.height - containerHeight - viewPosition);
     const tabletOverlap = Math.max(0, keyboardHeight - bottomSpace);
     const phoneOverlap = keyboardHeight || insets.bottom;
-    const overlap = Platform.select({
-        ios: isTablet ? tabletOverlap : phoneOverlap,
-        default: 0,
-    });
 
-    return overlap;
-}
-
-export function useAvoidKeyboard(ref: RefObject<KeyboardAwareScrollView>, dimisher = 3) {
-    const height = useKeyboardHeight();
-
-    useEffect(() => {
-        let offsetY = height / dimisher;
-        if (offsetY < 80) {
-            offsetY = 0;
-        }
-
-        ref.current?.scrollToPosition(0, offsetY);
-    }, [height, dimisher, ref]);
+    return isTablet ? tabletOverlap : phoneOverlap;
 }

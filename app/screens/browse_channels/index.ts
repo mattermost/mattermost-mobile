@@ -2,15 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatest, of as of$} from 'rxjs';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {queryAllMyChannel} from '@queries/servers/channel';
-import {queryRolesByNames} from '@queries/servers/role';
-import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
-import {observeUser} from '@queries/servers/user';
-import {hasPermission} from '@utils/role';
+import {observePermissionForTeam} from '@queries/servers/role';
+import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeCurrentTeam} from '@queries/servers/team';
+import {observeCurrentUser} from '@queries/servers/user';
 
 import SearchHandler from './search_handler';
 
@@ -20,22 +20,30 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const sharedChannelsEnabled = observeConfigBooleanValue(database, 'ExperimentalSharedChannels');
     const canShowArchivedChannels = observeConfigBooleanValue(database, 'ExperimentalViewArchivedChannels');
 
-    const currentTeamId = observeCurrentTeamId(database);
-    const currentUserId = observeCurrentUserId(database);
+    const currentTeam = observeCurrentTeam(database);
+    const currentUser = observeCurrentUser(database);
 
     const joinedChannels = queryAllMyChannel(database).observe();
 
-    const roles = currentUserId.pipe(
-        switchMap((id) => observeUser(database, id)),
-        switchMap((u) => (u ? of$(u.roles.split(' ')) : of$([]))),
-        switchMap((values) => queryRolesByNames(database, values).observeWithColumns(['permissions'])),
+    const canCreatePublicChannels = combineLatest([currentUser, currentTeam]).pipe(
+        switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.CREATE_PUBLIC_CHANNEL, true)),
     );
 
-    const canCreateChannels = roles.pipe(switchMap((r) => of$(hasPermission(r, Permissions.CREATE_PUBLIC_CHANNEL))));
+    const canCreatePrivateChannels = combineLatest([currentUser, currentTeam]).pipe(
+        switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.CREATE_PRIVATE_CHANNEL, false)),
+    );
+
+    const canCreateChannels = combineLatest([canCreatePublicChannels, canCreatePrivateChannels]).pipe(
+        switchMap(([open, priv]) => of$(open || priv)),
+        distinctUntilChanged(),
+    );
 
     return {
         canCreateChannels,
-        currentTeamId,
+        currentTeamId: currentTeam.pipe(
+            switchMap((t) => of$(t?.id)),
+            distinctUntilChanged(),
+        ),
         joinedChannels,
         sharedChannelsEnabled,
         canShowArchivedChannels,

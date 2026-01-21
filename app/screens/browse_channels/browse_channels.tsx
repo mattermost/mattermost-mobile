@@ -1,59 +1,33 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useState} from 'react';
-import {type IntlShape, useIntl} from 'react-intl';
+import {useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleSheet, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
 import Loading from '@components/loading';
+import NavigationButton from '@components/navigation_button';
 import Search from '@components/search';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
+import {navigateBack, navigateToScreenWithBaseRoute} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import ChannelDropdown from './channel_dropdown';
 import ChannelList from './channel_list';
 
-import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
-import type {ImageResource, OptionsTopBarButton} from 'react-native-navigation';
-
-const CLOSE_BUTTON_ID = 'close-browse-channels';
-const CREATE_BUTTON_ID = 'create-pub-channel';
-
 export const PUBLIC = 'public';
 export const SHARED = 'shared';
 export const ARCHIVED = 'archived';
 
-const makeLeftButton = (icon: ImageResource): OptionsTopBarButton => {
-    return {
-        id: CLOSE_BUTTON_ID,
-        icon,
-        testID: 'close.browse_channels.button',
-    };
-};
-
-const makeRightButton = (theme: Theme, formatMessage: IntlShape['formatMessage'], enabled: boolean): OptionsTopBarButton => {
-    return {
-        color: theme.sidebarHeaderTextColor,
-        id: CREATE_BUTTON_ID,
-        text: formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
-        showAsAction: 'always',
-        testID: 'browse_channels.create.button',
-        enabled,
-    };
-};
-
-const close = () => {
+const close = async () => {
     Keyboard.dismiss();
-    dismissModal();
+    await navigateBack();
 };
 
 const style = StyleSheet.create({
@@ -73,10 +47,6 @@ const style = StyleSheet.create({
 });
 
 type Props = {
-
-    // Screen Props (do not change during the lifetime of the screen)
-    componentId: AvailableScreens;
-    closeButton: ImageResource;
 
     // Properties not changing during the lifetime of the screen)
     currentTeamId: string;
@@ -99,10 +69,8 @@ type Props = {
 
 export default function BrowseChannels(props: Props) {
     const {
-        componentId,
         canCreateChannels,
         sharedChannelsEnabled,
-        closeButton,
         currentTeamId,
         canShowArchivedChannels,
         typeOfChannels,
@@ -114,24 +82,37 @@ export default function BrowseChannels(props: Props) {
         loading,
         onEndReached,
     } = props;
+    const navigation = useNavigation();
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
 
     const [adding, setAdding] = useState(false);
 
+    const handleCreate = useCallback(() => {
+        navigateToScreenWithBaseRoute(`/(modals)/${Screens.BROWSE_CHANNELS}`, Screens.CREATE_OR_EDIT_CHANNEL);
+    }, []);
+
     const setHeaderButtons = useCallback((createEnabled: boolean) => {
-        const buttons: NavButtons = {
-            leftButtons: [makeLeftButton(closeButton)],
-            rightButtons: [],
-        };
-
         if (canCreateChannels) {
-            buttons.rightButtons = [makeRightButton(theme, intl.formatMessage, createEnabled)];
+            navigation.setOptions({
+                headerRight: () => (
+                    <NavigationButton
+                        onPress={handleCreate}
+                        text={intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'})}
+                        testID='browse_channels.create.button'
+                        color={createEnabled ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                        disabled={!createEnabled}
+                    />
+                ),
+            });
+            return;
         }
+        navigation.setOptions({
+            headerRight: undefined,
+        });
 
-        setButtons(componentId, buttons);
-    }, [closeButton, canCreateChannels, intl.locale, theme, componentId]);
+    }, [canCreateChannels, handleCreate, intl, navigation, theme.sidebarHeaderTextColor]);
 
     const onSelectChannel = useCallback(async (channel: Channel) => {
         setHeaderButtons(false);
@@ -154,29 +135,21 @@ export default function BrowseChannels(props: Props) {
             setHeaderButtons(true);
             setAdding(false);
         } else {
+            await close();
             switchToChannelById(serverUrl, channel.id, currentTeamId);
-            close();
         }
-    }, [setHeaderButtons, intl.locale]);
+    }, [setHeaderButtons, serverUrl, currentTeamId, intl]);
 
     const onSearch = useCallback(() => {
         searchChannels(term);
     }, [term, searchChannels]);
 
-    const handleCreate = useCallback(() => {
-        const screen = Screens.CREATE_OR_EDIT_CHANNEL;
-        const title = intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'});
-        goToScreen(screen, title);
-    }, [intl.locale]);
-
-    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
-    useNavButtonPressed(CREATE_BUTTON_ID, componentId, handleCreate, [handleCreate]);
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.BROWSE_CHANNELS, close);
 
     useEffect(() => {
         // Update header buttons in case anything related to the header changes
         setHeaderButtons(!adding);
-    }, [theme, canCreateChannels, adding]);
+    }, [adding, setHeaderButtons]);
 
     let content;
     if (adding) {
@@ -231,12 +204,5 @@ export default function BrowseChannels(props: Props) {
         );
     }
 
-    return (
-        <SafeAreaView
-            style={style.container}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-        >
-            {content}
-        </SafeAreaView>
-    );
+    return content;
 }

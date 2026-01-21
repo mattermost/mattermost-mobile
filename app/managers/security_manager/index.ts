@@ -45,8 +45,6 @@ import {toMilliseconds} from '@utils/datetime';
 import {isMainActivity} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type SecurityManagerServerConfig = {
     Biometrics?: boolean;
     JailbreakProtection?: boolean;
@@ -364,14 +362,12 @@ class SecurityManagerSingleton {
 
         logDebug('SecurityManager: Auth required', {serverCount: serverUrls.length, reason});
 
-        Emm.enableBlurScreen(true);
-        Emm.applyBlurEffect(20);
+        Emm.applyBlurEffect(0.5);
         this.onWipeRequested({oid, serverUrls});
 
         const locale = await getCurrentUserLocale(serverUrls[0]);
         showAuthenticationRequiredAlert(reason, locale, () => {
             Emm.removeBlurEffect();
-            Emm.enableBlurScreen(false);
         });
     };
 
@@ -386,21 +382,18 @@ class SecurityManagerSingleton {
         if (reason === IntuneConditionalLaunchBlockedReasons.LAUNCH_BLOCKED) {
             // Conditional launch policy blocked (OS version, jailbreak, threat level)
             // Trigger selective wipe of managed data
-            Emm.enableBlurScreen(true);
-            Emm.applyBlurEffect(20);
+            Emm.applyBlurEffect(0.5);
 
             this.onWipeRequested({oid, serverUrls});
             const locale = await getCurrentUserLocale(serverUrls[0]);
             showConditionalAccessAlert(locale, () => {
                 Emm.removeBlurEffect();
-                Emm.enableBlurScreen(false);
             });
         } else if (reason === IntuneConditionalLaunchBlockedReasons.LAUNCH_CANCELED) {
             // User canceled conditional launch (dismissed PIN/auth prompt)
             // Allow retry with biometric prompt
             await new Promise((resolve) => setTimeout(resolve, 250));
-            Emm.enableBlurScreen(true);
-            Emm.applyBlurEffect(20);
+            Emm.applyBlurEffect(0.5);
 
             const locale = await getCurrentUserLocale(serverUrls[0]);
 
@@ -410,7 +403,6 @@ class SecurityManagerSingleton {
                 // Retry by setting current identity again
                 await IntuneManager.setCurrentIdentity(serverUrls[0]);
             });
-            Emm.enableBlurScreen(false);
         }
     };
 
@@ -526,6 +518,7 @@ class SecurityManagerSingleton {
         if (server === this.activeServer) {
             this.initialized = false;
             this.activeServer = undefined;
+            this.setScreenCapturePolicy('');
         }
     };
 
@@ -591,8 +584,7 @@ class SecurityManagerSingleton {
         return new Promise(async (resolve) => {
             logDebug('ensureMAMEnrollment: Enrollment required', {serverUrl});
 
-            Emm.enableBlurScreen(true);
-            Emm.applyBlurEffect(20);
+            Emm.applyBlurEffect(0.5);
 
             // Give time for blur effect to apply
             await new Promise((resolveEffect) => setTimeout(resolveEffect, 250));
@@ -818,18 +810,6 @@ class SecurityManagerSingleton {
         }
 
         Emm.enableBlurScreen(this.isScreenCapturePrevented(server));
-    };
-
-    /**
-     * Gets the shielded screen ID for the screen.
-     */
-    getShieldScreenId = (screen: AvailableScreens, force = false, skip = false) => {
-        if ((this.activeServer && this.isScreenCapturePrevented(this.activeServer)) || force) {
-            const name = `${screen}.screen`;
-            return skip ? `${name}.skip.shielded` : `${name}.shielded`;
-        }
-
-        return `${screen}.screen`;
     };
 
     /**

@@ -13,7 +13,7 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
-import {openUserProfileModal} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -158,6 +158,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 16,
             justifyContent: 'center',
             height: 24,
+            marginHorizontal: 12,
         },
         sectionWrapper: {
             backgroundColor: theme.centerChannelBg,
@@ -229,7 +230,7 @@ export default function UserList({
         return createProfilesSections(intl, profiles, channelMembers);
     }, [channelMembers, customSection, intl, loading, profiles, term]);
 
-    const openUserProfile = useCallback(async (profile: UserProfile | UserModel) => {
+    const openProfile = useCallback(async (profile: UserProfile | UserModel) => {
         let user: UserModel;
         if ('create_at' in profile) {
             const res = await storeProfile(serverUrl, profile);
@@ -241,12 +242,11 @@ export default function UserList({
             user = profile;
         }
 
-        openUserProfileModal(intl, theme, {
+        openUserProfile({
             userId: user.id,
             location,
         });
-    }, [intl, location, serverUrl, theme]);
-
+    }, [location, serverUrl]);
     const renderItem = useCallback(({item, index, section}: RenderItemType) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
         const selected = selectedIds.has(item.id);
@@ -262,7 +262,7 @@ export default function UserList({
                 isChannelAdmin={isChAdmin}
                 manageMode={manageMode}
                 onPress={handleSelectProfile}
-                onLongPress={openUserProfile}
+                onLongPress={openProfile}
                 selectable={manageMode || canAdd}
                 disabled={!canAdd}
                 selected={selected}
@@ -273,7 +273,7 @@ export default function UserList({
                 includeMargin={includeUserMargin}
             />
         );
-    }, [selectedIds, manageMode, handleSelectProfile, openUserProfile, showManageMode, tutorialWatched, includeUserMargin]);
+    }, [selectedIds, manageMode, handleSelectProfile, openProfile, showManageMode, tutorialWatched, includeUserMargin]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {

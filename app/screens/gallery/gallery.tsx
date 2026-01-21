@@ -10,7 +10,7 @@ import {ExpoImageAnimated} from '@components/expo_image';
 import {useGallery} from '@context/gallery';
 import {useServerUrl} from '@context/server';
 import {isGif} from '@utils/file';
-import {freezeOtherScreens, galleryItemToFileInfo, measureItem} from '@utils/gallery';
+import {galleryItemToFileInfo, measureItem} from '@utils/gallery';
 
 import LightboxSwipeout, {type LightboxSwipeoutRef, type RenderItemInfo} from './lightbox_swipeout';
 import Backdrop, {type BackdropProps} from './lightbox_swipeout/backdrop';
@@ -135,7 +135,6 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
     function onSwipeFailure() {
         'worklet';
 
-        runOnJS(freezeOtherScreens)(true);
         hideHeaderAndFooter(false);
     }
 
@@ -187,6 +186,8 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
                     <DocumentRenderer
                         item={props.item}
                         hideHeaderAndFooter={hideHeaderAndFooter}
+                        width={props.width}
+                        height={props.height}
                     />
                 );
             default:

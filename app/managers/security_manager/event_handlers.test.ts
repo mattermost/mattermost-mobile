@@ -24,7 +24,7 @@ import TestHelper from '@test/test_helper';
 import * as alerts from '@utils/alerts';
 import {toMilliseconds} from '@utils/datetime';
 
-import SecurityManager from '.';
+import SecurityManager from './index';
 
 jest.mock('@mattermost/react-native-emm', () => ({
     isDeviceSecured: jest.fn(),

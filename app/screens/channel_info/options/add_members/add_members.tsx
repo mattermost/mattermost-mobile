@@ -7,10 +7,8 @@ import {Platform} from 'react-native';
 
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {getHeaderOptions} from '@screens/channel_add_members/channel_add_members';
-import {goToScreen} from '@screens/navigation';
+import {navigateToChannelInfoScreen} from '@screens/navigation';
 
 type Props = {
     channelId: string;
@@ -19,13 +17,11 @@ type Props = {
 
 const AddMembers = ({displayName, channelId}: Props) => {
     const {formatMessage} = useIntl();
-    const theme = useTheme();
     const title = formatMessage({id: 'channel_info.add_members', defaultMessage: 'Add members'});
 
     const goToAddMembers = usePreventDoubleTap(useCallback(async () => {
-        const options = await getHeaderOptions(theme, displayName, true);
-        goToScreen(Screens.CHANNEL_ADD_MEMBERS, title, {channelId, inModal: true}, options);
-    }, [channelId, displayName, theme, title]));
+        navigateToChannelInfoScreen(Screens.CHANNEL_ADD_MEMBERS, {channelId, inModal: true, displayName});
+    }, [channelId, displayName]));
 
     return (
         <OptionItem

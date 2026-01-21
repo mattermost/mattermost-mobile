@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useNavigation} from 'expo-router';
 import moment from 'moment-timezone';
 import React, {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
-import {type Options} from 'react-native-navigation';
+import {DeviceEventEmitter, Keyboard, ScrollView, View} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
-import CompassIcon from '@components/compass_icon';
+import NavigationButton from '@components/navigation_button';
 import TabletTitle from '@components/tablet_title';
 import {Events, Screens} from '@constants';
 import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES, CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
@@ -18,13 +19,11 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {usePreventDoubleTap} from '@hooks/utils';
-import SecurityManager from '@managers/security_manager';
-import {dismissModal, goToScreen, openAsBottomSheet, showModal} from '@screens/navigation';
+import {navigateBack, navigateToScreen, navigateToScreenWithBaseRoute} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {getCurrentMomentForTimezone, getRoundedTime} from '@utils/helpers';
 import {logDebug} from '@utils/log';
-import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {
     getTimezone,
@@ -38,7 +37,6 @@ import CustomStatusSuggestions from './components/custom_status_suggestions';
 import RecentCustomStatuses from './components/recent_custom_statuses';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type NewStatusType = {
     emoji?: string;
@@ -51,7 +49,6 @@ type Props = {
     customStatusExpirySupported: boolean;
     currentUser?: UserModel;
     recentCustomStatuses: UserCustomStatus[];
-    componentId: AvailableScreens;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -81,8 +78,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const DEFAULT_DURATION: CustomStatusDuration = 'today';
-const BTN_UPDATE_STATUS = 'update-custom-status';
-const edges: Edge[] = ['bottom', 'left', 'right'];
+const edges: Edge[] = ['left', 'right'];
 
 const calculateExpiryTime = (duration: CustomStatusDuration, currentUser: UserModel | undefined, expiresAt: moment.Moment): string => {
     const userTimezone = getTimezone(currentUser?.timezone);
@@ -149,32 +145,31 @@ function reducer(state: NewStatusType, action: {
     }
 }
 
-const dismissModalAndKeyboard = (isTablet: boolean, options?: Options & { componentId: AvailableScreens}) => {
+const dismissModalAndKeyboard = async (isTablet: boolean) => {
+    if (Keyboard.isVisible()) {
+        Keyboard.dismiss();
+        await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+
     if (isTablet) {
         DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
     } else {
-        dismissModal(options);
+        navigateBack();
     }
-    Keyboard.dismiss();
 };
-
-const closeCustomStatusModalId = 'close-custom-status';
 
 const CustomStatus = ({
     customStatusExpirySupported,
     currentUser,
     recentCustomStatuses,
-    componentId,
 }: Props) => {
+    const navigation = useNavigation();
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const [isBtnEnabled, setIsBtnEnabled] = useState(true);
-    useNavButtonPressed('close-custom-status', componentId, () => {
-        dismissModalAndKeyboard(isTablet, {componentId});
-    }, [componentId, isTablet]);
     const storedStatus = useMemo(() => {
         return getUserCustomStatus(currentUser);
     }, [currentUser]);
@@ -218,6 +213,7 @@ const CustomStatus = ({
     }, []);
 
     const handleClearAfterClick = useCallback((duration: CustomStatusDuration, expiresAt: string) => {
+        CallbackStore.removeCallback();
         dispatchStatus({type: 'duration', duration, expiresAt});
     }, []);
 
@@ -234,21 +230,18 @@ const CustomStatus = ({
 
     const openClearAfterModal = useCallback(() => {
         const screen = Screens.CUSTOM_STATUS_CLEAR_AFTER;
-        const title = intl.formatMessage({id: 'mobile.custom_status.clear_after.title', defaultMessage: 'Clear Custom Status After'});
+        CallbackStore.setCallback(handleClearAfterClick);
         const passProps = {
-            handleClearAfterClick,
             initialDuration: newStatus.duration,
-            intl,
-            theme,
-            closeButtonId: 'close-custom-status',
+            isModal: isTablet,
         };
 
         if (isTablet) {
-            showModal(screen, title, passProps);
+            navigateToScreen(screen, passProps);
         } else {
-            goToScreen(screen, title, passProps);
+            navigateToScreenWithBaseRoute(`/(modals)/${Screens.CUSTOM_STATUS}/`, screen, passProps);
         }
-    }, [intl, theme, isTablet, newStatus.duration, handleClearAfterClick]);
+    }, [isTablet, newStatus.duration, handleClearAfterClick]);
 
     const handleRecentCustomStatusSuggestionClick = useCallback((status: UserCustomStatus) => {
         dispatchStatus({type: 'fromUserCustomStatusIgnoringExpire', status: {...status, duration: status.duration || CustomStatusDurationEnum.DONT_CLEAR}});
@@ -287,7 +280,7 @@ const CustomStatus = ({
 
                 const {error} = await updateCustomStatus(serverUrl, status);
                 if (error) {
-                    dismissModalAndKeyboard(isTablet, {componentId});
+                    dismissModalAndKeyboard(isTablet);
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
                     setIsBtnEnabled(true);
                     return;
@@ -303,63 +296,35 @@ const CustomStatus = ({
                 updateLocalCustomStatus(serverUrl, currentUser, undefined);
             }
         }
-        dismissModalAndKeyboard(isTablet, {componentId});
-    }, [
-        currentUser,
-        isStatusSet,
-        storedStatus,
-        isTablet,
-        componentId,
-        newStatus,
-        customStatusExpirySupported,
-        serverUrl,
-    ]);
+        dismissModalAndKeyboard(isTablet);
+    }, [currentUser, isStatusSet, storedStatus, isTablet, newStatus, customStatusExpirySupported, serverUrl]);
 
     const openEmojiPicker = usePreventDoubleTap(useCallback(() => {
-        openAsBottomSheet({
-            closeButtonId: 'close-emoji-picker',
-            screen: Screens.EMOJI_PICKER,
-            theme,
-            title: intl.formatMessage({id: 'mobile.custom_status.choose_emoji', defaultMessage: 'Choose an emoji'}),
-            props: {onEmojiPress: handleEmojiClick},
-        });
-    }, [theme, intl, handleEmojiClick]));
+        CallbackStore.setCallback(handleEmojiClick);
+        navigateToScreen(Screens.EMOJI_PICKER);
+    }, [handleEmojiClick]));
 
     const handleBackButton = useCallback(() => {
-        dismissModalAndKeyboard(isTablet, {componentId});
-    }, [componentId, isTablet]);
+        dismissModalAndKeyboard(isTablet);
+    }, [isTablet]);
 
-    useAndroidHardwareBackHandler(componentId, handleBackButton);
-    useNavButtonPressed(BTN_UPDATE_STATUS, componentId, handleSetStatus, [handleSetStatus]);
+    useAndroidHardwareBackHandler(Screens.CUSTOM_STATUS, handleBackButton);
 
     useEffect(() => {
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        mergeNavigationOptions(componentId, {
-            topBar: {
-                rightButtons: [
-                    {
-                        enabled: isBtnEnabled,
-                        id: BTN_UPDATE_STATUS,
-                        showAsAction: 'always',
-                        testID: 'custom_status.done.button',
-                        text: intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'}),
-                        color: theme.sidebarHeaderTextColor,
-                    },
-                ],
-                leftButtons: [{
-                    id: closeCustomStatusModalId,
-                    icon: closeButton,
-                    testID: 'close.custom_status.button',
-                }],
-            },
+        navigation.setOptions({
+            headerRight: () => (
+                <NavigationButton
+                    onPress={handleSetStatus}
+                    text={intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'})}
+                    testID='custom_status.done.button'
+                    disabled={!isBtnEnabled}
+                />
+            ),
         });
-    }, [componentId, intl, isBtnEnabled, theme.sidebarHeaderTextColor]);
+    }, [handleSetStatus, intl, isBtnEnabled, navigation, theme.sidebarHeaderTextColor]);
 
     return (
-        <View
-            style={style.flex}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-        >
+        <View style={style.flex}>
             {isTablet &&
                 <TabletTitle
                     action={intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'})}
@@ -373,11 +338,9 @@ const CustomStatus = ({
                 style={style.container}
                 testID='custom_status.screen'
             >
-                <KeyboardAvoidingView
-                    behavior='padding'
-                    enabled={Platform.OS === 'ios'}
-                    keyboardVerticalOffset={100}
+                <KeyboardAwareScrollView
                     contentContainerStyle={style.contentContainerStyle}
+                    keyboardShouldPersistTaps='handled'
                 >
                     <ScrollView
                         bounces={false}
@@ -423,7 +386,7 @@ const CustomStatus = ({
                         </View>
                         <View style={style.separator}/>
                     </ScrollView>
-                </KeyboardAvoidingView>
+                </KeyboardAwareScrollView>
             </SafeAreaView>
         </View>
     );

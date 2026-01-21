@@ -12,8 +12,9 @@ import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
 import GroupModel from '@database/models/server/group';
 import {useMemoMentionedGroup, useMemoMentionedUser} from '@hooks/markdown';
-import {bottomSheet, dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {openUserProfile} from '@utils/navigation';
 import {displayUsername} from '@utils/user';
 
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
@@ -91,12 +92,12 @@ const AtMention = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const openUserProfile = () => {
+    const openProfile = () => {
         if (!user) {
             return;
         }
 
-        openUserProfileModal(intl, theme, {
+        openUserProfile({
             location,
             userId: user.id,
             channelId,
@@ -138,15 +139,9 @@ const AtMention = ({
                 );
             };
 
-            bottomSheet({
-                closeButtonId: 'close-at-mention',
-                renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
-                title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
-                theme,
-            });
+            bottomSheet(renderContent, [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)]);
         }
-    }, [managedConfig?.copyAndPasteProtection, intl, theme, mentionName, user?.username]);
+    }, [managedConfig?.copyAndPasteProtection, intl, mentionName, user?.username]);
 
     const mentionTextStyle: StyleProp<TextStyle> = [];
 
@@ -193,7 +188,7 @@ const AtMention = ({
 
     if (canPress) {
         onLongPress = handleLongPress;
-        onPress = (isSearchResult ? undefined : openUserProfile);
+        onPress = (isSearchResult ? undefined : openProfile);
     }
 
     if (suffix) {

@@ -1,21 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, type AppStateStatus, DeviceEventEmitter, Platform} from 'react-native';
+import {router} from 'expo-router';
+import {AppState, type AppStateStatus, DeviceEventEmitter, type EventSubscription, type NativeEventSubscription, Platform} from 'react-native';
 
 import {storeGlobal, storeOnboardingViewedValue} from '@actions/app/global';
 import {cancelAllSessionNotifications, terminateSession} from '@actions/local/session';
 import {logout, scheduleSessionNotification} from '@actions/remote/session';
 import {Events, Launch} from '@constants';
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
+import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getAllServerCredentials} from '@init/credentials';
-import {relaunchApp} from '@init/launch';
+import {determineRouteFromLaunchProps} from '@init/launch';
 import IntuneManager from '@managers/intune_manager';
 import SecurityManager from '@managers/security_manager';
 import {queryGlobalValue} from '@queries/app/global';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
-import {getThemeFromState} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
@@ -32,21 +33,26 @@ export class SessionManagerSingleton {
     private previousAppState: AppStateStatus;
     private scheduling = false;
     private terminatingSessionUrl = new Set<string>();
+    private appStateChangeListener: NativeEventSubscription | undefined;
+    private appStateBlurListener: NativeEventSubscription | undefined;
+    private appStateFocusListener: NativeEventSubscription | undefined;
+    private serverLogoutListener: EventSubscription | undefined;
+    private sessionExpiredListener: EventSubscription | undefined;
 
     constructor() {
         if (Platform.OS === 'android') {
-            AppState.addEventListener('blur', () => {
+            this.appStateBlurListener = AppState.addEventListener('blur', () => {
                 this.onAppStateChange('inactive');
             });
-            AppState.addEventListener('focus', () => {
+            this.appStateFocusListener = AppState.addEventListener('focus', () => {
                 this.onAppStateChange('active');
             });
         } else {
-            AppState.addEventListener('change', this.onAppStateChange);
+            this.appStateChangeListener = AppState.addEventListener('change', this.onAppStateChange);
         }
 
-        DeviceEventEmitter.addListener(Events.SERVER_LOGOUT, this.onLogout);
-        DeviceEventEmitter.addListener(Events.SESSION_EXPIRED, this.onSessionExpired);
+        this.serverLogoutListener = DeviceEventEmitter.addListener(Events.SERVER_LOGOUT, this.onLogout);
+        this.sessionExpiredListener = DeviceEventEmitter.addListener(Events.SESSION_EXPIRED, this.onSessionExpired);
 
         this.previousAppState = AppState.currentState;
     }
@@ -71,6 +77,14 @@ export class SessionManagerSingleton {
                 storeGlobal(GLOBAL_IDENTIFIERS.CACHE_MIGRATION, true);
             }
         });
+    }
+
+    cleanup() {
+        this.appStateChangeListener?.remove();
+        this.appStateBlurListener?.remove();
+        this.appStateFocusListener?.remove();
+        this.serverLogoutListener?.remove();
+        this.sessionExpiredListener?.remove();
     }
 
     private scheduleAllSessionNotifications = async () => {
@@ -122,7 +136,7 @@ export class SessionManagerSingleton {
                 let displayName = '';
                 let launchType: LaunchType = Launch.AddServer;
                 if (!Object.keys(DatabaseManager.serverDatabases).length) {
-                    EphemeralStore.theme = undefined;
+                    EphemeralStore.setTheme(getDefaultThemeByAppearance());
                     launchType = Launch.Normal;
 
                     if (activeServerDisplayName) {
@@ -135,8 +149,9 @@ export class SessionManagerSingleton {
                 if (!servers.length) {
                     await storeOnboardingViewedValue(false);
                 }
+                const launchRoute = await determineRouteFromLaunchProps({launchType, serverUrl, displayName});
 
-                relaunchApp({launchType, serverUrl, displayName});
+                router.replace({pathname: launchRoute.route, params: launchRoute.params});
             }
         } finally {
             this.terminatingSessionUrl.delete(serverUrl);
@@ -158,11 +173,12 @@ export class SessionManagerSingleton {
             const activeServerUrl = await DatabaseManager.getActiveServerUrl();
             const serverDisplayName = await getServerDisplayName(serverUrl);
 
-            await relaunchApp({launchType: Launch.Normal, serverUrl, displayName: serverDisplayName});
+            const launchRoute = await determineRouteFromLaunchProps({launchType: Launch.Normal, serverUrl, displayName: serverDisplayName});
+            router.replace({pathname: launchRoute.route, params: launchRoute.params});
             if (activeServerUrl) {
-                addNewServer(getThemeFromState(), serverUrl, serverDisplayName);
+                addNewServer(EphemeralStore.getTheme(), serverUrl, serverDisplayName);
             } else {
-                EphemeralStore.theme = undefined;
+                EphemeralStore.setTheme(getDefaultThemeByAppearance());
             }
         } finally {
             this.terminatingSessionUrl.delete(serverUrl);

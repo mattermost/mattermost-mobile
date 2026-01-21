@@ -131,7 +131,7 @@ const Button = ({
                 style={styles.container}
                 testID={`${testID}-text-container`}
             >
-                {showLoader && loadingComponent}
+                {showLoader && !isIconOnTheRight&& loadingComponent}
                 {!isIconOnTheRight && icon}
                 <Text
                     style={txtStyleToUse}
@@ -139,6 +139,7 @@ const Button = ({
                 >
                     {text}
                 </Text>
+                {showLoader && isIconOnTheRight&& loadingComponent}
                 {isIconOnTheRight && icon}
             </View>
         </ElementButton>

@@ -4,7 +4,6 @@
 import {match} from 'path-to-regexp';
 import {defineMessage, type IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import urlParse from 'url-parse';
 
 import {joinIfNeededAndSwitchToChannel, makeDirectChannel} from '@actions/remote/channel';
@@ -23,9 +22,9 @@ import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
-import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
+import {dismissAllRoutesAndResetToRootRoute, updateParams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/draft';
 import {getIntlShape} from '@utils/general';
 import {logError} from '@utils/log';
@@ -55,7 +54,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
 
         // After checking the server for http & https then we add it
         if (!existingServerUrl) {
-            const theme = EphemeralStore.theme || getDefaultThemeByAppearance();
+            const theme = EphemeralStore.getTheme() || getDefaultThemeByAppearance();
 
             if (deepLink.type === DeepLink.MagicLink && 'token' in deepLink.data) {
                 const result = await magicLinkLogin(deepLink.data.serverUrl, deepLink.data.token);
@@ -66,7 +65,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                 return {error: false};
             }
             if (NavigationStore.getVisibleScreen() === Screens.SERVER) {
-                Navigation.updateProps(Screens.SERVER, {serverUrl: deepLink.data.serverUrl});
+                updateParams({serverUrl: deepLink.data.serverUrl});
             } else if (!NavigationStore.getScreensInStack().includes(Screens.SERVER)) {
                 addNewServer(theme, deepLink.data.serverUrl, undefined, deepLink);
             }
@@ -74,7 +73,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
         }
 
         if (existingServerUrl !== currentServerUrl && NavigationStore.getVisibleScreen()) {
-            await dismissAllModalsAndPopToRoot();
+            await dismissAllRoutesAndResetToRootRoute();
             DatabaseManager.setActiveServerDatabase(existingServerUrl);
             WebsocketManager.initializeClient(existingServerUrl, 'DeepLink');
             await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
@@ -116,11 +115,8 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
             }
             case DeepLink.Permalink: {
                 const deepLinkData = deepLink.data as DeepLinkPermalink;
-                if (
-                    NavigationStore.hasModalsOpened() ||
-                    !deepLinkScreens.includes(NavigationStore.getVisibleScreen())
-                ) {
-                    await dismissAllModalsAndPopToRoot();
+                if (!deepLinkScreens.includes(NavigationStore.getVisibleScreen())) {
+                    await dismissAllRoutesAndResetToRootRoute();
                 }
                 showPermalink(existingServerUrl, deepLinkData.teamName, deepLinkData.postId);
                 break;
@@ -165,7 +161,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                             break;
                         }
                     }
-                    goToPlaybookRun(intl, deepLinkData.playbookRunId);
+                    goToPlaybookRun(deepLinkData.playbookRunId);
                 } else {
                     // Alert playbooks not enabled or version not supported
                     Alert.alert(

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -20,17 +20,13 @@ import {useTheme} from '@context/theme';
 import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useKeyboardOverlap} from '@hooks/device';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {dismissModal} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
-import {mergeNavigationOptions} from '@utils/navigation';
 import {showAddChannelMembersSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const CLOSE_BUTTON_ID = 'close-add-member';
 const TEST_ID = 'add_members';
@@ -61,16 +57,14 @@ export const getHeaderOptions = async (theme: Theme, displayName: string, inModa
 };
 
 type Props = {
-    componentId: AvailableScreens;
     channel?: ChannelModel;
     teammateNameDisplay: string;
     tutorialWatched: boolean;
-    inModal?: boolean;
 }
 
 const close = () => {
     Keyboard.dismiss();
-    dismissModal();
+    navigateBack();
 };
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -116,11 +110,9 @@ function removeProfileFromList(list: Set<string>, id: string) {
 }
 
 export default function ChannelAddMembers({
-    componentId,
     channel,
     teammateNameDisplay,
     tutorialWatched,
-    inModal,
 }: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -200,11 +192,6 @@ export default function ChannelAddMembers({
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const updateNavigationButtons = useCallback(async () => {
-        const options = await getHeaderOptions(theme, channel?.displayName || '', inModal);
-        mergeNavigationOptions(componentId, options);
-    }, [theme, channel?.displayName, inModal, componentId]);
-
     const userFetchFunction = useCallback(async (page: number) => {
         if (!channel) {
             return [];
@@ -244,12 +231,7 @@ export default function ChannelAddMembers({
         };
     }, []);
 
-    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
-    useAndroidHardwareBackHandler(componentId, close);
-
-    useEffect(() => {
-        updateNavigationButtons();
-    }, [updateNavigationButtons, channel, serverUrl]);
+    useAndroidHardwareBackHandler(Screens.CHANNEL_ADD_MEMBERS, close);
 
     if (addingMembers) {
         return (
@@ -266,7 +248,6 @@ export default function ChannelAddMembers({
             onLayout={onLayout}
             ref={mainView}
             edges={['top', 'left', 'right']}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             {showBanner && (
                 <SectionNotice

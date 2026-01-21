@@ -5,12 +5,11 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import PasteInput, {type PasteInputRef} from '@mattermost/react-native-paste-input';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData, View} from 'react-native';
+import {type NativeSyntheticEvent, type TextInputSelectionChangeEventData, View} from 'react-native';
 
 import QuickActions from '@components/post_draft/quick_actions/';
 import {INITIAL_PRIORITY} from '@components/post_draft/send_handler/send_handler';
 import Uploads from '@components/post_draft/uploads';
-import {ExtraKeyboard, useExtraKeyboardContext} from '@context/extra_keyboard';
 import {useTheme} from '@context/theme';
 import {emptyFunction} from '@utils/general';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -79,16 +78,6 @@ const EditPostInput = ({
         }
     }, [message, onChangeText]);
 
-    const keyboardContext = useExtraKeyboardContext();
-
-    const onFocus = useCallback(() => {
-        keyboardContext?.registerTextInputFocus();
-    }, [keyboardContext]);
-
-    const onBlur = useCallback(() => {
-        keyboardContext?.registerTextInputBlur();
-    }, [keyboardContext]);
-
     const inputStyle = useMemo(() => {
         return [styles.input];
     }, [styles]);
@@ -123,8 +112,6 @@ const EditPostInput = ({
                 testID='edit_post.message.input'
                 underlineColorAndroid='transparent'
                 value={message}
-                onFocus={onFocus}
-                onBlur={onBlur}
             />
             {isMinimumServerVersion(version, MAJOR_VERSION_TO_SHOW_ATTACHMENTS, MINOR_VERSION_TO_SHOW_ATTACHMENTS) &&
                 <>
@@ -150,7 +137,6 @@ const EditPostInput = ({
                     />
                 </>
             }
-            {Platform.select({ios: <ExtraKeyboard/>})}
         </View>
     );
 };
