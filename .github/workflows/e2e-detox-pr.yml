@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  INTUNE_ENABLED: 'true'
+  INTUNE_ENABLED: 'false'
 
 jobs:
   update-initial-status-ios:
