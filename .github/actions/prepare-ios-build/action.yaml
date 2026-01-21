@@ -53,7 +53,7 @@ runs:
     - name: ci/install-pods-dependencies
       shell: bash
       env:
-        INTUNE_ENABLED: ${{ inputs.intune-enabled == 'true' && '1' || '0' }}
+        INTUNE_ENABLED: ${{ inputs.intune-enabled }}
       run: |
         echo "::group::install-pods-dependencies"
         echo "INTUNE_ENABLED=$INTUNE_ENABLED"
