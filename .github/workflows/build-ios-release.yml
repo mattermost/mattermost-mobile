@@ -11,7 +11,7 @@ on:
 env:
   NODE_VERSION: 22.14.0
   TERM: xterm
-  INTUNE_ENABLED: 'true'
+  INTUNE_ENABLED: 'false'
 
 jobs:
   test:
