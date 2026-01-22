@@ -14,7 +14,7 @@ type Props = {
     testID?: string;
     canUploadFiles: boolean;
     fileCount: number;
-    isAIEnabled: boolean;
+    isAgentsEnabled: boolean;
     isPostPriorityEnabled: boolean;
     canShowPostPriority?: boolean;
     canShowSlashCommands?: boolean;
@@ -46,7 +46,7 @@ export default function QuickActions({
     canUploadFiles,
     value,
     fileCount,
-    isAIEnabled,
+    isAgentsEnabled,
     isPostPriorityEnabled,
     canShowSlashCommands = true,
     canShowPostPriority,
@@ -106,7 +106,7 @@ export default function QuickActions({
                     testID={emojiActionTestID}
                 />
             )}
-            {isAIEnabled && (
+            {isAgentsEnabled && (
                 <AIRewriteAction
                     testID={aiRewriteActionTestID}
                     value={value}

@@ -4,9 +4,8 @@
 import {rewriteStore} from '@agents/store';
 import {map} from 'rxjs/operators';
 
-export const observeIsAIEnabled = (serverUrl: string) => {
+export const observeIsAgentsEnabled = (serverUrl: string) => {
     return rewriteStore.observeAgents(serverUrl).pipe(
         map((agents) => agents.length > 0),
     );
 };
-

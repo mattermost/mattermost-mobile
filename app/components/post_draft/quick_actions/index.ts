@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {observeIsAgentsEnabled} from '@agents/queries/agents';
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 
 import {withServerUrl} from '@context/server';
-import {observeIsAIEnabled} from '@queries/servers/ai';
 import {observeIsPostPriorityEnabled} from '@queries/servers/post';
 import {observeCanUploadFiles} from '@queries/servers/security';
 import {observeMaxFileCount} from '@queries/servers/system';
@@ -24,7 +24,7 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhancedProps) => {
 
     return {
         canUploadFiles,
-        isAIEnabled: observeIsAIEnabled(serverUrl),
+        isAgentsEnabled: observeIsAgentsEnabled(serverUrl),
         isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
         maxFileCount,
     };
