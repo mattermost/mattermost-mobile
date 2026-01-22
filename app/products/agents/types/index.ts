@@ -103,10 +103,3 @@ export interface RewriteRequest {
 export interface RewriteResponse {
     rewritten_text: string;
 }
-
-// Backward compatibility aliases (prefix with AI)
-export type AIRewriteAction = RewriteAction;
-export type AIAgent = Agent;
-export type AIRewriteRequest = RewriteRequest;
-export type AIRewriteResponse = RewriteResponse;
-
