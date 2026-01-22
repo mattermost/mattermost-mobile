@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {loadAgentsScreen} from '@agents/screens';
 import {Provider as EMMProvider} from '@mattermost/react-native-emm';
 import React, {type ComponentType} from 'react';
 import {IntlProvider} from 'react-intl';
@@ -63,12 +64,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     switch (screenName) {
         case Screens.ABOUT:
             screen = withServerDatabase(require('@screens/settings/about').default);
-            break;
-        case Screens.AGENTS_SELECTOR:
-            screen = withServerDatabase(require('@agents/screens/agent_selector').default);
-            break;
-        case Screens.AGENTS_REWRITE_OPTIONS:
-            screen = withServerDatabase(require('@agents/screens/rewrite_options').default);
             break;
         case Screens.APPS_FORM:
             screen = withServerDatabase(require('@screens/apps_form').default);
@@ -311,6 +306,10 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SCHEDULED_POST_OPTIONS:
             screen = withServerDatabase(require('@screens/scheduled_post_options').default);
             break;
+    }
+
+    if (!screen) {
+        screen = loadAgentsScreen(screenName);
     }
 
     if (!screen) {
