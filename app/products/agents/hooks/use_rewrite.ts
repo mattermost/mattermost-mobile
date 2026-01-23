@@ -158,6 +158,3 @@ export const useRewrite = (): UseRewriteReturn => {
         cancelRewrite,
     };
 };
-
-// Backward compatibility alias
-export const useAIRewrite = useRewrite;
