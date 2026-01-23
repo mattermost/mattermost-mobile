@@ -226,7 +226,7 @@ const RewriteOptions = ({
         );
     }, [intl]);
 
-    const handleRewrite = useCallback((action: RewriteAction, prompt?: string) => {
+    const handleRewrite = useCallback(async (action: RewriteAction, prompt?: string) => {
         // Only dismiss keyboard if it's actually visible to prevent unwanted animations
         if (isKeyboardVisible) {
             Keyboard.dismiss();
@@ -258,12 +258,15 @@ const RewriteOptions = ({
         };
 
         // Close the bottom sheet first, then start rewrite
-        closeBottomSheet().then(triggerRewrite).catch((e) => {
+        try {
+            await closeBottomSheet();
+            triggerRewrite();
+        } catch (e) {
             logWarning('[RewriteOptions] Error closing bottom sheet:', e);
 
             // Still try to start the rewrite even if sheet close failed
             triggerRewrite();
-        });
+        }
     }, [originalMessage, serverUrl, closeBottomSheet, selectedAgent, isKeyboardVisible, startRewrite, handleRewriteSuccess, handleRewriteError]);
 
     // Determine if we're in generation mode (empty original message means user wants to generate new content)
