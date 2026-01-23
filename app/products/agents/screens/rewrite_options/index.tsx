@@ -89,6 +89,15 @@ type Props = {
 const CUSTOM_PROMPT_INPUT_HEIGHT = 64;
 const OPTIONS_PADDING = 8;
 
+const options: Array<{action: RewriteAction; message: typeof messages.shorten; icon: string}> = [
+    {action: 'shorten', message: messages.shorten, icon: 'text-short'},
+    {action: 'elaborate', message: messages.elaborate, icon: 'text-long'},
+    {action: 'improve_writing', message: messages.improveWriting, icon: 'auto-fix'},
+    {action: 'fix_spelling', message: messages.fixSpelling, icon: 'spellcheck'},
+    {action: 'simplify', message: messages.simplify, icon: 'creation-outline'},
+    {action: 'summarize', message: messages.summarize, icon: 'ai-summarize'},
+];
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.centerChannelBg,
@@ -304,15 +313,6 @@ const RewriteOptions = ({
         });
     }, [theme, intl, agents, selectedAgent, isTablet]);
 
-    const options: Array<{action: RewriteAction; message: typeof messages.shorten; icon: string}> = [
-        {action: 'shorten', message: messages.shorten, icon: 'text-short'},
-        {action: 'elaborate', message: messages.elaborate, icon: 'text-long'},
-        {action: 'improve_writing', message: messages.improveWriting, icon: 'auto-fix'},
-        {action: 'fix_spelling', message: messages.fixSpelling, icon: 'spellcheck'},
-        {action: 'simplify', message: messages.simplify, icon: 'creation-outline'},
-        {action: 'summarize', message: messages.summarize, icon: 'ai-summarize'},
-    ];
-
     const snapPoints = useMemo(() => {
         const paddingBottom = 10;
         const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
@@ -327,7 +327,7 @@ const RewriteOptions = ({
         return [1, COMPONENT_HEIGHT];
     }, [agents.length]);
 
-    const renderContent = () => (
+    const renderContent = useCallback(() => (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
                 {agents.length > 1 && (
@@ -379,7 +379,7 @@ const RewriteOptions = ({
                 </View>
             )}
         </View>
-    );
+    ), [styles, agents, intl, selectedAgent, handleOpenAgentSelector, theme, isGeneratingContent, customPrompt, handleCustomPromptSubmit, handleRewrite]);
 
     return (
         <BottomSheet
