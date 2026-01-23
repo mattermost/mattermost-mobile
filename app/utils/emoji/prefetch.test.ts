@@ -5,7 +5,6 @@ import {Image as ExpoImage} from 'expo-image';
 import {Platform} from 'react-native';
 
 import {logDebug} from '@utils/log';
-import {urlSafeBase64Encode} from '@utils/security';
 
 import {prefetchCustomEmojiImages} from './prefetch';
 
@@ -40,18 +39,8 @@ describe('prefetchCustomEmojiImages', () => {
         Platform.OS = 'ios';
 
         prefetchCustomEmojiImages(mockClient, emojis);
-        const cachePath = urlSafeBase64Encode(mockClient.apiClient.baseUrl);
-        const expectedResults = [{
-            uri: 'url/emoji1',
-            cacheKey: 'emoji-emoji_name1',
-            cachePath,
-        }, {
-            uri: 'url/emoji2',
-            cacheKey: 'emoji-emoji_name2',
-            cachePath,
-        }];
 
         expect(logDebug).toHaveBeenCalledWith('Prefetching 2 custom emoji images');
-        expect(ExpoImage.prefetch).toHaveBeenCalledWith(expectedResults, {cachePolicy: 'disk'});
+        expect(ExpoImage.prefetch).toHaveBeenCalledWith(['url/emoji1', 'url/emoji2'], {cachePolicy: 'disk'});
     });
 });

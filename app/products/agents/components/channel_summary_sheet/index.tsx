@@ -43,19 +43,19 @@ type Props = {
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
-        paddingHorizontal: 20,
-        paddingBottom: 24,
+    container: {},
+    headerSection: {
+        gap: 4,
     },
     agentRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 16,
+        paddingVertical: 8,
     },
     agentLabel: {
-        color: changeOpacity(theme.centerChannelColor, 0.56),
-        ...typography('Body', 100, 'Regular'),
+        color: theme.centerChannelColor,
+        ...typography('Body', 200, 'Regular'),
     },
     agentSelector: {
         flexDirection: 'row',
@@ -63,18 +63,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         gap: 4,
     },
     agentName: {
-        color: changeOpacity(theme.centerChannelColor, 0.72),
+        color: changeOpacity(theme.centerChannelColor, 0.56),
         ...typography('Body', 100, 'Regular'),
+    },
+    promptWrapper: {
+        paddingTop: 4,
     },
     promptContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         borderWidth: 1,
         borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: Platform.select({ios: 12, default: 10}),
-        marginBottom: 8,
+        borderRadius: 4,
+        padding: 12,
         gap: 8,
     },
     promptInput: {
@@ -84,7 +85,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Body', 200, 'Regular'),
     },
     sendButton: {
-        width: 32,
+        width: 44,
         height: 32,
         borderRadius: 4,
         backgroundColor: theme.buttonBg,
@@ -94,19 +95,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     sendButtonDisabled: {
         backgroundColor: changeOpacity(theme.buttonBg, 0.5),
     },
+    optionsContainer: {
+        paddingVertical: 8,
+    },
     optionRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 16,
+        paddingVertical: 12,
     },
     optionLabel: {
         color: theme.centerChannelColor,
         ...typography('Body', 200, 'Regular'),
-    },
-    divider: {
-        height: 1,
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
     },
     loadingOverlay: {
         ...Platform.select({
@@ -128,11 +128,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 type SummaryOptionItemProps = {
     option: SummaryOption;
     onPress: (option: SummaryOption) => void;
-    showDivider: boolean;
     disabled: boolean;
 };
 
-const SummaryOptionItem = React.memo(({option, onPress, showDivider, disabled}: SummaryOptionItemProps) => {
+const SummaryOptionItem = React.memo(({option, onPress, disabled}: SummaryOptionItemProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
@@ -142,26 +141,23 @@ const SummaryOptionItem = React.memo(({option, onPress, showDivider, disabled}: 
     }, [onPress, option]);
 
     return (
-        <React.Fragment>
-            <TouchableOpacity
-                onPress={handlePress}
-                style={styles.optionRow}
-                testID={`agents.channel_summary.option.${option.id}`}
-                disabled={disabled}
-            >
-                <Text style={styles.optionLabel}>
-                    {intl.formatMessage({id: option.labelId, defaultMessage: option.defaultLabel})}
-                </Text>
-                {option.showChevron && (
-                    <CompassIcon
-                        name='chevron-right'
-                        size={24}
-                        color={changeOpacity(theme.centerChannelColor, 0.56)}
-                    />
-                )}
-            </TouchableOpacity>
-            {showDivider && <View style={styles.divider}/>}
-        </React.Fragment>
+        <TouchableOpacity
+            onPress={handlePress}
+            style={styles.optionRow}
+            testID={`agents.channel_summary.option.${option.id}`}
+            disabled={disabled}
+        >
+            <Text style={styles.optionLabel}>
+                {intl.formatMessage({id: option.labelId, defaultMessage: option.defaultLabel})}
+            </Text>
+            {option.showChevron && (
+                <CompassIcon
+                    name='chevron-right'
+                    size={20}
+                    color={changeOpacity(theme.centerChannelColor, 0.32)}
+                />
+            )}
+        </TouchableOpacity>
     );
 });
 SummaryOptionItem.displayName = 'SummaryOptionItem';
@@ -348,77 +344,81 @@ const ChannelSummarySheet = ({channelId}: Props) => {
 
     return (
         <View style={styles.container}>
-            {/* Selected Agent Row */}
-            <TouchableOpacity
-                onPress={handleAgentSelectorOpen}
-                style={styles.agentRow}
-                testID='agents.channel_summary.agent_selector'
-                disabled={submitting || loadingAgents}
-            >
-                <Text style={styles.agentLabel}>
-                    {intl.formatMessage({id: 'agents.channel_summary.selected_agent', defaultMessage: 'Selected Agent'})}
-                </Text>
-                <View style={styles.agentSelector}>
-                    {loadingAgents ? (
-                        <Loading size='small'/>
-                    ) : (
-                        <>
-                            <Text style={styles.agentName}>{selectedAgentDisplayName}</Text>
-                            <CompassIcon
-                                name='chevron-right'
-                                size={20}
-                                color={changeOpacity(theme.centerChannelColor, 0.56)}
-                            />
-                        </>
-                    )}
-                </View>
-            </TouchableOpacity>
-
-            {/* AI Prompt Input */}
-            <View style={styles.promptContainer}>
-                <CompassIcon
-                    name='creation-outline'
-                    size={20}
-                    color={changeOpacity(theme.centerChannelColor, 0.56)}
-                />
-                <TextInput
-                    value={customPrompt}
-                    onChangeText={setCustomPrompt}
-                    style={styles.promptInput}
-                    placeholder={intl.formatMessage({id: 'agents.channel_summary.ai_prompt_placeholder', defaultMessage: 'Ask AI to edit selection...'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.48)}
-                    testID='agents.channel_summary.prompt_input'
-                    editable={!submitting}
-                    onSubmitEditing={handleCustomPromptSubmitDebounced}
-                    returnKeyType='send'
-                />
+            {/* Header Section - Agent selector + Prompt input */}
+            <View style={styles.headerSection}>
                 <TouchableOpacity
-                    onPress={handleCustomPromptSubmitDebounced}
-                    style={[
-                        styles.sendButton,
-                        (!customPrompt.trim() || submitting) && styles.sendButtonDisabled,
-                    ]}
-                    disabled={!customPrompt.trim() || submitting}
-                    testID='agents.channel_summary.prompt_submit'
+                    onPress={handleAgentSelectorOpen}
+                    style={styles.agentRow}
+                    testID='agents.channel_summary.agent_selector'
+                    disabled={submitting || loadingAgents}
                 >
-                    <CompassIcon
-                        name='send'
-                        size={18}
-                        color='#FFFFFF'
-                    />
+                    <Text style={styles.agentLabel}>
+                        {intl.formatMessage({id: 'agents.channel_summary.selected_agent', defaultMessage: 'Selected Agent'})}
+                    </Text>
+                    <View style={styles.agentSelector}>
+                        {loadingAgents ? (
+                            <Loading size='small'/>
+                        ) : (
+                            <>
+                                <Text style={styles.agentName}>{selectedAgentDisplayName}</Text>
+                                <CompassIcon
+                                    name='chevron-right'
+                                    size={20}
+                                    color={changeOpacity(theme.centerChannelColor, 0.32)}
+                                />
+                            </>
+                        )}
+                    </View>
                 </TouchableOpacity>
+
+                <View style={styles.promptWrapper}>
+                    <View style={styles.promptContainer}>
+                        <CompassIcon
+                            name='creation-outline'
+                            size={20}
+                            color={changeOpacity(theme.centerChannelColor, 0.64)}
+                        />
+                        <TextInput
+                            value={customPrompt}
+                            onChangeText={setCustomPrompt}
+                            style={styles.promptInput}
+                            placeholder={intl.formatMessage({id: 'agents.channel_summary.ai_prompt_placeholder', defaultMessage: 'Ask AI to edit selection...'})}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.48)}
+                            testID='agents.channel_summary.prompt_input'
+                            editable={!submitting}
+                            onSubmitEditing={handleCustomPromptSubmitDebounced}
+                            returnKeyType='send'
+                        />
+                        <TouchableOpacity
+                            onPress={handleCustomPromptSubmitDebounced}
+                            style={[
+                                styles.sendButton,
+                                (!customPrompt.trim() || submitting) && styles.sendButtonDisabled,
+                            ]}
+                            disabled={!customPrompt.trim() || submitting}
+                            testID='agents.channel_summary.prompt_submit'
+                        >
+                            <CompassIcon
+                                name='send'
+                                size={20}
+                                color='#FFFFFF'
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
 
             {/* Summary Options */}
-            {SUMMARY_OPTIONS.map((option, index) => (
-                <SummaryOptionItem
-                    key={option.id}
-                    option={option}
-                    onPress={handleOptionPressDebounced}
-                    showDivider={index < SUMMARY_OPTIONS.length - 1}
-                    disabled={submitting}
-                />
-            ))}
+            <View style={styles.optionsContainer}>
+                {SUMMARY_OPTIONS.map((option) => (
+                    <SummaryOptionItem
+                        key={option.id}
+                        option={option}
+                        onPress={handleOptionPressDebounced}
+                        disabled={submitting}
+                    />
+                ))}
+            </View>
 
             {submitting && (
                 <View style={styles.loadingOverlay}>
