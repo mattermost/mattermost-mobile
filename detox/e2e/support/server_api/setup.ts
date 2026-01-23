@@ -16,12 +16,33 @@ export const apiInit = async (baseUrl: string, {
     teamOptions = {type: 'O', prefix: 'team'},
     userOptions = {prefix: 'user'},
 }: any = {}): Promise<any> => {
-    const {team} = await Team.apiCreateTeam(baseUrl, teamOptions);
-    const {channel} = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});
-    const {user} = await User.apiCreateUser(baseUrl, userOptions);
+    const teamResult = await Team.apiCreateTeam(baseUrl, teamOptions);
+    if (teamResult.error) {
+        throw new Error(`Failed to create team: ${JSON.stringify(teamResult.error)}`);
+    }
+    const {team} = teamResult;
 
-    await Team.apiAddUserToTeam(baseUrl, user.id, team.id);
-    await Channel.apiAddUserToChannel(baseUrl, user.id, channel.id);
+    const channelResult = await Channel.apiCreateChannel(baseUrl, {...channelOptions, teamId: team.id});
+    if (channelResult.error) {
+        throw new Error(`Failed to create channel: ${JSON.stringify(channelResult.error)}`);
+    }
+    const {channel} = channelResult;
+
+    const userResult = await User.apiCreateUser(baseUrl, userOptions);
+    if (userResult.error) {
+        throw new Error(`Failed to create user: ${JSON.stringify(userResult.error)}`);
+    }
+    const {user} = userResult;
+
+    const addTeamResult = await Team.apiAddUserToTeam(baseUrl, user.id, team.id);
+    if (addTeamResult.error) {
+        throw new Error(`Failed to add user to team: ${JSON.stringify(addTeamResult.error)}`);
+    }
+
+    const addChannelResult = await Channel.apiAddUserToChannel(baseUrl, user.id, channel.id);
+    if (addChannelResult.error) {
+        throw new Error(`Failed to add user to channel: ${JSON.stringify(addChannelResult.error)}`);
+    }
 
     return {
         channel,
