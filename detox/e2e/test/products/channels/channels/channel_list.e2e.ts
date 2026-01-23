@@ -32,10 +32,10 @@ import {expect} from 'detox';
 
 describe('Channels - Channel List', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     const directMessagesCategory = 'direct_messages';
     const offTopicChannelName = 'off-topic';
     const townSquareChannelName = 'town-square';
+    const channelsCategory = 'channels';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
