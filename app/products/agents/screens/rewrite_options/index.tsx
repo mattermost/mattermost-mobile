@@ -126,6 +126,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     optionsContainer: {
         paddingTop: OPTIONS_PADDING,
     },
+    bottomSheetContent: {
+        paddingTop: 10,
+    },
 }));
 
 const RewriteOptions = ({
@@ -389,7 +392,7 @@ const RewriteOptions = ({
             keyboardBehavior='fillParent'
             keyboardBlurBehavior='none'
             testID='ai_rewrite_options'
-            contentStyle={{paddingTop: 10}}
+            contentStyle={styles.bottomSheetContent}
         />
     );
 };
