@@ -50,13 +50,10 @@ function RewritingIndicator() {
 
     useEffect(() => {
         if (isProcessing) {
-            rotation.value = 0;
             rotation.value = withRepeat(
                 withTiming(360, {duration: 750, easing: Easing.linear}),
                 -1,
             );
-        } else {
-            cancelAnimation(rotation);
         }
 
         return () => {

@@ -203,7 +203,6 @@ export default function PostInput({
                 true,
             );
         } else {
-            cancelAnimation(pulseOpacity);
             pulseOpacity.value = withTiming(1, {duration: 200});
         }
 
