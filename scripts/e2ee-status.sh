@@ -23,6 +23,7 @@ else
     echo "To enable:"
     echo "   npm run e2ee:enable         - Download pre-built binaries"
     echo "   npm run e2ee:enable -- dev  - Symlink sister directory"
+    echo "   npm run e2ee:enable -- ci   - For CI use; download skip pod install"
     echo ""
     exit 0
 fi

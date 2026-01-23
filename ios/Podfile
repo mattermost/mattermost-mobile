@@ -26,7 +26,7 @@ setup_permissions([
 ])
 
 # Conditional E2EE support
-e2ee_enabled = ENV['E2EE_ENABLED'] == '1'
+e2ee_enabled = ENV['E2EE_ENABLED'] == 'true' || ENV['E2EE_ENABLED'] == '1'
 
 if e2ee_enabled
   puts "🔐 E2EE features enabled"

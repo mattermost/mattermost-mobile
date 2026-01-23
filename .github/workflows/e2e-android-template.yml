@@ -62,7 +62,6 @@ on:
         value: ${{ jobs.generate-report.outputs.FAILURES }}
 
 env:
-  E2EE_RELEASE: 1
   AWS_REGION: "us-east-1"
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
@@ -87,6 +86,7 @@ env:
   FAILURE_MESSAGE: "Something has failed"
   IOS: "false"
   RUNNING_E2E: "true"
+  E2EE_ENABLED: "true"
   AVD_NAME: ${{ inputs.android_avd_name }}
   SDK_VERSION: ${{ inputs.android_api_level }}
 
@@ -160,6 +160,8 @@ jobs:
 
       - name: Prepare Android Build
         uses: ./.github/actions/prepare-android-build
+        with:
+          e2ee-enabled: ${{ env.E2EE_ENABLED }}
         env:
           STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
           STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"

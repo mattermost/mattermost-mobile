@@ -221,12 +221,13 @@
     "e2ee:status": "./scripts/e2ee-status.sh",
     "e2ee:build": "npm run --prefix libraries/@mattermost/e2ee build",
     "e2ee:clean": "npm run --prefix libraries/@mattermost/e2ee clean",
-    "e2ee:test": "npm run --prefix libraries/@mattermost/e2ee test",
-    "e2ee:test:rust": "npm run --prefix libraries/@mattermost/e2ee test:rust",
     "e2ee:test:verify": "npm run --prefix libraries/@mattermost/e2ee test:verify",
     "e2ee:test:ios": "npm run --prefix libraries/@mattermost/e2ee test:ios",
     "e2ee:test:android": "npm run --prefix libraries/@mattermost/e2ee test:android",
-    "e2ee:test:all": "npm run --prefix libraries/@mattermost/e2ee test:all"
+    "e2ee:test:dev": "npm run --prefix libraries/@mattermost/e2ee test:rust && npm run e2ee:test:verify && npm run e2ee:test:ios && npm run e2ee:test:android",
+    "e2ee:test:ci": "npm run tsc && npm run e2ee:test:verify",
+    "e2ee:test:ci:ios": "npm run e2ee:test:ci && npm run e2ee:test:ios",
+    "e2ee:test:ci:android": "npm run e2ee:test:ci && npm run e2ee:test:android"
   },
   "overrides": {
     "promise": "^8.3.0",

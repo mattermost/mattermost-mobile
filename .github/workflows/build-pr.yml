@@ -9,7 +9,7 @@ env:
   NODE_VERSION: 22.14.0
   TERM: xterm
   INTUNE_ENABLED: 'true'
-  E2EE_RELEASE: 'true'
+  E2EE_ENABLED: 'true'
 
 jobs:
   test:
@@ -41,7 +41,10 @@ jobs:
 
       - name: ci/prepare-ios-build
         uses: ./.github/actions/prepare-ios-build
+        env:
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
         with:
+          e2ee-enabled: ${{ env.E2EE_ENABLED }}
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
@@ -91,6 +94,8 @@ jobs:
           STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
           STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
           MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
+        with:
+          e2ee-enabled: ${{ env.E2EE_ENABLED }}
 
       - name: ci/build-android-pr
         env:

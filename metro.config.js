@@ -21,17 +21,15 @@ const isE2EEDevMode = fs.existsSync(e2eeDevMarker) && fs.existsSync(e2eeSisterDi
  */
 const config = {
     watchFolders: isE2EEDevMode ? [e2eeSisterDir] : [],
-    resolver: {
-
+    resolver: isE2EEDevMode ? {
         // Follow symlinks to their real locations
         unstable_enableSymlinks: true,
-
         // Ensure node_modules from symlinked dirs resolve to main node_modules
-        nodeModulesPaths: isE2EEDevMode ? [
+        nodeModulesPaths: [
             path.resolve(__dirname, 'node_modules'),
             path.resolve(e2eeSisterDir, 'node_modules'),
-        ] : [],
-    },
+        ],
+    } : {},
 };
 
 module.exports = mergeConfig(defaultConfig, config);

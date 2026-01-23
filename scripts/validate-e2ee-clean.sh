@@ -47,16 +47,28 @@ if should_check "package.json"; then
     fi
 fi
 
-# Check for E2EE pods being ADDED to Podfile.lock (not just present)
-# This allows committing other Podfile.lock changes while e2ee is locally enabled
+# Check for E2EE pods in Podfile.lock
 if should_check "ios/Podfile.lock"; then
     echo "Checking ios/Podfile.lock..."
-    if git diff --cached ios/Podfile.lock 2>/dev/null | grep -q "^+.*MattermostE2ee"; then
-        echo "  [error] Staged changes add MattermostE2ee pods"
-        echo "     Run: git checkout -- ios/Podfile.lock"
-        ERRORS=$((ERRORS + 1))
+    if [[ "$STAGED_ONLY" == "true" ]]; then
+        # Pre-commit: Check for ADDED lines in staged changes
+        # This allows committing other Podfile.lock changes while e2ee is locally enabled
+        if git diff --cached ios/Podfile.lock 2>/dev/null | grep -q "^+.*MattermostE2ee"; then
+            echo "  [error] Staged changes add MattermostE2ee pods"
+            echo "     Run: git checkout -- ios/Podfile.lock"
+            ERRORS=$((ERRORS + 1))
+        else
+            echo "  [ok]"
+        fi
     else
-        echo "  [ok]"
+        # CI mode: Check if file contains E2EE references
+        if grep -q "MattermostE2ee" ios/Podfile.lock 2>/dev/null; then
+            echo "  [error] Contains MattermostE2ee pods"
+            echo "     Run 'npm run e2ee:disable' to restore clean state"
+            ERRORS=$((ERRORS + 1))
+        else
+            echo "  [ok]"
+        fi
     fi
 fi
 

@@ -7,10 +7,6 @@ set -e
 # =============================================================================
 # E2EE Configuration
 # =============================================================================
-# Default version for binary mode (update this when upgrading E2EE)
-# Can be overridden with: E2EE_VERSION=v0.3.0 npm run e2ee:enable
-E2EE_VERSION="${E2EE_VERSION:-v0.1.0}"
-
 E2EE_DIR="libraries/@mattermost/e2ee"
 E2EE_SISTER_DIR="../mattermost-mobile-e2ee"
 
@@ -19,11 +15,17 @@ MODE_ARG="${1:-}"
 
 # Determine mode:
 #   - `npm run e2ee:enable -- dev`: Use sister directory for active development
-#   - (default): Download pre-built binaries
+#   - `npm run e2ee:enable -- ci`: Download binaries, skip pod-install (for CI)
+#   - (default): Download pre-built binaries + pod-install
 if [ "$MODE_ARG" = "dev" ]; then
     MODE="dev"
+    SKIP_PODS=false
+elif [ "$MODE_ARG" = "ci" ]; then
+    MODE="binary"
+    SKIP_PODS=true
 else
     MODE="binary"
+    SKIP_PODS=false
 fi
 
 echo "Initializing E2EE development environment..."
@@ -89,7 +91,7 @@ else
     # Use E2EE_VERSION above to pin to a specific release (e.g., E2EE_VERSION=v0.2.0)
 
     echo "Downloading pre-built E2EE library..."
-    if ./scripts/download-e2ee-binaries.sh "$E2EE_VERSION"; then
+    if ./scripts/download-e2ee-binaries.sh; then
         echo "[ok] Using pre-built binaries"
     else
         echo "[error] Failed to download pre-built binaries"
@@ -107,32 +109,37 @@ else
     E2EE_SOURCE_DIR="$E2EE_DIR"
 fi
 
-# Clear Android caches (Gradle daemon caches settings evaluation)
-cd android && ./gradlew --stop 2>/dev/null || true
-cd ..
-rm -rf android/.gradle android/build/generated/autolinking
-
-# Install pods with E2EE
-echo ""
-echo "Installing iOS dependencies with E2EE..."
-if [[ $(uname -m) == 'arm64' ]]; then
-    E2EE_ENABLED=1 npm run pod-install-m1
+if [ "$SKIP_PODS" = "true" ]; then
+    echo ""
+    echo "[ok] E2EE library downloaded and linked to node_modules"
 else
-    E2EE_ENABLED=1 npm run pod-install
-fi
+    # Clear Android caches (Gradle daemon caches settings evaluation)
+    cd android && ./gradlew --stop 2>/dev/null || true
+    cd ..
+    rm -rf android/.gradle android/build/generated/autolinking
 
-echo ""
-echo "[ok] E2EE development environment ready! Don't forget to restart Metro with 'npm start -- --reset-cache'."
-echo ""
-if [ "$MODE" = "dev" ]; then
-    echo "DEV MODE: Linked from directory ($E2EE_SISTER_DIR)"
-    echo "   Changes in that directory will be reflected after Metro reload."
-    echo "   Run 'npm run build' there after Rust changes."
+    # Install pods with E2EE
+    echo ""
+    echo "Installing iOS dependencies with E2EE..."
+    if [[ $(uname -m) == 'arm64' ]]; then
+        E2EE_ENABLED=1 npm run pod-install-m1
+    else
+        E2EE_ENABLED=1 npm run pod-install
+    fi
+
+    echo ""
+    echo "[ok] E2EE development environment ready! Don't forget to restart Metro with 'npm start -- --reset-cache'."
+    echo ""
+    if [ "$MODE" = "dev" ]; then
+        echo "DEV MODE: Linked from directory ($E2EE_SISTER_DIR)"
+        echo "   Changes in that directory will be reflected after Metro reload."
+        echo "   Run 'npm run build' there after Rust changes."
+    fi
+    echo ""
+    echo "IMPORTANT: Your local Podfile.lock now includes E2EE pods."
+    echo "   Do NOT commit these changes. The pre-commit hook will block them."
+    echo ""
+    echo "To disable E2EE: npm run e2ee:disable"
+    echo "To check status: npm run e2ee:status"
+    echo ""
 fi
-echo ""
-echo "IMPORTANT: Your local Podfile.lock now includes E2EE pods."
-echo "   Do NOT commit these changes. The pre-commit hook will block them."
-echo ""
-echo "To disable E2EE: npm run e2ee:disable"
-echo "To check status: npm run e2ee:status"
-echo ""
