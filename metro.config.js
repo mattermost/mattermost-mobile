@@ -22,8 +22,10 @@ const isE2EEDevMode = fs.existsSync(e2eeDevMarker) && fs.existsSync(e2eeSisterDi
 const config = {
     watchFolders: isE2EEDevMode ? [e2eeSisterDir] : [],
     resolver: isE2EEDevMode ? {
+
         // Follow symlinks to their real locations
         unstable_enableSymlinks: true,
+
         // Ensure node_modules from symlinked dirs resolve to main node_modules
         nodeModulesPaths: [
             path.resolve(__dirname, 'node_modules'),
