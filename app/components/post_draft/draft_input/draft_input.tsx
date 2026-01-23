@@ -97,7 +97,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.20),
             borderTopLeftRadius: 12,
             borderTopRightRadius: 12,
-            position: 'relative',
         },
         postPriorityLabel: {
             marginLeft: 12,
