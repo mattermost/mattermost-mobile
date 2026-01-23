@@ -25,8 +25,8 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Edit', () => {
     const serverOneDisplayName = 'Server 1';
@@ -57,11 +57,15 @@ describe('Messaging - Message Edit', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+        await ChannelScreen.dismissKeyboard();
 
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: originalPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(originalPostListPostItem).toBeVisible();
+        await waitFor(originalPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+
+        // # Scroll to post to dismiss keyboard and ensure post is visible
+        await originalPostListPostItem.scrollTo('top');
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -91,11 +95,15 @@ describe('Messaging - Message Edit', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+        await ChannelScreen.dismissKeyboard();
 
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+
+        // # Scroll to post to dismiss keyboard and ensure post is visible
+        await postListPostItem.scrollTo('top');
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -121,8 +129,12 @@ describe('Messaging - Message Edit', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+        await ChannelScreen.dismissKeyboard();
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);
+
+        // # Scroll to post to dismiss keyboard before tapping
+        await parentPostListPostItem.scrollTo('top');
         await parentPostListPostItem.tap();
 
         // * Verify on thread screen
@@ -131,7 +143,12 @@ describe('Messaging - Message Edit', () => {
         // # Post a reply, open post options for the reply message and tap edit option
         const replyMessage = `${message} reply`;
         await ThreadScreen.postMessage(replyMessage);
+        await ChannelScreen.dismissKeyboard();
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
+
+        // # Scroll to reply post to dismiss keyboard before long press
+        await replyPostListPostItem.scrollTo('top');
         await ThreadScreen.openPostOptionsFor(replyPost.id, replyMessage);
         await PostOptionsScreen.editPostOption.tap();
 

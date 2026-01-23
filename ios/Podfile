@@ -12,7 +12,7 @@ require File.join(File.dirname(`node --print "require.resolve('expo/package.json
 node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 
-platform :ios, '15.1' #min_ios_version_supported
+platform :ios, '16.0' #min_ios_version_supported
 prepare_react_native_project!
 
 Pod::UI.puts "Configuring Pod with statically linked Frameworks".green
@@ -26,7 +26,7 @@ setup_permissions([
 ])
 
 # Conditional Intune MAM support
-intune_enabled = ENV['INTUNE_ENABLED'] == '1'
+intune_enabled = ENV['INTUNE_ENABLED'] == 'true' || ENV['INTUNE_ENABLED'] == '1'
 
 if intune_enabled
   puts "🔐 Intune MAM features enabled"
