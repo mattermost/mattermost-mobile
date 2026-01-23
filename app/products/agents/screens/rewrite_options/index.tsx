@@ -266,12 +266,12 @@ const RewriteOptions = ({
         });
     }, [originalMessage, serverUrl, closeBottomSheet, selectedAgent, isKeyboardVisible, startRewrite, handleRewriteSuccess, handleRewriteError]);
 
-    // Determine if we're in generation mode (empty original message)
-    const isGeneratingContent = !originalMessage || !originalMessage.trim();
+    // Determine if we're in generation mode (empty original message means user wants to generate new content)
+    const isInGenerationMode = !originalMessage || !originalMessage.trim();
 
     // Auto-focus the text input when in generation mode
     useEffect(() => {
-        if (isGeneratingContent) {
+        if (isInGenerationMode) {
             // Small delay to ensure the bottom sheet has finished animating
             const timer = setTimeout(() => {
                 textInputRef.current?.focus();
@@ -279,7 +279,7 @@ const RewriteOptions = ({
             return () => clearTimeout(timer);
         }
         return undefined;
-    }, [isGeneratingContent]);
+    }, [isInGenerationMode]);
 
     const handleCustomPromptSubmit = useCallback(() => {
         // Only dismiss keyboard if it's visible when user submits
@@ -351,7 +351,7 @@ const RewriteOptions = ({
                         <TextInput
                             ref={textInputRef}
                             style={styles.customPromptInput}
-                            placeholder={intl.formatMessage(isGeneratingContent ? messages.generatePrompt : messages.customPrompt)}
+                            placeholder={intl.formatMessage(isInGenerationMode ? messages.generatePrompt : messages.customPrompt)}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.64)}
                             value={customPrompt}
                             onChangeText={setCustomPrompt}
@@ -364,7 +364,7 @@ const RewriteOptions = ({
                 </View>
             </View>
 
-            {!isGeneratingContent && (
+            {!isInGenerationMode && (
                 <View style={styles.optionsContainer}>
                     {options.map((option) => (
                         <OptionItem
@@ -379,7 +379,7 @@ const RewriteOptions = ({
                 </View>
             )}
         </View>
-    ), [styles, agents, intl, selectedAgent, handleOpenAgentSelector, theme, isGeneratingContent, customPrompt, handleCustomPromptSubmit, handleRewrite]);
+    ), [styles, agents, intl, selectedAgent, handleOpenAgentSelector, theme, isInGenerationMode, customPrompt, handleCustomPromptSubmit, handleRewrite]);
 
     return (
         <BottomSheet
