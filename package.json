@@ -43,7 +43,7 @@
     "@react-navigation/bottom-tabs": "7.3.10",
     "@react-navigation/native": "7.1.6",
     "@react-navigation/stack": "7.2.10",
-    "@rneui/base": "4.0.0-rc.8",
+    "@rneui/base": "5.0.0",
     "@sentry/react-native": "6.10.0",
     "@shopify/flash-list": "1.8.0",
     "@stream-io/flat-list-mvcp": "0.10.3",
