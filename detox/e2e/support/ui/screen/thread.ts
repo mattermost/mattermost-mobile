@@ -11,7 +11,7 @@ import {
     SendButton,
 } from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 class ThreadScreen {
@@ -93,14 +93,24 @@ class ThreadScreen {
     back = async () => {
         await this.backButton.tap();
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+        // Wait for the previous screen to be fully loaded and rendered
+        await wait(timeouts.TWO_SEC);
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-        await expect(postListPostItem).toBeVisible();
+
+        // Poll for the post to become visible without waiting for idle bridge
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
+
+        // Dismiss keyboard by tapping on the post list (needed after posting a message)
+        const flatList = this.postList.getFlatList();
+        await flatList.scroll(100, 'down');
+        await wait(timeouts.ONE_SEC);
 
         // # Open post options
-        await postListPostItem.longPress();
+        await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     };
@@ -110,6 +120,9 @@ class ThreadScreen {
         await this.postInput.tap();
         await this.postInput.replaceText(message);
         await this.tapSendButton();
+
+        // # Wait for message to be rendered
+        await wait(timeouts.FOUR_SEC);
     };
 
     enterMessageToSchedule = async (message: string) => {
