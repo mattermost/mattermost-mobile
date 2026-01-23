@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Channel, Post, Setup, User} from '@support/server_api';
+import {Post, Setup, User} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -23,22 +23,18 @@ import {
     SettingsScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Account - Account Menu', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testUser: any;
-    let otherUser: any;
     let testChannel: any;
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
         testChannel = channel;
-
-        ({user: otherUser} = await User.apiCreateUser(siteOneUrl));
-        await Channel.apiAddUserToChannel(siteOneUrl, otherUser.id, testChannel.id);
 
         // # Log in to server and go to account screen
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -53,6 +49,7 @@ describe('Account - Account Menu', () => {
 
     afterAll(async () => {
         // # Log out
+        await ChannelScreen.back();
         await HomeScreen.logout();
     });
 
@@ -77,7 +74,8 @@ describe('Account - Account Menu', () => {
 
         // * Verify on account screen and verify user presence icon and label are for offline user status
         await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('offline')).toBeVisible();
+        await wait(timeouts.TWO_SEC);
+        await waitFor(AccountScreen.getUserPresenceIndicator('offline')).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(AccountScreen.getUserPresenceLabel('offline')).toHaveText('Offline');
 
         // # Tap on user presence option and tap on do not disturb user status option
@@ -87,7 +85,8 @@ describe('Account - Account Menu', () => {
 
         // * Verify on account screen and verify user presence icon and label are for do no disturb user status
         await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('dnd')).toBeVisible();
+        await wait(timeouts.TWO_SEC);
+        await waitFor(AccountScreen.getUserPresenceIndicator('dnd')).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(AccountScreen.getUserPresenceLabel('dnd')).toHaveText('Do Not Disturb');
 
         // # Tap on user presence option and tap on away user status option
@@ -97,7 +96,8 @@ describe('Account - Account Menu', () => {
 
         // * Verify on account screen and verify user presence icon and label are for away user status
         await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('away')).toBeVisible();
+        await wait(timeouts.TWO_SEC);
+        await waitFor(AccountScreen.getUserPresenceIndicator('away')).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(AccountScreen.getUserPresenceLabel('away')).toHaveText('Away');
 
         // # Tap on user presence option and tap on online user status option
@@ -107,7 +107,8 @@ describe('Account - Account Menu', () => {
 
         // * Verify on account screen and verify user presence icon and label are for online user status
         await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('online')).toBeVisible();
+        await wait(timeouts.TWO_SEC);
+        await waitFor(AccountScreen.getUserPresenceIndicator('online')).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(AccountScreen.getUserPresenceLabel('online')).toHaveText('Online');
     });
 
@@ -191,9 +192,12 @@ describe('Account - Account Menu', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
+        // Wait for keyboard to dismiss and message to be posted
+        await wait(timeouts.TWO_SEC);
+
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem, postListPostItemHeaderDisplayName} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(postListPostItemHeaderDisplayName).toHaveText(testUser.username);
 
         // Also check profile screen

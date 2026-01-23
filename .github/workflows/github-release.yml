@@ -15,8 +15,8 @@ env:
   RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
   SNYK_VERSION: "1.1297.2"
   CYCLONEDX_VERSION: "v0.27.2"
-  INTUNE_ENABLED: 1
-  E2EE_RELEASE: 1
+  INTUNE_ENABLED: 'true'
+  E2EE_RELEASE: 'true'
 
 jobs:
   test:
@@ -43,7 +43,7 @@ jobs:
       - name: ci/prepare-ios-build
         uses: ./.github/actions/prepare-ios-build
         with:
-          intune-enabled: 'true'
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: ci/build-ios-unsigned

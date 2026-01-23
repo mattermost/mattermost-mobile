@@ -28,7 +28,9 @@ export interface ClientPlaybooksMix {
     restoreChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
     setAssignee: (playbookRunId: string, checklistNum: number, itemNum: number, assigneeId?: string) => Promise<void>;
     setDueDate: (playbookRunId: string, checklistNum: number, itemNum: number, date?: number) => Promise<void>;
-    addChecklistItem: (playbookRunId: string, checklistNum: number, title: string) => Promise<void>;
+    addChecklistItem: (playbookRunId: string, checklistNum: number, item: ChecklistItemInput) => Promise<void>;
+    deleteChecklistItem: (playbookRunId: string, checklistNum: number, itemNum: number) => Promise<void>;
+    updateChecklistItem: (playbookRunId: string, checklistNum: number, itemNum: number, item: ChecklistItemInput) => Promise<void>;
 
     renameChecklist: (playbookRunId: string, checklistNumber: number, newName: string) => Promise<void>;
 
@@ -209,10 +211,24 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         );
     };
 
-    addChecklistItem = async (playbookRunId: string, checklistNum: number, title: string) => {
+    addChecklistItem = async (playbookRunId: string, checklistNum: number, item: ChecklistItemInput) => {
         await this.doFetch(
             `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNum}/add`,
-            {method: 'post', body: {title}},
+            {method: 'post', body: item},
+        );
+    };
+
+    updateChecklistItem = async (playbookRunId: string, checklistNum: number, itemNum: number, item: ChecklistItemInput) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNum}/item/${itemNum}`,
+            {method: 'put', body: item},
+        );
+    };
+
+    deleteChecklistItem = async (playbookRunId: string, checklistNum: number, itemNum: number) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNum}/item/${itemNum}`,
+            {method: 'delete'},
         );
     };
 

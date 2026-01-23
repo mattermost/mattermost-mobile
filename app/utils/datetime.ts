@@ -56,10 +56,24 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
     return date.toLocaleString(currentUserLocale, options);
 }
 
-export function formatTime(seconds: number) {
+export function formatTime(seconds: number, textTime: boolean = false) {
     const h = Math.max(Math.floor(seconds / 3600), 0);
     const m = Math.max(Math.floor((seconds % 3600) / 60), 0);
     const s = Math.max(Math.floor(seconds % 60), 0);
+
+    if (textTime) {
+        const parts: string[] = [];
+        if (h > 0) {
+            parts.push(`${h}h`);
+        }
+        if (m > 0) {
+            parts.push(`${m}m`);
+        }
+        if (s > 0) {
+            parts.push(`${s}s`);
+        }
+        return parts.length > 0 ? parts.join(' ') : '0s';
+    }
 
     const hh = h > 0 ? `${h}:` : '';
     const mm = h > 0 ? `${m.toString().padStart(2, '0')}` : `${m}`;

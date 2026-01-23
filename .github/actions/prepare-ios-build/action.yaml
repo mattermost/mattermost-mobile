@@ -64,8 +64,8 @@ runs:
     - name: ci/install-pods-dependencies
       shell: bash
       env:
-        E2EE_ENABLED: ${{ inputs.e2ee-enabled == 'true' && '1' || '0' }}
-        INTUNE_ENABLED: ${{ inputs.intune-enabled == 'true' && '1' || '0' }}
+        INTUNE_ENABLED: ${{ inputs.intune-enabled }}
+        E2EE_ENABLED: ${{ inputs.e2ee-enabled }}
       run: |
         echo "::group::install-pods-dependencies"
         echo "E2EE_ENABLED=$E2EE_ENABLED"

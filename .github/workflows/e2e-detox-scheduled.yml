@@ -5,8 +5,8 @@ on:
     - cron: "0 0 * * 4,5" # Wednesday and Thursday midnight
 
 env:
-  INTUNE_ENABLED: 1
-  E2EE_RELEASE: 1
+  INTUNE_ENABLED: 'true'
+  E2EE_RELEASE: 'true'
 
 jobs:
   update-initial-status-ios:
@@ -46,7 +46,7 @@ jobs:
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
         with:
-          intune-enabled: 'true'
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: Build iOS Simulator
