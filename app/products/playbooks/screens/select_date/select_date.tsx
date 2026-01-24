@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {Keyboard, Text, View} from 'react-native';
 
 import Button from '@components/button';
-import DateTimeSelector from '@components/data_time_selector';
+import DateTimeSelector from '@components/date_time_selector';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
