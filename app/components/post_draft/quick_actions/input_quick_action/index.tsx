@@ -89,10 +89,14 @@ export default function InputQuickAction({
         focusWithEmojiDismiss();
     }, [inputType, updateValue, focusWithEmojiDismiss, cursorPositionRef, updateCursorPosition]);
 
-    const actionTestID = disabled ? `${testID}.disabled` : testID;
+    const actionTestID = disabled ?
+        `${testID}.disabled` :
+        testID;
     const style = getStyleSheet(theme);
     const iconName = inputType === 'at' ? inputType : 'slash-forward-box-outline';
-    const iconColor = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
+    const iconColor = disabled ?
+        changeOpacity(theme.centerChannelColor, 0.16) :
+        changeOpacity(theme.centerChannelColor, 0.64);
 
     return (
         <TouchableWithFeedback
