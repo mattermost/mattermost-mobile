@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {rewriteMessage} from '@agents/actions/remote/agents';
 import {rewriteStore} from '@agents/store';
 import {useCallback, useEffect, useRef, useState} from 'react';
 
-import NetworkManager from '@managers/network_manager';
 import {logWarning} from '@utils/log';
 
 import type {RewriteAction} from '@agents/types';
@@ -32,7 +32,7 @@ type UseRewriteReturn = {
  */
 export const useRewrite = (): UseRewriteReturn => {
     const [isProcessing, setIsProcessing] = useState(rewriteStore.isRewriteProcessing());
-    const currentPromiseRef = useRef<Promise<string> | null>(null);
+    const currentPromiseRef = useRef<Promise<{rewrittenText?: string; error?: unknown}> | null>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const isCancelledRef = useRef(false);
 
@@ -82,11 +82,10 @@ export const useRewrite = (): UseRewriteReturn => {
 
         const runRewrite = async () => {
             try {
-                const client = NetworkManager.getClient(serverUrl);
-                const rewritePromise = client.getRewrittenMessage(message, action, customPrompt, agentId);
+                const rewritePromise = rewriteMessage(serverUrl, message, action, customPrompt, agentId);
                 currentPromiseRef.current = rewritePromise;
 
-                const response = await Promise.race([rewritePromise, timeoutPromise]);
+                const result = await Promise.race([rewritePromise, timeoutPromise]);
 
                 // Clear timeout if successful
                 if (timeoutRef.current) {
@@ -96,7 +95,17 @@ export const useRewrite = (): UseRewriteReturn => {
 
                 // Check if this is still the current promise (not cancelled)
                 if (currentPromiseRef.current === rewritePromise && !isCancelledRef.current) {
+                    // Handle error from remote action
+                    if (result.error) {
+                        logWarning('[useRewrite] Error from remote action:', result.error);
+                        rewriteStore.setRewriteProcessing(false, '');
+                        currentPromiseRef.current = null;
+                        onError('An error occurred while rewriting your message. Please try again.');
+                        return;
+                    }
+
                     // Ensure response is a valid non-empty string
+                    const response = result.rewrittenText;
                     if (response && typeof response === 'string' && response.trim().length > 0) {
                         // If response is a JSON-encoded string, parse it to get actual newlines/escapes
                         let formattedResponse = response;
