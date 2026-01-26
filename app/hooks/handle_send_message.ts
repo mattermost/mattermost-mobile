@@ -86,7 +86,7 @@ export const useHandleSendMessage = ({
             return false;
         }
 
-        const messageLength = value ? value.trim().length : 0;
+        const messageLength = value.trim().length;
 
         if (messageLength > maxMessageLength) {
             return false;
