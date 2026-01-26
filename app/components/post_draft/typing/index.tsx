@@ -33,7 +33,8 @@ function Typing({
     const typing = useRef<Array<{id: string; now: number; username: string}>>([]);
     const timeoutToDisappear = useRef<NodeJS.Timeout>();
     const mounted = useRef(false);
-    const [refresh, setRefresh] = useState(0);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [refresh, setRefresh] = useState(0); // Used to trigger re-renders when typing state changes
 
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -160,9 +161,6 @@ function Typing({
         }
     };
 
-    // Force re-render to get current typing count
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ = refresh;
     const isVisible = typing.current.length > 0;
 
     return (
