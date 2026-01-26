@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useRewrite} from '@agents/hooks';
-import {rewriteStore} from '@agents/store';
+import {useAgents, useRewrite} from '@agents/hooks';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Alert, Keyboard, Platform, TextInput, View} from 'react-native';
@@ -153,64 +152,23 @@ const RewriteOptions = ({
     const {startRewrite} = useRewrite();
 
     const [customPrompt, setCustomPrompt] = useState('');
-    const [agents, setAgents] = useState<Agent[]>([]);
+    const agents = useAgents(serverUrl);
     const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
-    const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
     const textInputRef = useRef<TextInput>(null);
 
-    // Get agents from rewriteStore on mount and subscribe to changes
+    // Set default agent when agents list changes
     useEffect(() => {
-        const availableAgents = rewriteStore.getAgents(serverUrl);
-        setAgents(availableAgents);
-
-        // Set default agent (first one)
-        if (availableAgents.length > 0) {
-            setSelectedAgent(availableAgents[0]);
+        if (agents.length > 0) {
+            setSelectedAgent((current) => current || agents[0]);
         }
-
-        const handleAgentsUpdate = (updatedAgents: Agent[]) => {
-            setAgents(updatedAgents);
-
-            // Auto-select first agent if none selected
-            if (updatedAgents.length > 0) {
-                setSelectedAgent((current) => current || updatedAgents[0]);
-            }
-        };
-
-        // Subscribe to agent updates
-        const subscription = rewriteStore.observeAgents(serverUrl).subscribe(handleAgentsUpdate);
-
-        return () => subscription.unsubscribe();
-    }, [serverUrl]);
+    }, [agents]);
 
     const closeBottomSheet = useCallback(async () => {
-        try {
-            await dismissBottomSheet(Screens.AGENTS_REWRITE_OPTIONS);
-        } catch (e) {
-            // If dismissal fails, log but don't throw
-            logWarning('[RewriteOptions] Failed to dismiss bottom sheet:', e);
-        }
+        await dismissBottomSheet(Screens.AGENTS_REWRITE_OPTIONS);
     }, []);
 
     useNavButtonPressed(closeButtonId, componentId, closeBottomSheet, []);
     useAndroidHardwareBackHandler(componentId, closeBottomSheet);
-
-    // Track keyboard visibility
-    useEffect(() => {
-        const keyboardWillShowListener = Keyboard.addListener(
-            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-            () => setIsKeyboardVisible(true),
-        );
-        const keyboardWillHideListener = Keyboard.addListener(
-            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-            () => setIsKeyboardVisible(false),
-        );
-
-        return () => {
-            keyboardWillShowListener.remove();
-            keyboardWillHideListener.remove();
-        };
-    }, []);
 
     const handleRewriteSuccess = useCallback((rewrittenText: string) => {
         updateValue(rewrittenText);
@@ -282,15 +240,12 @@ const RewriteOptions = ({
     }, [isInGenerationMode]);
 
     const handleCustomPromptSubmit = useCallback(() => {
-        // Only dismiss keyboard if it's visible when user submits
-        if (isKeyboardVisible) {
-            Keyboard.dismiss();
-        }
+        Keyboard.dismiss();
 
         if (customPrompt && customPrompt.trim()) {
             handleRewrite('custom', customPrompt);
         }
-    }, [customPrompt, handleRewrite, isKeyboardVisible]);
+    }, [customPrompt, handleRewrite]);
 
     const isTablet = useIsTablet();
 
