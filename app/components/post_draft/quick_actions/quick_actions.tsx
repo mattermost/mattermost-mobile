@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AIRewriteAction from '@agents/components/ai_rewrite_action';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import AIRewriteAction from './ai_rewrite_action';
 import AttachmentAction from './attachment_quick_action';
 import EmojiAction from './emoji_quick_action';
 import InputAction from './input_quick_action';
