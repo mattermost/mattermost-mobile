@@ -42,10 +42,18 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.ADD_USER_TO_TEAM, false)),
     );
 
+    const canInviteGuests = combineLatest([currentUser, team]).pipe(
+        switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.INVITE_GUEST, false)),
+    );
+
+    const canInvitePeople = combineLatest([canAddUserToTeam, canInviteGuests]).pipe(
+        switchMap(([add, invite]) => of$(add || invite)),
+    );
+
     return {
         canCreateChannels,
         canJoinChannels,
-        canInvitePeople: canAddUserToTeam,
+        canInvitePeople,
         displayName: team.pipe(
             switchMap((t) => of$(t?.displayName)),
             distinctUntilChanged(),
