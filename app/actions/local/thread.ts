@@ -13,7 +13,7 @@ import {getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, type Prep
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
 import {getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissAllModals, dismissAllModalsAndPopToRoot, dismissAllOverlays, getThemeFromState, goToScreen} from '@screens/navigation';
+import {dismissAllModals, dismissAllModalsAndPopToRoot, dismissAllOverlays, goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
@@ -135,8 +135,6 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             subtitle = subtitle.replace('{channelName}', channel.displayName);
         }
 
-        const theme = getThemeFromState();
-
         DeviceEventEmitter.emit(Events.CLOSE_INPUT_ACCESSORY_VIEW);
 
         goToScreen(Screens.THREAD, '', {rootId}, {
@@ -145,7 +143,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
                     text: title,
                 },
                 subtitle: {
-                    color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
+                    color: changeOpacity(EphemeralStore.theme!.sidebarHeaderTextColor, 0.72),
                     text: subtitle,
                 },
                 noBorder: true,
