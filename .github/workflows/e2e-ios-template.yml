@@ -115,7 +115,7 @@ jobs:
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
-          parallelism: 10
+          parallelism: 5
           search_path: detox/e2e/test
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
@@ -260,6 +260,23 @@ jobs:
         run: |
           echo "RUNNING_E2E=true" > .env
 
+      - name: Verify Simulator Health
+        run: |
+          echo "Verifying simulator health before running tests..."
+
+          # Check if simulator is still responsive
+          if ! xcrun simctl bootstatus "$SIMULATOR_ID" -b 2>/dev/null; then
+            echo "⚠️ Simulator not responsive, attempting recovery..."
+
+            # Try to shutdown and reboot
+            xcrun simctl shutdown "$SIMULATOR_ID" || true
+            sleep 3
+            xcrun simctl boot "$SIMULATOR_ID"
+            xcrun simctl bootstatus "$SIMULATOR_ID"
+          fi
+
+          echo "✅ Simulator is healthy and ready"
+
       - name: Start Metro Bundler and Run Detox E2E Tests
         continue-on-error: true # We want to run all the tests
         run: |
@@ -318,14 +335,34 @@ jobs:
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
 
+      - name: Cleanup Simulator State
+        if: always()
+        run: |
+          echo "Cleaning up simulator state after tests..."
+
+          # Stop Metro bundler if still running
+          if [ ! -z "$METRO_PID" ]; then
+            echo "Stopping Metro bundler (PID: $METRO_PID)..."
+            kill -9 "$METRO_PID" 2>/dev/null || true
+          fi
+
+          # Terminate app gracefully
+          if [ ! -z "$SIMULATOR_ID" ]; then
+            echo "Terminating app on simulator..."
+            xcrun simctl terminate "$SIMULATOR_ID" com.mattermost.rnbeta 2>/dev/null || true
+            sleep 2
+          fi
+
+          echo "✅ Simulator cleanup complete"
+
       - name: reset network settings
         if: ${{ inputs.low_bandwidth_mode || failure() }}
         run: |
           networksetup -setwebproxystate Ethernet "off"
           networksetup -setsecurewebproxystate Ethernet "off"
 
-          if (sudo pfctl -q -sa | grep 'Status: Enabled') then sudo pfctl -d; fi 
-          if (command  -v pm2 &> /dev/null) then pm2 stop mitmdump; fi 
+          if (sudo pfctl -q -sa | grep 'Status: Enabled') then sudo pfctl -d; fi
+          if (command  -v pm2 &> /dev/null) then pm2 stop mitmdump; fi
 
           sleep 5;
 
