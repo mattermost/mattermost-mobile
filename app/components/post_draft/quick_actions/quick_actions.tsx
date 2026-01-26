@@ -58,8 +58,8 @@ export default function QuickActions({
     updatePostPriority,
     focus,
 }: Props) {
-    const atDisabled = value ? value[value.length - 1] === '@' : false;
-    const slashDisabled = value ? value.length > 0 : false;
+    const atDisabled = value.endsWith('@');
+    const slashDisabled = value.length > 0;
 
     const atInputActionTestID = `${testID}.at_input_action`;
     const slashInputActionTestID = `${testID}.slash_input_action`;
