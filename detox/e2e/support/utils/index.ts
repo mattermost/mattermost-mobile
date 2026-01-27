@@ -70,6 +70,7 @@ export const timeouts = {
     HALF_SEC: SECOND / 2,
     ONE_SEC: SECOND,
     TWO_SEC: SECOND * 2,
+    THREE_SEC: SECOND * 3,
     FOUR_SEC: SECOND * 4,
     TEN_SEC: SECOND * 10,
     HALF_MIN: MINUTE / 2,
@@ -102,4 +103,44 @@ export async function retryWithReload(func: () => Promise<void>, retries: number
             }
         }
     }
+}
+
+/**
+ * Poll for an element to become visible without waiting for React Native bridge to be idle.
+ * This is useful when the bridge is busy with animations or state updates but the UI is already rendered.
+ *
+ * @param {Detox.NativeElement} detoxElement - The Detox element to wait for
+ * @param {number} timeout - Maximum time to wait in milliseconds (default: 10 seconds)
+ * @param {number} pollInterval - How often to check in milliseconds (default: 500ms)
+ * @return {Promise<void>} - Resolves when element is visible, throws if timeout is reached
+ * @throws {Error} - If element is not visible after timeout
+ *
+ * @example
+ * const button = element(by.id('my.button'));
+ * await waitForElementToBeVisible(button, timeouts.TEN_SEC);
+ */
+export async function waitForElementToBeVisible(
+    detoxElement: Detox.NativeElement,
+    timeout: number = timeouts.TEN_SEC,
+    pollInterval: number = timeouts.HALF_SEC,
+): Promise<void> {
+    const {expect: detoxExpect} = require('detox');
+    const startTime = Date.now();
+    /* eslint-disable no-await-in-loop */
+    while (Date.now() - startTime < timeout) {
+        try {
+            await detoxExpect(detoxElement).toBeVisible();
+            return; // Element found and visible
+        } catch (error) {
+            // Element not visible yet, wait and try again
+            if ((Date.now() - startTime) + pollInterval >= timeout) {
+                // About to timeout, throw the error
+                throw error;
+            }
+            await wait(pollInterval);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    // Final check - will throw if still not found
+    await detoxExpect(detoxElement).toBeVisible();
 }

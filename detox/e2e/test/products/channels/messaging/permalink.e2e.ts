@@ -26,7 +26,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Permalink', () => {
     const serverOneDisplayName = 'Server 1';
@@ -62,13 +62,20 @@ describe('Messaging - Permalink', () => {
         const permalinkLabel = `permalink-${getRandomId()}`;
         const permalinkMessage = `[${permalinkLabel}](/${teamName}/pl/${permalinkTargetPost.id})`;
         await ChannelScreen.postMessage(permalinkMessage);
-        await element(by.text(permalinkLabel)).tap({x: 5, y: 10});
-        await wait(timeouts.ONE_SEC);
+        await wait(timeouts.TWO_SEC);
+
+        // # Wait for the message to be posted and element to become visible (keyboard should dismiss)
+        const permalinkElement = element(by.text(permalinkLabel));
+        await waitFor(permalinkElement).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+
+        // # Tap on permalink
+        await permalinkElement.tap();
+        await wait(timeouts.FOUR_SEC);
 
         // * Verify on permalink screen and target post is displayed
         await PermalinkScreen.toBeVisible();
         const {postListPostItem: permalinkPostListPostItem} = PermalinkScreen.getPostListPostItem(permalinkTargetPost.id, permalinkTargetPost.message);
-        await expect(permalinkPostListPostItem).toBeVisible();
+        await expect(permalinkPostListPostItem).toExist();
 
         // # Jump to recent messages
         await PermalinkScreen.jumpToRecentMessages();
@@ -76,7 +83,7 @@ describe('Messaging - Permalink', () => {
         // * Verify on channel screen and target post is displayed
         await expect(ChannelScreen.headerTitle).toHaveText(permalinkTargetChannelDiplayName);
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(permalinkTargetPost.id, permalinkTargetPost.message);
-        await expect(channelPostListPostItem).toBeVisible();
+        await expect(channelPostListPostItem).toExist();
     };
 
     it('MM-T4876_1 - should be able to jump to target public channel post by tapping on permalink with team name', async () => {

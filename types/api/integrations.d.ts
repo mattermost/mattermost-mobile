@@ -64,7 +64,7 @@ type DialogElement = {
     display_name: string;
     name: string;
     type: InteractiveDialogElementType;
-    subtype: InteractiveDialogTextSubtype;
+    subtype?: InteractiveDialogTextSubtype;
     default: string | boolean;
     placeholder: string;
     help_text: string;

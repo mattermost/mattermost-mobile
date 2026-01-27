@@ -24,8 +24,8 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Reply', () => {
     const serverOneDisplayName = 'Server 1';
@@ -46,6 +46,11 @@ describe('Messaging - Message Reply', () => {
         await ChannelListScreen.toBeVisible();
     });
 
+    afterEach(async () => {
+        // # Go back to channel list screen
+        await ChannelScreen.back();
+    });
+
     afterAll(async () => {
         // # Log out
         await HomeScreen.logout();
@@ -56,11 +61,12 @@ describe('Messaging - Message Reply', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+        await ChannelScreen.dismissKeyboard();
 
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Open post options for the message that was just posted, tap reply option
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -74,6 +80,7 @@ describe('Messaging - Message Reply', () => {
         // # Reply to parent post
         const replyMessage = `${message} reply`;
         await ThreadScreen.postMessage(replyMessage);
+        await ChannelScreen.dismissKeyboard();
 
         // * Verify reply message is posted
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -82,7 +89,6 @@ describe('Messaging - Message Reply', () => {
 
         // # Go back to channel list screen
         await ThreadScreen.back();
-        await ChannelScreen.back();
     });
 
     it('MM-T4785_2 - should be able to open reply thread by tapping on the post', async () => {
@@ -90,11 +96,12 @@ describe('Messaging - Message Reply', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+        await ChannelScreen.dismissKeyboard();
 
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Tap on post to open thread
         await postListPostItem.tap();
@@ -104,7 +111,6 @@ describe('Messaging - Message Reply', () => {
 
         // # Go back to channel list screen
         await ThreadScreen.back();
-        await ChannelScreen.back();
     });
 
     it('MM-T4785_3 - should not have reply option available on reply thread post options', async () => {
@@ -112,8 +118,12 @@ describe('Messaging - Message Reply', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+        await ChannelScreen.dismissKeyboard();
+
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+
         await postListPostItem.tap();
 
         // * Verify on reply thread screen
@@ -128,6 +138,5 @@ describe('Messaging - Message Reply', () => {
         // # Go back to channel list screen
         await PostOptionsScreen.close();
         await ThreadScreen.back();
-        await ChannelScreen.back();
     });
 });

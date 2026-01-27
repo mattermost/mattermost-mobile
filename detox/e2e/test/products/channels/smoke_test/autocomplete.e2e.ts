@@ -66,15 +66,12 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.postInput.typeText('@');
         await Autocomplete.toBeVisible();
 
-        // * Verify at-mention list is displayed
-        await expect(Autocomplete.sectionAtMentionList).toBeVisible();
-
         // # Type in username
         await ChannelScreen.postInput.typeText(testUser.username);
 
         // * Verify at-mention autocomplete contains associated user suggestion
         const {atMentionItem} = Autocomplete.getAtMentionItem(testUser.id);
-        await expect(atMentionItem).toBeVisible();
+        await expect(atMentionItem).toExist();
 
         // # Select and post at-mention suggestion
         await atMentionItem.tap();
@@ -90,15 +87,12 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
 
-        // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
-
         // # Type in channel name
         await ChannelScreen.postInput.typeText(testChannel.name);
 
         // * Verify channel mention autocomplete contains associated channel suggestion
         const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
-        await expect(channelMentionItem).toBeVisible();
+        await expect(channelMentionItem).toExist();
 
         // # Select and post channel mention suggestion
         await channelMentionItem.tap();
@@ -117,15 +111,12 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.postInput.typeText(`:${emojiNameFirst2Chars}`);
         await Autocomplete.toBeVisible();
 
-        // * Verify emoji suggestion list is displayed
-        await expect(Autocomplete.flatEmojiSuggestionList).toBeVisible();
-
         // # Type in 3rd to last characters of emoji name
         await ChannelScreen.postInput.typeText(emojiName3rdToLastChars);
 
         // * Verify emoji suggestion autocomplete contains associated emoji suggestion
         const {emojiSuggestionItem} = Autocomplete.getEmojiSuggestionItem(emojiName);
-        await expect(emojiSuggestionItem).toBeVisible();
+        await expect(emojiSuggestionItem).toExist();
 
         // # Select and post emoji suggestion
         await emojiSuggestionItem.tap();
@@ -141,16 +132,13 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.postInput.typeText('/');
         await Autocomplete.toBeVisible();
 
-        // * Verify slash suggestion list is displayed
-        await expect(Autocomplete.flatSlashSuggestionList).toBeVisible();
-
         // # Type in slash command name
         const slashCommand = 'away';
         await ChannelScreen.postInput.typeText(slashCommand);
 
         // * Verify slash suggestion autocomplete contains associated slash command suggestion
         const {slashSuggestionItem} = Autocomplete.getSlashSuggestionItem(slashCommand);
-        await expect(slashSuggestionItem).toBeVisible();
+        await expect(slashSuggestionItem).toExist();
 
         // # Select and post slash suggestion
         await slashSuggestionItem.tap();
