@@ -189,6 +189,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         isBoRPost: of$(borPost),
         showBoRReadReceipts,
         borReceiptData,
+        currentUser,
     };
 });
 
