@@ -267,13 +267,13 @@ export default function UserList({
                 disabled={!canAdd}
                 selected={selected}
                 showManageMode={showManageMode}
-                testID='create_direct_message.user_list.user_item'
+                testID={`${testID}.user_item`}
                 tutorialWatched={tutorialWatched}
                 user={item}
                 includeMargin={includeUserMargin}
             />
         );
-    }, [selectedIds, manageMode, handleSelectProfile, openUserProfile, showManageMode, tutorialWatched, includeUserMargin]);
+    }, [selectedIds, manageMode, handleSelectProfile, openUserProfile, showManageMode, testID, tutorialWatched, includeUserMargin]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {

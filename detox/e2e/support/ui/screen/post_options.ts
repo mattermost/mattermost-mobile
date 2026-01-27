@@ -88,12 +88,12 @@ class PostOptionsScreen {
 
     openPostOptionsForPinedPosts = async (postId: string) => {
         await waitFor(this.pinnedPostListItem(postId)).toExist().withTimeout(timeouts.TWO_SEC);
-        await this.pinnedPostListItem(postId).longPress();
+        await this.pinnedPostListItem(postId).longPress(timeouts.TWO_SEC);
     };
 
     openPostOptionsForSearchedPosts = async (postId: string) => {
         await waitFor(this.searchedPostListItem(postId)).toExist().withTimeout(timeouts.TWO_SEC);
-        await this.searchedPostListItem(postId).longPress();
+        await this.searchedPostListItem(postId).longPress(timeouts.TWO_SEC);
     };
 }
 

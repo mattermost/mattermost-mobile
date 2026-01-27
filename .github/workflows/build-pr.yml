@@ -8,7 +8,7 @@ on:
 env:
   NODE_VERSION: 22.14.0
   TERM: xterm
-  INTUNE_ENABLED: 1
+  INTUNE_ENABLED: 'true'
 
 jobs:
   test:
@@ -41,7 +41,7 @@ jobs:
       - name: ci/prepare-ios-build
         uses: ./.github/actions/prepare-ios-build
         with:
-          intune-enabled: 'true'
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: ci/build-ios-pr
