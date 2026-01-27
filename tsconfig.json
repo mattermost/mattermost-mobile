@@ -67,7 +67,7 @@
             "@websocket": ["app/client/websocket"],
         }
     },
-    "include": ["app/**/*", "share_extension/**/*", "test/**/*", "types/**/*"],
+    "include": ["app/**/*", "share_extension/**/*", "test/**/*", "types/**/*", "env.d.ts"],
     "exclude": [
         "node_modules",
         "build",
