@@ -229,13 +229,11 @@ const EmojiPickerHeader: React.FC<Props> = ({
                     showSoftInputOnFocus={Platform.OS !== 'android' || showKeyboard}
                 />
             </View>
-            {Platform.OS !== 'android' &&
-                <SkinToneSelector
-                    skinTone={skinTone}
-                    containerWidth={containerWidth}
-                    isSearching={isSearching}
-                />
-            }
+            <SkinToneSelector
+                skinTone={skinTone}
+                containerWidth={containerWidth}
+                isSearching={isSearching}
+            />
         </View>
     );
 };

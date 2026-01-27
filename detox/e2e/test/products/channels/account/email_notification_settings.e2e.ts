@@ -21,7 +21,8 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {expect} from 'detox';
+import {timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Account - Settings - Email Notification Settings', () => {
     const serverOneDisplayName = 'Server 1';
@@ -65,6 +66,9 @@ describe('Account - Settings - Email Notification Settings', () => {
         // # Tap on never option
         await EmailNotificationSettingsScreen.neverOption.tap();
 
+        // Wait for option to be selected
+        await wait(timeouts.ONE_SEC);
+
         // * Verify email threads option does not exist
         await expect(EmailNotificationSettingsScreen.emailThreadsOptionToggledOn).not.toExist();
 
@@ -73,7 +77,8 @@ describe('Account - Settings - Email Notification Settings', () => {
 
         // * Verify on notification settings screen and never is set
         await NotificationSettingsScreen.toBeVisible();
-        await expect(NotificationSettingsScreen.emailNotificationsOptionInfo).toHaveText('Never');
+        await wait(timeouts.TWO_SEC);
+        await waitFor(NotificationSettingsScreen.emailNotificationsOptionInfo).toHaveText('Never').withTimeout(timeouts.TEN_SEC);
 
         // # Go back to email notification settings screen
         await EmailNotificationSettingsScreen.open();
@@ -83,12 +88,15 @@ describe('Account - Settings - Email Notification Settings', () => {
 
         // # Tap on immediately option, toggle email threads option off, and tap on back button
         await EmailNotificationSettingsScreen.immediatelyOption.tap();
+        await wait(timeouts.ONE_SEC);
         await EmailNotificationSettingsScreen.toggleEmailThreadsOptionOff();
+        await wait(timeouts.ONE_SEC);
         await EmailNotificationSettingsScreen.back();
 
         // * Verify on notification settings screen and immediately is set
         await NotificationSettingsScreen.toBeVisible();
-        await expect(NotificationSettingsScreen.emailNotificationsOptionInfo).toHaveText('Immediately');
+        await wait(timeouts.TWO_SEC);
+        await waitFor(NotificationSettingsScreen.emailNotificationsOptionInfo).toHaveText('Immediately').withTimeout(timeouts.TEN_SEC);
 
         // # Go back to email notification settings screen
         await EmailNotificationSettingsScreen.open();
