@@ -38,6 +38,11 @@ type PlaybookChecklistItem = {
     update_at: number;
 }
 
+type ChecklistItemInput = {
+    title: string;
+    description?: string;
+}
+
 type PlaybookChecklist = {
     id: string;
     title: string;

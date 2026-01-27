@@ -114,7 +114,9 @@ class Autocomplete {
     toBeVisible = async (isVisible = true) => {
         await wait(timeouts.ONE_SEC);
         if (isVisible) {
-            await expect(this.autocomplete.atIndex(0)).toBeVisible();
+            // Use a lower visibility threshold to account for keyboard controller positioning
+            // The autocomplete may be partially off-screen during keyboard animations
+            await expect(this.autocomplete.atIndex(0)).toBeVisible(1);
             return this.autocomplete;
         }
 
