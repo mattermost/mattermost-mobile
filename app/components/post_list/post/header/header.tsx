@@ -102,7 +102,7 @@ const Header = (props: HeaderProps) => {
     const usernameOverride = ensureString(post.props?.override_username);
 
     const isUnrevealedPost = useMemo(() => isUnrevealedBoRPost(post), [post, post.metadata?.expire_at]);
-    const ownBoRPost = useMemo(() => isOwnBoRPost(post, currentUser), [currentUser, post]);
+    const ownBoRPost = useMemo(() => isOwnBoRPost(post, currentUser?.id), [currentUser?.id, post]);
     const showBoRIcon = isUnrevealedPost || ownBoRPost;
     const borExpireAt = post.metadata?.expire_at;
     const serverUrl = useServerUrl();
