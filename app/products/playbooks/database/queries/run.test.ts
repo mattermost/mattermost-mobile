@@ -3,7 +3,7 @@
 
 /* eslint-disable max-lines */
 
-import {of as of$} from 'rxjs';
+import {of as of$, firstValueFrom} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -18,6 +18,7 @@ import {
     getLastPlaybookRunsFetchAt,
     queryParticipantsFromAPIRun,
     observeParticipantsIdsFromPlaybookModel,
+    observeHasRunningPlaybookRunsInTeam,
 } from './run';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -761,6 +762,113 @@ describe('Playbook Run Queries', () => {
             const runIds = fetchedRuns.map((run) => run.id);
             expect(runIds).toContain(mockRuns[0].id);
             expect(runIds).not.toContain(mockRuns[1].id);
+        });
+    });
+
+    describe('observeHasRunningPlaybookRunsInTeam', () => {
+        it('should return true when there are running playbook runs in the team', async () => {
+            const teamId = 'team-id-1';
+            const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0).map((run) => ({
+                ...run,
+                team_id: teamId,
+                end_at: 0,
+            }));
+
+            await operator.handlePlaybookRun({
+                runs: mockRuns,
+                prepareRecordsOnly: false,
+                removeAssociatedRecords: false,
+            });
+
+            const result = await firstValueFrom(observeHasRunningPlaybookRunsInTeam(operator.database, teamId));
+
+            expect(result).toBe(true);
+        });
+
+        it('should return false when all runs in the team are finished', async () => {
+            const teamId = 'team-id-1';
+            const mockRuns = TestHelper.createPlaybookRuns(2, 0, 0).map((run) => ({
+                ...run,
+                team_id: teamId,
+                end_at: 1620000000000,
+            }));
+
+            await operator.handlePlaybookRun({
+                runs: mockRuns,
+                prepareRecordsOnly: false,
+                removeAssociatedRecords: false,
+            });
+
+            const result = await firstValueFrom(observeHasRunningPlaybookRunsInTeam(operator.database, teamId));
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false when no runs exist in the team', async () => {
+            const teamId = 'team-id-1';
+
+            const result = await firstValueFrom(observeHasRunningPlaybookRunsInTeam(operator.database, teamId));
+
+            expect(result).toBe(false);
+        });
+
+        it('should only count runs from the specified team', async () => {
+            const teamId = 'team-id-1';
+            const otherTeamId = 'team-id-2';
+
+            const mockRuns = [
+                {
+                    ...TestHelper.createPlaybookRuns(1, 0, 0)[0],
+                    id: 'run-1',
+                    team_id: teamId,
+                    end_at: 1620000000000, // Finished in target team
+                },
+                {
+                    ...TestHelper.createPlaybookRuns(1, 0, 0)[0],
+                    id: 'run-2',
+                    team_id: otherTeamId,
+                    end_at: 0, // Running in other team
+                },
+            ];
+
+            await operator.handlePlaybookRun({
+                runs: mockRuns,
+                prepareRecordsOnly: false,
+                removeAssociatedRecords: false,
+            });
+
+            const result = await firstValueFrom(observeHasRunningPlaybookRunsInTeam(operator.database, teamId));
+
+            expect(result).toBe(false);
+        });
+
+        it('should return true when at least one run is in progress among mixed runs', async () => {
+            const teamId = 'team-id-1';
+
+            const mockRuns = [
+                {
+                    ...TestHelper.createPlaybookRuns(1, 0, 0)[0],
+                    id: 'run-1',
+                    team_id: teamId,
+                    end_at: 1620000000000, // Finished
+                },
+                {
+                    ...TestHelper.createPlaybookRuns(1, 0, 0)[0],
+                    id: 'run-2',
+                    team_id: teamId,
+                    end_at: 0, // Running
+                },
+            ];
+
+            await operator.handlePlaybookRun({
+                runs: mockRuns,
+                prepareRecordsOnly: false,
+                removeAssociatedRecords: false,
+            });
+
+            const result = await firstValueFrom(observeHasRunningPlaybookRunsInTeam(operator.database, teamId));
+
+            expect(result).toBe(true);
         });
     });
 });
