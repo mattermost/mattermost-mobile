@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - name: ci/test
         uses: ./.github/actions/test
 
@@ -32,7 +32,7 @@ jobs:
       - test
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: ci/setup-ssh-key
         uses: ./.github/actions/setup-ssh-key
@@ -53,7 +53,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/upload-ios-unsigned
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           path: Mattermost-unsigned.ipa
           name: Mattermost-unsigned.ipa
@@ -70,7 +70,7 @@ jobs:
         shell: bash
 
       - name: ci/upload-ios-sbom
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           path: sbom-ios.json
           name: sbom-ios.json
@@ -81,7 +81,7 @@ jobs:
       - test
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
@@ -96,7 +96,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/upload-android-unsigned-build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           path: Mattermost-unsigned.apk
           name: Mattermost-unsigned.apk
@@ -113,7 +113,7 @@ jobs:
         shell: bash
 
       - name: ci/upload-android-sbom
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           path: sbom-android.json
           name: sbom-android.json
@@ -125,10 +125,10 @@ jobs:
       - build-android-unsigned
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: ci/download-sboms
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           pattern: sbom-*.json
           path: ${{ github.workspace }}
@@ -194,7 +194,7 @@ jobs:
         shell: bash
 
       - name: ci/upload-consolidated-sbom
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           path: sbom-${{ github.event.repository.name }}-${{ env.RELEASE_TAG }}.json
           name: sbom-${{ github.event.repository.name }}-${{ env.RELEASE_TAG }}.json
@@ -207,16 +207,16 @@ jobs:
       - generate-consolidated-sbom
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-      - uses: ruby/setup-ruby@cb0fda56a307b8c78d38320cd40d9eb22a3bf04e # v1.242.0
+      - uses: ruby/setup-ruby@90be1154f987f4dc0fe0dd0feedac9e473aa4ba8 # v1.286.0
 
       - name: release/setup-fastlane-dependencies
         run: bundle install
         working-directory: ./fastlane
 
       - name: ci/download-artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           path: ${{ github.workspace }}
           merge-multiple: true
