@@ -382,7 +382,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
                             value={customPrompt}
                             onChangeText={setCustomPrompt}
                             style={styles.promptInput}
-                            placeholder={intl.formatMessage({id: 'agents.channel_summary.ai_prompt_placeholder', defaultMessage: 'Ask AI to edit selection...'})}
+                            placeholder={intl.formatMessage({id: 'agents.channel_summary.ai_prompt_placeholder', defaultMessage: 'Ask AI about this channel'})}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.48)}
                             testID='agents.channel_summary.prompt_input'
                             editable={!submitting}

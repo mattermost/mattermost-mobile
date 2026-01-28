@@ -13,7 +13,7 @@
   "account.logout_from": "Log out of {serverName}",
   "account.settings": "Settings",
   "account.your_profile": "Your Profile",
-  "agents.channel_summary.ai_prompt_placeholder": "Ask AI to edit selection...",
+  "agents.channel_summary.ai_prompt_placeholder": "Ask AI about this channel",
   "agents.channel_summary.ask_agents": "Ask Agents",
   "agents.channel_summary.date_picker.submit": "Summarize",
   "agents.channel_summary.date_picker.title": "Select date range",
