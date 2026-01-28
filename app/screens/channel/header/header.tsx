@@ -191,6 +191,7 @@ const ChannelHeader = ({
         if (hasPlaybookRuns && !isDMorGM) {
             items += 1;
         }
+        items += 1; // Ask Agents action (shown in all channel types)
         let height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + MARGIN + (items * ITEM_HEIGHT);
         if (Platform.OS === 'android') {
             height += BOTTOM_SHEET_ANDROID_OFFSET;
