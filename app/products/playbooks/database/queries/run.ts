@@ -100,9 +100,10 @@ export const queryPlaybookRunsByParticipantAndTeam = (database: Database, partic
 
 export const observeHasRunningPlaybookRunsInTeam = (database: Database, teamId: string) => {
     return database.get<PlaybookRunModel>(PLAYBOOK_RUN).query(
-        Q.experimentalJoinTables([CHANNEL]),
-        Q.on(CHANNEL, 'team_id', Q.eq(teamId)),
-        Q.where('end_at', Q.eq(0)),
+        Q.and(
+            Q.where('team_id', teamId),
+            Q.where('end_at', Q.eq(0)),
+        ),
     ).observeCount().pipe(
         switchMap((count) => of$(count > 0)),
     );
