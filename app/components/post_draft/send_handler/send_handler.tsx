@@ -52,6 +52,7 @@ type Props = {
     channelDisplayName?: string;
     isFromDraftView?: boolean;
     draftReceiverUserName?: string;
+    onPostCreated?: (postId: string) => void;
 }
 
 export const INITIAL_PRIORITY = {
@@ -93,6 +94,7 @@ export default function SendHandler({
     isFromDraftView,
     draftType,
     postId,
+    onPostCreated,
 }: Props) {
     const serverUrl = useServerUrl();
 
@@ -115,6 +117,7 @@ export default function SendHandler({
         channelType,
         postPriority,
         clearDraft,
+        onPostCreated,
     });
 
     if (isFromDraftView) {

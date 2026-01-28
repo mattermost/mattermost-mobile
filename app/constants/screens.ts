@@ -1,10 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AGENTS_SCREENS from '@agents/constants/screens';
+
 import PLAYBOOKS_SCREENS from '@playbooks/constants/screens';
 
 export const ABOUT = 'About';
 export const ACCOUNT = 'Account';
+export const AGENTS = 'Agents';
 export const APPS_FORM = 'AppForm';
 export const ATTACHMENT_OPTIONS = 'AttachmentOptions';
 export const BOTTOM_SHEET = 'BottomSheet';
@@ -95,6 +98,7 @@ export const USER_PROFILE = 'UserProfile';
 export default {
     ABOUT,
     ACCOUNT,
+    AGENTS,
     APPS_FORM,
     ATTACHMENT_OPTIONS,
     BOTTOM_SHEET,
@@ -180,6 +184,7 @@ export default {
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
+    ...AGENTS_SCREENS,
     ...PLAYBOOKS_SCREENS,
 } as const;
 
