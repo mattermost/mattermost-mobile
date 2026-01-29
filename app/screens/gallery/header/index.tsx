@@ -59,10 +59,14 @@ const Header = ({index, onClose, style, total}: Props) => {
             style={style}
         >
             <Animated.View style={topContainerStyle}/>
-            <Animated.View style={containerStyle}>
+            <Animated.View
+                style={containerStyle}
+                testID='gallery.header'
+            >
                 <PressableOpacity
                     onPress={onClose}
                     style={iconStyle}
+                    testID='gallery.header.close'
                 >
                     <CompassIcon
                         color='white'

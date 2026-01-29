@@ -48,7 +48,7 @@ export default function UploadItemWrapper({
             removeCallback.current?.();
             removeCallback.current = undefined;
         };
-    }, []);
+    }, [file.clientId]);
 
     useDidUpdate(() => {
         if (loading && file.clientId) {
@@ -104,7 +104,7 @@ export default function UploadItemWrapper({
                 progress={progress}
                 showRetryButton={Boolean(file.failed)}
                 galleryStyles={styles}
-                testID={file.id}
+                testID={`uploaded-item-${file.id}`}
                 forwardRef={ref}
                 inViewPort={inViewPort}
             />

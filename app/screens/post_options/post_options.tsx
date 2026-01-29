@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {RUNNING_E2E} from '@env';
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
@@ -82,6 +83,7 @@ const PostOptions = ({
     const renderContent = () => {
         return (
             <BottomSheetScrollView
+                accessible={RUNNING_E2E !== 'true'}
                 bounces={false}
                 scrollEnabled={enabled}
                 {...panResponder.panHandlers}

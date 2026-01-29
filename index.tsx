@@ -22,6 +22,7 @@ TurboLogger.configure({
 if (__DEV__) {
     LogBox.ignoreLogs([
         'new NativeEventEmitter',
+        'Open debugger to view warnings.',
     ]);
 
     // Ignore all notifications if running e2e
