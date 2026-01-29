@@ -19,14 +19,12 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        paddingHorizontal: 20,
         paddingBottom: 24,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 8,
-        marginBottom: 8,
     },
     backButton: {
         marginRight: 12,
@@ -38,15 +36,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     label: {
         color: changeOpacity(theme.centerChannelColor, 0.72),
         marginBottom: 4,
-        marginTop: 16,
+        marginTop: 8,
         ...typography('Body', 75, 'SemiBold'),
     },
     dateBox: {
         borderWidth: 1,
         borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 12,
+        borderRadius: 4,
+        padding: 12,
     },
     dateText: {
         color: theme.centerChannelColor,
