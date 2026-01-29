@@ -22,7 +22,7 @@ const CustomEmojiPicker: React.FC<Props> = ({
     onEmojiPress,
     setIsEmojiSearchFocused,
 }) => {
-    const {cursorPositionRef, updateValue, updateCursorPosition} = useKeyboardAnimationContext();
+    const {cursorPositionRef, updateValue, updateCursorPosition, clearCursorPositionPreservation} = useKeyboardAnimationContext();
 
     const handleEmojiPress = useCallback((emojiName: string) => {
         // If onEmojiPress prop is provided, use it (for other use cases)
@@ -73,13 +73,17 @@ const CustomEmojiPicker: React.FC<Props> = ({
         // Update cursor position state (for Android and to keep state in sync)
         updateCursorPosition(newCursorPosition);
 
+        // Clear preservation flags after emoji is inserted
+        // This allows normal cursor updates to proceed
+        clearCursorPositionPreservation?.();
+
         const insertEmoji = (v: string): string => {
             // Use the captured cursor position from when the function was created
             return v.slice(0, currentCursorPosition) + insertedText + v.slice(currentCursorPosition);
         };
 
         updateValue(insertEmoji);
-    }, [onEmojiPress, updateValue, updateCursorPosition, cursorPositionRef]);
+    }, [onEmojiPress, updateValue, updateCursorPosition, cursorPositionRef, clearCursorPositionPreservation]);
 
     return (
         <EmojiPicker
