@@ -351,16 +351,22 @@ export default function PostInput({
         // Only block if we're actually in a transition period (emoji picker opening or just opened)
         const isInTransition = isInEmojiPickerTransition?.();
         const preservedPosition = isInTransition ? getPreservedCursorPosition?.() : null;
-        const isResettingToEnd = cp === value.length && cp !== cursorPosition && preservedPosition !== null && preservedPosition !== cp;
+
+        const isCursorAtEnd = cp === value.length;
+        const cursorPositionChanged = cp !== cursorPosition;
+        const hasPreservedPosition = preservedPosition !== null;
+        const preservedPositionChanged = preservedPosition !== cp;
+        const isResettingToEnd = isCursorAtEnd && cursorPositionChanged && hasPreservedPosition && preservedPositionChanged;
+        const isPreservedPositionWithinBounds = hasPreservedPosition && preservedPosition! < value.length;
 
         // If we're opening emoji picker and cursor is being reset to end, ignore it and keep the preserved position
-        if (!fromHandleTextChange && isResettingToEnd && isInTransition && preservedPosition !== null && preservedPosition < value.length) {
+        if (!fromHandleTextChange && isResettingToEnd && isInTransition && isPreservedPositionWithinBounds) {
             return;
         }
 
         // When emoji picker is open, ignore cursor position updates that move to the end
         // unless the value length changed (user typed something).
-        if (showInputAccessoryView && !fromHandleTextChange && cp === value.length && cp !== cursorPosition) {
+        if (showInputAccessoryView && !fromHandleTextChange && isCursorAtEnd && cursorPositionChanged) {
             return;
         }
 
