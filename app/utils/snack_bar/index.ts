@@ -14,6 +14,7 @@ export type ShowSnackBarArgs = {
     messageValues?: Record<string, PrimitiveType>;
     customMessage?: string;
     type?: SnackBarConfig['type'];
+    actionText?: string;
 };
 
 export const showSnackBar = (passProps: ShowSnackBarArgs) => {
@@ -68,6 +69,15 @@ export const showScheduledPostCreationErrorSnackbar = (errorMessage: string) => 
 export const showPlaybookErrorSnackbar = () => {
     return showSnackBar({
         barType: SNACK_BAR_TYPE.PLAYBOOK_ERROR,
+    });
+};
+
+export const showEnableTranslationSnackbar = (onAction: () => void, location: AvailableScreens) => {
+    return showSnackBar({
+        onAction,
+        barType: SNACK_BAR_TYPE.ENABLE_TRANSLATION,
+        sourceScreen: location,
+        actionText: 'Enable',
     });
 };
 

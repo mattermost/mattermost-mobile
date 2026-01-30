@@ -3,10 +3,20 @@
 
 import AgentPost from '@agents/components/agent_post';
 import {isAgentPost} from '@agents/utils';
+import {LinearGradient} from 'expo-linear-gradient';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
+import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight, type LayoutChangeEvent, StyleSheet} from 'react-native';
 import {KeyboardController} from 'react-native-keyboard-controller';
+import Animated, {
+    cancelAnimation,
+    Easing,
+    interpolate,
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withTiming,
+} from 'react-native-reanimated';
 
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
@@ -24,9 +34,10 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {openAsBottomSheet} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
-import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
+import {fromAutoResponder, getPostTranslation, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Avatar from './avatar';
@@ -77,6 +88,7 @@ type PostProps = {
     style?: StyleProp<ViewStyle>;
     testID?: string;
     thread?: ThreadModel;
+    isChannelAutotranslated: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -116,6 +128,110 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const gradientSettings = {
+    locations: [0, 0.3, 0.5, 0.7, 1] as const,
+    start: {x: 0, y: 0},
+    end: {x: 0.766, y: 0.643}, // 130 degree angle (more severe)
+};
+
+const MAX_RUNNING_TRANSLATIONS = 10;
+
+const shimmerStyles = StyleSheet.create({
+    shimmerContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: 'hidden',
+    },
+    shimmerBackground: {
+        ...StyleSheet.absoluteFillObject,
+    },
+    shimmerWrapper: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        width: '300%',
+    },
+});
+
+const useShimmerAnimation = (post: PostModel, isChannelAutotranslated: boolean, locale: string, layoutWidth: number, theme: Theme) => {
+    const translation = getPostTranslation(post, locale);
+    const isTranslating = isChannelAutotranslated && post.type === '' && translation?.state === 'processing';
+    const shimmerTranslateX = useSharedValue(-1);
+
+    useEffect(() => {
+        if (isTranslating) {
+            if (EphemeralStore.totalRunningTranslations() < MAX_RUNNING_TRANSLATIONS) {
+                EphemeralStore.addRunningTranslation(post.id);
+                shimmerTranslateX.value = withRepeat(
+                    withTiming(1, {
+                        duration: 2000,
+                        easing: Easing.linear,
+                    }),
+                    -1,
+                );
+            } else {
+                shimmerTranslateX.value = 0;
+            }
+        }
+
+        return () => {
+            EphemeralStore.removeRunningTranslation(post.id);
+            cancelAnimation(shimmerTranslateX);
+            shimmerTranslateX.value = -1;
+        };
+    }, [isTranslating, post.id, shimmerTranslateX]);
+
+    const shimmerAnimatedStyle = useAnimatedStyle(() => {
+        const translateX = interpolate(
+            shimmerTranslateX.value,
+            [-1, 1],
+            [-4 * layoutWidth, 4 * layoutWidth],
+        );
+        return {
+            transform: [{translateX}],
+        };
+    });
+
+    const gradientColors = useMemo(() => {
+        return [
+            changeOpacity(theme.centerChannelBg, 0.0),
+            changeOpacity(theme.centerChannelBg, 0.4),
+            theme.centerChannelBg,
+            changeOpacity(theme.centerChannelBg, 0.4),
+            changeOpacity(theme.centerChannelBg, 0.0),
+        ] as const;
+    }, [theme]);
+
+    const backgroundColor = useMemo(() => {
+        return changeOpacity(theme.centerChannelBg, 0.32);
+    }, [theme]);
+
+    if (!isTranslating) {
+        return null;
+    }
+    return (
+        <View
+            style={shimmerStyles.shimmerContainer}
+            pointerEvents='none'
+        >
+            <View style={[shimmerStyles.shimmerBackground, {backgroundColor}]}/>
+            <Animated.View style={[shimmerStyles.shimmerWrapper, shimmerAnimatedStyle]}>
+                <LinearGradient
+                    colors={gradientColors}
+                    locations={gradientSettings.locations}
+                    start={gradientSettings.start}
+                    end={gradientSettings.end}
+                    style={StyleSheet.absoluteFill}
+                />
+            </Animated.View>
+        </View>
+    );
+};
+
 const Post = ({
     appsEnabled,
     canDelete,
@@ -150,6 +266,7 @@ const Post = ({
     thread,
     previousPost,
     isLastPost,
+    isChannelAutotranslated,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -169,6 +286,8 @@ const Post = ({
     const isAgentPostType = isAgentPost(post);
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
+    const [layoutWidth, setLayoutWidth] = useState(0);
+    const shimmerAnimation = useShimmerAnimation(post, isChannelAutotranslated, intl.locale, layoutWidth, theme);
     const hasSameRoot = useMemo(() => {
         if (isFirstReply) {
             return false;
@@ -281,6 +400,10 @@ const Post = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Performance metrics should only run once on mount
     }, []);
 
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setLayoutWidth(e.nativeEvent.layout.width);
+    }, []);
+
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
     const itemTestID = `${testID}.${post.id}`;
@@ -345,6 +468,7 @@ const Post = ({
                     post={post}
                     showPostPriority={showPostPriority}
                     shouldRenderReplyButton={shouldRenderReplyButton}
+                    isChannelAutotranslated={isChannelAutotranslated}
                 />
             );
         }
@@ -404,6 +528,7 @@ const Post = ({
                 searchPatterns={searchPatterns}
                 showAddReaction={showAddReaction}
                 theme={theme}
+                isChannelAutotranslated={isChannelAutotranslated}
             />
         );
     }
@@ -431,6 +556,7 @@ const Post = ({
         <View
             testID={testID}
             style={[styles.postStyle, style, highlightedStyle]}
+            onLayout={onLayout}
         >
             <TouchableHighlight
                 testID={itemTestID}
@@ -459,6 +585,7 @@ const Post = ({
                     </View>
                 </>
             </TouchableHighlight>
+            {shimmerAnimation}
         </View>
     );
 };

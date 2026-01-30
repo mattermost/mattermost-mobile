@@ -85,6 +85,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CHANNEL_NOTIFICATION_PREFERENCES:
             screen = withServerDatabase(require('@screens/channel_notification_preferences').default);
             break;
+        case Screens.CHANNEL_SETTINGS:
+            screen = withServerDatabase(require('@screens/channel_settings').default);
+            break;
         case Screens.CHANNEL_FILES:
             screen = withServerDatabase(require('@screens/channel_files').default);
             break;
@@ -295,6 +298,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.USER_PROFILE:
             screen = withServerDatabase(require('@screens/user_profile').default);
+            break;
+        case Screens.SHOW_TRANSLATION:
+            screen = withServerDatabase(require('@screens/show_translation').default);
             break;
         case Screens.CALL:
             screen = withServerDatabase(require('@calls/screens/call_screen').default);
