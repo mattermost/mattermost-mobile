@@ -218,7 +218,7 @@ const useShimmerAnimation = (post: PostModel, isChannelAutotranslated: boolean, 
             style={shimmerStyles.shimmerContainer}
             pointerEvents='none'
         >
-            <View style={[shimmerStyles.shimmerBackground, {backgroundColor}]} />
+            <View style={[shimmerStyles.shimmerBackground, {backgroundColor}]}/>
             <Animated.View style={[shimmerStyles.shimmerWrapper, shimmerAnimatedStyle]}>
                 <LinearGradient
                     colors={gradientColors}
