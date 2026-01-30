@@ -1,0 +1,11 @@
+flows:
+  - "*"
+  - "auth/*"
+executionOrder:
+  # continueOnFailure: false
+  flowsOrder:
+    - login
+    - search
+    - search-something
+excludeTags:
+  - androidonly

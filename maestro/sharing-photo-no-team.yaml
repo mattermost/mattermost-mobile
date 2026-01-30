@@ -1,0 +1,47 @@
+appId: com.mattermost.rnbeta
+---
+# Test: iOS Photos App - Smart Navigation
+# This demonstrates Maestro's ability to automate system apps (not just your own app)
+#
+# Test behavior:
+# - If the app opens to the Library view, it will tap on the first photo
+# - If the app opens directly to a photo (remembering last state), it skips the tap
+# - Either way, we end up at an individual photo view
+
+- launchApp:
+    appId: com.mattermost.rnbeta
+    clearState: true
+
+# Launch the iOS Photos app
+- launchApp:
+    appId: com.apple.mobileslideshow
+
+# Wait for the app to load
+- waitForAnimationToEnd
+
+# Conditional: If we see "Library", tap on the first photo
+# Otherwise, we're already viewing a photo, so skip
+- runFlow:
+    when:
+      visible: "Library"
+    commands:
+      - tapOn:
+          id: "PXGGridLayout-Info"
+          index: 0
+      - waitForAnimationToEnd
+
+# Assert that we can see the share button (confirms we're at photo detail view)
+- assertVisible:
+    id: "PUOneUpBarButtonItemIdentifierShare"
+
+- tapOn:
+    id: "PUOneUpBarButtonItemIdentifierShare"
+
+# this should be Mattermost Beta app
+- tapOn:
+    id: activityImageView
+    index: 1
+
+- waitForAnimationToEnd
+
+- assertVisible: "Not connected to any servers"

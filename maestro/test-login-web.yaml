@@ -1,0 +1,16 @@
+url: https://v10-11-mysql2.test.mattermost.cloud
+---
+- launchApp
+- tapOn: View in Browser
+- tapOn:
+    id: input_loginId
+    index: 1
+- inputText: rahim@teamrahman.com
+
+- tapOn:
+    id: input_password-input
+    index: 1
+
+- inputText: l0gm3in!
+- tapOn:
+    id: saveSetting

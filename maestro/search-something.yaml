@@ -1,0 +1,6 @@
+appId: com.mattermost.rnbeta
+---
+- tapOn:
+    id: navigation.header.search_bar.search.input
+
+- inputText: Guillermo

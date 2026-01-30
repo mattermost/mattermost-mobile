@@ -1,0 +1,3 @@
+appId: com.mattermost.rnbeta
+---
+- assertVisible: '.*Hello from one device.*'

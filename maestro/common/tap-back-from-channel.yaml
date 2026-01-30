@@ -1,0 +1,9 @@
+appId: com.mattermost.rnbeta
+---
+- runFlow:
+    when:
+      visible:
+        id: navigation.header.back
+    commands:
+      - tapOn:
+          id: navigation.header.back

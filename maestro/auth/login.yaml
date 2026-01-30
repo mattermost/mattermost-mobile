@@ -1,0 +1,62 @@
+appId: com.mattermost.rnbeta
+---
+- launchApp:
+    appId: com.mattermost.rnbeta
+    clearState: true
+
+- runFlow:
+    when:
+      platform: Android
+      visible:
+        id: "mobile.onboaring.sign_in"
+    commands:
+      - tapOn:
+          id: "mobile.onboaring.sign_in"
+
+- extendedWaitUntil:
+    visible:
+      id: "server_header.title.connect_to_server"
+    timeout: 10000
+
+- tapOn: "Enter Server URL"
+- inputText: "https://v10-11-mysql2.test.mattermost.cloud"
+
+- tapOn: "Display Name"
+- inputText: "Test Server"
+
+- hideKeyboard
+
+- tapOn:
+    id: "server_form.connect.button"
+
+- runFlow:
+    when:
+      visible: "Due to the configuration of this server.*"
+    commands:
+      - tapOn: "Okay"
+
+- waitForAnimationToEnd
+
+# - extendedWaitUntil:
+#     visible:
+#       id: "login_form.username.input"
+#     timeout: 10000
+
+- tapOn:
+    id: "login_form.username.input"
+- inputText: "rahim@teamrahman.com"
+
+- tapOn:
+    id: "login_form.password.input"
+- inputText: "l0gm3in!"
+
+- tapOn:
+    id: "login_form.signin.button"
+
+# - extendedWaitUntil:
+#     visible:
+#       id: "channel_list.screen"
+#     timeout: 15000
+
+- assertVisible:
+    id: "channel_list.screen"

@@ -1,0 +1,5 @@
+appId: com.mattermost.rnbeta
+---
+# - tapOn: Delete, may need to use page object
+- tapOn:
+    point: "67%,57%"

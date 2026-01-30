@@ -1,0 +1,15 @@
+appId: com.mattermost.rnbeta
+---
+- launchApp:
+    clearState: true
+
+- runFlow: auth/login.yaml
+
+- tapOn:
+    id: tab_bar.account.tab
+
+- assertVisible:
+    id: account.settings.option.label
+
+- tapOn:
+    id: account.settings.option.label

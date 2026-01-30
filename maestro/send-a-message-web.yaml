@@ -1,0 +1,11 @@
+url: https://v10-11-mysql2.test.mattermost.cloud
+---
+- launchApp
+
+- runFlow: test-login-web.yaml
+
+- tapOn:
+    id: post_textbox
+- inputText: 'Guillermo ${env.RANDOM_TEXT}'
+- tapOn:
+    id: 'Send Now'
