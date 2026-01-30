@@ -129,9 +129,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const gradientSettings = {
-    locations: [0.1, 0.5, 0.9] as const,
+    locations: [0, 0.3, 0.5, 0.7, 1] as const,
     start: {x: 0, y: 0},
-    end: {x: 1, y: 0},
+    end: {x: 0.766, y: 0.643}, // 130 degree angle (more severe)
 };
 
 const MAX_RUNNING_TRANSLATIONS = 10;
@@ -143,10 +143,17 @@ const shimmerStyles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
+        overflow: 'hidden',
     },
-    shimmerGradient: {
-        flex: 1,
-        width: '100%',
+    shimmerBackground: {
+        ...StyleSheet.absoluteFillObject,
+    },
+    shimmerWrapper: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        width: '300%',
     },
 });
 
@@ -161,7 +168,7 @@ const useShimmerAnimation = (post: PostModel, isChannelAutotranslated: boolean, 
                 EphemeralStore.addRunningTranslation(post.id);
                 shimmerTranslateX.value = withRepeat(
                     withTiming(1, {
-                        duration: 1000,
+                        duration: 2000,
                         easing: Easing.linear,
                     }),
                     -1,
@@ -182,7 +189,7 @@ const useShimmerAnimation = (post: PostModel, isChannelAutotranslated: boolean, 
         const translateX = interpolate(
             shimmerTranslateX.value,
             [-1, 1],
-            [-layoutWidth, layoutWidth],
+            [-4 * layoutWidth, 4 * layoutWidth],
         );
         return {
             transform: [{translateX}],
@@ -191,30 +198,37 @@ const useShimmerAnimation = (post: PostModel, isChannelAutotranslated: boolean, 
 
     const gradientColors = useMemo(() => {
         return [
-            'transparent',
-            changeOpacity(theme.centerChannelColor, 0.2),
-            'transparent',
+            changeOpacity(theme.centerChannelBg, 0.0),
+            changeOpacity(theme.centerChannelBg, 0.4),
+            theme.centerChannelBg,
+            changeOpacity(theme.centerChannelBg, 0.4),
+            changeOpacity(theme.centerChannelBg, 0.0),
         ] as const;
     }, [theme]);
 
-    const gradientStyle = useMemo(() => [shimmerStyles.shimmerContainer, shimmerAnimatedStyle], [shimmerAnimatedStyle]);
+    const backgroundColor = useMemo(() => {
+        return changeOpacity(theme.centerChannelBg, 0.32);
+    }, [theme]);
 
     if (!isTranslating) {
         return null;
     }
     return (
-        <Animated.View
-            style={gradientStyle}
+        <View
+            style={shimmerStyles.shimmerContainer}
             pointerEvents='none'
         >
-            <LinearGradient
-                colors={gradientColors}
-                locations={gradientSettings.locations}
-                start={gradientSettings.start}
-                end={gradientSettings.end}
-                style={shimmerStyles.shimmerGradient}
-            />
-        </Animated.View>
+            <View style={[shimmerStyles.shimmerBackground, {backgroundColor}]} />
+            <Animated.View style={[shimmerStyles.shimmerWrapper, shimmerAnimatedStyle]}>
+                <LinearGradient
+                    colors={gradientColors}
+                    locations={gradientSettings.locations}
+                    start={gradientSettings.start}
+                    end={gradientSettings.end}
+                    style={StyleSheet.absoluteFill}
+                />
+            </Animated.View>
+        </View>
     );
 };
 
