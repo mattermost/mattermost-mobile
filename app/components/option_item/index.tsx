@@ -58,6 +58,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             gap: 12,
             justifyContent: 'space-between',
         },
+        disabled: {
+            opacity: 0.6,
+        },
         destructive: {
             color: theme.dndIndicator,
         },
@@ -114,6 +117,7 @@ export type OptionItemProps = {
     action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void);
     description?: string;
     destructive?: boolean;
+    disabled?: boolean;
     icon?: string;
     iconColor?: string;
     info?: string | UserChipData;
@@ -136,6 +140,7 @@ const OptionItem = ({
     action,
     description,
     destructive,
+    disabled = false,
     icon,
     iconColor,
     info,
@@ -193,6 +198,10 @@ const OptionItem = ({
         const extraStyle = longInfo ? styles.shrink : {};
         return [styles.actionContainer, extraStyle];
     }, [longInfo, styles.actionContainer, styles.shrink]);
+
+    const containerStyle = useMemo(() => {
+        return disabled ? [styles.container, styles.disabled] : styles.container;
+    }, [disabled, styles.container, styles.disabled]);
 
     let actionComponent;
     let radioComponent;
@@ -297,7 +306,7 @@ const OptionItem = ({
     const component = (
         <View
             testID={testID}
-            style={styles.container}
+            style={containerStyle}
             onLayout={onLayout}
         >
             <View style={labelContainerStyle}>

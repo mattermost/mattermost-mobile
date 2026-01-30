@@ -6,6 +6,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeChannel, observeChannelAutotranslation, observeMyChannelAutotranslation} from '@queries/servers/channel';
+import {observeIsUserLanguageSupportedByAutotranslation} from '@queries/servers/system';
 
 import MyAutotranslation from './my_autotranslation';
 
@@ -19,11 +20,13 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
     const channel = observeChannel(database, channelId);
     const enabled = observeMyChannelAutotranslation(database, channelId);
     const channelAutotranslationEnabled = observeChannelAutotranslation(database, channelId);
+    const isLanguageSupported = observeIsUserLanguageSupportedByAutotranslation(database);
 
     return {
         enabled,
         displayName: channel.pipe(switchMap((c) => of$(c?.displayName || ''))),
         channelAutotranslationEnabled,
+        isLanguageSupported,
     };
 });
 

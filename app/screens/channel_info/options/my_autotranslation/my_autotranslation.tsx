@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {defineMessage, useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {setMyChannelAutotranslation} from '@actions/remote/channel';
@@ -11,14 +11,54 @@ import {useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {alertErrorWithFallback} from '@utils/draft';
 
+const messages = defineMessages({
+    label: {
+        id: 'channel_info.my_autotranslation',
+        defaultMessage: 'Auto-translation',
+    },
+    failed: {
+        id: 'channel_info.my_autotranslation_failed',
+        defaultMessage: 'An error occurred trying to enable automatic translation for yourself in channel {displayName}',
+    },
+    languageNotSupported: {
+        id: 'channel_info.my_autotranslation_language_not_supported',
+        defaultMessage: 'Your language is not supported',
+    },
+    enabled: {
+        id: 'channel_info.my_autotranslation_enabled',
+        defaultMessage: 'On ({language})',
+    },
+    disabled: {
+        id: 'channel_info.my_autotranslation_disabled',
+        defaultMessage: 'Off',
+    },
+    turnOffTitle: {
+        id: 'channel_info.turn_off_auto_translation.title',
+        defaultMessage: 'Turn off auto-translation',
+    },
+    turnOffDescription: {
+        id: 'channel_info.turn_off_auto_translation.description',
+        defaultMessage: "Messages in this channel will revert to their original language. This will only affect how you see this channel. Other members won't be affected.",
+    },
+    turnOffCancel: {
+        id: 'channel_info.turn_off_auto_translation.button.cancel',
+        defaultMessage: 'cancel',
+    },
+    turnOffYes: {
+        id: 'channel_info.turn_off_auto_translation.button.yes',
+        defaultMessage: 'Yes, turn off',
+    },
+});
+
 type Props = {
     channelId: string;
     enabled: boolean;
     displayName: string;
     channelAutotranslationEnabled: boolean;
+    isLanguageSupported: boolean;
 };
 
-const MyAutotranslation = ({channelId, displayName, enabled, channelAutotranslationEnabled}: Props) => {
+const MyAutotranslation = ({channelId, displayName, enabled, channelAutotranslationEnabled, isLanguageSupported}: Props) => {
     // Use the local state for optimistic updates
     const [autotranslation, setAutotranslation] = useState(enabled);
     const serverUrl = useServerUrl();
@@ -31,10 +71,7 @@ const MyAutotranslation = ({channelId, displayName, enabled, channelAutotranslat
             alertErrorWithFallback(
                 intl,
                 result.error,
-                defineMessage({
-                    id: 'channel_info.my_autotranslation_failed',
-                    defaultMessage: 'An error occurred trying to enable automatic translation for yourself in channel {displayName}',
-                }),
+                messages.failed,
                 {displayName},
             );
             setAutotranslation((v) => !v);
@@ -44,17 +81,11 @@ const MyAutotranslation = ({channelId, displayName, enabled, channelAutotranslat
     const toggleAutotranslation = usePreventDoubleTap(useCallback(async () => {
         if (autotranslation) {
             Alert.alert(
-                intl.formatMessage({
-                    id: 'channel_info.turn_off_auto_translation.title',
-                    defaultMessage: 'Turn off auto-translation',
-                }),
-                intl.formatMessage({
-                    id: 'channel_info.turn_off_auto_translation.description',
-                    defaultMessage: 'Messages in this channel will revert to their original language. This will only affect how you see this channel. Other members won’t be affected.',
-                }),
+                intl.formatMessage(messages.turnOffTitle),
+                intl.formatMessage(messages.turnOffDescription),
                 [
-                    {text: intl.formatMessage({id: 'channel_info.turn_off_auto_translation.button.cancel', defaultMessage: 'cancel'}), style: 'cancel'},
-                    {text: intl.formatMessage({id: 'channel_info.turn_off_auto_translation.button.yes', defaultMessage: 'Yes, turn off'}), onPress: () => doToggleAutotranslation()},
+                    {text: intl.formatMessage(messages.turnOffCancel), style: 'cancel'},
+                    {text: intl.formatMessage(messages.turnOffYes), onPress: () => doToggleAutotranslation()},
                 ],
             );
         } else {
@@ -66,23 +97,27 @@ const MyAutotranslation = ({channelId, displayName, enabled, channelAutotranslat
         return null;
     }
 
-    const description = autotranslation ? intl.formatMessage({
-        id: 'channel_info.my_autotranslation_enabled',
-        defaultMessage: 'On ({language})',
-    }, {
+    if (!isLanguageSupported) {
+        return (
+            <OptionItem
+                label={intl.formatMessage(messages.label)}
+                description={intl.formatMessage(messages.languageNotSupported)}
+                icon='translate'
+                type='none'
+                disabled={true}
+                testID='channel_info.options.my_autotranslation.option'
+            />
+        );
+    }
+
+    const description = autotranslation ? intl.formatMessage(messages.enabled, {
         language: intl.formatDisplayName(intl.locale, {type: 'language'}),
-    }) : intl.formatMessage({
-        id: 'channel_info.my_autotranslation_disabled',
-        defaultMessage: 'Off',
-    });
+    }) : intl.formatMessage(messages.disabled);
 
     return (
         <OptionItem
             action={toggleAutotranslation}
-            label={intl.formatMessage({
-                id: 'channel_info.my_autotranslation',
-                defaultMessage: 'Auto-translation',
-            })}
+            label={intl.formatMessage(messages.label)}
             description={description}
             icon='translate'
             type='toggle'

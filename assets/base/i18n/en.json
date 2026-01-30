@@ -206,6 +206,7 @@
   "channel_info.my_autotranslation_disabled": "Off",
   "channel_info.my_autotranslation_enabled": "On ({language})",
   "channel_info.my_autotranslation_failed": "An error occurred trying to enable automatic translation for yourself in channel {displayName}",
+  "channel_info.my_autotranslation_language_not_supported": "Your language is not supported",
   "channel_info.nickname": "Nickname",
   "channel_info.notification.all": "All",
   "channel_info.notification.default": "Default",
