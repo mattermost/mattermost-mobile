@@ -263,6 +263,130 @@ describe('dialog_conversion', () => {
             expect(result.submission).toEqual({});
             expect(result.errors).toEqual(['Field some_field not found in dialog elements']);
         });
+
+        it('should handle multiselect AppSelectOption arrays', () => {
+            const mockMultiselectElement: DialogElement = {
+                name: 'multiselect_field',
+                type: DialogElementTypes.SELECT,
+                multiselect: true,
+                display_name: 'Multi Select',
+                optional: false,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [
+                    {value: 'opt1', text: 'Option 1'},
+                    {value: 'opt2', text: 'Option 2'},
+                    {value: 'opt3', text: 'Option 3'},
+                ],
+            };
+
+            const values: AppFormValues = {
+                multiselect_field: [
+                    {label: 'Option 1', value: 'opt1'},
+                    {label: 'Option 3', value: 'opt3'},
+                ],
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, [mockMultiselectElement]);
+
+            expect(result.submission).toEqual({
+                multiselect_field: 'opt1,opt3',
+            });
+            expect(result.errors).toEqual([]);
+        });
+
+        it('should handle multiselect string arrays', () => {
+            const mockMultiselectElement: DialogElement = {
+                name: 'multiselect_field',
+                type: DialogElementTypes.SELECT,
+                multiselect: true,
+                display_name: 'Multi Select',
+                optional: false,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [
+                    {value: 'opt1', text: 'Option 1'},
+                    {value: 'opt2', text: 'Option 2'},
+                ],
+            };
+
+            const values: AppFormValues = {
+                multiselect_field: ['opt1', 'opt2'] as any,
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, [mockMultiselectElement]);
+
+            expect(result.submission).toEqual({
+                multiselect_field: 'opt1,opt2',
+            });
+            expect(result.errors).toEqual([]);
+        });
+
+        it('should handle empty multiselect arrays', () => {
+            const mockMultiselectElement: DialogElement = {
+                name: 'multiselect_field',
+                type: DialogElementTypes.SELECT,
+                multiselect: true,
+                display_name: 'Multi Select',
+                optional: true,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+            };
+
+            const values: AppFormValues = {
+                multiselect_field: [],
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, [mockMultiselectElement]);
+
+            expect(result.submission).toEqual({
+                multiselect_field: '',
+            });
+            expect(result.errors).toEqual([]);
+        });
+
+        it('should not affect single select with multiselect=false', () => {
+            const mockSingleSelectElement: DialogElement = {
+                name: 'single_select',
+                type: DialogElementTypes.SELECT,
+                multiselect: false,
+                display_name: 'Single Select',
+                optional: false,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [
+                    {value: 'opt1', text: 'Option 1'},
+                ],
+            };
+
+            const values: AppFormValues = {
+                single_select: {label: 'Option 1', value: 'opt1'},
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, [mockSingleSelectElement]);
+
+            expect(result.submission).toEqual({
+                single_select: 'opt1',
+            });
+            expect(result.errors).toEqual([]);
+        });
     });
 
     describe('convertDialogElementToAppField', () => {
@@ -357,6 +481,45 @@ describe('dialog_conversion', () => {
                 options: [
                     {label: 'Option 1', value: 'opt1'},
                     {label: 'Option 2', value: 'opt2'},
+                ],
+            });
+        });
+
+        it('should convert multiselect element correctly', () => {
+            const element: DialogElement = {
+                name: 'multiselect_field',
+                type: DialogElementTypes.SELECT,
+                display_name: 'Multiselect Field',
+                help_text: 'Choose multiple options',
+                optional: false,
+                multiselect: true,
+                options: [
+                    {value: 'opt1', text: 'Option 1'},
+                    {value: 'opt2', text: 'Option 2'},
+                    {value: 'opt3', text: 'Option 3'},
+                ],
+                default: 'opt1,opt3',
+                placeholder: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+            };
+
+            const result = convertDialogElementToAppField(element);
+
+            expect(result).toEqual({
+                name: 'multiselect_field',
+                type: 'static_select',
+                is_required: true,
+                label: 'Multiselect Field',
+                description: 'Choose multiple options',
+                position: 0,
+                value: 'opt1,opt3',
+                multiselect: true,
+                options: [
+                    {label: 'Option 1', value: 'opt1'},
+                    {label: 'Option 2', value: 'opt2'},
+                    {label: 'Option 3', value: 'opt3'},
                 ],
             });
         });
@@ -584,6 +747,7 @@ describe('dialog_conversion', () => {
                     },
                 ],
                 submit_buttons: undefined,
+                submit_label: 'Submit',
                 source: undefined,
                 submit: {
                     path: '/dialog/submit',
@@ -699,6 +863,91 @@ describe('dialog_conversion', () => {
             });
             expect(result.submit_buttons).toBeUndefined();
             expect(result.source).toBeUndefined();
+        });
+
+        it('should set source when fields have refresh enabled', () => {
+            const configWithRefreshField = {
+                ...mockConfig,
+                dialog: {
+                    ...mockConfig.dialog,
+                    elements: [
+                        ...mockConfig.dialog.elements,
+                        {
+                            name: 'refresh_field',
+                            type: DialogElementTypes.SELECT,
+                            display_name: 'Refresh Field',
+                            help_text: 'This field triggers refresh',
+                            optional: false,
+                            refresh: true,
+                            options: [
+                                {value: 'option1', text: 'Option 1'},
+                            ],
+                            default: '',
+                            placeholder: '',
+                            min_length: 0,
+                            max_length: 0,
+                            data_source: '',
+                        },
+                    ],
+                },
+            };
+
+            const result = convertDialogToAppForm(configWithRefreshField as InteractiveDialogConfig);
+
+            expect(result.source).toEqual({
+                path: '/dialog/refresh',
+                expand: {},
+            });
+        });
+
+        it('should set source when source_url is provided', () => {
+            const configWithSourceUrl = {
+                ...mockConfig,
+                dialog: {
+                    ...mockConfig.dialog,
+                    source_url: 'https://example.com/refresh',
+                },
+            };
+
+            const result = convertDialogToAppForm(configWithSourceUrl);
+
+            expect(result.source).toEqual({
+                path: 'https://example.com/refresh',
+                expand: {},
+            });
+        });
+
+        it('should prioritize source_url over default refresh path', () => {
+            const configWithBoth = {
+                ...mockConfig,
+                dialog: {
+                    ...mockConfig.dialog,
+                    source_url: 'https://example.com/custom-refresh',
+                    elements: [
+                        {
+                            name: 'refresh_field',
+                            type: DialogElementTypes.SELECT,
+                            display_name: 'Refresh Field',
+                            refresh: true,
+                            options: [],
+                            optional: false,
+                            default: '',
+                            placeholder: '',
+                            help_text: '',
+                            min_length: 0,
+                            max_length: 0,
+                            data_source: '',
+                        },
+                    ],
+                },
+            };
+
+            const result = convertDialogToAppForm(configWithBoth as InteractiveDialogConfig);
+
+            expect(result.source).toEqual({
+                path: 'https://example.com/custom-refresh',
+                expand: {},
+            });
         });
     });
 });
