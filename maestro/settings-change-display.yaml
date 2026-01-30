@@ -1,0 +1,11 @@
+appId: com.mattermost.rnbeta
+---
+- tapOn:
+    id: settings.display.option
+- tapOn:
+    id: display_settings.theme.option
+- tapOn:
+    id: theme_display_settings.denim.option
+- tapOn:
+    id: BackButton
+- assertVisible: Denim

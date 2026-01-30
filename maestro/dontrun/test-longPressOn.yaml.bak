@@ -1,0 +1,29 @@
+appId: com.mattermost.rnbeta
+---
+- launchApp: 
+    appId: com.mattermost.rnbeta
+
+- waitForAnimationToEnd
+
+- tapOn:
+    id: "channel_list.category.*.channel_item.town-square.display_name"
+
+# Wait for the post with our message to appear (can take 2-5 seconds to upload)
+- extendedWaitUntil:
+    visible: ".*Test Photo Sharing"
+    timeout: 10000
+    
+- tapOn: ".*Test Photo Sharing"
+
+- tapOn:
+    id: navigation.header.back
+
+- longPressOn: 
+    text: ".*Test Photo Sharing"
+    point: 10%, 57%
+
+- waitForAnimationToEnd
+
+- tapOn:
+    point: 22%,93%
+# - tapOn: Delete

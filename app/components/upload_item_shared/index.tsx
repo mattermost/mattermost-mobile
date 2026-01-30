@@ -307,6 +307,13 @@ export default function UploadItemShared({
                     />
                 </View>
             )}
+
+            {!loading && !file.failed && file.id && (
+                <View
+                    testID='progress-bar-completed'
+                    style={{position: 'absolute', width: 1, height: 1}}
+                />
+            )}
         </View>
     );
 }

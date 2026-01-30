@@ -196,7 +196,10 @@ const FloatingInputContainer = ({
             onLayout={onLayout}
         >
             <View style={styles.container}>
-                <Pressable onPress={handlePressOnContainer}>
+                <Pressable
+                    onPress={handlePressOnContainer}
+                    testID={testID}
+                >
                     <Animated.Text
                         style={[styles.label, textAnimatedTextStyle]}
                         suppressHighlighting={true}
@@ -209,7 +212,10 @@ const FloatingInputContainer = ({
                     </View>
                 </Pressable>
                 {Boolean(error) && (
-                    <View style={styles.errorContainer}>
+                    <View
+                        style={styles.errorContainer}
+                        testID={`${testID}.error`}
+                    >
                         {!hideErrorIcon && errorIcon &&
                         <CompassIcon
                             name={errorIcon}
@@ -218,7 +224,7 @@ const FloatingInputContainer = ({
                         }
                         <Text
                             style={styles.errorText}
-                            testID={`${testID}.error`}
+                            testID={`${testID}.error.text`}
                         >
                             {error}
                         </Text>

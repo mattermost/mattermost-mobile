@@ -1,0 +1,146 @@
+appId: com.mattermost.rnbeta
+---
+# Test: Upload photo and preview in gallery
+# This test logs in, navigates to off-topic channel, uploads a photo,
+# submits the post, and then taps on the image to preview it in the gallery
+
+# Launch the app with clear state
+- launchApp:
+    appId: com.mattermost.rnbeta
+    # clearState: true
+
+# Handle onboarding screen if present (Android)
+# - runFlow:
+#     when:
+#       platform: Android
+#       visible:
+#         id: "mobile.onboaring.sign_in"
+#     commands:
+#       - tapOn:
+#           id: "mobile.onboaring.sign_in"
+
+# # Wait for server connection screen
+# - extendedWaitUntil:
+#     visible:
+#       id: "server_header.title.connect_to_server"
+#     timeout: 10000
+
+# # Enter server URL
+# - tapOn: "Enter Server URL"
+# - inputText: "https://v10-11-mysql2.test.mattermost.cloud"
+
+# # Enter display name
+# - tapOn: "Display Name"
+# - inputText: "Test Server"
+
+# # Connect to server
+# - tapOn:
+#     id: "server_form.connect.button"
+
+# # Handle configuration warning if present
+# - runFlow:
+#     when:
+#       visible: "Due to the configuration of this server.*"
+#     commands:
+#       - tapOn: "Okay"
+
+# - waitForAnimationToEnd
+
+# # Login with credentials
+# - tapOn:
+#     id: "login_form.username.input"
+# - inputText: "rahim@teamrahman.com"
+
+# - tapOn:
+#     id: "login_form.password.input"
+# - inputText: "l0gm3in!"
+
+# - tapOn:
+#     id: "login_form.signin.button"
+
+# # Wait for channel list to load
+# - extendedWaitUntil:
+#     visible:
+#       id: "channel_list.screen"
+#     timeout: 15000
+
+# Navigate to off-topic channel
+# - tapOn:
+#     id: "channel_list.category.*.channel_item.off-topic.display_name"
+
+# - waitForAnimationToEnd
+
+# Tap on the attachment icon (camera/image icon) in the post input area
+- tapOn:
+    id: "channel.post_draft.quick_actions.image_action"
+
+# - waitForAnimationToEnd
+
+# Add a test image to the device gallery
+# - addMedia:
+#     - "assets/base/images/logo-dark.png"
+
+- waitForAnimationToEnd
+
+# On iOS, this should open the photo picker
+# Tap on the first photo in the gallery
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: PXGGridLayout-Info
+          index: 0
+      - tapOn:
+          id: Add
+
+      - waitForAnimationToEnd
+
+# On Android, handle photo selection
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      # Tap on the first image in the gallery
+      - tapOn:
+          index: 0
+      - waitForAnimationToEnd
+
+- tapOn:
+    id: channel.post_draft.post.input
+
+- inputText: "Test Photo Gallery Preview"
+
+# Wait for the send button to appear
+- extendedWaitUntil:
+    visible:
+      id: "channel.post_draft.send_action.send.button"
+    timeout: 5000
+
+# Submit the post by tapping the send button
+- tapOn:
+    id: "channel.post_draft.send_action.send.button"
+
+- waitForAnimationToEnd
+
+# Wait for the post with our message to appear (can take 2-5 seconds to upload)
+- extendedWaitUntil:
+    visible: ".*Test Photo Gallery Preview"
+    timeout: 10000
+
+# Tap on the image to open the gallery preview
+# Look for the image attachment in the post
+- tapOn: ".*Test Photo Gallery Preview"
+
+- waitForAnimationToEnd
+
+# Assert that we're in the gallery preview by checking for common gallery elements
+- assertVisible:
+    id: "gallery.header"
+
+# Clean up - go back to channel
+- tapOn:
+    id: "close.gallery.button"
+    optional: true
+
+- waitForAnimationToEnd

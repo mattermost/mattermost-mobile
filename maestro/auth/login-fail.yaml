@@ -1,0 +1,48 @@
+appId: com.mattermost.rnbeta
+---
+- launchApp: 
+    appId: com.mattermost.rnbeta
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "server_header.title.connect_to_server"
+    timeout: 10000
+
+- tapOn: "Enter Server URL"
+- inputText: "https://v10-11-mysql2.test.mattermost.cloud"
+
+- tapOn: "Display Name"
+- inputText: "Test Server"
+
+- tapOn:
+    id: "Done"
+
+- runFlow:
+    when:
+      visible: "Due to the configuration of this server.*"
+    commands:
+      - tapOn: "Okay"
+
+- waitForAnimationToEnd
+
+- tapOn:
+    id: "login_form.username.input"
+- inputText: "rahim@teamrahman.com"
+
+- tapOn:
+    id: "login_form.password.input"
+- inputText: "wrongpassword"
+
+- tapOn:
+    id: "login_form.signin.button"
+
+# Wait for login attempt to complete and error to appear
+- waitForAnimationToEnd
+
+# Give extra time for error to render
+- extendedWaitUntil:
+    visible:
+      id: "login_form.password.input.error"
+    timeout: 5000
+

@@ -1,0 +1,87 @@
+appId: com.mattermost.rnbeta
+---
+# Test: iOS Photos App - Smart Navigation
+# This demonstrates Maestro's ability to automate system apps (not just your own app)
+#
+# Test behavior:
+# - If the app opens to the Library view, it will tap on the first photo
+# - If the app opens directly to a photo (remembering last state), it skips the tap
+# - Either way, we end up at an individual photo view
+
+# Launch the iOS Photos app
+- launchApp:
+    appId: com.apple.mobileslideshow
+
+# Wait for the app to load
+- waitForAnimationToEnd
+
+# Conditional: If we see "Library", tap on the first photo
+# Otherwise, we're already viewing a photo, so skip
+- runFlow:
+    when:
+      visible: "Library"
+    commands:
+      - tapOn:
+          id: "PXGGridLayout-Info"
+          index: 0
+      - waitForAnimationToEnd
+
+# Assert that we can see the share button (confirms we're at photo detail view)
+- assertVisible:
+    id: "PUOneUpBarButtonItemIdentifierShare"
+
+- tapOn:
+    id: "PUOneUpBarButtonItemIdentifierShare"
+
+# this should be Mattermost Beta app
+- tapOn:
+    id: activityImageView
+    index: 1
+
+- waitForAnimationToEnd
+
+- tapOn: "Channel"
+
+- tapOn: "Off-Topic"
+
+- tapOn: Enter a message (optional)
+- inputText: Test Photo Sharing in Off-Topic
+
+# this is the compass icon button to submit the post
+- tapOn:
+    point: 90%,13%
+
+- launchApp:
+    appId: com.mattermost.rnbeta
+
+- waitForAnimationToEnd
+
+- runFlow: common/tap-back-from-channel.yaml
+
+- tapOn:
+    id: "channel_list.category.*.channel_item.off-topic.display_name"
+
+- waitForAnimationToEnd
+
+- scroll
+
+# Wait for the post with our message to appear (can take 2-5 seconds to upload)
+- extendedWaitUntil:
+    visible: ".*Test Photo Sharing in Off-Topic"
+    timeout: 10000
+
+- tapOn: ".*Test Photo Sharing in Off-Topic"
+
+- tapOn:
+    id: gallery.header.close
+
+- longPressOn:
+    text: ".*Test Photo Sharing in Off-Topic"
+    point: 10%, 57%
+
+- waitForAnimationToEnd
+
+- tapOn:
+    id: post_options.delete_post.option
+
+- runFlow: common/tap-on-delete-dialog.yaml

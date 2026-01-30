@@ -1,0 +1,78 @@
+appId: com.mattermost.rnbeta
+---
+- launchApp:
+    appId: com.mattermost.rnbeta
+    clearState: true
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: Android
+      visible:
+        id: "mobile.onboaring.sign_in"
+    commands:
+      - tapOn:
+          id: "mobile.onboaring.sign_in"
+- extendedWaitUntil:
+    visible:
+      id: "server_header.title.connect_to_server"
+    timeout: 2500
+# - inputText: "https://10-4-saml.test.mattermost.cloud"
+# connect to server screen
+- tapOn: "Enter Server URL"
+- inputText: "https://v10-11-mysql2.test.mattermost.cloud"
+- tapOn: "Display Name"
+- inputText: "Test Server"
+- tapOn:
+    id: "server_form.connect.button"
+- runFlow:
+    when:
+      visible: "Due to the configuration of this server.*"
+    commands:
+      - tapOn: "Okay"
+- waitForAnimationToEnd
+# - assertVisible: ".*Okta SAML"
+# - tapOn:
+#     text: ".*Okta SAML"
+#     retryTapIfNoChange: true
+- assertVisible:
+    id: "login_options.sso.SAML"
+- tapOn:
+    id: "login_options.sso.SAML"
+
+- runFlow:
+    when:
+      visible: "Open this page in .*"
+    commands:
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - tapOn: "Cancel"
+
+- assertVisible: "Connecting to.*"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - eraseText: 100
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - longPressOn:
+          id: "input.*"
+      - tapOn:
+          id: com.google.android.inputmethod.latin:id/key_pos_del
+
+# - tapOn:
+#     point: "50%,43%"
+- inputText: "rahim+test+account@mattermost.com"
+# - tapOn: "Done"
+- hideKeyboard
+- tapOn: "Next"
+- waitForAnimationToEnd
+- inputText: "l0gM3in!"
+# - tapOn: "Done"
+- hideKeyboard
+- tapOn: "Verify"
+# https://v10-11-mysql2.test.mattermost.cloud"

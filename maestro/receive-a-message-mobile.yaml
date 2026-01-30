@@ -1,0 +1,8 @@
+appId: com.mattermost.rnbeta
+---
+# - launchApp
+
+- tapOn:
+    id: channel_list.category.*.channel_item.town-square.display_name
+
+- assertVisible: '.*Guillermo ${env.RANDOM_TEXT}.*'

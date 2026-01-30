@@ -1,0 +1,20 @@
+appId: com.mattermost.rnbeta
+---
+- launchApp:
+    clearState: true
+
+- runFlow: auth/login.yaml
+
+- tapOn:
+    id: account-profile-picture
+- tapOn:
+    id: account.settings.option.label
+- tapOn:
+    id: settings.display.option.label
+- tapOn:
+    id: display_settings.theme.option.label
+- tapOn:
+    id: theme_display_settings.indigo.option
+- tapOn:
+    id: BackButton
+- assertVisible: Indigo

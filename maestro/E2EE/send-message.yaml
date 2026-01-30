@@ -1,0 +1,9 @@
+appId: com.mattermost.rnbeta
+---
+- tapOn:
+    id: channel.post_draft.post.input
+
+- inputText: Hello from one device
+
+- tapOn:
+    id: channel.post_draft.send_action.send.button

@@ -1,0 +1,31 @@
+appId: com.android.chrome
+tags:
+  - androidonly
+---
+- launchApp:
+    appId: com.android.chrome
+- tapOn:
+    id: com.android.chrome:id/optional_toolbar_button
+- tapOn:
+    id: com.android.chrome:id/search_box_text
+- inputText: www.mattermost.com
+- tapOn:
+    id: com.google.android.inputmethod.latin:id/key_pos_ime_action
+- tapOn:
+    id: com.android.chrome:id/menu_button
+- tapOn:
+    id: com.android.chrome:id/share_menu_id
+- tapOn:
+    id: com.android.intentresolver:id/item
+    index: 2
+
+- tapOn: Channel.*
+
+- tapOn: .*Town Square
+
+- tapOn:
+    id: floating-text-input-label
+
+- inputText: Test Photo Sharing
+
+- tapOn: "󰒊"

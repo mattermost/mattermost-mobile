@@ -1,0 +1,12 @@
+appId: com.mattermost.rnbeta
+tags:
+  - smokeTest
+---
+- launchApp
+- tapOn:
+    id: tab_bar.search.tab
+- tapOn:
+    id: navigation.header.search_bar.search.input
+- inputText: Hello World
+- tapOn:
+    id: Search

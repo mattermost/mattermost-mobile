@@ -48,6 +48,7 @@
             "@constants/*": ["app/constants/*"],
             "@context/*": ["app/context/*"],
             "@database/*": ["app/database/*"],
+            "@env": ["env.d.ts"],
             "@helpers/*": ["app/helpers/*"],
             "@hooks/*": ["app/hooks/*"],
             "@i18n": ["app/i18n/index"],

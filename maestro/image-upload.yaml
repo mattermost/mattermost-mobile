@@ -1,0 +1,128 @@
+appId: com.mattermost.rnbeta
+---
+# Test: Upload multiple images in Town Square
+# This test navigates to Town Square and uploads 5 images (indices 3-7)
+
+# Launch the app (without clearing state, so we're already logged in)
+- launchApp:
+    appId: com.mattermost.rnbeta
+
+- waitForAnimationToEnd
+
+- runFlow: common/tap-back-from-channel.yaml
+
+# Navigate to Town Square channel
+- tapOn:
+    id: "channel_list.category.*.channel_item.town-square.display_name"
+
+- waitForAnimationToEnd
+
+# Tap on the image upload button in the post draft area
+- tapOn:
+    id: "channel.post_draft.quick_actions.image_action"
+
+- waitForAnimationToEnd
+
+# On iOS, select 5 images (indices 3-7) from the photo picker
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      # Select image at index 7
+      - tapOn:
+          id: PXGGridLayout-Info
+          index: 2
+
+      # Select image at index 3
+      - tapOn:
+          id: PXGGridLayout-Info
+          index: 3
+
+      # Select image at index 4
+      - tapOn:
+          id: PXGGridLayout-Info
+          index: 4
+
+      # # Select image at index 5
+      # - tapOn:
+      #     id: PXGGridLayout-Info
+      #     index: 5
+
+      # Select image at index 6
+      - tapOn:
+          id: PXGGridLayout-Info
+          index: 6
+
+      # Tap the "Add" button to confirm selection
+      - tapOn:
+          id: Add
+
+# On Android, handle photo selection
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      # Select images at indices 3-7
+      - tapOn:
+          index: 3
+      - tapOn:
+          index: 4
+      - tapOn:
+          index: 5
+      # - tapOn:
+      #     index: 6
+      - tapOn:
+          index: 7
+      - waitForAnimationToEnd
+
+# - waitForAnimationToEnd
+
+# Wait for all 5 uploads to complete
+# Each upload shows a progress bar while loading
+# Once complete, the progress bar testID changes to "progress-bar-completed"
+# Wait for the 5th progress bar (index 4) to be completed
+- extendedWaitUntil:
+    visible:
+      id: "progress-bar-completed"
+      index: 3
+    timeout: 10000
+
+# Click on the 3rd uploaded image thumbnail (index 2) to preview it
+- tapOn:
+    id: "uploaded-item-.*"
+    index: 1
+
+- waitForAnimationToEnd
+
+# Assert that the gallery preview opened by checking for the gallery header
+- assertVisible:
+    id: "gallery.header"
+
+# Swipe left twice to navigate through the gallery images
+- swipe:
+    direction: LEFT
+
+- waitForAnimationToEnd
+
+- swipe:
+    direction: LEFT
+
+- waitForAnimationToEnd
+
+# Close the gallery preview
+- tapOn:
+    id: "gallery.header.close"
+
+- tapOn:
+    id: channel.post_draft.send_action.send.button
+
+- longPressOn:
+    id: "channel.post_list.post.*"
+    point: 10%, 57%
+
+- tapOn:
+    id: post_options.delete_post.option
+
+# - tapOn: Delete
+- tapOn:
+    point: "67%,57%"

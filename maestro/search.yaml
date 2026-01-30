@@ -1,0 +1,9 @@
+appId: com.mattermost.rnbeta
+---
+- tapOn:
+    id: tab_bar.search.tab
+
+- tapOn:
+    id: navigation.large_header.title
+
+- runFlow: common/tap-back-from-channel.yaml

@@ -1,0 +1,94 @@
+appId: com.mattermost.rnbeta
+---
+# Test: Upload multiple images in Town Square
+# This test navigates to Town Square and uploads 5 images (indices 3-7)
+
+# Launch the app (without clearing state, so we're already logged in)
+- launchApp:
+    appId: com.mattermost.rnbeta
+
+- waitForAnimationToEnd
+
+# Navigate to Town Square channel
+- tapOn:
+    id: "channel_list.category.*.channel_item.town-square.display_name"
+
+- waitForAnimationToEnd
+
+# Tap on the image upload button in the post draft area
+- tapOn:
+    id: "channel.post_draft.quick_actions.image_action"
+
+- waitForAnimationToEnd
+
+# On iOS, select 5 images (indices 3-7) from the photo picker
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      # Select image at index 7
+      - tapOn:
+          id: PXGGridLayout-Info
+          index: 3
+
+      # Tap the "Add" button to confirm selection
+      - tapOn:
+          id: Add
+
+# On Android, handle photo selection
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      # Select images at indices 3-7
+      - tapOn:
+          index: 2
+
+      - waitForAnimationToEnd
+
+# - waitForAnimationToEnd
+
+# Wait for all 5 uploads to complete
+# Each upload shows a progress bar while loading
+# Once complete, the progress bar testID changes to "progress-bar-completed"
+# Wait for the 5th progress bar (index 4) to be completed
+- extendedWaitUntil:
+    visible:
+      id: "progress-bar-completed"
+      index: 0
+    timeout: 10000
+
+# Click on the 3rd uploaded image thumbnail (index 2) to preview it
+- tapOn:
+    id: "uploaded-item-.*"
+    index: 0
+
+- waitForAnimationToEnd
+
+# Assert that the gallery preview opened by checking for the gallery header
+- assertVisible:
+    id: "gallery.header"
+
+- waitForAnimationToEnd
+
+# Close the gallery preview
+- tapOn:
+    id: "gallery.header.close"
+
+- waitForAnimationToEnd
+
+- tapOn:
+    id: "channel.post_draft.send_action.send.button"
+
+- longPressOn:
+    point: 10%, 57%
+
+- assertNotVisible:
+    id: "post_options.copy_text.option.label"
+
+- tapOn:
+    id: post_options.delete_post.option
+
+# - tapOn: Delete
+- tapOn:
+    point: "67%,57%"
