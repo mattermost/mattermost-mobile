@@ -48,7 +48,7 @@ jobs:
 
   build-ios-simulator:
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
-    runs-on: macos-15
+    runs-on: macos-26
     needs:
       - update-initial-status-ios
     steps:
@@ -60,6 +60,10 @@ jobs:
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+
+      - name: Set .env with RUNNING_E2E=true
+        run: |
+          echo "RUNNING_E2E=true" > .env
 
       - name: Build iOS Simulator
         env:
@@ -74,7 +78,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-build-simulator-${{ github.run_id }}
-          path: Mattermost-simulator-x86_64.app.zip
+          path: Mattermost-simulator-*.app.zip
 
   build-android-apk:
     runs-on: ubuntu-latest-8-cores
