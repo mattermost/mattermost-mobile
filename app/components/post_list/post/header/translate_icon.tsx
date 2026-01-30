@@ -18,7 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         translationProcessing: {
             color: theme.centerChannelColor,
-            opacity: 0.56,
+            opacity: 0.75,
             ...typography('Body', 75, 'Regular'),
         },
     };
@@ -34,8 +34,8 @@ function TranslateIcon({
         return (
             <CompassIcon
                 name='translate'
-                size={16}
-                color={changeOpacity(theme.centerChannelColor, 0.56)}
+                size={14}
+                color={changeOpacity(theme.centerChannelColor, 0.64)}
             />
         );
     }
@@ -45,7 +45,7 @@ function TranslateIcon({
             <>
                 <Loading
                     size='small'
-                    color={changeOpacity(theme.centerChannelColor, 0.56)}
+                    color={changeOpacity(theme.centerChannelColor, 0.64)}
                 />
                 <FormattedText
                     id='post_header.translation_processing'
@@ -60,7 +60,7 @@ function TranslateIcon({
         return (
             <CompassIcon
                 name='translate'
-                size={16}
+                size={14}
                 color={theme.dndIndicator}
             />
         );
