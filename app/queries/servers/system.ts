@@ -15,6 +15,8 @@ import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 import {isMinimumLicenseTier, isMinimumServerVersion, type LicenseTierSku} from '@utils/helpers';
 import {logError} from '@utils/log';
 
+import {observeCurrentUser} from './user';
+
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ConfigModel from '@typings/database/models/servers/config';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -256,6 +258,23 @@ export const observeConfigBooleanValue = (database: Database, key: keyof ClientC
 export const observeConfigIntValue = (database: Database, key: keyof ClientConfig, defaultValue = 0) => {
     return observeConfigValue(database, key).pipe(
         switchMap((v) => of$((parseInt(v || '0', 10) || defaultValue))),
+    );
+};
+
+export const observeIsUserLanguageSupportedByAutotranslation = (database: Database) => {
+    const currentUser = observeCurrentUser(database);
+    const autoTranslationLanguages = observeConfigValue(database, 'AutoTranslationLanguages');
+
+    return combineLatest([currentUser, autoTranslationLanguages]).pipe(
+        switchMap(([user, languages]) => {
+            if (!user?.locale || !languages) {
+                return of$(false);
+            }
+            const userLocale = user.locale;
+            const languagesList = languages.split(',');
+            return of$(languagesList.includes(userLocale));
+        }),
+        distinctUntilChanged(),
     );
 };
 

@@ -13,6 +13,7 @@ interface ClientConfig {
     AndroidMinVersion: string;
     AppDownloadLink: string;
     AsymmetricSigningPublicKey: string;
+    AutoTranslationLanguages: string;
     AvailableLocales: string;
     BannerColor: string;
     BannerText: string;
