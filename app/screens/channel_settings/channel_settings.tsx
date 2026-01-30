@@ -16,8 +16,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Archive from './archive';
 import ChannelAutotranslation from './channel_autotranslation';
+import ChannelInfoOption from './channel_info';
 import ConvertPrivate from './convert_private';
-import EditChannel from './edit_channel';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -98,7 +98,7 @@ const ChannelSettings = ({
                     testID='channel_settings.scroll_view'
                 >
                     {canManageSettings &&
-                        <EditChannel channelId={channelId}/>
+                        <ChannelInfoOption channelId={channelId}/>
                     }
                     {canConvert &&
                         <ConvertPrivate

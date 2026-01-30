@@ -210,7 +210,7 @@ const observeHasChannelSettingsActions = (
     ]).pipe(
         switchMap(([manageSettings, convert, archive, unarchive, enableCalls, convertGM, autotranslateEnabled]) => {
             return of$(
-                manageSettings || // Edit channel or Channel autotranslations
+                manageSettings || // Channel info or Channel autotranslations
                 convert || // Convert to private
                 archive || unarchive || // Archive channel
                 enableCalls || // Enable/Disable calls
