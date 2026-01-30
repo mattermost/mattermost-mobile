@@ -10,6 +10,7 @@
       NODE_VERSION: 22.14.0
       TERM: xterm
       INTUNE_ENABLED: 1
+      RUNNING_E2E: true
     
     jobs:
       test:
