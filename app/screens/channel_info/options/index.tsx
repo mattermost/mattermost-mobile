@@ -11,6 +11,7 @@ import {isTypeDMorGM} from '@utils/channel';
 import AddMembers from './add_members';
 import AutoFollowThreads from './auto_follow_threads';
 import ChannelFiles from './channel_files';
+import ChannelSettings from './channel_settings';
 import IgnoreMentions from './ignore_mentions';
 import Members from './members';
 import MyAutotranslation from './my_autotranslation';
@@ -24,6 +25,7 @@ type Props = {
     canManageMembers: boolean;
     isCRTEnabled: boolean;
     isPlaybooksEnabled: boolean;
+    hasChannelSettingsActions: boolean;
 }
 
 const Options = ({
@@ -33,11 +35,15 @@ const Options = ({
     canManageMembers,
     isCRTEnabled,
     isPlaybooksEnabled,
+    hasChannelSettingsActions,
 }: Props) => {
     const isDMorGM = isTypeDMorGM(type);
 
     return (
         <>
+            {hasChannelSettingsActions && (
+                <ChannelSettings channelId={channelId}/>
+            )}
             {type !== General.DM_CHANNEL && (
                 <>
                     {isCRTEnabled && (

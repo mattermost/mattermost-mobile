@@ -20,7 +20,6 @@ import ChannelInfoAppBindings from './app_bindings';
 import DestructiveOptions from './destructive_options';
 import Extra from './extra';
 import Options from './options';
-import ChannelSettings from './options/channel_settings';
 import Title from './title';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -132,13 +131,8 @@ const ChannelInfo = ({
                         canManageMembers={canManageMembers}
                         isCRTEnabled={isCRTEnabled}
                         isPlaybooksEnabled={isPlaybooksEnabled}
+                        hasChannelSettingsActions={hasChannelSettingsActions}
                     />
-                    {hasChannelSettingsActions && (
-                        <>
-                            <View style={styles.separator}/>
-                            <ChannelSettings channelId={channelId}/>
-                        </>
-                    )}
                     <View style={styles.separator}/>
                     <ChannelInfoAppBindings
                         channelId={channelId}
