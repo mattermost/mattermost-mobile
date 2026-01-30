@@ -38,7 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             padding: 8,
         },
         content: {
-            gap: 16,
+            gap: 8,
         },
         messageBlock: {
             backgroundColor: theme.centerChannelBg,
@@ -46,6 +46,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         messageBlockOriginal: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
             borderRadius: 4,
+            paddingBottom: 8,
         },
         badgeContainer: {
             flexDirection: 'row',
