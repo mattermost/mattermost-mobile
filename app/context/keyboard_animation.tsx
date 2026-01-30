@@ -32,7 +32,11 @@ interface KeyboardAnimationContextType {
     isEmojiSearchFocused: boolean;
     setIsEmojiSearchFocused: (focused: boolean) => void;
     cursorPositionRef: React.MutableRefObject<number>;
-    registerCursorPosition: (cursorPosition: number) => void;
+    registerCursorPosition: (cursorPosition: number, valueLength?: number) => void;
+    preserveCursorPositionForEmojiPicker: () => void;
+    clearCursorPositionPreservation: () => void;
+    isInEmojiPickerTransition: () => boolean;
+    getPreservedCursorPosition: () => number | null;
     updateValue: React.Dispatch<React.SetStateAction<string>> | null;
     updateCursorPosition: React.Dispatch<React.SetStateAction<number>> | null;
     registerPostInputCallbacks: (
@@ -108,6 +112,14 @@ export const useKeyboardAnimationContext = () => {
     const defaultRegisterCursorPosition = useCallback(() => {
         // No-op fallback
     }, []);
+    const defaultPreserveCursorPositionForEmojiPicker = useCallback(() => {
+        // No-op fallback
+    }, []);
+    const defaultClearCursorPositionPreservation = useCallback(() => {
+        // No-op fallback
+    }, []);
+    const defaultIsInEmojiPickerTransition = useCallback(() => false, []);
+    const defaultGetPreservedCursorPosition = useCallback(() => null, []);
 
     const defaultUpdateValue = useRef<React.Dispatch<React.SetStateAction<string>> | null>(null);
     const defaultUpdateCursorPosition = useRef<React.Dispatch<React.SetStateAction<number>> | null>(null);
@@ -142,6 +154,10 @@ export const useKeyboardAnimationContext = () => {
         setIsEmojiSearchFocused: defaultSetIsEmojiSearchFocused,
         cursorPositionRef: defaultCursorPositionRef,
         registerCursorPosition: defaultRegisterCursorPosition,
+        preserveCursorPositionForEmojiPicker: defaultPreserveCursorPositionForEmojiPicker,
+        clearCursorPositionPreservation: defaultClearCursorPositionPreservation,
+        isInEmojiPickerTransition: defaultIsInEmojiPickerTransition,
+        getPreservedCursorPosition: defaultGetPreservedCursorPosition,
         updateValue: defaultUpdateValue.current,
         updateCursorPosition: defaultUpdateCursorPosition.current,
         registerPostInputCallbacks: defaultRegisterPostInputCallbacks,
@@ -160,6 +176,10 @@ export const useKeyboardAnimationContext = () => {
         defaultSetIsEmojiSearchFocused,
         defaultCursorPositionRef,
         defaultRegisterCursorPosition,
+        defaultPreserveCursorPositionForEmojiPicker,
+        defaultClearCursorPositionPreservation,
+        defaultIsInEmojiPickerTransition,
+        defaultGetPreservedCursorPosition,
         defaultUpdateValue,
         defaultUpdateCursorPosition,
         defaultRegisterPostInputCallbacks,
