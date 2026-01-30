@@ -37,18 +37,11 @@ jobs:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
-      - name: Configure AWS credentials new bucket
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
-        with:
-          aws-region: us-east-1
-          role-to-assume: ${{ secrets.MM_MOBILE_RELEASE_AWS_ROLE_TO_ASSUME }}
-
       - name: ci/build-ios-simulator
         env:
           TAG: "${{ github.ref_name }}"
           AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
-          AWS_NEW_BUCKET_NAME: "${{ secrets.MM_MOBILE_RELEASE_AWS_NEW_BUCKET_NAME }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: bundle exec fastlane ios simulator --env ios.simulator
@@ -59,6 +52,22 @@ jobs:
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip
+
+      # Logic for new bucket upload
+      - name: Configure AWS credentials new bucket
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.MM_MOBILE_RELEASE_AWS_ROLE_TO_ASSUME }}
+
+      - name: ci/upload-ios-simulator-new-bucket
+        env:
+          TAG: "${{ github.ref_name }}"
+          AWS_NEW_BUCKET_NAME: "${{ secrets.MM_MOBILE_RELEASE_AWS_NEW_BUCKET_NAME }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: bundle exec fastlane ios upload_artifacts_to_s3 --env ios.simulator output_file:"Mattermost-simulator-x86_64.app.zip"
+        working-directory: ./fastlane
 
   build-and-deploy-ios-beta:
     runs-on: macos-15-large
@@ -83,17 +92,10 @@ jobs:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
-      - name: Configure AWS credentials new bucket
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
-        with:
-          aws-region: us-east-1
-          role-to-assume: ${{ secrets.MM_MOBILE_RELEASE_AWS_ROLE_TO_ASSUME }}
-
       - name: ci/build-and-deploy-ios-beta
         env:
           AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
-          AWS_NEW_BUCKET_NAME: "${{ secrets.MM_MOBILE_RELEASE_AWS_NEW_BUCKET_NAME }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           FASTLANE_TEAM_ID: "${{ secrets.MM_MOBILE_FASTLANE_TEAM_ID }}"
           IOS_API_ISSUER_ID: "${{ secrets.MM_MOBILE_IOS_API_ISSUER_ID }}"
@@ -117,3 +119,20 @@ jobs:
         with:
           name: ios-build-beta-${{ github.run_id }}
           path: "*.ipa"
+
+      # Logic for new bucket upload
+      - name: Configure AWS credentials new bucket
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.MM_MOBILE_RELEASE_AWS_ROLE_TO_ASSUME }}
+
+      - name: ci/upload-ios-beta-new-bucket
+        env:
+          AWS_NEW_BUCKET_NAME: "${{ secrets.MM_MOBILE_RELEASE_AWS_NEW_BUCKET_NAME }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
+        run: |
+          echo "::group::Upload to new S3 bucket"
+          bundle exec fastlane ios upload_artifacts_to_s3 --env ios.beta
+          echo "::endgroup::"
+        working-directory: ./fastlane
