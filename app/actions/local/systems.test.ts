@@ -11,6 +11,7 @@ import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 
+import * as PostActions from './post';
 import {
     storeConfig,
     storeConfigAndLicense,
@@ -211,6 +212,56 @@ describe('dataRetention', () => {
 
         const {error} = await dataRetentionCleanup(serverUrl);
         expect(error).toBeUndefined();
+    });
+
+    it('batch deletion handles large datasets correctly - dataRetentionCleanup', async () => {
+        const yesterday = Date.now() - (25 * 60 * 60 * 1000);
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.LAST_DATA_RETENTION_RUN, value: yesterday},
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        const posts: Post[] = [];
+        const cutoffTime = Date.now() - (15 * 24 * 60 * 60 * 1000); // 15 days ago
+
+        for (let i = 0; i < 2500; i++) {
+            posts.push(TestHelper.fakePost({
+                channel_id: 'channelid1',
+                id: `post_${i}`,
+                create_at: cutoffTime - i, // all posts older than 14 days
+            }));
+        }
+
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: posts.map((p) => p.id),
+            posts,
+            prepareRecordsOnly: false,
+        });
+
+        const database = operator.database;
+        const postsBeforeCleanup = await database.get('Post').query().fetchCount();
+        expect(postsBeforeCleanup).toBe(2500);
+
+        const deletedBatches: string[][] = [];
+        const deletePostsSpy = jest.spyOn(PostActions, 'deletePosts').mockImplementation(async (url: string, postIds: string[]) => {
+            deletedBatches.push(postIds);
+            return {error: false};
+        });
+        const vacuumSpy = jest.spyOn(Database.prototype, 'unsafeVacuum').mockImplementation(jest.fn());
+
+        const {error} = await dataRetentionCleanup(serverUrl);
+        expect(error).toBeUndefined();
+
+        expect(deletedBatches.length).toBe(3);
+        expect(deletedBatches[0].length).toBe(1000);
+        expect(deletedBatches[1].length).toBe(1000);
+        expect(deletedBatches[2].length).toBe(500);
+
+        deletePostsSpy.mockRestore();
+        vacuumSpy.mockRestore();
     });
 });
 
