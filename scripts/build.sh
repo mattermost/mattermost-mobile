@@ -110,7 +110,7 @@ function setup() {
 
         echo "Installing Fastane"
         if !gem list bundler -i --version 2.5.11 > /dev/null 2>&1; then
-          gem install bundler --versio 2.5.11
+          gem install bundler --version 2.5.11
         fi
         cd fastlane && bundle install && cd .. || exit 1
     fi
