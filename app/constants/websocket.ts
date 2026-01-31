@@ -112,6 +112,10 @@ const WebsocketEvents = {
     // Burn on Read
     BOR_POST_REVEALED: 'post_revealed',
     BOR_POST_BURNED: 'post_burned',
+
+    // File access control
+    FILE_DOWNLOAD_REJECTED: 'file_download_rejected',
+    SHOW_TOAST: 'show_toast',
 };
 
 export default WebsocketEvents;
