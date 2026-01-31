@@ -81,3 +81,6 @@ export SUBMIT_ANDROID_TO_GOOGLE_PLAY=false
 ############ INTUNE MAM CONFIGURATION ############
 #export INTUNE_ENABLED=false # Set to true to enable Intune MAM SDK
 #export INTUNE_CLIENT_ID=<Entra App Registration Client ID>
+
+############ E2EE CONFIGURATION ############
+#export E2EE_ENABLED=false # Set to true to enable end-to-end encryption
