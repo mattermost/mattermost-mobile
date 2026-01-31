@@ -101,6 +101,7 @@ const Header = (props: HeaderProps) => {
     const userIconOverride = ensureString(post.props?.override_icon_url);
     const usernameOverride = ensureString(post.props?.override_username);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const isUnrevealedPost = useMemo(() => isUnrevealedBoRPost(post), [post, post.metadata?.expire_at]);
     const ownBoRPost = useMemo(() => isOwnBoRPost(post, currentUser), [currentUser, post]);
     const showBoRIcon = isUnrevealedPost || ownBoRPost;
