@@ -10,8 +10,9 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {usePreventDoubleTap} from '@hooks/utils';
 import SecurityManager from '@managers/security_manager';
-import {renamePlaybookRun} from '@playbooks/actions/remote/runs';
+import {updatePlaybookRun} from '@playbooks/actions/remote/runs';
 import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
@@ -20,6 +21,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     componentId: AvailableScreens;
     currentTitle: string;
+    currentSummary: string;
     playbookRunId: string;
 }
 
@@ -36,11 +38,15 @@ const styles = StyleSheet.create({
         paddingVertical: 32,
         paddingHorizontal: 20,
     },
+    summaryInput: {
+        marginTop: 16,
+    },
 });
 
 const RenamePlaybookRunBottomSheet = ({
     componentId,
     currentTitle,
+    currentSummary,
     playbookRunId,
 }: Props) => {
     const intl = useIntl();
@@ -49,10 +55,14 @@ const RenamePlaybookRunBottomSheet = ({
     const serverUrl = useServerUrl();
 
     const [title, setTitle] = useState<string>(currentTitle);
+    const [summary, setSummary] = useState<string>(currentSummary);
 
     const canSave = useMemo(() => {
-        return title.trim().length > 0 && title !== currentTitle;
-    }, [title, currentTitle]);
+        const nameValid = title.trim().length > 0;
+        const nameChanged = title !== currentTitle;
+        const summaryChanged = summary !== currentSummary;
+        return nameValid && (nameChanged || summaryChanged);
+    }, [title, currentTitle, summary, currentSummary]);
 
     const rightButton = React.useMemo(() => {
         const base = buildNavigationButton(
@@ -78,19 +88,22 @@ const RenamePlaybookRunBottomSheet = ({
 
     const handleSave = useCallback(async () => {
         if (canSave) {
-            const res = await renamePlaybookRun(serverUrl, playbookRunId, title.trim());
+            const res = await updatePlaybookRun(serverUrl, playbookRunId, title.trim(), summary.trim());
             if (res.error) {
                 showPlaybookErrorSnackbar();
             } else {
                 close(componentId);
             }
         }
-    }, [canSave, title, componentId, serverUrl, playbookRunId]);
+    }, [canSave, title, summary, componentId, serverUrl, playbookRunId]);
 
-    useNavButtonPressed(SAVE_BUTTON_ID, componentId, handleSave, [handleSave]);
+    const onSave = usePreventDoubleTap(handleSave);
+
+    useNavButtonPressed(SAVE_BUTTON_ID, componentId, onSave, [onSave]);
     useAndroidHardwareBackHandler(componentId, handleClose);
 
-    const label = formatMessage({id: 'playbooks.playbook_run.rename.label', defaultMessage: 'Checklist name'});
+    const nameLabel = formatMessage({id: 'playbooks.playbook_run.rename.label', defaultMessage: 'Checklist name'});
+    const summaryLabel = formatMessage({id: 'playbooks.playbook_run.edit.summary_label', defaultMessage: 'Summary'});
 
     return (
         <View
@@ -98,13 +111,24 @@ const RenamePlaybookRunBottomSheet = ({
             style={styles.container}
         >
             <FloatingTextInput
-                label={label}
+                label={nameLabel}
                 onChangeText={setTitle}
                 testID='playbooks.playbook_run.rename.input'
                 value={title}
                 theme={theme}
                 autoFocus={true}
             />
+            <View style={styles.summaryInput}>
+                <FloatingTextInput
+                    label={summaryLabel}
+                    onChangeText={setSummary}
+                    testID='playbooks.playbook_run.edit.summary_input'
+                    value={summary}
+                    theme={theme}
+                    multiline={true}
+                    multilineInputHeight={100}
+                />
+            </View>
         </View>
     );
 };

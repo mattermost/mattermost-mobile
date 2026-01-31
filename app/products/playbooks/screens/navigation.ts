@@ -129,15 +129,17 @@ export async function goToEditChecklistItem(
     }, options);
 }
 
-export async function goToRenamePlaybookRun(
+export async function goToEditPlaybookRun(
     intl: IntlShape,
     theme: Theme,
     currentTitle: string,
+    currentSummary: string,
     playbookRunId: string,
 ) {
-    const title = intl.formatMessage({id: 'playbooks.playbook_run.rename.title', defaultMessage: 'Rename playbook run'});
+    const title = intl.formatMessage({id: 'playbooks.playbook_run.edit.title', defaultMessage: 'Edit playbook run'});
     goToScreen(Screens.PLAYBOOK_RENAME_RUN, title, {
         currentTitle,
+        currentSummary,
         playbookRunId,
     });
 }
