@@ -34,7 +34,7 @@ exports[`components/channel_list_row should show no results 1`] = `
       "flex": 1,
     }
   }
-  testID="UserListRow.flat_list"
+  testID="create_direct_message.user_list.flat_list"
   viewabilityConfigCallbackPairs={[]}
 >
   <View>
@@ -646,7 +646,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
       "flex": 1,
     }
   }
-  testID="UserListRow.section_list"
+  testID="create_direct_message.user_list.section_list"
 >
   <View>
     <View
@@ -990,7 +990,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
       "flex": 1,
     }
   }
-  testID="UserListRow.section_list"
+  testID="create_direct_message.user_list.section_list"
 >
   <View>
     <View
@@ -1372,7 +1372,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
       "flex": 1,
     }
   }
-  testID="UserListRow.section_list"
+  testID="create_direct_message.user_list.section_list"
 >
   <View>
     <View

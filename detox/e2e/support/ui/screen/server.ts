@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForVisibilityWithRetry} from '@support/utils';
 import {expect} from 'detox';
 
 class ServerScreen {
@@ -47,7 +47,7 @@ class ServerScreen {
 
     toBeVisible = async () => {
         await waitFor(this.serverScreen).toExist().withTimeout(timeouts.TEN_SEC);
-        await waitFor(this.serverUrlInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForVisibilityWithRetry(this.serverUrlInput, timeouts.TEN_SEC);
 
         return this.serverScreen;
     };
@@ -72,7 +72,10 @@ class ServerScreen {
                 }
             }
         }
-        await waitFor(this.usernameInput).toExist().withTimeout(isAndroid()? timeouts.ONE_MIN : timeouts.HALF_MIN);
+
+        // The bridge can be busy during login transition, use waitFor without idle check
+        const timeout = isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN;
+        await waitFor(this.usernameInput).toBeVisible().withTimeout(timeout);
     };
 
     close = async () => {
@@ -123,7 +126,10 @@ class ServerScreen {
                 }
             }
         }
-        await waitFor(this.usernameInput).toExist().withTimeout(isAndroid()? timeouts.ONE_MIN : timeouts.HALF_MIN);
+
+        // The bridge can be busy during login transition, so poll for the element without waiting for idle
+        const timeout = isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN;
+        await waitForElementToBeVisible(this.usernameInput, timeout, timeouts.ONE_SEC);
     };
 }
 

@@ -224,6 +224,7 @@ function AutoCompleteSelector({
                 onPress={goToSelectorScreen}
                 style={disabled ? style.disabled : null}
                 type='opacity'
+                testID={`${testID}.select.button`}
             >
                 <View style={roundedBorders ? style.roundedInput : style.input}>
                     <Text

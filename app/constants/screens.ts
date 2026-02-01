@@ -26,6 +26,7 @@ const CREATE_OR_EDIT_CHANNEL = 'create_or_edit_channel';
 const COMPONENT_LIBRARY = 'component_library';
 const CUSTOM_STATUS = '(custom_status)';
 const CUSTOM_STATUS_CLEAR_AFTER = 'custom_status_clear_after';
+const DIALOG_ROUTER = 'dialog_router';
 const DRAFT_SCHEDULED_POST_OPTIONS = 'draft_scheduled_post_options';
 const EDIT_POST = 'edit_post';
 const EDIT_PROFILE = 'edit_profile';
@@ -119,6 +120,7 @@ export default {
     HOME,
     INTEGRATION_SELECTOR,
     INTERACTIVE_DIALOG,
+    DIALOG_ROUTER,
     INVITE,
 
     JOIN_TEAM,
@@ -173,6 +175,7 @@ export const MODAL_SCREENS = new Set<string>([
     CREATE_OR_EDIT_CHANNEL,
     CREATE_DIRECT_MESSAGE,
     CUSTOM_STATUS,
+    DIALOG_ROUTER,
     EDIT_POST,
     EDIT_PROFILE,
     EDIT_SERVER,

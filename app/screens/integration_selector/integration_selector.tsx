@@ -477,6 +477,7 @@ function IntegrationSelector({
                 channel={itemProps.item as Channel}
                 selectable={isMultiselect || false}
                 selected={itemSelected}
+                testID={'integration_selector.channel_list'}
             />
         );
     }, [multiselectSelected, theme, isMultiselect]);

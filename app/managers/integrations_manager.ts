@@ -58,7 +58,7 @@ class ServerIntegrationsManager {
             return;
         }
 
-        navigateToScreen(Screens.INTERACTIVE_DIALOG, {title: config.dialog.title, config});
+        navigateToScreen(Screens.DIALOG_ROUTER, {title: config.dialog.title, config});
     }
 }
 

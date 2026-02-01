@@ -417,6 +417,8 @@
   "global_threads.options.title": "Thread Actions",
   "global_threads.unreads": "Unreads",
   "integration_selector.multiselect.submit": "Done",
+  "interactive_dialog.submission_failed": "Submission failed",
+  "interactive_dialog.submission_failed_validation": "Submission failed with validation errors",
   "interactive_dialog.submit": "Submit",
   "intro.add_members": "Add members",
   "intro.channel_info": "Info",
