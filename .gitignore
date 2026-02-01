@@ -53,6 +53,7 @@ local.properties
 android/app/bin
 android/app/build
 android/build
+android/.kotlin
 .settings
 .project
 .classpath

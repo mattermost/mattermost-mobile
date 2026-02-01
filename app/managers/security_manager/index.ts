@@ -25,6 +25,7 @@ import {
     type IntunePolicy,
     type IntunePolicyChangedEvent,
     type IntuneWipeRequestedEvent,
+    type IntuneCompanyPortalRequiredEvent,
 } from '@managers/intune_manager/types';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getConfig, getConfigValue, getSecurityConfig} from '@queries/servers/system';
@@ -35,6 +36,7 @@ import {
     showAuthenticationRequiredAlert,
     showBiometricFailureAlert,
     showBiometricFailureAlertForOrganization,
+    showCompanyPortalRequiredAlert,
     showConditionalAccessAlert,
     showDeviceNotTrustedAlert,
     showIdentitySwitchRequiredAlert,
@@ -50,6 +52,7 @@ import {logDebug, logError} from '@utils/log';
 import {handleAppStateResume} from '@utils/security/app_state';
 import {getAuthenticationOutcome, probeDeviceSecured} from '@utils/security/authentication';
 import {AuthenticationSource, PROMPT_AUTH_AFTER} from '@utils/security/constants';
+import {tryOpenURL} from '@utils/url';
 
 type SecurityManagerServerConfig = {
     Biometrics?: boolean;
@@ -75,6 +78,7 @@ class SecurityManagerSingleton {
     isEnrolling = false;
     isCheckingBiometrics = false;
     needsEnrollmentCheck = false;
+    showingAuthRequiredAlert = false; // Prevents enrollment alert while showing auth required alert
     intunePolicySubscription?: EventSubscription;
     intuneEnrollmentSubscription?: EventSubscription;
     intuneWipeSubscription?: EventSubscription;
@@ -82,6 +86,7 @@ class SecurityManagerSingleton {
     intuneBlockedSubscription?: EventSubscription;
     intuneIdentitySwitchSubscription?: EventSubscription;
     intuneComplianceFailedSubscription?: EventSubscription;
+    intuneCompanyPortalSubscription?: EventSubscription;
 
     constructor() {
         AppState.addEventListener('change', this.onAppStateChange);
@@ -97,6 +102,7 @@ class SecurityManagerSingleton {
         this.intuneBlockedSubscription = IntuneManager.subscribeToConditionalLaunchBlocked(this.onConditionalLaunchBlocked);
         this.intuneIdentitySwitchSubscription = IntuneManager.subscribeToIdentitySwitchRequired(this.onIdentitySwitchRequired);
         this.intuneComplianceFailedSubscription = IntuneManager.subscribeToComplianceFailed(this.onComplianceFailed);
+        this.intuneCompanyPortalSubscription = IntuneManager.subscribeToCompanyPortalRequired(this.onCompanyPortalRequired);
     }
 
     /**
@@ -135,11 +141,11 @@ class SecurityManagerSingleton {
                 return;
             }
 
-            // Fetch configs and policies for all servers in parallel
-            await Promise.all(servers.map((server) => loadServerConfig(server.url)));
-
             // Retry any pending wipes that failed previously
             await this.retryPendingWipes();
+
+            // Fetch configs and policies for all servers in parallel
+            await Promise.all(servers.map((server) => loadServerConfig(server.url)));
         } catch (error) {
             logError('SecurityManager: Failed to initialize', error);
         }
@@ -369,12 +375,18 @@ class SecurityManagerSingleton {
 
         logDebug('SecurityManager: Auth required', {serverCount: serverUrls.length, reason});
 
+        // Set flag to prevent enrollment alert from showing while auth required alert is shown
+        this.showingAuthRequiredAlert = true;
+
         Emm.applyBlurEffect(0.5);
-        this.onWipeRequested({oid, serverUrls});
 
         const locale = await getCurrentUserLocale(serverUrls[0]);
         showAuthenticationRequiredAlert(reason, locale, () => {
+            this.onWipeRequested({oid, serverUrls});
             Emm.removeBlurEffect();
+
+            // Clear flag when alert is dismissed
+            this.showingAuthRequiredAlert = false;
         });
     };
 
@@ -391,9 +403,9 @@ class SecurityManagerSingleton {
             // Trigger selective wipe of managed data
             Emm.applyBlurEffect(0.5);
 
-            this.onWipeRequested({oid, serverUrls});
             const locale = await getCurrentUserLocale(serverUrls[0]);
             showConditionalAccessAlert(locale, () => {
+                this.onWipeRequested({oid, serverUrls});
                 Emm.removeBlurEffect();
             });
         } else if (reason === IntuneConditionalLaunchBlockedReasons.LAUNCH_CANCELED) {
@@ -420,10 +432,49 @@ class SecurityManagerSingleton {
         const {oid, reason, serverUrls} = event;
 
         logDebug('SecurityManager: Identity switch required', {reason, serverCount: serverUrls.length});
-        const locale = await getCurrentUserLocale(serverUrls[0]);
-        this.onWipeRequested({oid, serverUrls});
 
-        showIdentitySwitchRequiredAlert(locale);
+        Emm.applyBlurEffect(0.5);
+
+        const locale = await getCurrentUserLocale(serverUrls[0]);
+        showIdentitySwitchRequiredAlert(locale, () => {
+            this.onWipeRequested({oid, serverUrls});
+            Emm.removeBlurEffect();
+        });
+    };
+
+    /**
+     * Handle Company Portal required event
+     * Shows alert with option to go to Play Store/App Store or logout
+     */
+    onCompanyPortalRequired = (event: IntuneCompanyPortalRequiredEvent) => {
+        const {serverUrls} = event;
+
+        const portalRequired = async () => {
+            logDebug('SecurityManager: Company Portal required', {serverCount: serverUrls.length});
+
+            const locale = await getCurrentUserLocale(serverUrls[0]);
+            const companyPortalUrl = 'https://play.google.com/store/apps/details?id=com.microsoft.windowsintune.companyportal';
+
+            Emm.applyBlurEffect(0.5);
+            showCompanyPortalRequiredAlert(
+                locale,
+                () => {
+                    // User chose to go to store - open Company Portal in Play Store
+                    tryOpenURL(companyPortalUrl, undefined, () => {
+                        Emm.exitApp();
+                    });
+                },
+                async () => {
+                    // User cancelled - logout from all affected servers
+                    await Promise.all(serverUrls.map((serverUrl) => logout(serverUrl, undefined, {skipServerLogout: false})));
+
+                    Emm.removeBlurEffect();
+                },
+            );
+        };
+
+        // Give some time in case the app is transitioning from another screen
+        setTimeout(portalRequired, 500);
     };
 
     /**
@@ -567,6 +618,13 @@ class SecurityManagerSingleton {
         // Check if already enrolling to prevent race conditions
         if (this.isEnrolling) {
             logDebug('ensureMAMEnrollment: Already enrolling, skipping');
+            return true;
+        }
+
+        // Skip enrollment check if auth required alert is being shown
+        // This prevents enrollment alert from appearing while handling auth failures
+        if (this.showingAuthRequiredAlert) {
+            logDebug('ensureMAMEnrollment: Auth required alert showing, skipping enrollment check');
             return true;
         }
 
@@ -991,7 +1049,7 @@ class SecurityManagerSingleton {
 
         logDebug('SecurityManager: Retrying pending wipes', {count: pendingWipes.length});
 
-        pendingWipes.forEach(async (wipe) => {
+        for await (const wipe of pendingWipes) {
             const {oid, serverUrls} = wipe;
 
             // Retry wipe for each server
@@ -1004,7 +1062,7 @@ class SecurityManagerSingleton {
 
             // Report completion status (clears pending state if successful)
             IntuneManager.reportWipeComplete(oid, success);
-        });
+        }
     };
 }
 

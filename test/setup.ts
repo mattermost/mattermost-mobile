@@ -257,7 +257,7 @@ jest.mock('@managers/intune_manager', () => ({
         setCurrentIdentity: jest.fn(),
         cleanupAfterWipe: jest.fn(),
         reportWipeComplete: jest.fn(),
-        getPendingWipes: jest.fn(() => Promise.resolve([])),
+        getPendingWipes: jest.fn(() => []),
         getPolicy: jest.fn(() => Promise.resolve(null)),
         isIntuneMAMEnabledForServer: jest.fn(() => Promise.resolve(false)),
         isManagedServer: jest.fn(() => Promise.resolve(false)),
@@ -269,6 +269,7 @@ jest.mock('@managers/intune_manager', () => ({
         subscribeToIdentitySwitchRequired: jest.fn(() => ({remove: jest.fn()})),
         subscribeToComplianceFailed: jest.fn(() => ({remove: jest.fn()})),
         subscribeToComplianceCompleted: jest.fn(() => ({remove: jest.fn()})),
+        subscribeToCompanyPortalRequired: jest.fn(() => ({remove: jest.fn()})),
     },
 }));
 

@@ -3,7 +3,7 @@
 
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -63,8 +63,7 @@ const SSO = ({
     let loginUrl = '';
     let shouldUseNativeEntra = false;
 
-    shouldUseNativeEntra = Platform.OS === 'ios' &&
-            config.IntuneMAMEnabled === 'true' && config.IntuneAuthService?.toLocaleLowerCase() === ssoType.toLocaleLowerCase() &&
+    shouldUseNativeEntra = config.IntuneMAMEnabled === 'true' && config.IntuneAuthService?.toLocaleLowerCase() === ssoType.toLocaleLowerCase() &&
             Boolean(config.IntuneScope) &&
             isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
 

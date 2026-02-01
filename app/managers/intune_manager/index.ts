@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Emm from '@mattermost/react-native-emm';
-import {Platform, type EventSubscription} from 'react-native';
+import {type EventSubscription} from 'react-native';
 
 import {getCurrentUserLocale} from '@actions/local/user';
 import {License} from '@constants';
@@ -21,6 +21,7 @@ import type {
     IntuneIdentitySwitchRequiredEvent,
     IntunePolicyChangedEvent,
     IntuneWipeRequestedEvent,
+    IntuneCompanyPortalRequiredEvent,
     MSALIdentity,
     MSALTokens,
     IntuneSpec,
@@ -28,13 +29,11 @@ import type {
 } from './types';
 
 let Intune: IntuneSpec | null = null;
-if (Platform.OS === 'ios') {
-    try {
-        Intune = require('@mattermost/intune').default;
-    } catch {
-        // Intune library not available
-        logDebug('Intune library not available - MAM features disabled');
-    }
+try {
+    Intune = require('@mattermost/intune').default;
+} catch {
+    // Intune library not available
+    logDebug('Intune library not available - MAM features disabled');
 }
 
 /**
@@ -311,6 +310,19 @@ export class IntuneManagerSingleton {
         }
 
         return Intune.onIntuneComplianceFailed(handler);
+    }
+
+    /**
+     * Subscribe to Company Portal required events (fires when Company Portal app needs to be installed)
+     * @param handler - The callback to handle Company Portal requirement
+     * @returns EventSubscription that can be removed
+     */
+    subscribeToCompanyPortalRequired(handler: (event: IntuneCompanyPortalRequiredEvent) => void): EventSubscription | undefined {
+        if (!Intune) {
+            return undefined;
+        }
+
+        return Intune.onIntuneCompanyPortalRequired(handler);
     }
 
     /**

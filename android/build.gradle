@@ -9,6 +9,8 @@ buildscript {
         kotlin_version = kotlinVersion
         firebaseVersion = "24.1.0"
         ndkVersion = "27.1.12297006"
+        // Intune MAM support (enabled via environment variable)
+        intuneEnabled = System.getenv("INTUNE_ENABLED") == "1" || System.getenv("INTUNE_ENABLED") == "true"
     }
     repositories {
         mavenCentral()
@@ -38,6 +40,12 @@ allprojects {
             url "$rootDir/../detox/node_modules/detox/Detox-android"
         }
         maven { url 'https://jitpack.io' }
+        if (intuneEnabled) {
+            // Microsoft Duo SDK Feed - required for MSAL dependencies (Surface Duo support)
+            maven { 
+                url 'https://pkgs.dev.azure.com/MicrosoftDeviceSDK/DuoSDK-Public/_packaging/Duo-SDK-Feed/maven/v1' 
+            }
+        }
     }
 }
 

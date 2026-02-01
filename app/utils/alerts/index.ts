@@ -145,6 +145,18 @@ export const messages = defineMessages({
         id: 'security_manager.mam_declined_message',
         defaultMessage: '{organization} requires enrollment in Microsoft Intune. You can retry enrollment or logout.',
     },
+    company_portal_required_title: {
+        id: 'security_manager.company_portal_required_title',
+        defaultMessage: 'Company Portal Required',
+    },
+    company_portal_required_message: {
+        id: 'security_manager.company_portal_required_message',
+        defaultMessage: 'To use your work or school account with this app, you must install the Microsoft Intune Company Portal app.',
+    },
+    go_to_store: {
+        id: 'security_manager.go_to_store',
+        defaultMessage: 'Go to Store',
+    },
     enroll_now: {
         id: 'security_manager.enroll_now',
         defaultMessage: 'Enroll Now',
@@ -482,12 +494,12 @@ export const showConditionalAccessAlert = async (locale?: string, callback?: () 
 /**
  * Shows an alert when Intune requires an identity switch.
  */
-export const showIdentitySwitchRequiredAlert = async (locale?: string) => {
+export const showIdentitySwitchRequiredAlert = async (locale?: string, callback?: () => void) => {
     const resolvedLocale = locale || DEFAULT_LOCALE;
     Alert.alert(
         getLocalizedMessage(resolvedLocale, messages.identity_switch_required_title.id, messages.identity_switch_required_title.defaultMessage),
         getLocalizedMessage(resolvedLocale, messages.identity_switch_required_message.id, messages.identity_switch_required_message.defaultMessage),
-        [{text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage)}],
+        [{text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage), onPress: callback}],
         {cancelable: false},
     );
 };
@@ -608,6 +620,36 @@ export const showMAMComplianceFailedAlert = (
         title,
         message,
         [{text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage), onPress: callback}],
+        {cancelable: false},
+    );
+};
+
+/**
+ * Shows an alert when Company Portal app is required for Intune enrollment.
+ * Provides option to go to Play Store/App Store or cancel (logs out user).
+ */
+export const showCompanyPortalRequiredAlert = async (
+    locale: string | undefined,
+    goToStoreCallback: () => void,
+    cancelCallback: () => void,
+) => {
+    const resolvedLocale = locale || DEFAULT_LOCALE;
+
+    Alert.alert(
+        getLocalizedMessage(resolvedLocale, messages.company_portal_required_title.id, messages.company_portal_required_title.defaultMessage),
+        getLocalizedMessage(resolvedLocale, messages.company_portal_required_message.id, messages.company_portal_required_message.defaultMessage),
+        [
+            {
+                text: getLocalizedMessage(resolvedLocale, messages.logout.id, messages.logout.defaultMessage),
+                style: 'cancel',
+                onPress: cancelCallback,
+            },
+            {
+                text: getLocalizedMessage(resolvedLocale, messages.go_to_store.id, messages.go_to_store.defaultMessage),
+                style: 'default',
+                onPress: goToStoreCallback,
+            },
+        ],
         {cancelable: false},
     );
 };

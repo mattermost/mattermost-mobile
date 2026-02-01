@@ -487,8 +487,12 @@ describe('SecurityManager - Event Handlers', () => {
         });
 
         describe('onIdentitySwitchRequired', () => {
-            test('should trigger wipe and show alert', async () => {
-                const showAlertSpy = jest.spyOn(alerts, 'showIdentitySwitchRequiredAlert').mockResolvedValue(undefined);
+            test('should apply blur screen and trigger wipe', async () => {
+                const showAlertSpy = jest.spyOn(alerts, 'showIdentitySwitchRequiredAlert').mockImplementation(async (_locale, callback) => {
+                    if (callback) {
+                        callback();
+                    }
+                });
                 const performWipeSpy = jest.spyOn(SecurityManager as any, 'performSelectiveWipe').mockResolvedValue(undefined);
 
                 const event: IntuneIdentitySwitchRequiredEvent = {
@@ -499,9 +503,11 @@ describe('SecurityManager - Event Handlers', () => {
 
                 await SecurityManager.onIdentitySwitchRequired(event);
 
+                expect(Emm.applyBlurEffect).toHaveBeenCalled();
                 expect(showAlertSpy).toHaveBeenCalled();
                 await TestHelper.wait(10);
                 expect(performWipeSpy).toHaveBeenCalledWith(serverUrl1, true);
+                expect(Emm.removeBlurEffect).toHaveBeenCalled();
 
                 showAlertSpy.mockRestore();
                 performWipeSpy.mockRestore();

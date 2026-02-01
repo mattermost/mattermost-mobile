@@ -119,13 +119,13 @@ runs:
       uses: ./.github/actions/prepare-mobile-build
 
     - name: ci/setup-intune
-      if: inputs.intune-enabled == 'true'
+      if: inputs.intune-enabled == '1' || inputs.intune-enabled == 'true'
       uses: ./.github/actions/setup-intune
       with:
         ssh-private-key: ${{ inputs.intune-ssh-private-key }}
 
     - name: Get Intune submodule commit hash
-      if: inputs.intune-enabled == 'true'
+      if: inputs.intune-enabled == '1' || inputs.intune-enabled == 'true'
       id: intune-hash
       shell: bash
       run: |

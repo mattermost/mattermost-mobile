@@ -16,7 +16,7 @@ import expo.modules.ReactActivityDelegateWrapper
 
 class MainActivity : ReactActivity() {
     private var HWKeyboardConnected = false
-    private val foldableObserver = FoldableObserver.getInstance(this)
+    private lateinit var foldableObserver: FoldableObserver
     private var lastOrientation: Int = Configuration.ORIENTATION_UNDEFINED
 
     /**
@@ -40,7 +40,12 @@ class MainActivity : ReactActivity() {
 
         setHWKeyboardConnected()
         lastOrientation = this.resources.configuration.orientation
+
+        // Initialize foldableObserver after super.onCreate() to ensure Activity is fully initialized
+        // This is required when Intune MAM SDK transforms the Activity to extend MAMActivity
+        foldableObserver = FoldableObserver.getInstance(this)
         foldableObserver.onCreate()
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
     }
 

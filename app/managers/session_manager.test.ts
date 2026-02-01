@@ -73,6 +73,7 @@ jest.mock('@managers/intune_manager', () => ({
         subscribeToConditionalLaunchBlocked: jest.fn().mockReturnValue({remove: jest.fn()}),
         subscribeToIdentitySwitchRequired: jest.fn().mockReturnValue({remove: jest.fn()}),
         subscribeToComplianceFailed: jest.fn().mockReturnValue({remove: jest.fn()}),
+        subscribeToCompanyPortalRequired: jest.fn().mockReturnValue({remove: jest.fn()}),
     },
 }));
 jest.mock('@managers/network_manager');

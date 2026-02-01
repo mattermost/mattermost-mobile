@@ -14,6 +14,7 @@ import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.common.ReleaseLevel
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.modules.network.OkHttpClientProvider
+import com.mattermost.helpers.IntuneHelper
 import com.mattermost.networkclient.RCTOkHttpClientFactory
 import com.mattermost.networkclient.sessionattributes.SessionAttributes
 import com.mattermost.rnshare.ShareWorker
@@ -34,6 +35,11 @@ import java.io.File
 
 class MainApplication : Application(), ReactApplication, INotificationsApplication {
 
+    // Lazy-initialized Intune helper for MAM SDK integration
+    private val intuneHelper by lazy {
+        IntuneHelper(applicationContext) { reactHost }
+    }
+
     override val reactHost: ReactHost by lazy {
         DefaultNewArchitectureEntryPoint.releaseLevel = try {
             ReleaseLevel.valueOf(BuildConfig.REACT_NATIVE_RELEASE_LEVEL.uppercase())
@@ -51,6 +57,9 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
 
     override fun onCreate() {
         super.onCreate()
+
+        // Initialize Intune MAM SDK (must be done early in app lifecycle)
+        intuneHelper.initializeIfEnabled()
 
         // Initialize Sentry early for native crash reporting
         RNSentrySDK.init(this)
