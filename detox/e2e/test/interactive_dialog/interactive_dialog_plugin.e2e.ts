@@ -453,7 +453,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await element(by.text('MacBook Pro 16-inch')).tap();
         await wait(300);
         const dynamicCompaniesButton = element(by.id('AppFormElement.dynamic_companies.select.button'));
-        await expect(dynamicCompaniesButton).toExist();
+        await waitFor(dynamicCompaniesButton).toExist().withTimeout(3000);
         await dynamicCompaniesButton.tap();
         await wait(300);
         await IntegrationSelectorScreen.toBeVisible();
