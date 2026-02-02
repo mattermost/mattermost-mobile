@@ -7,7 +7,7 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {observePermissionForTeam} from '@queries/servers/role';
-import {observePushVerificationStatus} from '@queries/servers/system';
+import {observeConfigBooleanValue, observePushVerificationStatus} from '@queries/servers/system';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 
@@ -22,7 +22,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     const canJoinChannels = combineLatest([currentUser, team]).pipe(
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.JOIN_PUBLIC_CHANNELS, true)),
-        distinctUntilChanged(),
     );
 
     const canCreatePublicChannels = combineLatest([currentUser, team]).pipe(
@@ -42,12 +41,21 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.ADD_USER_TO_TEAM, false)),
     );
 
-    const canInviteGuests = combineLatest([currentUser, team]).pipe(
-        switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.INVITE_GUEST, false)),
+    const guestAccountsEnabled = observeConfigBooleanValue(database, 'EnableGuestAccounts');
+
+    const canInviteGuests = combineLatest([guestAccountsEnabled, currentUser, team]).pipe(
+        switchMap(([enabled, u, t]) => {
+            if (!enabled) {
+                return of$(false);
+            }
+            return observePermissionForTeam(database, t, u, Permissions.INVITE_GUEST, false);
+        }),
+        distinctUntilChanged(),
     );
 
     const canInvitePeople = combineLatest([canAddUserToTeam, canInviteGuests]).pipe(
         switchMap(([add, invite]) => of$(add || invite)),
+        distinctUntilChanged(),
     );
 
     return {
