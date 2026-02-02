@@ -319,7 +319,7 @@ lane :upload_file_to_s3 do |options|
                         })
     end
 
-    if options[:file] == 'Mattermost-simulator-x86_64.app.zip'
+    if options[:file]&.start_with?('Mattermost-simulator-') && options[:file]&.end_with?('.app.zip')
       pretext = '#### New iOS build for VM/Simulator'
       msg = "Download link: #{links.first}"
       send_message_to_mattermost({
@@ -419,10 +419,22 @@ platform :ios do
   lane :simulator do
     UI.success('Building iOS app for simulator')
 
-    output_file = "Mattermost-simulator-x86_64.app.zip"
+    # Detect the host architecture
+    host_arch = `uname -m`.strip
+
+    # Use arm64 for Apple Silicon (arm64), x86_64 for Intel
+    if host_arch == "arm64"
+      build_arch = "arm64"
+      output_file = "Mattermost-simulator-arm64.app.zip"
+    else
+      build_arch = "x86_64"
+      output_file = "Mattermost-simulator-x86_64.app.zip"
+    end
+
+    UI.message("Building for #{build_arch} architecture on #{host_arch} host")
 
     build_ios_unsigned_or_simulator(
-      more_xc_args: "-sdk iphonesimulator -arch x86_64",
+      more_xc_args: "-sdk iphonesimulator -arch #{build_arch}",
       rel_build_dir: "Release-iphonesimulator",
       output_file: output_file,
     )
