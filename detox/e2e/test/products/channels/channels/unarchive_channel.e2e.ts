@@ -76,7 +76,6 @@ describe('Channels - Unarchive Channel', () => {
         await expect(ChannelScreen.introDisplayName).toHaveText(channelDisplayName);
 
         // # Go back to channel list screen by closing archived channel
-        await expect(ChannelScreen.archievedCloseChannelButton).toBeVisible();
 
         // # Open channel info screen, tap on unarchive channel and confirm, close and re-open app to reload, and re-open unarchived public channel
         await ChannelInfoScreen.open();

@@ -82,16 +82,16 @@
   },
   "behavior": {
     "init": {
-      "reinstallApp": true,
-      "launchApp": false
+      "reinstallApp": false,
+      "launchApp": true
     },
     "cleanup": {
-      "shutdownDevice": false
+      "shutdownDevice": true
     }
   },
   "session": {
     "sessionId": "mobile-test-session",
-    "debugSynchronization": 5000,
+    "debugSynchronization": 20000,
     "autoStart": true
   },
   "visibility": {

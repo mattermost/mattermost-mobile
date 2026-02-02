@@ -171,7 +171,7 @@ describe('components/categories_list', () => {
         expect(wrapper.queryByText('Drafts')).not.toBeTruthy();
     });
 
-    it('should not render channel list with Playbooks menu if playbooks feature is disabled', () => {
+    it('should not render Playbooks menu when showPlaybooksButton is false', () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 moreThanOneTeam={false}
@@ -179,14 +179,14 @@ describe('components/categories_list', () => {
                 draftsCount={0}
                 scheduledPostCount={0}
                 scheduledPostHasError={false}
-                playbooksEnabled={false}
+                showPlaybooksButton={false}
             />,
             {database},
         );
-        expect(wrapper.queryByText('Playbook checklists')).not.toBeTruthy();
+        expect(wrapper.queryByText('Playbook checklists')).toBeNull();
     });
 
-    it('should render channel list with Playbooks menu if playbooks feature is enabled', () => {
+    it('should render Playbooks menu when showPlaybooksButton is true', () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 moreThanOneTeam={false}
@@ -194,7 +194,7 @@ describe('components/categories_list', () => {
                 draftsCount={0}
                 scheduledPostCount={0}
                 scheduledPostHasError={false}
-                playbooksEnabled={true}
+                showPlaybooksButton={true}
             />,
             {database},
         );
