@@ -23,17 +23,18 @@ index dfde0b3d60..3a4a440688 100644
  org.jvnet.staxex:stax-ex:1.8.1=classpath
  org.ow2.asm:asm-analysis:9.6=classpath
 diff --git a/app.json b/app.json
-index 08eb45fcd9..914911c17a 100644
+index bc0917992..0efef9479 100644
 --- a/app.json
 +++ b/app.json
-@@ -1,4 +1,7 @@
- {
-   "name": "Mattermost",
--  "displayName": "Mattermost"
-+  "displayName": "Mattermost",
-+  "plugins": [
-+    "expo-web-browser"
-+  ]
+@@ -4,7 +4,8 @@
+   "expo": {
+     "scheme": "mattermost",
+     "plugins": [
+-      "expo-router"
++      "expo-router",
++      "expo-web-browser"
+     ]
+   }
  }
 diff --git a/app/components/expo_image/index.tsx b/app/components/expo_image/index.tsx
 index 9dbffd7ca6..bd70fffb9c 100644
@@ -42,7 +43,7 @@ index 9dbffd7ca6..bd70fffb9c 100644
 @@ -8,6 +8,8 @@ import Animated from 'react-native-reanimated';
  import {useServerUrl} from '@context/server';
  import {urlSafeBase64Encode} from '@utils/security';
- 
+
 +import type {SharedRefType} from 'expo';
 +
  type ExpoImagePropsWithId = ImageProps & {id: string};
@@ -58,7 +59,7 @@ index 9dbffd7ca6..bd70fffb9c 100644
 +        if (typeof props.source === 'number' || typeof props.source === 'string' || Array.isArray(props.source) || !props.source) {
              return props.source;
          }
- 
+
          // Only add cacheKey and cachePath if id is provided (i.e., not memory-only caching)
 -        if (id) {
 +        if (id && typeof props.source === 'object' && 'uri' in props.source) {
@@ -67,7 +68,7 @@ index 9dbffd7ca6..bd70fffb9c 100644
                  cacheKey: id,
 @@ -43,13 +45,13 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
      }, [id, props.source, cachePath]);
- 
+
      // Process placeholder to add cachePath and cacheKey if it has a uri
 -    const placeholder: ImageSource | undefined = useMemo(() => {
 -        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string') {
@@ -75,7 +76,7 @@ index 9dbffd7ca6..bd70fffb9c 100644
 +        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string' || Array.isArray(props.placeholder)) {
              return props.placeholder;
          }
- 
+
          // If placeholder has a uri and id is provided, add cachePath and cacheKey
 -        if (props.placeholder.uri && id) {
 +        if (typeof props.placeholder === 'object' && 'uri' in props.placeholder && props.placeholder.uri && id) {
@@ -92,7 +93,7 @@ index 9dbffd7ca6..bd70fffb9c 100644
 +        if (typeof props.source === 'number' || typeof props.source === 'string' || Array.isArray(props.source) || !props.source) {
              return props.source;
          }
- 
+
          // Only add cacheKey and cachePath if id is provided (i.e., not memory-only caching)
 -        if (id) {
 +        if (id && typeof props.source === 'object' && 'uri' in props.source) {
@@ -101,7 +102,7 @@ index 9dbffd7ca6..bd70fffb9c 100644
                  cacheKey: id,
 @@ -92,13 +94,13 @@ const ExpoImageBackground = ({id, ...props}: ExpoImageBackgroundProps) => {
      }, [id, props.source, cachePath]);
- 
+
      // Process placeholder to add cachePath and cacheKey if it has a uri
 -    const placeholder: ImageSource | undefined = useMemo(() => {
 -        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string') {
@@ -109,7 +110,7 @@ index 9dbffd7ca6..bd70fffb9c 100644
 +        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string' || Array.isArray(props.placeholder)) {
              return props.placeholder;
          }
- 
+
          // If placeholder has a uri and id is provided, add cachePath and cacheKey
 -        if (props.placeholder.uri && id) {
 +        if (typeof props.placeholder === 'object' && 'uri' in props.placeholder && props.placeholder.uri && id) {
@@ -117,17 +118,16 @@ index 9dbffd7ca6..bd70fffb9c 100644
                  ...props.placeholder,
                  cacheKey: `${id}-thumb`,
 diff --git a/package.json b/package.json
-index 80a6ffba49..47bb39cdcb 100644
+index a4745d9b7..c29f779cb 100644
 --- a/package.json
 +++ b/package.json
-@@ -53,15 +53,17 @@
+@@ -56,17 +56,18 @@
      "deep-equal": "2.2.3",
      "deepmerge": "4.3.1",
      "emoji-regex": "10.4.0",
 -    "expo": "52.0.47",
 +    "expo": "53.0.24",
      "expo-application": "6.0.2",
-+    "expo-constants": "17.1.7",
      "expo-crypto": "14.0.2",
      "expo-device": "7.0.3",
 -    "expo-image": "2.0.7",
@@ -135,13 +135,53 @@ index 80a6ffba49..47bb39cdcb 100644
 +    "expo-file-system": "18.1.11",
 +    "expo-image": "2.4.1",
 +    "expo-linear-gradient": "14.1.5",
+     "expo-router": "4.0.22",
+     "expo-splash-screen": "0.29.24",
      "expo-store-review": "8.0.1",
      "expo-video-thumbnails": "9.0.3",
 -    "expo-web-browser": "14.0.2",
-+    "expo-web-browser": "~14.2.0",
++    "expo-web-browser": "14.2.0",
      "fflate": "0.8.2",
      "fuse.js": "7.1.0",
-     "html-entities": "2.6.0",
+     "grapheme-splitter": "1.0.4",
+@@ -220,17 +221,15 @@
+     "updatesnapshot": "NODE_OPTIONS=--max_old_space_size=12000 jest --updateSnapshot"
+   },
+   "overrides": {
++    "prismjs": "1.30.0",
+     "promise": "^8.3.0",
++    "react": "18.3.1",
++    "react-dom": "18.3.1",
+     "react-test-renderer": "18.3.1",
+     "@babel/runtime": "7.27.0",
+     "@babel/runtime-corejs3": "7.26.10",
+-    "@testing-library/react-native": {
+-      "react": "^18.3.1"
+-    },
+     "@testing-library/react-hooks": {
+-      "@types/react": "^18.2.37",
+-      "react": "^18.3.1",
+-      "react-test-renderer": "^18.3.1"
++      "@types/react": "^18.2.37"
+     },
+     "@react-native-community/datetimepicker": {
+       "react-native": "^0.77.3"
+@@ -241,15 +240,6 @@
+     "@react-native/eslint-config@0.76.5": {
+       "@typescript-eslint/eslint-plugin": "^8.29.1"
+     },
+-    "react-syntax-highlighter": {
+-      "prismjs": "1.30.0"
+-    },
+-    "refractor": {
+-      "prismjs": "1.30.0"
+-    },
+-    "expo-router": {
+-      "react": "18.3.1"
+-    },
+     "@react-navigation/bottom-tabs": {
+       "@react-navigation/native": "7.1.25"
+     }
 diff --git a/patches/expo-file-system+18.0.12.patch b/patches/expo-file-system+18.1.11.patch
 similarity index 100%
 rename from patches/expo-file-system+18.0.12.patch
@@ -179,41 +219,6 @@ index 69520d0097..bece1d88a3 100644
  --- a/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageModule.kt
  +++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageModule.kt
  @@ -148,13 +148,17 @@ class ExpoImageModule : Module() {
-@@ -299,10 +286,10 @@ index 72ad8fa..60ceaac 100644
-  
-    private fun getCustomHeaders(): Headers {
- diff --git a/node_modules/expo-image/build/Image.d.ts b/node_modules/expo-image/build/Image.d.ts
--index 44ea175..14b20d9 100644
-+index 765a3db..6982c6d 100644
- --- a/node_modules/expo-image/build/Image.d.ts
- +++ b/node_modules/expo-image/build/Image.d.ts
--@@ -33,6 +33,16 @@ export declare class Image extends React.PureComponent<ImageProps> {
-+@@ -35,6 +35,16 @@ export declare class Image extends React.PureComponent<ImageProps> {
-       * finished prefetching.
-       */
-      static prefetch(urls: string | string[], options?: ImagePrefetchOptions): Promise<boolean>;
-@@ -319,7 +306,7 @@ index 44ea175..14b20d9 100644
-      /**
-       * Asynchronously clears all images stored in memory.
-       * @platform android
--@@ -46,11 +56,13 @@ export declare class Image extends React.PureComponent<ImageProps> {
-+@@ -48,11 +58,13 @@ export declare class Image extends React.PureComponent<ImageProps> {
-       * Asynchronously clears all images from the disk cache.
-       * @platform android
-       * @platform ios
-@@ -335,10 +322,10 @@ index 44ea175..14b20d9 100644
-       * Asynchronously checks if an image exists in the disk cache and resolves to
-       * the path of the cached image if it does.
- diff --git a/node_modules/expo-image/build/Image.types.d.ts b/node_modules/expo-image/build/Image.types.d.ts
--index 493fd68..1f71756 100644
-+index f690040..af43e4a 100644
- --- a/node_modules/expo-image/build/Image.types.d.ts
- +++ b/node_modules/expo-image/build/Image.types.d.ts
--@@ -46,6 +46,14 @@ export type ImageSource = {
-+@@ -45,6 +45,14 @@ export type ImageSource = {
-       * If not provided, the `uri` is used also as the cache key.
-       */
-      cacheKey?: string;
 @@ -354,15 +341,16 @@ index 493fd68..1f71756 100644
        * The max width of the viewport for which this source should be selected.
        * Has no effect if `source` prop is not an array or has only 1 element.
@@ -280,7 +285,7 @@ index 69520d0097..bece1d88a3 100644
     }
  diff --git a/node_modules/expo-image/ios/ImageUtils.swift b/node_modules/expo-image/ios/ImageUtils.swift
 -index 34f2231..a58943e 100644
-+index e24e776..fc32c79 100644
++index e24e776..91381ac 100644
  --- a/node_modules/expo-image/ios/ImageUtils.swift
  +++ b/node_modules/expo-image/ios/ImageUtils.swift
 -@@ -172,7 +172,7 @@ func createCacheKeyFilter(_ cacheKey: String?) -> SDWebImageCacheKeyFilter? {
@@ -291,7 +296,7 @@ index 69520d0097..bece1d88a3 100644
 --func createSDWebImageContext(forSource source: ImageSource, cachePolicy: ImageCachePolicy = .disk) -> SDWebImageContext {
 -+func createSDWebImageContext(forSource source: ImageSource, cachePolicy: ImageCachePolicy = .disk, customCache: SDImageCache? = nil) -> SDWebImageContext {
 +-func createSDWebImageContext(forSource source: ImageSource, cachePolicy: ImageCachePolicy = .disk, useAppleWebpCodec: Bool = true) -> SDWebImageContext {
-++func createSDWebImageContext(forSource source: ImageSource, cachePolicy: ImageCachePolicy = .disk, customCache: SDImageCache? = nil, useAppleWebpCodec: Bool = true) -> SDWebImageContext {
+++func createSDWebImageContext(forSource source: ImageSource, cachePolicy: ImageCachePolicy = .disk, useAppleWebpCodec: Bool = true, customCache: SDImageCache? = nil) -> SDWebImageContext {
     var context = SDWebImageContext()
   
     // Modify URL request to add headers.
@@ -305,7 +310,7 @@ index 69520d0097..bece1d88a3 100644
   
  diff --git a/node_modules/expo-image/ios/ImageView.swift b/node_modules/expo-image/ios/ImageView.swift
 -index 2ab4cba..0d423ea 100644
-+index bb6f6a5..de3468b 100644
++index bb6f6a5..6095af0 100644
  --- a/node_modules/expo-image/ios/ImageView.swift
  +++ b/node_modules/expo-image/ios/ImageView.swift
  @@ -8,6 +8,79 @@ import VisionKit
@@ -324,7 +329,7 @@ index 69520d0097..bece1d88a3 100644
  +    // Get custom cache if cachePath is specified
  +    let customCache = CachePathManager.shared.getCacheForPath(source.cachePath)
 -+    var context = createSDWebImageContext(forSource: source, cachePolicy: cachePolicy, customCache: customCache)
-++    var context = createSDWebImageContext(forSource: source, cachePolicy: cachePolicy, customCache: customCache, useAppleWebpCodec: useAppleWebpCodec)
+++    var context = createSDWebImageContext(forSource: source, cachePolicy: cachePolicy, useAppleWebpCodec: useAppleWebpCodec, customCache: customCache)
   
       // Cancel currently running load requests.
       cancelPendingOperation()
@@ -337,13 +342,13 @@ index 69520d0097..bece1d88a3 100644
 +-    var context = createSDWebImageContext(forSource: placeholder, cachePolicy: .disk, useAppleWebpCodec: useAppleWebpCodec)
  +    let customCache = CachePathManager.shared.getCacheForPath(placeholder.cachePath)
 -+    var context = createSDWebImageContext(forSource: placeholder, cachePolicy: .disk, customCache: customCache)
-++    var context = createSDWebImageContext(forSource: placeholder, cachePolicy: .disk, customCache: customCache, useAppleWebpCodec: useAppleWebpCodec)
+++    var context = createSDWebImageContext(forSource: placeholder, cachePolicy: .disk, useAppleWebpCodec: useAppleWebpCodec, customCache: customCache)
   
       let isPlaceholderHash = placeholder.isBlurhash || placeholder.isThumbhash
   
  diff --git a/node_modules/expo-image/src/Image.tsx b/node_modules/expo-image/src/Image.tsx
 -index 7721bd9..584cb02 100644
-+index c52e711..c392133 100644
++index c52e711..2003506 100644
  --- a/node_modules/expo-image/src/Image.tsx
  +++ b/node_modules/expo-image/src/Image.tsx
 -@@ -69,8 +69,18 @@ export class Image extends React.PureComponent<ImageProps> {
@@ -360,12 +365,18 @@ index 69520d0097..bece1d88a3 100644
           break;
       }
   
-@@ -655,12 +643,23 @@ index 7721bd9..584cb02 100644
+@@ -655,12 +643,29 @@ index 7721bd9..584cb02 100644
  +    }
     }
   
 +   /**
-+@@ -109,8 +130,8 @@ export class Image extends React.PureComponent<ImageProps> {
++@@ -105,12 +126,14 @@ export class Image extends React.PureComponent<ImageProps> {
++    * Asynchronously clears all images from the disk cache.
++    * @platform android
++    * @platform ios
+++   * @param path Optional cache path to clear. If provided, only that specific cache is cleared.
+++   *             If not provided, clears all caches.
++    * @return A promise resolving to `true` when the operation succeeds.
 +    * It may resolve to `false` on Android when the activity is no longer available.
 +    * Resolves to `false` on Web.
 +    */
@@ -386,6 +397,7 @@ index 69520d0097..bece1d88a3 100644
      * If not provided, the `uri` is used also as the cache key.
      */
     cacheKey?: string;
+
 diff --git a/patches/expo-modules-core+2.2.3.patch b/patches/expo-modules-core+2.5.0.patch
 similarity index 100%
 rename from patches/expo-modules-core+2.2.3.patch

@@ -78,7 +78,7 @@ function applyDiffChanges(diffPath, dryRun) {
 
         // Use patch command instead of git apply for better compatibility
         // patch is more forgiving with context matching
-        exec(`patch -p1 < ${diffPath}`, {silent: true});
+        exec(`git apply ${diffPath}`, {silent: false});
 
         log('   ✓ All changes applied successfully', 'green');
         log('   ✓ Patch files renamed automatically', 'green');
