@@ -57,6 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             minHeight: ITEM_HEIGHT,
             gap: 12,
             justifyContent: 'space-between',
+            paddingVertical: 12,
         },
         disabled: {
             opacity: 0.6,
@@ -166,8 +167,9 @@ const OptionItem = ({
 
     const labelContainerStyle = useMemo(() => {
         const extraStyle = longInfo ? {flex: undefined} : {};
-        return [styles.labelContainer, extraStyle];
-    }, [longInfo, styles.labelContainer]);
+        const alignmentStyle = description ? {alignItems: 'flex-start' as const} : {};
+        return [styles.labelContainer, extraStyle, alignmentStyle];
+    }, [longInfo, styles.labelContainer, description]);
 
     const labelStyle = useMemo(() => {
         return isInLine ? styles.inlineLabel : styles.label;
