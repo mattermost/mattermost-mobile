@@ -16,6 +16,59 @@ const RETRY_DELAY = 5000;
 let isFirstLaunch = true;
 
 /**
+ * Verify Detox connection to app is healthy
+ * @param maxAttempts - Maximum number of verification attempts
+ * @param delayMs - Delay between attempts in milliseconds
+ * @returns {Promise<void>}
+ */
+async function verifyDetoxConnection(maxAttempts = 3, delayMs = 2000): Promise<void> {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            // Simple health check: verify device is responsive
+            device.getPlatform();
+            console.info(`✅ Detox connection verified on attempt ${attempt}`);
+            return;
+        } catch (error) {
+            console.warn(`❌ Detox connection check failed on attempt ${attempt}/${maxAttempts}: ${(error as Error).message}`);
+
+            if (attempt < maxAttempts) {
+                await new Promise((resolve) => setTimeout(resolve, delayMs * attempt)); // Exponential backoff
+            }
+        }
+    }
+
+    throw new Error('Detox connection verification failed after maximum attempts');
+}
+
+/**
+ * Wait for app to be ready (database initialized, bridge ready)
+ * @param timeoutMs - Maximum time to wait in milliseconds
+ * @returns {Promise<void>}
+ */
+async function waitForAppReady(timeoutMs = 10000): Promise<void> {
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < timeoutMs) {
+        try {
+            // Check if app is responsive by looking for a basic UI element
+            // Try server screen first, then channel list screen
+            try {
+                await waitFor(element(by.id('server.screen'))).toBeVisible().withTimeout(2000);
+            } catch {
+                await waitFor(element(by.id('channel_list.screen'))).toBeVisible().withTimeout(2000);
+            }
+            console.info('✅ App is ready');
+            return;
+        } catch {
+            // App not ready yet, wait a bit
+            await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+    }
+
+    throw new Error(`App failed to become ready within ${timeoutMs}ms`);
+}
+
+/**
  * Launch the app with retry mechanism
  * @returns {Promise<void>}
  */
@@ -123,11 +176,25 @@ beforeAll(async () => {
     await User.apiAdminLogin(siteOneUrl);
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
     await launchAppWithRetry();
+
+    // Verify Detox connection is healthy after app launch
+    await verifyDetoxConnection();
+
+    // Wait for app to be fully ready (database initialized, bridge ready)
+    await waitForAppReady();
 });
 
 // Add this to speed up test cleanup
 afterAll(async () => {
     try {
+        // Dismiss keyboard if visible to prevent session invalidation issues
+        try {
+            await device.sendToHome();
+            await new Promise((resolve) => setTimeout(resolve, 500));
+        } catch (error) {
+            console.warn('[Teardown] Could not send app to home:', error);
+        }
+
         await device.terminateApp();
     } catch (error) {
         console.error('[Teardown] Error terminating app:', error);
