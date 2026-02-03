@@ -4,7 +4,8 @@
 import {useAgents, useRewrite} from '@agents/hooks';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Alert, Keyboard, Platform, TextInput, View} from 'react-native';
+import {Alert, Keyboard, TextInput, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
@@ -149,6 +150,7 @@ const RewriteOptions = ({
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
+    const insets = useSafeAreaInsets();
     const {startRewrite} = useRewrite();
 
     const [customPrompt, setCustomPrompt] = useState('');
@@ -270,17 +272,16 @@ const RewriteOptions = ({
 
     const snapPoints = useMemo(() => {
         const paddingBottom = 10;
-        const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
 
         // Add agent selector height if multiple agents available
         const agentSelectorHeight = agents.length > 1 ? ITEM_HEIGHT : 0;
 
         // Use the same height for both generation and editing modes
         const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(6, ITEM_HEIGHT);
-        const COMPONENT_HEIGHT = agentSelectorHeight + CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + bottomSheetAdjust;
+        const COMPONENT_HEIGHT = agentSelectorHeight + CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + insets.bottom;
 
         return [1, COMPONENT_HEIGHT];
-    }, [agents.length]);
+    }, [agents.length, insets.bottom]);
 
     const renderContent = useCallback(() => (
         <View style={styles.container}>

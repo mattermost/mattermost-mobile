@@ -3,8 +3,9 @@
 
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo} from 'react';
-import {Platform, type ListRenderItemInfo, View} from 'react-native';
+import {type ListRenderItemInfo, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -55,6 +56,7 @@ const AgentSelector = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const isTablet = useIsTablet();
+    const insets = useSafeAreaInsets();
     const {enabled, panResponder} = useBottomSheetListsFix();
 
     const close = useCallback(() => {
@@ -81,11 +83,10 @@ const AgentSelector = ({
 
     const snapPoints = useMemo(() => {
         const paddingBottom = 10;
-        const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
 
         // Calculate height based on number of agents
         const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(agents.length, ITEM_HEIGHT);
-        const componentHeight = optionsHeight + paddingBottom + bottomSheetAdjust;
+        const componentHeight = optionsHeight + paddingBottom + insets.bottom;
 
         const points: Array<string | number> = [1, componentHeight];
 
@@ -95,7 +96,7 @@ const AgentSelector = ({
         }
 
         return points;
-    }, [agents.length]);
+    }, [agents.length, insets.bottom]);
 
     const renderContent = () => (
         <View style={styles.container}>
