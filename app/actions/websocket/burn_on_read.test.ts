@@ -153,7 +153,7 @@ describe('WebSocket Burn on Read Actions', () => {
             expect(mockedHandlePostEdited).toHaveBeenCalled();
             const calledMsg = mockedHandlePostEdited.mock.calls[0][1];
             const updatedPost = JSON.parse(calledMsg.data.post);
-            expect(updatedPost.metadata.embeds).toEqual([{type: 'link'}]);
+            expect(updatedPost.metadata.embeds).toEqual([{type: 'permalink'}]);
             expect(updatedPost.metadata.recipients).toEqual(['user1', 'user2']);
         });
 
