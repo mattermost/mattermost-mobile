@@ -492,6 +492,28 @@ platform :ios do
     end
   end
 
+  desc 'Upload artifacts to S3'
+  lane :upload_artifacts_to_s3 do |options|
+    output_file = options[:output_file]
+    UI.message("Uploading to new S3 bucket..." + (output_file ? " file: #{output_file}" : ""))
+    begin
+      if output_file && !output_file.empty?
+        upload_file_to_s3({
+          :os_type => "ios",
+          :file => output_file,
+          :enable_s3_new_bucket => true
+        })
+      else
+        upload_file_to_s3({
+          :os_type => "ios",
+          :enable_s3_new_bucket => true
+        })
+      end
+    rescue SyntaxError, StandardError
+      UI.error("Failed to upload to new S3 bucket")
+    end
+  end
+
   lane :update_settings do
     # Configure Main app settings
     app_name = ENV['APP_NAME'] || 'Mattermost Beta'
