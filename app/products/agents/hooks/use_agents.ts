@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {rewriteStore, type RewriteState} from '@agents/store';
+import {rewriteStore} from '@agents/store';
 import {useEffect, useState} from 'react';
 
 import type {Agent} from '@agents/types';
@@ -20,20 +20,4 @@ export function useAgents(serverUrl: string): Agent[] {
     }, [serverUrl]);
 
     return agents;
-}
-
-/**
- * React hook to subscribe to rewrite state
- */
-export function useRewriteState(): RewriteState {
-    const [state, setState] = useState<RewriteState>(
-        () => rewriteStore.getRewriteState(),
-    );
-
-    useEffect(() => {
-        const subscription = rewriteStore.observeRewriteState().subscribe(setState);
-        return () => subscription.unsubscribe();
-    }, []);
-
-    return state;
 }

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {rewriteMessage} from '@agents/actions/remote/agents';
-import {rewriteStore} from '@agents/store';
+import {rewriteStore, type RewriteState} from '@agents/store';
 import {useCallback, useEffect, useRef, useState} from 'react';
 
 import {logWarning} from '@utils/log';
@@ -167,3 +167,19 @@ export const useRewrite = (): UseRewriteReturn => {
         cancelRewrite,
     };
 };
+
+/**
+ * React hook to subscribe to rewrite state
+ */
+export function useRewriteState(): RewriteState {
+    const [state, setState] = useState<RewriteState>(
+        () => rewriteStore.getRewriteState(),
+    );
+
+    useEffect(() => {
+        const subscription = rewriteStore.observeRewriteState().subscribe(setState);
+        return () => subscription.unsubscribe();
+    }, []);
+
+    return state;
+}
