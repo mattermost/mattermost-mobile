@@ -3262,27 +3262,52 @@ describe('Components.Markdown.transform', () => {
     describe('parseCitationUrl', () => {
         const {parseCitationUrl} = require('@components/markdown/transform');
 
-        it('should return null for URLs without view=citation', () => {
-            expect(parseCitationUrl('http://localhost:8066/team/pl/abc123')).toBeNull();
+        // Valid 26-character post ID for testing
+        const validPostId1 = 'hod5do9pc38q7e7ofcc7e3hzae';
+
+        it('should return null for URLs without view=citation query param', () => {
+            expect(parseCitationUrl(`http://localhost:8066/team/pl/${validPostId1}`)).toBeNull();
             expect(parseCitationUrl('http://localhost:8066/team/channels/general')).toBeNull();
             expect(parseCitationUrl('')).toBeNull();
         });
 
-        it('should parse post citation URLs', () => {
-            const result = parseCitationUrl('http://localhost:8066/missionops/pl/hod5do9pc38q7e7ofcc7e3hzae?view=citation');
+        it('should return null when view=citation appears in path but not as query param', () => {
+            // view=citation must be a query parameter, not just appear anywhere in URL
+            expect(parseCitationUrl('http://localhost:8066/view=citation/team/pl/abc123')).toBeNull();
+        });
+
+        it('should parse post citation URLs with valid 26-char post ID', () => {
+            const result = parseCitationUrl(`http://localhost:8066/missionops/pl/${validPostId1}?view=citation`);
             expect(result).toEqual({
                 entityType: 'POST',
-                entityId: 'hod5do9pc38q7e7ofcc7e3hzae',
-                linkUrl: 'http://localhost:8066/missionops/pl/hod5do9pc38q7e7ofcc7e3hzae?view=citation',
+                entityId: validPostId1,
+                linkUrl: `http://localhost:8066/missionops/pl/${validPostId1}?view=citation`,
             });
         });
 
-        it('should parse channel citation URLs', () => {
+        it('should return null for post IDs that are not exactly 26 characters', () => {
+            // Too short
+            expect(parseCitationUrl('http://localhost:8066/team/pl/abc123?view=citation')).toBeNull();
+
+            // Too long
+            expect(parseCitationUrl('http://localhost:8066/team/pl/abc123def456ghi789jkl012mnopq?view=citation')).toBeNull();
+        });
+
+        it('should parse channel citation URLs with valid channel names', () => {
             const result = parseCitationUrl('http://localhost:8066/missionops/channels/mission-planning?view=citation');
             expect(result).toEqual({
                 entityType: 'CHANNEL',
                 entityId: 'mission-planning',
                 linkUrl: 'http://localhost:8066/missionops/channels/mission-planning?view=citation',
+            });
+        });
+
+        it('should parse channel citation URLs with underscores and dots', () => {
+            const result = parseCitationUrl('http://localhost:8066/team/channels/my_channel.name?view=citation');
+            expect(result).toEqual({
+                entityType: 'CHANNEL',
+                entityId: 'my_channel.name',
+                linkUrl: 'http://localhost:8066/team/channels/my_channel.name?view=citation',
             });
         });
 
@@ -3296,11 +3321,93 @@ describe('Components.Markdown.transform', () => {
         });
 
         it('should handle view=citation with additional query params', () => {
-            const result = parseCitationUrl('http://localhost:8066/team/pl/abc123?foo=bar&view=citation');
+            const result = parseCitationUrl(`http://localhost:8066/team/pl/${validPostId1}?foo=bar&view=citation`);
             expect(result).toEqual({
                 entityType: 'POST',
-                entityId: 'abc123',
-                linkUrl: 'http://localhost:8066/team/pl/abc123?foo=bar&view=citation',
+                entityId: validPostId1,
+                linkUrl: `http://localhost:8066/team/pl/${validPostId1}?foo=bar&view=citation`,
+            });
+        });
+
+        describe('with serverUrl for internal link validation', () => {
+            const serverUrl = 'http://localhost:8066';
+
+            it('should parse internal links when serverUrl matches', () => {
+                const result = parseCitationUrl(
+                    `http://localhost:8066/team/pl/${validPostId1}?view=citation`,
+                    serverUrl,
+                );
+                expect(result).toEqual({
+                    entityType: 'POST',
+                    entityId: validPostId1,
+                    linkUrl: `http://localhost:8066/team/pl/${validPostId1}?view=citation`,
+                });
+            });
+
+            it('should return null for external links when serverUrl is provided', () => {
+                const result = parseCitationUrl(
+                    `http://external-server.com/team/pl/${validPostId1}?view=citation`,
+                    serverUrl,
+                );
+                expect(result).toBeNull();
+            });
+
+            it('should return null when ports do not match', () => {
+                const result = parseCitationUrl(
+                    `http://localhost:9000/team/pl/${validPostId1}?view=citation`,
+                    serverUrl,
+                );
+                expect(result).toBeNull();
+            });
+        });
+
+        describe('with server subpaths', () => {
+            const serverUrlWithSubpath = 'http://localhost:8066/mattermost';
+
+            it('should handle server URLs with subpaths', () => {
+                const result = parseCitationUrl(
+                    `http://localhost:8066/mattermost/team/pl/${validPostId1}?view=citation`,
+                    serverUrlWithSubpath,
+                );
+                expect(result).toEqual({
+                    entityType: 'POST',
+                    entityId: validPostId1,
+                    linkUrl: `http://localhost:8066/mattermost/team/pl/${validPostId1}?view=citation`,
+                });
+            });
+
+            it('should handle channel URLs with subpaths', () => {
+                const result = parseCitationUrl(
+                    'http://localhost:8066/mattermost/team/channels/general?view=citation',
+                    serverUrlWithSubpath,
+                );
+                expect(result).toEqual({
+                    entityType: 'CHANNEL',
+                    entityId: 'general',
+                    linkUrl: 'http://localhost:8066/mattermost/team/channels/general?view=citation',
+                });
+            });
+
+            it('should handle team URLs with subpaths', () => {
+                const result = parseCitationUrl(
+                    'http://localhost:8066/mattermost/myteam?view=citation',
+                    serverUrlWithSubpath,
+                );
+                expect(result).toEqual({
+                    entityType: 'TEAM',
+                    entityId: 'myteam',
+                    linkUrl: 'http://localhost:8066/mattermost/myteam?view=citation',
+                });
+            });
+        });
+
+        it('should handle encoded URLs', () => {
+            const encodedUrl = `http://localhost:8066/team/channels/${encodeURIComponent('channel-name')}?view=citation`;
+            const result = parseCitationUrl(encodedUrl);
+            expect(result).toEqual({
+                entityType: 'CHANNEL',
+                entityId: 'channel-name',
+                linkUrl: encodedUrl,
             });
         });
     });
@@ -3308,8 +3415,12 @@ describe('Components.Markdown.transform', () => {
     describe('processInlineEntities', () => {
         const {processInlineEntities} = require('@components/markdown/transform');
 
+        // Valid 26-character post IDs for testing
+        const validPostId1 = 'hod5do9pc38q7e7ofcc7e3hzae';
+        const validPostId2 = 'abc123def456ghi789jkl012mn';
+
         it('should not modify links without view=citation', () => {
-            const input = parser.parse('[link text](http://example.com/team/pl/abc123)');
+            const input = parser.parse(`[link text](http://example.com/team/pl/${validPostId1})`);
             const result = processInlineEntities(input);
 
             const walker = result.walker();
@@ -3318,14 +3429,14 @@ describe('Components.Markdown.transform', () => {
             while ((e = walker.next())) {
                 if (e.node.type === 'link') {
                     foundLink = true;
-                    expect(e.node.destination).toBe('http://example.com/team/pl/abc123');
+                    expect(e.node.destination).toBe(`http://example.com/team/pl/${validPostId1}`);
                 }
             }
             expect(foundLink).toBe(true);
         });
 
         it('should transform post citation links to inline_entity_link nodes', () => {
-            const input = parser.parse('[permalink](http://localhost:8066/team/pl/abc123?view=citation)');
+            const input = parser.parse(`[permalink](http://localhost:8066/team/pl/${validPostId1}?view=citation)`);
             const result = processInlineEntities(input);
 
             const walker = result.walker();
@@ -3335,8 +3446,8 @@ describe('Components.Markdown.transform', () => {
                 if (e.node.type === 'inline_entity_link') {
                     foundInlineEntity = true;
                     expect(e.node.entityType).toBe('POST');
-                    expect(e.node.entityId).toBe('abc123');
-                    expect(e.node.linkUrl).toBe('http://localhost:8066/team/pl/abc123?view=citation');
+                    expect(e.node.entityId).toBe(validPostId1);
+                    expect(e.node.linkUrl).toBe(`http://localhost:8066/team/pl/${validPostId1}?view=citation`);
                 }
             }
             expect(foundInlineEntity).toBe(true);
@@ -3360,7 +3471,7 @@ describe('Components.Markdown.transform', () => {
         });
 
         it('should handle multiple citation links in one document', () => {
-            const input = parser.parse('First [link](http://localhost:8066/team/pl/post1?view=citation) and second [link](http://localhost:8066/team/pl/post2?view=citation)');
+            const input = parser.parse(`First [link](http://localhost:8066/team/pl/${validPostId1}?view=citation) and second [link](http://localhost:8066/team/pl/${validPostId2}?view=citation)`);
             const result = processInlineEntities(input);
 
             const walker = result.walker();
@@ -3372,8 +3483,38 @@ describe('Components.Markdown.transform', () => {
                 }
             }
             expect(entityLinks.length).toBe(2);
-            expect(entityLinks[0].entityId).toBe('post1');
-            expect(entityLinks[1].entityId).toBe('post2');
+            expect(entityLinks[0].entityId).toBe(validPostId1);
+            expect(entityLinks[1].entityId).toBe(validPostId2);
+        });
+
+        it('should only process internal links when serverUrl is provided', () => {
+            const serverUrl = 'http://localhost:8066';
+            const input = parser.parse(`[external](http://external.com/team/pl/${validPostId1}?view=citation) and [internal](http://localhost:8066/team/pl/${validPostId2}?view=citation)`);
+            const result = processInlineEntities(input, serverUrl);
+
+            const walker = result.walker();
+            const entityLinks: any[] = [];
+            const regularLinks: any[] = [];
+            let e;
+            while ((e = walker.next())) {
+                // Only count on entering to avoid duplicates
+                if (!e.entering) {
+                    continue;
+                }
+                if (e.node.type === 'inline_entity_link') {
+                    entityLinks.push(e.node);
+                } else if (e.node.type === 'link') {
+                    regularLinks.push(e.node);
+                }
+            }
+
+            // Only the internal link should be transformed
+            expect(entityLinks.length).toBe(1);
+            expect(entityLinks[0].entityId).toBe(validPostId2);
+
+            // The external link should remain as a regular link
+            expect(regularLinks.length).toBe(1);
+            expect(regularLinks[0].destination).toBe(`http://external.com/team/pl/${validPostId1}?view=citation`);
         });
     });
 });

@@ -1,30 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-type ChannelAnalysisOptions = {
-    since?: string;
-    until?: string;
-    days?: number;
-    prompt?: string;
-    unreads_only?: boolean;
-};
+import type {Agent, AgentsResponse, ChannelAnalysisOptions, ChannelAnalysisResponse} from '@agents/types/api';
 
-type ChannelAnalysisResponse = {
-    postid: string;
-    channelid: string;
-};
-
-export type Agent = {
-    id: string;
-    displayName: string;
-    username: string;
-    service_type?: string;
-    service_id?: string;
-};
-
-type AgentsResponse = {
-    agents: Agent[];
-};
+export type {Agent};
 
 export interface ClientAgentsMix {
     getAgentsRoute: () => string;

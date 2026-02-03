@@ -2,10 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {type Agent} from '@agents/client/rest';
-import {Image} from 'expo-image';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {FlatList, type ListRenderItemInfo, Text, TouchableOpacity, View} from 'react-native';
 
 import {buildProfileImageUrl} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
@@ -14,7 +13,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-const AVATAR_SIZE = 32;
+import AgentItem from './agent_item';
 
 type Props = {
     agents: Agent[];
@@ -25,8 +24,7 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        paddingHorizontal: 20,
-        paddingBottom: 24,
+        flex: 1,
     },
     headerRow: {
         flexDirection: 'row',
@@ -41,36 +39,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.centerChannelColor,
         ...typography('Heading', 300, 'SemiBold'),
     },
-    agentRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 16,
-    },
-    agentInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        flex: 1,
-    },
-    agentAvatar: {
-        width: AVATAR_SIZE,
-        height: AVATAR_SIZE,
-        borderRadius: AVATAR_SIZE / 2,
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-    },
-    agentAvatarFallback: {
-        width: AVATAR_SIZE,
-        height: AVATAR_SIZE,
-        borderRadius: AVATAR_SIZE / 2,
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    agentName: {
-        color: theme.centerChannelColor,
-        ...typography('Body', 200, 'Regular'),
-    },
     divider: {
         height: 1,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -84,63 +52,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Body', 200, 'Regular'),
     },
 }));
-
-type AgentItemProps = {
-    agent: Agent;
-    profileImageUrl?: string;
-    currentAgentUsername: string;
-    onSelect: (agent: Agent) => void;
-    showDivider: boolean;
-};
-
-const AgentItem = React.memo(({agent, profileImageUrl, currentAgentUsername, onSelect, showDivider}: AgentItemProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
-
-    const handlePress = useCallback(() => {
-        onSelect(agent);
-    }, [onSelect, agent]);
-
-    return (
-        <React.Fragment>
-            <TouchableOpacity
-                onPress={handlePress}
-                style={styles.agentRow}
-                testID={`agents.selector.agent.${agent.username}`}
-            >
-                <View style={styles.agentInfo}>
-                    {profileImageUrl ? (
-                        <Image
-                            source={{uri: profileImageUrl}}
-                            style={styles.agentAvatar}
-                            placeholder='account-outline'
-                        />
-                    ) : (
-                        <View style={styles.agentAvatarFallback}>
-                            <CompassIcon
-                                name='account-outline'
-                                size={20}
-                                color={changeOpacity(theme.centerChannelColor, 0.56)}
-                            />
-                        </View>
-                    )}
-                    <Text style={styles.agentName}>
-                        {agent.displayName || agent.username}
-                    </Text>
-                </View>
-                {currentAgentUsername === agent.username && (
-                    <CompassIcon
-                        name='check'
-                        size={24}
-                        color={theme.linkColor}
-                    />
-                )}
-            </TouchableOpacity>
-            {showDivider && <View style={styles.divider}/>}
-        </React.Fragment>
-    );
-});
-AgentItem.displayName = 'AgentItem';
 
 const AgentSelectorPanel = ({
     agents,
@@ -164,49 +75,62 @@ const AgentSelectorPanel = ({
         return urls;
     }, [agents, serverUrl]);
 
+    const keyExtractor = useCallback((agent: Agent) => agent.id || agent.username, []);
+
+    const renderItem = useCallback(({item: agent}: ListRenderItemInfo<Agent>) => {
+        const profileImageUrl = agent.id ? agentImageUrls[agent.id] : undefined;
+        return (
+            <AgentItem
+                agent={agent}
+                profileImageUrl={profileImageUrl}
+                currentAgentUsername={currentAgentUsername}
+                onSelect={onSelectAgent}
+            />
+        );
+    }, [agentImageUrls, currentAgentUsername, onSelectAgent]);
+
+    const renderSeparator = useCallback(() => (
+        <View style={styles.divider}/>
+    ), [styles.divider]);
+
+    const renderEmpty = useCallback(() => (
+        <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+                {intl.formatMessage({id: 'agents.selector.no_agents', defaultMessage: 'No agents available'})}
+            </Text>
+        </View>
+    ), [intl, styles.emptyContainer, styles.emptyText]);
+
+    const renderHeader = useCallback(() => (
+        <View style={styles.headerRow}>
+            <TouchableOpacity
+                onPress={onBack}
+                style={styles.backButton}
+                testID='agents.selector.back'
+            >
+                <CompassIcon
+                    name='arrow-left'
+                    size={24}
+                    color={theme.centerChannelColor}
+                />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>
+                {intl.formatMessage({id: 'agents.selector.title', defaultMessage: 'Select Agent'})}
+            </Text>
+        </View>
+    ), [intl, onBack, styles.backButton, styles.headerRow, styles.headerTitle, theme.centerChannelColor]);
+
     return (
         <View style={styles.container}>
-            {/* Header with back button */}
-            <View style={styles.headerRow}>
-                <TouchableOpacity
-                    onPress={onBack}
-                    style={styles.backButton}
-                    testID='agents.selector.back'
-                >
-                    <CompassIcon
-                        name='arrow-left'
-                        size={24}
-                        color={theme.centerChannelColor}
-                    />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>
-                    {intl.formatMessage({id: 'agents.selector.title', defaultMessage: 'Select Agent'})}
-                </Text>
-            </View>
-
-            {/* Empty state */}
-            {agents.length === 0 && (
-                <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>
-                        {intl.formatMessage({id: 'agents.selector.no_agents', defaultMessage: 'No agents available'})}
-                    </Text>
-                </View>
-            )}
-
-            {/* Agent list */}
-            {agents.map((agent, index) => {
-                const profileImageUrl = agent.id ? agentImageUrls[agent.id] : undefined;
-                return (
-                    <AgentItem
-                        key={agent.id || agent.username}
-                        agent={agent}
-                        profileImageUrl={profileImageUrl}
-                        currentAgentUsername={currentAgentUsername}
-                        onSelect={onSelectAgent}
-                        showDivider={index < agents.length - 1}
-                    />
-                );
-            })}
+            <FlatList
+                data={agents}
+                keyExtractor={keyExtractor}
+                renderItem={renderItem}
+                ItemSeparatorComponent={renderSeparator}
+                ListEmptyComponent={renderEmpty}
+                ListHeaderComponent={renderHeader}
+                showsVerticalScrollIndicator={false}
+            />
         </View>
     );
 };

@@ -2,24 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
-import {fetchPostById} from '@actions/remote/post';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel} from '@queries/servers/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
-type ChannelAnalysisOptions = {
-    since?: string;
-    until?: string;
-    days?: number;
-    prompt?: string;
-};
-
-type ChannelAnalysisResponse = {
-    postid: string;
-    channelid: string;
-};
+import type {ChannelAnalysisOptions, ChannelAnalysisResponse} from '@agents/types/api';
 
 export async function requestChannelSummary(
     serverUrl: string,
@@ -35,9 +24,6 @@ export async function requestChannelSummary(
         if (!result?.postid || !result?.channelid) {
             return {error: 'Invalid response from server'};
         }
-
-        // Ensure post is persisted to database for offline compatibility
-        await fetchPostById(serverUrl, result.postid);
 
         // Ensure channel exists in database and user has membership before switching
         // This is critical for offline compatibility - switchToChannelById expects

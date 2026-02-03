@@ -2,8 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {Node, type NodeType} from 'commonmark';
+import urlParse from 'url-parse';
 
 import {escapeRegex} from '@utils/markdown';
+import {safeDecodeURIComponent} from '@utils/url';
+import {ID_PATH_PATTERN, IDENTIFIER_PATH_PATTERN} from '@utils/url/path';
 
 import type {HighlightWithoutNotificationKey, SearchPattern, UserMentionKey} from '@typings/global/markdown';
 
@@ -384,26 +387,66 @@ export function parseTaskLists(ast: Node) {
 
 /**
  * Parse a citation URL to extract entity type and identifier.
- * Citation URLs contain ?view=citation or &view=citation query parameter.
+ * Citation URLs must have view=citation as a query parameter.
  *
  * URL patterns:
  * - Post: /team/pl/postId?view=citation
  * - Channel: /team/channels/channelName?view=citation
  * - Team: /team?view=citation (just the team slug)
+ *
+ * @param url - The URL to parse
+ * @param serverUrl - Optional server URL to validate this is an internal link
+ * @returns Parsed citation info or null if not a valid citation URL
  */
-export function parseCitationUrl(url: string): {entityType: string; entityId: string; linkUrl: string} | null {
-    // Check if this is a citation link
-    if (!url.includes('view=citation')) {
+export function parseCitationUrl(url: string, serverUrl?: string): {entityType: string; entityId: string; linkUrl: string} | null {
+    // Use urlParse for proper URL parsing
+    const decodedUrl = safeDecodeURIComponent(url);
+    const parsedUrl = urlParse(decodedUrl, true);
+
+    // Check if view=citation is a proper query parameter
+    if (parsedUrl.query.view !== 'citation') {
         return null;
     }
 
-    // Remove the query string for parsing the path
-    const urlWithoutQuery = url.split('?')[0];
+    // If serverUrl is provided, validate this is an internal link
+    if (serverUrl) {
+        const parsedServerUrl = urlParse(serverUrl);
+        const normalizedServerHost = parsedServerUrl.hostname.toLowerCase();
+        const normalizedUrlHost = parsedUrl.hostname.toLowerCase();
+
+        // Verify the URL's host matches the server's host
+        if (normalizedUrlHost !== normalizedServerHost) {
+            return null;
+        }
+
+        // Verify the URL's port matches (if specified)
+        if (parsedServerUrl.port && parsedUrl.port !== parsedServerUrl.port) {
+            return null;
+        }
+    }
+
+    // Get the pathname, stripping any server subpath if serverUrl is provided
+    let pathname = parsedUrl.pathname;
+    if (serverUrl) {
+        const parsedServerUrl = urlParse(serverUrl);
+
+        // Get server's pathname without trailing slashes but keep the leading slash
+        const serverPath = parsedServerUrl.pathname.replace(/\/+$/, '');
+        if (serverPath && serverPath !== '/' && pathname.startsWith(serverPath)) {
+            pathname = pathname.substring(serverPath.length) || '/';
+        }
+    }
+
+    // Post ID regex: exactly 26 lowercase alphanumeric characters
+    const postIdPattern = new RegExp(`^${ID_PATH_PATTERN}$`);
+
+    // Channel/identifier pattern from path constants
+    const identifierPattern = new RegExp(`^${IDENTIFIER_PATH_PATTERN}$`);
 
     // Parse the path to determine entity type
-    // Post permalink: /team/pl/postId
-    const postMatch = /\/pl\/([a-zA-Z0-9]+)/.exec(urlWithoutQuery);
-    if (postMatch) {
+    // Post permalink: /team/pl/postId (postId is exactly 26 chars)
+    const postMatch = /\/pl\/([a-z0-9]+)$/i.exec(pathname);
+    if (postMatch && postIdPattern.test(postMatch[1].toLowerCase())) {
         return {
             entityType: 'POST',
             entityId: postMatch[1],
@@ -412,10 +455,11 @@ export function parseCitationUrl(url: string): {entityType: string; entityId: st
     }
 
     // Channel permalink: /team/channels/channelName
+    // Channel names can contain: lowercase letters, numbers, hyphens, underscores, periods, and colons
     // Note: entityId here is the channel NAME (from URL path), not the channel UUID.
     // The InlineEntityLink component handles looking up the actual channel ID.
-    const channelMatch = /\/channels\/([^/?]+)/.exec(urlWithoutQuery);
-    if (channelMatch) {
+    const channelMatch = /\/channels\/([^/]+)$/.exec(pathname);
+    if (channelMatch && identifierPattern.test(channelMatch[1])) {
         return {
             entityType: 'CHANNEL',
             entityId: channelMatch[1],
@@ -424,20 +468,16 @@ export function parseCitationUrl(url: string): {entityType: string; entityId: st
     }
 
     // Team permalink: just /teamSlug (no /pl/ or /channels/)
-    // Extract the team slug from the path
-    const pathParts = urlWithoutQuery.split('/').filter(Boolean);
+    // Extract the team slug from the path - it's the last segment
+    const pathSegments = pathname.split('/').filter(Boolean);
 
-    // Find the part after the host - typically the path starts after protocol://host
-    // URL format: http://host/teamSlug or http://host/teamSlug?view=citation
-    if (pathParts.length > 0) {
-        // Get the last meaningful path segment that isn't a known route
-        const teamSlug = pathParts.find((part) =>
-            !part.includes(':') && // Not protocol
-            !part.includes('.') && // Not a hostname
-            part !== 'pl' &&
-            part !== 'channels',
-        );
-        if (teamSlug) {
+    // For team URLs, we expect just the team slug in the path (after any subpath)
+    // URL format: http://host/[subpath/]teamSlug?view=citation
+    if (pathSegments.length === 1) {
+        const teamSlug = pathSegments[0];
+
+        // Team names follow a similar pattern but are more restrictive
+        if (/^[a-z0-9][a-z0-9\-_]*$/.test(teamSlug)) {
             return {
                 entityType: 'TEAM',
                 entityId: teamSlug,
@@ -457,8 +497,11 @@ export function parseCitationUrl(url: string): {entityType: string; entityId: st
  * - [text](http://server/team/pl/postId?view=citation) -> post citation
  * - [text](http://server/team/channels/channelName?view=citation) -> channel citation
  * - [text](http://server/team?view=citation) -> team citation
+ *
+ * @param ast - The AST to process
+ * @param serverUrl - Optional server URL to validate internal links only
  */
-export function processInlineEntities(ast: Node) {
+export function processInlineEntities(ast: Node, serverUrl?: string) {
     const walker = ast.walker();
 
     let e;
@@ -474,7 +517,7 @@ export function processInlineEntities(ast: Node) {
             continue;
         }
 
-        const parsed = parseCitationUrl(node.destination);
+        const parsed = parseCitationUrl(node.destination, serverUrl);
         if (!parsed) {
             continue;
         }

@@ -12,6 +12,7 @@ import CompassIcon from '@components/compass_icon';
 import EditedIndicator from '@components/edited_indicator';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
+import {useServerUrl} from '@context/server';
 import {logError} from '@utils/log';
 import {computeTextStyle, getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -185,6 +186,7 @@ const Markdown = ({
     const blockStyles = useMemo<MarkdownBlockStyles>(() => getMarkdownBlockStyles(theme), [theme]);
     const textStyles = useMemo<MarkdownTextStyles>(() => getMarkdownTextStyles(theme), [theme]);
     const managedConfig = useManagedConfig<ManagedConfig>();
+    const serverUrl = useServerUrl();
 
     const renderText = useCallback(({context, literal}: MarkdownBaseRenderer) => {
         const selectable = (managedConfig.copyAndPasteProtection !== 'true') && context.includes('table_cell');
@@ -695,7 +697,7 @@ const Markdown = ({
             ast = addListItemIndices(ast);
             ast = pullOutImages(ast);
             ast = parseTaskLists(ast);
-            ast = processInlineEntities(ast);
+            ast = processInlineEntities(ast, serverUrl);
             if (mentionKeys) {
                 ast = highlightMentions(ast, mentionKeys);
             }
@@ -751,7 +753,7 @@ const Markdown = ({
                 />
             );
         }
-    }, [highlightKeys, isEdited, mentionKeys, parser, renderer, searchPatterns, style.errorMessage, value]);
+    }, [highlightKeys, isEdited, mentionKeys, parser, renderer, searchPatterns, serverUrl, style.errorMessage, value]);
 
     return output;
 };

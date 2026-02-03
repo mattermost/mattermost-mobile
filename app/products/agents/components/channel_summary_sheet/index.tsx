@@ -6,11 +6,12 @@ import {requestChannelSummary} from '@agents/actions/remote/channel_summary';
 import {type Agent} from '@agents/client/rest';
 import {AGENT_ANALYSIS_SUMMARY} from '@agents/constants';
 import React, {useCallback, useEffect, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {Alert, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
+import {Alert, Platform, ScrollView, Text, TextInput, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
+import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
@@ -25,17 +26,23 @@ type SummaryOptionId = 'unreads' | '7d' | '14d' | 'custom';
 
 type SummaryOption = {
     id: SummaryOptionId;
-    labelId: string;
-    defaultLabel: string;
+    message: MessageDescriptor;
     days?: number;
     showChevron?: boolean;
 };
 
+const messages = defineMessages({
+    unreads: {id: 'agents.channel_summary.option.unreads', defaultMessage: 'Summarize unreads'},
+    sevenDays: {id: 'agents.channel_summary.option.7d', defaultMessage: 'Summarize last 7 days'},
+    fourteenDays: {id: 'agents.channel_summary.option.14d', defaultMessage: 'Summarize last 14 days'},
+    custom: {id: 'agents.channel_summary.option.custom', defaultMessage: 'Select date range to summarize'},
+});
+
 const SUMMARY_OPTIONS: SummaryOption[] = [
-    {id: 'unreads', labelId: 'agents.channel_summary.option.unreads', defaultLabel: 'Summarize unreads'},
-    {id: '7d', days: 7, labelId: 'agents.channel_summary.option.7d', defaultLabel: 'Summarize last 7 days'},
-    {id: '14d', days: 14, labelId: 'agents.channel_summary.option.14d', defaultLabel: 'Summarize last 14 days'},
-    {id: 'custom', labelId: 'agents.channel_summary.option.custom', defaultLabel: 'Select date range to summarize', showChevron: true},
+    {id: 'unreads', message: messages.unreads},
+    {id: '7d', days: 7, message: messages.sevenDays},
+    {id: '14d', days: 14, message: messages.fourteenDays},
+    {id: 'custom', message: messages.custom, showChevron: true},
 ];
 
 type Props = {
@@ -43,7 +50,6 @@ type Props = {
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {},
     headerSection: {
         gap: 4,
     },
@@ -98,16 +104,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     optionsContainer: {
         paddingVertical: 8,
     },
-    optionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 12,
-    },
-    optionLabel: {
-        color: theme.centerChannelColor,
-        ...typography('Body', 200, 'Regular'),
-    },
     loadingOverlay: {
         ...Platform.select({
             ios: {
@@ -124,43 +120,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         }),
     },
 }));
-
-type SummaryOptionItemProps = {
-    option: SummaryOption;
-    onPress: (option: SummaryOption) => void;
-    disabled: boolean;
-};
-
-const SummaryOptionItem = React.memo(({option, onPress, disabled}: SummaryOptionItemProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
-    const intl = useIntl();
-
-    const handlePress = useCallback(() => {
-        onPress(option);
-    }, [onPress, option]);
-
-    return (
-        <TouchableOpacity
-            onPress={handlePress}
-            style={styles.optionRow}
-            testID={`agents.channel_summary.option.${option.id}`}
-            disabled={disabled}
-        >
-            <Text style={styles.optionLabel}>
-                {intl.formatMessage({id: option.labelId, defaultMessage: option.defaultLabel})}
-            </Text>
-            {option.showChevron && (
-                <CompassIcon
-                    name='chevron-right'
-                    size={20}
-                    color={changeOpacity(theme.centerChannelColor, 0.32)}
-                />
-            )}
-        </TouchableOpacity>
-    );
-});
-SummaryOptionItem.displayName = 'SummaryOptionItem';
 
 const ChannelSummarySheet = ({channelId}: Props) => {
     const intl = useIntl();
@@ -190,7 +149,16 @@ const ChannelSummarySheet = ({channelId}: Props) => {
         loadAgents();
     }, [serverUrl]);
 
-    const handleOptionPress = useCallback(async (option: SummaryOption) => {
+    const handleOptionPress = useCallback(async (optionId: string | boolean) => {
+        if (submitting) {
+            return;
+        }
+
+        const option = SUMMARY_OPTIONS.find((o) => o.id === optionId);
+        if (!option) {
+            return;
+        }
+
         if (option.id === 'custom') {
             setShowDatePicker(true);
             return;
@@ -234,7 +202,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
         }
 
         dismissBottomSheet();
-    }, [serverUrl, channelId, selectedAgent, customPrompt, intl]);
+    }, [serverUrl, channelId, selectedAgent, customPrompt, intl, submitting]);
 
     const handleAgentSelectorOpen = useCallback(() => {
         setShowAgentSelector(true);
@@ -316,7 +284,6 @@ const ChannelSummarySheet = ({channelId}: Props) => {
         dismissBottomSheet();
     }, [serverUrl, channelId, selectedAgent, customPrompt, intl]);
 
-    const handleOptionPressDebounced = usePreventDoubleTap(handleOptionPress);
     const handleCustomPromptSubmitDebounced = usePreventDoubleTap(handleCustomPromptSubmit);
     const handleDateRangeSubmitDebounced = usePreventDoubleTap(handleDateRangeSubmit);
 
@@ -343,7 +310,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
     const selectedAgentDisplayName = selectedAgent?.displayName || selectedAgent?.username || '';
 
     return (
-        <View style={styles.container}>
+        <ScrollView>
             {/* Header Section - Agent selector + Prompt input */}
             <View style={styles.headerSection}>
                 <TouchableOpacity
@@ -411,11 +378,13 @@ const ChannelSummarySheet = ({channelId}: Props) => {
             {/* Summary Options */}
             <View style={styles.optionsContainer}>
                 {SUMMARY_OPTIONS.map((option) => (
-                    <SummaryOptionItem
+                    <OptionItem
                         key={option.id}
-                        option={option}
-                        onPress={handleOptionPressDebounced}
-                        disabled={submitting}
+                        action={handleOptionPress}
+                        label={intl.formatMessage(option.message)}
+                        testID={`agents.channel_summary.option.${option.id}`}
+                        type={option.showChevron ? 'arrow' : 'default'}
+                        value={option.id}
                     />
                 ))}
             </View>
@@ -425,7 +394,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
                     <Loading color={theme.buttonBg}/>
                 </View>
             )}
-        </View>
+        </ScrollView>
     );
 };
 

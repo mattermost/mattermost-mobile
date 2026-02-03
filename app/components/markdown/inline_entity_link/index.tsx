@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {Platform, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import {fetchChannelByName, switchToChannelById} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
@@ -38,11 +38,8 @@ const ICON_SIZE = 10;
 // Vertical offset to center the icon with the middle of the text line
 // This shifts the icon down to align with the visual center of text (accounting for descenders)
 // Using transform translateY for more reliable positioning of inline Views
-const VERTICAL_OFFSET = Platform.select({
-    ios: 3,
-    android: 3,
-    default: 3,
-});
+// TODO: This value is hardcoded for a particular font size and may need adjustment for different text sizes
+const VERTICAL_OFFSET = 3;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 

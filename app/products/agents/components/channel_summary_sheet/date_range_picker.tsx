@@ -3,7 +3,7 @@
 
 import DateTimePicker, {type DateTimePickerEvent} from '@react-native-community/datetimepicker';
 import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {type IntlShape, useIntl} from 'react-intl';
 import {Platform, Text, TouchableOpacity, View} from 'react-native';
 
 import Button from '@components/button';
@@ -63,11 +63,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const formatDate = (date?: Date) => {
+const formatDate = (date: Date | undefined, intl: IntlShape) => {
     if (!date) {
         return '';
     }
-    return date.toLocaleDateString(undefined, {
+    return date.toLocaleDateString(intl.locale, {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -75,6 +75,31 @@ const formatDate = (date?: Date) => {
 };
 
 type PickerTarget = 'since' | 'until' | undefined;
+
+type DateInputFieldProps = {
+    label: string;
+    date: Date | undefined;
+    placeholder: string;
+    onPress: () => void;
+    testID: string;
+    styles: ReturnType<typeof getStyleSheet>;
+    intl: IntlShape;
+};
+
+const DateInputField = ({label, date, placeholder, onPress, testID, styles, intl}: DateInputFieldProps) => (
+    <>
+        <Text style={styles.label}>{label}</Text>
+        <TouchableOpacity
+            onPress={onPress}
+            style={styles.dateBox}
+            testID={testID}
+        >
+            <Text style={date ? styles.dateText : styles.datePlaceholder}>
+                {date ? formatDate(date, intl) : placeholder}
+            </Text>
+        </TouchableOpacity>
+    </>
+);
 
 const DateRangePicker = ({onSubmit, onCancel}: Props) => {
     const intl = useIntl();
@@ -93,8 +118,12 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
         return since.getTime() <= until.getTime();
     }, [since, until]);
 
-    const openPicker = useCallback((target: 'since' | 'until') => {
-        setPickerTarget(target);
+    const openSincePicker = useCallback(() => {
+        setPickerTarget('since');
+    }, []);
+
+    const openUntilPicker = useCallback(() => {
+        setPickerTarget('until');
     }, []);
 
     const onChangeDate = useCallback((_: DateTimePickerEvent, date?: Date) => {
@@ -164,32 +193,26 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
             </View>
 
             {/* Start Date */}
-            <Text style={styles.label}>
-                {intl.formatMessage({id: 'agents.channel_summary.since', defaultMessage: 'Start'})}
-            </Text>
-            <TouchableOpacity
-                onPress={() => openPicker('since')}
-                style={styles.dateBox}
+            <DateInputField
+                label={intl.formatMessage({id: 'agents.channel_summary.since', defaultMessage: 'Start'})}
+                date={since}
+                placeholder={intl.formatMessage({id: 'agents.channel_summary.since_placeholder', defaultMessage: 'Select date'})}
+                onPress={openSincePicker}
                 testID='agents.channel_summary.date_from'
-            >
-                <Text style={since ? styles.dateText : styles.datePlaceholder}>
-                    {since ? formatDate(since) : intl.formatMessage({id: 'agents.channel_summary.since_placeholder', defaultMessage: 'Select date'})}
-                </Text>
-            </TouchableOpacity>
+                styles={styles}
+                intl={intl}
+            />
 
             {/* End Date */}
-            <Text style={styles.label}>
-                {intl.formatMessage({id: 'agents.channel_summary.until', defaultMessage: 'End'})}
-            </Text>
-            <TouchableOpacity
-                onPress={() => openPicker('until')}
-                style={styles.dateBox}
+            <DateInputField
+                label={intl.formatMessage({id: 'agents.channel_summary.until', defaultMessage: 'End'})}
+                date={until}
+                placeholder={intl.formatMessage({id: 'agents.channel_summary.until_placeholder', defaultMessage: 'Select date'})}
+                onPress={openUntilPicker}
                 testID='agents.channel_summary.date_to'
-            >
-                <Text style={until ? styles.dateText : styles.datePlaceholder}>
-                    {until ? formatDate(until) : intl.formatMessage({id: 'agents.channel_summary.until_placeholder', defaultMessage: 'Select date'})}
-                </Text>
-            </TouchableOpacity>
+                styles={styles}
+                intl={intl}
+            />
 
             {errorText && <Text style={styles.error}>{errorText}</Text>}
 
@@ -205,24 +228,12 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
                 />
             </View>
 
-            {/* Date Picker (iOS) */}
-            {pickerTarget && Platform.OS === 'ios' && (
+            {/* Date Picker */}
+            {pickerTarget && (
                 <DateTimePicker
                     value={(pickerTarget === 'since' ? since : until) || new Date()}
                     mode='date'
-                    display='spinner'
-                    onChange={onChangeDate}
-                    maximumDate={pickerTarget === 'since' ? until : new Date()}
-                    minimumDate={pickerTarget === 'until' ? since : undefined}
-                />
-            )}
-
-            {/* Date Picker (Android) */}
-            {pickerTarget && Platform.OS === 'android' && (
-                <DateTimePicker
-                    value={(pickerTarget === 'since' ? since : until) || new Date()}
-                    mode='date'
-                    display='calendar'
+                    display={Platform.select({ios: 'spinner', default: 'calendar'})}
                     onChange={onChangeDate}
                     maximumDate={pickerTarget === 'since' ? until : new Date()}
                     minimumDate={pickerTarget === 'until' ? since : undefined}
