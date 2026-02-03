@@ -142,24 +142,30 @@ export default function PostInput({
         scrollOffset,
         registerCursorPosition,
         registerPostInputCallbacks,
+        isInEmojiPickerTransition,
+        getPreservedCursorPosition,
+        clearCursorPositionPreservation,
     } = useKeyboardAnimationContext();
 
     // Register cursor position updates with context
+    // Always update cursorPositionRef, even when input accessory view is shown,
+    // so emoji insertion works correctly at cursor position
     useEffect(() => {
-        if (showInputAccessoryView) {
-            return;
-        }
         if (registerCursorPosition) {
-            registerCursorPosition(cursorPosition);
+            // Pass value length so registerCursorPosition can check if cursor is reset to end
+            registerCursorPosition(cursorPosition, value.length);
         }
-    }, [registerCursorPosition, cursorPosition, showInputAccessoryView]);
+    }, [registerCursorPosition, cursorPosition, showInputAccessoryView, value]);
 
     // Register updateValue and updateCursorPosition with context
     useEffect(() => {
         if (registerPostInputCallbacks) {
             registerPostInputCallbacks(updateValue, updateCursorPosition);
         }
-    }, [registerPostInputCallbacks, updateValue, updateCursorPosition]);
+
+        // updateValue and updateCursorPosition are stable setState functions, don't need to be in deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [registerPostInputCallbacks]);
 
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
     const {isProcessing} = useRewrite();
@@ -244,7 +250,11 @@ export default function PostInput({
         // This must happen before closing the emoji picker
         setIsEmojiSearchFocused(false);
 
-        // Close emoji picker immediately
+        const wasEmojiPickerOpen = showInputAccessoryView;
+        if (wasEmojiPickerOpen) {
+            updateCursorPosition(value.length);
+            clearCursorPositionPreservation?.();
+        }
         setShowInputAccessoryView(false);
 
         if (Platform.OS === 'android') {
@@ -315,6 +325,10 @@ export default function PostInput({
         setShowInputAccessoryView,
         showInputAccessoryView,
         lastKeyboardHeight,
+        updateCursorPosition,
+        clearCursorPositionPreservation,
+        value,
+        cursorPosition,
     ]);
 
     const handleAndroidKeyboardHide = useCallback(() => {
@@ -352,13 +366,36 @@ export default function PostInput({
     }, [intl, longMessageAlertShown, maxMessageLength]);
 
     const handlePostDraftSelectionChanged = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData> | null, fromHandleTextChange = false) => {
-        if (showInputAccessoryView && !fromHandleTextChange) {
-            return;
-        }
+        // Always update cursor position, even when input accessory view is shown,
+        // so emoji insertion works correctly at cursor position
         const cp = fromHandleTextChange ? cursorPosition : event!.nativeEvent.selection.end;
 
+        // Check if cursor is being reset to end when we're transitioning to emoji picker
+        // This happens when keyboard is dismissed - the TextInput selection resets to end
+        // Only block if we're actually in a transition period (emoji picker opening or just opened)
+        const isInTransition = isInEmojiPickerTransition?.();
+        const preservedPosition = isInTransition ? getPreservedCursorPosition?.() : null;
+
+        const isCursorAtEnd = cp === value.length;
+        const cursorPositionChanged = cp !== cursorPosition;
+        const hasPreservedPosition = preservedPosition !== null;
+        const preservedPositionChanged = preservedPosition !== cp;
+        const isResettingToEnd = isCursorAtEnd && cursorPositionChanged && hasPreservedPosition && preservedPositionChanged;
+        const isPreservedPositionWithinBounds = hasPreservedPosition && preservedPosition! < value.length;
+
+        // If we're opening emoji picker and cursor is being reset to end, ignore it and keep the preserved position
+        if (!fromHandleTextChange && isResettingToEnd && isInTransition && isPreservedPositionWithinBounds) {
+            return;
+        }
+
+        // When emoji picker is open, ignore cursor position updates that move to the end
+        // unless the value length changed (user typed something).
+        if (showInputAccessoryView && !fromHandleTextChange && isCursorAtEnd && cursorPositionChanged) {
+            return;
+        }
+
         updateCursorPosition(cp);
-    }, [showInputAccessoryView, cursorPosition, updateCursorPosition]);
+    }, [cursorPosition, updateCursorPosition, showInputAccessoryView, value.length, isInEmojiPickerTransition, getPreservedCursorPosition]);
 
     const handleTextChange = useCallback((newValue: string) => {
         if (!shouldProcessEvent(newValue)) {
