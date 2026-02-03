@@ -88,32 +88,6 @@ class RewriteStore {
     isRewriteProcessing(): boolean {
         return this.rewriteState.getValue().isProcessing;
     }
-
-    // =========================================================================
-    // Cleanup
-    // =========================================================================
-
-    /**
-     * Clear agents for a specific server
-     */
-    clearAgents(serverUrl: string) {
-        const subject = this.agentsSubjects.get(serverUrl);
-        if (subject) {
-            subject.next([]);
-        }
-    }
-
-    /**
-     * Clear all state (e.g., on logout)
-     */
-    clear() {
-        for (const subject of this.agentsSubjects.values()) {
-            subject.next([]);
-            subject.complete();
-        }
-        this.agentsSubjects.clear();
-        this.rewriteState.next({isProcessing: false, serverUrl: ''});
-    }
 }
 
 // Singleton instance
