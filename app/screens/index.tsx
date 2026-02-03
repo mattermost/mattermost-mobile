@@ -305,6 +305,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SCHEDULED_POST_OPTIONS:
             screen = withServerDatabase(require('@screens/scheduled_post_options').default);
             break;
+        case Screens.E2EE_DEVICES:
+            screen = withServerDatabase(require('@e2ee/screens/enabled_devices').default);
+            break;
     }
 
     if (!screen) {

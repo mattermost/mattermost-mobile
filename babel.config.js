@@ -23,6 +23,7 @@ module.exports = {
                 '@constants': './app/constants',
                 '@context': './app/context',
                 '@database': './app/database',
+                '@e2ee': './app/products/e2ee',
                 '@helpers': './app/helpers',
                 '@hooks': './app/hooks',
                 '@i18n': './app/i18n',

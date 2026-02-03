@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import E2EEHandler, {type E2EEHandlerMix} from '@e2ee/database/operators/handlers';
+
 import ServerDataOperatorBase from '@database/operator/server_data_operator/handlers';
 import CategoryHandler, {type CategoryHandlerMix} from '@database/operator/server_data_operator/handlers/category';
 import ChannelHandler, {type ChannelHandlerMix} from '@database/operator/server_data_operator/handlers/channel';
@@ -20,6 +22,7 @@ interface ServerDataOperator extends
     CategoryHandlerMix,
     ChannelHandlerMix,
     CustomProfileHandlerMix,
+    E2EEHandlerMix,
     GroupHandlerMix,
     PlaybookHandlerMix,
     PostHandlerMix,
@@ -34,6 +37,7 @@ class ServerDataOperator extends mix(ServerDataOperatorBase).with(
     CategoryHandler,
     ChannelHandler,
     CustomProfileHandler,
+    E2EEHandler,
     GroupHandler,
     PlaybookHandler,
     PostHandler,
