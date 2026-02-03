@@ -10,6 +10,7 @@ import {addColumns, createTable, schemaMigrations, unsafeExecuteSql} from '@nozb
 import {MM_TABLES} from '@constants/database';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 
+const {E2EE_ENABLED_DEVICES} = E2EE_TABLES;
 const {
     CHANNEL,
     CHANNEL_BOOKMARK,

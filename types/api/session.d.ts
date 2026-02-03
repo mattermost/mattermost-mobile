@@ -9,6 +9,8 @@ interface Session {
     user_id: string;
     props?: {
         os: string;
+        isMobile?: boolean;
+        mobile_version?: string;
         csrf: string;
     };
 }
