@@ -510,5 +510,51 @@ describe('RenamePlaybookRunBottomSheet', () => {
         expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, newSummary, true);
         expect(popTopScreen).toHaveBeenCalledWith(componentId);
     });
+
+    it('should hide summary input when summary editing is disabled', () => {
+        const props = getBaseProps(false);
+        const {queryByTestId, queryByText} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+
+        expect(queryByTestId('playbooks.playbook_run.edit.summary_input')).toBeNull();
+        expect(queryByText('Summary')).toBeNull();
+    });
+
+    it('should enable save button when name changes and summary editing is disabled', () => {
+        const props = getBaseProps(false);
+        const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+
+        const input = getByTestId('playbooks.playbook_run.rename.input');
+
+        act(() => {
+            fireEvent.changeText(input, 'New Playbook Run Title');
+        });
+
+        const updatedButton = {
+            ...mockRightButton,
+            enabled: true,
+        };
+        expect(setButtons).toHaveBeenCalledWith(componentId, {
+            rightButtons: [updatedButton],
+        });
+    });
+
+    it('should call updatePlaybookRun when summary editing is disabled', async () => {
+        const props = getBaseProps(false);
+        const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+
+        const input = getByTestId('playbooks.playbook_run.rename.input');
+        const newTitle = 'New Playbook Run Title';
+
+        act(() => {
+            fireEvent.changeText(input, newTitle);
+        });
+
+        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        await act(async () => {
+            await saveCallback();
+        });
+
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, currentSummary, false);
+    });
 });
 
