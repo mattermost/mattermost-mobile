@@ -457,7 +457,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
             await saveCallback();
         });
 
-        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, '');
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, '', true);
     });
 
     it('should disable save button when summary is reverted to original', () => {
@@ -507,7 +507,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
             await saveCallback();
         });
 
-        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, newSummary);
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, newSummary, true);
         expect(popTopScreen).toHaveBeenCalledWith(componentId);
     });
 });

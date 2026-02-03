@@ -120,17 +120,19 @@ const RenamePlaybookRunBottomSheet = ({
                 theme={theme}
                 autoFocus={true}
             />
-            <View style={styles.summaryInput}>
-                <FloatingTextInput
-                    label={summaryLabel}
-                    onChangeText={setSummary}
-                    testID='playbooks.playbook_run.edit.summary_input'
-                    value={summary}
-                    theme={theme}
-                    multiline={true}
-                    multilineInputHeight={100}
-                />
-            </View>
+            {canEditSummary && (
+                <View style={styles.summaryInput}>
+                    <FloatingTextInput
+                        label={summaryLabel}
+                        onChangeText={setSummary}
+                        testID='playbooks.playbook_run.edit.summary_input'
+                        value={summary}
+                        theme={theme}
+                        multiline={true}
+                        multilineInputHeight={100}
+                    />
+                </View>
+            )}
         </View>
     );
 };

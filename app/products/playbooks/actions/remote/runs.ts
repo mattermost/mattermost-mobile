@@ -156,7 +156,7 @@ export const updatePlaybookRun = async (serverUrl: string, playbookRunId: string
         await client.patchPlaybookRun(playbookRunId, updates);
 
         // Update local database
-        const result = await localUpdatePlaybookRun(serverUrl, playbookRunId, name, summary);
+        const result = await localUpdatePlaybookRun(serverUrl, playbookRunId, name, canEditSummary ? summary : undefined);
         if (result.error) {
             logDebug('[updatePlaybookRun] local update failed after successful API call', getFullErrorMessage(result.error));
             return result;
