@@ -6,7 +6,6 @@ import urlParse from 'url-parse';
 
 import {escapeRegex} from '@utils/markdown';
 import {safeDecodeURIComponent} from '@utils/url';
-import {ID_PATH_PATTERN, IDENTIFIER_PATH_PATTERN} from '@utils/url/path';
 
 import type {HighlightWithoutNotificationKey, SearchPattern, UserMentionKey} from '@typings/global/markdown';
 
@@ -437,16 +436,10 @@ export function parseCitationUrl(url: string, serverUrl?: string): {entityType: 
         }
     }
 
-    // Post ID regex: exactly 26 lowercase alphanumeric characters
-    const postIdPattern = new RegExp(`^${ID_PATH_PATTERN}$`);
-
-    // Channel/identifier pattern from path constants
-    const identifierPattern = new RegExp(`^${IDENTIFIER_PATH_PATTERN}$`);
-
     // Parse the path to determine entity type
     // Post permalink: /team/pl/postId (postId is exactly 26 chars)
-    const postMatch = /\/pl\/([a-z0-9]+)$/i.exec(pathname);
-    if (postMatch && postIdPattern.test(postMatch[1].toLowerCase())) {
+    const postMatch = /\/pl\/([a-z0-9]{26})$/i.exec(pathname);
+    if (postMatch) {
         return {
             entityType: 'POST',
             entityId: postMatch[1],
@@ -458,8 +451,8 @@ export function parseCitationUrl(url: string, serverUrl?: string): {entityType: 
     // Channel names can contain: lowercase letters, numbers, hyphens, underscores, periods, and colons
     // Note: entityId here is the channel NAME (from URL path), not the channel UUID.
     // The InlineEntityLink component handles looking up the actual channel ID.
-    const channelMatch = /\/channels\/([^/]+)$/.exec(pathname);
-    if (channelMatch && identifierPattern.test(channelMatch[1])) {
+    const channelMatch = /\/channels\/([@a-zA-Z\-_0-9][@a-zA-Z\-_0-9.:]*)$/.exec(pathname);
+    if (channelMatch) {
         return {
             entityType: 'CHANNEL',
             entityId: channelMatch[1],

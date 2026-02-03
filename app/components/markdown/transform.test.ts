@@ -3425,14 +3425,19 @@ describe('Components.Markdown.transform', () => {
 
             const walker = result.walker();
             let foundLink = false;
+            let foundInlineEntity = false;
             let e;
             while ((e = walker.next())) {
                 if (e.node.type === 'link') {
                     foundLink = true;
                     expect(e.node.destination).toBe(`http://example.com/team/pl/${validPostId1}`);
                 }
+                if (e.node.type === 'inline_entity_link') {
+                    foundInlineEntity = true;
+                }
             }
             expect(foundLink).toBe(true);
+            expect(foundInlineEntity).toBe(false);
         });
 
         it('should transform post citation links to inline_entity_link nodes', () => {
@@ -3441,6 +3446,7 @@ describe('Components.Markdown.transform', () => {
 
             const walker = result.walker();
             let foundInlineEntity = false;
+            let foundLink = false;
             let e;
             while ((e = walker.next())) {
                 if (e.node.type === 'inline_entity_link') {
@@ -3449,8 +3455,12 @@ describe('Components.Markdown.transform', () => {
                     expect(e.node.entityId).toBe(validPostId1);
                     expect(e.node.linkUrl).toBe(`http://localhost:8066/team/pl/${validPostId1}?view=citation`);
                 }
+                if (e.node.type === 'link') {
+                    foundLink = true;
+                }
             }
             expect(foundInlineEntity).toBe(true);
+            expect(foundLink).toBe(false);
         });
 
         it('should transform channel citation links to inline_entity_link nodes', () => {
@@ -3459,6 +3469,7 @@ describe('Components.Markdown.transform', () => {
 
             const walker = result.walker();
             let foundInlineEntity = false;
+            let foundLink = false;
             let e;
             while ((e = walker.next())) {
                 if (e.node.type === 'inline_entity_link') {
@@ -3466,8 +3477,12 @@ describe('Components.Markdown.transform', () => {
                     expect(e.node.entityType).toBe('CHANNEL');
                     expect(e.node.entityId).toBe('general');
                 }
+                if (e.node.type === 'link') {
+                    foundLink = true;
+                }
             }
             expect(foundInlineEntity).toBe(true);
+            expect(foundLink).toBe(false);
         });
 
         it('should handle multiple citation links in one document', () => {
@@ -3476,15 +3491,20 @@ describe('Components.Markdown.transform', () => {
 
             const walker = result.walker();
             const entityLinks: any[] = [];
+            const regularLinks: any[] = [];
             let e;
             while ((e = walker.next())) {
                 if (e.node.type === 'inline_entity_link') {
                     entityLinks.push(e.node);
                 }
+                if (e.node.type === 'link') {
+                    regularLinks.push(e.node);
+                }
             }
             expect(entityLinks.length).toBe(2);
             expect(entityLinks[0].entityId).toBe(validPostId1);
             expect(entityLinks[1].entityId).toBe(validPostId2);
+            expect(regularLinks.length).toBe(0);
         });
 
         it('should only process internal links when serverUrl is provided', () => {
@@ -3512,9 +3532,15 @@ describe('Components.Markdown.transform', () => {
             expect(entityLinks.length).toBe(1);
             expect(entityLinks[0].entityId).toBe(validPostId2);
 
+            // Verify the internal link is NOT a regular link
+            expect(regularLinks.some((link) => link.destination.includes(validPostId2))).toBe(false);
+
             // The external link should remain as a regular link
             expect(regularLinks.length).toBe(1);
             expect(regularLinks[0].destination).toBe(`http://external.com/team/pl/${validPostId1}?view=citation`);
+
+            // Verify the external link is NOT an inline_entity_link
+            expect(entityLinks.some((link) => link.entityId === validPostId1)).toBe(false);
         });
     });
 });
