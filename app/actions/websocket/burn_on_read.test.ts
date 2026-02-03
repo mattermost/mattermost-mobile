@@ -57,8 +57,147 @@ describe('WebSocket Burn on Read Actions', () => {
             await handleBoRPostRevealedEvent(serverUrl, msg);
 
             expect(mockedGetPostById).toHaveBeenCalledWith(expect.any(Object), 'post1');
-            expect(mockedHandlePostEdited).toHaveBeenCalledWith(serverUrl, msg);
             expect(mockedHandleNewPostEvent).not.toHaveBeenCalled();
+        });
+
+        it('should merge recipients from message with existing post recipients', async () => {
+            const existingPost = TestHelper.fakePostModel({
+                id: 'post1',
+                metadata: {recipients: ['user1', 'user2']},
+            });
+            mockedGetPostById.mockResolvedValue(existingPost);
+
+            const msgWithRecipients = {
+                data: {
+                    post: JSON.stringify(post),
+                    recipients: ['user3', 'user4'],
+                },
+            } as WebSocketMessage;
+
+            await handleBoRPostRevealedEvent(serverUrl, msgWithRecipients);
+
+            expect(mockedHandlePostEdited).toHaveBeenCalled();
+            const calledMsg = mockedHandlePostEdited.mock.calls[0][1];
+            const updatedPost = JSON.parse(calledMsg.data.post);
+            expect(updatedPost.metadata.recipients).toEqual(['user1', 'user2', 'user3', 'user4']);
+        });
+
+        it('should deduplicate recipients when merging', async () => {
+            const existingPost = TestHelper.fakePostModel({
+                id: 'post1',
+                metadata: {recipients: ['user1', 'user2']},
+            });
+            mockedGetPostById.mockResolvedValue(existingPost);
+
+            const msgWithDuplicates = {
+                data: {
+                    post: JSON.stringify(post),
+                    recipients: ['user2', 'user3'],
+                },
+            } as WebSocketMessage;
+
+            await handleBoRPostRevealedEvent(serverUrl, msgWithDuplicates);
+
+            expect(mockedHandlePostEdited).toHaveBeenCalled();
+            const calledMsg = mockedHandlePostEdited.mock.calls[0][1];
+            const updatedPost = JSON.parse(calledMsg.data.post);
+            expect(updatedPost.metadata.recipients).toEqual(['user1', 'user2', 'user3']);
+        });
+
+        it('should handle existing post without recipients metadata', async () => {
+            const existingPost = TestHelper.fakePostModel({
+                id: 'post1',
+                metadata: {},
+            });
+            mockedGetPostById.mockResolvedValue(existingPost);
+
+            const msgWithRecipients = {
+                data: {
+                    post: JSON.stringify(post),
+                    recipients: ['user1', 'user2'],
+                },
+            } as WebSocketMessage;
+
+            await handleBoRPostRevealedEvent(serverUrl, msgWithRecipients);
+
+            expect(mockedHandlePostEdited).toHaveBeenCalled();
+            const calledMsg = mockedHandlePostEdited.mock.calls[0][1];
+            const updatedPost = JSON.parse(calledMsg.data.post);
+            expect(updatedPost.metadata.recipients).toEqual(['user1', 'user2']);
+        });
+
+        it('should preserve existing post metadata when adding recipients', async () => {
+            const postWithMetadata = TestHelper.fakePost({
+                id: 'post1',
+                channel_id: 'channel1',
+                user_id: 'user1',
+                create_at: 12345,
+                message: 'hello',
+                metadata: {embeds: [{type: 'permalink'} as PostEmbed]},
+            });
+            const existingPost = TestHelper.fakePostModel({
+                id: 'post1',
+                metadata: {recipients: ['user1']},
+            });
+            mockedGetPostById.mockResolvedValue(existingPost);
+
+            const msgWithMetadata = {
+                data: {
+                    post: JSON.stringify(postWithMetadata),
+                    recipients: ['user2'],
+                },
+            } as WebSocketMessage;
+
+            await handleBoRPostRevealedEvent(serverUrl, msgWithMetadata);
+
+            expect(mockedHandlePostEdited).toHaveBeenCalled();
+            const calledMsg = mockedHandlePostEdited.mock.calls[0][1];
+            const updatedPost = JSON.parse(calledMsg.data.post);
+            expect(updatedPost.metadata.embeds).toEqual([{type: 'link'}]);
+            expect(updatedPost.metadata.recipients).toEqual(['user1', 'user2']);
+        });
+
+        it('should handle empty recipients array in websocket message', async () => {
+            const existingPost = TestHelper.fakePostModel({
+                id: 'post1',
+                metadata: {recipients: ['user1', 'user2']},
+            });
+            mockedGetPostById.mockResolvedValue(existingPost);
+
+            const msgWithEmptyRecipients = {
+                data: {
+                    post: JSON.stringify(post),
+                    recipients: [],
+                },
+            } as WebSocketMessage;
+
+            await handleBoRPostRevealedEvent(serverUrl, msgWithEmptyRecipients);
+
+            expect(mockedHandlePostEdited).toHaveBeenCalled();
+            const calledMsg = mockedHandlePostEdited.mock.calls[0][1];
+            const updatedPost = JSON.parse(calledMsg.data.post);
+            expect(updatedPost.metadata.recipients).toEqual(['user1', 'user2']);
+        });
+
+        it('should handle undefined recipients in websocket message', async () => {
+            const existingPost = TestHelper.fakePostModel({
+                id: 'post1',
+                metadata: {recipients: ['user1', 'user2']},
+            });
+            mockedGetPostById.mockResolvedValue(existingPost);
+
+            const msgWithoutRecipients = {
+                data: {
+                    post: JSON.stringify(post),
+                },
+            } as WebSocketMessage;
+
+            await handleBoRPostRevealedEvent(serverUrl, msgWithoutRecipients);
+
+            expect(mockedHandlePostEdited).toHaveBeenCalled();
+            const calledMsg = mockedHandlePostEdited.mock.calls[0][1];
+            const updatedPost = JSON.parse(calledMsg.data.post);
+            expect(updatedPost.metadata.recipients).toEqual(['user1', 'user2']);
         });
 
         it('should handle malformed post data gracefully', async () => {
