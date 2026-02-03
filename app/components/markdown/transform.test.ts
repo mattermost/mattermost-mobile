@@ -3410,6 +3410,78 @@ describe('Components.Markdown.transform', () => {
                 linkUrl: encodedUrl,
             });
         });
+
+        describe('non-internal URLs with similar shape', () => {
+            const serverUrl = 'http://localhost:8066';
+
+            it('should reject external URLs that mimic internal link structure', () => {
+                // External server with same path structure as a Mattermost permalink
+                const result = parseCitationUrl(
+                    `http://evil-site.com/team/pl/${validPostId1}?view=citation`,
+                    serverUrl,
+                );
+                expect(result).toBeNull();
+            });
+
+            it('should reject URLs from similar-looking domains', () => {
+                // Subdomain that might try to look like the real server
+                const result = parseCitationUrl(
+                    `http://localhost.evil.com:8066/team/pl/${validPostId1}?view=citation`,
+                    serverUrl,
+                );
+                expect(result).toBeNull();
+            });
+
+            it('should reject URLs with matching path but different protocol handling', () => {
+                // Same structure but on a different server entirely
+                const result = parseCitationUrl(
+                    'http://mattermost-lookalike.com/team/channels/general?view=citation',
+                    serverUrl,
+                );
+                expect(result).toBeNull();
+            });
+        });
+
+        describe('URLs with escaped slashes', () => {
+            it('should handle URLs with encoded slashes in channel names', () => {
+                // Channel name with encoded slash - should not match since %2F is not a valid channel character
+                const result = parseCitationUrl('http://localhost:8066/team/channels/channel%2Fname?view=citation');
+
+                // The URL decodes to channel/name which has a slash, making it invalid
+                expect(result).toBeNull();
+            });
+
+            it('should handle URLs with encoded characters that decode to valid patterns', () => {
+                // %2D is encoded hyphen, which should decode and work
+                const result = parseCitationUrl('http://localhost:8066/team/channels/my%2Dchannel?view=citation');
+                expect(result).toEqual({
+                    entityType: 'CHANNEL',
+                    entityId: 'my-channel',
+                    linkUrl: 'http://localhost:8066/team/channels/my%2Dchannel?view=citation',
+                });
+            });
+
+            it('should handle URLs with escaped slashes that decode to valid paths', () => {
+                // URL with %2F in team name decodes to a valid path structure
+                // After decoding: /team/evil/channels/general - the channel part is still valid
+                const result = parseCitationUrl('http://localhost:8066/team%2Fevil/channels/general?view=citation');
+
+                // The channel regex matches at the end of the decoded path
+                expect(result).toEqual({
+                    entityType: 'CHANNEL',
+                    entityId: 'general',
+                    linkUrl: 'http://localhost:8066/team%2Fevil/channels/general?view=citation',
+                });
+            });
+
+            it('should reject URLs where escaped slashes break the expected pattern', () => {
+                // Escaped slash in the post ID itself - after decoding this creates an invalid path
+                const result = parseCitationUrl('http://localhost:8066/team/pl/abc%2F123?view=citation');
+
+                // The post ID pattern requires exactly 26 alphanumeric chars, abc/123 doesn't match
+                expect(result).toBeNull();
+            });
+        });
     });
 
     describe('processInlineEntities', () => {
