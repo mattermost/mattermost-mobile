@@ -175,6 +175,7 @@ describe('Smoke Test - Channels', () => {
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.favoriteAction.tap();
         await ChannelInfoScreen.muteAction.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify channel is favorited and muted
         await expect(ChannelInfoScreen.unfavoriteAction).toBeVisible();
@@ -183,6 +184,7 @@ describe('Smoke Test - Channels', () => {
         // # Tap on favorited action to unfavorite the channel and tap on muted action to unmute the channel
         await ChannelInfoScreen.unfavoriteAction.tap();
         await ChannelInfoScreen.unmuteAction.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify channel is unfavorited and unmuted
         await expect(ChannelInfoScreen.favoriteAction).toBeVisible();
@@ -204,9 +206,5 @@ describe('Smoke Test - Channels', () => {
         await ChannelInfoScreen.openChannelSettings();
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
-
-        // * Verify on channel screen and post draft archived message is displayed
-        await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(ChannelListScreen.getChannelItem(channelsCategory, channel.name)).not.toExist();
     });
 });

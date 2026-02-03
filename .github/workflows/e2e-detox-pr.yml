@@ -1,12 +1,11 @@
 # Can be used to run Detox E2E tests on pull requests for the Mattermost mobile app with low bandwidth
 # by using 'E2E iOS tests for PR (LBW 1)' instead.
-name: Detox E2E Tests PR
+name: E2E
 
 on:
   pull_request:
     branches:
       - main
-      - feature_schedule_posts
     types:
       - labeled
 
@@ -15,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  INTUNE_ENABLED: 1
+  INTUNE_ENABLED: 'true'
 
 jobs:
   update-initial-status-ios:
@@ -49,7 +48,7 @@ jobs:
 
   build-ios-simulator:
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
-    runs-on: macos-15
+    runs-on: macos-26
     needs:
       - update-initial-status-ios
     steps:
@@ -59,8 +58,12 @@ jobs:
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
         with:
-          intune-enabled: 'true'
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+
+      - name: Set .env with RUNNING_E2E=true
+        run: |
+          echo "RUNNING_E2E=true" > .env
 
       - name: Build iOS Simulator
         env:
@@ -75,7 +78,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-build-simulator-${{ github.run_id }}
-          path: Mattermost-simulator-x86_64.app.zip
+          path: Mattermost-simulator-*.app.zip
 
   build-android-apk:
     runs-on: ubuntu-latest-8-cores
@@ -122,7 +125,7 @@ jobs:
         
   run-ios-tests-on-pr:
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
-    name: iOS Mobile Tests on PR
+    name: iOS
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
@@ -134,7 +137,7 @@ jobs:
 
   run-android-tests-on-pr:
     if: contains(github.event.label.name, 'E2E Android tests for PR')
-    name: Android Mobile Tests on PR
+    name: Android
     uses: ./.github/workflows/e2e-android-template.yml
     needs:
       - build-android-apk
