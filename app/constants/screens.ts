@@ -29,6 +29,7 @@ export const CUSTOM_STATUS = 'CustomStatus';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const DRAFT = 'Draft';
 export const DRAFT_SCHEDULED_POST_OPTIONS = 'DraftScheduledPostOptions';
+export const E2EE_DEVICES = 'E2EEDevices';
 export const EDIT_POST = 'EditPost';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
@@ -117,6 +118,7 @@ export default {
     CUSTOM_STATUS,
     CUSTOM_STATUS_CLEAR_AFTER,
     DRAFT_SCHEDULED_POST_OPTIONS,
+    E2EE_DEVICES,
     EDIT_POST,
     EDIT_PROFILE,
     EDIT_SERVER,

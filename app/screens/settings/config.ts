@@ -58,6 +58,10 @@ const messages = defineMessages({
         defaultMessage: 'Advanced Settings',
         id: 'general_settings.advanced_settings',
     },
+    e2ee_devices: {
+        defaultMessage: 'End-to-End Encryption Devices',
+        id: 'general_settings.e2ee_devices',
+    },
     about: {
         defaultMessage: 'About {appTitle}',
         id: 'general_settings.about',
@@ -118,6 +122,12 @@ export const SettingOptionConfig: Record<string, SettingConfigDetails> = {
         i18nId: messages.advanced_settings.id,
         icon: 'tune',
         testID: messages.advanced_settings.id,
+    },
+    e2ee_devices: {
+        defaultMessage: messages.e2ee_devices.defaultMessage,
+        i18nId: messages.e2ee_devices.id,
+        icon: 'lock-outline',
+        testID: messages.e2ee_devices.id,
     },
     about: {
         defaultMessage: messages.about.defaultMessage,

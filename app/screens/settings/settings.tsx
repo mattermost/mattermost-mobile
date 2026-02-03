@@ -55,7 +55,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
         setButtons(componentId, {
             leftButtons: [closeButton],
         });
-    }, []);
+    }, [closeButton, componentId]);
 
     useAndroidHardwareBackHandler(componentId, close);
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, []);
@@ -70,6 +70,13 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
     const goToDisplaySettings = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.SETTINGS_DISPLAY;
         const title = intl.formatMessage({id: 'settings.display', defaultMessage: 'Display'});
+
+        goToScreen(screen, title);
+    }, [intl]));
+
+    const goToE2EEDevices = usePreventDoubleTap(useCallback(() => {
+        const screen = Screens.E2EE_DEVICES;
+        const title = intl.formatMessage({id: 'settings.e2ee_devices', defaultMessage: 'End-to-End Encryption Devices'});
 
         goToScreen(screen, title);
     }, [intl]));
@@ -110,6 +117,11 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
                 onPress={goToAdvancedSettings}
                 optionName='advanced_settings'
                 testID='settings.advanced_settings.option'
+            />
+            <SettingItem
+                onPress={goToE2EEDevices}
+                optionName='e2ee_devices'
+                testID='settings.e2ee_devices.option'
             />
             <SettingItem
                 icon='information-outline'
