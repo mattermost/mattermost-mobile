@@ -68,6 +68,8 @@ const ClientAgents = (superclass: any) => class extends superclass {
             true,
         ) as RewriteResponse;
 
+        // Handle cases where the AI returns plain text instead of the expected JSON format.
+        // If rewritten_text is undefined, treat the entire response as the rewritten message.
         if (response.rewritten_text === undefined) {
             return response as unknown as string;
         }
