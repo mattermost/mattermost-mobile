@@ -94,7 +94,7 @@ export async function handleBoRPostAllRevealed(serverUrl: string, msg: WebSocket
         }
 
         const currentUser = await getCurrentUser(database);
-        if (!isOwnBoRPost(post, currentUser)) {
+        if (!isOwnBoRPost(post, currentUser?.id)) {
             return null;
         }
 
