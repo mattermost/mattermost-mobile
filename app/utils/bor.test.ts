@@ -100,7 +100,7 @@ describe('BoR utility functions', () => {
                 userId: 'user123',
             } as PostModel;
 
-            expect(isOwnBoRPost(ownBorPost, mockUser)).toBe(true);
+            expect(isOwnBoRPost(ownBorPost, mockUser.id)).toBe(true);
         });
 
         it('should return false for BoR posts not owned by current user', () => {
@@ -109,7 +109,7 @@ describe('BoR utility functions', () => {
                 userId: 'user456',
             } as PostModel;
 
-            expect(isOwnBoRPost(othersBorPost, mockUser)).toBe(false);
+            expect(isOwnBoRPost(othersBorPost, mockUser.id)).toBe(false);
         });
 
         it('should return false for non-BoR posts', () => {
@@ -118,7 +118,7 @@ describe('BoR utility functions', () => {
                 userId: 'user123',
             } as PostModel;
 
-            expect(isOwnBoRPost(ownRegularPost, mockUser)).toBe(false);
+            expect(isOwnBoRPost(ownRegularPost, mockUser.id)).toBe(false);
         });
 
         it('should return false when no current user is provided', () => {
