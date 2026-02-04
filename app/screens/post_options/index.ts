@@ -3,7 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$, Observable} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
@@ -148,8 +148,9 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         }),
     );
 
-    const canDelete = combineLatest([canDeletePostPermission, channelIsArchived, channelIsReadOnly, canPostPermission]).pipe(switchMap(([permission, isArchived, isReadOnly, canPost]) => {
-        return of$(permission && !isArchived && !isReadOnly && canPost);
+    const canDelete = combineLatest([canDeletePostPermission, channelIsArchived, channelIsReadOnly, canPostPermission, currentUser]).pipe(switchMap(([permission, isArchived, isReadOnly, canPost, user]) => {
+        const canDeleteBoRPost = borPost ? post.userId === user?.id : true;
+        return of$(permission && !isArchived && !isReadOnly && canPost && canDeleteBoRPost);
     }));
 
     const thread = observeIsCRTEnabled(database).pipe(
@@ -174,6 +175,11 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         }),
     );
 
+    const currentUserId = currentUser.pipe(
+        switchMap((u) => of$(u?.id)),
+        distinctUntilChanged(),
+    );
+
     return {
         canMarkAsUnread,
         canAddReaction,
@@ -189,6 +195,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         isBoRPost: of$(borPost),
         showBoRReadReceipts,
         borReceiptData,
+        currentUserId,
     };
 });
 
