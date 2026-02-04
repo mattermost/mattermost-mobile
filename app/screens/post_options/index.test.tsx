@@ -28,7 +28,38 @@ describe('PostOptions', () => {
         database = server.database;
     });
 
-    it('should show limited options for unrevealed BoR post', async () => {
+    it('should show limited options for own BoR post', async () => {
+        const unrevealedBoRPost = TestHelper.fakePostModel({
+            type: PostTypes.BURN_ON_READ,
+            channelId: TestHelper.basicChannel!.id,
+            userId: TestHelper.basicUser!.id,
+        });
+
+        renderWithEverything(
+            <PostOptions
+                post={unrevealedBoRPost}
+                serverUrl={serverUrl}
+                showAddReaction={true}
+                sourceScreen={'DraftScheduledPostOptions'}
+                componentId={'DraftScheduledPostOptions'}
+            />,
+            {database},
+        );
+
+        await waitFor(() => {
+            expect(screen.queryByText('Save')).toBeVisible();
+        });
+
+        expect(screen.queryByText('Copy Link')).toBeVisible();
+
+        expect(screen.queryByText('Pin to Channel')).not.toBeVisible();
+        expect(screen.queryByText('Copy Text')).not.toBeVisible();
+        expect(screen.queryByText('Edit')).not.toBeVisible();
+        expect(screen.queryByText('Reply')).not.toBeVisible();
+        expect(screen.queryByText('Follow Message')).not.toBeVisible();
+    });
+
+    it('should show limited options for received unrevealed BoR post', async () => {
         const unrevealedBoRPost = TestHelper.fakePostModel({
             type: PostTypes.BURN_ON_READ,
             channelId: TestHelper.basicChannel!.id,
@@ -54,9 +85,8 @@ describe('PostOptions', () => {
             expect(screen.getByText('Mark as Unread')).toBeVisible();
         });
 
-        expect(screen.queryByText('Copy Link')).toBeVisible();
-        expect(screen.queryByText('Save')).toBeVisible();
-
+        expect(screen.queryByText('Copy Link')).not.toBeVisible();
+        expect(screen.queryByText('Save')).not.toBeVisible();
         expect(screen.queryByText('Pin to Channel')).not.toBeVisible();
         expect(screen.queryByText('Copy Text')).not.toBeVisible();
         expect(screen.queryByText('Edit')).not.toBeVisible();
@@ -64,7 +94,7 @@ describe('PostOptions', () => {
         expect(screen.queryByText('Follow Message')).not.toBeVisible();
     });
 
-    it('should show limited options for revealed BoR post', async () => {
+    it('should show limited options for someone else\'s revealed BoR post', async () => {
         const unrevealedBoRPost = TestHelper.fakePostModel({
             type: PostTypes.BURN_ON_READ,
             channelId: TestHelper.basicChannel!.id,
@@ -91,11 +121,10 @@ describe('PostOptions', () => {
 
         await waitFor(() => {
             expect(screen.getByText('Mark as Unread')).toBeVisible();
+            expect(screen.queryByText('Save')).toBeVisible();
         });
 
-        expect(screen.queryByText('Copy Link')).toBeVisible();
-        expect(screen.queryByText('Save')).toBeVisible();
-
+        expect(screen.queryByText('Copy Link')).not.toBeVisible();
         expect(screen.queryByText('Copy Text')).not.toBeVisible();
         expect(screen.queryByText('Pin to Channel')).not.toBeVisible();
         expect(screen.queryByText('Edit')).not.toBeVisible();
