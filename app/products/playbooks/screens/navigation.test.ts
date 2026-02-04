@@ -610,7 +610,7 @@ describe('Playbooks Navigation', () => {
             const playbookRunId = 'run-id-123';
             const canEditSummary = true;
 
-            await goToEditPlaybookRun(mockIntl, Preferences.THEMES.denim, currentTitle, currentSummary, playbookRunId, canEditSummary);
+            await goToEditPlaybookRun(mockIntl, Preferences.THEMES.denim, currentTitle, currentSummary, playbookRunId, {canEditSummary});
 
             expect(mockIntl.formatMessage).toHaveBeenCalledWith({
                 id: 'playbooks.playbook_run.edit.title',

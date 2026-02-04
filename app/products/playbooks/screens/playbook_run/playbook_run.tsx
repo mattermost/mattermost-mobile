@@ -267,7 +267,7 @@ export default function PlaybookRun({
             return;
         }
 
-        goToEditPlaybookRun(intl, theme, playbookRun.name, playbookRun.summary, playbookRun.id, canEditSummary);
+        goToEditPlaybookRun(intl, theme, playbookRun.name, playbookRun.summary, playbookRun.id, {canEditSummary});
     }, [intl, theme, playbookRun, canEditSummary]);
 
     const handleFinishRun = useCallback(() => {

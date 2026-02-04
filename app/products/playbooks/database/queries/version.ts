@@ -68,9 +68,7 @@ export async function fetchIsSummaryEditEnabled(database: Database) {
 }
 
 export function observeIsSummaryEditEnabled(database: Database) {
-    return database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).query(
-        Q.where('id', SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION),
-    ).observeWithColumns(['value']).pipe(
+    return queryPlaybooksVersion(database).observeWithColumns(['value']).pipe(
         switchMap((systems: SystemModel[]) => {
             return of$(isSummaryEditEnabledFromSystemModel(systems));
         }),

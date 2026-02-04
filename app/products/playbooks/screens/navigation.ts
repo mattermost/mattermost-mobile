@@ -129,14 +129,19 @@ export async function goToEditChecklistItem(
     }, options);
 }
 
+export type GoToEditPlaybookRunOptions = {
+    canEditSummary?: boolean;
+};
+
 export async function goToEditPlaybookRun(
     intl: IntlShape,
     theme: Theme,
     currentTitle: string,
     currentSummary: string,
     playbookRunId: string,
-    canEditSummary: boolean,
+    options?: GoToEditPlaybookRunOptions,
 ) {
+    const {canEditSummary = true} = options ?? {};
     const title = intl.formatMessage({id: 'playbooks.playbook_run.edit.title', defaultMessage: 'Edit playbook run'});
     goToScreen(Screens.PLAYBOOK_RENAME_RUN, title, {
         currentTitle,

@@ -656,7 +656,7 @@ describe('PlaybookRun', () => {
             'Test Playbook Run',
             'Test summary',
             props.playbookRun!.id,
-            true, // canEditSummary
+            {canEditSummary: true},
         );
     });
 });
