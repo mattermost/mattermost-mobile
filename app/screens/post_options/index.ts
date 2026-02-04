@@ -159,7 +159,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
 
     const showBoRReadReceipts = combineLatest([currentUser]).pipe(
         switchMap(([user]) => {
-            return of$(isOwnBoRPost(post, user));
+            return of$(isOwnBoRPost(post, user?.id));
         }),
     );
 
