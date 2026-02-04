@@ -20,7 +20,7 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
-import { Alert } from '@support/ui/component';
+import {Alert} from '@support/ui/component';
 import {
     BrowseChannelsScreen,
     ChannelInfoScreen,

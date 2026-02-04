@@ -14,9 +14,11 @@
  * - MM-T3199: RN apps Edit public channel
  * - MM-T3206: RN apps Edit private channel
  * - MM-T854: RN apps Channel can be created using 2 non-latin characters
+ * - MM-T867: RN apps Copying channel header text
+ * - MM-T865: RN apps Copying channel purpose text
  */
 
-import {Setup} from '@support/server_api';
+import {Channel, Setup} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -37,15 +39,31 @@ describe('Channels', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testUser: any;
+    let testTeam: any;
     let publicChannelName: string;
     let publicChannelDisplayName: string;
     let privateChannelName: string;
     let privateChannelDisplayName: string;
+    let channelWithMetadata: any;
 
     beforeAll(async () => {
-        const {user} = await Setup.apiInit(siteOneUrl);
+        const {user, team} = await Setup.apiInit(siteOneUrl);
         testUser = user;
+        testTeam = team;
 
+        // Create a channel with header and purpose for copy tests
+        const {channel: metadataChannel} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: testTeam.id,
+            name: `channel-metadata-${getRandomId()}`,
+            displayName: `Channel Metadata ${getRandomId()}`,
+            type: 'O',
+            header: 'This is test header',
+            purpose: 'Test purpose for copying',
+        });
+        channelWithMetadata = metadataChannel;
+
+        await wait(timeouts.THREE_SEC);
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channelWithMetadata.id);
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
     });
@@ -207,11 +225,52 @@ describe('Channels', () => {
         await wait(timeouts.ONE_SEC);
 
         await CreateOrEditChannelScreen.createButton.tap();
+
         await wait(timeouts.TWO_SEC);
+
+        await ChannelScreen.dismissScheduledPostTooltip();
 
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(nonLatinChannelName);
 
+        await ChannelScreen.back();
+    });
+
+    it('MM-T867 - RN apps Copying channel header text', async () => {
+        // # Navigate to the channel with metadata
+        await ChannelScreen.open(channelsCategory, channelWithMetadata.name);
+        await ChannelInfoScreen.open();
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify header is visible
+        await expect(ChannelInfoScreen.extraHeader).toBeVisible();
+
+        // # Test long-press and cancel flow
+        await ChannelInfoScreen.cancelCopyChannelHeader(channelWithMetadata.header);
+
+        // * Verify we're still on channel info screen
+        await expect(ChannelInfoScreen.channelInfoScreen).toBeVisible();
+
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
+    });
+
+    it('MM-T865 - RN apps Copying channel purpose text', async () => {
+        // # Navigate to the channel with metadata
+        await ChannelScreen.open(channelsCategory, channelWithMetadata.name);
+        await ChannelInfoScreen.open();
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify purpose is visible
+        await expect(ChannelInfoScreen.publicPrivateTitlePurpose).toBeVisible();
+
+        // # Test long-press and cancel flow
+        await ChannelInfoScreen.cancelCopyChannelPurpose(channelWithMetadata.purpose);
+
+        // * Verify we're still on channel info screen
+        await expect(ChannelInfoScreen.channelInfoScreen).toBeVisible();
+
+        await ChannelInfoScreen.close();
         await ChannelScreen.back();
     });
 });

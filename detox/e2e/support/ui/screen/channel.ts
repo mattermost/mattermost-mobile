@@ -153,13 +153,13 @@ class ChannelScreen {
     dismissScheduledPostTooltip = async () => {
         // Try to close scheduled post tooltip if it exists (try both regular and admin account versions)
         try {
-            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.ONE_SEC);
+            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
             await this.scheduledPostTooltipCloseButton.tap();
             await wait(timeouts.HALF_SEC);
         } catch {
             // Try admin account version
             try {
-                await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.ONE_SEC);
+                await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.FOUR_SEC);
                 await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
                 await wait(timeouts.HALF_SEC);
             } catch {

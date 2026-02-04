@@ -14,6 +14,7 @@
  * - MM-T3196: RN apps Manage members in channel
  * - MM-T3204: RN apps Add user to private channel
  * - MM-T3205: RN apps Remove user from private channel
+ * - MM-T878: RN apps View Members in GM
  */
 
 import {Channel, Setup, Team, User} from '@support/server_api';
@@ -22,26 +23,31 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
+    AddMembersScreen,
     ChannelInfoScreen,
     ChannelScreen,
+    CreateDirectMessageScreen,
     HomeScreen,
     LoginScreen,
+    ManageChannelMembersScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testUser: any;
     let testTeam: any;
+    let testChannel: any;
 
     beforeAll(async () => {
-        const {user, team} = await Setup.apiInit(siteOneUrl);
+        const {user, team, channel} = await Setup.apiInit(siteOneUrl);
         testUser = user;
         testTeam = team;
+        testChannel = channel;
 
-        // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
     });
@@ -52,313 +58,238 @@ describe('Channels', () => {
     });
 
     it('MM-T3195 - RN apps Add members to channel', async () => {
-        // # Setup: Create a test channel and a new user to add
-        const channelName = `add-members-${getRandomId()}`;
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
-            teamId: testTeam.id,
-            name: channelName,
-            displayName: channelName,
-            type: 'O',
-        });
-
+        // # Create a new user and add to team
         const {user: newUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'addmember'});
         await Team.apiAddUserToTeam(siteOneUrl, newUser.id, testTeam.id);
 
-        // Navigate to the channel
-        await ChannelScreen.open('public', channel.display_name);
+        // # Open default test channel
+        await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // # Step 1: Tap a channel title to view channel info, and note the number of channel members next to Manage Members
+        // # Open channel info and tap add members
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
 
-        // # Step 2: Tap on "Add members", observe list of users on the server
         await expect(ChannelInfoScreen.addMembersAction).toBeVisible();
         await ChannelInfoScreen.addMembersAction.tap();
         await wait(timeouts.TWO_SEC);
 
-        // # Step 3: Tap on "Search", observe keyboard opens
-        // Search input should be available
-        const addMembersSearchInput = element(by.id('add_members.search_bar.search.input'));
-        await expect(addMembersSearchInput).toBeVisible();
+        // # Dismiss tutorial if present
+        await AddMembersScreen.dismissTutorial();
+        await AddMembersScreen.toBeVisible();
 
-        // # Step 4: Type in the name of the user to be added, observe user list filters accordingly
-        await addMembersSearchInput.typeText(newUser.username);
-        await wait(timeouts.TWO_SEC);
+        // # Search and add user
+        await AddMembersScreen.searchAndAddUser(newUser.username, newUser.id);
 
-        // # Step 5: Tap on the circle to the left of the user's name (first tap may just close keyboard; may have to tap again), observe the circle next to their name appears selected
-        const userItem = element(by.id(`add_members.user_list.user_item.${newUser.id}.${newUser.id}`));
-        await waitFor(userItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await userItem.tap();
-        await wait(timeouts.ONE_SEC);
-
-        // # Step 6: Tap on "add" at the top right of the screen
-        const addButton = element(by.id('add_members.add.button'));
-        await expect(addButton).toBeVisible();
-        await addButton.tap();
-        await wait(timeouts.TWO_SEC);
-
-        // * The user is added to the channel
-        // * System message should display in the channel showing which members were added to the channel.
+        // * Verify user added system message appears
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 
-        // Verify system message about user being added
         const systemMessage = `${newUser.username} added to the channel by ${testUser.username}`;
         await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
-            toBeVisible().
-            whileElement(by.id('post_list.flat_list')).
-            scroll(50, 'down');
-
-        // Go back to channel list
+            toBeVisible();
         await ChannelScreen.back();
     });
 
     it('MM-T856 - Add existing users to public channel from drop-down Add Members', async () => {
-        // # Setup: Create test channel and user
-        const channelName = `add-users-${getRandomId()}`;
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
-            teamId: testTeam.id,
-            name: channelName,
-            displayName: channelName,
-            type: 'O',
-        });
-
-        // # Step 1: In another window/browser, log in as another user, who you want to add to the public channel [user2]
+        // # Create a new user and add to team
         const {user: user2} = await User.apiCreateUser(siteOneUrl, {prefix: 'user2'});
         await Team.apiAddUserToTeam(siteOneUrl, user2.id, testTeam.id);
 
-        // # Step 2: As user1 in your main browser or device, view a public channel other than Town Square or Off-Topic (can create a new channel if needed)
-        await ChannelScreen.open('public', channel.display_name);
+        // # Open default test channel
+        await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // # Step 3: Click the "v" to the right of the channel name at the top of the center panel (mobile apps tap the channel name)
+        // # Open channel info and tap add members
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
 
-        // # Step 4: Click or tap "Add Members" and search for 'user2'
         await expect(ChannelInfoScreen.addMembersAction).toBeVisible();
         await ChannelInfoScreen.addMembersAction.tap();
         await wait(timeouts.TWO_SEC);
 
-        const searchInput = element(by.id('add_members.search_bar.search.input'));
-        await expect(searchInput).toBeVisible();
-        await searchInput.typeText(user2.username);
-        await wait(timeouts.TWO_SEC);
+        // # Dismiss tutorial if present and search and add user
+        await AddMembersScreen.toBeVisible();
+        await AddMembersScreen.dismissTutorial();
+        await AddMembersScreen.searchAndAddUser(user2.username, user2.id);
 
-        // # Step 5: Select the member [user2] you want to add to the channel and observe that the user is added to the modal text box or on mobile has check mark next to the name Verify status icon displays on the user's profile picture on the search results list
-        // * Selected user is removed from the list as soon as it is selected to be added
-        const userItem = element(by.id(`add_members.user_list.user_item.${user2.id}.${user2.id}`));
-        await waitFor(userItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await userItem.tap();
-        await wait(timeouts.ONE_SEC);
-
-        // Add the user
-        const addButton = element(by.id('add_members.add.button'));
-        await expect(addButton).toBeVisible();
-        await addButton.tap();
-        await wait(timeouts.TWO_SEC);
-
-        // * System message posts in channel for each user added
+        // * Verify user added system message appears
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 
         const systemMessage = `${user2.username} added to the channel by ${testUser.username}`;
         await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
-            toBeVisible().
-            whileElement(by.id('post_list.flat_list')).
-            scroll(50, 'down');
-
-        // Go back to channel list
+            toBeVisible();
         await ChannelScreen.back();
     });
 
     it('MM-T3196 - RN apps Manage members in channel', async () => {
-        // # Setup: Create a test channel and add a user to it
-        const channelName = `manage-members-${getRandomId()}`;
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
-            teamId: testTeam.id,
-            name: channelName,
-            displayName: channelName,
-            type: 'O',
-        });
-
+        // # Create a new user, add to team and channel
         const {user: memberUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'member'});
         await Team.apiAddUserToTeam(siteOneUrl, memberUser.id, testTeam.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, memberUser.id, channel.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, memberUser.id, testChannel.id);
 
-        // Navigate to the channel
-        await ChannelScreen.open('public', channel.display_name);
+        // # Open default test channel
+        await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // # Step 1: In channel info screen, note the number of users in the channel
+        // # Open channel info and tap members option
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
 
-        // # Step 2: Tap on "Manage members"
         await expect(ChannelInfoScreen.membersOption).toBeVisible();
         await ChannelInfoScreen.membersOption.tap();
+
+        await wait(timeouts.TWO_SEC);
+        await element(by.text(isAndroid()? 'MANAGE': 'Manage')).tap();
         await wait(timeouts.TWO_SEC);
 
-        // # Step 3: Tap on the circle to the left of a user, observe it appears selected
-        const manageMembersSearchInput = element(by.id('manage_members.search_bar.search.input'));
-        await expect(manageMembersSearchInput).toBeVisible();
-        await manageMembersSearchInput.typeText(memberUser.username);
-        await wait(timeouts.TWO_SEC);
+        // # Search and remove user
+        await ManageChannelMembersScreen.searchAndRemoveUser(memberUser.username, memberUser.id);
 
-        const userItem = element(by.id(`manage_members.user_list.user_item.${memberUser.id}.${memberUser.id}`));
-        await waitFor(userItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await userItem.tap();
-        await wait(timeouts.ONE_SEC);
-
-        // # Step 4: Tap on "remove" at the top right of the screen, observe confirmation message
-        const removeButton = element(by.id('manage_members.remove.button'));
-        await expect(removeButton).toBeVisible();
-        await removeButton.tap();
-        await wait(timeouts.ONE_SEC);
-
-        // # Step 5: Tap on "yes" to remove the user from the channel
-        const yesButton = element(by.text('Yes'));
-        await expect(yesButton).toBeVisible();
-        await yesButton.tap();
-        await wait(timeouts.TWO_SEC);
-
-        // * The user should disappear from the list of users and be removed from the channel
-        // * A system message showing that the user has been removed from the channel should display in the channel
+        // * Verify user removed system message appears
+        await ChannelInfoScreen.close();
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 
-        // Verify system message about user being removed
         const systemMessage = `${memberUser.username} was removed from the channel`;
         await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
-            toBeVisible().
-            whileElement(by.id('post_list.flat_list')).
-            scroll(50, 'down');
-
-        // Go back to channel list
+            toBeVisible();
         await ChannelScreen.back();
     });
 
     it('MM-T3204 - RN apps Add user to private channel', async () => {
-        // # Setup: Create a private test channel and a new user
-        const channelName = `private-add-${getRandomId()}`;
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+        // # Create private channel
+        const {channel: privateChannel} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,
-            name: channelName,
-            displayName: channelName,
             type: 'P',
         });
 
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privateChannel.id);
+
+        // # Create a new user and add to team
         const {user: newUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'privuser'});
         await Team.apiAddUserToTeam(siteOneUrl, newUser.id, testTeam.id);
 
-        // Navigate to the channel
-        await ChannelScreen.open('private', channel.display_name);
+        // # Open private channel
+        await ChannelScreen.open(channelsCategory, privateChannel.name);
 
-        // # Step 1: Tap the name of a private channel where you have permission to add members
+        // # Open channel info and tap add members
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
 
-        // # Step 2: Tap Add Members
-        // * A list of users on the server should be displayed
         await expect(ChannelInfoScreen.addMembersAction).toBeVisible();
         await ChannelInfoScreen.addMembersAction.tap();
         await wait(timeouts.TWO_SEC);
 
-        // # Step 3: Type the beginning of a user's name in the search box
-        // * Your keyboard should pop up so you can type in the name of a user.
-        // * The list should filter as you type in the name and display all users matching your input
-        const searchInput = element(by.id('add_members.search_bar.search.input'));
-        await expect(searchInput).toBeVisible();
-        await searchInput.typeText(newUser.username);
-        await wait(timeouts.TWO_SEC);
+        // # Dismiss tutorial if present and search and add user
+        await AddMembersScreen.toBeVisible();
+        await AddMembersScreen.dismissTutorial();
+        await AddMembersScreen.searchAndAddUser(newUser.username, newUser.id);
 
-        // # Step 4: Select user
-        // * The circle should show blue with a white tick (selected)
-        const userItem = element(by.id(`add_members.user_list.user_item.${newUser.id}.${newUser.id}`));
-        await waitFor(userItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await userItem.tap();
-        await wait(timeouts.ONE_SEC);
-
-        // # Step 5: Tap Add
-        // * The user should be added to the channel
-        const addButton = element(by.id('add_members.add.button'));
-        await expect(addButton).toBeVisible();
-        await addButton.tap();
-        await wait(timeouts.TWO_SEC);
-
-        // * System message should display in the channel showing which members were added to the channel.
+        // * Verify user added system message appears
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 
         const systemMessage = `${newUser.username} added to the channel by ${testUser.username}`;
         await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
-            toBeVisible().
-            whileElement(by.id('post_list.flat_list')).
-            scroll(50, 'down');
+            toBeVisible();
 
-        // Go back to channel list
         await ChannelScreen.back();
     });
 
     it('MM-T3205 - RN apps Remove user from private channel', async () => {
-        // # Setup: Create a private channel with an additional member
-        const channelName = `private-remove-${getRandomId()}`;
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+        // # Create private channel
+        const {channel: privateChannel} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,
-            name: channelName,
-            displayName: channelName,
             type: 'P',
         });
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privateChannel.id);
 
+        // # Create a new user, add to team and private channel
         const {user: memberUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'removeme'});
         await Team.apiAddUserToTeam(siteOneUrl, memberUser.id, testTeam.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, memberUser.id, channel.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, memberUser.id, privateChannel.id);
 
-        // Navigate to the channel
-        await ChannelScreen.open('private', channel.display_name);
+        // # Open private channel
+        await ChannelScreen.open(channelsCategory, privateChannel.name);
 
-        // # Step 1: Tap the name of a private channel
+        // # Open channel info and tap members option
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
 
-        // # Step 2: Tap Manage Members
         await expect(ChannelInfoScreen.membersOption).toBeVisible();
         await ChannelInfoScreen.membersOption.tap();
         await wait(timeouts.TWO_SEC);
 
-        // # Step 3: Type the beginning of a user's name in the search box
-        const searchInput = element(by.id('manage_members.search_bar.search.input'));
-        await expect(searchInput).toBeVisible();
-        await searchInput.typeText(memberUser.username);
+        await element(by.text(isAndroid()? 'MANAGE': 'Manage')).tap();
         await wait(timeouts.TWO_SEC);
 
-        // # Step 4: Select user and tap Remove
-        const userItem = element(by.id(`manage_members.user_list.user_item.${memberUser.id}.${memberUser.id}`));
-        await waitFor(userItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await userItem.tap();
-        await wait(timeouts.ONE_SEC);
+        // # Search and remove user
+        await ManageChannelMembersScreen.searchAndRemoveUser(memberUser.username, memberUser.id);
 
-        const removeButton = element(by.id('manage_members.remove.button'));
-        await expect(removeButton).toBeVisible();
-        await removeButton.tap();
-        await wait(timeouts.ONE_SEC);
-
-        // Confirm removal
-        const yesButton = element(by.text('Yes'));
-        await expect(yesButton).toBeVisible();
-        await yesButton.tap();
-        await wait(timeouts.TWO_SEC);
-
-        // * User is removed from channel
-        // * System message posts in channel for the user who removed them
+        // * Verify user removed system message appears
+        await ChannelInfoScreen.close();
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 
         const systemMessage = `${memberUser.username} was removed from the channel`;
         await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
-            toBeVisible().
-            whileElement(by.id('post_list.flat_list')).
-            scroll(50, 'down');
+            toBeVisible();
 
-        // Go back to channel list
+        await ChannelScreen.back();
+    });
+
+    it('MM-T878 - RN apps View Members in GM', async () => {
+        // # Create two new users and add to team
+        const {user: user1} = await User.apiCreateUser(siteOneUrl, {prefix: 'gmuser1'});
+        await wait(timeouts.ONE_SEC);
+        const {user: user2} = await User.apiCreateUser(siteOneUrl, {prefix: 'gmuser2'});
+        await wait(timeouts.ONE_SEC);
+        await Team.apiAddUserToTeam(siteOneUrl, user1.id, testTeam.id);
+        await wait(timeouts.ONE_SEC);
+        await Team.apiAddUserToTeam(siteOneUrl, user2.id, testTeam.id);
+        await wait(timeouts.ONE_SEC);
+
+        // # Create a group message
+        await CreateDirectMessageScreen.open();
+        await wait(timeouts.TWO_SEC);
+        await CreateDirectMessageScreen.closeTutorial();
+        await wait(timeouts.TWO_SEC);
+
+        await CreateDirectMessageScreen.searchInput.replaceText(user1.username);
+        await wait(timeouts.ONE_SEC);
+        const user1Item = CreateDirectMessageScreen.getUserItem(user1.id);
+        await waitFor(user1Item).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await user1Item.tap();
+        await wait(timeouts.ONE_SEC);
+
+        await CreateDirectMessageScreen.searchInput.replaceText(user2.username);
+        await wait(timeouts.ONE_SEC);
+
+        const user2Item = CreateDirectMessageScreen.getUserItem(user2.id);
+        await waitFor(user2Item).toBeVisible().whileElement(by.id(CreateDirectMessageScreen.testID.flatUserList)).scroll(200, 'down');
+        await user2Item.tap();
+        await wait(timeouts.ONE_SEC);
+
+        await CreateDirectMessageScreen.startButton.tap();
+        await wait(timeouts.TWO_SEC);
+        await ChannelScreen.dismissScheduledPostTooltip();
+        await ChannelScreen.toBeVisible();
+
+        // # Open channel info and tap members option
+        await ChannelInfoScreen.open();
+        await wait(timeouts.ONE_SEC);
+
+        await expect(ChannelInfoScreen.membersOption).toBeVisible();
+        await ChannelInfoScreen.membersOption.tap();
+        await wait(timeouts.TWO_SEC);
+
+        // * Verify members list is visible
+        await expect(ManageChannelMembersScreen.gmMemberSectionList).toBeVisible();
+
+        // # Go back
+        await ManageChannelMembersScreen.backButton.tap();
+        await wait(timeouts.ONE_SEC);
+
+        await ChannelInfoScreen.close();
         await ChannelScreen.back();
     });
 });

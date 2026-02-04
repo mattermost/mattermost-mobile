@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {serverOneUrl} from '@support/test_config';
 import {ChannelListScreen, ServerScreen} from '@support/ui/screen';
 import {isAndroid, retryWithReload, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
@@ -79,7 +80,15 @@ class LoginScreen {
         while (attempt < maxAttempts) {
             try {
                 // eslint-disable-next-line no-await-in-loop
-                await retryWithReload(() => this.loginWithRetryIfStuck(user));
+                await retryWithReload(
+                    async () => {
+                        return this.loginWithRetryIfStuck(user);
+                    },
+                    3, // retries
+                    ServerScreen,
+                    serverOneUrl, // serverUrl - reconnect after reload
+                    'Server 1', // serverDisplayName
+                );
                 return;
             } catch (error) {
                 lastError = error;

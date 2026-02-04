@@ -19,92 +19,89 @@ import {
 } from '@support/test_config';
 import {
     ChannelScreen,
-    HomeScreen,
     LoginScreen,
     ServerScreen,
+    HomeScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testUser: any;
     let testTeam: any;
+    let testChannel: any;
+    let user1: any;
+    let user5: any;
 
     beforeAll(async () => {
-        const {user, team} = await Setup.apiInit(siteOneUrl);
+        const {user, channel, team} = await Setup.apiInit(siteOneUrl);
         testUser = user;
         testTeam = team;
+        testChannel = channel;
 
-        // # Log in to server
+        ({user: user1} = await User.apiCreateUser(siteOneUrl, {prefix: 'user1'}));
+        const {user: user2} = await User.apiCreateUser(siteOneUrl, {prefix: 'user2'});
+        const {user: user3} = await User.apiCreateUser(siteOneUrl, {prefix: 'user3'});
+
+        await Team.apiAddUserToTeam(siteOneUrl, user1.id, testTeam.id);
+        await Team.apiAddUserToTeam(siteOneUrl, user2.id, testTeam.id);
+        await Team.apiAddUserToTeam(siteOneUrl, user3.id, testTeam.id);
+
+        await Channel.apiAddUserToChannel(siteOneUrl, user1.id, testChannel.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, user2.id, testChannel.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, user3.id, testChannel.id);
+        await wait(timeouts.TWO_SEC);
+
+        await Channel.apiRemoveUserFromChannel(siteOneUrl, testChannel.id, user1.id);
+        await wait(timeouts.TWO_SEC);
+
+        const {user: user4} = await User.apiCreateUser(siteOneUrl, {prefix: 'user4'});
+        await Team.apiAddUserToTeam(siteOneUrl, user4.id, testTeam.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, user4.id, testChannel.id);
+        await wait(timeouts.TWO_SEC);
+
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: 'Test message to interrupt system messages',
+        });
+        await wait(timeouts.TWO_SEC);
+
+        ({user: user5} = await User.apiCreateUser(siteOneUrl, {prefix: 'user5'}));
+        await Team.apiAddUserToTeam(siteOneUrl, user5.id, testTeam.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, user5.id, testChannel.id);
+        await wait(timeouts.TWO_SEC);
+
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
     });
 
     afterAll(async () => {
-        // # Log out
         await HomeScreen.logout();
     });
 
     it('MM-T858 - Combined joinleave messages in public channel', async () => {
-        // # Setup: Create test channel and users
-        const channelName = `joinleave-${getRandomId()}`;
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
-            teamId: testTeam.id,
-            name: channelName,
-            displayName: channelName,
-            type: 'O',
-        });
+        // Verify the posts via API to ensure correct structure
+        const {posts} = await Post.apiGetPostsInChannel(siteOneUrl, testChannel.id);
 
-        const {user: user1} = await User.apiCreateUser(siteOneUrl, {prefix: 'user1'});
-        const {user: user2} = await User.apiCreateUser(siteOneUrl, {prefix: 'user2'});
-        const {user: user3} = await User.apiCreateUser(siteOneUrl, {prefix: 'user3'});
-        await Team.apiAddUserToTeam(siteOneUrl, user1.id, testTeam.id);
-        await Team.apiAddUserToTeam(siteOneUrl, user2.id, testTeam.id);
-        await Team.apiAddUserToTeam(siteOneUrl, user3.id, testTeam.id);
+        // Verify we have the expected post types (no expect needed)
+        const hasJoinPost = posts.some((p: { type: string }) => p.type === 'system_join_channel');
+        const hasAddPosts = posts.filter((p: { type: string }) => p.type === 'system_add_to_channel').length >= 4;
+        const hasRemovePost = posts.some((p: { type: string }) => p.type === 'system_remove_from_channel');
+        const hasRegularPost = posts.some((p: { message: string }) => p.message === 'Test message to interrupt system messages');
 
-        // Navigate to the channel
-        await ChannelScreen.open('public', channel.display_name);
+        if (!hasJoinPost || !hasAddPosts || !hasRemovePost || !hasRegularPost) {
+            throw new Error(`Missing expected posts. Join: ${hasJoinPost}, Adds: ${hasAddPosts}, Remove: ${hasRemovePost}, Regular: ${hasRegularPost}`);
+        }
 
-        // # Step 1: Add any 3 users to a public channel (we'll call them user1, user2, user3)
-        await Channel.apiAddUserToChannel(siteOneUrl, user1.id, channel.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, user2.id, channel.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, user3.id, channel.id);
+        // Now verify the UI displays these messages correctly
+        await ChannelScreen.open(channelsCategory, testChannel.name);
         await wait(timeouts.TWO_SEC);
 
-        // # Step 2: Observe system message " and 2 others were added to the channel by you", and "and 2 others" is a link (but don't click it yet, or if you already did, refresh to re-collapse it)
-        // System messages should be visible
+        // Verify the regular message is visible
+        await expect(element(by.text('Test message to interrupt system messages'))).toBeVisible();
 
-        // # Step 3: Remove one of ^those users from the channel (user1)
-        await Channel.apiRemoveUserFromChannel(siteOneUrl, channel.id, user1.id);
-        await wait(timeouts.TWO_SEC);
-
-        // # Step 4: Have yet another user (not one of the above) log in in another browser and join that channel themselves (user4)
-        // Note: Simulating this via API
-        const {user: user4} = await User.apiCreateUser(siteOneUrl, {prefix: 'user4'});
-        await Team.apiAddUserToTeam(siteOneUrl, user4.id, testTeam.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, user4.id, channel.id);
-        await wait(timeouts.TWO_SEC);
-
-        // # Step 5: Post a message in the channel to interrupt the join/leave messages
-        await Post.apiCreatePost(siteOneUrl, {
-            channelId: channel.id,
-            message: 'Test message to interrupt system messages',
-        });
-        await wait(timeouts.TWO_SEC);
-
-        // # Step 6: You add yet another user (not one of the above users) to the channel (user5)
-        const {user: user5} = await User.apiCreateUser(siteOneUrl, {prefix: 'user5'});
-        await Team.apiAddUserToTeam(siteOneUrl, user5.id, testTeam.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, user5.id, channel.id);
-        await wait(timeouts.TWO_SEC);
-
-        // * Verify system messages are displayed
-        // Note: Exact message combining behavior is handled by the server
-        // We verify that system messages are present
-        await expect(element(by.id('post_list'))).toBeVisible();
-
-        // Go back to channel list
         await ChannelScreen.back();
     });
 });
