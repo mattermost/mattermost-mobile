@@ -421,6 +421,8 @@
   "global_threads.unreads": "Ongelezen",
   "home.header.plus_menu": "Opties",
   "integration_selector.multiselect.submit": "Gereed",
+  "interactive_dialog.submission_failed": "Versturen mislukt",
+  "interactive_dialog.submission_failed_validation": "Versturen mislukt met validatiefouten",
   "interactive_dialog.submit": "Verzenden",
   "intro.add_members": "Voeg leden toe",
   "intro.channel_info": "Info",
