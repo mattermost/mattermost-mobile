@@ -46,7 +46,7 @@ const DeletePostOption = ({bottomSheetId, combinedPost, post, currentUser}: Prop
             });
             deleteAction = burnPostNow;
 
-            if (isOwnBoRPost(post, currentUser)) {
+            if (isOwnBoRPost(post, currentUser?.id)) {
                 body = formatMessage({
                     id: 'mobile.burn_on_read.delete_now.sender.body',
                     defaultMessage: 'This message will be permanently deleted for all recipients right away. This action can\'t be undone. Are you sure you want to delete this message?',

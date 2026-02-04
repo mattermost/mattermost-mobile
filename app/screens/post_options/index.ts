@@ -148,8 +148,9 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         }),
     );
 
-    const canDelete = combineLatest([canDeletePostPermission, channelIsArchived, channelIsReadOnly, canPostPermission]).pipe(switchMap(([permission, isArchived, isReadOnly, canPost]) => {
-        return of$(permission && !isArchived && !isReadOnly && canPost);
+    const canDelete = combineLatest([canDeletePostPermission, channelIsArchived, channelIsReadOnly, canPostPermission, currentUser]).pipe(switchMap(([permission, isArchived, isReadOnly, canPost, user]) => {
+        const canDeleteBoRPost = borPost ? post.userId === user?.id : true;
+        return of$(permission && !isArchived && !isReadOnly && canPost && canDeleteBoRPost);
     }));
 
     const thread = observeIsCRTEnabled(database).pipe(
@@ -158,7 +159,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
 
     const showBoRReadReceipts = combineLatest([currentUser]).pipe(
         switchMap(([user]) => {
-            return of$(isOwnBoRPost(post, user));
+            return of$(isOwnBoRPost(post, user?.id));
         }),
     );
 
