@@ -3,7 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$, Observable} from 'rxjs';
-import {distinctUntilChanged, switchMap} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
 import {Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
@@ -175,11 +175,6 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         }),
     );
 
-    const currentUserId = currentUser.pipe(
-        switchMap((u) => of$(u?.id)),
-        distinctUntilChanged(),
-    );
-
     return {
         canMarkAsUnread,
         canAddReaction,
@@ -195,7 +190,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         isBoRPost: of$(borPost),
         showBoRReadReceipts,
         borReceiptData,
-        currentUserId,
+        currentUser,
     };
 });
 
