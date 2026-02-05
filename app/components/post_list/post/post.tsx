@@ -211,6 +211,10 @@ const Post = ({
     }, [location, isAutoResponder, isSystemPost, isEphemeral, hasBeenDeleted, isPendingOrFailed, serverUrl, post, borPost, blurAndDismissKeyboard]);
 
     const handlePress = useCallback(() => {
+        if (isBoRPost(post)) {
+            return;
+        }
+
         pressDetected.current = true;
 
         KeyboardController.dismiss();
