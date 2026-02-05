@@ -804,7 +804,7 @@ describe('setChannelAutotranslation', () => {
 describe('setMyChannelAutotranslation', () => {
     it('should update myChannel and call deletePostsForChannel when autotranslation changes', async () => {
         const channelForMy = TestHelper.fakeChannel({id: channelId, team_id: teamId});
-        const myChannelMember = TestHelper.fakeChannelMember({channel_id: channelId, autotranslation: true});
+        const myChannelMember = TestHelper.fakeChannelMember({channel_id: channelId, autotranslation_disabled: false});
         await operator.handleChannel({channels: [channelForMy], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channelForMy], myChannels: [myChannelMember], prepareRecordsOnly: false});
         jest.mocked(mockClient.setMyChannelAutotranslation).mockResolvedValue({} as ChannelMembership);

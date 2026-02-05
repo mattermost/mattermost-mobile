@@ -57,7 +57,7 @@ export default class MyChannelModel extends Model implements MyChannelModelInter
     @field('last_playbook_runs_fetch_at') lastPlaybookRunsFetchAt!: number;
 
     /* autotranslation: Determines if the channel has automatic translation enabled for this user*/
-    @field('autotranslation') autotranslation!: boolean;
+    @field('autotranslation_disabled') autotranslationDisabled!: boolean;
 
     /** channel : The relation pointing to the CHANNEL table */
     @immutableRelation(CHANNEL, 'id') channel!: Relation<ChannelModel>;

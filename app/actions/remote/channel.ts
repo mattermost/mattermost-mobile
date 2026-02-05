@@ -1291,11 +1291,11 @@ export const setMyChannelAutotranslation = async (serverUrl: string, channelId: 
         const models = [];
 
         const myChannel = await getMyChannel(database, channelId);
-        const autotranslationChanged = myChannel && myChannel.autotranslation !== enabled;
+        const autotranslationChanged = myChannel && myChannel.autotranslationDisabled !== !enabled;
 
         if (myChannel && autotranslationChanged) {
             myChannel.prepareUpdate((v) => {
-                v.autotranslation = enabled;
+                v.autotranslationDisabled = !enabled;
             });
             models.push(myChannel);
         }

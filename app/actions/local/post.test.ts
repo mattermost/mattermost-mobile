@@ -462,32 +462,48 @@ describe('deletePostsForChannelsWithAutotranslation', () => {
             id: 'id',
             channel_id: channelId,
             msg_count: 0,
-            autotranslation: false,
+            autotranslation_disabled: true,
         });
+        const post = TestHelper.fakePost({id: 'postid1', channel_id: channelId, root_id: ''});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post.id],
+            posts: [post],
+            prepareRecordsOnly: false,
+        });
 
         const {models, error} = await deletePostsForChannelsWithAutotranslation(serverUrl);
         expect(error).toBeUndefined();
         expect(models).toEqual([]);
+
+        const databasePost = await getPostById(operator.database, post.id);
+        expect(databasePost).toBeDefined();
     });
 
-    it('myChannels with autotranslation - resetAutotranslations true', async () => {
+    it('myChannels with autotranslation - delete posts', async () => {
         const channelMember: ChannelMembership = TestHelper.fakeChannelMember({
             id: 'id',
             channel_id: channelId,
             msg_count: 0,
-            autotranslation: true,
+            autotranslation_disabled: false,
         });
+        const post = TestHelper.fakePost({id: 'postid1', channel_id: channelId, root_id: ''});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post.id],
+            posts: [post],
+            prepareRecordsOnly: false,
+        });
 
-        const {models, error} = await deletePostsForChannelsWithAutotranslation(serverUrl, true);
+        const {models, error} = await deletePostsForChannelsWithAutotranslation(serverUrl);
         expect(error).toBeUndefined();
         expect(models.length).toBeGreaterThan(0);
-
-        const myChannel = await getMyChannel(operator.database, channelId);
-        expect(myChannel?.autotranslation).toBe(false);
+        const databasePost = await getPostById(operator.database, post.id);
+        expect(databasePost).toBeUndefined();
     });
 
     it('handle error', async () => {

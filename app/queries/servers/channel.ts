@@ -294,15 +294,6 @@ export const observeChannelAutotranslation = (database: Database, channelId: str
     );
 };
 
-export const observeMyChannelAutotranslation = (database: Database, channelId: string) => {
-    const enableAutoTranslation = observeConfigBooleanValue(database, 'EnableAutoTranslation');
-    const myChannel = observeMyChannel(database, channelId);
-    return combineLatest([enableAutoTranslation, myChannel]).pipe(
-        switchMap(([et, mc]) => of$(Boolean(et && mc?.autotranslation))),
-        distinctUntilChanged(),
-    );
-};
-
 export const getChannelById = async (database: Database, channelId: string) => {
     try {
         const channel = await database.get<ChannelModel>(CHANNEL).find(channelId);
@@ -495,7 +486,8 @@ export const queryMyChannelsByChannelIds = (database: Database, ids: string[]) =
 
 export const queryMyChannelsWithAutotranslation = (database: Database) => {
     return database.get<MyChannelModel>(MY_CHANNEL).query(
-        Q.where('autotranslation', Q.eq(true)),
+        Q.on(CHANNEL, Q.where('autotranslation', Q.eq(true))),
+        Q.where('autotranslation_disabled', Q.eq(false)),
     );
 };
 
@@ -808,5 +800,5 @@ export const observeIsChannelAutotranslated = (database: Database, channelId: st
     const enableAutoTranslation = observeConfigBooleanValue(database, 'EnableAutoTranslation');
     const channel = observeChannel(database, channelId);
     const myChannel = observeMyChannel(database, channelId);
-    return combineLatest([enableAutoTranslation, channel, myChannel]).pipe(switchMap(([et, c, mc]) => of$(Boolean(et && c?.autotranslation && mc?.autotranslation))));
+    return combineLatest([enableAutoTranslation, channel, myChannel]).pipe(switchMap(([et, c, mc]) => of$(Boolean(et && c?.autotranslation && !mc?.autotranslationDisabled))));
 };

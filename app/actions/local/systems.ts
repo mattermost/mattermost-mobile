@@ -72,7 +72,7 @@ export async function storeConfig(serverUrl: string, config: ClientConfig | unde
         const configsToDelete: IdValue[] = [];
 
         // Check if EnableAutoTranslation changed from enabled to disabled
-        const enableAutoTranslationChanged = currentConfig?.EnableAutoTranslation === 'true' && config.EnableAutoTranslation !== 'true';
+        const enableAutoTranslationChanged = (currentConfig?.EnableAutoTranslation === 'true') !== (config.EnableAutoTranslation === 'true');
 
         let k: keyof ClientConfig;
         for (k in config) {
@@ -98,7 +98,7 @@ export async function storeConfig(serverUrl: string, config: ClientConfig | unde
 
             // If EnableAutoTranslation was disabled, delete posts and disable user autotranslation
             if (enableAutoTranslationChanged) {
-                await deletePostsForChannelsWithAutotranslation(serverUrl, true, prepareRecordsOnly);
+                await deletePostsForChannelsWithAutotranslation(serverUrl, prepareRecordsOnly);
             }
 
             return results;

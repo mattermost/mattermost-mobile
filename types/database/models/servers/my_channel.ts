@@ -43,7 +43,7 @@ declare class MyChannelModel extends Model {
     lastPlaybookRunsFetchAt: number;
 
     /** autotranslation : Whether the channel has automatic translation enabled for this user */
-    autotranslation: boolean;
+    autotranslationDisabled: boolean;
 
     /** channel : The relation pointing to the CHANNEL table */
     channel: Relation<ChannelModel>;

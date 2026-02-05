@@ -12,6 +12,7 @@ import {getMyChannel} from '@queries/servers/channel';
 import {getCommonSystemValues, getTeamHistory} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
+import TestHelper from '@test/test_helper';
 
 import {
     switchToChannel,
@@ -776,19 +777,19 @@ describe('updateMyChannelFromWebsocket', () => {
     const serverUrl = 'baseHandler.test.com';
     const channelId = 'id1';
     const teamId = 'tId1';
-    const channel: Channel = {
+    const channel: Channel = TestHelper.fakeChannel({
         id: channelId,
         team_id: teamId,
         total_msg_count: 0,
         delete_at: 0,
-    } as Channel;
-    const channelMember: ChannelMembership = {
+    });
+    const channelMember: ChannelMembership = TestHelper.fakeChannelMember({
         id: 'id',
         user_id: 'userid',
         channel_id: channelId,
         msg_count: 0,
         roles: '',
-    } as ChannelMembership;
+    });
 
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
@@ -820,7 +821,7 @@ describe('updateMyChannelFromWebsocket', () => {
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         jest.mocked(deletePostsForChannel).mockClear();
 
-        await updateMyChannelFromWebsocket(serverUrl, {...channelMember, autotranslation: true}, false);
+        await updateMyChannelFromWebsocket(serverUrl, {...channelMember, autotranslation_disabled: true}, false);
 
         expect(deletePostsForChannel).toHaveBeenCalledWith(serverUrl, channelId);
     });
@@ -829,10 +830,10 @@ describe('updateMyChannelFromWebsocket', () => {
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
-        await updateMyChannelFromWebsocket(serverUrl, {...channelMember, autotranslation: true}, false);
+        await updateMyChannelFromWebsocket(serverUrl, {...channelMember, autotranslation_disabled: true}, false);
 
         const member = await getMyChannel(operator.database, channelId);
-        expect(member?.autotranslation).toBe(true);
+        expect(member?.autotranslationDisabled).toBe(true);
     });
 });
 

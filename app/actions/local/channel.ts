@@ -299,14 +299,14 @@ export async function updateMyChannelFromWebsocket(serverUrl: string, channelMem
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const member = await getMyChannel(database, channelMember.channel_id);
 
-        if (member && member.autotranslation !== channelMember.autotranslation) {
+        if (member && Boolean(member.autotranslationDisabled) !== Boolean(channelMember.autotranslation_disabled)) {
             await deletePostsForChannel(serverUrl, channelMember.channel_id);
         }
 
         if (member) {
             member.prepareUpdate((m) => {
                 m.roles = channelMember.roles;
-                m.autotranslation = channelMember.autotranslation ?? false;
+                m.autotranslationDisabled = channelMember.autotranslation_disabled ?? false;
             });
             if (!prepareRecordsOnly) {
                 operator.batchRecords([member], 'updateMyChannelFromWebsocket');

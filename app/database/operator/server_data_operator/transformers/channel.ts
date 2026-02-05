@@ -157,7 +157,7 @@ export const transformMyChannelRecord = async ({action, database, value}: Transf
         myChannel.viewedAt = record?.viewedAt || 0;
         myChannel.lastFetchedAt = record?.lastFetchedAt || 0;
         myChannel.lastPlaybookRunsFetchAt = record?.lastPlaybookRunsFetchAt || 0;
-        myChannel.autotranslation = Boolean(raw.autotranslation);
+        myChannel.autotranslationDisabled = Boolean(raw.autotranslation_disabled);
     };
 
     return prepareBaseRecord({

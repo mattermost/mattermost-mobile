@@ -88,7 +88,7 @@ type ChannelMembership = {
     post_root_id?: string;
     is_unread?: boolean;
     manually_unread?: boolean;
-    autotranslation?: boolean;
+    autotranslation_disabled?: boolean;
 };
 type ChannelUnread = {
     channel_id: string;

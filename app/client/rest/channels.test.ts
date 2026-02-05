@@ -154,7 +154,7 @@ describe('ClientChannels', () => {
         const channelId = 'channel1';
         const enabled = false;
         const expectedUrl = `${client.getChannelMemberRoute(channelId, 'me')}/autotranslation`;
-        const expectedOptions = {method: 'put', body: {autotranslation: enabled}};
+        const expectedOptions = {method: 'put', body: {autotranslation_disabled: enabled}};
         const mockMembership = {id: 'me-channel1', channel_id: channelId, user_id: 'me', autotranslation: enabled};
         jest.mocked(client.doFetch).mockResolvedValue(mockMembership);
 

@@ -239,7 +239,7 @@ export async function handleAutotranslationChanges(serverUrl: string, meData: My
             const membershipMap = new Map(memberships.map((m) => [m.id, m]));
             for (const m of newMemberships) {
                 const membership = membershipMap.get(m.channel_id);
-                if (membership && membership.autotranslation !== m.autotranslation) { // Autotranslation modified
+                if (membership && membership.autotranslationDisabled !== Boolean(m.autotranslation_disabled)) { // Autotranslation modified
                     promises.push(deletePostsForChannel(serverUrl, m.channel_id, true));
                 }
             }

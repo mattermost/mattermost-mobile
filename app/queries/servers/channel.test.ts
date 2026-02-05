@@ -67,7 +67,6 @@ import {prepareChannels,
     queryMyChannelsByChannelIds,
     queryMyChannelsWithAutotranslation,
     observeChannelAutotranslation,
-    observeMyChannelAutotranslation,
     observeIsChannelAutotranslated,
 } from './channel';
 import {queryRoles} from './role';
@@ -1627,11 +1626,11 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
     });
 
     describe('queryMyChannelsWithAutotranslation', () => {
-        it('should return only myChannels with autotranslation true', async () => {
-            const channel1 = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1'});
-            const channel2 = TestHelper.fakeChannel({id: 'ch2', team_id: 'team1'});
-            const myCh1 = TestHelper.fakeChannelMember({id: 'ch1', channel_id: 'ch1', autotranslation: true});
-            const myCh2 = TestHelper.fakeChannelMember({id: 'ch2', channel_id: 'ch2', autotranslation: false});
+        it('should return only myChannels with channel autotranslation enabled and user autotranslation not disabled', async () => {
+            const channel1 = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1', autotranslation: true});
+            const channel2 = TestHelper.fakeChannel({id: 'ch2', team_id: 'team1', autotranslation: true});
+            const myCh1 = TestHelper.fakeChannelMember({id: 'ch1', channel_id: 'ch1', autotranslation_disabled: false});
+            const myCh2 = TestHelper.fakeChannelMember({id: 'ch2', channel_id: 'ch2', autotranslation_disabled: true});
             await operator.handleChannel({channels: [channel1, channel2], prepareRecordsOnly: false});
             await operator.handleMyChannel({channels: [channel1, channel2], myChannels: [myCh1, myCh2], prepareRecordsOnly: false});
 
@@ -1640,12 +1639,23 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
 
             expect(fetched.length).toBe(1);
             expect(fetched[0].id).toBe('ch1');
-            expect(fetched[0].autotranslation).toBe(true);
+            expect(fetched[0].autotranslationDisabled).toBe(false);
         });
 
-        it('should return empty when no myChannels have autotranslation', async () => {
-            const channel1 = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1'});
-            const myCh1 = TestHelper.fakeChannelMember({id: 'ch1', channel_id: 'ch1', autotranslation: false});
+        it('should exclude channels that have autotranslation disabled at channel level', async () => {
+            const channel1 = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1', autotranslation: false});
+            const myCh1 = TestHelper.fakeChannelMember({id: 'ch1', channel_id: 'ch1', autotranslation_disabled: false});
+            await operator.handleChannel({channels: [channel1], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel1], myChannels: [myCh1], prepareRecordsOnly: false});
+
+            const result = queryMyChannelsWithAutotranslation(database);
+            const fetched = await result.fetch();
+            expect(fetched.length).toBe(0);
+        });
+
+        it('should return empty when no myChannels have autotranslation disabled false', async () => {
+            const channel1 = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1', autotranslation: true});
+            const myCh1 = TestHelper.fakeChannelMember({id: 'ch1', channel_id: 'ch1', autotranslation_disabled: true});
             await operator.handleChannel({channels: [channel1], prepareRecordsOnly: false});
             await operator.handleMyChannel({channels: [channel1], myChannels: [myCh1], prepareRecordsOnly: false});
 
@@ -1704,54 +1714,13 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
         });
     });
 
-    describe('observeMyChannelAutotranslation', () => {
-        const channelId = 'ch_my_observe';
-
-        it('should emit true when EnableAutoTranslation is true and myChannel has autotranslation', async () => {
-            jest.mocked(observeConfigBooleanValue).mockReturnValue(of$(true));
-            const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1'});
-            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation: true});
-            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
-            await operator.handleMyChannel({channels: [channel], myChannels: [myChannel], prepareRecordsOnly: false});
-
-            const subscriptionNext = jest.fn();
-            const result = observeMyChannelAutotranslation(database, channelId);
-            result.subscribe({next: subscriptionNext});
-
-            expect(subscriptionNext).toHaveBeenCalledWith(true);
-        });
-
-        it('should emit false when myChannel has autotranslation false', async () => {
-            jest.mocked(observeConfigBooleanValue).mockReturnValue(of$(true));
-            const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1'});
-            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation: false});
-            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
-            await operator.handleMyChannel({channels: [channel], myChannels: [myChannel], prepareRecordsOnly: false});
-
-            const subscriptionNext = jest.fn();
-            const result = observeMyChannelAutotranslation(database, channelId);
-            result.subscribe({next: subscriptionNext});
-
-            expect(subscriptionNext).toHaveBeenCalledWith(false);
-        });
-
-        it('should emit false when myChannel is not found', async () => {
-            jest.mocked(observeConfigBooleanValue).mockReturnValue(of$(true));
-            const subscriptionNext = jest.fn();
-            const result = observeMyChannelAutotranslation(database, 'nonexistent');
-            result.subscribe({next: subscriptionNext});
-
-            expect(subscriptionNext).toHaveBeenCalledWith(false);
-        });
-    });
-
     describe('observeIsChannelAutotranslated', () => {
         const channelId = 'ch_is_autotranslated';
 
-        it('should emit true when config and channel and myChannel all have autotranslation true', async () => {
+        it('should emit true when config and channel has autotranslation true and myChannel has autotranslation disabled false', async () => {
             jest.mocked(observeConfigBooleanValue).mockReturnValue(of$(true));
             const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: true});
-            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation: true});
+            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation_disabled: false});
             await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
             await operator.handleMyChannel({channels: [channel], myChannels: [myChannel], prepareRecordsOnly: false});
 
@@ -1765,7 +1734,7 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
         it('should emit false when channel autotranslation is false', async () => {
             jest.mocked(observeConfigBooleanValue).mockReturnValue(of$(true));
             const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: false});
-            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation: true});
+            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation_disabled: false});
             await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
             await operator.handleMyChannel({channels: [channel], myChannels: [myChannel], prepareRecordsOnly: false});
 
@@ -1776,10 +1745,10 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
             expect(subscriptionNext).toHaveBeenCalledWith(false);
         });
 
-        it('should emit false when myChannel autotranslation is false', async () => {
+        it('should emit false when myChannel autotranslation disabled is true', async () => {
             jest.mocked(observeConfigBooleanValue).mockReturnValue(of$(true));
             const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: true});
-            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation: false});
+            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation_disabled: true});
             await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
             await operator.handleMyChannel({channels: [channel], myChannels: [myChannel], prepareRecordsOnly: false});
 

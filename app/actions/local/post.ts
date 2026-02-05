@@ -451,7 +451,7 @@ export async function deletePostsForChannel(serverUrl: string, channelId: string
     }
 }
 
-export async function deletePostsForChannelsWithAutotranslation(serverUrl: string, resetAutotranslations = false, prepareRecordsOnly = false) {
+export async function deletePostsForChannelsWithAutotranslation(serverUrl: string, prepareRecordsOnly = false) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const myChannels = await queryMyChannelsWithAutotranslation(database).fetch();
@@ -465,18 +465,6 @@ export async function deletePostsForChannelsWithAutotranslation(serverUrl: strin
             if (result.models) {
                 allModels.push(...result.models);
             }
-        }
-
-        // Reset autotranslation for all channels if requested
-        if (resetAutotranslations && myChannels.length) {
-            const myChannelModels: Model[] = [];
-            for (const myChannel of myChannels) {
-                myChannel.prepareUpdate((v) => {
-                    v.autotranslation = false;
-                });
-                myChannelModels.push(myChannel);
-            }
-            allModels.push(...myChannelModels);
         }
 
         if (allModels.length && !prepareRecordsOnly) {

@@ -31,7 +31,7 @@ export default schemaMigrations({migrations: [
             addColumns({
                 table: MY_CHANNEL,
                 columns: [
-                    {name: 'autotranslation', type: 'boolean'},
+                    {name: 'autotranslation_disabled', type: 'boolean'},
                 ],
             }),
             addColumns({

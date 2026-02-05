@@ -847,7 +847,7 @@ class TestHelperSingleton {
             roles: '',
             viewedAt: 0,
             lastPlaybookRunsFetchAt: 0,
-            autotranslation: false,
+            autotranslationDisabled: false,
             channel: this.fakeRelation(),
             settings: this.fakeRelation(),
             resetPreparedState: jest.fn(),
