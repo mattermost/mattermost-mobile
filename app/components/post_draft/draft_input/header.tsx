@@ -44,10 +44,11 @@ export default function DraftInputHeader({
 }: Props) {
     const theme = useTheme();
     const hasLabels = postPriority.priority !== '' || postPriority.requested_ack;
+    const hasBoR = postBoRConfig && postBoRConfig.enabled;
     const style = getStyleSheet(theme);
 
     return (
-        <View style={[style.container, hasLabels ? style.paddingTopStyle : undefined]}>
+        <View style={[style.container, (hasLabels || hasBoR) ? style.paddingTopStyle : undefined]}>
             {postPriority.priority && (
                 <PostPriorityLabel label={postPriority.priority}/>
             )}
@@ -87,7 +88,7 @@ export default function DraftInputHeader({
                     )}
                 </>
             )}
-            {postBoRConfig && postBoRConfig.enabled &&
+            {hasBoR &&
                 <BoRLabel
                     durationSeconds={postBoRConfig.borDurationSeconds}
                 />
