@@ -1103,7 +1103,6 @@
   "playbooks.playbook_run.property_fields": "Pole vlastností",
   "playbooks.playbook_run.rename.button": "Uložit",
   "playbooks.playbook_run.rename.label": "Název kontrolního seznamu",
-  "playbooks.playbook_run.rename.title": "Přejmenovat běh playbooku",
   "playbooks.playbook_run.run_details": "Podrobnosti kontrolního seznamu",
   "playbooks.playbook_run.status_update": "Aktualizace příspěvku",
   "playbooks.playbook_run.status_update_due": "Aktualizace splatná\n{time}",

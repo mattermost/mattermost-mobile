@@ -1081,7 +1081,6 @@
   "playbooks.playbook_run.participants_title": "Deltagare",
   "playbooks.playbook_run.rename.button": "Spara",
   "playbooks.playbook_run.rename.label": "Namn på checklista",
-  "playbooks.playbook_run.rename.title": "Byt namn på playbook-körning",
   "playbooks.playbook_run.run_details": "Detaljer om checklistan",
   "playbooks.playbook_run.status_update": "Publicera uppdatering",
   "playbooks.playbook_run.status_update_due": "Uppdatering väntas\n{time}",

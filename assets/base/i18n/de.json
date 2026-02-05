@@ -1101,7 +1101,6 @@
   "playbooks.playbook_run.property_fields": "Eigenschaftsfelder",
   "playbooks.playbook_run.rename.button": "Speichern",
   "playbooks.playbook_run.rename.label": "Checkliste",
-  "playbooks.playbook_run.rename.title": "Playbook-Durchlauf umbenennen",
   "playbooks.playbook_run.run_details": "Checklistendetails",
   "playbooks.playbook_run.status_update": "Aktualisierung senden",
   "playbooks.playbook_run.status_update_due": "Aktualisierung fällig\n{time}",

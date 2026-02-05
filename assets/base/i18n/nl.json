@@ -1103,7 +1103,6 @@
   "playbooks.playbook_run.property_fields": "Eigenschapsvelden",
   "playbooks.playbook_run.rename.button": "Opslaan",
   "playbooks.playbook_run.rename.label": "Naam checklist",
-  "playbooks.playbook_run.rename.title": "Playbook uitvoering hernoemen",
   "playbooks.playbook_run.run_details": "Details van checklist",
   "playbooks.playbook_run.status_update": "Update plaatsen",
   "playbooks.playbook_run.status_update_due": "Update verwacht\n{time}",

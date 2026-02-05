@@ -1103,7 +1103,6 @@
   "playbooks.playbook_run.property_fields": "属性字段",
   "playbooks.playbook_run.rename.button": "保存",
   "playbooks.playbook_run.rename.label": "清单名称",
-  "playbooks.playbook_run.rename.title": "重命名剧本运行",
   "playbooks.playbook_run.run_details": "清单详情",
   "playbooks.playbook_run.status_update": "发布更新",
   "playbooks.playbook_run.status_update_due": "更新截止时间\n{time}",
