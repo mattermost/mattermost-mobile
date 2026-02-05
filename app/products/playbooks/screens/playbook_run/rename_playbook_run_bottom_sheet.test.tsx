@@ -73,12 +73,13 @@ describe('RenamePlaybookRunBottomSheet', () => {
         });
     });
 
-    function getBaseProps() {
+    function getBaseProps(canEditSummary = true) {
         return {
             componentId,
             currentTitle,
             currentSummary,
             playbookRunId,
+            canEditSummary,
         };
     }
 
@@ -287,7 +288,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
             await saveCallback();
         });
 
-        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, currentSummary);
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, currentSummary, true);
         expect(Keyboard.dismiss).toHaveBeenCalled();
         expect(popTopScreen).toHaveBeenCalledWith(componentId);
     });
@@ -310,8 +311,8 @@ describe('RenamePlaybookRunBottomSheet', () => {
             await saveCallback();
         });
 
-        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, 'New Playbook Run Name', currentSummary);
-        expect(updatePlaybookRun).not.toHaveBeenCalledWith('some.server.url', playbookRunId, titleWithSpaces, currentSummary);
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, 'New Playbook Run Name', currentSummary, true);
+        expect(updatePlaybookRun).not.toHaveBeenCalledWith('some.server.url', playbookRunId, titleWithSpaces, currentSummary, true);
     });
 
     it('should close when Android back button is pressed', () => {
@@ -391,7 +392,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
             await saveCallback();
         });
 
-        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, newSummary);
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, newSummary, true);
     });
 
     it('should trim summary when saving', async () => {
@@ -410,7 +411,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
             await saveCallback();
         });
 
-        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, 'New summary with spaces');
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, 'New summary with spaces', true);
     });
 
     it('should show error snackbar when save fails', async () => {
@@ -456,7 +457,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
             await saveCallback();
         });
 
-        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, '');
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, '', true);
     });
 
     it('should disable save button when summary is reverted to original', () => {
@@ -506,8 +507,54 @@ describe('RenamePlaybookRunBottomSheet', () => {
             await saveCallback();
         });
 
-        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, newSummary);
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, newSummary, true);
         expect(popTopScreen).toHaveBeenCalledWith(componentId);
+    });
+
+    it('should hide summary input when summary editing is disabled', () => {
+        const props = getBaseProps(false);
+        const {queryByTestId, queryByText} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+
+        expect(queryByTestId('playbooks.playbook_run.edit.summary_input')).toBeNull();
+        expect(queryByText('Summary')).toBeNull();
+    });
+
+    it('should enable save button when name changes and summary editing is disabled', () => {
+        const props = getBaseProps(false);
+        const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+
+        const input = getByTestId('playbooks.playbook_run.rename.input');
+
+        act(() => {
+            fireEvent.changeText(input, 'New Playbook Run Title');
+        });
+
+        const updatedButton = {
+            ...mockRightButton,
+            enabled: true,
+        };
+        expect(setButtons).toHaveBeenCalledWith(componentId, {
+            rightButtons: [updatedButton],
+        });
+    });
+
+    it('should call updatePlaybookRun when summary editing is disabled', async () => {
+        const props = getBaseProps(false);
+        const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+
+        const input = getByTestId('playbooks.playbook_run.rename.input');
+        const newTitle = 'New Playbook Run Title';
+
+        act(() => {
+            fireEvent.changeText(input, newTitle);
+        });
+
+        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        await act(async () => {
+            await saveCallback();
+        });
+
+        expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, currentSummary, false);
     });
 });
 

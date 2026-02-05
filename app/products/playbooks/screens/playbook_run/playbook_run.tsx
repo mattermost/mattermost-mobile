@@ -173,6 +173,7 @@ type Props = {
     pendingCount: number;
     currentUserId: string;
     teammateNameDisplay: string;
+    canEditSummary: boolean;
 }
 
 export default function PlaybookRun({
@@ -185,6 +186,7 @@ export default function PlaybookRun({
     componentId,
     currentUserId,
     teammateNameDisplay,
+    canEditSummary,
 }: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -265,8 +267,8 @@ export default function PlaybookRun({
             return;
         }
 
-        goToEditPlaybookRun(intl, theme, playbookRun.name, playbookRun.summary, playbookRun.id);
-    }, [intl, theme, playbookRun]);
+        goToEditPlaybookRun(intl, theme, playbookRun.name, playbookRun.summary, playbookRun.id, {canEditSummary});
+    }, [intl, theme, playbookRun, canEditSummary]);
 
     const handleFinishRun = useCallback(() => {
         if (!playbookRun) {

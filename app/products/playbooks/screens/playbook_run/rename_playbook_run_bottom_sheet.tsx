@@ -23,6 +23,7 @@ type Props = {
     currentTitle: string;
     currentSummary: string;
     playbookRunId: string;
+    canEditSummary: boolean;
 }
 
 const SAVE_BUTTON_ID = 'save-playbook-run-name';
@@ -46,6 +47,7 @@ const RenamePlaybookRunBottomSheet = ({
     currentTitle,
     currentSummary,
     playbookRunId,
+    canEditSummary,
 }: Props) => {
     const intl = useIntl();
     const {formatMessage} = intl;
@@ -58,9 +60,9 @@ const RenamePlaybookRunBottomSheet = ({
     const canSave = useMemo(() => {
         const nameValid = title.trim().length > 0;
         const nameChanged = title !== currentTitle;
-        const summaryChanged = summary !== currentSummary;
+        const summaryChanged = canEditSummary && summary !== currentSummary;
         return nameValid && (nameChanged || summaryChanged);
-    }, [title, currentTitle, summary, currentSummary]);
+    }, [title, currentTitle, summary, currentSummary, canEditSummary]);
 
     const rightButton = React.useMemo(() => {
         const base = buildNavigationButton(
@@ -86,14 +88,14 @@ const RenamePlaybookRunBottomSheet = ({
 
     const handleSave = useCallback(async () => {
         if (canSave) {
-            const res = await updatePlaybookRun(serverUrl, playbookRunId, title.trim(), summary.trim());
+            const res = await updatePlaybookRun(serverUrl, playbookRunId, title.trim(), summary.trim(), canEditSummary);
             if (res.error) {
                 showPlaybookErrorSnackbar();
             } else {
                 close(componentId);
             }
         }
-    }, [canSave, title, summary, componentId, serverUrl, playbookRunId]);
+    }, [canSave, title, summary, componentId, serverUrl, playbookRunId, canEditSummary]);
 
     const onSave = usePreventDoubleTap(handleSave);
 
@@ -116,15 +118,17 @@ const RenamePlaybookRunBottomSheet = ({
                 theme={theme}
                 autoFocus={true}
             />
-            <FloatingTextInput
-                label={summaryLabel}
-                onChangeText={setSummary}
-                testID='playbooks.playbook_run.edit.summary_input'
-                value={summary}
-                theme={theme}
-                multiline={true}
-                multilineInputHeight={100}
-            />
+            {canEditSummary && (
+                <FloatingTextInput
+                    label={summaryLabel}
+                    onChangeText={setSummary}
+                    testID='playbooks.playbook_run.edit.summary_input'
+                    value={summary}
+                    theme={theme}
+                    multiline={true}
+                    multilineInputHeight={100}
+                />
+            )}
         </View>
     );
 };

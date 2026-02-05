@@ -840,7 +840,7 @@ describe('updatePlaybookRun', () => {
     it('should handle client error', async () => {
         jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
 
-        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary);
+        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary, true);
 
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
@@ -852,7 +852,7 @@ describe('updatePlaybookRun', () => {
         const clientError = new Error('Client error');
         mockClient.patchPlaybookRun.mockRejectedValueOnce(clientError);
 
-        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary);
+        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary, true);
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
         expect(result.data).toBeUndefined();
@@ -864,7 +864,7 @@ describe('updatePlaybookRun', () => {
         mockClient.patchPlaybookRun.mockResolvedValueOnce(undefined);
         jest.mocked(localUpdatePlaybookRun).mockResolvedValueOnce({error: 'DB error'});
 
-        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary);
+        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary, true);
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
         expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName, summary: newSummary});
@@ -874,13 +874,25 @@ describe('updatePlaybookRun', () => {
     it('should update playbook run successfully', async () => {
         mockClient.patchPlaybookRun.mockResolvedValueOnce(undefined);
 
-        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary);
+        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary, true);
 
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.data).toBe(true);
         expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName, summary: newSummary});
         expect(localUpdatePlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId, newName, newSummary);
+    });
+
+    it('should not include summary in API call when canEditSummary is false', async () => {
+        mockClient.patchPlaybookRun.mockResolvedValueOnce(undefined);
+
+        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary, false);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.data).toBe(true);
+        expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName});
+        expect(localUpdatePlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId, newName, undefined);
     });
 });
 

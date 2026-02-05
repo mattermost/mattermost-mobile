@@ -146,13 +146,17 @@ export const setOwner = async (serverUrl: string, playbookRunId: string, ownerId
     }
 };
 
-export const updatePlaybookRun = async (serverUrl: string, playbookRunId: string, name: string, summary: string) => {
+export const updatePlaybookRun = async (serverUrl: string, playbookRunId: string, name: string, summary: string, canEditSummary: boolean) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        await client.patchPlaybookRun(playbookRunId, {name, summary});
+        const updates: Partial<PlaybookRun> = {name};
+        if (canEditSummary) {
+            updates.summary = summary;
+        }
+        await client.patchPlaybookRun(playbookRunId, updates);
 
         // Update local database
-        const result = await localUpdatePlaybookRun(serverUrl, playbookRunId, name, summary);
+        const result = await localUpdatePlaybookRun(serverUrl, playbookRunId, name, canEditSummary ? summary : undefined);
         if (result.error) {
             logDebug('[updatePlaybookRun] local update failed after successful API call', getFullErrorMessage(result.error));
             return result;
