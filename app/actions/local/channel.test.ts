@@ -28,6 +28,7 @@ import {
     showUnreadChannelsOnly,
     updateDmGmDisplayName,
 } from './channel';
+import {deletePostsForChannel} from './post';
 
 import type {ChannelModel, MyChannelModel, SystemModel} from '@database/models/server';
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -53,6 +54,11 @@ jest.mock('@utils/helpers', () => {
         isTablet: mockIsTablet,
     };
 });
+
+jest.mock('./post', () => ({
+    ...jest.requireActual('./post'),
+    deletePostsForChannel: jest.fn().mockResolvedValue({models: [], error: undefined}),
+}));
 
 const queryDatabaseValues = async (database: Database, teamId: string, channelId: string) => ({
     systemValues: await getCommonSystemValues(database),
@@ -807,6 +813,26 @@ describe('updateMyChannelFromWebsocket', () => {
         expect(error).toBeUndefined();
         expect(model).toBeDefined();
         expect(model?.roles).toBe('channel_user');
+    });
+
+    it('calls deletePostsForChannel when autotranslation changes', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        jest.mocked(deletePostsForChannel).mockClear();
+
+        await updateMyChannelFromWebsocket(serverUrl, {...channelMember, autotranslation: true}, false);
+
+        expect(deletePostsForChannel).toHaveBeenCalledWith(serverUrl, channelId);
+    });
+
+    it('updates member autotranslation from channelMember', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        await updateMyChannelFromWebsocket(serverUrl, {...channelMember, autotranslation: true}, false);
+
+        const member = await getMyChannel(operator.database, channelId);
+        expect(member?.autotranslation).toBe(true);
     });
 });
 

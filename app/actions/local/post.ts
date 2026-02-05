@@ -395,18 +395,18 @@ export function getUsersCountFromMentions(serverUrl: string, mentions: string[])
     }
 }
 
-export async function deletePostsForChannel(serverUrl: string, channelId: string, prepareRecordsOnly = false) {
+export async function deletePostsForChannel(serverUrl: string, channelId: string, prepareRecordsOnly = false): Promise<{models: Model[]; error?: unknown}> {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const channel = await getChannelById(database, channelId);
 
         if (!channel) {
-            return {error: false, models: []};
+            return {models: []};
         }
 
         const posts = await channel.posts.fetch();
         if (!posts.length) {
-            return {error: false, models: []};
+            return {models: []};
         }
 
         const preparedPostsPromises = posts.map((post) => prepareDeletePost(post));

@@ -5,10 +5,12 @@
 
 import {createIntl} from 'react-intl';
 
+import {deletePostsForChannel} from '@actions/local/post';
 import {DeepLink} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import TestHelper from '@test/test_helper';
 
 import {
     removeMemberFromChannel,
@@ -55,6 +57,8 @@ import {
     handleKickFromChannel,
     fetchGroupMessageMembersCommonTeams,
     convertGroupMessageToPrivateChannel,
+    setChannelAutotranslation,
+    setMyChannelAutotranslation,
 } from './channel';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -78,6 +82,10 @@ jest.mock('@utils/helpers', () => {
         isTablet: mockIsTablet,
     };
 });
+
+jest.mock('@actions/local/post', () => ({
+    deletePostsForChannel: jest.fn().mockResolvedValue({models: [], error: undefined}),
+}));
 
 let mockGetActiveServer: jest.Mock;
 jest.mock('@queries/app/servers', () => {
@@ -134,6 +142,8 @@ const mockClient = {
         posts: [],
         previousPostId: '',
     })),
+    setChannelAutotranslation: jest.fn(),
+    setMyChannelAutotranslation: jest.fn(),
 };
 
 const teamId = 'teamid1';
@@ -145,7 +155,6 @@ const intl = createIntl({
 });
 
 beforeAll(() => {
-    // eslint-disable-next-line
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;
 });
@@ -763,5 +772,58 @@ describe('direct and group', () => {
         const {updatedChannel, error} = await convertGroupMessageToPrivateChannel(serverUrl, channelId, teamId, 'newprivatechannel');
         expect(error).toBeUndefined();
         expect(updatedChannel).toBeDefined();
+    });
+});
+
+describe('setChannelAutotranslation', () => {
+    it('should update channel and call deletePostsForChannel when disabling autotranslation', async () => {
+        const channelWithAutotranslation = TestHelper.fakeChannel({id: channelId, team_id: teamId, autotranslation: true});
+        await operator.handleChannel({channels: [channelWithAutotranslation], prepareRecordsOnly: false});
+        jest.mocked(mockClient.setChannelAutotranslation).mockResolvedValue({id: channelId, autotranslation: false} as Channel);
+        jest.mocked(deletePostsForChannel).mockClear();
+
+        const result = await setChannelAutotranslation(serverUrl, channelId, false);
+
+        expect(result.error).toBeUndefined();
+        expect(result.channel).toBeDefined();
+        expect(result.channel!.autotranslation).toBe(false);
+        expect(mockClient.setChannelAutotranslation).toHaveBeenCalledWith(channelId, false);
+        expect(deletePostsForChannel).toHaveBeenCalledWith(serverUrl, channelId);
+    });
+
+    it('should handle client error', async () => {
+        jest.mocked(mockClient.setChannelAutotranslation).mockRejectedValueOnce(new Error('API error'));
+
+        const result = await setChannelAutotranslation(serverUrl, channelId, true);
+
+        expect(result.error).toBeDefined();
+        expect(deletePostsForChannel).not.toHaveBeenCalled();
+    });
+});
+
+describe('setMyChannelAutotranslation', () => {
+    it('should update myChannel and call deletePostsForChannel when autotranslation changes', async () => {
+        const channelForMy = TestHelper.fakeChannel({id: channelId, team_id: teamId});
+        const myChannelMember = TestHelper.fakeChannelMember({channel_id: channelId, autotranslation: true});
+        await operator.handleChannel({channels: [channelForMy], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channelForMy], myChannels: [myChannelMember], prepareRecordsOnly: false});
+        jest.mocked(mockClient.setMyChannelAutotranslation).mockResolvedValue({} as ChannelMembership);
+        jest.mocked(deletePostsForChannel).mockClear();
+
+        const result = await setMyChannelAutotranslation(serverUrl, channelId, false);
+
+        expect(result.error).toBeUndefined();
+        expect(result.data).toBe(true);
+        expect(mockClient.setMyChannelAutotranslation).toHaveBeenCalledWith(channelId, false);
+        expect(deletePostsForChannel).toHaveBeenCalledWith(serverUrl, channelId);
+    });
+
+    it('should handle client error', async () => {
+        jest.mocked(mockClient.setMyChannelAutotranslation).mockRejectedValueOnce(new Error('API error'));
+
+        const result = await setMyChannelAutotranslation(serverUrl, channelId, true);
+
+        expect(result.error).toBeDefined();
+        expect(deletePostsForChannel).not.toHaveBeenCalled();
     });
 });

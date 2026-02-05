@@ -22,7 +22,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     componentId: AvailableScreens;
-    post: PostModel;
+    post?: PostModel;
     appsEnabled: boolean;
     customEmojiNames: string[];
     isCRTEnabled: boolean;
