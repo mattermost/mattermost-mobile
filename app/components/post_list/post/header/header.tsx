@@ -125,7 +125,7 @@ const Header = ({
     // memo when the relevant data changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const isUnrevealedPost = useMemo(() => isUnrevealedBoRPost(post), [post, post.metadata?.expire_at]);
-    const ownBoRPost = useMemo(() => isOwnBoRPost(post, currentUser), [currentUser, post]);
+    const ownBoRPost = useMemo(() => isOwnBoRPost(post, currentUser?.id), [currentUser?.id, post]);
     const showBoRIcon = isUnrevealedPost || ownBoRPost;
     const borExpireAt = post.metadata?.expire_at;
     const serverUrl = useServerUrl();
