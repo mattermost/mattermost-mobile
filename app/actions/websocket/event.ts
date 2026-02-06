@@ -12,6 +12,7 @@ import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
 
 import * as category from './category';
 import * as channel from './channel';
+import * as files from './files';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
 import * as posts from './posts';
@@ -316,6 +317,16 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.BOR_POST_BURNED:
             handleBoRPostBurnedEvent(serverUrl, msg);
+            break;
+
+        // File access control
+        case WebsocketEvents.FILE_DOWNLOAD_REJECTED:
+            files.handleFileDownloadRejected(serverUrl, msg);
+            break;
+
+        // Toast control
+        case WebsocketEvents.SHOW_TOAST:
+            files.handleShowToast(serverUrl, msg);
             break;
     }
     handlePlaybookEvents(serverUrl, msg);
