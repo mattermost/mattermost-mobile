@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 /* eslint-disable no-await-in-loop, no-console */
 
-import {cleanupAdbReversePorts, resetAdbServer} from '@support/adb_utils';
 import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {Plugin, System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
@@ -111,40 +110,19 @@ export async function launchAppWithRetry(): Promise<void> {
             }
 
             console.info(`✅ App launched successfully on attempt ${attempt}`);
-            return; // Success, exit the function
+            return;
 
         } catch (error) {
             lastError = error;
             console.warn(`❌ App launch failed on attempt ${attempt}/${MAX_RETRY_ATTEMPTS}: ${(error as Error).message}`);
 
-            // If this is the last attempt, don't wait
             if (attempt < MAX_RETRY_ATTEMPTS) {
-                // Check if this is an ADB port binding issue (Android-specific, common in CI)
-                const errorMessage = (error as Error).message;
-                const isAdbPortError = errorMessage.includes('cannot bind listener') ||
-                                      errorMessage.includes('Address already in use') ||
-                                      errorMessage.includes('adb');
-
-                // Only attempt ADB cleanup if we detect an ADB-related error
-                // These functions are safe no-ops on iOS
-                if (isAdbPortError) {
-                    console.warn('Detected ADB-related error, attempting cleanup...');
-                    await cleanupAdbReversePorts();
-
-                    // On second retry with port issues, also reset ADB server
-                    if (attempt >= 2) {
-                        console.warn('Multiple failures detected, attempting ADB server reset...');
-                        await resetAdbServer();
-                    }
-                }
-
                 console.warn(`Waiting ${RETRY_DELAY}ms before retrying...`);
                 await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
             }
         }
     }
 
-    // If we get here, all attempts failed
     throw new Error(`Failed to launch app after ${MAX_RETRY_ATTEMPTS} attempts. Last error: ${(lastError as Error).message}`);
 }
 
@@ -153,28 +131,20 @@ export async function launchAppWithRetry(): Promise<void> {
  * @returns {Promise<void>}
  */
 async function initializeClaudePromptHandler(): Promise<void> {
-    if (process.env.ANTHROPIC_API_KEY) {
+    try {
+        if (!process.env.ANTHROPIC_API_KEY) {
+            return;
+        }
         const promptHandler = new ClaudePromptHandler(process.env.ANTHROPIC_API_KEY);
         pilot.init(promptHandler);
-    } else {
-        console.info('To use ClaudePromptHandler, please set the ANTHROPIC_API_KEY environment variable.');
+    } catch (e) {
+        console.warn('Claude init failed, continuing without AI:', e);
     }
 }
 
 beforeAll(async () => {
     // Reset flag to ensure each test file starts with a clean app launch
     isFirstLaunch = true;
-
-    await initializeClaudePromptHandler();
-
-    // Clean up any stale ADB reverse port mappings from previous runs
-    // This is crucial in CI where crashed tests may leave stale connections
-    await cleanupAdbReversePorts();
-
-    // Login as sysadmin and reset server configuration
-    await System.apiCheckSystemHealth(siteOneUrl);
-    await User.apiAdminLogin(siteOneUrl);
-    await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
     await launchAppWithRetry();
 
     // Verify Detox connection is healthy after app launch
@@ -182,28 +152,10 @@ beforeAll(async () => {
 
     // Wait for app to be fully ready (database initialized, bridge ready)
     await waitForAppReady();
-});
+    await initializeClaudePromptHandler();
 
-// Add this to speed up test cleanup
-afterAll(async () => {
-    try {
-        // Dismiss keyboard if visible to prevent session invalidation issues
-        try {
-            await device.sendToHome();
-            await new Promise((resolve) => setTimeout(resolve, 500));
-        } catch (error) {
-            console.warn('[Teardown] Could not send app to home:', error);
-        }
-
-        await device.terminateApp();
-    } catch (error) {
-        console.error('[Teardown] Error terminating app:', error);
-    }
-
-    // Clean up ADB connections after tests complete
-    try {
-        await cleanupAdbReversePorts();
-    } catch (error) {
-        console.error('[Teardown] Error cleaning up ADB ports:', error);
-    }
+    // Login as sysadmin and reset server configuration
+    await System.apiCheckSystemHealth(siteOneUrl);
+    await User.apiAdminLogin(siteOneUrl);
+    await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
 });

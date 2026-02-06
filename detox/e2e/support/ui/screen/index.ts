@@ -3,6 +3,7 @@
 
 import AboutScreen from './about';
 import AccountScreen from './account';
+import AddMembersScreen from './add_members';
 import AdvancedSettingsScreen from './advanced_settings';
 import AutoResponderNotificationSettingsScreen from './auto_responder_notification_settings';
 import BrowseChannelsScreen from './browse_channels';
@@ -55,6 +56,7 @@ import UserProfileScreen from './user_profile';
 export {
     AboutScreen,
     AccountScreen,
+    AddMembersScreen,
     AdvancedSettingsScreen,
     AutoResponderNotificationSettingsScreen,
     BrowseChannelsScreen,

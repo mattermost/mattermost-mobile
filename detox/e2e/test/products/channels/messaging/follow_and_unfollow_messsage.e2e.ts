@@ -66,7 +66,6 @@ describe('Messaging - Follow and Unfollow Message', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
 
         // # Wait for keyboard to dismiss and message to be visible
         await wait(timeouts.ONE_SEC);
@@ -106,7 +105,6 @@ describe('Messaging - Follow and Unfollow Message', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
 
         // # Wait for keyboard to dismiss and message to be visible
         await wait(timeouts.ONE_SEC);
