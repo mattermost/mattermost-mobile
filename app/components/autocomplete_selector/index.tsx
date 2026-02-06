@@ -15,6 +15,8 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {usePreventDoubleTap} from '@hooks/utils';
+import NetworkManager from '@managers/network_manager';
+import {getActiveServerUrl} from '@queries/app/servers';
 import {getChannelById} from '@queries/servers/channel';
 import {getUserById, observeTeammateNameDisplay} from '@queries/servers/user';
 import {goToScreen} from '@screens/navigation';
@@ -113,7 +115,24 @@ async function getItemName(serverUrl: string, selected: string, teammateNameDisp
             }
 
             const channel = await getChannelById(database, selected);
-            return channel?.displayName || intl.formatMessage({id: 'autocomplete_selector.unknown_channel', defaultMessage: 'Unknown channel'});
+
+            if (channel?.displayName) {
+                return channel.displayName;
+            }
+
+            // If channel not found locally, try to fetch from server
+            try {
+                const activeServerUrl = await getActiveServerUrl();
+                if (activeServerUrl) {
+                    const client = NetworkManager.getClient(activeServerUrl);
+                    const serverChannel = await client.getChannel(selected);
+                    return serverChannel?.display_name || intl.formatMessage({id: 'autocomplete_selector.unknown_channel', defaultMessage: 'Unknown channel'});
+                }
+            } catch (error) {
+                // Server fetch failed, fall back to unknown channel
+            }
+
+            return intl.formatMessage({id: 'autocomplete_selector.unknown_channel', defaultMessage: 'Unknown channel'});
         }
     }
 
