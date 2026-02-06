@@ -171,6 +171,17 @@ android {
         }
     }
 
+    // Handle duplicate native libraries from e2ee module + react-native prefab
+    // See: https://github.com/facebook/react-native/issues/35215
+    packagingOptions {
+        pickFirst '**/libjsi.so'
+        pickFirst '**/libc++_shared.so'
+        pickFirst '**/libreactnative.so'
+        pickFirst '**/libfbjni.so'
+        pickFirst '**/libturbomodulejsijni.so'
+        pickFirst '**/libreact_nativemodule_core.so'
+    }
+
     // applicationVariants are e.g. debug, release
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
