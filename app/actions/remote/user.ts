@@ -6,6 +6,7 @@
 import {chunk} from 'lodash';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
+import {deletePostsForChannelsWithAutotranslation} from '@actions/local/post';
 import {updateRecentCustomStatuses, updateLocalUser} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {General} from '@constants';
@@ -15,7 +16,7 @@ import NetworkManager from '@managers/network_manager';
 import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
 import {queryGroupsByNames} from '@queries/servers/group';
 import {getCurrentUserId, setCurrentUserId} from '@queries/servers/system';
-import {getCurrentUser, prepareUsers, queryAllUsers, queryUsersById, queryUsersByIdsOrUsernames, queryUsersByUsername} from '@queries/servers/user';
+import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByIdsOrUsernames, queryUsersByUsername} from '@queries/servers/user';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {getDeviceTimezone} from '@utils/timezone';
@@ -47,7 +48,7 @@ export type ProfilesInChannelRequest = {
 export const fetchMe = async (serverUrl: string, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<MyUserRequest> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const resultSettled = await Promise.allSettled([client.getMe(groupLabel), client.getStatus('me', groupLabel)]);
         let user: UserProfile|undefined;
@@ -71,6 +72,14 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false, groupLabel?:
 
         if (!fetchOnly) {
             await operator.handleUsers({users: [user], prepareRecordsOnly: false});
+
+            const currentUser = await getUserById(database, user.id);
+            if (currentUser) {
+                const localeChanged = currentUser.locale !== user.locale;
+                if (localeChanged) {
+                    await deletePostsForChannelsWithAutotranslation(serverUrl);
+                }
+            }
         }
 
         return {user};

@@ -46,6 +46,7 @@ type BodyProps = {
     searchPatterns?: SearchPattern[];
     showAddReaction?: boolean;
     theme: Theme;
+    isChannelAutotranslated: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -60,6 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         messageBody: {
             paddingVertical: 2,
             flex: 1,
+            overflow: 'hidden',
         },
         messageContainer: {width: '100%'},
         replyBar: {
@@ -89,9 +91,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Body = ({
-    appsEnabled, hasFiles, hasReactions, highlight, highlightReplyBar,
-    isCRTEnabled, isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAcknowledgementEnabled, isPostAddChannelMember,
-    location, post, searchPatterns, showAddReaction, theme,
+    appsEnabled,
+    hasFiles,
+    hasReactions,
+    highlight,
+    highlightReplyBar,
+    isCRTEnabled,
+    isEphemeral,
+    isFirstReply,
+    isJumboEmoji,
+    isLastReply,
+    isPendingOrFailed,
+    isPostAcknowledgementEnabled,
+    isPostAddChannelMember,
+    location,
+    post,
+    searchPatterns,
+    showAddReaction,
+    theme,
+    isChannelAutotranslated,
 }: BodyProps) => {
     const intl = useIntl();
     const style = getStyleSheet(theme);
@@ -131,10 +149,8 @@ const Body = ({
     }, [highlightReplyBar, isCRTEnabled, isFirstReply, isLastReply, isReplyPost, location, style]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-        if (location === Screens.SAVED_MESSAGES) {
-            setLayoutWidth(e.nativeEvent.layout.width);
-        }
-    }, [location]);
+        setLayoutWidth(e.nativeEvent.layout.width);
+    }, []);
 
     if (hasBeenDeleted) {
         body = (
@@ -180,12 +196,14 @@ const Body = ({
                 post={post}
                 searchPatterns={searchPatterns}
                 theme={theme}
+                isChannelAutotranslated={isChannelAutotranslated}
             />
         );
     }
 
     const acknowledgementsVisible = isPostAcknowledgementEnabled && post.metadata?.priority?.requested_ack;
     const reactionsVisible = hasReactions && showAddReaction;
+
     if (!hasBeenDeleted) {
         body = (
             <View style={style.messageBody}>

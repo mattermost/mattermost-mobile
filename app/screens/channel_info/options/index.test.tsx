@@ -28,8 +28,8 @@ describe('ChannelInfoOptions', () => {
             callsEnabled: false,
             canManageMembers: false,
             isCRTEnabled: false,
-            canManageSettings: false,
             isPlaybooksEnabled: true,
+            hasChannelSettingsActions: false,
         };
     }
     beforeEach(async () => {

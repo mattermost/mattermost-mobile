@@ -107,9 +107,10 @@ const ConvertPrivate = ({canConvert, channelId, displayName}: Props) => {
             label={intl.formatMessage({id: 'channel_info.convert_private', defaultMessage: 'Convert to private channel'})}
             icon='lock-outline'
             type='default'
-            testID='channel_info.options.convert_private.option'
+            testID='channel_settings.convert_private.option'
         />
     );
 };
 
 export default ConvertPrivate;
+
