@@ -87,7 +87,6 @@ describe('Channels', () => {
         await expect(FindChannelsScreen.getFilteredChannelItem(testChannel.name)).toBeVisible();
         await FindChannelsScreen.getFilteredChannelItem(testChannel.name).tap();
         await wait(timeouts.ONE_SEC);
-        await ChannelScreen.dismissKeyboard();
 
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);

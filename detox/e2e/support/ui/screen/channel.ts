@@ -17,7 +17,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ChannelScreen {
@@ -204,23 +204,6 @@ class ChannelScreen {
         }
     };
 
-    dismissKeyboard = async () => {
-        // Explicitly dismiss keyboard before long press
-        if (isAndroid()) {
-            try {
-                await device.pressBack();
-                await wait(timeouts.THREE_SEC);
-            } catch (error) {
-                // Keyboard might not be open, continue
-            }
-        }
-        if (isIos()) {
-            // On iOS, tap outside the input area to dismiss keyboard
-            await this.postInput.tapReturnKey();
-            await wait(timeouts.TWO_SEC);
-        }
-    };
-
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -243,7 +226,7 @@ class ChannelScreen {
         // # Post message
         await this.postInput.tap();
         await this.postInput.clearText();
-        await this.postInput.typeText(message);
+        await this.postInput.replaceText(`${message}\n`);
         await this.tapSendButton();
         await wait(timeouts.TWO_SEC);
     };
