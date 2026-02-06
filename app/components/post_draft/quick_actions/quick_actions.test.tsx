@@ -1,13 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Screens} from '@constants';
 import {PostPriorityType} from '@constants/post';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import QuickActions from './quick_actions';
 
+jest.mock('@components/post_draft/quick_actions/bor_quick_action', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+
 describe('Quick Actions', () => {
     const baseProps: Parameters<typeof QuickActions>[0] = {
+        isBoREnabled: false,
+        updatePostBoRStatus: jest.fn(),
         testID: 'test-quick-actions',
         canUploadFiles: true,
         fileCount: 0,
@@ -23,6 +31,7 @@ describe('Quick Actions', () => {
         },
         updatePostPriority: jest.fn(),
         focus: jest.fn(),
+        location: Screens.CHANNEL,
     };
 
     describe('slash commands', () => {
@@ -170,4 +179,33 @@ describe('Quick Actions', () => {
         });
     });
 
+    describe('BoR quick action', () => {
+        it('should render BoR action when isBoREnabled is true', () => {
+            const props = {
+                ...baseProps,
+                isBoREnabled: true,
+            };
+            const {queryByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
+            expect(queryByTestId('test-quick-actions.bor_action')).toBeDefined();
+        });
+
+        it('should not render BoR action when isBoREnabled is false', () => {
+            const props = {
+                ...baseProps,
+                isBoREnabled: false,
+            };
+            const {queryByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
+            expect(queryByTestId('test-quick-actions.bor_action')).toBeNull();
+        });
+
+        it('should not render BoR action in threads', () => {
+            const props = {
+                ...baseProps,
+                isBoREnabled: true,
+                location: Screens.THREAD,
+            };
+            const {queryByTestId} = renderWithIntlAndTheme(<QuickActions {...props}/>);
+            expect(queryByTestId('test-quick-actions.bor_action')).toBeNull();
+        });
+    });
 });

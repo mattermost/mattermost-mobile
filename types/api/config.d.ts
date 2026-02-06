@@ -22,6 +22,8 @@ interface ClientConfig {
     BuildHash: string;
     BuildHashEnterprise: string;
     BuildNumber: string;
+    BurnOnReadMaximumTimeToLiveSeconds: string;
+    BurnOnReadDurationSeconds: string;
     CloseUnusedDirectMessages: string;
     CollapsedThreads: string;
     CustomBrandText: string;
@@ -46,6 +48,7 @@ interface ClientConfig {
     EmailNotificationContentsType: string;
     EnableBanner: string;
     EnableBotAccountCreation: string;
+    EnableBurnOnRead: string;
     EnableChannelViewedMessages: string;
     EnableClientMetrics?: string;
     EnableCluster: string;

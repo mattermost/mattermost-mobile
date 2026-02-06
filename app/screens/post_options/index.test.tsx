@@ -164,4 +164,62 @@ describe('PostOptions', () => {
         expect(screen.queryByText('Mark as Unread')).not.toBeVisible();
         expect(screen.queryByText('Follow Message')).not.toBeVisible();
     });
+
+    it('should show BOR read receipts for own BoR post', async () => {
+        const ownBoRPost = TestHelper.fakePostModel({
+            type: PostTypes.BURN_ON_READ,
+            channelId: TestHelper.basicChannel!.id,
+            userId: TestHelper.basicUser!.id,
+            message: 'This is my BoR post',
+            metadata: {
+                expire_at: Date.now() + 1000000,
+                recipients: ['user1', 'user2'],
+            },
+        });
+
+        renderWithEverything(
+            <PostOptions
+                post={ownBoRPost}
+                serverUrl={serverUrl}
+                showAddReaction={true}
+                sourceScreen={'DraftScheduledPostOptions'}
+                componentId={'DraftScheduledPostOptions'}
+            />,
+            {database},
+        );
+
+        await waitFor(() => {
+            expect(screen.queryByTestId('bor_read_receipts')).toBeVisible();
+        });
+
+        expect(screen.getByText('Read by 2 of 99 recipients')).toBeVisible();
+    });
+
+    it('should not show BOR read receipts for other users BoR post', async () => {
+        const otherUserBoRPost = TestHelper.fakePostModel({
+            type: PostTypes.BURN_ON_READ,
+            channelId: TestHelper.basicChannel!.id,
+            userId: TestHelper.generateId(), // Different user
+            message: 'This is someone else\'s BoR post',
+            metadata: {
+                expire_at: Date.now() + 1000000,
+                recipients: ['user1', 'user2'],
+            },
+        });
+
+        renderWithEverything(
+            <PostOptions
+                post={otherUserBoRPost}
+                serverUrl={serverUrl}
+                showAddReaction={true}
+                sourceScreen={'DraftScheduledPostOptions'}
+                componentId={'DraftScheduledPostOptions'}
+            />,
+            {database},
+        );
+
+        await waitFor(() => {
+            expect(screen.queryByTestId('bor_read_receipts')).not.toBeVisible();
+        });
+    });
 });

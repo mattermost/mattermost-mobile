@@ -17,6 +17,7 @@ export async function handleBoRPostRevealedEvent(serverUrl: string, msg: WebSock
 
         const {database} = operator;
         let post: Post;
+        const recipients = msg.data.recipients || [];
         try {
             post = JSON.parse(msg.data.post);
         } catch {
@@ -24,7 +25,18 @@ export async function handleBoRPostRevealedEvent(serverUrl: string, msg: WebSock
         }
 
         const existingPost = await getPostById(database, post.id);
+
         if (existingPost) {
+            // Add the receipt to post metadata and update in websocket message so handlePostEdited can get
+            // the updated list of recipients
+            const existingRecipients = existingPost.metadata?.recipients || [];
+            const updatedRecipients = Array.from(new Set([...existingRecipients, ...recipients]));
+            post.metadata = {
+                ...post.metadata,
+                recipients: updatedRecipients,
+            };
+            msg.data.post = JSON.stringify(post);
+
             await handlePostEdited(serverUrl, msg);
         } else {
             await handleNewPostEvent(serverUrl, msg);

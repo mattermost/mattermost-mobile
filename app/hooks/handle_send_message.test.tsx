@@ -657,4 +657,35 @@ describe('useHandleSendMessage', () => {
             expect(defaultProps.clearDraft).not.toHaveBeenCalled();
         });
     });
+
+    it('should handle sending BoR message', async () => {
+        const props = {
+            ...defaultProps,
+            postBoRConfig: {
+                enabled: true,
+                borDurationSeconds: 60,
+                borMaximumTimeToLiveSeconds: 3600,
+            } as PostBoRConfig,
+        };
+        const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+        expect(result.current.canSend).toBe(true);
+
+        await act(async () => {
+            result.current.handleSendMessage();
+        });
+
+        expect(createPost).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.objectContaining({
+                channel_id: 'channel-id',
+                message: 'test message',
+                user_id: 'current-user',
+                type: 'burn_on_read',
+            }),
+            [],
+        );
+        expect(defaultProps.clearDraft).toHaveBeenCalled();
+        expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_LIST_SCROLL_TO_BOTTOM, Screens.CHANNEL);
+    });
 });
