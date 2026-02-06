@@ -27,6 +27,8 @@ When testing features that require mobile device interaction:
 
 ## Key Commands
 
+> **iOS Simulator Setup:** For detailed iOS simulator setup instructions, troubleshooting CocoaPods issues, and build debugging, see [CLAUDE-IOS-SIMULATOR.md](./CLAUDE-IOS-SIMULATOR.md).
+
 ```bash
 # Setup
 npm run pod-install           # iOS CocoaPods (or pod-install-m1 for M1 Macs)

@@ -2,8 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {Node, type NodeType} from 'commonmark';
+import urlParse from 'url-parse';
 
 import {escapeRegex} from '@utils/markdown';
+import {safeDecodeURIComponent} from '@utils/url';
 
 import type {HighlightWithoutNotificationKey, SearchPattern, UserMentionKey} from '@typings/global/markdown';
 
@@ -377,6 +379,154 @@ export function parseTaskLists(ast: Node) {
                 textNode.literal = literal.substring(match[0].length);
             }
         }
+    }
+
+    return ast;
+}
+
+/**
+ * Parse a citation URL to extract entity type and identifier.
+ * Citation URLs must have view=citation as a query parameter.
+ *
+ * URL patterns:
+ * - Post: /team/pl/postId?view=citation
+ * - Channel: /team/channels/channelName?view=citation
+ * - Team: /team?view=citation (just the team slug)
+ *
+ * @param url - The URL to parse
+ * @param serverUrl - Optional server URL to validate this is an internal link
+ * @returns Parsed citation info or null if not a valid citation URL
+ */
+export function parseCitationUrl(url: string, serverUrl?: string): {entityType: string; entityId: string; linkUrl: string} | null {
+    // Use urlParse for proper URL parsing
+    const decodedUrl = safeDecodeURIComponent(url);
+    const parsedUrl = urlParse(decodedUrl, true);
+
+    // Check if view=citation is a proper query parameter
+    if (parsedUrl.query.view !== 'citation') {
+        return null;
+    }
+
+    // If serverUrl is provided, validate this is an internal link
+    if (serverUrl) {
+        const parsedServerUrl = urlParse(serverUrl);
+        const normalizedServerHost = parsedServerUrl.hostname.toLowerCase();
+        const normalizedUrlHost = parsedUrl.hostname.toLowerCase();
+
+        // Verify the URL's host matches the server's host
+        if (normalizedUrlHost !== normalizedServerHost) {
+            return null;
+        }
+
+        // Verify the URL's port matches (if specified)
+        if (parsedServerUrl.port && parsedUrl.port !== parsedServerUrl.port) {
+            return null;
+        }
+    }
+
+    // Get the pathname, stripping any server subpath if serverUrl is provided
+    let pathname = parsedUrl.pathname;
+    if (serverUrl) {
+        const parsedServerUrl = urlParse(serverUrl);
+
+        // Get server's pathname without trailing slashes but keep the leading slash
+        const serverPath = parsedServerUrl.pathname.replace(/\/+$/, '');
+        if (serverPath && serverPath !== '/' && pathname.startsWith(serverPath)) {
+            pathname = pathname.substring(serverPath.length) || '/';
+        }
+    }
+
+    // Parse the path to determine entity type
+    // Post permalink: /team/pl/postId (postId is exactly 26 chars)
+    const postMatch = /\/pl\/([a-z0-9]{26})$/i.exec(pathname);
+    if (postMatch) {
+        return {
+            entityType: 'POST',
+            entityId: postMatch[1],
+            linkUrl: url,
+        };
+    }
+
+    // Channel permalink: /team/channels/channelName
+    // Channel names can contain: lowercase letters, numbers, hyphens, underscores, periods, and colons
+    // Note: entityId here is the channel NAME (from URL path), not the channel UUID.
+    // The InlineEntityLink component handles looking up the actual channel ID.
+    const channelMatch = /\/channels\/([@a-zA-Z\-_0-9][@a-zA-Z\-_0-9.:]*)$/.exec(pathname);
+    if (channelMatch) {
+        return {
+            entityType: 'CHANNEL',
+            entityId: channelMatch[1],
+            linkUrl: url,
+        };
+    }
+
+    // Team permalink: just /teamSlug (no /pl/ or /channels/)
+    // Extract the team slug from the path - it's the last segment
+    const pathSegments = pathname.split('/').filter(Boolean);
+
+    // For team URLs, we expect just the team slug in the path (after any subpath)
+    // URL format: http://host/[subpath/]teamSlug?view=citation
+    if (pathSegments.length === 1) {
+        const teamSlug = pathSegments[0];
+
+        // Team names follow a similar pattern but are more restrictive
+        if (/^[a-z0-9][a-z0-9\-_]*$/.test(teamSlug)) {
+            return {
+                entityType: 'TEAM',
+                entityId: teamSlug,
+                linkUrl: url,
+            };
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Process markdown links with ?view=citation query parameter and
+ * replace them with inline_entity_link nodes that will be rendered as clickable link icons.
+ *
+ * This handles the new citation format:
+ * - [text](http://server/team/pl/postId?view=citation) -> post citation
+ * - [text](http://server/team/channels/channelName?view=citation) -> channel citation
+ * - [text](http://server/team?view=citation) -> team citation
+ *
+ * @param ast - The AST to process
+ * @param serverUrl - Optional server URL to validate internal links only
+ */
+export function processInlineEntities(ast: Node, serverUrl?: string) {
+    const walker = ast.walker();
+
+    let e;
+    while ((e = walker.next())) {
+        if (!e.entering) {
+            continue;
+        }
+
+        const node: any = e.node;
+
+        // Look for link nodes with citation query parameter
+        if (node.type !== 'link' || !node.destination) {
+            continue;
+        }
+
+        const parsed = parseCitationUrl(node.destination, serverUrl);
+        if (!parsed) {
+            continue;
+        }
+
+        // Create the inline entity link node
+        const entityNode: any = new Node('inline_entity_link' as any);
+        entityNode.entityType = parsed.entityType;
+        entityNode.entityId = parsed.entityId;
+        entityNode.linkUrl = parsed.linkUrl;
+
+        // Replace the link node with the entity node
+        node.insertBefore(entityNode);
+        node.unlink();
+
+        // Resume at the entity node
+        walker.resumeAt(entityNode, false);
     }
 
     return ast;
