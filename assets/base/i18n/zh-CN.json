@@ -1087,6 +1087,8 @@
   "playbooks.only_runs_available.ok": "OK",
   "playbooks.only_runs_available.title": "Playbooks 不可用",
   "playbooks.participant_playbooks.title": "剧本清单",
+  "playbooks.playbook_run.edit.summary_label": "摘要",
+  "playbooks.playbook_run.edit.title": "编辑剧本运行",
   "playbooks.playbook_run.error.description": "请检查您的网络连接或稍后再试。",
   "playbooks.playbook_run.error.title": "无法获取详情",
   "playbooks.playbook_run.finish_run_button": "完成",
