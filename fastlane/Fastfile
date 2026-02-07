@@ -930,12 +930,15 @@ platform :android do
   end
 
   lane :replace_assets do
+    require 'fileutils'
+  
     if ENV['REPLACE_ASSETS'] == 'true'
-      sh 'cp -R ../dist/assets/release/icons/android/* ../android/app/src/main/res/'
-      sh 'cp -R ../dist/assets/release/splash_screen/android/* ../android/app/src/main/res/'
+      FileUtils.cp_r Dir["../dist/assets/release/icons/android/*"], "../android/app/src/main/res/"
+      FileUtils.cp_r Dir["../dist/assets/release/splash_screen/android/*"], "../android/app/src/main/res/"
     end
-    sh 'mkdir -p ../android/app/src/main/res/raw/'
-    sh 'cp -R ../assets/sounds/* ../android/app/src/main/res/raw/'
+  
+    FileUtils.mkdir_p("../android/app/src/main/res/raw/")
+    FileUtils.cp_r Dir["../assets/sounds/*"], "../android/app/src/main/res/raw/"
   end
 
   lane :pinned_certificates do
