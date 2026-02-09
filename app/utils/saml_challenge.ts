@@ -3,23 +3,15 @@
 
 // SAML mobile code-exchange challenge helpers (modeled after RFC 7636)
 
-import base64 from 'base-64';
 import {getRandomValues, randomUUID} from 'expo-crypto';
 import {sha256} from 'js-sha256';
+
+import {bytesToBase64Url} from '@utils/encoding';
 
 function getRandomBytes(length: number): Uint8Array {
     const bytes = new Uint8Array(length);
     getRandomValues(bytes);
     return bytes;
-}
-
-function bytesToBase64Url(bytes: Uint8Array): string {
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) {
-        binary += String.fromCharCode(bytes[i]);
-    }
-    const b64 = base64.encode(binary);
-    return b64.replace(/\+/g, '-').replace(/\//g, '_').split('=').join('');
 }
 
 export function generateState(): string {
