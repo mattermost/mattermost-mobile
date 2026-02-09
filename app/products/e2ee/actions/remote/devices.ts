@@ -12,6 +12,15 @@ type EnabledDevicesResponse = {
     error?: unknown;
 }
 
+export const registerDevice = async (
+    serverUrl: string,
+    signaturePublicKey: string,
+    deviceName: string,
+) => {
+    const client = NetworkManager.getClient(serverUrl);
+    return client.registerDevice(signaturePublicKey, deviceName);
+};
+
 export const fetchEnabledDevices = async (
     serverUrl: string,
     currentDeviceId: string,

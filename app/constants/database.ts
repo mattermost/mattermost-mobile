@@ -61,6 +61,7 @@ export const SYSTEM_IDENTIFIERS = {
     CURRENT_TEAM_ID: 'currentTeamId',
     CURRENT_USER_ID: 'currentUserId',
     DATA_RETENTION_POLICIES: 'dataRetentionPolicies',
+    E2EE_VERSION: 'e2ee_version',
     EXPANDED_LINKS: 'expandedLinks',
     GRANULAR_DATA_RETENTION_POLICIES: 'granularDataRetentionPolicies',
     LAST_DATA_RETENTION_RUN: 'lastDataRetentionRun',
