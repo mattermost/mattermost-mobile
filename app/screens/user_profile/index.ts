@@ -14,7 +14,7 @@ import {observeCanManageChannelMembers, observePermissionForChannel} from '@quer
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeCurrentUser, observeUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
 import {isDefaultChannel} from '@utils/channel';
-import {isSystemAdmin, sortCustomProfileAttributes, convertToAttributesMap, convertProfileAttributesToCustomAttributes} from '@utils/user';
+import {isSystemAdmin, sortCustomProfileAttributes, convertToAttributesMap, convertProfileAttributesToCustomAttributes, getUserIdFromChannelName} from '@utils/user';
 
 import UserProfile from './user_profile';
 
@@ -36,9 +36,16 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
     const isDC = channel ? channel.pipe(
         switchMap((c) => of$(isDefaultChannel(c))),
     ) : of$(false);
-    const isDirectMessage = channelId ? channel.pipe(
-        switchMap((c) => of$(c?.type === General.DM_CHANNEL)),
-    ) : of$(false);
+    const isDirectMessageWithUser = combineLatest([channel, currentUserId, user]).pipe(
+        map(([c, currentId, viewedUser]) => {
+            if (!c || c.type !== General.DM_CHANNEL || !viewedUser) {
+                return false;
+            }
+
+            const dmUserId = getUserIdFromChannelName(currentId, c.name);
+            return dmUserId === viewedUser.id;
+        }),
+    );
     const teamId = channel.pipe(switchMap((c) => (c?.teamId ? of$(c.teamId) : observeCurrentTeamId(database))));
     const isTeamAdmin = teamId.pipe(switchMap((id) => observeUserIsTeamAdmin(database, userId, id)));
     const systemAdmin = user.pipe(switchMap((u) => of$(u?.roles ? isSystemAdmin(u.roles) : false)));
@@ -81,7 +88,7 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
         isChannelAdmin,
         isCustomStatusEnabled,
         isDefaultChannel: isDC,
-        isDirectMessage,
+        isDirectMessageWithUser,
         isMilitaryTime,
         isSystemAdmin: systemAdmin,
         isTeamAdmin,
