@@ -12,7 +12,7 @@ export interface ClientE2EEMix {
 
 const ClientE2EE = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     getE2EERoute = () => {
-        return '/plugins/e2ee/api/v1';
+        return '/plugins/mattermost-e2ee/v1';
     };
 
     fetchDevices = async () => {
