@@ -129,6 +129,9 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
                 setTooltipVisible(true);
             }
         });
+
+        // tutorialWatched is not a dependency because it is not used in the effect
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
@@ -145,7 +148,7 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
             >
                 <Animated.View
                     style={widthAnimatedStyle}
-                    exiting={Platform.OS === 'android' ? undefined : FadeOut /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */}
+                    exiting={Platform.select({ios: FadeOut})} /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */
                     entering={FadeIn}
                 >
                     <Animated.View style={[styles.container, opacityStyle]}>
@@ -162,7 +165,7 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
             <Animated.View
                 style={styles.expanded}
                 entering={entering}
-                exiting={exiting}
+                exiting={Platform.select({ios: exiting})} /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */
             >
                 {!isTablet && <CloseButton collapse={collapse}/>}
                 <SkinSelector

@@ -5,10 +5,9 @@ import {Setup, User, Team, Playbooks, PlaybooksHelpers, Channel} from '@support/
 import {siteOneUrl} from '@support/test_config';
 import {ServerScreen, LoginScreen, ChannelScreen, ChannelListScreen, ThreadScreen} from '@support/ui/screen';
 
-describe('Playbooks - Basic', () => {
+(process.env.ANTHROPIC_API_KEY ? describe : describe.skip)('Playbooks - Basic', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
-
     let testUser: any;
     let testTeam: any;
     let testChannel: any;

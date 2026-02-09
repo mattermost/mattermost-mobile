@@ -5,11 +5,28 @@ import {Navigation} from 'react-native-navigation';
 
 import {Events, Preferences, Screens} from '@constants';
 import NavigationStore from '@store/navigation_store';
+import {isTablet} from '@utils/helpers';
 
-import {openAsBottomSheet} from './navigation';
+import {openAsBottomSheet, openAttachmentOptions} from './navigation';
 
 import type {FirstArgument} from '@typings/utils/utils';
 import type {IntlShape} from 'react-intl';
+
+jest.mock('@utils/helpers', () => ({
+    ...jest.requireActual('@utils/helpers'),
+    isTablet: jest.fn(),
+}));
+
+jest.mock('@components/compass_icon', () => {
+    function CompassIcon() {
+        return null;
+    }
+    CompassIcon.getImageSourceSync = jest.fn().mockReturnValue({});
+    return {
+        __esModule: true,
+        default: CompassIcon,
+    };
+});
 
 function expectShowModalCalledWith(screen: string, title: string, props?: Record<string, unknown>) {
     expect(Navigation.showModal).toHaveBeenCalledWith({
@@ -33,8 +50,8 @@ function expectShowModalOverCurrentContext(screen: string, props?: Record<string
     expectShowModalCalledWith(screen, '', props);
 }
 
-function expectOpenAsBottomSheetCalledWith(props: FirstArgument<typeof openAsBottomSheet>, isTablet: boolean) {
-    if (isTablet) {
+function expectOpenAsBottomSheetCalledWith(props: FirstArgument<typeof openAsBottomSheet>, isTabletDevice: boolean) {
+    if (isTabletDevice) {
         expectShowModalCalledWith(props.screen, props.title, {closeButtonId: props.closeButtonId, ...props.props});
     } else {
         expectShowModalOverCurrentContext(props.screen, props.props);
@@ -104,6 +121,71 @@ describe('openUserProfileModal', () => {
             closeButtonId: 'close-user-profile',
             theme,
             props,
+        }, false);
+    });
+});
+
+describe('openAttachmentOptions', () => {
+    const intl = {
+        formatMessage: jest.fn(({defaultMessage}) => defaultMessage),
+    } as unknown as IntlShape;
+    const theme = Preferences.THEMES.denim;
+    const mockOnUploadFiles = jest.fn();
+    const props = {
+        onUploadFiles: mockOnUploadFiles,
+        maxFilesReached: false,
+        canUploadFiles: true,
+        testID: 'test-attachment',
+        fileCount: 0,
+        maxFileCount: 5,
+    };
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        jest.mocked(isTablet).mockReturnValue(false);
+    });
+
+    it('should call openAsBottomSheet with correct parameters on non-tablet', () => {
+        openAttachmentOptions(intl, theme, props);
+
+        expectOpenAsBottomSheetCalledWith({
+            screen: Screens.ATTACHMENT_OPTIONS,
+            title: 'Files and media',
+            closeButtonId: 'attachment-close-id',
+            theme,
+            props,
+        }, false);
+    });
+
+    it('should call openAsBottomSheet with correct parameters on tablet', () => {
+        jest.mocked(isTablet).mockReturnValue(true);
+
+        openAttachmentOptions(intl, theme, props);
+
+        expectOpenAsBottomSheetCalledWith({
+            screen: Screens.ATTACHMENT_OPTIONS,
+            title: 'Files and media',
+            closeButtonId: 'attachment-close-id',
+            theme,
+            props,
+        }, true);
+    });
+
+    it('should handle optional props correctly', () => {
+        const minimalProps = {
+            onUploadFiles: mockOnUploadFiles,
+            maxFilesReached: true,
+            canUploadFiles: false,
+        };
+
+        openAttachmentOptions(intl, theme, minimalProps);
+
+        expectOpenAsBottomSheetCalledWith({
+            screen: Screens.ATTACHMENT_OPTIONS,
+            title: 'Files and media',
+            closeButtonId: 'attachment-close-id',
+            theme,
+            props: minimalProps,
         }, false);
     });
 });

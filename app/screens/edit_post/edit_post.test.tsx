@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {act, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {Alert} from 'react-native';
 
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
+import * as Navigation from '@screens/navigation';
 import {fireEvent, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import PickerUtil from '@utils/file/file_picker';
@@ -13,6 +15,7 @@ import EditPost from './edit_post';
 
 import type {Database} from '@nozbe/watermelondb';
 import type PostModel from '@typings/database/models/servers/post';
+import type {IntlShape} from 'react-intl';
 
 jest.mock('@utils/file/file_picker');
 jest.mock('@managers/draft_upload_manager', () => ({
@@ -21,6 +24,13 @@ jest.mock('@managers/draft_upload_manager', () => ({
     registerProgressHandler: jest.fn(() => jest.fn()),
     registerErrorHandler: jest.fn(() => jest.fn()),
     cancel: jest.fn(),
+}));
+jest.mock('@screens/navigation', () => ({
+    openAttachmentOptions: jest.fn(),
+    buildNavigationButton: jest.fn((id: string, testID: string) => ({id, testID})),
+    dismissBottomSheet: jest.fn(() => Promise.resolve()),
+    dismissModal: jest.fn(),
+    setButtons: jest.fn(),
 }));
 
 const TEST_CONFIG = {
@@ -110,6 +120,14 @@ describe('Edit Post', () => {
                 onUploadFiles?.([file as ExtractedFileInfo]);
                 return Promise.resolve({error: undefined});
             }),
+            attachFileFromPhotoGallery: jest.fn(() => {
+                onUploadFiles?.([file as ExtractedFileInfo]);
+                return Promise.resolve({error: undefined});
+            }),
+            attachFileFromCamera: jest.fn(() => {
+                onUploadFiles?.([file as ExtractedFileInfo]);
+                return Promise.resolve({error: undefined});
+            }),
         }) as unknown as PickerUtil);
     };
 
@@ -120,12 +138,30 @@ describe('Edit Post', () => {
         });
     };
 
-    const triggerFileUpload = (screen: ReturnType<typeof renderEditPost>) => {
-        fireEvent.press(screen.getByTestId('edit_post.quick_actions.file_action'));
+    const triggerFileUpload = async (screen: ReturnType<typeof renderEditPost>) => {
+        let onUploadFilesCallback: ((files: ExtractedFileInfo[]) => void) | undefined;
+        jest.mocked(Navigation.openAttachmentOptions).mockImplementation((intl, theme, props) => {
+            onUploadFilesCallback = props?.onUploadFiles;
+            return undefined;
+        });
+
+        await act(async () => {
+            fireEvent.press(screen.getByTestId('edit_post.quick_actions.attachment_action'));
+        });
+
+        if (onUploadFilesCallback) {
+            await act(async () => {
+                const mockIntl = {formatMessage: jest.fn()} as unknown as IntlShape;
+                const mockPicker = new PickerUtil(mockIntl, onUploadFilesCallback as (files: ExtractedFileInfo[]) => void);
+                await mockPicker.attachFileFromFiles(undefined, true);
+            });
+        }
     };
 
-    const triggerFileRemoval = (screen: ReturnType<typeof renderEditPost>, fileId: string) => {
-        fireEvent.press(screen.getByTestId(`remove-button-${fileId}`));
+    const triggerFileRemoval = async (screen: ReturnType<typeof renderEditPost>, fileId: string) => {
+        await act(async () => {
+            fireEvent.press(screen.getByTestId(`remove-button-${fileId}`));
+        });
     };
 
     beforeAll(async () => {
@@ -159,53 +195,61 @@ describe('Edit Post', () => {
     });
 
     describe('File Upload Validation', () => {
-        it('should show error when file uploads are disabled', () => {
+        it('should show error when file uploads are disabled', async () => {
             setupPickerMock(TEST_FILES.smallFile);
             const props = {...baseProps, canUploadFiles: false};
             const screen = renderEditPost(props);
-            triggerFileUpload(screen);
+            await triggerFileUpload(screen);
 
-            expect(screen.getByText(ERROR_MESSAGES.uploadsDisabled)).toBeVisible();
+            await waitFor(() => {
+                expect(screen.getByText(ERROR_MESSAGES.uploadsDisabled)).toBeVisible();
+            });
         });
 
-        it('should show error when maximum file count is reached', () => {
+        it('should show error when maximum file count is reached', async () => {
             setupPickerMock(TEST_FILES.smallFile);
             const props = {...baseProps, maxFileCount: 1};
             const screen = renderEditPost(props);
-            triggerFileUpload(screen);
+            await triggerFileUpload(screen);
 
-            expect(screen.getByText(ERROR_MESSAGES.maxFilesReached)).toBeVisible();
+            await waitFor(() => {
+                expect(screen.getByText(ERROR_MESSAGES.maxFilesReached)).toBeVisible();
+            });
         });
 
-        it('should show error when file size exceeds limit', () => {
+        it('should show error when file size exceeds limit', async () => {
             setupPickerMock(TEST_FILES.largeFile);
             const props = {...baseProps, maxFileSize: 1000};
             const screen = renderEditPost(props);
-            triggerFileUpload(screen);
+            await triggerFileUpload(screen);
 
-            expect(screen.getByText(ERROR_MESSAGES.fileTooLarge)).toBeVisible();
+            await waitFor(() => {
+                expect(screen.getByText(ERROR_MESSAGES.fileTooLarge)).toBeVisible();
+            });
         });
     });
 
     describe('File Upload Integration', () => {
-        it('should integrate with DraftEditPostUploadManager for successful uploads', () => {
+        it('should integrate with DraftEditPostUploadManager for successful uploads', async () => {
             setupPickerMock(TEST_FILES.newFile);
             const screen = renderEditPost();
-            triggerFileUpload(screen);
+            await triggerFileUpload(screen);
 
-            expect(DraftEditPostUploadManager.prepareUpload).toHaveBeenCalledWith(
-                TEST_CONFIG.serverUrl,
-                TEST_FILES.newFile,
-                baseProps.post.channelId,
-                baseProps.post.rootId,
-                0,
-                true,
-                expect.any(Function),
-            );
-            expect(DraftEditPostUploadManager.registerErrorHandler).toHaveBeenCalledWith(
-                TEST_FILES.newFile.clientId,
-                expect.any(Function),
-            );
+            await waitFor(() => {
+                expect(DraftEditPostUploadManager.prepareUpload).toHaveBeenCalledWith(
+                    TEST_CONFIG.serverUrl,
+                    TEST_FILES.newFile,
+                    baseProps.post.channelId,
+                    baseProps.post.rootId,
+                    0,
+                    true,
+                    expect.any(Function),
+                );
+                expect(DraftEditPostUploadManager.registerErrorHandler).toHaveBeenCalledWith(
+                    TEST_FILES.newFile.clientId,
+                    expect.any(Function),
+                );
+            });
         });
     });
 
@@ -215,49 +259,57 @@ describe('Edit Post', () => {
             setupPickerMock(TEST_FILES.newFile);
         });
 
-        it('should remove newly uploaded files without confirmation', () => {
+        it('should remove newly uploaded files without confirmation', async () => {
             const screen = renderEditPost();
-            triggerFileUpload(screen);
-            triggerFileRemoval(screen, TEST_FILES.newFile.id);
+            await triggerFileUpload(screen);
+            await triggerFileRemoval(screen, TEST_FILES.newFile.id);
             expect(Alert.alert).not.toHaveBeenCalled();
-            expect(DraftEditPostUploadManager.cancel).toHaveBeenCalledWith(TEST_FILES.newFile.clientId);
+            await waitFor(() => {
+                expect(DraftEditPostUploadManager.cancel).toHaveBeenCalledWith(TEST_FILES.newFile.clientId);
+            });
         });
 
-        it('should show confirmation dialog for existing files', () => {
+        it('should show confirmation dialog for existing files', async () => {
             const screen = renderEditPost();
-            triggerFileRemoval(screen, TEST_FILES.existingFile1.id);
-            expect(Alert.alert).toHaveBeenCalledWith(
-                ERROR_MESSAGES.confirmDelete,
-                'Are you sure you want to remove test-1?',
-                expect.any(Array),
-            );
+            await triggerFileRemoval(screen, TEST_FILES.existingFile1.id);
+            await waitFor(() => {
+                expect(Alert.alert).toHaveBeenCalledWith(
+                    ERROR_MESSAGES.confirmDelete,
+                    'Are you sure you want to remove test-1?',
+                    expect.any(Array),
+                );
+            });
         });
     });
 
     describe('Error Display', () => {
-        it('should display upload error in PostError component when file upload fails', () => {
+        it('should display upload error in PostError component when file upload fails', async () => {
             setupPickerMock(TEST_FILES.largeFile);
             const props = {...baseProps, maxFileSize: 1000};
             const screen = renderEditPost(props);
 
             // Trigger file upload that will cause size error
-            triggerFileUpload(screen);
+            await triggerFileUpload(screen);
 
             // Verify that the PostError component is displayed with the error
-            expect(screen.getByTestId('edit_post.message.input.error')).toBeVisible();
-            expect(screen.getByText(ERROR_MESSAGES.fileTooLarge)).toBeVisible();
+            await waitFor(() => {
+                expect(screen.getByTestId('edit_post.message.input.error')).toBeVisible();
+                expect(screen.getByText(ERROR_MESSAGES.fileTooLarge)).toBeVisible();
+            });
         });
 
-        it('should display upload error with divider when error is present', () => {
+        it('should display upload error with divider when error is present', async () => {
             setupPickerMock(TEST_FILES.smallFile);
             const props = {...baseProps, canUploadFiles: false};
             const screen = renderEditPost(props);
 
             // Trigger file upload that will cause upload disabled error
-            triggerFileUpload(screen);
+            await triggerFileUpload(screen);
 
             // Verify that the error is displayed
-            expect(screen.getByText(ERROR_MESSAGES.uploadsDisabled)).toBeVisible();
+            await waitFor(() => {
+                expect(screen.getByText(ERROR_MESSAGES.uploadsDisabled)).toBeVisible();
+            });
 
             // Verify that the PostError component has the hasError styling applied
             const editPostInput = screen.getByTestId('edit_post.message.input');

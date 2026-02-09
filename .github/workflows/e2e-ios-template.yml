@@ -38,12 +38,12 @@ on:
         description: "iPhone simulator name"
         required: false
         type: string
-        default: "iPhone 15 Pro"
+        default: "iPhone 17 Pro"
       ios_device_os_name:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 17.2"
+        default: "iOS 26.2"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
@@ -121,7 +121,7 @@ jobs:
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
   e2e-ios:
-    name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+    name: machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
     runs-on: macos-15
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
@@ -173,6 +173,82 @@ jobs:
       - name: Install Detox Dependencies
         run: cd detox && npm i
 
+      - name: Pre-boot iOS Simulator
+        run: |
+          set -e
+
+          echo "Looking for simulator: ${{ env.DEVICE_NAME }} with ${{ env.DEVICE_OS_VERSION }}"
+
+          # Find or create the simulator
+          SIMULATOR_ID=$(xcrun simctl list devices | grep "${{ env.DEVICE_NAME }}" | grep "${{ env.DEVICE_OS_VERSION }}" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
+
+          if [ -z "$SIMULATOR_ID" ]; then
+            echo "Simulator not found. Creating simulator ${{ env.DEVICE_NAME }} with ${{ env.DEVICE_OS_VERSION }}"
+
+            # Get device type (use exact match with parentheses to avoid partial matches)
+            DEVICE_TYPE=$(xcrun simctl list devicetypes | grep "${{ env.DEVICE_NAME }} (" | head -1 | awk -F'[()]' '{print $(NF-1)}')
+            if [ -z "$DEVICE_TYPE" ]; then
+              echo "Error: Could not find device type for ${{ env.DEVICE_NAME }}"
+              exit 1
+            fi
+            echo "Found device type: $DEVICE_TYPE"
+
+            # Get runtime (extract the identifier after the last " - ")
+            RUNTIME=$(xcrun simctl list runtimes | grep "${{ env.DEVICE_OS_VERSION }}" | head -1 | sed 's/.* - \(.*\)/\1/')
+            if [ -z "$RUNTIME" ]; then
+              echo "Error: Could not find runtime for ${{ env.DEVICE_OS_VERSION }}"
+              exit 1
+            fi
+            echo "Found runtime: $RUNTIME"
+
+            # Create simulator
+            SIMULATOR_ID=$(xcrun simctl create "CI-${{ env.DEVICE_NAME }}" "$DEVICE_TYPE" "$RUNTIME")
+            echo "Created simulator with ID: $SIMULATOR_ID"
+          else
+            echo "Found existing simulator: $SIMULATOR_ID"
+          fi
+
+          # Boot simulator first to initialize directory structure
+          echo "Initializing simulator directories (first boot)..."
+          xcrun simctl boot "$SIMULATOR_ID"
+          xcrun simctl bootstatus "$SIMULATOR_ID"
+
+          # Shut down to apply password autofill restrictions
+          echo "Shutting down to apply password autofill restrictions..."
+          xcrun simctl shutdown "$SIMULATOR_ID"
+          sleep 3
+
+          echo "Disabling password autofill (simulator is shut down)"
+
+          # Ensure the directory exists (should now exist after first boot)
+          SETTINGS_DIR="$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles"
+          mkdir -p "$SETTINGS_DIR"
+
+          # Use the JavaScript utility to disable password autofill
+          cd detox
+          node utils/disable_ios_autofill.js --simulator-id "$SIMULATOR_ID"
+
+          if [ $? -ne 0 ]; then
+            echo "⚠️ Failed to disable password autofill"
+            exit 1
+          fi
+
+          cd ..
+
+          echo "Booting simulator with password autofill disabled..."
+          xcrun simctl boot "$SIMULATOR_ID"
+
+          # Wait for boot to complete
+          xcrun simctl bootstatus "$SIMULATOR_ID"
+
+          # Open Simulator.app in background to speed up UI rendering
+          open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID"
+
+          # Give Simulator.app time to fully initialize UI (iOS 26.2 needs more time)
+          sleep 5
+
+          echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
+
       - name: Start Proxy
         if: ${{ inputs.low_bandwidth_mode }}
         id: start-proxy
@@ -182,26 +258,102 @@ jobs:
 
       - name: Set .env with RUNNING_E2E=true
         run: |
-          cat > .env <<EOF
-          echo "RUNNING_E2E=true" >> .env
+          echo "RUNNING_E2E=true" > .env
 
-      - name: Run Detox E2E Tests
+      - name: Verify Simulator Health
+        run: |
+          echo "Verifying simulator health before running tests..."
+
+          # Check if simulator is still responsive
+          if ! xcrun simctl bootstatus "$SIMULATOR_ID" -b 2>/dev/null; then
+            echo "⚠️ Simulator not responsive, attempting recovery..."
+
+            # Try to shutdown and reboot
+            xcrun simctl shutdown "$SIMULATOR_ID" || true
+            sleep 3
+            xcrun simctl boot "$SIMULATOR_ID"
+            xcrun simctl bootstatus "$SIMULATOR_ID"
+          fi
+
+          echo "✅ Simulator is healthy and ready"
+
+      - name: Start Metro Bundler and Run Detox E2E Tests
         continue-on-error: true # We want to run all the tests
         run: |
-          # Start the server
-          npm run start &
-          sleep 120 # Wait for watchman to finish querying the files
+          # Start Metro bundler in background
+          npm run start > metro.log 2>&1 &
+          METRO_PID=$!
+          echo "Metro PID: $METRO_PID"
+          echo "METRO_PID=$METRO_PID" >> $GITHUB_ENV
+
+          # Wait for Metro to be ready with health check endpoint polling
+          timeout=120
+          elapsed=0
+          echo "Waiting for Metro bundler to be ready..."
+          while [ $elapsed -lt $timeout ]; do
+            # Try health check endpoint first (more reliable)
+            if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+              echo "✅ Metro bundler is ready after ${elapsed}s (verified via health check)"
+              break
+            # Fallback to log checking
+            elif grep -q "Fast - Scalable - Integrated" metro.log 2>/dev/null; then
+              echo "✅ Metro bundler is ready after ${elapsed}s (verified via logs)"
+              break
+            fi
+
+            # Show progress every 10 seconds
+            if [ $((elapsed % 10)) -eq 0 ] && [ $elapsed -gt 0 ]; then
+              echo "Still waiting for Metro... (${elapsed}s elapsed)"
+            fi
+
+            sleep 2
+            elapsed=$((elapsed + 2))
+          done
+
+          if [ $elapsed -ge $timeout ]; then
+            echo "⚠️ Warning: Metro bundler may not be fully ready after ${timeout}s, proceeding anyway"
+            echo "Metro process status:"
+            ps aux | grep -E "metro|node.*start" | grep -v grep || echo "Metro process not found"
+            echo ""
+            echo "Last 30 lines of metro.log:"
+            tail -30 metro.log
+          else
+            echo "Metro is serving on http://localhost:8081"
+            # Give Metro extra time to fully initialize for iOS 26.2 (React Native bridge needs more time)
+            echo "Allowing Metro to fully stabilize..."
+            sleep 8
+          fi
+
           cd detox
-          npm run clean-detox
           npm run detox:config-gen
           npm run e2e:ios-test -- ${{ matrix.specs }}
         env:
           DETOX_DISABLE_HIERARCHY_DUMP: "YES"
-          DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"      
+          DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"
           DETOX_LOGLEVEL: "debug"
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
+
+      - name: Cleanup Simulator State
+        if: always()
+        run: |
+          echo "Cleaning up simulator state after tests..."
+
+          # Stop Metro bundler if still running
+          if [ ! -z "$METRO_PID" ]; then
+            echo "Stopping Metro bundler (PID: $METRO_PID)..."
+            kill -9 "$METRO_PID" 2>/dev/null || true
+          fi
+
+          # Terminate app gracefully
+          if [ ! -z "$SIMULATOR_ID" ]; then
+            echo "Terminating app on simulator..."
+            xcrun simctl terminate "$SIMULATOR_ID" com.mattermost.rnbeta 2>/dev/null || true
+            sleep 2
+          fi
+
+          echo "✅ Simulator cleanup complete"
 
       - name: reset network settings
         if: ${{ inputs.low_bandwidth_mode || failure() }}
@@ -209,8 +361,8 @@ jobs:
           networksetup -setwebproxystate Ethernet "off"
           networksetup -setsecurewebproxystate Ethernet "off"
 
-          if (sudo pfctl -q -sa | grep 'Status: Enabled') then sudo pfctl -d; fi 
-          if (command  -v pm2 &> /dev/null) then pm2 stop mitmdump; fi 
+          if (sudo pfctl -q -sa | grep 'Status: Enabled') then sudo pfctl -d; fi
+          if (command  -v pm2 &> /dev/null) then pm2 stop mitmdump; fi
 
           sleep 5;
 

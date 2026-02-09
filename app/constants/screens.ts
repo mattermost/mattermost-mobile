@@ -6,6 +6,7 @@ import PLAYBOOKS_SCREENS from '@playbooks/constants/screens';
 export const ABOUT = 'About';
 export const ACCOUNT = 'Account';
 export const APPS_FORM = 'AppForm';
+export const ATTACHMENT_OPTIONS = 'AttachmentOptions';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CALL = 'Call';
@@ -42,6 +43,7 @@ export const GLOBAL_THREADS = 'GlobalThreads';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const INTERACTIVE_DIALOG = 'InteractiveDialog';
+export const DIALOG_ROUTER = 'DialogRouter';
 export const INVITE = 'Invite';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
 export const JOIN_TEAM = 'JoinTeam';
@@ -94,6 +96,7 @@ export default {
     ABOUT,
     ACCOUNT,
     APPS_FORM,
+    ATTACHMENT_OPTIONS,
     BOTTOM_SHEET,
     BROWSE_CHANNELS,
     CALL,
@@ -129,6 +132,7 @@ export default {
     HOME,
     INTEGRATION_SELECTOR,
     INTERACTIVE_DIALOG,
+    DIALOG_ROUTER,
     INVITE,
     IN_APP_NOTIFICATION,
     JOIN_TEAM,
@@ -206,6 +210,7 @@ export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
 ]);
 
 export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
+    ATTACHMENT_OPTIONS,
     BOTTOM_SHEET,
     DRAFT_SCHEDULED_POST_OPTIONS,
     EMOJI_PICKER,

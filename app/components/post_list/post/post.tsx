@@ -5,7 +5,8 @@ import AgentPost from '@agents/components/agent_post';
 import {isAgentPost} from '@agents/utils';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
+import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
+import {KeyboardController} from 'react-native-keyboard-controller';
 
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
@@ -17,7 +18,7 @@ import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {POST_TIME_TO_FAIL} from '@constants/post';
 import * as Screens from '@constants/screens';
-import {useHideExtraKeyboardIfNeeded} from '@context/extra_keyboard';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -155,6 +156,7 @@ const Post = ({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const isTablet = useIsTablet();
+    const {blurAndDismissKeyboard, closeInputAccessoryView, showInputAccessoryView} = useKeyboardAnimationContext();
     const styles = getStyleSheet(theme);
     const isAutoResponder = fromAutoResponder(post);
     const isPendingOrFailed = isPostPendingOrFailed(post);
@@ -185,7 +187,7 @@ const Post = ({
         return false;
     }, [customEmojiNames, post.message]);
 
-    const handlePostPress = useCallback(() => {
+    const handlePostPress = useCallback(async () => {
         if ([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {
             showPermalink(serverUrl, '', post.id);
             return;
@@ -197,6 +199,7 @@ const Post = ({
         } else if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
             // BoR posts cannot have replies, so don't open threads screen for them
             if (!borPost && [Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
+                await blurAndDismissKeyboard();
                 const postRootId = post.rootId || post.id;
                 fetchAndSwitchToThread(serverUrl, postRootId);
             }
@@ -205,17 +208,23 @@ const Post = ({
         setTimeout(() => {
             pressDetected.current = false;
         }, 300);
-    }, [location, isAutoResponder, isSystemPost, isEphemeral, hasBeenDeleted, isPendingOrFailed, serverUrl, post, borPost]);
+    }, [location, isAutoResponder, isSystemPost, isEphemeral, hasBeenDeleted, isPendingOrFailed, serverUrl, post, borPost, blurAndDismissKeyboard]);
 
-    const handlePress = useHideExtraKeyboardIfNeeded(() => {
+    const handlePress = useCallback(() => {
+        if (isBoRPost(post)) {
+            return;
+        }
+
         pressDetected.current = true;
+
+        KeyboardController.dismiss();
 
         if (post) {
             setTimeout(handlePostPress, 300);
         }
     }, [handlePostPress, post]);
 
-    const showPostOptions = useHideExtraKeyboardIfNeeded(() => {
+    const showPostOptions = useCallback(async () => {
         if (!post) {
             return;
         }
@@ -228,7 +237,11 @@ const Post = ({
             return;
         }
 
-        Keyboard.dismiss();
+        if (showInputAccessoryView) {
+            closeInputAccessoryView();
+        }
+
+        await blurAndDismissKeyboard();
         const passProps = {sourceScreen: location, post, showAddReaction, serverUrl};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
@@ -239,11 +252,7 @@ const Post = ({
             title,
             props: passProps,
         });
-    }, [
-        canDelete, hasBeenDeleted, intl,
-        isEphemeral, isPendingOrFailed, isTablet, isSystemPost,
-        location, post, serverUrl, showAddReaction, theme,
-    ]);
+    }, [post, isSystemPost, canDelete, hasBeenDeleted, isPendingOrFailed, isEphemeral, blurAndDismissKeyboard, closeInputAccessoryView, showInputAccessoryView, location, showAddReaction, serverUrl, isTablet, intl, theme]);
 
     const [, rerender] = useState(false);
     useEffect(() => {

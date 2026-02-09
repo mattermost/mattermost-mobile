@@ -4,20 +4,27 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import CameraAction from './camera_quick_action';
-import FileAction from './file_quick_action';
-import ImageAction from './image_quick_action';
+import BoRQuickAction from '@components/post_draft/quick_actions/bor_quick_action';
+import {Screens} from '@constants';
+
+import AttachmentAction from './attachment_quick_action';
+import EmojiAction from './emoji_quick_action';
 import InputAction from './input_quick_action';
 import PostPriorityAction from './post_priority_action';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     testID?: string;
     canUploadFiles: boolean;
     fileCount: number;
     isPostPriorityEnabled: boolean;
+    isBoREnabled: boolean;
     canShowPostPriority?: boolean;
     canShowSlashCommands?: boolean;
+    canShowEmojiPicker?: boolean;
     maxFileCount: number;
+    location?: AvailableScreens;
 
     // Draft Handler
     value: string;
@@ -25,6 +32,8 @@ type Props = {
     addFiles: (file: FileInfo[]) => void;
     postPriority: PostPriority;
     updatePostPriority: (postPriority: PostPriority) => void;
+    postBoRConfig?: PostBoRConfig;
+    updatePostBoRStatus?: (config: PostBoRConfig) => void;
     focus: () => void;
 }
 
@@ -35,6 +44,7 @@ const style = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         height: QUICK_ACTIONS_HEIGHT,
+        marginLeft: 8,
     },
 });
 
@@ -44,24 +54,30 @@ export default function QuickActions({
     value,
     fileCount,
     isPostPriorityEnabled,
+    isBoREnabled,
     canShowSlashCommands = true,
     canShowPostPriority,
+    canShowEmojiPicker = true,
     maxFileCount,
     updateValue,
     addFiles,
     postPriority,
     updatePostPriority,
     focus,
+    updatePostBoRStatus,
+    postBoRConfig,
+    location,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
     const slashDisabled = value.length > 0;
+    const showBoRAction = isBoREnabled && updatePostBoRStatus && location === Screens.CHANNEL;
 
     const atInputActionTestID = `${testID}.at_input_action`;
     const slashInputActionTestID = `${testID}.slash_input_action`;
-    const fileActionTestID = `${testID}.file_action`;
-    const imageActionTestID = `${testID}.image_action`;
-    const cameraActionTestID = `${testID}.camera_action`;
+    const emojiActionTestID = `${testID}.emoji_action`;
+    const attachmentActionTestID = `${testID}.attachment_action`;
     const postPriorityActionTestID = `${testID}.post_priority_action`;
+    const borPriorityActionTestID = `${testID}.bor_action`;
 
     const uploadProps = {
         disabled: !canUploadFiles,
@@ -76,6 +92,10 @@ export default function QuickActions({
             testID={testID}
             style={style.quickActionsContainer}
         >
+            <AttachmentAction
+                testID={attachmentActionTestID}
+                {...uploadProps}
+            />
             <InputAction
                 testID={atInputActionTestID}
                 disabled={atDisabled}
@@ -92,18 +112,11 @@ export default function QuickActions({
                     focus={focus}
                 />
             )}
-            <FileAction
-                testID={fileActionTestID}
-                {...uploadProps}
-            />
-            <ImageAction
-                testID={imageActionTestID}
-                {...uploadProps}
-            />
-            <CameraAction
-                testID={cameraActionTestID}
-                {...uploadProps}
-            />
+            {canShowEmojiPicker && (
+                <EmojiAction
+                    testID={emojiActionTestID}
+                />
+            )}
             {isPostPriorityEnabled && canShowPostPriority && (
                 <PostPriorityAction
                     testID={postPriorityActionTestID}
@@ -111,6 +124,13 @@ export default function QuickActions({
                     updatePostPriority={updatePostPriority}
                 />
             )}
+            {showBoRAction &&
+                <BoRQuickAction
+                    testId={borPriorityActionTestID}
+                    postBoRConfig={postBoRConfig}
+                    updatePostBoRStatus={updatePostBoRStatus}
+                />
+            }
         </View>
     );
 }

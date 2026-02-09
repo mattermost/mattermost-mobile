@@ -7,13 +7,13 @@ import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {updateLastPlaybookRunsFetchAt} from '@playbooks/actions/local/channel';
-import {handlePlaybookRuns, setOwner as localSetOwner, renamePlaybookRun as localRenamePlaybookRun} from '@playbooks/actions/local/run';
+import {handlePlaybookRuns, setOwner as localSetOwner, updatePlaybookRun as localUpdatePlaybookRun} from '@playbooks/actions/local/run';
 import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
 import {fetchPlaybookRunPropertyFields} from './property_fields';
-import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel, fetchPlaybookRunsPageForParticipant, setOwner, finishRun, renamePlaybookRun, createPlaybookRun, fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from './runs';
+import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel, fetchPlaybookRunsPageForParticipant, setOwner, finishRun, updatePlaybookRun, createPlaybookRun, fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from './runs';
 
 const serverUrl = 'baseHandler.test.com';
 const channelId = 'channel-id-1';
@@ -449,6 +449,7 @@ describe('finishRun', () => {
 
 describe('fetchPlaybookRunsPageForParticipant', () => {
     const participantId = 'participant-id-1';
+    const teamId = 'team-id-1';
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -461,7 +462,7 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             has_more: false,
         });
 
-        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId);
+        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId, teamId);
 
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
@@ -473,6 +474,7 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             participant_id: participantId,
             sort: 'create_at',
             direction: 'desc',
+            team_id: teamId,
         });
     });
 
@@ -483,7 +485,7 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             has_more: true,
         });
 
-        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId, 2);
+        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId, teamId, 2);
 
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
@@ -495,13 +497,14 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             participant_id: participantId,
             sort: 'create_at',
             direction: 'desc',
+            team_id: teamId,
         });
     });
 
     it('should handle network error', async () => {
         mockClient.fetchPlaybookRuns.mockRejectedValue(new Error('Network error'));
 
-        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId);
+        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId, teamId);
 
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
@@ -515,7 +518,7 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             has_more: false,
         });
 
-        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId);
+        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId, teamId);
 
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
@@ -530,7 +533,7 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             has_more: false,
         });
 
-        await fetchPlaybookRunsPageForParticipant(serverUrl, participantId);
+        await fetchPlaybookRunsPageForParticipant(serverUrl, participantId, teamId);
 
         expect(mockClient.fetchPlaybookRuns).toHaveBeenCalledWith({
             page: 0,
@@ -538,6 +541,7 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
             participant_id: participantId,
             sort: 'create_at',
             direction: 'desc',
+            team_id: teamId,
         });
     });
 });
@@ -823,60 +827,72 @@ describe('postStatusUpdate', () => {
     });
 });
 
-describe('renamePlaybookRun', () => {
+describe('updatePlaybookRun', () => {
     const playbookRunId = 'playbook-run-id-1';
     const newName = 'New Run Name';
+    const newSummary = 'New run summary';
 
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.mocked(localRenamePlaybookRun).mockResolvedValue({data: true});
+        jest.mocked(localUpdatePlaybookRun).mockResolvedValue({data: true});
     });
 
     it('should handle client error', async () => {
         jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
 
-        const result = await renamePlaybookRun(serverUrl, playbookRunId, newName);
+        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary, true);
 
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
         expect(result.data).toBeUndefined();
-        expect(localRenamePlaybookRun).not.toHaveBeenCalled();
+        expect(localUpdatePlaybookRun).not.toHaveBeenCalled();
     });
 
     it('should handle API exception', async () => {
         const clientError = new Error('Client error');
         mockClient.patchPlaybookRun.mockRejectedValueOnce(clientError);
 
-        const result = await renamePlaybookRun(serverUrl, playbookRunId, newName);
+        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary, true);
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
         expect(result.data).toBeUndefined();
-        expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName});
-        expect(localRenamePlaybookRun).not.toHaveBeenCalled();
+        expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName, summary: newSummary});
+        expect(localUpdatePlaybookRun).not.toHaveBeenCalled();
     });
 
     it('should handle local DB update failure', async () => {
         mockClient.patchPlaybookRun.mockResolvedValueOnce(undefined);
-        jest.mocked(localRenamePlaybookRun).mockResolvedValueOnce({error: 'DB error'});
+        jest.mocked(localUpdatePlaybookRun).mockResolvedValueOnce({error: 'DB error'});
 
-        const result = await renamePlaybookRun(serverUrl, playbookRunId, newName);
+        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary, true);
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
-        expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName});
-        expect(localRenamePlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId, newName);
+        expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName, summary: newSummary});
+        expect(localUpdatePlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId, newName, newSummary);
     });
 
-    it('should rename playbook run successfully', async () => {
+    it('should update playbook run successfully', async () => {
         mockClient.patchPlaybookRun.mockResolvedValueOnce(undefined);
 
-        const result = await renamePlaybookRun(serverUrl, playbookRunId, newName);
+        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary, true);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.data).toBe(true);
+        expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName, summary: newSummary});
+        expect(localUpdatePlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId, newName, newSummary);
+    });
+
+    it('should not include summary in API call when canEditSummary is false', async () => {
+        mockClient.patchPlaybookRun.mockResolvedValueOnce(undefined);
+
+        const result = await updatePlaybookRun(serverUrl, playbookRunId, newName, newSummary, false);
 
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.data).toBe(true);
         expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName});
-        expect(localRenamePlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId, newName);
-
+        expect(localUpdatePlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId, newName, undefined);
     });
 });
 

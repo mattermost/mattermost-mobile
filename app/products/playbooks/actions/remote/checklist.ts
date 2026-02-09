@@ -11,6 +11,7 @@ import {
     setDueDate as localSetDueDate,
     renameChecklist as localRenameChecklist,
     deleteChecklistItem as localDeleteChecklistItem,
+    updateChecklistItemTitleAndDescription as localUpdateChecklistItemTitleAndDescription,
 } from '@playbooks/actions/local/checklist';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 import {getFullErrorMessage} from '@utils/errors';
@@ -187,11 +188,11 @@ export const addChecklistItem = async (
     serverUrl: string,
     playbookRunId: string,
     checklistNumber: number,
-    title: string,
+    item: ChecklistItemInput,
 ) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        await client.addChecklistItem(playbookRunId, checklistNumber, title);
+        await client.addChecklistItem(playbookRunId, checklistNumber, item);
 
         // Fetch and sync the entire run to get the created item with server-generated ID
         const run = await client.fetchPlaybookRun(playbookRunId);
@@ -225,6 +226,27 @@ export const deleteChecklistItem = async (
         return {data: true};
     } catch (error) {
         logDebug('error on deleteChecklistItem', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const updateChecklistItemTitleAndDescription = async (
+    serverUrl: string,
+    playbookRunId: string,
+    itemId: string,
+    checklistNumber: number,
+    itemNumber: number,
+    item: ChecklistItemInput,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.updateChecklistItem(playbookRunId, checklistNumber, itemNumber, item);
+
+        await localUpdateChecklistItemTitleAndDescription(serverUrl, itemId, item.title, item.description);
+        return {data: true};
+    } catch (error) {
+        logDebug('error on updateChecklistItemTitleAndDescription', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

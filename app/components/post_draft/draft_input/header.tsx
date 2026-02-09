@@ -4,6 +4,7 @@
 import React from 'react';
 import {Platform, View} from 'react-native';
 
+import BoRLabel from '@components/burn_on_read_label';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
@@ -14,6 +15,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 type Props = {
     postPriority: PostPriority;
     noMentionsError: boolean;
+    postBoRConfig?: PostBoRConfig;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -22,6 +24,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         marginLeft: 12,
         gap: 7,
+        flexWrap: 'wrap',
     },
     error: {
         color: PostPriorityColors.URGENT,
@@ -37,13 +40,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 export default function DraftInputHeader({
     postPriority,
     noMentionsError,
+    postBoRConfig,
 }: Props) {
     const theme = useTheme();
     const hasLabels = postPriority.priority !== '' || postPriority.requested_ack;
+    const hasBoR = postBoRConfig && postBoRConfig.enabled;
     const style = getStyleSheet(theme);
 
     return (
-        <View style={[style.container, hasLabels ? style.paddingTopStyle : undefined]}>
+        <View style={[style.container, (hasLabels || hasBoR) ? style.paddingTopStyle : undefined]}>
             {postPriority.priority && (
                 <PostPriorityLabel label={postPriority.priority}/>
             )}
@@ -83,6 +88,11 @@ export default function DraftInputHeader({
                     )}
                 </>
             )}
+            {hasBoR &&
+                <BoRLabel
+                    durationSeconds={postBoRConfig.borDurationSeconds}
+                />
+            }
         </View>
     );
 }

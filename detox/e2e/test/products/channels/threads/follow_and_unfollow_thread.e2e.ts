@@ -27,7 +27,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Threads - Follow and Unfollow Thread', () => {
     const serverOneDisplayName = 'Server 1';
@@ -59,22 +59,25 @@ describe('Threads - Follow and Unfollow Thread', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
-        await wait(timeouts.ONE_SEC);
 
         // * Verify thread is followed by user by default via thread navigation
         await expect(ThreadScreen.followingButton).toBeVisible();
 
         // # Unfollow thread via thread navigation
         await ThreadScreen.followingButton.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify thread is not followed by user via thread navigation
         await expect(ThreadScreen.followButton).toBeVisible();
 
         // # Follow thread via thread navigation
-        await wait(timeouts.TWO_SEC);
         await ThreadScreen.followButton.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify thread is followed by user via thread navigation
         await expect(ThreadScreen.followingButton).toBeVisible();
@@ -92,7 +95,6 @@ describe('Threads - Follow and Unfollow Thread', () => {
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
-        await wait(timeouts.ONE_SEC);
         await ThreadScreen.back();
 
         // * Verify thread is followed by user by default via post footer
@@ -101,13 +103,14 @@ describe('Threads - Follow and Unfollow Thread', () => {
 
         // # Unfollow thread via post footer
         await postListPostItemFooterFollowingButton.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify thread is not followed by user via post footer
         await expect(postListPostItemFooterFollowButton).toBeVisible();
 
         // # Follow thread via post footer
-        await wait(timeouts.TWO_SEC);
         await postListPostItemFooterFollowButton.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify thread is followed by user via post footer
         await expect(postListPostItemFooterFollowingButton).toBeVisible();
@@ -134,6 +137,7 @@ describe('Threads - Follow and Unfollow Thread', () => {
         // # Unfollow thread via post options
         await waitFor(PostOptionsScreen.followingThreadOption).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await PostOptionsScreen.followingThreadOption.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify thread is not followed by user via post footer
         const {postListPostItemFooterFollowButton, postListPostItemFooterFollowingButton} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
@@ -146,8 +150,8 @@ describe('Threads - Follow and Unfollow Thread', () => {
         await expect(PostOptionsScreen.followThreadOption).toBeVisible();
 
         // # Tap on follow thread option
-        await wait(timeouts.TWO_SEC);
         await PostOptionsScreen.followThreadOption.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify thread is followed by user via post footer
         await waitFor(postListPostItemFooterFollowingButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
@@ -188,14 +192,9 @@ describe('Threads - Follow and Unfollow Thread', () => {
 
         // # Tap on unfollow thread option
         await ThreadOptionsScreen.followingThreadOption.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify thread is not displayed anymore in all your threads section
-        await wait(timeouts.ONE_SEC);
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
-
-        await wait(timeouts.FOUR_SEC);
-
-        // # Go back to channel list screen
-        await GlobalThreadsScreen.back();
     });
 });
