@@ -311,6 +311,7 @@ class EphemeralStoreSingleton {
     // Ephemeral control for rejected files
     addRejectedFile = (fileId: string, rejectionReason?: string) => {
         this.rejectedFiles.set(fileId, rejectionReason || '');
+
         // Emit event so components can re-render with the updated rejection status
         DeviceEventEmitter.emit(Events.FILE_REJECTED, {fileId});
     };

@@ -54,6 +54,7 @@ export async function handleFileDownloadRejected(serverUrl: string, msg: WebSock
         });
     } catch (error) {
         logDebug('[handleFileDownloadRejected] Error handling event:', error);
+
         // Silently fail - don't crash the app for file rejection events
     }
 }
