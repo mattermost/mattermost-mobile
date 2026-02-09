@@ -1103,7 +1103,6 @@
   "playbooks.playbook_run.property_fields": "Pola właściwości",
   "playbooks.playbook_run.rename.button": "Zapisz",
   "playbooks.playbook_run.rename.label": "Nazwa listy kontrolnej",
-  "playbooks.playbook_run.rename.title": "Zmiana nazwy uruchomienia playbooka",
   "playbooks.playbook_run.run_details": "Szczegóły listy kontrolnej",
   "playbooks.playbook_run.status_update": "Opublikuj aktualizację",
   "playbooks.playbook_run.status_update_due": "Wymagana aktualizacja\n{time}",

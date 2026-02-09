@@ -1096,7 +1096,6 @@
   "playbooks.playbook_run.property_fields": "Палі ўласцівасцей",
   "playbooks.playbook_run.rename.button": "Захаваць",
   "playbooks.playbook_run.rename.label": "Назва кантрольнага спісу",
-  "playbooks.playbook_run.rename.title": "Перайменаваць запуск playbook",
   "playbooks.playbook_run.run_details": "Дэталі спісу задач",
   "playbooks.playbook_run.status_update": "Апублікаваць абнаўленне",
   "playbooks.playbook_run.status_update_due": "Абнавіць да\n{time}",
