@@ -36,4 +36,26 @@ describe('screens/user_profile/user_profile', () => {
 
         expect(shouldShow).toBe(false);
     });
+
+    it('should hide profile options when override is enabled', () => {
+        const shouldShow = shouldShowUserProfileOptions({
+            channelContext: false,
+            isDirectMessageWithUser: false,
+            manageMode: false,
+            override: true,
+        });
+
+        expect(shouldShow).toBe(false);
+    });
+
+    it('should show profile options outside channel context even for direct message with viewed user', () => {
+        const shouldShow = shouldShowUserProfileOptions({
+            channelContext: false,
+            isDirectMessageWithUser: true,
+            manageMode: false,
+            override: false,
+        });
+
+        expect(shouldShow).toBe(true);
+    });
 });

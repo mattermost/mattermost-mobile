@@ -26,6 +26,25 @@ type EnhancedProps = WithDatabaseArgs & {
     channelId?: string;
 }
 
+type DMChannelInfo = {
+    name: string;
+    type: string;
+};
+
+export function isDirectMessageWithViewedUser(channel: DMChannelInfo|undefined, currentUserId: string, viewedUserId: string|undefined): boolean {
+    if (!channel || channel.type !== General.DM_CHANNEL || !viewedUserId) {
+        return false;
+    }
+
+    const ids = channel.name.split('__');
+    if (ids.length !== 2 || !ids[0] || !ids[1] || !ids.includes(currentUserId)) {
+        return false;
+    }
+
+    const dmUserId = getUserIdFromChannelName(currentUserId, channel.name);
+    return dmUserId === viewedUserId;
+}
+
 const enhanced = withObservables([], ({channelId, database, userId}: EnhancedProps) => {
     const currentUser = observeCurrentUser(database);
     const currentUserId = observeCurrentUserId(database);
@@ -37,14 +56,7 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
         switchMap((c) => of$(isDefaultChannel(c))),
     ) : of$(false);
     const isDirectMessageWithUser = combineLatest([channel, currentUserId, user]).pipe(
-        map(([c, currentId, viewedUser]) => {
-            if (!c || c.type !== General.DM_CHANNEL || !viewedUser) {
-                return false;
-            }
-
-            const dmUserId = getUserIdFromChannelName(currentId, c.name);
-            return dmUserId === viewedUser.id;
-        }),
+        map(([c, currentId, viewedUser]) => isDirectMessageWithViewedUser(c, currentId, viewedUser?.id)),
     );
     const teamId = channel.pipe(switchMap((c) => (c?.teamId ? of$(c.teamId) : observeCurrentTeamId(database))));
     const isTeamAdmin = teamId.pipe(switchMap((id) => observeUserIsTeamAdmin(database, userId, id)));
