@@ -144,6 +144,58 @@ class ChannelInfoScreen {
         await this.ignoreMentionsOptionToggledOn.tap();
         await expect(this.ignoreMentionsOptionToggledOff).toBeVisible();
     };
+
+    copyChannelHeader = async (headerText: string) => {
+        // Long press on header text
+        await element(by.text(headerText)).longPress();
+
+        // Wait for bottom sheet
+        await waitFor(element(by.id('channel_info.extra.header.bottom_sheet.copy_header_text'))).
+            toBeVisible().
+            withTimeout(timeouts.TWO_SEC);
+
+        // Tap copy option (actual copy action)
+        await element(by.id('channel_info.extra.header.bottom_sheet.copy_header_text')).tap();
+    };
+
+    cancelCopyChannelHeader = async (headerText: string) => {
+        // Long press on header text
+        await element(by.text(headerText)).longPress();
+
+        // Wait for bottom sheet
+        await waitFor(element(by.id('channel_info.extra.header.bottom_sheet.copy_header_text'))).
+            toBeVisible().
+            withTimeout(timeouts.TWO_SEC);
+
+        // Cancel
+        await element(by.id('channel_info.extra.header.bottom_sheet.cancel')).tap();
+    };
+
+    copyChannelPurpose = async (purposeText: string) => {
+        // Long press on purpose text
+        await element(by.text(purposeText)).longPress();
+
+        // Wait for bottom sheet
+        await waitFor(element(by.id('channel_info.title.public_private.bottom_sheet.copy_purpose'))).
+            toBeVisible().
+            withTimeout(timeouts.TWO_SEC);
+
+        // Tap copy option
+        await element(by.id('channel_info.title.public_private.bottom_sheet.copy_purpose')).tap();
+    };
+
+    cancelCopyChannelPurpose = async (purposeText: string) => {
+        // Long press on purpose text
+        await element(by.text(purposeText)).longPress();
+
+        // Wait for bottom sheet
+        await waitFor(element(by.id('channel_info.title.public_private.bottom_sheet.copy_purpose'))).
+            toBeVisible().
+            withTimeout(timeouts.TWO_SEC);
+
+        // Cancel
+        await element(by.id('channel_info.title.public_private.bottom_sheet.cancel')).tap();
+    };
 }
 
 const channelInfoScreen = new ChannelInfoScreen();

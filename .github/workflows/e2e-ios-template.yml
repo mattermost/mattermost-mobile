@@ -115,7 +115,7 @@ jobs:
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
-          parallelism: 5
+          parallelism: 10
           search_path: detox/e2e/test
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
@@ -244,8 +244,8 @@ jobs:
           # Open Simulator.app in background to speed up UI rendering
           open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID"
 
-          # Give Simulator.app time to fully initialize UI
-          sleep 3
+          # Give Simulator.app time to fully initialize UI (iOS 26.2 needs more time)
+          sleep 5
 
           echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
 
@@ -319,9 +319,9 @@ jobs:
             tail -30 metro.log
           else
             echo "Metro is serving on http://localhost:8081"
-            # Give Metro extra time to fully initialize for iOS 26.2
+            # Give Metro extra time to fully initialize for iOS 26.2 (React Native bridge needs more time)
             echo "Allowing Metro to fully stabilize..."
-            sleep 3
+            sleep 8
           fi
 
           cd detox

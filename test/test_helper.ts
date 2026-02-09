@@ -60,6 +60,7 @@ class TestHelperSingleton {
     basicCategory: Category | null;
     basicCategoryChannel: CategoryChannel | null;
     basicChannel: Channel | null;
+    basicChannelInfo: ChannelInfo | null;
     basicChannelMember: ChannelMembership | null;
     basicMyChannel: ChannelMembership | null;
     basicMyChannelSettings: ChannelMembership | null;
@@ -75,6 +76,7 @@ class TestHelperSingleton {
         this.basicCategory = null;
         this.basicCategoryChannel = null;
         this.basicChannel = null;
+        this.basicChannelInfo = null;
         this.basicChannelMember = null;
         this.basicMyChannel = null;
         this.basicMyChannelSettings = null;
@@ -116,6 +118,10 @@ class TestHelperSingleton {
         });
         await operator.handleChannel({
             channels: [this.basicChannel!],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleChannelInfo({
+            channelInfos: [this.basicChannelInfo!],
             prepareRecordsOnly: false,
         });
         await operator.handleMyChannel({
@@ -1463,6 +1469,7 @@ class TestHelperSingleton {
         this.basicTeamMember = this.fakeTeamMember(this.basicUser.id, this.basicTeam.id);
         this.basicCategory = this.fakeCategoryWithId(this.basicTeam.id);
         this.basicChannel = this.fakeChannelWithId(this.basicTeam.id);
+        this.basicChannelInfo = this.fakeChannelInfo({id: this.basicChannel.id, member_count: 100});
         this.basicCategoryChannel = this.fakeCategoryChannelWithId(this.basicTeam.id, this.basicCategory.id, this.basicChannel.id);
         this.basicChannelMember = this.fakeChannelMember({user_id: this.basicUser.id, channel_id: this.basicChannel.id});
         this.basicMyChannel = this.fakeMyChannel({user_id: this.basicUser.id, channel_id: this.basicChannel.id});

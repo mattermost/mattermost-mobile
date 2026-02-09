@@ -100,6 +100,7 @@ function PostDraft({
             updateValue={setValue}
             value={value}
             setIsFocused={setIsFocused}
+            location={location}
         />
     );
 

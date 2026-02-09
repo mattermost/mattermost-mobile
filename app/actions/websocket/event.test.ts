@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as bookmark from '@actions/local/channel_bookmark';
+import * as burnOnRead from '@actions/websocket/burn_on_read';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
@@ -36,6 +37,7 @@ jest.mock('@calls/connection/websocket_event_handlers');
 jest.mock('./group');
 jest.mock('@actions/local/channel_bookmark');
 jest.mock('@actions/websocket/scheduled_post');
+jest.mock('@actions/websocket/burn_on_read');
 jest.mock('@playbooks/actions/websocket/events');
 
 describe('handleWebSocketEvent', () => {
@@ -524,6 +526,24 @@ describe('handleWebSocketEvent', () => {
         msg.event = WebsocketEvents.SCHEDULED_POST_DELETED;
         await handleWebSocketEvent(serverUrl, msg);
         expect(scheduledPost.handleDeleteScheduledPost).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle BOR_POST_REVEALED event', async () => {
+        msg.event = WebsocketEvents.BOR_POST_REVEALED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(burnOnRead.handleBoRPostRevealedEvent).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle BOR_POST_BURNED event', async () => {
+        msg.event = WebsocketEvents.BOR_POST_BURNED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(burnOnRead.handleBoRPostBurnedEvent).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle BURN_ON_READ_ALL_REVEALED event', async () => {
+        msg.event = WebsocketEvents.BURN_ON_READ_ALL_REVEALED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(burnOnRead.handleBoRPostAllRevealed).toHaveBeenCalledWith(serverUrl, msg);
     });
 
     it('all messages should go through the playbooks handler', async () => {

@@ -2,13 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
+import {firstValueFrom} from 'rxjs';
 
-import {ActionType} from '@constants';
+import {ActionType, License} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import TestHelper from '@test/test_helper';
 
-import {queryPostsWithPermalinkReferences} from './post';
+import {queryPostsWithPermalinkReferences, observeIsBoREnabled} from './post';
 
 describe('Post Queries', () => {
     const serverUrl = 'post.test.com';
@@ -276,6 +278,93 @@ describe('Post Queries', () => {
             const result = await queryPostsWithPermalinkReferences(database, referencedPostId);
 
             expect(result).toHaveLength(0);
+        });
+    });
+
+    describe('observeIsBoREnabled', () => {
+        it('should return true when both feature is enabled and license is valid', async () => {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
+                prepareRecordsOnly: false,
+            });
+
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableBurnOnRead', value: 'true'},
+                    {id: 'BuildEnterpriseReady', value: 'true'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await firstValueFrom(observeIsBoREnabled(database));
+            expect(result).toBe(true);
+        });
+
+        it('should return false when feature is disabled but license is valid', async () => {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
+                prepareRecordsOnly: false,
+            });
+
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableBurnOnRead', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await firstValueFrom(observeIsBoREnabled(database));
+            expect(result).toBe(false);
+        });
+
+        it('should return false when feature is enabled but license is insufficient', async () => {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Enterprise}}],
+                prepareRecordsOnly: false,
+            });
+
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableBurnOnRead', value: 'true'},
+                    {id: 'BuildEnterpriseReady', value: 'true'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await firstValueFrom(observeIsBoREnabled(database));
+            expect(result).toBe(false);
+        });
+
+        it('should return false when both feature is disabled and license is insufficient', async () => {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Professional}}],
+                prepareRecordsOnly: false,
+            });
+
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableBurnOnRead', value: 'false'},
+                    {id: 'BuildEnterpriseReady', value: 'true'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await firstValueFrom(observeIsBoREnabled(database));
+            expect(result).toBe(false);
+        });
+
+        it('should return false when no config is set', async () => {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await firstValueFrom(observeIsBoREnabled(database));
+            expect(result).toBe(false);
         });
     });
 });

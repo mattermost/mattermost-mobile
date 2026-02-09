@@ -394,7 +394,6 @@ describe('Account - Custom Status', () => {
         await ChannelListScreen.open();
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(messageText);
-        await ChannelScreen.dismissKeyboard();
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem, postListPostItemHeaderDisplayName} =

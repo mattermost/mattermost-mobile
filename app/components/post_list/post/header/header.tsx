@@ -15,7 +15,7 @@ import {CHANNEL, THREAD} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
-import {isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
+import {isUnrevealedBoRPost} from '@utils/bor';
 import {getPostTranslation, postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {ensureString} from '@utils/types';
@@ -121,12 +121,7 @@ const Header = ({
     const usernameOverride = ensureString(post.props?.override_username);
     const intl = useIntl();
 
-    // We need to add the expire_at to the dependencies to ensure we update the
-    // memo when the relevant data changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const isUnrevealedPost = useMemo(() => isUnrevealedBoRPost(post), [post, post.metadata?.expire_at]);
-    const ownBoRPost = useMemo(() => isOwnBoRPost(post, currentUser?.id), [currentUser?.id, post]);
-    const showBoRIcon = isUnrevealedPost || ownBoRPost;
+    const showBoRIcon = useMemo(() => isUnrevealedBoRPost(post), [post, post.metadata?.expire_at]);
     const borExpireAt = post.metadata?.expire_at;
     const serverUrl = useServerUrl();
 
@@ -192,7 +187,7 @@ const Header = ({
                         />
                     }
                     {
-                        !showBoRIcon && Boolean(borExpireAt) &&
+                        Boolean(borExpireAt) &&
                         <ExpiryTimer
                             expiryTime={borExpireAt as number}
                             onExpiry={onBoRPostExpiry}

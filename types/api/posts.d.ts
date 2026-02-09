@@ -90,6 +90,8 @@ type PostMetadata = {
     priority?: PostPriority;
     original_language?: string;
     expire_at?: number;
+    borConfig?: PostBoRConfig;
+    recipients?: string[];
     translations?: Record<string, PostTranslation>;
 };
 
@@ -188,4 +190,10 @@ type FetchPaginatedThreadOptions = {
     perPage?: number;
     fromCreateAt?: number;
     fromPost?: string;
+}
+
+type PostBoRConfig = {
+    enabled: boolean;
+    borDurationSeconds: number;
+    borMaximumTimeToLiveSeconds: number;
 }
