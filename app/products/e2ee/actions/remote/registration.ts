@@ -11,7 +11,7 @@ import {forceLogoutIfNecessary} from '@actions/remote/session';
 import NetworkManager from '@managers/network_manager';
 import {bytesToBase64} from '@utils/encoding';
 import {getFullErrorMessage} from '@utils/errors';
-import {logDebug, logError} from '@utils/log';
+import {logDebug, logError, logInfo} from '@utils/log';
 
 import {registerDevice} from './devices';
 
@@ -25,49 +25,52 @@ export const initE2eeDevice = async (serverUrl: string, userId: string) => {
     const e2eeEnabled = result.data || false;
     if (e2eeEnabled) {
         // generate signing key
-        const alreadyInitialized = await isInKeychain(serverUrl);
-        if (!alreadyInitialized) {
-            // generate signing key may throw an error during generation
-            const signingKey = generateSignatureKeyPair();
-            try {
-                const base64SigningKey = bytesToBase64(new Uint8Array(signingKey.blob));
-
-                // store signing key in keychain
-                const storedValue = await storeInKeychain(serverUrl, base64SigningKey);
-                const storedType = storedValue ? storedValue.storage : undefined;
-                if (storedType) {
-                    const now = new Date().getTime();
-
-                    // post register device
-                    const deviceId = await registerDevice(serverUrl, signingKey.publicKey, modelName ?? '');
-
-                    // generate identity
-                    const identity = {
-                        userId: '',
-                        deviceId,
-                    };
-
-                    // save registered device data
-                    addDevice(serverUrl, {
-                        device_id: deviceId,
-                        device_name: modelName ?? '',
-                        signature_public_key: signingKey.publicKey,
-                        created_at: now,
-                        last_active_at: now,
-                        app_version: nativeApplicationVersion ?? '',
-                        os_version: osVersion ?? '',
-                    });
-                }
-
-                return {data: true};
-            } catch (error) {
-                logError(error);
-                return {error};
-            }
-        } else {
+        const alreadyInKeychain = await isInKeychain(serverUrl);
+        if (alreadyInKeychain) {
             await removeFromKeychain(serverUrl);
             return {error: 'removed'};
         }
+
+        // generate signing key may throw an error during generation
+        const signingKey = generateSignatureKeyPair();
+        try {
+            const base64SigningKey = bytesToBase64(new Uint8Array(signingKey.blob));
+
+            // store signing key in keychain
+            const storedValue = await storeInKeychain(serverUrl, base64SigningKey);
+            const storedType = storedValue ? storedValue.storage : undefined;
+            if (storedType) {
+                const now = new Date().getTime();
+
+                // post register device
+                const deviceId = await registerDevice(serverUrl, signingKey.publicKey, modelName ?? '');
+
+                // generate identity
+                const identity = {
+                    userId,
+                    deviceId,
+                };
+
+                logInfo('generated identity is ', identity);
+
+                // save registered device data
+                addDevice(serverUrl, {
+                    device_id: deviceId,
+                    device_name: modelName ?? '',
+                    signature_public_key: signingKey.publicKey,
+                    created_at: now,
+                    last_active_at: now,
+                    app_version: nativeApplicationVersion ?? '',
+                    os_version: osVersion ?? '',
+                });
+            }
+
+            return {data: true};
+        } catch (error) {
+            logError(error);
+            return {error};
+        }
+
     }
 
     return {data: false};
