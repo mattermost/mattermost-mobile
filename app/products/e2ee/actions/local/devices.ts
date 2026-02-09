@@ -9,13 +9,11 @@ import {logDebug} from '@utils/log';
 export const addDevice = async (serverUrl: string, device: EnabledDevice) => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const now = new Date().getTime();
-
         const savedDevices = await operator.handleDevices({
             devices: [device],
         });
 
-        if (savedDevices.length != 1) {
+        if (savedDevices.length !== 1) {
             return {
                 error: 'more than one device was affected by registration',
             };
