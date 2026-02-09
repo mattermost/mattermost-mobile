@@ -112,7 +112,22 @@ const mergePostInChannelChunks = async (newChunk: PostsInChannelModel, existingC
 
 export const exportedForTest = {
     mergePostInChannelChunks,
+    shouldUpdateForBoRPost,
 };
+
+function shouldUpdateForBoRPost(e: PostModel, n: Post): boolean {
+    const bothBoRPost = e.type === PostTypes.BURN_ON_READ && n.type === PostTypes.BURN_ON_READ;
+    if (!bothBoRPost) {
+        return false;
+    }
+
+    const borPostGotRevealed = isUnrevealedBoRPost(e) && !isUnrevealedBoRPost(n);
+    const borPostGotReadByAll = e.metadata?.expire_at === undefined && n.metadata?.expire_at !== undefined;
+
+    // Since a user can't un-see a BoR post, we consider an update if the recipients list length has changed
+    const borRecipientsUpdated = (e.metadata?.recipients || []).length !== (n.metadata?.recipients || []).length;
+    return borPostGotRevealed || borRecipientsUpdated || borPostGotReadByAll;
+}
 
 const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
@@ -367,13 +382,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             tableName,
             fieldName: 'id',
             shouldUpdate: (e: PostModel, n: Post) => {
-                const bothBoRPost = e.type === PostTypes.BURN_ON_READ && n.type === PostTypes.BURN_ON_READ;
-                const borPostGotRevealed = isUnrevealedBoRPost(e) && !isUnrevealedBoRPost(n);
-
-                // Since a user can't un-see a BoR post, we consider an update if the recipients list length has changed
-                const borRecipientsUpdated = bothBoRPost ? (e.metadata?.recipients || []).length !== (n.metadata?.recipients || []).length : false;
-
-                if (bothBoRPost && (borPostGotRevealed || borRecipientsUpdated)) {
+                if (shouldUpdateForBoRPost(e, n)) {
                     return true;
                 }
 
