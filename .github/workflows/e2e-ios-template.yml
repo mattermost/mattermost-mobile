@@ -4,7 +4,19 @@ on:
   workflow_call:
     inputs:
       MM_TEST_SERVER_URL:
-        description: "The test server URL"
+        description: "The test server URL (for backwards compatibility, use SITE_1_URL)"
+        required: false
+        type: string
+      SITE_1_URL:
+        description: "Site 1 server URL"
+        required: false
+        type: string
+      SITE_2_URL:
+        description: "Site 2 server URL"
+        required: false
+        type: string
+      SITE_3_URL:
+        description: "Site 3 server URL"
         required: false
         type: string
       MM_TEST_USER_NAME:
@@ -70,9 +82,9 @@ env:
   HEADLESS: "true"
   TYPE: ${{ inputs.run-type }}
   PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
-  SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
-  SITE_2_URL: "https://mobile-e2e-site-2.test.mattermost.cloud"
-  SITE_3_URL: "https://mobile-e2e-site-3.test.mattermost.cloud"
+  SITE_1_URL: ${{ inputs.SITE_1_URL || inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
+  SITE_2_URL: ${{ inputs.SITE_2_URL || 'https://mobile-e2e-site-2.test.mattermost.cloud' }}
+  SITE_3_URL: ${{ inputs.SITE_3_URL || 'https://mobile-e2e-site-3.test.mattermost.cloud' }}
   ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
   JIRA_PROJECT_KEY: "MM"
   ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}

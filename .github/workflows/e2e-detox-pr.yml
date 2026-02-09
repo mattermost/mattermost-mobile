@@ -9,12 +9,41 @@ on:
     types:
       - labeled
 
+  workflow_dispatch:
+    inputs:
+      SITE_1_URL:
+        description: "Site 1 server URL"
+        required: true
+        type: string
+      SITE_2_URL:
+        description: "Site 2 server URL"
+        required: true
+        type: string
+      SITE_3_URL:
+        description: "Site 3 server URL"
+        required: true
+        type: string
+      MOBILE_VERSION:
+        description: "Mobile version to test"
+        required: true
+        type: string
+      PLATFORM:
+        description: "ios, android, or both"
+        required: false
+        default: "both"
+        type: choice
+        options:
+          - ios
+          - android
+          - both
+
 concurrency:
-  group: "${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.event.label.name }}"
+  group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}-${{ github.event.label.name || 'manual' }}"
   cancel-in-progress: true
 
 env:
   INTUNE_ENABLED: 'true'
+  IS_WORKFLOW_DISPATCH: ${{ github.event_name == 'workflow_dispatch' }}
 
 jobs:
   update-initial-status-ios:
@@ -224,3 +253,61 @@ jobs:
                 });
               }
             });
+
+  # Jobs for workflow_dispatch triggered runs (Matterwick E2E provisioning)
+  run-ios-tests-on-workflow-dispatch:
+    if: github.event_name == 'workflow_dispatch' && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
+    name: iOS (Matterwick E2E)
+    uses: ./.github/workflows/e2e-ios-template.yml
+    with:
+      run-type: "PR"
+      SITE_1_URL: ${{ github.event.inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ github.event.inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ github.event.inputs.SITE_3_URL }}
+      MOBILE_VERSION: ${{ github.event.inputs.MOBILE_VERSION }}
+    secrets: inherit
+
+  run-android-tests-on-workflow-dispatch:
+    if: github.event_name == 'workflow_dispatch' && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+    name: Android (Matterwick E2E)
+    uses: ./.github/workflows/e2e-android-template.yml
+    with:
+      run-type: "PR"
+      SITE_1_URL: ${{ github.event.inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ github.event.inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ github.event.inputs.SITE_3_URL }}
+      MOBILE_VERSION: ${{ github.event.inputs.MOBILE_VERSION }}
+      run-android-tests: true
+    secrets: inherit
+
+  remove-e2e-label-on-workflow-dispatch:
+    runs-on: ubuntu-22.04
+    if: github.event_name == 'workflow_dispatch'
+    needs: []
+    continue-on-error: true
+    steps:
+      - name: Remove E2E/Run label when triggered via Matterwick
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            try {
+              // Get the current run to check if it's associated with a PR
+              const run = await github.rest.actions.getWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.runId
+              });
+
+              // Try to find associated PR
+              if (run.data.pull_requests && run.data.pull_requests.length > 0) {
+                const prNumber = run.data.pull_requests[0].number;
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  name: 'E2E/Run'
+                });
+              }
+            } catch (error) {
+              console.log('Label removal skipped - not associated with a PR');
+            }
