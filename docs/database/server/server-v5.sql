@@ -1,8 +1,8 @@
-﻿-- Exported from QuickDBD: https://www.quickdatabasediagrams.com/
+-- Exported from QuickDBD: https://www.quickdatabasediagrams.com/
 -- Link to schema: https://app.quickdatabasediagrams.com/#/d/7cAwTM
 -- NOTE! If you have used non-SQL datatypes in your design, you will have to change these here.
 
--- Server Database - Schema Version 2
+-- Server Database - Schema Version 18
 -- Please bump the version by 1, any time the schema changes.
 -- Also, include the migration plan under app/database/migration/server,
 -- update all models, relationships and types.
@@ -56,6 +56,7 @@ CREATE TABLE [Channel] (
     [update_at] number  NOT NULL ,
     [banner_info] string,
     [abac_policy_enforced] boolean  NOT NULL ,
+    [autotranslation] boolean  NULL ,
     CONSTRAINT [PK_Channel] PRIMARY KEY CLUSTERED (
         [id] ASC
     )
@@ -193,6 +194,7 @@ CREATE TABLE [MyChannel] (
     [message_count] number  NOT NULL ,
     [roles] string  NOT NULL ,
     [viewed_at] number  NOT NULL ,
+    [autotranslation_disabled] boolean  NULL ,
     CONSTRAINT [PK_MyChannel] PRIMARY KEY CLUSTERED (
         [id] ASC
     )
