@@ -93,7 +93,6 @@ describe('Channels - Channel Post List', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open('channels', testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
 
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
