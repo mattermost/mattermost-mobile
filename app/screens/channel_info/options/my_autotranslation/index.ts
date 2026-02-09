@@ -6,7 +6,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeChannel, observeChannelAutotranslation, observeIsChannelAutotranslated} from '@queries/servers/channel';
-import {observeIsUserLanguageSupportedByAutotranslation} from '@queries/servers/system';
+import {observeIsUserLanguageSupportedByAutotranslation} from '@queries/servers/user';
 
 import MyAutotranslation from './my_autotranslation';
 

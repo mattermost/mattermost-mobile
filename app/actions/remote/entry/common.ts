@@ -4,7 +4,7 @@
 import {nativeApplicationVersion} from 'expo-application';
 import {RESULTS, checkNotifications} from 'react-native-permissions';
 
-import {deletePostsForChannel, deletePostsForChannelsWithAutotranslation} from '@actions/local/post';
+import {deletePostsForChannel, deletePostsForChannelsWithAutotranslation} from '@actions/local/channel';
 import {fetchChannelById, fetchMyChannelsForTeam, handleKickFromChannel, type MyChannelsRequest} from '@actions/remote/channel';
 import {type MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchConfigAndLicense, fetchDataRetentionPolicy} from '@actions/remote/systems';

@@ -71,11 +71,12 @@ type PostImage = {
     frame_count?: number;
 };
 
+type PostTranslationState = 'ready' | 'skipped' | 'unavailable' | 'processing';
 type PostTranslation = {
     object: {
         message: string;
     };
-    state: 'ready' | 'skipped' | 'unavailable' | 'processing';
+    state: PostTranslationState;
     source_lang?: string;
 };
 

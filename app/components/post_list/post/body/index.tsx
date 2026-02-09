@@ -61,7 +61,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         messageBody: {
             paddingVertical: 2,
             flex: 1,
-            overflow: 'hidden',
         },
         messageContainer: {width: '100%'},
         replyBar: {
@@ -149,8 +148,10 @@ const Body = ({
     }, [highlightReplyBar, isCRTEnabled, isFirstReply, isLastReply, isReplyPost, location, style]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-        setLayoutWidth(e.nativeEvent.layout.width);
-    }, []);
+        if (location === Screens.SAVED_MESSAGES) {
+            setLayoutWidth(e.nativeEvent.layout.width);
+        }
+    }, [location]);
 
     if (hasBeenDeleted) {
         body = (

@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {addChannelToDefaultCategory, handleConvertedGMCategories} from '@actions/local/category';
-import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket} from '@actions/local/channel';
-import {deletePostsForChannel, storePostsForChannel} from '@actions/local/post';
+import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket, deletePostsForChannel} from '@actions/local/channel';
+import {storePostsForChannel} from '@actions/local/post';
 import {fetchMyChannel, fetchChannelById, fetchMissingDirectChannelsInfo} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';

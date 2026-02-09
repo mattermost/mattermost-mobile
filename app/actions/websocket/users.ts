@@ -3,8 +3,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {updateChannelsDisplayName} from '@actions/local/channel';
-import {deletePostsForChannelsWithAutotranslation} from '@actions/local/post';
+import {deletePostsForChannelsWithAutotranslation, updateChannelsDisplayName} from '@actions/local/channel';
 import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {General, Events, Preferences} from '@constants';

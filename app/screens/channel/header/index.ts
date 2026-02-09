@@ -11,8 +11,8 @@ import {queryPlaybookRunsPerChannel} from '@playbooks/database/queries/run';
 import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {observeChannel, observeChannelInfo, observeIsChannelAutotranslated} from '@queries/servers/channel';
 import {observeCanAddBookmarks, queryBookmarks} from '@queries/servers/channel_bookmark';
-import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId, observeIsUserLanguageSupportedByAutotranslation} from '@queries/servers/system';
-import {observeUser} from '@queries/servers/user';
+import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
+import {observeIsUserLanguageSupportedByAutotranslation, observeUser} from '@queries/servers/user';
 import {
     getUserCustomStatus,
     getUserIdFromChannelName,

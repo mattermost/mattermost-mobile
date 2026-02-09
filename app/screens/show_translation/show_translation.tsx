@@ -9,7 +9,6 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 import Post from '@components/post_list/post';
 import Tag from '@components/tag';
 import {Screens} from '@constants';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
@@ -128,21 +127,19 @@ function ShowTranslation({
             style={style.container}
             testID='show_translation.screen'
         >
-            <ExtraKeyboardProvider>
-                <ScrollView
-                    contentContainerStyle={style.content}
-                    showsVerticalScrollIndicator={true}
-                >
-                    {renderMessageBlock(
-                        originalLanguage,
-                        true,
-                    )}
-                    {renderMessageBlock(
-                        intl.locale,
-                        false,
-                    )}
-                </ScrollView>
-            </ExtraKeyboardProvider>
+            <ScrollView
+                contentContainerStyle={style.content}
+                showsVerticalScrollIndicator={true}
+            >
+                {renderMessageBlock(
+                    originalLanguage,
+                    true,
+                )}
+                {renderMessageBlock(
+                    intl.locale,
+                    false,
+                )}
+            </ScrollView>
         </SafeAreaView>
     );
 }

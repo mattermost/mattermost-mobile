@@ -5,8 +5,7 @@
 
 import {chunk} from 'lodash';
 
-import {updateChannelsDisplayName} from '@actions/local/channel';
-import {deletePostsForChannelsWithAutotranslation} from '@actions/local/post';
+import {updateChannelsDisplayName, deletePostsForChannelsWithAutotranslation} from '@actions/local/channel';
 import {updateRecentCustomStatuses, updateLocalUser} from '@actions/local/user';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {General} from '@constants';

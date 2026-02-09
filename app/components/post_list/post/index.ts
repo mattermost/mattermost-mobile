@@ -87,7 +87,7 @@ function isFirstReply(post: PostModel, previousPost?: PostModel) {
     return false;
 }
 
-function observeIsConsecutivePost(database: Database, post: PostModel, previousPost?: PostModel) {
+function observeIsConsecutivePost(database: Database, post: PostModel, userLocale: string, previousPost?: PostModel) {
     if (isBoRPost(post)) {
         return of$(false);
     }
@@ -95,13 +95,9 @@ function observeIsConsecutivePost(database: Database, post: PostModel, previousP
         return of$(false);
     }
 
-    const userLocale = observeCurrentUser(database).pipe(
-        switchMap((user) => of$(user?.locale || DEFAULT_LOCALE)),
-    );
-
     const author = post.userId ? observePostAuthor(database, post) : of$(undefined);
-    return combineLatest([userLocale, author]).pipe(
-        switchMap(([locale, user]) => of$(Boolean(!user?.isBot && areConsecutivePosts(post, previousPost, locale)))),
+    return author.pipe(
+        switchMap((user) => of$(Boolean(!user?.isBot && areConsecutivePosts(post, previousPost, userLocale)))),
         distinctUntilChanged(),
     );
 }
@@ -146,7 +142,7 @@ const withPost = withObservables(
 
         // Don't combine consecutive Burn on Read posts as we want each BoR post
         // to display its header to allow displaying the remaining time.
-        const isConsecutivePost = observeIsConsecutivePost(database, post, previousPost);
+        const isConsecutivePost = observeIsConsecutivePost(database, post, currentUser?.locale || DEFAULT_LOCALE, previousPost);
 
         const hasFiles = queryFilesForPost(database, post.id).observeCount().pipe(
             switchMap((c) => of$(c > 0)),

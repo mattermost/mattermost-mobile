@@ -26,6 +26,6 @@ type PostTranslationUpdateData = {
     language: string;
     object_id: string;
     src_lang: string;
-    state: 'ready' | 'skipped' | 'processing' | 'unavailable';
+    state: PostTranslationState;
     translation: string; // JSON-encoded PostTranslation['object']
 }

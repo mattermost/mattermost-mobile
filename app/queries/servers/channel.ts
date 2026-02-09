@@ -5,7 +5,7 @@
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 import {of as of$, Observable, combineLatest} from 'rxjs';
-import {map as map$, switchMap, distinctUntilChanged, combineLatestWith} from 'rxjs/operators';
+import {map as map$, switchMap, distinctUntilChanged, combineLatestWith, map} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -88,15 +88,15 @@ const buildChannelInfos = async (database: Database, channels: Channel[]) => {
     const channelInfos: ChannelInfo[] = [];
 
     const channelsQuery = await queryAllChannels(database);
-    const storedChannelsMap = channelsQuery.reduce<Record<string, ChannelModel>>((map, channel) => {
-        map[channel.id] = channel;
-        return map;
+    const storedChannelsMap = channelsQuery.reduce<Record<string, ChannelModel>>((acc, channel) => {
+        acc[channel.id] = channel;
+        return acc;
     }, {});
 
     const channelInfosQuery = await queryAllChannelsInfo(database);
-    const storedChannelInfosMap = channelInfosQuery.reduce<Record<string, ChannelInfoModel>>((map, info) => {
-        map[info.id] = info;
-        return map;
+    const storedChannelInfosMap = channelInfosQuery.reduce<Record<string, ChannelInfoModel>>((acc, info) => {
+        acc[info.id] = info;
+        return acc;
     }, {});
 
     for (const c of channels) {
@@ -800,5 +800,5 @@ export const observeIsChannelAutotranslated = (database: Database, channelId: st
     const enableAutoTranslation = observeConfigBooleanValue(database, 'EnableAutoTranslation');
     const channel = observeChannel(database, channelId);
     const myChannel = observeMyChannel(database, channelId);
-    return combineLatest([enableAutoTranslation, channel, myChannel]).pipe(switchMap(([et, c, mc]) => of$(Boolean(et && c?.autotranslation && !mc?.autotranslationDisabled))));
+    return combineLatest([enableAutoTranslation, channel, myChannel]).pipe(map(([et, c, mc]) => Boolean(et && c?.autotranslation && !mc?.autotranslationDisabled)));
 };

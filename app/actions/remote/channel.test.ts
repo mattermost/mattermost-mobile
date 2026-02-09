@@ -5,7 +5,7 @@
 
 import {createIntl} from 'react-intl';
 
-import {deletePostsForChannel} from '@actions/local/post';
+import {deletePostsForChannel} from '@actions/local/channel';
 import {DeepLink} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -83,7 +83,7 @@ jest.mock('@utils/helpers', () => {
     };
 });
 
-jest.mock('@actions/local/post', () => ({
+jest.mock('@actions/local/channel', () => ({
     deletePostsForChannel: jest.fn().mockResolvedValue({models: [], error: undefined}),
 }));
 
@@ -803,10 +803,10 @@ describe('setChannelAutotranslation', () => {
 
 describe('setMyChannelAutotranslation', () => {
     it('should update myChannel and call deletePostsForChannel when autotranslation changes', async () => {
-        const channelForMy = TestHelper.fakeChannel({id: channelId, team_id: teamId});
+        const channel = TestHelper.fakeChannel({id: channelId, team_id: teamId});
         const myChannelMember = TestHelper.fakeChannelMember({channel_id: channelId, autotranslation_disabled: false});
-        await operator.handleChannel({channels: [channelForMy], prepareRecordsOnly: false});
-        await operator.handleMyChannel({channels: [channelForMy], myChannels: [myChannelMember], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [myChannelMember], prepareRecordsOnly: false});
         jest.mocked(mockClient.setMyChannelAutotranslation).mockResolvedValue({} as ChannelMembership);
         jest.mocked(deletePostsForChannel).mockClear();
 

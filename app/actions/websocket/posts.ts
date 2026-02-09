@@ -414,6 +414,9 @@ export async function handlePostTranslationUpdatedEvent(serverUrl: string, msg: 
         if (locale !== translationData.language) {
             return;
         }
+        if (locale === translationData.src_lang) {
+            return;
+        }
         await updatePostTranslation(serverUrl, translationData.object_id, translationData.language, {
             object: translationObject,
             state: translationData.state,

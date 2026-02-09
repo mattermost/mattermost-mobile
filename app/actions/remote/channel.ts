@@ -5,9 +5,8 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {addChannelToDefaultCategory, handleConvertedGMCategories, storeCategories} from '@actions/local/category';
-import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeAllMyChannels, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
+import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeAllMyChannels, storeMyChannelsForTeam, switchToChannel, deletePostsForChannel} from '@actions/local/channel';
 import {switchToGlobalDrafts} from '@actions/local/draft';
-import {deletePostsForChannel} from '@actions/local/post';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {loadCallForChannel} from '@calls/actions/calls';
 import {DeepLink, Events, General, Preferences, Screens} from '@constants';
@@ -287,7 +286,7 @@ export async function patchChannel(serverUrl: string, channelId: string, channel
             models.push(channel);
         }
         if (models?.length) {
-            await operator.batchRecords(models.flat(), 'patchChannel');
+            await operator.batchRecords(models, 'patchChannel');
         }
         return {channel: channelData};
     } catch (error) {
@@ -1266,7 +1265,7 @@ export const setChannelAutotranslation = async (serverUrl: string, channelId: st
         }
 
         if (models?.length) {
-            await operator.batchRecords(models.flat(), 'setChannelAutotranslation');
+            await operator.batchRecords(models, 'setChannelAutotranslation');
         }
 
         // Delete posts when autotranslation setting changes
@@ -1301,7 +1300,7 @@ export const setMyChannelAutotranslation = async (serverUrl: string, channelId: 
         }
 
         if (models?.length) {
-            await operator.batchRecords(models.flat(), 'setMyChannelAutotranslation');
+            await operator.batchRecords(models, 'setMyChannelAutotranslation');
         }
 
         // Delete posts when autotranslation setting changes

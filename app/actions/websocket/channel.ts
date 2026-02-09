@@ -4,9 +4,9 @@
 import {addChannelToDefaultCategory, handleConvertedGMCategories} from '@actions/local/category';
 import {
     markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
-    storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket,
+    storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket, deletePostsForChannel,
 } from '@actions/local/channel';
-import {deletePostsForChannel, storePostsForChannel} from '@actions/local/post';
+import {storePostsForChannel} from '@actions/local/post';
 import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, handleKickFromChannel} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';

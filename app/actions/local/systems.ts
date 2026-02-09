@@ -25,7 +25,8 @@ import PostModel from '@typings/database/models/servers/post';
 import {isExpiredBoRPost} from '@utils/bor';
 import {logError} from '@utils/log';
 
-import {deletePosts, deletePostsForChannelsWithAutotranslation} from './post';
+import {deletePostsForChannelsWithAutotranslation} from './channel';
+import {deletePosts} from './post';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
 
