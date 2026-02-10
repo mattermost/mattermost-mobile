@@ -10,7 +10,7 @@ import {observeCallsConfig} from '@calls/state';
 import {General, Permissions} from '@constants';
 import {withServerUrl} from '@context/server';
 import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
-import {observeCurrentChannel} from '@queries/servers/channel';
+import {observeChannelAutotranslation, observeCurrentChannel} from '@queries/servers/channel';
 import {observeCanAddBookmarks} from '@queries/servers/channel_bookmark';
 import {observeCanManageChannelMembers, observeCanManageChannelSettings, observePermissionForChannel, observePermissionForTeam} from '@queries/servers/role';
 import {
@@ -246,6 +246,10 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         }),
     );
 
+    const isAutotranslationEnabledForThisChannel = channelId.pipe(
+        switchMap((cId) => observeChannelAutotranslation(database, cId)),
+    );
+
     const isPlaybooksEnabled = observeIsPlaybooksEnabled(database);
     return {
         type,
@@ -256,6 +260,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         isCRTEnabled: observeIsCRTEnabled(database),
         isPlaybooksEnabled,
         hasChannelSettingsActions: observeHasChannelSettingsActions(database, serverUrl, channelId, channel, currentUser, type),
+        isAutotranslationEnabledForThisChannel,
     };
 });
 

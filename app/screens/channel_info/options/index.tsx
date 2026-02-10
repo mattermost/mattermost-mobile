@@ -26,6 +26,7 @@ type Props = {
     isCRTEnabled: boolean;
     isPlaybooksEnabled: boolean;
     hasChannelSettingsActions: boolean;
+    isAutotranslationEnabledForThisChannel: boolean;
 }
 
 const Options = ({
@@ -36,6 +37,7 @@ const Options = ({
     isCRTEnabled,
     isPlaybooksEnabled,
     hasChannelSettingsActions,
+    isAutotranslationEnabledForThisChannel,
 }: Props) => {
     const isDMorGM = isTypeDMorGM(type);
 
@@ -53,7 +55,9 @@ const Options = ({
                 </>
             )}
             <NotificationPreference channelId={channelId}/>
-            <MyAutotranslation channelId={channelId}/>
+            {isAutotranslationEnabledForThisChannel && (
+                <MyAutotranslation channelId={channelId}/>
+            )}
             <PinnedMessages channelId={channelId}/>
             <ChannelFiles channelId={channelId}/>
             {isPlaybooksEnabled && !isDMorGM &&

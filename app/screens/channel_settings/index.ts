@@ -15,7 +15,6 @@ import {
     observeConfigBooleanValue,
     observeConfigValue,
     observeCurrentTeamId,
-    observeCurrentUserId,
 } from '@queries/servers/system';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeCurrentUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
@@ -36,11 +35,10 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
     const channel = observeChannel(database, channelId);
     const type = channel.pipe(switchMap((c) => of$(c?.type)));
     const teamId = channel.pipe(switchMap((c) => (c?.teamId ? of$(c.teamId) : observeCurrentTeamId(database))));
-    const userId = observeCurrentUserId(database);
     const currentUser = observeCurrentUser(database);
     const team = observeCurrentTeam(database);
-    const isTeamAdmin = combineLatest([teamId, userId]).pipe(
-        switchMap(([tId, uId]) => observeUserIsTeamAdmin(database, uId, tId)),
+    const isTeamAdmin = combineLatest([teamId, currentUser]).pipe(
+        switchMap(([tId, u]) => (u ? observeUserIsTeamAdmin(database, u.id, tId) : of$(false))),
     );
 
     // Calls observables
@@ -61,8 +59,8 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
         switchMap((roles) => of$(isSystemAdmin(roles || ''))),
         distinctUntilChanged(),
     );
-    const channelAdmin = userId.pipe(
-        switchMap((uId) => observeUserIsChannelAdmin(database, uId, channelId)),
+    const channelAdmin = currentUser.pipe(
+        switchMap((u) => (u ? observeUserIsChannelAdmin(database, u.id, channelId) : of$(false))),
         distinctUntilChanged(),
     );
     const serverVersion = observeConfigValue(database, 'Version');

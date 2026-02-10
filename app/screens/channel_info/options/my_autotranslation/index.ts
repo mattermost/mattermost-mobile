@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeChannel, observeChannelAutotranslation, observeIsChannelAutotranslated} from '@queries/servers/channel';
+import {observeChannel, observeIsChannelAutotranslated} from '@queries/servers/channel';
 import {observeIsUserLanguageSupportedByAutotranslation} from '@queries/servers/user';
 
 import MyAutotranslation from './my_autotranslation';
@@ -19,13 +19,11 @@ type Props = WithDatabaseArgs & {
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
     const channel = observeChannel(database, channelId);
     const enabled = observeIsChannelAutotranslated(database, channelId);
-    const channelAutotranslationEnabled = observeChannelAutotranslation(database, channelId);
     const isLanguageSupported = observeIsUserLanguageSupportedByAutotranslation(database);
 
     return {
         enabled,
         displayName: channel.pipe(switchMap((c) => of$(c?.displayName || ''))),
-        channelAutotranslationEnabled,
         isLanguageSupported,
     };
 });

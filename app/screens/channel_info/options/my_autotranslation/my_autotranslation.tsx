@@ -54,11 +54,10 @@ type Props = {
     channelId: string;
     enabled: boolean;
     displayName: string;
-    channelAutotranslationEnabled: boolean;
     isLanguageSupported: boolean;
 };
 
-const MyAutotranslation = ({channelId, displayName, enabled, channelAutotranslationEnabled, isLanguageSupported}: Props) => {
+const MyAutotranslation = ({channelId, displayName, enabled, isLanguageSupported}: Props) => {
     // Use the local state for optimistic updates
     const [autotranslation, setAutotranslation] = useState(enabled);
     const serverUrl = useServerUrl();
@@ -92,10 +91,6 @@ const MyAutotranslation = ({channelId, displayName, enabled, channelAutotranslat
             doToggleAutotranslation();
         }
     }, [autotranslation, doToggleAutotranslation, intl]));
-
-    if (!channelAutotranslationEnabled) {
-        return null;
-    }
 
     if (!isLanguageSupported) {
         return (

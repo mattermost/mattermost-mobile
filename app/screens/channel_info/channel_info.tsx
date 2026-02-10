@@ -37,6 +37,7 @@ type Props = {
     isCRTEnabled: boolean;
     type?: ChannelType;
     hasChannelSettingsActions: boolean;
+    isAutotranslationEnabledForThisChannel: boolean;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -69,6 +70,7 @@ const ChannelInfo = ({
     isCRTEnabled,
     type,
     hasChannelSettingsActions,
+    isAutotranslationEnabledForThisChannel,
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -132,6 +134,7 @@ const ChannelInfo = ({
                         isCRTEnabled={isCRTEnabled}
                         isPlaybooksEnabled={isPlaybooksEnabled}
                         hasChannelSettingsActions={hasChannelSettingsActions}
+                        isAutotranslationEnabledForThisChannel={isAutotranslationEnabledForThisChannel}
                     />
                     <View style={styles.separator}/>
                     <ChannelInfoAppBindings
