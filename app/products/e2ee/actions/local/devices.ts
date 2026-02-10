@@ -6,22 +6,22 @@ import DatabaseManager from '@database/manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
-export const addDevice = async (serverUrl: string, device: EnabledDevice) => {
+export const updateDevices = async (serverUrl: string, devices: EnabledDevice[]) => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const savedDevices = await operator.handleDevices({
-            devices: [device],
+        const updatedDevices = await operator.handleDevices({
+            devices,
         });
 
-        if (savedDevices.length !== 1) {
+        if (updatedDevices.length !== devices.length) {
             return {
-                error: 'more than one device was affected by registration',
+                error: 'wrong number of handled devices',
             };
         }
 
-        return {data: savedDevices[0]};
+        return {data: updatedDevices};
     } catch (error) {
-        logDebug('fetchEnabledDevicesNoDb', getFullErrorMessage(error));
+        logDebug('addDeviceDb', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
