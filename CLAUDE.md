@@ -143,6 +143,8 @@ Located at `libraries/@mattermost/`:
 
 ## Testing
 
+**Testing guide:** See [docs/testing_guide.md](docs/testing_guide.md) for how to add and structure unit tests.
+
 ### Test Organization
 - **Jest coverage excludes** `/components/` and `/screens/` directories
 - Mock database manager at `app/database/manager/__mocks__/index.ts`

@@ -23,6 +23,7 @@ import {
     LoginScreen,
     ServerScreen,
     ChannelInfoScreen,
+    ChannelSettingsScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
@@ -54,14 +55,16 @@ describe('Channels - Archive Channel', () => {
     });
 
     it('MM-T4932_1 - should be able to archive a public channel and confirm', async () => {
-        // # Open a public channel screen, open channel info screen, and tap on archive channel option and confirm
+        // # Open a public channel screen, open channel info screen, go to channel settings, and tap on archive channel option and confirm
         const {channel: publicChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'O', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, publicChannel.id);
         await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, publicChannel.name);
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.archivePublicChannel({confirm: true});
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
         // # Tap on close channel button, open browse channels screen, search for the archived public channel
         await BrowseChannelsScreen.open();
@@ -76,32 +79,37 @@ describe('Channels - Archive Channel', () => {
     });
 
     it('MM-T4932_2 - should be able to archive a public channel and cancel', async () => {
-        // # Open a public channel screen, open channel info screen, and tap on archive channel option and cancel
+        // # Open a public channel screen, open channel info screen, go to channel settings, and tap on archive channel option and cancel
         const {channel: publicChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'O', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, publicChannel.id);
         await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, publicChannel.name);
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.archivePublicChannel({confirm: false});
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.archivePublicChannel({confirm: false});
 
-        // * Verify still on channel info screen
-        await ChannelInfoScreen.toBeVisible();
+        // * Verify still on channel settings screen
+        await ChannelSettingsScreen.toBeVisible();
 
         // # Go back to channel list screen
+        await ChannelSettingsScreen.close();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
     });
 
     it('MM-T4932_3 - should be able to archive a private channel and confirm', async () => {
-        // # Open a private channel screen, open channel info screen, and tap on archive channel option and confirm
+        // # Open a private channel screen, open channel info screen, go to channel settings, and tap on archive channel option and confirm
         const {channel: privateChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privateChannel.id);
         await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, privateChannel.name);
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.archivePrivateChannel({confirm: true});
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.archivePrivateChannel({confirm: true});
 
         // # Tap on close channel button, open browse channels screen, tap on channel dropdown, tap on archived channels menu item, and search for the archived private channel
         await BrowseChannelsScreen.open();

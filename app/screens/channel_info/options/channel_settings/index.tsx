@@ -14,23 +14,24 @@ type Props = {
     channelId: string;
 }
 
-const EditChannel = ({channelId}: Props) => {
+const ChannelSettings = ({channelId}: Props) => {
     const {formatMessage} = useIntl();
-    const title = formatMessage({id: 'screens.channel_edit', defaultMessage: 'Edit Channel'});
+    const title = formatMessage({id: 'channel_info.channel_settings', defaultMessage: 'Channel Settings'});
 
-    const goToEditChannel = usePreventDoubleTap(useCallback(async () => {
-        goToScreen(Screens.CREATE_OR_EDIT_CHANNEL, title, {channelId});
+    const goToChannelSettings = usePreventDoubleTap(useCallback(async () => {
+        goToScreen(Screens.CHANNEL_SETTINGS, title, {channelId});
     }, [channelId, title]));
 
     return (
         <OptionItem
-            action={goToEditChannel}
+            action={goToChannelSettings}
             label={title}
-            icon='pencil-outline'
+            icon='settings-outline'
             type={Platform.select({ios: 'arrow', default: 'default'})}
-            testID='channel_info.options.edit_channel.option'
+            testID='channel_info.options.channel_settings.option'
         />
     );
 };
 
-export default EditChannel;
+export default ChannelSettings;
+

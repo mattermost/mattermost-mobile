@@ -18,7 +18,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
 
-export function areConsecutivePosts(post: PostModel, previousPost: PostModel) {
+export function areConsecutivePosts(post: PostModel, previousPost: PostModel, userLocale: string) {
     let consecutive = false;
 
     if (post && previousPost) {
@@ -31,6 +31,14 @@ export function areConsecutivePosts(post: PostModel, previousPost: PostModel) {
         // Were the last post and this post made by the same user within some time?
         consecutive = previousPost && isFromSameUser && isInTimeframe && !postFromWebhook &&
         !prevPostFromWebhook && isNotSystemMessage;
+    }
+
+    if (consecutive) {
+        const postTranslation = getPostTranslation(post, userLocale);
+        const previousPostTranslation = getPostTranslation(previousPost, userLocale);
+        if (postTranslation?.state !== previousPostTranslation?.state) {
+            consecutive = false;
+        }
     }
 
     return consecutive;
@@ -272,4 +280,13 @@ export function scheduledPostFromPost(post: Post, schedulingInfo: SchedulingInfo
         },
         file_ids: fileIDs,
     };
+}
+
+export function getPostTranslation(post: Post | PostModel, locale: string): PostTranslation | undefined {
+    const normalizedLocale = locale.split('-')[0];
+    return post.metadata?.translations?.[normalizedLocale];
+}
+
+export function getPostTranslatedMessage(originalMessage: string, translation: PostTranslation): string {
+    return translation.object?.message ?? originalMessage;
 }
