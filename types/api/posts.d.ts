@@ -71,6 +71,15 @@ type PostImage = {
     frame_count?: number;
 };
 
+type PostTranslationState = 'ready' | 'skipped' | 'unavailable' | 'processing';
+type PostTranslation = {
+    object: {
+        message: string;
+    };
+    state: PostTranslationState;
+    source_lang?: string;
+};
+
 type PostMetadata = {
     acknowledgements?: PostAcknowledgement[];
     embeds?: PostEmbed[];
@@ -82,6 +91,7 @@ type PostMetadata = {
     expire_at?: number;
     borConfig?: PostBoRConfig;
     recipients?: string[];
+    translations?: Record<string, PostTranslation>;
 };
 
 type Post = {
