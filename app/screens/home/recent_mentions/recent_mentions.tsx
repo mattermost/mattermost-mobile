@@ -33,6 +33,7 @@ type Props = {
     customEmojiNames: string[];
     currentTimezone: string | null;
     mentions: PostModel[];
+    hasMultipleTeams: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentTimezone}: Props) => {
+const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentTimezone, hasMultipleTeams}: Props) => {
     const theme = useTheme();
     const route = useRoute();
     const isFocused = useIsFocused();
@@ -54,7 +55,6 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
     const serverUrl = useServerUrl();
-
     const params = route.params as {direction: string};
     const toLeft = params.direction === 'left';
     const translateSide = toLeft ? -25 : 25;
@@ -84,6 +84,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<Animated.FlatList<string>>(true, onSnap);
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
+
     const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, currentTimezone, false).reverse(), [mentions]);
 
     const animated = useAnimatedStyle(() => {
@@ -151,13 +152,14 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
                         key={item.value.currentPost.id}
                         location={Screens.MENTIONS}
                         post={item.value.currentPost}
+                        skipTeam={!hasMultipleTeams}
                         testID='recent_mentions.post_list'
                     />
                 );
             default:
                 return null;
         }
-    }, [appsEnabled, customEmojiNames]);
+    }, [appsEnabled, customEmojiNames, hasMultipleTeams]);
 
     return (
         <Freeze freeze={!isFocused}>
