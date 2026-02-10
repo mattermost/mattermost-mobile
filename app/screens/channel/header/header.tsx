@@ -60,6 +60,7 @@ type ChannelProps = {
     playbooksActiveRuns: number;
     isPlaybooksEnabled: boolean;
     activeRunId?: string;
+    isChannelAutotranslated: boolean;
 
     // searchTerm: string;
 };
@@ -113,6 +114,7 @@ const ChannelHeader = ({
     hasPlaybookRuns,
     isPlaybooksEnabled,
     activeRunId,
+    isChannelAutotranslated,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -315,6 +317,19 @@ const ChannelHeader = ({
         return undefined;
     }, [memberCount, customStatus, isCustomStatusExpired, theme.sidebarHeaderTextColor, styles.customStatusContainer, styles.customStatusEmoji, styles.customStatusText, styles.subtitle, isCustomStatusEnabled]);
 
+    const titleCompanion = useMemo(() => {
+        if (isChannelAutotranslated) {
+            return (
+                <CompassIcon
+                    name='translate'
+                    size={16}
+                    color={changeOpacity(theme.sidebarHeaderTextColor, 0.72)}
+                />
+            );
+        }
+        return undefined;
+    }, [isChannelAutotranslated, theme.sidebarHeaderTextColor]);
+
     useEffect(() => {
         const asyncEffect = async () => {
             if (isPlaybooksEnabled && !EphemeralStore.getChannelPlaybooksSynced(serverUrl, channelId)) {
@@ -338,6 +353,7 @@ const ChannelHeader = ({
                 subtitle={subtitle}
                 subtitleCompanion={subtitleCompanion}
                 title={title}
+                titleCompanion={titleCompanion}
             />
             <View style={contextStyle}>
                 <RoundedHeaderContext/>

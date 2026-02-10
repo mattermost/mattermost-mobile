@@ -50,6 +50,22 @@ class EphemeralStoreSingleton {
     // It is cleared any time the connection with the server is lost.
     private channelPlaybooksSynced: {[serverUrl: string]: Set<string>} = {};
 
+    // Track how many translations are being executed at the same time on the channel.
+    // We limit this to avoid overwhelming the device.
+    private runningTranslations = new Set<string>();
+
+    addRunningTranslation = (postId: string) => {
+        this.runningTranslations.add(postId);
+    };
+
+    removeRunningTranslation = (postId: string) => {
+        this.runningTranslations.delete(postId);
+    };
+
+    totalRunningTranslations = () => {
+        return this.runningTranslations.size;
+    };
+
     setProcessingNotification = (v: string) => {
         this.processingNotification = v;
     };

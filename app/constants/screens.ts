@@ -19,6 +19,7 @@ export const CHANNEL_BOOKMARK = 'ChannelBookmarkAddOrEdit';
 export const CHANNEL_FILES = 'ChannelFiles';
 export const CHANNEL_INFO = 'ChannelInfo';
 export const CHANNEL_NOTIFICATION_PREFERENCES = 'ChannelNotificationPreferences';
+export const CHANNEL_SETTINGS = 'ChannelSettings';
 export const CODE = 'Code';
 export const CONVERT_GM_TO_CHANNEL = 'ConvertGMToChannel';
 export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
@@ -91,6 +92,7 @@ export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
+export const SHOW_TRANSLATION = 'ShowTranslation';
 
 export default {
     ABOUT,
@@ -109,6 +111,7 @@ export default {
     CHANNEL_FILES,
     CHANNEL_INFO,
     CHANNEL_NOTIFICATION_PREFERENCES,
+    CHANNEL_SETTINGS,
     CODE,
     CONVERT_GM_TO_CHANNEL,
     COMPONENT_LIBRARY,
@@ -180,6 +183,7 @@ export default {
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
+    SHOW_TRANSLATION,
     ...PLAYBOOKS_SCREENS,
 } as const;
 

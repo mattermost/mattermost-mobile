@@ -54,7 +54,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         text: {
             color: theme.centerChannelBg,
         },
-        undo: {
+        action: {
             color: theme.centerChannelBg,
             ...typography('Body', 100, 'SemiBold'),
         },
@@ -101,6 +101,7 @@ const SnackBar = ({
     sourceScreen,
     customMessage,
     type,
+    actionText,
 }: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const intl = useIntl();
@@ -120,7 +121,7 @@ const SnackBar = ({
         config = {
             message: defaultMessage,
             iconName: DEFAULT_ICON,
-            canUndo: false,
+            hasAction: false,
             type,
         };
     }
@@ -245,6 +246,9 @@ const SnackBar = ({
             stopTimers();
             mounted.current = false;
         };
+
+        // Only run on initial load
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
@@ -301,10 +305,10 @@ const SnackBar = ({
                             textStyle={styles.text}
                             testID='toast'
                         >
-                            {config.canUndo && onAction && (
+                            {config.hasAction && onAction && (
                                 <TouchableOpacity onPress={onUndoPressHandler}>
-                                    <Text style={styles.undo}>
-                                        {intl.formatMessage({
+                                    <Text style={styles.action}>
+                                        {actionText || intl.formatMessage({
                                             id: 'snack.bar.undo',
                                             defaultMessage: 'Undo',
                                         })}
