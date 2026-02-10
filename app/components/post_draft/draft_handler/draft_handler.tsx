@@ -13,6 +13,7 @@ import {fileMaxWarning, fileSizeWarning, getUploadErrorMessage, uploadDisabledWa
 import SendHandler from '../send_handler';
 
 import type {ErrorHandlers} from '@typings/components/upload_error_handlers';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     testID?: string;
@@ -29,6 +30,7 @@ type Props = {
     updateValue: React.Dispatch<React.SetStateAction<string>>;
     value: string;
     setIsFocused: (isFocused: boolean) => void;
+    location?: AvailableScreens;
 }
 
 const emptyFileList: FileInfo[] = [];
@@ -49,6 +51,7 @@ export default function DraftHandler(props: Props) {
         updateValue,
         value,
         setIsFocused,
+        location,
     } = props;
 
     const serverUrl = useServerUrl();
@@ -139,6 +142,7 @@ export default function DraftHandler(props: Props) {
             updatePostInputTop={updatePostInputTop}
             updateValue={updateValue}
             setIsFocused={setIsFocused}
+            location={location}
         />
     );
 }

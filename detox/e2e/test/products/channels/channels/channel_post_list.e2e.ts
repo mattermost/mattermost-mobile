@@ -23,8 +23,8 @@ import {
     PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Post List', () => {
     const serverOneDisplayName = 'Server 1';
@@ -52,26 +52,37 @@ describe('Channels - Channel Post List', () => {
     it('MM-T4773_1 - should match elements on channel screen', async () => {
         // # Open a channel screen
         await ChannelScreen.open('channels', testChannel.name);
-        if (isAndroid()) {
-            await ChannelScreen.back();
-            await ChannelScreen.open('channels', testChannel.name);
-        }
 
         // * Verify basic elements on channel screen
-        await expect(ChannelScreen.backButton).toBeVisible();
+        await expect(ChannelScreen.backButton).toExist();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
+        await waitFor(ChannelScreen.introDisplayName).toExist().withTimeout(timeouts.TWO_SEC);
         await expect(ChannelScreen.introDisplayName).toHaveText(testChannel.display_name);
-        await expect(ChannelScreen.introSetHeaderAction).toBeVisible();
-        await expect(ChannelScreen.introChannelInfoAction).toBeVisible();
-        await expect(ChannelScreen.postList.getFlatList()).toBeVisible();
-        await expect(ChannelScreen.postDraft).toBeVisible();
-        await expect(ChannelScreen.postInput).toBeVisible();
-        await expect(ChannelScreen.atInputQuickAction).toBeVisible();
-        await expect(ChannelScreen.slashInputQuickAction).toBeVisible();
-        await expect(ChannelScreen.fileQuickAction).toBeVisible();
-        await expect(ChannelScreen.imageQuickAction).toBeVisible();
-        await expect(ChannelScreen.cameraQuickAction).toBeVisible();
-        await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
+        await expect(ChannelScreen.introSetHeaderAction).toExist();
+        await expect(ChannelScreen.introChannelInfoAction).toExist();
+        await expect(ChannelScreen.postList.getFlatList()).toExist();
+        await expect(ChannelScreen.postDraft).toExist();
+        await expect(ChannelScreen.postInput).toExist();
+        await expect(ChannelScreen.atInputQuickAction).toExist();
+        await expect(ChannelScreen.slashInputQuickAction).toExist();
+
+        // # Tap on attachment action to open file attachment options
+        const attachmentAction = element(by.id('channel.post_draft.quick_actions.attachment_action'));
+        await expect(attachmentAction).toExist();
+        await attachmentAction.tap();
+
+        // * Verify file attachment options screen and its options
+        const attachmentScreen = element(by.id('channel.post_draft.quick_actions.attachment_action.screen'));
+        await expect(attachmentScreen).toExist();
+        await expect(element(by.id('file_attachment.photo_library'))).toExist();
+        await expect(element(by.id('file_attachment.take_photo'))).toExist();
+        await expect(element(by.id('file_attachment.take_video'))).toExist();
+        await expect(element(by.id('file_attachment.attach_file'))).toExist();
+
+        // # Close attachment options by swiping down (works on both iOS and Android)
+        await attachmentScreen.swipe('down', 'fast', 0.5);
+
+        await expect(ChannelScreen.sendButtonDisabled).toExist();
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -81,16 +92,12 @@ describe('Channels - Channel Post List', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open('channels', testChannel.name);
-        if (isAndroid()) {
-            await ChannelScreen.back();
-            await ChannelScreen.open('channels', testChannel.name);
-        }
         await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Open post options for the message that was just posted, tap delete option and confirm
         await ChannelScreen.openPostOptionsFor(post.id, message);

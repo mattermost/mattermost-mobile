@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ProfilePicture} from '@support/ui/component';
+import {Alert, ProfilePicture} from '@support/ui/component';
 import {ChannelInfoScreen} from '@support/ui/screen';
 import {isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
@@ -10,20 +10,28 @@ class ManageChannelMembersScreen {
     testID = {
         backButton: 'screen.back.button',
         manageMembersScreen: 'manage_members.screen',
+        channelMembersScreen: 'channel_members.screen',
         manageDoneButton: 'manage_members.button', // Same button, text changes between "Manage" and "Done"
         searchBar: 'manage_members.search_bar',
+        searchInput: 'manage_members.search_bar.search.input',
         userList: 'manage_members.user_list',
-        userItemPrefix: 'create_direct_message.user_list.user_item.',
+        userItemPrefix: 'manage_members.user_list.user_item.',
+        removeButton: 'channel.remove_member',
         notice: 'manage_members.notice',
         tutorialHighlight: 'tutorial_highlight',
         tutorialSwipeLeft: 'tutorial_swipe_left',
+        gmMemberSectionList: 'manage_members.user_list.section_list',
     };
 
+    gmMemberSectionList = element(by.id(this.testID.gmMemberSectionList));
     manageMembersScreen = element(by.id(this.testID.manageMembersScreen));
+    channelMembersScreen = element(by.id(this.testID.channelMembersScreen));
     manageButton = element(by.id(this.testID.manageDoneButton));
     doneButton = element(by.id(this.testID.manageDoneButton)); // Same element as manageButton, different text
     searchBar = element(by.id(this.testID.searchBar));
+    searchInput = element(by.id(this.testID.searchInput));
     userList = element(by.id(this.testID.userList));
+    removeButton = element(by.id(this.testID.removeButton));
     notice = element(by.id(this.testID.notice));
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
@@ -90,6 +98,26 @@ class ManageChannelMembersScreen {
             // eslint-disable-next-line no-console
             console.log('Tutorial element not visible, skipping action:');
         }
+    };
+
+    searchAndRemoveUser = async (username: string, userId: string) => {
+        await expect(this.searchInput).toBeVisible();
+        await this.searchInput.typeText(`${username}`);
+        await wait(timeouts.TWO_SEC);
+
+        const userItem = this.getUserItem(userId);
+        await waitFor(userItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await userItem.tap();
+        await wait(timeouts.TWO_SEC);
+
+        await expect(this.removeButton).toBeVisible();
+        await this.removeButton.tap();
+        await wait(timeouts.TWO_SEC);
+
+        await Alert.removeButton.tap();
+        await wait(timeouts.TWO_SEC);
+
+        await device.pressBack();
     };
 }
 
