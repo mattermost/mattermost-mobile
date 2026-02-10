@@ -36,13 +36,8 @@ export function isDirectMessageWithViewedUser(channel: DMChannelInfo|undefined, 
         return false;
     }
 
-    const ids = channel.name.split('__');
-    if (ids.length !== 2 || !ids[0] || !ids[1] || !ids.includes(currentUserId)) {
-        return false;
-    }
-
     const dmUserId = getUserIdFromChannelName(currentUserId, channel.name);
-    return dmUserId === viewedUserId;
+    return Boolean(dmUserId) && dmUserId === viewedUserId;
 }
 
 const enhanced = withObservables([], ({channelId, database, userId}: EnhancedProps) => {

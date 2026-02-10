@@ -45,6 +45,19 @@ describe('screens/user_profile/index', () => {
         expect(result).toBe(false);
     });
 
+    it('should return true when DM channel name has reversed user order', () => {
+        const result = isDirectMessageWithViewedUser(
+            {
+                name: 'other_user_id__current_user_id',
+                type: General.DM_CHANNEL,
+            },
+            'current_user_id',
+            'other_user_id',
+        );
+
+        expect(result).toBe(true);
+    });
+
     it('should return false when DM channel name is malformed', () => {
         const result = isDirectMessageWithViewedUser(
             {
