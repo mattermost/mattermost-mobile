@@ -85,7 +85,7 @@ env:
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
   HEADLESS: "true"
   TYPE: ${{ inputs.run-type }}
-  PULL_REQUEST: ${{ github.event_name == 'pull_request' && format('https://github.com/mattermost/mattermost-mobile/pull/{0}', github.event.number) || '' }}
+  PULL_REQUEST: ${{ github.event.pull_request.number && format('https://github.com/mattermost/mattermost-mobile/pull/{0}', github.event.pull_request.number) || '' }}
   SITE_1_URL: ${{ inputs.SITE_1_URL || inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
   SITE_2_URL: ${{ inputs.SITE_2_URL || 'https://mobile-e2e-site-2.test.mattermost.cloud' }}
   SITE_3_URL: ${{ inputs.SITE_3_URL || 'https://mobile-e2e-site-3.test.mattermost.cloud' }}
