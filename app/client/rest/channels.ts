@@ -166,7 +166,7 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
     setMyChannelAutotranslation = async (channelId: string, enabled: boolean) => {
         return this.doFetch(
             `${this.getChannelMemberRoute(channelId, 'me')}/autotranslation`,
-            {method: 'put', body: {autotranslation_disabled: enabled}},
+            {method: 'put', body: {autotranslation_disabled: !enabled}},
         );
     };
 
