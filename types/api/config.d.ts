@@ -13,6 +13,7 @@ interface ClientConfig {
     AndroidMinVersion: string;
     AppDownloadLink: string;
     AsymmetricSigningPublicKey: string;
+    AutoTranslationLanguages: string;
     AvailableLocales: string;
     BannerColor: string;
     BannerText: string;
@@ -47,6 +48,7 @@ interface ClientConfig {
     EmailLoginButtonTextColor: string;
     EmailNotificationContentsType: string;
     EnableBanner: string;
+    EnableAutoTranslation: string;
     EnableBotAccountCreation: string;
     EnableBurnOnRead: string;
     EnableChannelViewedMessages: string;
