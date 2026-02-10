@@ -8,6 +8,8 @@ import DatabaseManager from '@database/manager';
 import PlaybookRunsOption from '@playbooks/components/channel_actions/playbook_runs_option';
 import {renderWithEverything} from '@test/intl-test-helper';
 
+import MyAutotranslation from './my_autotranslation';
+
 import ChannelInfoOptions from './';
 
 import type {Database} from '@nozbe/watermelondb';
@@ -17,6 +19,11 @@ const serverUrl = 'some.server.url';
 jest.mock('@playbooks/components/channel_actions/playbook_runs_option');
 jest.mocked(PlaybookRunsOption).mockImplementation((props) => {
     return React.createElement('PlaybookRunsOption', {...props, testID: 'playbook-runs-option'});
+});
+
+jest.mock('./my_autotranslation');
+jest.mocked(MyAutotranslation).mockImplementation((props) => {
+    return React.createElement('MyAutotranslation', {...props, testID: 'my-autotranslation-option'});
 });
 
 describe('ChannelInfoOptions', () => {
@@ -30,6 +37,7 @@ describe('ChannelInfoOptions', () => {
             isCRTEnabled: false,
             isPlaybooksEnabled: true,
             hasChannelSettingsActions: false,
+            isAutotranslationEnabledForThisChannel: true,
         };
     }
     beforeEach(async () => {
@@ -56,5 +64,17 @@ describe('ChannelInfoOptions', () => {
         props.type = General.GM_CHANNEL;
         rerender(<ChannelInfoOptions {...props}/>);
         expect(queryByTestId('playbook-runs-option')).toBeNull();
+    });
+    it('should not show my autotranslation option when isAutotranslationEnabledForThisChannel is false', () => {
+        const props = getBaseProps();
+        props.isAutotranslationEnabledForThisChannel = false;
+        const {queryByTestId} = renderWithEverything(<ChannelInfoOptions {...props}/>, {database});
+        expect(queryByTestId('my-autotranslation-option')).toBeNull();
+    });
+    it('should show my autotranslation option when isAutotranslationEnabledForThisChannel is true', () => {
+        const props = getBaseProps();
+        props.isAutotranslationEnabledForThisChannel = true;
+        const {getByTestId} = renderWithEverything(<ChannelInfoOptions {...props}/>, {database});
+        expect(getByTestId('my-autotranslation-option')).toBeTruthy();
     });
 });

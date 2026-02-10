@@ -38,27 +38,12 @@ describe('MyAutotranslation', () => {
         jest.clearAllMocks();
     });
 
-    it('returns null when channelAutotranslationEnabled is false', () => {
-        const {queryByTestId} = renderWithEverything(
-            <MyAutotranslation
-                channelId='channel1'
-                enabled={false}
-                displayName='Test Channel'
-                channelAutotranslationEnabled={false}
-                isLanguageSupported={true}
-            />,
-            {database},
-        );
-        expect(queryByTestId('channel_info.options.my_autotranslation.option')).toBeNull();
-    });
-
     it('renders disabled option when language is not supported', () => {
         const {getByTestId, getByText} = renderWithEverything(
             <MyAutotranslation
                 channelId='channel1'
                 enabled={false}
                 displayName='Test Channel'
-                channelAutotranslationEnabled={true}
                 isLanguageSupported={false}
             />,
             {database},
@@ -73,7 +58,6 @@ describe('MyAutotranslation', () => {
                 channelId='channel1'
                 enabled={true}
                 displayName='Test Channel'
-                channelAutotranslationEnabled={true}
                 isLanguageSupported={true}
             />,
             {database},
@@ -87,7 +71,6 @@ describe('MyAutotranslation', () => {
                 channelId='channel1'
                 enabled={false}
                 displayName='Test Channel'
-                channelAutotranslationEnabled={true}
                 isLanguageSupported={true}
             />,
             {database},
@@ -102,7 +85,6 @@ describe('MyAutotranslation', () => {
                 channelId='channel1'
                 enabled={false}
                 displayName='Test Channel'
-                channelAutotranslationEnabled={true}
                 isLanguageSupported={true}
             />,
             {database},
@@ -123,7 +105,6 @@ describe('MyAutotranslation', () => {
                 channelId='channel1'
                 enabled={true}
                 displayName='Test Channel'
-                channelAutotranslationEnabled={true}
                 isLanguageSupported={true}
             />,
             {database},
