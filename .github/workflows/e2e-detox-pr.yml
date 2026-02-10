@@ -47,11 +47,17 @@ env:
 
 jobs:
   update-initial-status-ios:
-    if: contains(github.event.label.name, 'E2E iOS tests for PR')
+    if: |
+      contains(github.event.label.name, 'E2E iOS tests for PR') ||
+      contains(github.event.label.name, 'E2E/Run-iOS') ||
+      contains(github.event.label.name, 'E2E/Run')
     runs-on: ubuntu-22.04
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
-        if: contains(github.event.label.name, 'E2E iOS tests for PR')
+        if: |
+          contains(github.event.label.name, 'E2E iOS tests for PR') ||
+          contains(github.event.label.name, 'E2E/Run-iOS') ||
+          contains(github.event.label.name, 'E2E/Run')
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -63,7 +69,10 @@ jobs:
 
   update-initial-status-android:
     runs-on: ubuntu-22.04
-    if: contains(github.event.label.name, 'E2E Android tests for PR')
+    if: |
+      contains(github.event.label.name, 'E2E Android tests for PR') ||
+      contains(github.event.label.name, 'E2E/Run-Android') ||
+      contains(github.event.label.name, 'E2E/Run')
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
@@ -76,7 +85,10 @@ jobs:
           status: pending
 
   build-ios-simulator:
-    if: contains(github.event.label.name, 'E2E iOS tests for PR')
+    if: |
+      contains(github.event.label.name, 'E2E iOS tests for PR') ||
+      contains(github.event.label.name, 'E2E/Run-iOS') ||
+      contains(github.event.label.name, 'E2E/Run')
     runs-on: macos-26
     needs:
       - update-initial-status-ios
@@ -111,7 +123,10 @@ jobs:
 
   build-android-apk:
     runs-on: ubuntu-latest-8-cores
-    if: contains(github.event.label.name, 'E2E Android tests for PR')
+    if: |
+      contains(github.event.label.name, 'E2E Android tests for PR') ||
+      contains(github.event.label.name, 'E2E/Run-Android') ||
+      contains(github.event.label.name, 'E2E/Run')
     needs:
       - update-initial-status-android
     env:
@@ -153,7 +168,10 @@ jobs:
           path: "android/app/build/**/*"
         
   run-ios-tests-on-pr:
-    if: contains(github.event.label.name, 'E2E iOS tests for PR')
+    if: |
+      contains(github.event.label.name, 'E2E iOS tests for PR') ||
+      contains(github.event.label.name, 'E2E/Run-iOS') ||
+      contains(github.event.label.name, 'E2E/Run')
     name: iOS
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
@@ -165,7 +183,10 @@ jobs:
     secrets: inherit
 
   run-android-tests-on-pr:
-    if: contains(github.event.label.name, 'E2E Android tests for PR')
+    if: |
+      contains(github.event.label.name, 'E2E Android tests for PR') ||
+      contains(github.event.label.name, 'E2E/Run-Android') ||
+      contains(github.event.label.name, 'E2E/Run')
     name: Android
     uses: ./.github/workflows/e2e-android-template.yml
     needs:
@@ -178,7 +199,10 @@ jobs:
 
   update-final-status-ios:
     runs-on: ubuntu-22.04
-    if: contains(github.event.label.name, 'E2E iOS tests for PR')
+    if: |
+      contains(github.event.label.name, 'E2E iOS tests for PR') ||
+      contains(github.event.label.name, 'E2E/Run-iOS') ||
+      contains(github.event.label.name, 'E2E/Run')
     needs:
       - run-ios-tests-on-pr
     steps:
@@ -195,7 +219,10 @@ jobs:
 
   update-final-status-android:
     runs-on: ubuntu-22.04
-    if: contains(github.event.label.name, 'E2E Android tests for PR')
+    if: |
+      contains(github.event.label.name, 'E2E Android tests for PR') ||
+      contains(github.event.label.name, 'E2E/Run-Android') ||
+      contains(github.event.label.name, 'E2E/Run')
     needs:
       - run-android-tests-on-pr
     steps:
@@ -214,15 +241,16 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - run-ios-tests-on-pr
+    if: always()
     steps:
       - name: e2e/remove-label-from-pr
         uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
         continue-on-error: true # Label might have been removed manually
         with:
           script: |
-            const iosLabel = 'E2E iOS tests for PR';
+            const iosLabels = ['E2E iOS tests for PR', 'E2E/Run-iOS', 'E2E/Run'];
             context.payload.pull_request.labels.forEach(label => {
-              if (label.name.includes(iosLabel)) {
+              if (iosLabels.some(l => label.name.includes(l))) {
                 github.rest.issues.removeLabel({
                   issue_number: context.issue.number,
                   owner: context.repo.owner,
@@ -236,15 +264,16 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - run-android-tests-on-pr
+    if: always()
     steps:
       - name: e2e/remove-label-from-pr
         uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
         continue-on-error: true # Label might have been removed manually
         with:
           script: |
-            const androidLabel = 'E2E Android tests for PR';
+            const androidLabels = ['E2E Android tests for PR', 'E2E/Run-Android', 'E2E/Run'];
             context.payload.pull_request.labels.forEach(label => {
-              if (label.name.includes(androidLabel)) {
+              if (androidLabels.some(l => label.name.includes(l))) {
                 github.rest.issues.removeLabel({
                   issue_number: context.issue.number,
                   owner: context.repo.owner,
@@ -261,10 +290,10 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: "PR"
-      SITE_1_URL: ${{ github.event.inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ github.event.inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ github.event.inputs.SITE_3_URL }}
-      MOBILE_VERSION: ${{ github.event.inputs.MOBILE_VERSION }}
+      SITE_1_URL: ${{ inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
     secrets: inherit
 
   run-android-tests-on-workflow-dispatch:
@@ -273,10 +302,10 @@ jobs:
     uses: ./.github/workflows/e2e-android-template.yml
     with:
       run-type: "PR"
-      SITE_1_URL: ${{ github.event.inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ github.event.inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ github.event.inputs.SITE_3_URL }}
-      MOBILE_VERSION: ${{ github.event.inputs.MOBILE_VERSION }}
+      SITE_1_URL: ${{ inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       run-android-tests: true
     secrets: inherit
 
@@ -284,6 +313,8 @@ jobs:
     runs-on: ubuntu-22.04
     if: github.event_name == 'workflow_dispatch'
     needs: []
+    permissions:
+      issues: write
     continue-on-error: true
     steps:
       - name: Remove E2E/Run label when triggered via Matterwick
