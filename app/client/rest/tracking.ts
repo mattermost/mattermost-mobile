@@ -435,8 +435,9 @@ export default class ClientTracking {
             return returnDataOnly ? (response.data || {}) : response;
         }
 
+        const errorMessage = response.data?.message as string || response.data?.error as string;
         throw new ClientError(this.apiClient.baseUrl, {
-            message: response.data?.message as string || `Response with status code ${response.code}`,
+            message: errorMessage || `Response with status code ${response.code}`,
             server_error_id: response.data?.id as string,
             status_code: response.code,
             url,

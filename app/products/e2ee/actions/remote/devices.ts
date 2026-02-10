@@ -12,6 +12,15 @@ type EnabledDevicesResponse = {
     error?: unknown;
 }
 
+export const registerDevice = async (
+    serverUrl: string,
+    signaturePublicKey: string,
+    deviceName: string,
+) => {
+    const client = NetworkManager.getClient(serverUrl);
+    return client.registerDevice(signaturePublicKey, deviceName);
+};
+
 export const fetchEnabledDevices = async (
     serverUrl: string,
     currentDeviceId: string,
@@ -30,7 +39,8 @@ export const fetchEnabledDevices = async (
                 }));
         }
 
-        var {devices} = await client.fetchDevices();
+        var result = await client.fetchDevices();
+        var devices = result.devices;
         if (devices != null) {
             // extend device information from sessions in case device_id matches; set is_current_device from currentDeviceId
             devices = devices.map((device) => {
