@@ -9,18 +9,9 @@ import {logDebug} from '@utils/log';
 
 import {fetchEnabledDevices} from './devices';
 
-import type {Database} from '@nozbe/watermelondb';
-
 jest.mock('@actions/remote/session', () => ({
     fetchSessions: jest.fn(),
     forceLogoutIfNecessary: jest.fn(),
-}));
-
-jest.mock('@database/manager', () => ({
-    __esModule: true,
-    default: {
-        getServerDatabaseAndOperator: jest.fn(),
-    },
 }));
 
 jest.mock('@utils/errors', () => ({
@@ -59,20 +50,18 @@ const mockSessions: Session[] = [
 ];
 
 const mockHandleDevices = jest.fn().mockResolvedValue([]);
-const mockOperator = {handleDevices: mockHandleDevices};
+const mockOperator = {
+    handleDevices: mockHandleDevices,
+};
 
 const mockClient = {
     fetchDevices: jest.fn(),
 };
 
-const throwFunc = () => {
-    throw new Error('error');
-};
-
 beforeAll(() => {
-    jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({
-        database: {} as Database,
-        operator: mockOperator as never,
+    DatabaseManager.getServerDatabaseAndOperator = jest.fn().mockReturnValue({
+        database: {},
+        operator: mockOperator,
     });
 
     // @ts-expect-error mock for test
@@ -115,7 +104,11 @@ describe('fetchEnabledDevices', () => {
     });
 
     it('should handle getServerDatabaseAndOperator error', async () => {
-        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementationOnce(throwFunc);
+        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementationOnce(
+            () => {
+                throw new Error('error');
+            },
+        );
         jest.mocked(getFullErrorMessage).mockReturnValueOnce('error');
 
         const result = await fetchEnabledDevices(serverUrl, currentDeviceId);

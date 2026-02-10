@@ -14,30 +14,41 @@ describe('fetchDevices', () => {
     test('shoud fetch devices for current user', async () => {
         const expectedUrl = '/plugins/mattermost-e2ee/v1/devices';
         const expectedOptions = {method: 'get'};
-        const mockResponse = {devices: [{
+        const mockResponse = [{
             device_id: 'device-1',
             device_name: 'Device 1',
             created_at: 1000,
             last_active_at: 2000,
-        }]};
+        }];
 
         jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
 
         const result = await client.fetchDevices();
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
-        expect(result).toEqual(mockResponse);
+        expect(result).toEqual({devices: mockResponse});
+    });
+
+    test('should return empty array when doFetch returns an empty object', async () => {
+        const expectedUrl = '/plugins/mattermost-e2ee/v1/devices';
+        const expectedOptions = {method: 'get'};
+        const mockResponse = {};
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.fetchDevices();
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual({devices: []});
     });
 
     test('should return empty array when doFetch returns null', async () => {
         const expectedUrl = '/plugins/mattermost-e2ee/v1/devices';
         const expectedOptions = {method: 'get'};
-        const mockResponse = {devices: []};
 
         jest.mocked(client.doFetch).mockResolvedValue(null);
 
         const result = await client.fetchDevices();
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
-        expect(result).toEqual(mockResponse);
+        expect(result).toEqual({devices: []});
     });
 
     test('should return error response when doFetch throws error', async () => {

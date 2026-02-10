@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {addDevice} from '@e2ee/actions/local/devices';
+import {updateDevices} from '@e2ee/actions/local/devices';
 import E2EE from '@e2ee/constants/e2ee';
 import {generateSignatureKeyPair} from '@mattermost/e2ee';
 import {nativeApplicationVersion} from 'expo-application';
-import {osVersion, modelName} from 'expo-device';
+import {deviceName, isDevice, modelName, osName, osVersion} from 'expo-device';
 import * as KeyChain from 'react-native-keychain';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
@@ -14,6 +14,18 @@ import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError, logInfo} from '@utils/log';
 
 import {registerDevice} from './devices';
+
+function getDisplayDeviceName(): string {
+    if (!isDevice) {
+        return osName === 'iOS' || osName === 'iPadOS' ? 'iOS Simulator' : 'Android Emulator';
+    }
+
+    if (deviceName?.trim()) {
+        return deviceName.trim();
+    }
+
+    return modelName?.trim() ?? osName ?? '';
+}
 
 export const initE2eeDevice = async (serverUrl: string, userId: string) => {
     const result = await checkIsE2eePluginEnabled(serverUrl);
@@ -27,13 +39,12 @@ export const initE2eeDevice = async (serverUrl: string, userId: string) => {
         // generate signing key
         const alreadyInKeychain = await isInKeychain(serverUrl);
         if (alreadyInKeychain) {
-            await removeFromKeychain(serverUrl);
-            return {error: 'removed'};
+            return {data: false};
         }
 
-        // generate signing key may throw an error during generation
-        const signingKey = generateSignatureKeyPair();
         try {
+            // generate signing key may throw an error during generation
+            const signingKey = generateSignatureKeyPair();
             const base64SigningKey = bytesToBase64(new Uint8Array(signingKey.blob));
 
             // store signing key in keychain
@@ -41,9 +52,10 @@ export const initE2eeDevice = async (serverUrl: string, userId: string) => {
             const storedType = storedValue ? storedValue.storage : undefined;
             if (storedType) {
                 const now = new Date().getTime();
+                const deviceDisplayName = getDisplayDeviceName();
 
                 // post register device
-                const deviceId = await registerDevice(serverUrl, signingKey.publicKey, modelName ?? '');
+                const deviceId = await registerDevice(serverUrl, signingKey.publicKey, deviceDisplayName);
 
                 // generate identity
                 const identity = {
@@ -53,21 +65,28 @@ export const initE2eeDevice = async (serverUrl: string, userId: string) => {
 
                 logInfo('generated identity is ', identity);
 
-                // save registered device data
-                addDevice(serverUrl, {
+                // save or update registered device data
+                updateDevices(serverUrl, [{
                     device_id: deviceId,
-                    device_name: modelName ?? '',
+                    device_name: deviceDisplayName,
                     signature_public_key: signingKey.publicKey,
                     created_at: now,
                     last_active_at: now,
                     app_version: nativeApplicationVersion ?? '',
                     os_version: osVersion ?? '',
-                });
+                }]);
             }
 
             return {data: true};
         } catch (error) {
-            logError(error);
+            // we reset keychain in case signing key information was set in case of error.
+            const removed = await removeFromKeychain(serverUrl);
+            if (!removed) {
+                logInfo('failure while removing existing key from keychain');
+            }
+
+            logDebug('error during e2ee device initialization', getFullErrorMessage(error));
+            forceLogoutIfNecessary(serverUrl, error);
             return {error};
         }
 
@@ -86,7 +105,6 @@ export const isInKeychain = async (serverUrl: string) => {
 export const storeInKeychain = async (serverUrl: string, encodedKey: string) => {
     return KeyChain.setGenericPassword('key', encodedKey, {
         accessible: KeyChain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-        securityLevel: KeyChain.SECURITY_LEVEL.SECURE_HARDWARE,
         server: serverUrl,
         service: E2EE.KeychainSigningKey,
     });
