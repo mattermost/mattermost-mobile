@@ -306,6 +306,7 @@ jobs:
     needs: []
     permissions:
       issues: write
+      actions: read
     continue-on-error: true
     steps:
       - name: Remove E2E/Run label when triggered via Matterwick
