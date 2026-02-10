@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useEffect, useMemo} from 'react';
-import {Easing} from 'react-native';
-import {cancelAnimation, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
+import {cancelAnimation, Easing, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
 import EphemeralStore from '@store/ephemeral_store';
 import {getPostTranslation} from '@utils/post';
