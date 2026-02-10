@@ -88,7 +88,6 @@ type PostMetadata = {
     images?: Dictionary<PostImage | undefined>;
     reactions?: Reaction[];
     priority?: PostPriority;
-    original_language?: string;
     expire_at?: number;
     borConfig?: PostBoRConfig;
     recipients?: string[];
