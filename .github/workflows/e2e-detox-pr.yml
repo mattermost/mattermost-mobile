@@ -48,14 +48,12 @@ env:
 jobs:
   update-initial-status-ios:
     if: |
-      contains(github.event.label.name, 'E2E iOS tests for PR') ||
       contains(github.event.label.name, 'E2E/Run-iOS') ||
       contains(github.event.label.name, 'E2E/Run')
     runs-on: ubuntu-22.04
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         if: |
-          contains(github.event.label.name, 'E2E iOS tests for PR') ||
           contains(github.event.label.name, 'E2E/Run-iOS') ||
           contains(github.event.label.name, 'E2E/Run')
         env:
@@ -70,7 +68,6 @@ jobs:
   update-initial-status-android:
     runs-on: ubuntu-22.04
     if: |
-      contains(github.event.label.name, 'E2E Android tests for PR') ||
       contains(github.event.label.name, 'E2E/Run-Android') ||
       contains(github.event.label.name, 'E2E/Run')
     steps:
@@ -86,7 +83,6 @@ jobs:
 
   build-ios-simulator:
     if: |
-      contains(github.event.label.name, 'E2E iOS tests for PR') ||
       contains(github.event.label.name, 'E2E/Run-iOS') ||
       contains(github.event.label.name, 'E2E/Run')
     runs-on: macos-26
@@ -124,7 +120,6 @@ jobs:
   build-android-apk:
     runs-on: ubuntu-latest-8-cores
     if: |
-      contains(github.event.label.name, 'E2E Android tests for PR') ||
       contains(github.event.label.name, 'E2E/Run-Android') ||
       contains(github.event.label.name, 'E2E/Run')
     needs:
@@ -169,7 +164,6 @@ jobs:
         
   run-ios-tests-on-pr:
     if: |
-      contains(github.event.label.name, 'E2E iOS tests for PR') ||
       contains(github.event.label.name, 'E2E/Run-iOS') ||
       contains(github.event.label.name, 'E2E/Run')
     name: iOS
@@ -184,7 +178,6 @@ jobs:
 
   run-android-tests-on-pr:
     if: |
-      contains(github.event.label.name, 'E2E Android tests for PR') ||
       contains(github.event.label.name, 'E2E/Run-Android') ||
       contains(github.event.label.name, 'E2E/Run')
     name: Android
@@ -200,7 +193,6 @@ jobs:
   update-final-status-ios:
     runs-on: ubuntu-22.04
     if: |
-      contains(github.event.label.name, 'E2E iOS tests for PR') ||
       contains(github.event.label.name, 'E2E/Run-iOS') ||
       contains(github.event.label.name, 'E2E/Run')
     needs:
@@ -220,7 +212,6 @@ jobs:
   update-final-status-android:
     runs-on: ubuntu-22.04
     if: |
-      contains(github.event.label.name, 'E2E Android tests for PR') ||
       contains(github.event.label.name, 'E2E/Run-Android') ||
       contains(github.event.label.name, 'E2E/Run')
     needs:
@@ -248,7 +239,7 @@ jobs:
         continue-on-error: true # Label might have been removed manually
         with:
           script: |
-            const iosLabels = ['E2E iOS tests for PR', 'E2E/Run-iOS', 'E2E/Run'];
+            const iosLabels = ['E2E/Run-iOS', 'E2E/Run'];
             context.payload.pull_request.labels.forEach(label => {
               if (iosLabels.some(l => label.name.includes(l))) {
                 github.rest.issues.removeLabel({
@@ -271,7 +262,7 @@ jobs:
         continue-on-error: true # Label might have been removed manually
         with:
           script: |
-            const androidLabels = ['E2E Android tests for PR', 'E2E/Run-Android', 'E2E/Run'];
+            const androidLabels = ['E2E/Run-Android', 'E2E/Run'];
             context.payload.pull_request.labels.forEach(label => {
               if (androidLabels.some(l => label.name.includes(l))) {
                 github.rest.issues.removeLabel({
