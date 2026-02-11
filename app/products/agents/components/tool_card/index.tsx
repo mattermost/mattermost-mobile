@@ -305,12 +305,18 @@ const ToolCard = ({
         return null;
     };
 
+    const testIdPrefix = `agents.tool_card.${tool.id}`;
+
     return (
-        <View style={styles.container}>
+        <View
+            style={styles.container}
+            testID={testIdPrefix}
+        >
             <TouchableOpacity
                 onPress={canExpand ? handleToggle : undefined}
                 style={styles.header}
                 activeOpacity={canExpand ? 0.7 : 1}
+                testID={`${testIdPrefix}.header`}
             >
                 {canExpand ? (
                     <Animated.View style={[styles.chevronIcon, chevronAnimatedStyle]}>
@@ -325,6 +331,7 @@ const ToolCard = ({
                 <Text
                     style={styles.toolName}
                     numberOfLines={1}
+                    testID={`${testIdPrefix}.name`}
                 >
                     {displayName}
                 </Text>
@@ -333,7 +340,10 @@ const ToolCard = ({
             {!isCollapsed && (
                 <Animated.View style={contentAnimatedStyle}>
                     {showArguments && (
-                        <View style={styles.argumentsContainer}>
+                        <View
+                            style={styles.argumentsContainer}
+                            testID={`${testIdPrefix}.arguments`}
+                        >
                             <Markdown
                                 baseTextStyle={styles.markdownText}
                                 value={argumentsMarkdown}
@@ -345,7 +355,10 @@ const ToolCard = ({
 
                     {showResults && (isSuccess || isError) && resultMarkdown && (
                         <>
-                            <View style={styles.responseLabel}>
+                            <View
+                                style={styles.responseLabel}
+                                testID={`${testIdPrefix}.result`}
+                            >
                                 {isSuccess && (
                                     <CompassIcon
                                         name='check-circle'
@@ -375,7 +388,10 @@ const ToolCard = ({
                                 />
                             </View>
                             {isResultPhase && (
-                                <View style={styles.warningCallout}>
+                                <View
+                                    style={styles.warningCallout}
+                                    testID={`${testIdPrefix}.warning`}
+                                >
                                     <View style={styles.warningHeader}>
                                         <CompassIcon
                                             name='information-outline'
@@ -399,7 +415,10 @@ const ToolCard = ({
                     )}
 
                     {isRejected && (
-                        <View style={styles.statusContainer}>
+                        <View
+                            style={styles.statusContainer}
+                            testID={`${testIdPrefix}.status.rejected`}
+                        >
                             <CompassIcon
                                 name='close-circle-outline'
                                 size={12}
@@ -416,7 +435,10 @@ const ToolCard = ({
             )}
 
             {isPending && !hasLocalDecision && isProcessing && (
-                <View style={styles.statusContainer}>
+                <View
+                    style={styles.statusContainer}
+                    testID={`${testIdPrefix}.status.processing`}
+                >
                     <Loading
                         size='small'
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
@@ -436,6 +458,7 @@ const ToolCard = ({
                         disabled={isProcessing}
                         style={[styles.button, isProcessing && styles.buttonDisabled]}
                         activeOpacity={0.7}
+                        testID={`${testIdPrefix}.approve`}
                     >
                         <FormattedText
                             id='agents.tool_call.approve'
@@ -448,6 +471,7 @@ const ToolCard = ({
                         disabled={isProcessing}
                         style={[styles.button, isProcessing && styles.buttonDisabled]}
                         activeOpacity={0.7}
+                        testID={`${testIdPrefix}.reject`}
                     >
                         <FormattedText
                             id='agents.tool_call.reject'
@@ -465,6 +489,7 @@ const ToolCard = ({
                         disabled={isProcessing}
                         style={[styles.shareButton, isProcessing && styles.buttonDisabled]}
                         activeOpacity={0.7}
+                        testID={`${testIdPrefix}.share`}
                     >
                         <CompassIcon
                             name='globe'
@@ -482,6 +507,7 @@ const ToolCard = ({
                         disabled={isProcessing}
                         style={[styles.keepPrivateButton, isProcessing && styles.buttonDisabled]}
                         activeOpacity={0.7}
+                        testID={`${testIdPrefix}.keep_private`}
                     >
                         <CompassIcon
                             name='lock-outline'

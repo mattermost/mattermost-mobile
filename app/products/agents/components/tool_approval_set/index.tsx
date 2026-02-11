@@ -183,7 +183,10 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     };
 
     return (
-        <View style={styles.container}>
+        <View
+            style={styles.container}
+            testID='agents.tool_approval_set'
+        >
             {actionableTools.map((tool) => (
                 <ToolCard
                     key={tool.id}
@@ -218,7 +221,10 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             ))}
 
             {actionableTools.length > 1 && isSubmitting && (
-                <View style={styles.statusBar}>
+                <View
+                    style={styles.statusBar}
+                    testID='agents.tool_approval_set.submitting'
+                >
                     <Loading
                         size='small'
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
@@ -232,7 +238,10 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             )}
 
             {actionableTools.length > 1 && undecidedCount > 0 && !isSubmitting && (
-                <View style={styles.statusBar}>
+                <View
+                    style={styles.statusBar}
+                    testID='agents.tool_approval_set.pending_decisions'
+                >
                     <FormattedText
                         id='agents.tool_call.pending_decisions'
                         defaultMessage='{count, plural, =0 {All tools decided} one {# tool needs a decision} other {# tools need decisions}}'
