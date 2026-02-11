@@ -42,6 +42,7 @@ export default function EmojiQuickAction({
         showInputAccessoryView,
         setShowInputAccessoryView,
         isKeyboardFullyClosed,
+        preserveCursorPositionForEmojiPicker,
     } = useKeyboardAnimationContext();
 
     const showEmojiPicker = useCallback(() => {
@@ -87,6 +88,9 @@ export default function EmojiQuickAction({
             return;
         }
 
+        // This prevents the cursor from being reset to the end when keyboard is dismissed
+        preserveCursorPositionForEmojiPicker();
+
         if (Platform.OS === 'android' && isKeyboardVisible()) {
             dismissKeyboard();
 
@@ -128,7 +132,7 @@ export default function EmojiQuickAction({
 
         // Shared values don't need to be in dependencies - they're stable references
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [disabled, showInputAccessoryView, lastKeyboardHeight, setShowInputAccessoryView, scheduleKeyboardCheck]));
+    }, [disabled, showInputAccessoryView, lastKeyboardHeight, setShowInputAccessoryView, scheduleKeyboardCheck, preserveCursorPositionForEmojiPicker]));
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);

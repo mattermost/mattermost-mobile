@@ -45,7 +45,6 @@ describe('Autocomplete - Edit Post', () => {
         const message = `Messsage ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, channel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EditPostScreen.open();

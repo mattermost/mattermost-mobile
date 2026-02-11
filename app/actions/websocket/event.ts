@@ -4,7 +4,11 @@
 import {handleAgentPostUpdate} from '@agents/actions/websocket';
 
 import * as bookmark from '@actions/local/channel_bookmark';
-import {handleBoRPostBurnedEvent, handleBoRPostRevealedEvent} from '@actions/websocket/burn_on_read';
+import {
+    handleBoRPostAllRevealed,
+    handleBoRPostBurnedEvent,
+    handleBoRPostRevealedEvent,
+} from '@actions/websocket/burn_on_read';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
@@ -15,6 +19,7 @@ import * as channel from './channel';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
 import * as posts from './posts';
+import {handlePostTranslationUpdatedEvent} from './posts';
 import * as preferences from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
@@ -316,6 +321,14 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.BOR_POST_BURNED:
             handleBoRPostBurnedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.BURN_ON_READ_ALL_REVEALED:
+            handleBoRPostAllRevealed(serverUrl, msg);
+            break;
+
+        // Autotranslation
+        case WebsocketEvents.POST_TRANSLATION_UPDATED:
+            handlePostTranslationUpdatedEvent(serverUrl, msg);
             break;
     }
     handlePlaybookEvents(serverUrl, msg);

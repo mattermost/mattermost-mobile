@@ -17,6 +17,7 @@ import {
     LoginScreen,
     ServerScreen,
     ChannelInfoScreen,
+    ChannelSettingsScreen,
 } from '@support/ui/screen';
 import {getAdminAccount, getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
@@ -54,7 +55,9 @@ describe('Channels - Unarchive Channel', () => {
         await expect(ChannelScreen.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible();
         await ChannelScreen.scheduledPostTooltipCloseButtonAdminAccount.tap();
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.archivePublicChannel({confirm: true});
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
         // * Verify on public channel screen and archived post draft is displayed
         await ChannelListScreen.toBeVisible();
@@ -77,9 +80,11 @@ describe('Channels - Unarchive Channel', () => {
 
         // # Go back to channel list screen by closing archived channel
 
-        // # Open channel info screen, tap on unarchive channel and confirm, close and re-open app to reload, and re-open unarchived public channel
+        // # Open channel info screen, go to channel settings, tap on unarchive channel and confirm, close and re-open app to reload, and re-open unarchived public channel
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.unarchivePublicChannel({confirm: true});
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.unarchivePublicChannel({confirm: true});
         await wait(timeouts.FOUR_SEC);
 
         // * Verify on unarchived public channel screen and active post draft is displayed
@@ -100,7 +105,9 @@ describe('Channels - Unarchive Channel', () => {
         await CreateOrEditChannelScreen.createButton.tap();
         await wait(timeouts.FOUR_SEC);
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.archivePrivateChannel({confirm: true});
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.archivePrivateChannel({confirm: true});
 
         await ChannelListScreen.toBeVisible();
         await FindChannelsScreen.open();
@@ -124,9 +131,11 @@ describe('Channels - Unarchive Channel', () => {
         // * Verify on private channel screen and archived post draft is displayed
         await expect(ChannelScreen.postDraftArchived).toBeVisible();
 
-        // # Open channel info screen, tap on unarchive channel and confirm, close and re-open app to reload, and re-open unarchived private channel
+        // # Open channel info screen, go to channel settings, tap on unarchive channel and confirm, close and re-open app to reload, and re-open unarchived private channel
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.unarchivePrivateChannel({confirm: true});
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.unarchivePrivateChannel({confirm: true});
         await wait(timeouts.FOUR_SEC);
 
         // * Verify on unarchived private channel screen and active post draft is displayed

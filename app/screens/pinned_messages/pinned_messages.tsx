@@ -32,6 +32,7 @@ type Props = {
     customEmojiNames: string[];
     isCRTEnabled: boolean;
     posts: PostModel[];
+    isChannelAutotranslated: boolean;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -58,13 +59,14 @@ function SavedMessages({
     customEmojiNames,
     isCRTEnabled,
     posts,
+    isChannelAutotranslated,
 }: Props) {
     const [loading, setLoading] = useState(!posts.length);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
     const serverUrl = useServerUrl();
 
-    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [posts]);
+    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [currentTimezone, posts]);
 
     const close = useCallback(() => {
         if (componentId) {
@@ -76,6 +78,9 @@ function SavedMessages({
         fetchPinnedPosts(serverUrl, channelId).finally(() => {
             setLoading(false);
         });
+
+        // Only fetch pinned posts on initial load
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useAndroidHardwareBackHandler(componentId, close);
@@ -141,12 +146,13 @@ function SavedMessages({
                         skipSavedHeader={true}
                         skipPinnedHeader={true}
                         testID='pinned_messages.post_list.post'
+                        isChannelAutotranslated={isChannelAutotranslated}
                     />
                 );
             default:
                 return null;
         }
-    }, [appsEnabled, currentTimezone, customEmojiNames, theme]);
+    }, [appsEnabled, currentTimezone, customEmojiNames, isCRTEnabled, isChannelAutotranslated]);
 
     return (
         <SafeAreaView
