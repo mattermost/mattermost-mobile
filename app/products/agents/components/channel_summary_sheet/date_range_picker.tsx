@@ -112,8 +112,12 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const [since, setSince] = useState<Date | undefined>();
-    const [until, setUntil] = useState<Date | undefined>();
+    const [since, setSince] = useState<Date | undefined>(() => {
+        const d = new Date();
+        d.setDate(d.getDate() - 7);
+        return d;
+    });
+    const [until, setUntil] = useState<Date | undefined>(() => new Date());
     const [pickerTarget, setPickerTarget] = useState<PickerTarget>();
     const [errorText, setErrorText] = useState<string | undefined>();
 

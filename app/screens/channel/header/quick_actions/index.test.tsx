@@ -11,6 +11,10 @@ import ChannelQuickAction from './index';
 
 import type {Database} from '@nozbe/watermelondb';
 
+jest.mock('@agents/store/agents_config', () => ({
+    useAgentsConfig: jest.fn(() => ({pluginEnabled: true})),
+}));
+
 jest.mock('@playbooks/components/channel_actions/playbook_runs_option', () => ({
     __esModule: true,
     default: jest.fn(),
