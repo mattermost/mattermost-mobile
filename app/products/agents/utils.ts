@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {AGENT_POST_TYPES} from '@agents/constants';
+import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -26,4 +27,64 @@ export function isPostRequester(post: PostModel | Post, currentUserId: string): 
     } catch {
         return false;
     }
+}
+
+/**
+ * Check if a post has redacted tool call data (private arguments hidden from channel)
+ */
+export function isToolCallRedacted(post: PostModel | Post): boolean {
+    try {
+        const props = post.props as Record<string, unknown>;
+        return props?.pending_tool_call_redacted === 'true';
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Check if a post is pending tool result approval
+ */
+export function isPendingToolResult(post: PostModel | Post): boolean {
+    try {
+        const props = post.props as Record<string, unknown>;
+        return props?.pending_tool_result === 'true';
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Determine the current tool approval stage for a post
+ */
+export function getToolApprovalStage(post: PostModel | Post, toolCalls: ToolCall[]): ToolApprovalStage | null {
+    if (isPendingToolResult(post)) {
+        return ToolApprovalStage.Result;
+    }
+    if (toolCalls.some((tc) => tc.status === ToolCallStatus.Pending)) {
+        return ToolApprovalStage.Call;
+    }
+    return null;
+}
+
+/**
+ * Merge public tool calls with private data, preserving status from public and arguments/results from private
+ */
+export function mergeToolCalls(publicCalls: ToolCall[], privateCalls: ToolCall[] | null): ToolCall[] {
+    if (!privateCalls?.length) {
+        return publicCalls;
+    }
+
+    const publicById = new Map(publicCalls.map((tc) => [tc.id, tc]));
+
+    return privateCalls.map((privateTool) => {
+        const publicTool = publicById.get(privateTool.id);
+        if (!publicTool) {
+            return privateTool;
+        }
+        return {
+            ...publicTool,
+            arguments: privateTool.arguments,
+            ...(privateTool.result != null && {result: privateTool.result}),
+        };
+    });
 }

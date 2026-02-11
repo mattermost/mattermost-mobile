@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ToolCallStatus, type ToolCall} from '@agents/types';
+import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import React, {useCallback, useMemo} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -23,6 +23,10 @@ interface ToolCardProps {
     onToggleCollapse: (toolId: string) => void;
     onApprove?: (toolId: string) => void;
     onReject?: (toolId: string) => void;
+    approvalStage: ToolApprovalStage | null;
+    canExpand?: boolean;
+    showArguments?: boolean;
+    showResults?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -62,11 +66,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             gap: 8,
             paddingTop: 8,
+            paddingBottom: 8,
             paddingLeft: 24,
         },
         responseLabelText: {
             fontSize: 14,
-            fontWeight: 600,
             lineHeight: 20,
             color: changeOpacity(theme.centerChannelColor, 0.75),
         },
@@ -91,6 +95,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginTop: 4,
             paddingLeft: 36,
         },
+        resultButtonContainer: {
+            flexDirection: 'row',
+            gap: 8,
+            marginTop: 12,
+            marginLeft: 24,
+        },
         button: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.08),
             borderRadius: 4,
@@ -107,6 +117,64 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             lineHeight: 16,
             color: theme.buttonBg,
         },
+        shareButton: {
+            backgroundColor: theme.buttonBg,
+            borderRadius: 4,
+            paddingVertical: 8,
+            paddingHorizontal: 16,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            justifyContent: 'center',
+        },
+        shareButtonText: {
+            fontSize: 12,
+            fontWeight: 600,
+            lineHeight: 16,
+            color: theme.buttonColor,
+        },
+        keepPrivateButton: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderRadius: 4,
+            paddingVertical: 8,
+            paddingHorizontal: 16,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            justifyContent: 'center',
+        },
+        keepPrivateButtonText: {
+            fontSize: 12,
+            fontWeight: 600,
+            lineHeight: 16,
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+        },
+        warningCallout: {
+            backgroundColor: changeOpacity(theme.dndIndicator, 0.08),
+            borderLeftWidth: 3,
+            borderLeftColor: theme.dndIndicator,
+            borderRadius: 4,
+            padding: 12,
+            marginTop: 8,
+            marginLeft: 24,
+            gap: 4,
+        },
+        warningHeader: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+        },
+        warningHeaderText: {
+            fontSize: 13,
+            fontWeight: 600,
+            lineHeight: 18,
+            color: theme.centerChannelColor,
+        },
+        warningBodyText: {
+            fontSize: 12,
+            lineHeight: 16,
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+        },
     };
 });
 
@@ -121,6 +189,10 @@ const ToolCard = ({
     onToggleCollapse,
     onApprove,
     onReject,
+    approvalStage,
+    canExpand = true,
+    showArguments = true,
+    showResults = true,
 }: ToolCardProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -132,6 +204,7 @@ const ToolCard = ({
     const isSuccess = tool.status === ToolCallStatus.Success;
     const isError = tool.status === ToolCallStatus.Error;
     const isRejected = tool.status === ToolCallStatus.Rejected;
+    const isResultPhase = approvalStage === ToolApprovalStage.Result;
 
     // Convert underscores to spaces and capitalize first letter of each word
     const displayName = useMemo(() => {
@@ -159,11 +232,14 @@ const ToolCard = ({
     }, [tool.result]);
 
     const handleToggle = useCallback(() => {
+        if (!canExpand) {
+            return;
+        }
         const newCollapsed = !isCollapsed;
         contentOpacity.value = withTiming(newCollapsed ? 0 : 1, {duration: 200});
         chevronRotation.value = withTiming(newCollapsed ? 0 : 90, {duration: 200});
         onToggleCollapse(tool.id);
-    }, [isCollapsed, contentOpacity, chevronRotation, onToggleCollapse, tool.id]);
+    }, [canExpand, isCollapsed, contentOpacity, chevronRotation, onToggleCollapse, tool.id]);
 
     const handleApprove = useCallback(() => {
         onApprove?.(tool.id);
@@ -232,17 +308,19 @@ const ToolCard = ({
     return (
         <View style={styles.container}>
             <TouchableOpacity
-                onPress={handleToggle}
+                onPress={canExpand ? handleToggle : undefined}
                 style={styles.header}
-                activeOpacity={0.7}
+                activeOpacity={canExpand ? 0.7 : 1}
             >
-                <Animated.View style={[styles.chevronIcon, chevronAnimatedStyle]}>
-                    <CompassIcon
-                        name='chevron-right'
-                        size={16}
-                        color={changeOpacity(theme.centerChannelColor, 0.56)}
-                    />
-                </Animated.View>
+                {canExpand ? (
+                    <Animated.View style={[styles.chevronIcon, chevronAnimatedStyle]}>
+                        <CompassIcon
+                            name='chevron-right'
+                            size={16}
+                            color={changeOpacity(theme.centerChannelColor, 0.56)}
+                        />
+                    </Animated.View>
+                ) : null}
                 {getStatusIcon()}
                 <Text
                     style={styles.toolName}
@@ -254,16 +332,18 @@ const ToolCard = ({
 
             {!isCollapsed && (
                 <Animated.View style={contentAnimatedStyle}>
-                    <View style={styles.argumentsContainer}>
-                        <Markdown
-                            baseTextStyle={styles.markdownText}
-                            value={argumentsMarkdown}
-                            theme={theme}
-                            location={Screens.CHANNEL}
-                        />
-                    </View>
+                    {showArguments && (
+                        <View style={styles.argumentsContainer}>
+                            <Markdown
+                                baseTextStyle={styles.markdownText}
+                                value={argumentsMarkdown}
+                                theme={theme}
+                                location={Screens.CHANNEL}
+                            />
+                        </View>
+                    )}
 
-                    {(isSuccess || isError) && resultMarkdown && (
+                    {showResults && (isSuccess || isError) && resultMarkdown && (
                         <>
                             <View style={styles.responseLabel}>
                                 {isSuccess && (
@@ -294,6 +374,27 @@ const ToolCard = ({
                                     location={Screens.CHANNEL}
                                 />
                             </View>
+                            {isResultPhase && (
+                                <View style={styles.warningCallout}>
+                                    <View style={styles.warningHeader}>
+                                        <CompassIcon
+                                            name='information-outline'
+                                            size={14}
+                                            color={theme.dndIndicator}
+                                        />
+                                        <FormattedText
+                                            id='agents.tool_call.review_tool_response'
+                                            defaultMessage='Review tool response'
+                                            style={styles.warningHeaderText}
+                                        />
+                                    </View>
+                                    <FormattedText
+                                        id='agents.tool_call.approval_warning'
+                                        defaultMessage='Approving lets Agents use this response in its next message. That message will be visible to everyone in the channel — only approve results you are comfortable sharing.'
+                                        style={styles.warningBodyText}
+                                    />
+                                </View>
+                            )}
                         </>
                     )}
 
@@ -328,7 +429,7 @@ const ToolCard = ({
                 </View>
             )}
 
-            {isPending && !hasLocalDecision && !isProcessing && (
+            {isPending && !hasLocalDecision && !isProcessing && onApprove && onReject && (
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity
                         onPress={handleApprove}
@@ -352,6 +453,45 @@ const ToolCard = ({
                             id='agents.tool_call.reject'
                             defaultMessage='Reject'
                             style={styles.buttonText}
+                        />
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            {isResultPhase && (isSuccess || isError) && !hasLocalDecision && !isProcessing && onApprove && onReject && (
+                <View style={styles.resultButtonContainer}>
+                    <TouchableOpacity
+                        onPress={handleApprove}
+                        disabled={isProcessing}
+                        style={[styles.shareButton, isProcessing && styles.buttonDisabled]}
+                        activeOpacity={0.7}
+                    >
+                        <CompassIcon
+                            name='globe'
+                            size={14}
+                            color={theme.buttonColor}
+                        />
+                        <FormattedText
+                            id='agents.tool_call.share'
+                            defaultMessage='Share'
+                            style={styles.shareButtonText}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={handleReject}
+                        disabled={isProcessing}
+                        style={[styles.keepPrivateButton, isProcessing && styles.buttonDisabled]}
+                        activeOpacity={0.7}
+                    >
+                        <CompassIcon
+                            name='lock-outline'
+                            size={14}
+                            color={changeOpacity(theme.centerChannelColor, 0.75)}
+                        />
+                        <FormattedText
+                            id='agents.tool_call.keep_private'
+                            defaultMessage='Keep private'
+                            style={styles.keepPrivateButtonText}
                         />
                     </TouchableOpacity>
                 </View>

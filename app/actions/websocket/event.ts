@@ -312,6 +312,7 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         // Agents
         case WebsocketEvents.AGENTS_POST_UPDATE:
+        case WebsocketEvents.AGENTS_TOOL_CALL_STATUS:
             handleAgentPostUpdate(msg);
             break;
 

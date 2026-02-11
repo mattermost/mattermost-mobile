@@ -16,6 +16,17 @@ export const ToolCallStatus = {
 export type ToolCallStatus = typeof ToolCallStatus[keyof typeof ToolCallStatus];
 
 /**
+ * Tool approval stage values
+ */
+export const ToolApprovalStage = {
+    Call: 'call',
+    Result: 'result',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+export type ToolApprovalStage = typeof ToolApprovalStage[keyof typeof ToolApprovalStage];
+
+/**
  * Tool call data structure
  */
 export interface ToolCall {
