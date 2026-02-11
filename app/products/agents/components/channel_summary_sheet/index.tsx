@@ -5,7 +5,7 @@ import {fetchAgents} from '@agents/actions/remote/agents';
 import {requestChannelSummary} from '@agents/actions/remote/channel_summary';
 import {type Agent} from '@agents/client/rest';
 import {AGENT_ANALYSIS_SUMMARY} from '@agents/constants';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
 import {Alert, Platform, ScrollView, Text, TextInput, TouchableOpacity, View} from 'react-native';
 
@@ -84,6 +84,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         padding: 12,
         gap: 8,
     },
+    promptContainerFocused: {
+        borderWidth: 2,
+        borderColor: theme.buttonBg,
+    },
     promptInput: {
         flex: 1,
         color: theme.centerChannelColor,
@@ -134,6 +138,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
     const [agents, setAgents] = useState<Agent[]>([]);
     const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
     const [loadingAgents, setLoadingAgents] = useState(true);
+    const [promptFocused, setPromptFocused] = useState(false);
 
     // Fetch agents on mount and set default to first agent
     useEffect(() => {
@@ -148,6 +153,14 @@ const ChannelSummarySheet = ({channelId}: Props) => {
         };
         loadAgents();
     }, [serverUrl]);
+
+    const handlePromptFocus = useCallback(() => setPromptFocused(true), []);
+    const handlePromptBlur = useCallback(() => setPromptFocused(false), []);
+
+    const promptContainerStyle = useMemo(() => [
+        styles.promptContainer,
+        promptFocused && styles.promptContainerFocused,
+    ], [styles, promptFocused]);
 
     const handleOptionPress = useCallback(async (optionId: string | boolean) => {
         if (submitting) {
@@ -339,7 +352,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
                 </TouchableOpacity>
 
                 <View style={styles.promptWrapper}>
-                    <View style={styles.promptContainer}>
+                    <View style={promptContainerStyle}>
                         <CompassIcon
                             name='creation-outline'
                             size={20}
@@ -355,6 +368,8 @@ const ChannelSummarySheet = ({channelId}: Props) => {
                             editable={!submitting}
                             onSubmitEditing={handleCustomPromptSubmitDebounced}
                             returnKeyType='send'
+                            onFocus={handlePromptFocus}
+                            onBlur={handlePromptBlur}
                         />
                         <TouchableOpacity
                             onPress={handleCustomPromptSubmitDebounced}

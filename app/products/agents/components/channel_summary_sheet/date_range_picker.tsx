@@ -5,6 +5,7 @@ import DateTimePicker, {type DateTimePickerEvent} from '@react-native-community/
 import React, {useCallback, useMemo, useState} from 'react';
 import {type IntlShape, useIntl} from 'react-intl';
 import {Platform, Text, TouchableOpacity, View} from 'react-native';
+import tinyColor from 'tinycolor2';
 
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
@@ -45,6 +46,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderRadius: 4,
         padding: 12,
     },
+    dateBoxActive: {
+        borderWidth: 2,
+        borderColor: theme.buttonBg,
+    },
     dateText: {
         color: theme.centerChannelColor,
         ...typography('Body', 200, 'Regular'),
@@ -84,14 +89,15 @@ type DateInputFieldProps = {
     testID: string;
     styles: ReturnType<typeof getStyleSheet>;
     intl: IntlShape;
+    isActive: boolean;
 };
 
-const DateInputField = ({label, date, placeholder, onPress, testID, styles, intl}: DateInputFieldProps) => (
+const DateInputField = ({label, date, placeholder, onPress, testID, styles, intl, isActive}: DateInputFieldProps) => (
     <>
         <Text style={styles.label}>{label}</Text>
         <TouchableOpacity
             onPress={onPress}
-            style={styles.dateBox}
+            style={[styles.dateBox, isActive && styles.dateBoxActive]}
             testID={testID}
         >
             <Text style={date ? styles.dateText : styles.datePlaceholder}>
@@ -119,12 +125,20 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
     }, [since, until]);
 
     const openSincePicker = useCallback(() => {
+        if (!since) {
+            const today = new Date();
+            setSince(until && until < today ? until : today);
+        }
         setPickerTarget('since');
-    }, []);
+    }, [since, until]);
 
     const openUntilPicker = useCallback(() => {
+        if (!until) {
+            const today = new Date();
+            setUntil(since && since > today ? since : today);
+        }
         setPickerTarget('until');
-    }, []);
+    }, [until, since]);
 
     const onChangeDate = useCallback((_: DateTimePickerEvent, date?: Date) => {
         if (Platform.OS === 'ios') {
@@ -179,6 +193,7 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
                 <TouchableOpacity
                     onPress={onCancel}
                     style={styles.backButton}
+                    hitSlop={{top: 16, bottom: 16, left: 16, right: 16}}
                     testID='agents.channel_summary.date_picker.back'
                 >
                     <CompassIcon
@@ -201,6 +216,7 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
                 testID='agents.channel_summary.date_from'
                 styles={styles}
                 intl={intl}
+                isActive={pickerTarget === 'since'}
             />
 
             {/* End Date */}
@@ -212,6 +228,7 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
                 testID='agents.channel_summary.date_to'
                 styles={styles}
                 intl={intl}
+                isActive={pickerTarget === 'until'}
             />
 
             {errorText && <Text style={styles.error}>{errorText}</Text>}
@@ -237,6 +254,7 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
                     onChange={onChangeDate}
                     maximumDate={pickerTarget === 'since' ? until : new Date()}
                     minimumDate={pickerTarget === 'until' ? since : undefined}
+                    themeVariant={tinyColor(theme.centerChannelBg).isDark() ? 'dark' : 'light'}
                 />
             )}
         </View>
