@@ -319,7 +319,7 @@ function Permalink({
                 handleJoin={handleJoin}
             />
         );
-    } else {
+    } else if (channel) {
         const postListContent = (
             <>
                 <View style={style.postList}>
@@ -330,7 +330,7 @@ function Permalink({
                         location={Screens.PERMALINK}
                         lastViewedAt={0}
                         shouldShowJoinLeaveMessages={false}
-                        channelId={channel!.id}
+                        channelId={channel.id}
                         rootId={rootId}
                         testID='permalink.post_list'
                         highlightPinnedOrSaved={false}
