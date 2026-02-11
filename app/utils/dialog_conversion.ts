@@ -4,8 +4,6 @@
 // Dialog conversion utilities for Interactive Dialog to AppsForm migration
 // Based on webapp dialog_conversion.ts from PR #31821
 
-import {logDebug} from '@utils/log';
-
 import {isAppSelectOption, mapDialogTypeToAppFieldType, DialogElementTypes, DialogTextSubtypes} from './dialog_utils';
 
 export interface ConversionContext {
@@ -135,19 +133,7 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
 
     // Field refresh should be controlled by the server-side dialog configuration
     // The server should specify which fields trigger form refresh
-    if (element.refresh === true) {
-        logDebug('Dialog conversion: Field has refresh enabled', {
-            fieldName: element.name,
-            fieldType: element.type,
-        });
-        appField.refresh = true;
-    }
-
-    logDebug('Dialog conversion: Converted field', {
-        fieldName: element.name,
-        fieldType: element.type,
-        hasRefresh: Boolean(appField.refresh),
-    });
+    appField.refresh = element.refresh;
 
     return appField;
 }

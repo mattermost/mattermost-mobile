@@ -249,17 +249,9 @@ function AppsFormComponent({
             return;
         }
 
-        logDebug('AppsFormComponent: Field changed', {
-            name,
-            value,
-            hasRefresh: Boolean(field.refresh),
-            fieldType: field.type,
-        });
-
         const newValues = {...values, [name]: value};
 
         if (field.refresh) {
-            logDebug('AppsFormComponent: Calling refreshOnSelect', {name, fieldType: field.type});
             refreshOnSelect(field, newValues, value).then((res) => {
                 // Check if component is still mounted before updating state
                 if (!isMountedRef.current) {
@@ -278,9 +270,6 @@ function AppsFormComponent({
                 const callResponse = res.data!;
                 switch (callResponse.type) {
                     case AppCallResponseTypes.FORM:
-                        logDebug('AppsFormComponent: Received new form from refresh - parent will handle update');
-
-                        // Form will be updated by parent (DialogRouter) which will trigger re-render
                         return;
                     case AppCallResponseTypes.OK:
                     case AppCallResponseTypes.NAVIGATE:
@@ -382,9 +371,6 @@ function AppsFormComponent({
                 handleGotoLocation(serverUrl, intl, callResponse.navigate_to_url!);
                 return;
             case AppCallResponseTypes.FORM:
-                logDebug('AppsFormComponent: Received new form from submit - parent will handle update');
-
-                // Form will be updated by parent (DialogRouter) which will trigger re-render
                 setSubmitting(false);
                 return;
             default:

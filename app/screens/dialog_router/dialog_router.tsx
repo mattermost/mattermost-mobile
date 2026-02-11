@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {type IntlShape, useIntl} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
 import {submitInteractiveDialog} from '@actions/remote/integrations';
@@ -34,6 +34,37 @@ export type DialogRouterProps = {
  * When feature flag is disabled:
  * - Renders legacy InteractiveDialog component
  */
+/**
+ * Converts error to user-friendly message based on error type
+ */
+function getSubmissionErrorMessage(error: unknown, intl: IntlShape): string {
+    if (!(error instanceof Error)) {
+        return intl.formatMessage({
+            id: 'interactive_dialog.submission_failed',
+            defaultMessage: 'Submission failed. Please try again.',
+        });
+    }
+
+    if (error.message.includes('network') || error.message.includes('fetch')) {
+        return intl.formatMessage({
+            id: 'interactive_dialog.submission_failed_network',
+            defaultMessage: 'Submission failed due to network error. Please check your connection and try again.',
+        });
+    }
+
+    if (error.message.includes('conversion') || error.message.includes('validation')) {
+        return intl.formatMessage({
+            id: 'interactive_dialog.submission_failed_validation',
+            defaultMessage: 'Submission failed due to form validation. Please check your inputs and try again.',
+        });
+    }
+
+    return intl.formatMessage({
+        id: 'interactive_dialog.submission_failed_with_details',
+        defaultMessage: 'Submission failed: {error}',
+    }, {error: error.message});
+}
+
 export const DialogRouter = React.memo<DialogRouterProps>(({
     config,
     componentId,
@@ -156,9 +187,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                         ...rawDialogData, // Use the raw dialog response from server
                         // Preserve some properties from current config if not provided
                         icon_url: rawDialogData.icon_url || currentConfig.dialog.icon_url,
-                        notify_on_cancel: rawDialogData.notify_on_cancel === undefined ?
-                            currentConfig.dialog.notify_on_cancel :
-                            rawDialogData.notify_on_cancel,
+                        notify_on_cancel: rawDialogData.notify_on_cancel ?? currentConfig.dialog.notify_on_cancel,
                     },
                 };
 
@@ -170,39 +199,12 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
 
             return result;
         } catch (error) {
-            const errorMessage = getFullErrorMessage(error);
-            logDebug('Dialog submission failed', errorMessage);
-
-            // Provide more context in error messages
-            let userFriendlyMessage: string;
-            if (error instanceof Error) {
-                if (error.message.includes('network') || error.message.includes('fetch')) {
-                    userFriendlyMessage = intl.formatMessage({
-                        id: 'interactive_dialog.submission_failed_network',
-                        defaultMessage: 'Submission failed due to network error. Please check your connection and try again.',
-                    });
-                } else if (error.message.includes('conversion') || error.message.includes('validation')) {
-                    userFriendlyMessage = intl.formatMessage({
-                        id: 'interactive_dialog.submission_failed_validation',
-                        defaultMessage: 'Submission failed due to form validation. Please check your inputs and try again.',
-                    });
-                } else {
-                    userFriendlyMessage = intl.formatMessage({
-                        id: 'interactive_dialog.submission_failed_with_details',
-                        defaultMessage: 'Submission failed: {error}',
-                    }, {error: error.message});
-                }
-            } else {
-                userFriendlyMessage = intl.formatMessage({
-                    id: 'interactive_dialog.submission_failed',
-                    defaultMessage: 'Submission failed. Please try again.',
-                });
-            }
+            logDebug('[DialogRouter.handleSubmit]', getFullErrorMessage(error));
 
             return {
                 error: {
                     type: AppCallResponseTypes.ERROR,
-                    text: userFriendlyMessage,
+                    text: getSubmissionErrorMessage(error, intl),
                     data: {
                         errors: {},
                     },
@@ -249,6 +251,8 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             const result = await InteractiveDialogAdapter.performDynamicLookup(element, String(userInput || ''), serverUrl, config);
             return {data: {type: 'ok', data: {items: result}}};
         } catch (error) {
+            // Return empty items on error to avoid breaking autocomplete UI
+            logDebug('[DialogRouter.performLookupCall]', getFullErrorMessage(error));
             return {data: {type: 'ok', data: {items: []}}};
         }
     }, [config, serverUrl]);
@@ -256,7 +260,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
     // Create refreshOnSelect for Interactive Dialog field refresh support
     const refreshOnSelect = useCallback(async (field: AppField, values: AppFormValues): Promise<DoAppCallResult<FormResponseData>> => {
         // Early return if required parameters are missing
-        if (!field || !currentConfig) {
+        if (!field || !field.name ||!currentConfig) {
             return {data: {type: 'ok'}};
         }
 
@@ -270,13 +274,13 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             const dialogSubmission = InteractiveDialogAdapter.convertValuesToSubmission(allValues, currentConfig);
 
             // Add the selected field that triggered refresh
-            dialogSubmission.submission.selected_field = field.name || '';
+            dialogSubmission.submission.selected_field = field.name;
 
             // Set type to indicate this is a refresh request (matching webapp)
-            (dialogSubmission as any).type = 'refresh';
+            const refreshSubmission = {...dialogSubmission, type: 'refresh'};
 
             // Use the existing submitInteractiveDialog action which handles routing properly
-            const result = await submitInteractiveDialog(serverUrl, dialogSubmission);
+            const result = await submitInteractiveDialog(serverUrl, refreshSubmission);
 
             // Check if we got a new dialog configuration back
             // Server returns {"form": {...}, "type": "form"} format

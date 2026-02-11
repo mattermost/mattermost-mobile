@@ -20,6 +20,7 @@ import {getActiveServerUrl} from '@queries/app/servers';
 import {getChannelById} from '@queries/servers/channel';
 import {getUserById, observeTeammateNameDisplay} from '@queries/servers/user';
 import {goToScreen} from '@screens/navigation';
+import {logDebug} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {displayUsername} from '@utils/user';
@@ -129,7 +130,7 @@ async function getItemName(serverUrl: string, selected: string, teammateNameDisp
                     return serverChannel?.display_name || intl.formatMessage({id: 'autocomplete_selector.unknown_channel', defaultMessage: 'Unknown channel'});
                 }
             } catch (error) {
-                // Server fetch failed, fall back to unknown channel
+                logDebug('[AutoCompleteSelector.getItemName] Failed to fetch channel from server', error);
             }
 
             return intl.formatMessage({id: 'autocomplete_selector.unknown_channel', defaultMessage: 'Unknown channel'});
