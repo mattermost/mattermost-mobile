@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {AGENT_POST_TYPES} from '@agents/constants';
+import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 
 import TestHelper from '@test/test_helper';
 
-import {isAgentPost, isPostRequester} from './utils';
+import {isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, mergeToolCalls} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -130,5 +131,169 @@ describe('isPostRequester', () => {
 
             expect(isPostRequester(faultyPost, currentUserId)).toBe(false);
         });
+    });
+});
+
+describe('isToolCallRedacted', () => {
+    it('should return true when pending_tool_call_redacted is true', () => {
+        const post = TestHelper.fakePost({
+            props: {pending_tool_call_redacted: 'true'},
+        });
+        expect(isToolCallRedacted(post)).toBe(true);
+    });
+
+    it('should return false when prop is not present', () => {
+        const post = TestHelper.fakePost({
+            props: {some_other_prop: 'value'},
+        });
+        expect(isToolCallRedacted(post)).toBe(false);
+    });
+
+    it('should return false when props is empty', () => {
+        const post = TestHelper.fakePost({props: {}});
+        expect(isToolCallRedacted(post)).toBe(false);
+    });
+
+    it('should return true for PostModel with redacted prop', () => {
+        const postModel = TestHelper.fakePostModel({
+            props: {pending_tool_call_redacted: 'true'},
+        });
+        expect(isToolCallRedacted(postModel)).toBe(true);
+    });
+
+    it('should return false when props access throws', () => {
+        const faultyPost = {
+            get props() {
+                throw new Error('Access denied');
+            },
+        } as any;
+        expect(isToolCallRedacted(faultyPost)).toBe(false);
+    });
+});
+
+describe('isPendingToolResult', () => {
+    it('should return true when pending_tool_result is true', () => {
+        const post = TestHelper.fakePost({
+            props: {pending_tool_result: 'true'},
+        });
+        expect(isPendingToolResult(post)).toBe(true);
+    });
+
+    it('should return false when prop is not present', () => {
+        const post = TestHelper.fakePost({
+            props: {some_other_prop: 'value'},
+        });
+        expect(isPendingToolResult(post)).toBe(false);
+    });
+
+    it('should return false when props is empty', () => {
+        const post = TestHelper.fakePost({props: {}});
+        expect(isPendingToolResult(post)).toBe(false);
+    });
+
+    it('should return true for PostModel with pending result prop', () => {
+        const postModel = TestHelper.fakePostModel({
+            props: {pending_tool_result: 'true'},
+        });
+        expect(isPendingToolResult(postModel)).toBe(true);
+    });
+});
+
+describe('getToolApprovalStage', () => {
+    const pendingToolCall: ToolCall = {
+        id: 'tc1',
+        name: 'search',
+        description: 'Search tool',
+        arguments: {},
+        status: ToolCallStatus.Pending,
+    };
+
+    const acceptedToolCall: ToolCall = {
+        id: 'tc2',
+        name: 'fetch',
+        description: 'Fetch tool',
+        arguments: {},
+        status: ToolCallStatus.Accepted,
+    };
+
+    it('should return Result when pending_tool_result is true', () => {
+        const post = TestHelper.fakePost({
+            props: {pending_tool_result: 'true'},
+        });
+        expect(getToolApprovalStage(post, [])).toBe(ToolApprovalStage.Result);
+    });
+
+    it('should return Call when there are pending tool calls', () => {
+        const post = TestHelper.fakePost({props: {}});
+        expect(getToolApprovalStage(post, [pendingToolCall])).toBe(ToolApprovalStage.Call);
+    });
+
+    it('should return null when no pending tools and no pending result', () => {
+        const post = TestHelper.fakePost({props: {}});
+        expect(getToolApprovalStage(post, [acceptedToolCall])).toBeNull();
+    });
+
+    it('should return Result even when there are pending tool calls', () => {
+        const post = TestHelper.fakePost({
+            props: {pending_tool_result: 'true'},
+        });
+        expect(getToolApprovalStage(post, [pendingToolCall])).toBe(ToolApprovalStage.Result);
+    });
+});
+
+describe('mergeToolCalls', () => {
+    const makeToolCall = (overrides: Partial<ToolCall> & {id: string}): ToolCall => ({
+        name: 'tool',
+        description: 'A tool',
+        arguments: {},
+        status: ToolCallStatus.Pending,
+        ...overrides,
+    });
+
+    it('should return publicCalls unchanged when privateCalls is null', () => {
+        const publicCalls = [makeToolCall({id: 'tc1', arguments: {q: 'hello'}})];
+        expect(mergeToolCalls(publicCalls, null)).toBe(publicCalls);
+    });
+
+    it('should return publicCalls unchanged when privateCalls is empty', () => {
+        const publicCalls = [makeToolCall({id: 'tc1', arguments: {q: 'hello'}})];
+        expect(mergeToolCalls(publicCalls, [])).toBe(publicCalls);
+    });
+
+    it('should merge private arguments into public calls while preserving public status', () => {
+        const publicCalls = [makeToolCall({id: 'tc1', status: ToolCallStatus.Accepted, arguments: {redacted: true}})];
+        const privateCalls = [makeToolCall({id: 'tc1', status: ToolCallStatus.Pending, arguments: {q: 'secret'}})];
+
+        const result = mergeToolCalls(publicCalls, privateCalls);
+        expect(result).toHaveLength(1);
+        expect(result[0].arguments).toEqual({q: 'secret'});
+        expect(result[0].status).toBe(ToolCallStatus.Accepted);
+    });
+
+    it('should merge private result when present', () => {
+        const publicCalls = [makeToolCall({id: 'tc1'})];
+        const privateCalls = [makeToolCall({id: 'tc1', result: 'done'})];
+
+        const result = mergeToolCalls(publicCalls, privateCalls);
+        expect(result[0].result).toBe('done');
+    });
+
+    it('should not overwrite result when private result is undefined', () => {
+        const publicCalls = [makeToolCall({id: 'tc1', result: 'original'})];
+        const privateCalls = [makeToolCall({id: 'tc1', result: undefined})];
+
+        const result = mergeToolCalls(publicCalls, privateCalls);
+        expect(result[0].result).toBe('original');
+    });
+
+    it('should return private tool as-is when not found in public calls', () => {
+        const publicCalls = [makeToolCall({id: 'tc1'})];
+        const privateCalls = [makeToolCall({id: 'tc_unknown', name: 'private_only', arguments: {x: 1}})];
+
+        const result = mergeToolCalls(publicCalls, privateCalls);
+        expect(result).toHaveLength(1);
+        expect(result[0].id).toBe('tc_unknown');
+        expect(result[0].name).toBe('private_only');
+        expect(result[0].arguments).toEqual({x: 1});
     });
 });
