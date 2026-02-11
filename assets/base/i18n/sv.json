@@ -438,7 +438,7 @@
   "intro.welcome.private": "Endast inbjudna medlemmar kan se meddelanden som skickas i denna privata kanal.",
   "intro.welcome.public": "Lägg till fler teammedlemmar i kanalen eller starta en konversation nedan.",
   "invite.custom_message": "Ange ett anpassat meddelande",
-  "invite.guest_magic_link": "Tillåt nya gästkonton att logga in utan lösenord",
+  "invite.guest_magic_link": "Använd magisk länk",
   "invite.invite_as_guest": "Bjud in som gäst",
   "invite.invite_as_guest_description": "Gäster är begränsade till de valda kanalerna",
   "invite.members.already_member": "Denna person är redan en teammedlem",
