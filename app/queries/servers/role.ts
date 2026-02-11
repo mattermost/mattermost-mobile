@@ -10,6 +10,7 @@ import {isDefaultChannel, isDMorGM} from '@utils/channel';
 import {hasPermission} from '@utils/role';
 
 import {observeChannel, observeMyChannelRoles} from './channel';
+import {observeConfigBooleanValue} from './system';
 import {observeMyTeam, observeMyTeamRoles} from './team';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -110,6 +111,31 @@ export function observeCanManageChannelSettings(database: Database, channelId: s
             }
 
             const permission = c.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES : Permissions.MANAGE_PRIVATE_CHANNEL_PROPERTIES;
+            return observePermissionForChannel(database, c, user, permission, true);
+        }),
+        distinctUntilChanged(),
+    );
+}
+
+export function observeCanManageChannelAutotranslations(database: Database, channelId: string, user: UserModel) {
+    const featureEnabled = observeConfigBooleanValue(database, 'EnableAutoTranslation');
+    const channel = observeChannel(database, channelId);
+    const restrictDMAndGMAutotranslation = observeConfigBooleanValue(database, 'RestrictDMAndGMAutotranslation');
+    return combineLatest([featureEnabled, channel, restrictDMAndGMAutotranslation]).pipe(
+        switchMap(([enabled, c, DMGMRestricted]) => {
+            if (!enabled) {
+                return of$(false);
+            }
+
+            if (!c || c.deleteAt !== 0) {
+                return of$(false);
+            }
+
+            if (isDMorGM(c)) {
+                return of$(!DMGMRestricted);
+            }
+
+            const permission = c.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_AUTO_TRANSLATION : Permissions.MANAGE_PRIVATE_CHANNEL_AUTO_TRANSLATION;
             return observePermissionForChannel(database, c, user, permission, true);
         }),
         distinctUntilChanged(),

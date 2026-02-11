@@ -12,7 +12,7 @@ import {withServerUrl} from '@context/server';
 import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {observeChannelAutotranslation, observeCurrentChannel} from '@queries/servers/channel';
 import {observeCanAddBookmarks} from '@queries/servers/channel_bookmark';
-import {observeCanManageChannelMembers, observeCanManageChannelSettings, observePermissionForChannel, observePermissionForTeam} from '@queries/servers/role';
+import {observeCanManageChannelAutotranslations, observeCanManageChannelMembers, observeCanManageChannelSettings, observePermissionForChannel, observePermissionForTeam} from '@queries/servers/role';
 import {
     observeConfigBooleanValue,
     observeConfigValue,
@@ -137,7 +137,10 @@ const observeHasChannelSettingsActions = (
         switchMap((version) => of$(isMinimumServerVersion(version || '', 9, 1))),
     );
 
-    const isChannelAutotranslateEnabled = observeConfigBooleanValue(database, 'EnableAutoTranslation');
+    const canManageChannelAutotranslations = combineLatest([channelId, currentUser]).pipe(
+        switchMap(([cId, u]) => (u ? observeCanManageChannelAutotranslations(database, cId, u) : of$(false))),
+        distinctUntilChanged(),
+    );
 
     const team = observeCurrentTeam(database);
     const isArchived = channel.pipe(switchMap((c) => of$((c?.deleteAt || 0) > 0)));
@@ -206,7 +209,7 @@ const observeHasChannelSettingsActions = (
         canUnarchive,
         canEnableDisableCalls,
         convertGMOptionAvailable,
-        isChannelAutotranslateEnabled,
+        canManageChannelAutotranslations,
     ]).pipe(
         switchMap(([manageSettings, convert, archive, unarchive, enableCalls, convertGM, autotranslateEnabled]) => {
             return of$(
@@ -215,7 +218,7 @@ const observeHasChannelSettingsActions = (
                 archive || unarchive || // Archive channel
                 enableCalls || // Enable/Disable calls
                 convertGM || // Convert GM to channel
-                (manageSettings && autotranslateEnabled), // Channel autotranslations
+                autotranslateEnabled, // Channel autotranslations
             );
         }),
     );

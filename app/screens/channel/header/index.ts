@@ -68,7 +68,9 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
 
     const isChannelAutotranslated = isChannelAutotranslatedBase.pipe(
         combineLatestWith(isUserLanguageSupported),
-        switchMap(([isAutotranslated, isLanguageSupported]) => of$(isAutotranslated && isLanguageSupported)),
+        switchMap(([isAutotranslated, isLanguageSupported]) => {
+            return of$(isAutotranslated && isLanguageSupported);
+        }),
         distinctUntilChanged(),
     );
 
