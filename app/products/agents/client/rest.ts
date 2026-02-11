@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {Agent, AgentsResponse, ChannelAnalysisOptions, ChannelAnalysisResponse} from '@agents/types/api';
+import type {Agent, AgentsResponse, AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse} from '@agents/types/api';
 
 export type {Agent};
 
@@ -17,6 +17,7 @@ export interface ClientAgentsMix {
         options?: ChannelAnalysisOptions,
     ) => Promise<ChannelAnalysisResponse>;
     submitToolApproval: (postId: string, acceptedToolIds: string[]) => Promise<void>;
+    getAgentsStatus: () => Promise<AgentsStatusResponse>;
 }
 
 const ClientAgents = (superclass: any) => class extends superclass {
@@ -81,6 +82,13 @@ const ClientAgents = (superclass: any) => class extends superclass {
                 method: 'post',
                 body: {accepted_tool_ids: acceptedToolIds},
             },
+        );
+    };
+
+    getAgentsStatus = async (): Promise<AgentsStatusResponse> => {
+        return this.doFetch(
+            `${this.urlVersion}/agents/status`,
+            {method: 'get'},
         );
     };
 };

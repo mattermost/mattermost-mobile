@@ -37,3 +37,11 @@ export type Agent = {
 export type AgentsResponse = {
     agents: Agent[];
 };
+
+/**
+ * Response from agents status API
+ */
+export type AgentsStatusResponse = {
+    available: boolean;
+    reason?: string;
+};
