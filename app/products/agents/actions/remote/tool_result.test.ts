@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {forceLogoutIfNecessary} from '@actions/remote/session';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
 import {submitToolResult} from './tool_result';
 
+jest.mock('@actions/remote/session');
 jest.mock('@managers/network_manager');
 jest.mock('@utils/errors');
 jest.mock('@utils/log');
@@ -48,6 +50,7 @@ describe('submitToolResult', () => {
         const result = await submitToolResult(serverUrl, postId, acceptedToolIds);
 
         expect(logError).toHaveBeenCalledWith('[submitToolResult]', error);
+        expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
         expect(getFullErrorMessage).toHaveBeenCalledWith(error);
         expect(result).toEqual({error: errorMessage});
     });

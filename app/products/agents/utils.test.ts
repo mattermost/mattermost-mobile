@@ -286,14 +286,30 @@ describe('mergeToolCalls', () => {
         expect(result[0].result).toBe('original');
     });
 
-    it('should return private tool as-is when not found in public calls', () => {
+    it('should preserve public tools and append private-only tools', () => {
         const publicCalls = [makeToolCall({id: 'tc1'})];
         const privateCalls = [makeToolCall({id: 'tc_unknown', name: 'private_only', arguments: {x: 1}})];
 
         const result = mergeToolCalls(publicCalls, privateCalls);
-        expect(result).toHaveLength(1);
-        expect(result[0].id).toBe('tc_unknown');
-        expect(result[0].name).toBe('private_only');
-        expect(result[0].arguments).toEqual({x: 1});
+        expect(result).toHaveLength(2);
+        expect(result[0].id).toBe('tc1');
+        expect(result[1].id).toBe('tc_unknown');
+        expect(result[1].name).toBe('private_only');
+        expect(result[1].arguments).toEqual({x: 1});
+    });
+
+    it('should preserve public-only tools when private is a subset', () => {
+        const publicCalls = [
+            makeToolCall({id: 'tc1', arguments: {q: 'hello'}}),
+            makeToolCall({id: 'tc2', arguments: {q: 'world'}}),
+        ];
+        const privateCalls = [makeToolCall({id: 'tc1', arguments: {q: 'secret'}})];
+
+        const result = mergeToolCalls(publicCalls, privateCalls);
+        expect(result).toHaveLength(2);
+        expect(result[0].id).toBe('tc1');
+        expect(result[0].arguments).toEqual({q: 'secret'});
+        expect(result[1].id).toBe('tc2');
+        expect(result[1].arguments).toEqual({q: 'world'});
     });
 });

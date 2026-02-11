@@ -6,7 +6,7 @@ import {fetchToolCallPrivate, fetchToolResultPrivate} from '@agents/actions/remo
 import {useStreamingState} from '@agents/store/streaming_store';
 import {ToolApprovalStage, type Annotation, type ToolCall} from '@agents/types';
 import {getToolApprovalStage, isPostRequester, isToolCallRedacted, mergeToolCalls} from '@agents/utils';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
@@ -137,6 +137,7 @@ const AgentPost = ({post, currentUserId, location}: AgentPostProps) => {
             });
             return () => sub.unsubscribe();
         } catch {
+            setIsDM(false);
             return undefined;
         }
     }, [serverUrl, post.channelId]);
@@ -188,7 +189,7 @@ const AgentPost = ({post, currentUserId, location}: AgentPostProps) => {
         return () => {
             cancelled = true;
         };
-    }, [isRedacted, isRequester, approvalStage, toolCalls.length, privateToolCalls, serverUrl, post.id]);
+    }, [isRedacted, isRequester, approvalStage, toolCalls, privateToolCalls, serverUrl, post.id]);
 
     // Fetch private tool results when in Phase 2
     useEffect(() => {
@@ -212,8 +213,14 @@ const AgentPost = ({post, currentUserId, location}: AgentPostProps) => {
     }, [isRedacted, isRequester, approvalStage, privateToolResults, serverUrl, post.id]);
 
     // Clear private data when streaming tool calls change
+    const prevStreamingToolCallsRef = useRef(streamingState?.toolCalls);
     useEffect(() => {
-        if (streamingState?.toolCalls) {
+        const currentToolCalls = streamingState?.toolCalls;
+        const hadToolCalls = prevStreamingToolCallsRef.current != null;
+        prevStreamingToolCallsRef.current = currentToolCalls;
+
+        // Clear when new streaming tool calls arrive OR when streaming ends
+        if (currentToolCalls || hadToolCalls) {
             setPrivateToolCalls(null);
             setPrivateToolResults(null);
         }

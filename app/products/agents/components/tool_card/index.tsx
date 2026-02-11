@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
@@ -12,6 +12,7 @@ import Loading from '@components/loading';
 import Markdown from '@components/markdown';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {safeParseJSON} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -113,7 +114,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         buttonText: {
             fontSize: 12,
-            fontWeight: 600,
+            fontWeight: '600',
             lineHeight: 16,
             color: theme.buttonBg,
         },
@@ -129,7 +130,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         shareButtonText: {
             fontSize: 12,
-            fontWeight: 600,
+            fontWeight: '600',
             lineHeight: 16,
             color: theme.buttonColor,
         },
@@ -145,7 +146,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         keepPrivateButtonText: {
             fontSize: 12,
-            fontWeight: 600,
+            fontWeight: '600',
             lineHeight: 16,
             color: changeOpacity(theme.centerChannelColor, 0.75),
         },
@@ -166,7 +167,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         warningHeaderText: {
             fontSize: 13,
-            fontWeight: 600,
+            fontWeight: '600',
             lineHeight: 18,
             color: theme.centerChannelColor,
         },
@@ -198,6 +199,11 @@ const ToolCard = ({
     const styles = getStyleSheet(theme);
     const contentOpacity = useSharedValue(isCollapsed ? 0 : 1);
     const chevronRotation = useSharedValue(isCollapsed ? 0 : 90);
+
+    useEffect(() => {
+        contentOpacity.value = isCollapsed ? 0 : 1;
+        chevronRotation.value = isCollapsed ? 0 : 90;
+    }, [isCollapsed, contentOpacity, chevronRotation]);
 
     const isPending = tool.status === ToolCallStatus.Pending;
     const hasLocalDecision = localDecision !== undefined && localDecision !== null;
@@ -241,13 +247,13 @@ const ToolCard = ({
         onToggleCollapse(tool.id);
     }, [canExpand, isCollapsed, contentOpacity, chevronRotation, onToggleCollapse, tool.id]);
 
-    const handleApprove = useCallback(() => {
+    const handleApprove = usePreventDoubleTap(useCallback(() => {
         onApprove?.(tool.id);
-    }, [onApprove, tool.id]);
+    }, [onApprove, tool.id]));
 
-    const handleReject = useCallback(() => {
+    const handleReject = usePreventDoubleTap(useCallback(() => {
         onReject?.(tool.id);
-    }, [onReject, tool.id]);
+    }, [onReject, tool.id]));
 
     const chevronAnimatedStyle = useAnimatedStyle(() => ({
         transform: [{rotate: `${chevronRotation.value}deg`}],
@@ -406,7 +412,7 @@ const ToolCard = ({
                                     </View>
                                     <FormattedText
                                         id='agents.tool_call.approval_warning'
-                                        defaultMessage='Approving lets Agents use this response in its next message. That message will be visible to everyone in the channel — only approve results you are comfortable sharing.'
+                                        defaultMessage='Approving lets Agents use this response in their next message. That message will be visible to everyone in the channel — only approve results you are comfortable sharing.'
                                         style={styles.warningBodyText}
                                     />
                                 </View>

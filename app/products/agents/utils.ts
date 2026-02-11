@@ -74,17 +74,25 @@ export function mergeToolCalls(publicCalls: ToolCall[], privateCalls: ToolCall[]
         return publicCalls;
     }
 
-    const publicById = new Map(publicCalls.map((tc) => [tc.id, tc]));
+    const privateById = new Map(privateCalls.map((tc) => [tc.id, tc]));
 
-    return privateCalls.map((privateTool) => {
-        const publicTool = publicById.get(privateTool.id);
-        if (!publicTool) {
-            return privateTool;
+    const merged = publicCalls.map((publicTool) => {
+        const privateTool = privateById.get(publicTool.id);
+        if (!privateTool) {
+            return publicTool;
         }
+        privateById.delete(publicTool.id);
         return {
             ...publicTool,
             arguments: privateTool.arguments,
             ...(privateTool.result != null && {result: privateTool.result}),
         };
     });
+
+    // Append any private-only tools not found in public calls
+    for (const privateTool of privateById.values()) {
+        merged.push(privateTool);
+    }
+
+    return merged;
 }

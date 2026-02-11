@@ -9,8 +9,10 @@ import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ToolCard from '../tool_card';
@@ -123,6 +125,14 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         // Reset submitting state regardless of success/error
         // On error, user can try again. On success, backend updates via POST_EDITED
         setIsSubmitting(false);
+
+        if (error) {
+            const barType = approvalStage === ToolApprovalStage.Result
+                ? SNACK_BAR_TYPE.AGENT_TOOL_RESULT_ERROR
+                : SNACK_BAR_TYPE.AGENT_TOOL_APPROVAL_ERROR;
+            showSnackBar({barType});
+        }
+
         return !error;
     }, [serverUrl, postId, approvalStage]);
 
@@ -135,7 +145,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             ...toolDecisions,
             [toolId]: approved,
         };
-        setToolDecisions(updatedDecisions);
+        setToolDecisions((prev) => ({...prev, [toolId]: approved}));
 
         // Check if there are still undecided actionable tools
         const hasUndecided = actionableTools.some((tool) => {
@@ -145,7 +155,8 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         if (!hasUndecided) {
             await submitDecisions(updatedDecisions);
         }
-    }, [isSubmitting, toolDecisions, actionableTools, submitDecisions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- toolDecisions is read for the submit check but setState uses functional form to avoid stale closure races
+    }, [isSubmitting, actionableTools, submitDecisions]);
 
     const handleApprove = useCallback((toolId: string) => {
         handleToolDecision(toolId, true);

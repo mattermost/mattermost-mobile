@@ -22,7 +22,7 @@
   "agents.regenerate.confirm": "Regenerate",
   "agents.regenerate.confirm_message": "This will clear the current response and generate a new one. Continue?",
   "agents.regenerate.confirm_title": "Regenerate Response",
-  "agents.tool_call.approval_warning": "Approving lets Agents use this response in its next message. That message will be visible to everyone in the channel — only approve results you are comfortable sharing.",
+  "agents.tool_call.approval_warning": "Approving lets Agents use this response in their next message. That message will be visible to everyone in the channel — only approve results you are comfortable sharing.",
   "agents.tool_call.approve": "Accept",
   "agents.tool_call.keep_private": "Keep private",
   "agents.tool_call.pending_decisions": "{count, plural, =0 {All tools decided} one {# tool needs a decision} other {# tools need decisions}}",

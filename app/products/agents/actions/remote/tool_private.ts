@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {forceLogoutIfNecessary} from '@actions/remote/session';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
@@ -23,6 +24,7 @@ export async function fetchToolCallPrivate(
         return {data};
     } catch (error) {
         logError('[fetchToolCallPrivate]', error);
+        forceLogoutIfNecessary(serverUrl, error);
         return {error: getFullErrorMessage(error)};
     }
 }
@@ -43,6 +45,7 @@ export async function fetchToolResultPrivate(
         return {data};
     } catch (error) {
         logError('[fetchToolResultPrivate]', error);
+        forceLogoutIfNecessary(serverUrl, error);
         return {error: getFullErrorMessage(error)};
     }
 }
