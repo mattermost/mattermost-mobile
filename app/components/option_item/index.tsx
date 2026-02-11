@@ -326,7 +326,7 @@ const OptionItem = ({
                     <Text
                         style={labelTextStyle}
                         testID={`${testID}.label`}
-                        numberOfLines={1}
+                        numberOfLines={2}
                     >
                         {label}
                     </Text>
