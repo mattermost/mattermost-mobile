@@ -122,7 +122,7 @@ export function observeCanManageChannelAutotranslations(database: Database, chan
     const channel = observeChannel(database, channelId);
     const restrictDMAndGMAutotranslation = observeConfigBooleanValue(database, 'RestrictDMAndGMAutotranslation');
     return combineLatest([featureEnabled, channel, restrictDMAndGMAutotranslation]).pipe(
-        switchMap(([enabled, c, DMGMRestricted]) => {
+        switchMap(([enabled, c, isDmGmRestricted]) => {
             if (!enabled) {
                 return of$(false);
             }
@@ -132,11 +132,11 @@ export function observeCanManageChannelAutotranslations(database: Database, chan
             }
 
             if (isDMorGM(c)) {
-                return of$(!DMGMRestricted);
+                return of$(!isDmGmRestricted);
             }
 
             const permission = c.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_AUTO_TRANSLATION : Permissions.MANAGE_PRIVATE_CHANNEL_AUTO_TRANSLATION;
-            return observePermissionForChannel(database, c, user, permission, true);
+            return observePermissionForChannel(database, c, user, permission, false);
         }),
         distinctUntilChanged(),
     );

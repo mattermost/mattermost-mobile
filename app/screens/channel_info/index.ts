@@ -211,14 +211,14 @@ const observeHasChannelSettingsActions = (
         convertGMOptionAvailable,
         canManageChannelAutotranslations,
     ]).pipe(
-        switchMap(([manageSettings, convert, archive, unarchive, enableCalls, convertGM, autotranslateEnabled]) => {
+        switchMap(([manageSettings, convert, archive, unarchive, enableCalls, convertGM, manageAutotranslations]) => {
             return of$(
                 manageSettings || // Channel info or Channel autotranslations
                 convert || // Convert to private
                 archive || unarchive || // Archive channel
                 enableCalls || // Enable/Disable calls
                 convertGM || // Convert GM to channel
-                autotranslateEnabled, // Channel autotranslations
+                manageAutotranslations, // Channel autotranslations
             );
         }),
     );
