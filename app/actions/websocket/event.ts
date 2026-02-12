@@ -330,6 +330,7 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         // Autotranslation
         case WebsocketEvents.POST_TRANSLATION_UPDATED:
             handlePostTranslationUpdatedEvent(serverUrl, msg);
+            break;
 
         // File access control
         case WebsocketEvents.FILE_DOWNLOAD_REJECTED:

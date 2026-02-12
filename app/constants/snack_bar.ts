@@ -176,7 +176,7 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     FILE_DOWNLOAD_REJECTED: {
         message: messages.FILE_DOWNLOAD_REJECTED,
         iconName: 'alert-circle-outline',
-        canUndo: false,
+        hasAction: false,
         type: MESSAGE_TYPE.ERROR,
     },
     FOLLOW_THREAD: {
@@ -240,7 +240,7 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     PLUGIN_TOAST: {
         message: messages.PLUGIN_TOAST,
         iconName: 'information-outline',
-        canUndo: false,
+        hasAction: false,
         type: MESSAGE_TYPE.DEFAULT,
     },
     PLAYBOOK_ERROR: {
