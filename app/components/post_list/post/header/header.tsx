@@ -121,6 +121,10 @@ const Header = ({
     const usernameOverride = ensureString(post.props?.override_username);
     const intl = useIntl();
 
+    // We need to depend on the expire_at directly,
+    // since changes in it may not be reflected in the post object
+    // (it is still the same object reference).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const showBoRIcon = useMemo(() => isUnrevealedBoRPost(post), [post, post.metadata?.expire_at]);
     const borExpireAt = post.metadata?.expire_at;
     const serverUrl = useServerUrl();

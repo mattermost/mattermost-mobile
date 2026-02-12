@@ -3,13 +3,14 @@
 
 import moment from 'moment';
 import mtz from 'moment-timezone';
-import React, {useEffect, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
+import useDidMount from '@hooks/did_mount';
 import {getLocaleFromLanguage} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -171,11 +172,11 @@ const UserProfile = ({
         canManageAndRemoveMembers,
     ]);
 
-    useEffect(() => {
+    useDidMount(() => {
         if (currentUserId !== user.id) {
             fetchTeamAndChannelMembership(serverUrl, user.id, teamId, channelId);
         }
-    }, []);
+    });
 
     const renderContent = () => {
         return (

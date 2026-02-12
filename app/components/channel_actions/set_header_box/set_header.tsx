@@ -30,7 +30,7 @@ const SetHeaderBox = ({channelId, containerStyle, isHeaderSet, inModal, testID}:
 
         await dismissBottomSheet();
         showModal(Screens.CREATE_OR_EDIT_CHANNEL, title, {channelId, headerOnly: true});
-    }, [intl, channelId]);
+    }, [intl, inModal, channelId]);
 
     let text;
     if (isHeaderSet) {

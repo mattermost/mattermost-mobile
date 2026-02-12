@@ -20,6 +20,7 @@ import {Screens} from '@constants/index';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useDidMount from '@hooks/did_mount';
 import SecurityManager from '@managers/security_manager';
 import {dismissOverlay} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
@@ -190,12 +191,9 @@ const TermsOfService = ({
         }
     }, [declineTerms, closeTermsAndLogout, getTermsError]);
 
-    useEffect(() => {
+    useDidMount(() => {
         getTerms();
-
-        // Only get the terms on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     useEffect(() => {
         return () => {

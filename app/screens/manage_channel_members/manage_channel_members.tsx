@@ -17,6 +17,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useDidMount from '@hooks/did_mount';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {openAsBottomSheet, popTopScreen, setButtons} from '@screens/navigation';
@@ -274,18 +275,14 @@ export default function ManageChannelMembers({
         }
     }, [loading, searchedTerm, getFetchChannelMembers]);
 
-    useEffect(() => {
+    useDidMount(() => {
         mounted.current = true;
         getFetchChannelMembers();
 
         return () => {
             mounted.current = false;
         };
-
-        // This effect is used only to track the mounted state and the initial fetch
-        // so it should only run once
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     useEffect(() => {
         if (canManageAndRemoveMembers) {

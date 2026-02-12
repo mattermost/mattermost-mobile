@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useMemo, useRef} from 'react';
 import {StyleSheet, View, Pressable} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets, type Edge} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import {useWindowDimensions} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import {translateYConfig} from '@hooks/gallery';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useLightboxSharedValues} from '@screens/gallery/lightbox_swipeout/context';
@@ -95,7 +96,7 @@ const TopControls: React.FC<TopControlsProps> = ({
         marginTop: withTiming(headerAndFooterHidden.value ? insets.top : headerHeight, translateYConfig),
     }));
 
-    useEffect(() => {
+    useDidMount(() => {
         const measure = async () => {
             const result = await measureViewInWindow(speedButtonRef);
             setViewPosition({
@@ -108,7 +109,7 @@ const TopControls: React.FC<TopControlsProps> = ({
         };
 
         measure();
-    }, []);
+    });
 
     let fullscreen;
     if (isFullscreen) {

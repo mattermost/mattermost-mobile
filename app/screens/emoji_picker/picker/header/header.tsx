@@ -36,15 +36,15 @@ const PickerHeader = ({skinTone, ...props}: Props) => {
 
     const onBlur = useCallback(() => {
         isSearching.value = false;
-    }, []);
+    }, [isSearching]);
 
     const onFocus = useCallback(() => {
         isSearching.value = true;
-    }, []);
+    }, [isSearching]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         containerWidth.value = e.nativeEvent.layout.width;
-    }, []);
+    }, [containerWidth]);
 
     let search;
     if (isTablet) {

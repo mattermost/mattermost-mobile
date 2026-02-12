@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {Platform} from 'react-native';
 
 import {updateMe} from '@actions/remote/user';
@@ -10,8 +10,8 @@ import SettingSeparator from '@components/settings/separator';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
+import useNotificationProps from '@hooks/notification_props';
 import {popTopScreen} from '@screens/navigation';
-import {getNotificationProps} from '@utils/user';
 
 import MobileSendPush from './push_send';
 import MobilePushStatus from './push_status';
@@ -28,8 +28,7 @@ type NotificationMobileProps = {
 };
 const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
     const serverUrl = useServerUrl();
-
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
+    const notifyProps = useNotificationProps(currentUser);
 
     const [pushSend, setPushSend] = useState<UserNotifyPropsPush>(notifyProps.push);
     const [pushStatus, setPushStatus] = useState<UserNotifyPropsPushStatus>(notifyProps.push_status);
@@ -39,7 +38,7 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
         setPushThreadPref(pushThread === 'all' ? 'mention' : 'all');
     }, [pushThread]);
 
-    const close = () => popTopScreen(componentId);
+    const close = useCallback(() => popTopScreen(componentId), [componentId]);
 
     const canSaveSettings = useCallback(() => {
         const p = pushSend !== notifyProps.push;

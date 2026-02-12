@@ -22,6 +22,7 @@ import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {openAsBottomSheet} from '@screens/navigation';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
@@ -273,10 +274,11 @@ const Post = ({
             }
         };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Timer only needs to reset when post.id changes, not on other prop updates
+    // Timer only needs to reset when post.id changes, not on other prop updates
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [post.id]);
 
-    useEffect(() => {
+    useDidMount(() => {
         if (!isLastPost) {
             return;
         }
@@ -287,9 +289,7 @@ const Post = ({
 
         PerformanceMetricsManager.finishLoad(location === 'Thread' ? 'THREAD' : 'CHANNEL', serverUrl);
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Performance metrics should only run once on mount
-    }, []);
+    });
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setLayoutWidth(e.nativeEvent.layout.width);

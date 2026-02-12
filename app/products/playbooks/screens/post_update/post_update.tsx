@@ -15,6 +15,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAvoidKeyboard} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from '@playbooks/actions/remote/runs';
@@ -121,7 +122,7 @@ const PostUpdate = ({
         });
     }, [rightButton, componentId]);
 
-    useEffect(() => {
+    useDidMount(() => {
         async function initialLoad() {
             let calculatedFollowersCount = 0;
             let calculatedBroadcastChannelCount = 0;
@@ -161,10 +162,7 @@ const PostUpdate = ({
         }
 
         initialLoad();
-
-    // This is the initial load, so we don't need to re-run it on every change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     const onNextUpdateSelected = useCallback((value: SelectedDialogOption) => {
         if (!value) {

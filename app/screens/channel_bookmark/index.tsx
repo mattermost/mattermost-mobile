@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, View, type AlertButton} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
@@ -12,6 +12,7 @@ import Button from '@components/button';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useDidMount from '@hooks/did_mount';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
@@ -257,9 +258,9 @@ const ChannelBookmarkAddOrEdit = ({
         }
     }, [bookmark, formatMessage, handleDelete]);
 
-    useEffect(() => {
+    useDidMount(() => {
         enableSaveButton(false);
-    }, []);
+    });
 
     useNavButtonPressed(RIGHT_BUTTON.id, componentId, onSaveBookmark, [bookmark]);
     useNavButtonPressed(closeButtonId, componentId, close, [close]);

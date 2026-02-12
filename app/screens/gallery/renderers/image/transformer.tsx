@@ -60,10 +60,7 @@ const ImageTransformer = (
 
     const setInteractionsEnabled = useCallback((value: boolean) => {
         interactionsEnabled.value = value;
-
-        // SharedValue does not trigger re-renders
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [interactionsEnabled]);
 
     const onLoadImageSuccess = useCallback(() => {
         setInteractionsEnabled(true);

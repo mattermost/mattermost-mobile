@@ -68,11 +68,11 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
     const close = useCallback(() => {
         Keyboard.dismiss();
         return dismissModal({componentId});
-    }, []);
+    }, [componentId]);
 
     const onCancel = useCallback(() => {
         dismissModal({componentId});
-    }, []);
+    }, [componentId]);
 
     const onChangeText = useCallback((text: string) => {
         setTerm(text);

@@ -302,7 +302,7 @@ const ServerItem = ({
                 server={server}
             />
         );
-    }, [isActive, server, theme, intl]);
+    }, [handleEdit, handleLogin, handleLogout, handleRemove, server]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.SWIPEABLE, (url: string) => {
@@ -329,6 +329,9 @@ const ServerItem = ({
             subscription.current?.unsubscribe();
             subscription.current = undefined;
         };
+
+    // We only want to reset the subscription when the server changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [server.lastActiveAt, isActive]);
 
     const serverItem = `server_list.server_item.${server.displayName.replace(/ /g, '_').toLocaleLowerCase()}`;
