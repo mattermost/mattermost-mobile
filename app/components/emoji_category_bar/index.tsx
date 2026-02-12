@@ -9,6 +9,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {selectEmojiCategoryBarSection, useEmojiCategoryBar} from '@hooks/emoji_category_bar';
+import {useFocusAfterEmojiDismiss} from '@hooks/useFocusAfterEmojiDismiss';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {deleteLastGrapheme} from '@utils/grapheme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -61,10 +62,13 @@ const EmojiCategoryBar = ({onSelect}: Props) => {
     const keyboardContext = useKeyboardAnimationContext();
     const {
         focusInput,
+        inputRef,
         updateValue,
         updateCursorPosition,
         cursorPositionRef,
     } = keyboardContext;
+
+    const {focus: focusWithEmojiDismiss} = useFocusAfterEmojiDismiss(inputRef, focusInput);
 
     // Only show keyboard/delete buttons if we're in input accessory view mode
     // Check if updateValue is available (not null) to determine if we're in input accessory context
@@ -80,8 +84,8 @@ const EmojiCategoryBar = ({onSelect}: Props) => {
     }, [onSelect]);
 
     const handleKeyboardPress = usePreventDoubleTap(useCallback(() => {
-        focusInput();
-    }, [focusInput]));
+        focusWithEmojiDismiss();
+    }, [focusWithEmojiDismiss]));
 
     const deleteCharFromCurrentCursorPosition = useCallback(() => {
         if (!updateValue || !updateCursorPosition || !cursorPositionRef) {

@@ -137,6 +137,33 @@ describe('ClientChannels', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
+    test('setChannelAutotranslation', async () => {
+        const channelId = 'channel1';
+        const enabled = true;
+        const expectedUrl = `${client.getChannelRoute(channelId)}/patch`;
+        const expectedOptions = {method: 'put', body: {autotranslation: enabled}};
+        jest.mocked(client.doFetch).mockResolvedValue({id: channelId, autotranslation: enabled});
+
+        const result = await client.setChannelAutotranslation(channelId, enabled);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result.autotranslation).toBe(enabled);
+    });
+
+    test('setMyChannelAutotranslation', async () => {
+        const channelId = 'channel1';
+        const enabled = false;
+        const expectedUrl = `${client.getChannelMemberRoute(channelId, 'me')}/autotranslation`;
+        const expectedOptions = {method: 'put', body: {autotranslation_disabled: !enabled}};
+        const mockMembership = {id: 'me-channel1', channel_id: channelId, user_id: 'me', autotranslation_disabled: !enabled};
+        jest.mocked(client.doFetch).mockResolvedValue(mockMembership);
+
+        const result = await client.setMyChannelAutotranslation(channelId, enabled);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockMembership);
+    });
+
     test('getChannel', async () => {
         const channelId = 'channel1';
         const expectedUrl = client.getChannelRoute(channelId);

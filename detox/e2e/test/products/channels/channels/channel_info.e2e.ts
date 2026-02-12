@@ -19,6 +19,7 @@ import {
     LoginScreen,
     ServerScreen,
     ChannelInfoScreen,
+    ChannelSettingsScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
@@ -65,13 +66,30 @@ describe('Channels - Channel Info', () => {
         await expect(ChannelInfoScreen.pinnedMessagesOption).toBeVisible();
         await expect(ChannelInfoScreen.copyChannelLinkOption).toBeVisible();
         await ChannelInfoScreen.scrollView.scrollTo('bottom');
-        await expect(ChannelInfoScreen.editChannelOption).toBeVisible();
+        await expect(ChannelInfoScreen.channelSettingsOption).toBeVisible();
         await ChannelInfoScreen.scrollView.scrollTo('bottom');
         await expect(ChannelInfoScreen.leaveChannelOption).toBeVisible();
-        await waitFor(ChannelInfoScreen.archiveChannelOption).toBeVisible().whileElement(by.id(ChannelInfoScreen.testID.scrollView)).scroll(50, 'down');
-        await expect(ChannelInfoScreen.archiveChannelOption).toBeVisible();
 
         // # Go back to channel list screen
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
+    });
+
+    it('should match elements on channel settings screen', async () => {
+        // # Open a channel screen, open channel info screen, and open channel settings screen
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelInfoScreen.open();
+        await ChannelInfoScreen.openChannelSettings();
+
+        // * Verify basic elements on channel settings screen
+        await ChannelSettingsScreen.toBeVisible();
+        await expect(ChannelSettingsScreen.closeButton).toBeVisible();
+        await expect(ChannelSettingsScreen.channelInfoOption).toBeVisible();
+        await expect(ChannelSettingsScreen.convertPrivateOption).toBeVisible();
+        await expect(ChannelSettingsScreen.archiveChannelOption).toBeVisible();
+
+        // # Go back to channel list screen
+        await ChannelSettingsScreen.close();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
     });

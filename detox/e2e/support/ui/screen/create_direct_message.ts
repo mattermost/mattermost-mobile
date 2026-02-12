@@ -77,7 +77,7 @@ class CreateDirectMessageScreen {
         await ChannelListScreen.headerPlusButton.tap();
         await wait(timeouts.ONE_SEC);
         await ChannelListScreen.openDirectMessageItem.tap();
-        await wait(timeouts.TEN_SEC);
+        await wait(timeouts.FOUR_SEC);
         return this.toBeVisible();
     };
 

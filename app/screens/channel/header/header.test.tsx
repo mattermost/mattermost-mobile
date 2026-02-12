@@ -54,6 +54,7 @@ describe('ChannelHeader', () => {
             isOwnDirectMessage: false,
             shouldRenderChannelBanner: false,
             isPlaybooksEnabled: true,
+            isChannelAutotranslated: false,
         };
     }
 

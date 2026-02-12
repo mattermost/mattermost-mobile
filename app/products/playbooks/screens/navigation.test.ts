@@ -7,7 +7,7 @@ import {goToScreen} from '@screens/navigation';
 import TestHelper from '@test/test_helper';
 import {changeOpacity} from '@utils/theme';
 
-import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate, goToPostUpdate, goToSelectPlaybook, goToStartARun, goToRenameChecklist, goToAddChecklistItem, goToEditChecklistItem, goToRenamePlaybookRun, goToCreateQuickChecklist} from './navigation';
+import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate, goToPostUpdate, goToSelectPlaybook, goToStartARun, goToRenameChecklist, goToAddChecklistItem, goToEditChecklistItem, goToEditPlaybookRun, goToCreateQuickChecklist} from './navigation';
 
 jest.mock('@screens/navigation', () => ({
     goToScreen: jest.fn(),
@@ -603,23 +603,27 @@ describe('Playbooks Navigation', () => {
         });
     });
 
-    describe('goToRenamePlaybookRun', () => {
-        it('should navigate to rename playbook run screen with correct parameters', async () => {
+    describe('goToEditPlaybookRun', () => {
+        it('should navigate to edit playbook run screen with correct parameters', async () => {
             const currentTitle = 'Playbook Run Title';
+            const currentSummary = 'Playbook run summary';
             const playbookRunId = 'run-id-123';
+            const canEditSummary = true;
 
-            await goToRenamePlaybookRun(mockIntl, Preferences.THEMES.denim, currentTitle, playbookRunId);
+            await goToEditPlaybookRun(mockIntl, Preferences.THEMES.denim, currentTitle, currentSummary, playbookRunId, {canEditSummary});
 
             expect(mockIntl.formatMessage).toHaveBeenCalledWith({
-                id: 'playbooks.playbook_run.rename.title',
-                defaultMessage: 'Rename playbook run',
+                id: 'playbooks.playbook_run.edit.title',
+                defaultMessage: 'Edit playbook run',
             });
             expect(goToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_RENAME_RUN,
-                'Rename playbook run',
+                'Edit playbook run',
                 {
                     currentTitle,
+                    currentSummary,
                     playbookRunId,
+                    canEditSummary,
                 },
             );
         });

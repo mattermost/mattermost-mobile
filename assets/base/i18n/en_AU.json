@@ -1081,7 +1081,6 @@
   "playbooks.playbook_run.participants_title": "Participants",
   "playbooks.playbook_run.rename.button": "Save",
   "playbooks.playbook_run.rename.label": "Checklist name",
-  "playbooks.playbook_run.rename.title": "Rename Playbook run",
   "playbooks.playbook_run.run_details": "Checklist details",
   "playbooks.playbook_run.status_update": "Post update",
   "playbooks.playbook_run.status_update_due": "Update due\n{time}",

@@ -45,13 +45,16 @@ export const useFocusAfterEmojiDismiss = (
 
             inputRef.current?.blur();
 
-            const handleDelayedFocus = () => {
-                focusInput();
-                setIsManuallyFocusingAfterEmojiDismiss(false);
-                focusTimeoutRef.current = null;
-            };
+            // Use requestAnimationFrame to ensure state updates have been applied
+            requestAnimationFrame(() => {
+                const handleDelayedFocus = () => {
+                    focusInput();
+                    setIsManuallyFocusingAfterEmojiDismiss(false);
+                    focusTimeoutRef.current = null;
+                };
 
-            focusTimeoutRef.current = setTimeout(handleDelayedFocus, 200);
+                focusTimeoutRef.current = setTimeout(handleDelayedFocus, 200);
+            });
 
             return () => {
                 if (focusTimeoutRef.current) {
@@ -80,6 +83,20 @@ export const useFocusAfterEmojiDismiss = (
 
             setIsEmojiSearchFocused(false);
             setShowInputAccessoryView(false);
+
+            if (focusTimeoutRef.current) {
+                clearTimeout(focusTimeoutRef.current);
+            }
+
+            inputRef.current?.blur();
+
+            // Schedule focus after emoji picker closes
+            focusTimeoutRef.current = setTimeout(() => {
+                focusInput();
+                setIsManuallyFocusingAfterEmojiDismiss(false);
+                isDismissingEmojiPicker.current = false;
+                focusTimeoutRef.current = null;
+            }, 200);
         } else {
             focusInput();
         }
@@ -91,6 +108,7 @@ export const useFocusAfterEmojiDismiss = (
         keyboardTranslateY,
         isTransitioningFromCustomView,
         setIsEmojiSearchFocused,
+        inputRef,
         focusInput,
     ]);
 

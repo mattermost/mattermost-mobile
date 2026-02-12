@@ -19,6 +19,7 @@ export const CHANNEL_BOOKMARK = 'ChannelBookmarkAddOrEdit';
 export const CHANNEL_FILES = 'ChannelFiles';
 export const CHANNEL_INFO = 'ChannelInfo';
 export const CHANNEL_NOTIFICATION_PREFERENCES = 'ChannelNotificationPreferences';
+export const CHANNEL_SETTINGS = 'ChannelSettings';
 export const CODE = 'Code';
 export const CONVERT_GM_TO_CHANNEL = 'ConvertGMToChannel';
 export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
@@ -29,6 +30,7 @@ export const CUSTOM_STATUS = 'CustomStatus';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const DRAFT = 'Draft';
 export const DRAFT_SCHEDULED_POST_OPTIONS = 'DraftScheduledPostOptions';
+export const E2EE_DEVICES = 'E2EEDevices';
 export const EDIT_POST = 'EditPost';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
@@ -43,6 +45,7 @@ export const GLOBAL_THREADS = 'GlobalThreads';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const INTERACTIVE_DIALOG = 'InteractiveDialog';
+export const DIALOG_ROUTER = 'DialogRouter';
 export const INVITE = 'Invite';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
 export const JOIN_TEAM = 'JoinTeam';
@@ -90,6 +93,7 @@ export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
+export const SHOW_TRANSLATION = 'ShowTranslation';
 
 export default {
     ABOUT,
@@ -108,6 +112,7 @@ export default {
     CHANNEL_FILES,
     CHANNEL_INFO,
     CHANNEL_NOTIFICATION_PREFERENCES,
+    CHANNEL_SETTINGS,
     CODE,
     CONVERT_GM_TO_CHANNEL,
     COMPONENT_LIBRARY,
@@ -117,6 +122,7 @@ export default {
     CUSTOM_STATUS,
     CUSTOM_STATUS_CLEAR_AFTER,
     DRAFT_SCHEDULED_POST_OPTIONS,
+    E2EE_DEVICES,
     EDIT_POST,
     EDIT_PROFILE,
     EDIT_SERVER,
@@ -131,6 +137,7 @@ export default {
     HOME,
     INTEGRATION_SELECTOR,
     INTERACTIVE_DIALOG,
+    DIALOG_ROUTER,
     INVITE,
     IN_APP_NOTIFICATION,
     JOIN_TEAM,
@@ -178,6 +185,7 @@ export default {
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
+    SHOW_TRANSLATION,
     ...PLAYBOOKS_SCREENS,
 } as const;
 
