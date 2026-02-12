@@ -41,7 +41,7 @@ const AskAgentsOption = ({
             renderContent,
             closeButtonId: 'close-channel-summary',
             enableDynamicSizing: true,
-            snapPoints: [1, '80%'],
+            snapPoints: [1, '50%'],
             theme,
             initialSnapIndex: 1,
         });
