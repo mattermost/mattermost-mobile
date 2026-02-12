@@ -15,6 +15,7 @@ import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {safeParseJSON} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 interface ToolCardProps {
     tool: ToolCall;
@@ -49,18 +50,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: 12,
         },
         toolName: {
-            fontSize: 14,
-            lineHeight: 20,
             color: changeOpacity(theme.centerChannelColor, 0.75),
             flex: 1,
+            ...typography('Body', 100),
         },
         argumentsContainer: {
             marginLeft: 24,
         },
         markdownText: {
-            fontSize: 11,
-            lineHeight: 16,
             color: changeOpacity(theme.centerChannelColor, 0.75),
+            ...typography('Body', 50),
         },
         responseLabel: {
             flexDirection: 'row',
@@ -71,9 +70,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingLeft: 24,
         },
         responseLabelText: {
-            fontSize: 14,
-            lineHeight: 20,
             color: changeOpacity(theme.centerChannelColor, 0.75),
+            ...typography('Body', 100),
         },
         resultContainer: {
             marginLeft: 24,
@@ -86,9 +84,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingLeft: 24,
         },
         statusText: {
-            fontSize: 14,
-            lineHeight: 20,
             color: changeOpacity(theme.centerChannelColor, 0.75),
+            ...typography('Body', 100),
         },
         buttonContainer: {
             flexDirection: 'row',
@@ -113,10 +110,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             opacity: 0.5,
         },
         buttonText: {
-            fontSize: 12,
-            fontWeight: '600',
-            lineHeight: 16,
             color: theme.buttonBg,
+            ...typography('Body', 75, 'SemiBold'),
         },
         shareButton: {
             backgroundColor: theme.buttonBg,
@@ -129,10 +124,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
         },
         shareButtonText: {
-            fontSize: 12,
-            fontWeight: '600',
-            lineHeight: 16,
             color: theme.buttonColor,
+            ...typography('Body', 75, 'SemiBold'),
         },
         keepPrivateButton: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -145,10 +138,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
         },
         keepPrivateButtonText: {
-            fontSize: 12,
-            fontWeight: '600',
-            lineHeight: 16,
             color: changeOpacity(theme.centerChannelColor, 0.75),
+            ...typography('Body', 75, 'SemiBold'),
         },
         warningCallout: {
             backgroundColor: changeOpacity(theme.dndIndicator, 0.08),
@@ -166,15 +157,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             gap: 6,
         },
         warningHeaderText: {
-            fontSize: 13,
-            fontWeight: '600',
-            lineHeight: 18,
             color: theme.centerChannelColor,
+            ...typography('Body', 100, 'SemiBold'),
         },
         warningBodyText: {
-            fontSize: 12,
-            lineHeight: 16,
             color: changeOpacity(theme.centerChannelColor, 0.75),
+            ...typography('Body', 75),
         },
     };
 });

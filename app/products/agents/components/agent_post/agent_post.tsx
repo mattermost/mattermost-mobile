@@ -11,12 +11,9 @@ import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
-import {General} from '@constants';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
-import {observeChannel} from '@queries/servers/channel';
 import {safeParseJSON} from '@utils/helpers';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -60,17 +57,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-interface AgentPostProps {
+export interface AgentPostProps {
     post: PostModel;
     currentUserId?: string;
     location: AvailableScreens;
+    isDM: boolean;
 }
 
 /**
  * Custom post component for agent responses
  * Handles streaming text updates and displays animated cursor during generation
  */
-const AgentPost = ({post, currentUserId, location}: AgentPostProps) => {
+const AgentPost = ({post, currentUserId, location, isDM}: AgentPostProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -126,21 +124,6 @@ const AgentPost = ({post, currentUserId, location}: AgentPostProps) => {
     const isRequester = useMemo(() => {
         return currentUserId ? isPostRequester(post, currentUserId) : false;
     }, [post, currentUserId]);
-
-    // Observe whether this post is in a DM channel
-    const [isDM, setIsDM] = useState(false);
-    useEffect(() => {
-        try {
-            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const sub = observeChannel(database, post.channelId).subscribe((channel) => {
-                setIsDM(channel?.type === General.DM_CHANNEL);
-            });
-            return () => sub.unsubscribe();
-        } catch {
-            setIsDM(false);
-            return undefined;
-        }
-    }, [serverUrl, post.channelId]);
 
     // Channel tool calling state
     const [privateToolCalls, setPrivateToolCalls] = useState<ToolCall[] | null>(null);

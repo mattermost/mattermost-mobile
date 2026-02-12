@@ -175,17 +175,19 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         }));
     }, [toolCalls, actionableTools]);
 
+    // Calculate how many actionable tools haven't been decided yet
+    const undecidedCount = useMemo(() => {
+        return actionableTools.filter(
+            (tool) => !(tool.id in toolDecisions),
+        ).length;
+    }, [actionableTools, toolDecisions]);
+
     if (toolCalls.length === 0) {
         return null;
     }
 
     const actionableIds = new Set(actionableTools.map((t) => t.id));
     const processedToolCalls = toolCalls.filter((call) => !actionableIds.has(call.id));
-
-    // Calculate how many actionable tools haven't been decided yet
-    const undecidedCount = actionableTools.filter(
-        (tool) => !(tool.id in toolDecisions),
-    ).length;
 
     // Helper to compute if a tool should be collapsed
     const isToolCollapsed = (tool: ToolCall) => {
