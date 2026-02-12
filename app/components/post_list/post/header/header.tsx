@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
+import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import {removePost} from '@actions/local/post';
@@ -15,7 +16,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
 import {isUnrevealedBoRPost} from '@utils/bor';
-import {postUserDisplayName} from '@utils/post';
+import {getPostTranslation, postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {ensureString} from '@utils/types';
 import {typography} from '@utils/typography';
@@ -25,6 +26,7 @@ import HeaderCommentedOn from './commented_on';
 import HeaderDisplayName from './display_name';
 import HeaderReply from './reply';
 import HeaderTag from './tag';
+import TranslateIcon from './translate_icon';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -50,6 +52,7 @@ type HeaderProps = {
     shouldRenderReplyButton?: boolean;
     teammateNameDisplay: string;
     hideGuestTags: boolean;
+    isChannelAutotranslated: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -80,12 +83,28 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Header = (props: HeaderProps) => {
-    const {
-        author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
-        isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isWebHook,
-        location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton, teammateNameDisplay, hideGuestTags,
-    } = props;
+const Header = ({
+    commentCount,
+    enablePostUsernameOverride,
+    hideGuestTags,
+    isAutoResponse,
+    isChannelAutotranslated,
+    isCustomStatusEnabled,
+    isEphemeral,
+    isMilitaryTime,
+    isPendingOrFailed,
+    isSystemPost,
+    isWebHook,
+    location,
+    post,
+    showPostPriority,
+    teammateNameDisplay,
+    author,
+    currentUser,
+    isCRTEnabled,
+    rootPostAuthor,
+    shouldRenderReplyButton,
+}: HeaderProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const pendingPostStyle = isPendingOrFailed ? style.pendingPost : undefined;
@@ -100,6 +119,7 @@ const Header = (props: HeaderProps) => {
     ) && !isCustomStatusExpired(author) && Boolean(customStatus?.emoji);
     const userIconOverride = ensureString(post.props?.override_icon_url);
     const usernameOverride = ensureString(post.props?.override_username);
+    const intl = useIntl();
 
     const showBoRIcon = useMemo(() => isUnrevealedBoRPost(post), [post]);
     const borExpireAt = post.metadata?.expire_at;
@@ -108,6 +128,8 @@ const Header = (props: HeaderProps) => {
     const onBoRPostExpiry = useCallback(async () => {
         await removePost(serverUrl, post);
     }, [post, serverUrl]);
+
+    const translation = getPostTranslation(post, intl.locale);
 
     return (
         <>
@@ -141,6 +163,9 @@ const Header = (props: HeaderProps) => {
                         style={style.time}
                         testID='post_header.date_time'
                     />
+                    {isChannelAutotranslated && post.type === '' &&
+                        <TranslateIcon translationState={translation?.state}/>
+                    }
                     {isEphemeral && (
                         <FormattedText
                             id='post_header.visible_message'

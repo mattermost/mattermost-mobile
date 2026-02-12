@@ -159,7 +159,7 @@ const Archive = ({
                 icon='archive-arrow-up-outline'
                 destructive={true}
                 type='default'
-                testID='channel_info.options.unarchive_channel.option'
+                testID='channel_settings.unarchive_channel.option'
             />
         );
     }
@@ -171,9 +171,10 @@ const Archive = ({
             icon='archive-outline'
             destructive={true}
             type='default'
-            testID='channel_info.options.archive_channel.option'
+            testID='channel_settings.archive_channel.option'
         />
     );
 };
 
 export default Archive;
+

@@ -20,6 +20,7 @@ import * as files from './files';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
 import * as posts from './posts';
+import {handlePostTranslationUpdatedEvent} from './posts';
 import * as preferences from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
@@ -326,6 +327,10 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             handleBoRPostAllRevealed(serverUrl, msg);
             break;
 
+        // Autotranslation
+        case WebsocketEvents.POST_TRANSLATION_UPDATED:
+            handlePostTranslationUpdatedEvent(serverUrl, msg);
+
         // File access control
         case WebsocketEvents.FILE_DOWNLOAD_REJECTED:
             files.handleFileDownloadRejected(serverUrl, msg);
@@ -334,6 +339,7 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         // Toast control
         case WebsocketEvents.SHOW_TOAST:
             files.handleShowToast(serverUrl, msg);
+
             break;
     }
     handlePlaybookEvents(serverUrl, msg);

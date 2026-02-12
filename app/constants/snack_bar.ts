@@ -31,6 +31,7 @@ export const SNACK_BAR_TYPE = keyMirror({
     RESCHEDULED_POST: null,
     DELETE_SCHEDULED_POST_ERROR: null,
     PLAYBOOK_ERROR: null,
+    ENABLE_TRANSLATION: null,
     BOR_POST_EXPIRED: null,
 });
 
@@ -43,7 +44,7 @@ export const MESSAGE_TYPE = {
 export type SnackBarConfig = {
     message: MessageDescriptor;
     iconName: string;
-    canUndo: boolean;
+    hasAction: boolean;
     type?: typeof MESSAGE_TYPE[keyof typeof MESSAGE_TYPE];
 };
 
@@ -128,6 +129,10 @@ const messages = defineMessages({
         id: 'snack.bar.playbook.error',
         defaultMessage: 'Unable to perform action. Please try again later.',
     },
+    ENABLE_TRANSLATION: {
+        id: 'snack.bar.enable.translation',
+        defaultMessage: 'Enable auto-translation?',
+    },
     BOR_POST_EXPIRED: {
         id: 'snack.bar.bor_post_expired.error',
         defaultMessage: 'This burn-on-read post has expired and can no longer be revealed.',
@@ -138,35 +143,35 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     ADD_CHANNEL_MEMBERS: {
         message: messages.ADD_CHANNEL_MEMBERS,
         iconName: 'check',
-        canUndo: false,
+        hasAction: false,
     },
     AGENT_STOP_ERROR: {
         message: messages.AGENT_STOP_ERROR,
         iconName: 'alert-outline',
-        canUndo: false,
+        hasAction: false,
         type: MESSAGE_TYPE.ERROR,
     },
     AGENT_REGENERATE_ERROR: {
         message: messages.AGENT_REGENERATE_ERROR,
         iconName: 'alert-outline',
-        canUndo: false,
+        hasAction: false,
         type: MESSAGE_TYPE.ERROR,
     },
     AGENT_TOOL_APPROVAL_ERROR: {
         message: messages.AGENT_TOOL_APPROVAL_ERROR,
         iconName: 'alert-outline',
-        canUndo: false,
+        hasAction: false,
         type: MESSAGE_TYPE.ERROR,
     },
     CODE_COPIED: {
         message: messages.CODE_COPIED,
         iconName: 'content-copy',
-        canUndo: false,
+        hasAction: false,
     },
     FAVORITE_CHANNEL: {
         message: messages.FAVORITE_CHANNEL,
         iconName: 'star',
-        canUndo: true,
+        hasAction: true,
     },
     FILE_DOWNLOAD_REJECTED: {
         message: messages.FILE_DOWNLOAD_REJECTED,
@@ -177,60 +182,60 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     FOLLOW_THREAD: {
         message: messages.FOLLOW_THREAD,
         iconName: 'check',
-        canUndo: true,
+        hasAction: true,
     },
     INFO_COPIED: {
         message: messages.INFO_COPIED,
         iconName: 'content-copy',
-        canUndo: false,
+        hasAction: false,
     },
     LINK_COPIED: {
         message: messages.LINK_COPIED,
         iconName: 'link-variant',
-        canUndo: false,
+        hasAction: false,
         type: MESSAGE_TYPE.SUCCESS,
     },
     LINK_COPY_FAILED: {
         message: messages.LINK_COPY_FAILED,
         iconName: 'link-variant',
-        canUndo: false,
+        hasAction: false,
         type: MESSAGE_TYPE.ERROR,
     },
     MESSAGE_COPIED: {
         message: messages.MESSAGE_COPIED,
         iconName: 'content-copy',
-        canUndo: false,
+        hasAction: false,
     },
     MUTE_CHANNEL: {
         message: messages.MUTE_CHANNEL,
         iconName: 'bell-off-outline',
-        canUndo: true,
+        hasAction: true,
     },
     REMOVE_CHANNEL_USER: {
         message: messages.REMOVE_CHANNEL_USER,
         iconName: 'check',
-        canUndo: true,
+        hasAction: true,
     },
     TEXT_COPIED: {
         message: messages.TEXT_COPIED,
         iconName: 'content-copy',
-        canUndo: false,
+        hasAction: false,
         type: MESSAGE_TYPE.SUCCESS,
     },
     UNFAVORITE_CHANNEL: {
         message: messages.UNFAVORITE_CHANNEL,
         iconName: 'star-outline',
-        canUndo: true,
+        hasAction: true,
     },
     UNMUTE_CHANNEL: {
         message: messages.UNMUTE_CHANNEL,
         iconName: 'bell-outline',
-        canUndo: true,
+        hasAction: true,
     },
     UNFOLLOW_THREAD: {
         message: messages.UNFOLLOW_THREAD,
         iconName: 'check',
-        canUndo: true,
+        hasAction: true,
     },
     PLUGIN_TOAST: {
         message: messages.PLUGIN_TOAST,
@@ -241,13 +246,18 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     PLAYBOOK_ERROR: {
         message: messages.PLAYBOOK_ERROR,
         iconName: 'alert-outline',
-        canUndo: false,
+        hasAction: false,
         type: MESSAGE_TYPE.ERROR,
+    },
+    ENABLE_TRANSLATION: {
+        message: messages.ENABLE_TRANSLATION,
+        iconName: 'globe',
+        hasAction: true,
     },
     BOR_POST_EXPIRED: {
         message: messages.BOR_POST_EXPIRED,
         iconName: 'alert-outline',
-        canUndo: false,
+        hasAction: false,
         type: MESSAGE_TYPE.ERROR,
     },
 };

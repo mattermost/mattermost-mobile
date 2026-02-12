@@ -46,6 +46,7 @@ describe('Header', () => {
         teammateNameDisplay: '',
         hideGuestTags: false,
         currentUser,
+        isChannelAutotranslated: false,
     };
 
     it('Should show BoR icon for own BoR post', () => {
