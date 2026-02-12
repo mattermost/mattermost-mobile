@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {type GestureResponderEvent, type StyleProp, StyleSheet, Text, type TextStyle, View} from 'react-native';
 
@@ -11,6 +11,7 @@ import {fetchUserOrGroupsByMentionsInBatch} from '@actions/remote/user';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
 import GroupModel from '@database/models/server/group';
+import useDidMount from '@hooks/did_mount';
 import {useMemoMentionedGroup, useMemoMentionedUser} from '@hooks/markdown';
 import {bottomSheet, dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -81,15 +82,12 @@ const AtMention = ({
     const group = useMemoMentionedGroup(groups, user, mentionName);
 
     // Effects
-    useEffect(() => {
+    useDidMount(() => {
         // Fetches and updates the local db store with the mention
         if (!user?.username && !group?.name) {
             fetchUserOrGroupsByMentionsInBatch(serverUrl, mentionName);
         }
-
-        // Only fetch the user or group on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     const openUserProfile = () => {
         if (!user) {

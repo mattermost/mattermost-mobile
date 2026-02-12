@@ -15,6 +15,7 @@ import ServerVersion from '@components/server_version';
 import {Events, Launch, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import SecurityManager from '@managers/security_manager';
 import {getAllServers} from '@queries/app/servers';
 import {findChannels, popToRoot} from '@screens/navigation';
@@ -134,7 +135,7 @@ export function HomeScreen(props: HomeProps) {
         }
     }, [appState]);
 
-    useEffect(() => {
+    useDidMount(() => {
         if (props.launchType === Launch.DeepLink) {
             if (props.launchError) {
                 alertInvalidDeepLink(intl);
@@ -150,10 +151,7 @@ export function HomeScreen(props: HomeProps) {
                 });
             }
         }
-
-    // only run on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.EMOJI_PICKER_SEARCH_FOCUSED, (focused: boolean) => {

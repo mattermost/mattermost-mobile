@@ -288,9 +288,6 @@ export default function PostInput({
                 }
             }, 1000);
         }
-
-        // Shared values don't need to be in dependencies - they're stable references
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         isDismissingEmojiPicker,
         focusTimeoutRef,
@@ -298,13 +295,19 @@ export default function PostInput({
         isEmojiSearchFocused,
         setIsFocused,
         setIsEmojiSearchFocused,
-        setShowInputAccessoryView,
         showInputAccessoryView,
-        lastKeyboardHeight,
+        setShowInputAccessoryView,
         updateCursorPosition,
+        value.length,
         clearCursorPositionPreservation,
-        value,
-        cursorPosition,
+        keyboardTranslateY,
+        inputAccessoryViewAnimatedHeight,
+        isInputAccessoryViewMode,
+        isTransitioningFromCustomView,
+        bottomInset,
+        scrollOffset,
+        keyboardHeight,
+        lastKeyboardHeight,
     ]);
 
     const handleAndroidKeyboardHide = useCallback(() => {

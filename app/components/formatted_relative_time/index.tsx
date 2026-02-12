@@ -37,6 +37,10 @@ const FormattedRelativeTime = ({timezone, value, updateIntervalInSeconds, ...pro
         return function cleanup() {
             return null;
         };
+
+    // We don't care about `getFormattedRelativeTime` changes as long as
+    // it is up to date when the effect runs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [updateIntervalInSeconds]);
 
     return (

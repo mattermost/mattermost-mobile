@@ -114,6 +114,10 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
         });
 
         return () => listner.remove();
+
+    // We only care about the state changes.
+    // navigation should stay stable for the lifetime of the component.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state]);
 
     const transform = useAnimatedStyle(() => {

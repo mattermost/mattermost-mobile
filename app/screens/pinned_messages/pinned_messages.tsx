@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {DeviceEventEmitter, FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -14,6 +14,7 @@ import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useDidMount from '@hooks/did_mount';
 import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
@@ -74,14 +75,11 @@ function SavedMessages({
         }
     }, [componentId]);
 
-    useEffect(() => {
+    useDidMount(() => {
         fetchPinnedPosts(serverUrl, channelId).finally(() => {
             setLoading(false);
         });
-
-        // Only fetch pinned posts on initial load
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     useAndroidHardwareBackHandler(componentId, close);
 

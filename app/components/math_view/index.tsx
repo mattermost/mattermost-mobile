@@ -17,7 +17,7 @@ type Props = {
 
 const MathView = (props: Props) => {
     const id = useId();
-    const config = useMemo(() => ({id}), []);
+    const config = useMemo(() => ({id}), [id]);
 
     return (
         <RNMathView

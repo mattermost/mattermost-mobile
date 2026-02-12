@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef} from 'react';
+import React, {useCallback, useRef} from 'react';
 import {type ListRenderItemInfo, StyleSheet} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import {useIsTablet} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 
 import Item from './item';
 
@@ -46,7 +47,7 @@ const EmojiBar = ({emojiSelected, reactionsByName, setIndex, sortedReactions}: P
     const onPress = useCallback((emoji: string) => {
         const index = sortedReactions.indexOf(emoji);
         setIndex(index);
-    }, [sortedReactions]);
+    }, [setIndex, sortedReactions]);
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
         const index = Math.min(info.highestMeasuredFrameIndex, info.index);
@@ -65,7 +66,7 @@ const EmojiBar = ({emojiSelected, reactionsByName, setIndex, sortedReactions}: P
         );
     }, [onPress, emojiSelected, reactionsByName]);
 
-    useEffect(() => {
+    useDidMount(() => {
         const t = setTimeout(() => {
             listRef.current?.scrollToItem({
                 item: emojiSelected,
@@ -75,7 +76,7 @@ const EmojiBar = ({emojiSelected, reactionsByName, setIndex, sortedReactions}: P
         }, 100);
 
         return () => clearTimeout(t);
-    }, []);
+    });
 
     return (
         <FlatList

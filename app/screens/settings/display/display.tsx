@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
 
 import SettingContainer from '@components/settings/container';
@@ -9,10 +9,10 @@ import SettingItem from '@components/settings/item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useUserTimezoneProps from '@hooks/user_timezone';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {goToScreen, popTopScreen} from '@screens/navigation';
 import {gotoSettingsScreen} from '@screens/settings/config';
-import {getUserTimezoneProps} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -62,7 +62,8 @@ type DisplayProps = {
 const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled, isCRTSwitchEnabled, isThemeSwitchingEnabled}: DisplayProps) => {
     const intl = useIntl();
     const theme = useTheme();
-    const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser?.timezone]);
+
+    const timezone = useUserTimezoneProps(currentUser);
 
     const goToThemeSettings = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.SETTINGS_DISPLAY_THEME;

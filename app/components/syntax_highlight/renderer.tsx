@@ -127,7 +127,7 @@ const CodeHighlightRenderer = ({defaultColor, digits, fontFamily, fontSize, rows
             selectable,
             digits,
         });
-    }, [defaultColor, digits, fontFamily, fontSize, stylesheet]);
+    }, [defaultColor, digits, fontFamily, fontSize, selectable, stylesheet]);
 
     return (
         <ScrollView

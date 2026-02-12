@@ -12,6 +12,7 @@ import PostList from '@components/post_list';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useAppState, useIsTablet} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import useDidUpdate from '@hooks/did_update';
 import {useDebounce} from '@hooks/utils';
 import EphemeralStore from '@store/ephemeral_store';
@@ -106,14 +107,11 @@ const ChannelPostList = ({
         }
     }, [appState === 'active']);
 
-    useEffect(() => {
+    useDidMount(() => {
         return () => {
             unsetActiveChannelOnServer(serverUrl);
         };
-
-        // We only want to run this on unmount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     const intro = (<Intro channelId={channelId}/>);
 
