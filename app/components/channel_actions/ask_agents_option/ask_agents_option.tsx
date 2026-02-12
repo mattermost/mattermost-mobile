@@ -45,7 +45,7 @@ const AskAgentsOption = ({
 
             // iOS needs more space to accommodate the inline date picker spinner
             // Android uses a modal date picker, so it needs less space
-            snapPoints: [1, Platform.select({ios: '65%', default: '50%'})!],
+            snapPoints: [1, Platform.select({ios: '60%', default: '40%'})!],
             theme,
             initialSnapIndex: 1,
         });
