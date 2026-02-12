@@ -3,7 +3,7 @@
 
 import {type Agent} from '@agents/client/rest';
 import {Image} from 'expo-image';
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -32,14 +32,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderRadius: AVATAR_SIZE / 2,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
     },
-    agentAvatarFallback: {
-        width: AVATAR_SIZE,
-        height: AVATAR_SIZE,
-        borderRadius: AVATAR_SIZE / 2,
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
     agentName: {
         color: theme.centerChannelColor,
         ...typography('Body', 200, 'Regular'),
@@ -55,7 +47,7 @@ type AgentItemProps = {
 
 const AgentItem = React.memo(({agent, profileImageUrl, currentAgentUsername, onSelect}: AgentItemProps) => {
     const theme = useTheme();
-    const styles = getStyleSheet(theme);
+    const styles = useMemo(() => getStyleSheet(theme), [theme]);
 
     const handlePress = useCallback(() => {
         onSelect(agent);
@@ -68,21 +60,11 @@ const AgentItem = React.memo(({agent, profileImageUrl, currentAgentUsername, onS
             testID={`agents.selector.agent.${agent.username}`}
         >
             <View style={styles.agentInfo}>
-                {profileImageUrl ? (
-                    <Image
-                        source={{uri: profileImageUrl}}
-                        style={styles.agentAvatar}
-                        placeholder='account-outline'
-                    />
-                ) : (
-                    <View style={styles.agentAvatarFallback}>
-                        <CompassIcon
-                            name='account-outline'
-                            size={20}
-                            color={changeOpacity(theme.centerChannelColor, 0.56)}
-                        />
-                    </View>
-                )}
+                <Image
+                    source={profileImageUrl ? {uri: profileImageUrl} : undefined}
+                    style={styles.agentAvatar}
+                    placeholder='account-outline'
+                />
                 <Text style={styles.agentName}>
                     {agent.displayName || agent.username}
                 </Text>

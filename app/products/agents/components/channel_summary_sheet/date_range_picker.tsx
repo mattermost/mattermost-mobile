@@ -3,12 +3,14 @@
 
 import DateTimePicker, {type DateTimePickerEvent} from '@react-native-community/datetimepicker';
 import React, {useCallback, useMemo, useState} from 'react';
-import {type IntlShape, useIntl} from 'react-intl';
-import {Platform, Text, TouchableOpacity, View} from 'react-native';
+import {useIntl} from 'react-intl';
+import {Platform, TouchableOpacity, View} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
+import FormattedDate, {type FormattedDateFormat} from '@components/formatted_date';
+import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -20,7 +22,7 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        paddingBottom: 24,
+        paddingBottom: 8,
     },
     header: {
         flexDirection: 'row',
@@ -68,41 +70,51 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const formatDate = (date: Date | undefined, intl: IntlShape) => {
-    if (!date) {
-        return '';
-    }
-    return date.toLocaleDateString(intl.locale, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
+const DATE_FORMAT: FormattedDateFormat = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
 };
 
 type PickerTarget = 'since' | 'until' | undefined;
 
 type DateInputFieldProps = {
-    label: string;
+    labelId: string;
+    labelDefault: string;
     date: Date | undefined;
-    placeholder: string;
+    placeholderId: string;
+    placeholderDefault: string;
     onPress: () => void;
     testID: string;
     styles: ReturnType<typeof getStyleSheet>;
-    intl: IntlShape;
     isActive: boolean;
 };
 
-const DateInputField = ({label, date, placeholder, onPress, testID, styles, intl, isActive}: DateInputFieldProps) => (
+const DateInputField = ({labelId, labelDefault, date, placeholderId, placeholderDefault, onPress, testID, styles, isActive}: DateInputFieldProps) => (
     <>
-        <Text style={styles.label}>{label}</Text>
+        <FormattedText
+            id={labelId}
+            defaultMessage={labelDefault}
+            style={styles.label}
+        />
         <TouchableOpacity
             onPress={onPress}
             style={[styles.dateBox, isActive && styles.dateBoxActive]}
             testID={testID}
         >
-            <Text style={date ? styles.dateText : styles.datePlaceholder}>
-                {date ? formatDate(date, intl) : placeholder}
-            </Text>
+            {date ? (
+                <FormattedDate
+                    value={date}
+                    format={DATE_FORMAT}
+                    style={styles.dateText}
+                />
+            ) : (
+                <FormattedText
+                    id={placeholderId}
+                    defaultMessage={placeholderDefault}
+                    style={styles.datePlaceholder}
+                />
+            )}
         </TouchableOpacity>
     </>
 );
@@ -119,7 +131,7 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
     });
     const [until, setUntil] = useState<Date | undefined>(() => new Date());
     const [pickerTarget, setPickerTarget] = useState<PickerTarget>();
-    const [errorText, setErrorText] = useState<string | undefined>();
+    const [showError, setShowError] = useState(false);
 
     const dateIsValid = useMemo(() => {
         if (!since || !until) {
@@ -178,13 +190,9 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
     }, [pickerTarget]);
 
     const handleSubmit = () => {
-        setErrorText(undefined);
-        if (!since || !until) {
-            setErrorText(intl.formatMessage({id: 'agents.channel_summary.range_error', defaultMessage: 'Select a valid date range'}));
-            return;
-        }
-        if (!dateIsValid) {
-            setErrorText(intl.formatMessage({id: 'agents.channel_summary.range_error', defaultMessage: 'Select a valid date range'}));
+        setShowError(false);
+        if (!since || !until || !dateIsValid) {
+            setShowError(true);
             return;
         }
         onSubmit(since, until);
@@ -206,36 +214,46 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
                         color={theme.centerChannelColor}
                     />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>
-                    {intl.formatMessage({id: 'agents.channel_summary.date_picker.title', defaultMessage: 'Select date range'})}
-                </Text>
+                <FormattedText
+                    id='agents.channel_summary.date_picker.title'
+                    defaultMessage='Select date range'
+                    style={styles.headerTitle}
+                />
             </View>
 
             {/* Start Date */}
             <DateInputField
-                label={intl.formatMessage({id: 'agents.channel_summary.since', defaultMessage: 'Start'})}
+                labelId='agents.channel_summary.since'
+                labelDefault='Start'
                 date={since}
-                placeholder={intl.formatMessage({id: 'agents.channel_summary.since_placeholder', defaultMessage: 'Select date'})}
+                placeholderId='agents.channel_summary.since_placeholder'
+                placeholderDefault='Select date'
                 onPress={openSincePicker}
                 testID='agents.channel_summary.date_from'
                 styles={styles}
-                intl={intl}
                 isActive={pickerTarget === 'since'}
             />
 
             {/* End Date */}
             <DateInputField
-                label={intl.formatMessage({id: 'agents.channel_summary.until', defaultMessage: 'End'})}
+                labelId='agents.channel_summary.until'
+                labelDefault='End'
                 date={until}
-                placeholder={intl.formatMessage({id: 'agents.channel_summary.until_placeholder', defaultMessage: 'Select date'})}
+                placeholderId='agents.channel_summary.until_placeholder'
+                placeholderDefault='Select date'
                 onPress={openUntilPicker}
                 testID='agents.channel_summary.date_to'
                 styles={styles}
-                intl={intl}
                 isActive={pickerTarget === 'until'}
             />
 
-            {errorText && <Text style={styles.error}>{errorText}</Text>}
+            {showError && (
+                <FormattedText
+                    id='agents.channel_summary.range_error'
+                    defaultMessage='Select a valid date range'
+                    style={styles.error}
+                />
+            )}
 
             {/* Submit Button */}
             <View style={styles.footer}>
@@ -266,4 +284,3 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
 };
 
 export default DateRangePicker;
-

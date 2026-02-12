@@ -295,6 +295,9 @@ const Markdown = ({
     }, [theme.centerChannelColor]);
 
     const renderInlineEntityLink = useCallback(({entityType, entityId, linkUrl}: {entityType: InlineEntityType; entityId: string; linkUrl?: string}) => {
+        if (!entityType || !entityId) {
+            return null;
+        }
         return (
             <InlineEntityLink
                 entityType={entityType}

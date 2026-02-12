@@ -39,14 +39,14 @@ describe('checkIsAgentsPluginEnabled', () => {
         expect(result).toEqual({data: false});
     });
 
-    it('should set pluginEnabled to false and return error when API call fails', async () => {
+    it('should not update config and return error when API call fails', async () => {
         const error = new Error('network error');
         const getAgentsStatus = jest.fn().mockRejectedValue(error);
         jest.mocked(NetworkManager.getClient).mockReturnValue({getAgentsStatus} as any);
 
         const result = await checkIsAgentsPluginEnabled(serverUrl);
 
-        expect(setAgentsConfig).toHaveBeenCalledWith(serverUrl, {pluginEnabled: false});
+        expect(setAgentsConfig).not.toHaveBeenCalled();
         expect(result).toEqual({error});
     });
 });

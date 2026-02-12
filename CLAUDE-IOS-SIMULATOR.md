@@ -83,7 +83,7 @@ git config --global --unset url.https://github.com/.insteadof
 
 **Warning:** Never leave git URL rewrites in place without informing the user!
 
-## Step 3: Start Metro Bundler
+## Step 3: Start Metro Bundler (if not already running)
 
 ```bash
 npm start
@@ -91,7 +91,7 @@ npm start
 
 Wait for "Dev server ready" message before proceeding.
 
-## Step 4: Run iOS App
+## Step 4: Run iOS App (if not already built)
 
 ### Using npm script
 ```bash
@@ -139,7 +139,7 @@ rm -rf ~/Library/Developer/Xcode/DerivedData/Mattermost-*
 
 # Clean and reinstall pods
 cd ios
-rm -rf Pods Podfile.lock build
+rm -rf Pods build
 export LANG=en_US.UTF-8 && export LC_ALL=en_US.UTF-8
 RCT_NEW_ARCH_ENABLED=0 arch -x86_64 pod install
 ```
@@ -153,21 +153,6 @@ open ios/Mattermost.xcworkspace
 ```
 
 Then select your simulator target and press Cmd+B to build.
-
-## Known Issues
-
-### Header Linking Issues (Xcode 26+)
-
-There may be compatibility issues between `react-native-navigation` and `react-native-safe-area-context` with newer Xcode versions. If you see errors like:
-
-```
-'react-native-safe-area-context/RNCSafeAreaView.h' file not found
-```
-
-This is a known modular headers issue. Potential solutions:
-1. Check if there's a newer version of the dependencies
-2. Try an older Xcode version if iOS 26 support isn't complete
-3. Consult with the team about known workarounds
 
 ## Quick Reference
 

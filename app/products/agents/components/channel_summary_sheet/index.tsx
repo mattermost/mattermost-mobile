@@ -5,17 +5,20 @@ import {fetchAgents} from '@agents/actions/remote/agents';
 import {requestChannelSummary} from '@agents/actions/remote/channel_summary';
 import {type Agent} from '@agents/client/rest';
 import {AGENT_ANALYSIS_SUMMARY} from '@agents/constants';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
-import {Alert, Platform, ScrollView, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Alert, ScrollView, Text, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
+import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {dismissBottomSheet} from '@screens/navigation';
+import {getErrorMessage} from '@utils/errors';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -75,25 +78,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     promptWrapper: {
         paddingTop: 4,
     },
-    promptContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-        borderRadius: 4,
-        padding: 12,
-        gap: 8,
-    },
-    promptContainerFocused: {
-        borderWidth: 2,
-        borderColor: theme.buttonBg,
-    },
-    promptInput: {
-        flex: 1,
-        color: theme.centerChannelColor,
-        padding: 0,
-        ...typography('Body', 200, 'Regular'),
-    },
     sendButton: {
         width: 44,
         height: 32,
@@ -109,19 +93,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingVertical: 8,
     },
     loadingOverlay: {
-        ...Platform.select({
-            ios: {
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: changeOpacity(theme.centerChannelBg, 0.7),
-                justifyContent: 'center',
-                alignItems: 'center',
-            },
-            default: {},
-        }),
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: changeOpacity(theme.centerChannelBg, 0.7),
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 }));
 
@@ -138,7 +117,6 @@ const ChannelSummarySheet = ({channelId}: Props) => {
     const [agents, setAgents] = useState<Agent[]>([]);
     const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
     const [loadingAgents, setLoadingAgents] = useState(true);
-    const [promptFocused, setPromptFocused] = useState(false);
 
     // Fetch agents on mount and set default to first agent
     useEffect(() => {
@@ -153,14 +131,6 @@ const ChannelSummarySheet = ({channelId}: Props) => {
         };
         loadAgents();
     }, [serverUrl]);
-
-    const handlePromptFocus = useCallback(() => setPromptFocused(true), []);
-    const handlePromptBlur = useCallback(() => setPromptFocused(false), []);
-
-    const promptContainerStyle = useMemo(() => [
-        styles.promptContainer,
-        promptFocused && styles.promptContainerFocused,
-    ], [styles, promptFocused]);
 
     const handleOptionPress = useCallback(async (optionId: string | boolean) => {
         if (submitting) {
@@ -209,7 +179,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
             setSubmitting(false);
             Alert.alert(
                 intl.formatMessage({id: 'agents.channel_summary.error_title', defaultMessage: 'Unable to start summary'}),
-                String(error),
+                getErrorMessage(error, intl),
             );
             return;
         }
@@ -252,7 +222,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
             setSubmitting(false);
             Alert.alert(
                 intl.formatMessage({id: 'agents.channel_summary.error_title', defaultMessage: 'Unable to start summary'}),
-                String(error),
+                getErrorMessage(error, intl),
             );
             return;
         }
@@ -289,7 +259,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
             setSubmitting(false);
             Alert.alert(
                 intl.formatMessage({id: 'agents.channel_summary.error_title', defaultMessage: 'Unable to start summary'}),
-                String(error),
+                getErrorMessage(error, intl),
             );
             return;
         }
@@ -332,9 +302,11 @@ const ChannelSummarySheet = ({channelId}: Props) => {
                     testID='agents.channel_summary.agent_selector'
                     disabled={submitting || loadingAgents}
                 >
-                    <Text style={styles.agentLabel}>
-                        {intl.formatMessage({id: 'agents.channel_summary.selected_agent', defaultMessage: 'Selected Agent'})}
-                    </Text>
+                    <FormattedText
+                        id='agents.channel_summary.selected_agent'
+                        defaultMessage='Selected Agent'
+                        style={styles.agentLabel}
+                    />
                     <View style={styles.agentSelector}>
                         {loadingAgents ? (
                             <Loading size='small'/>
@@ -352,41 +324,33 @@ const ChannelSummarySheet = ({channelId}: Props) => {
                 </TouchableOpacity>
 
                 <View style={styles.promptWrapper}>
-                    <View style={promptContainerStyle}>
-                        <CompassIcon
-                            name='creation-outline'
-                            size={20}
-                            color={changeOpacity(theme.centerChannelColor, 0.64)}
-                        />
-                        <TextInput
-                            value={customPrompt}
-                            onChangeText={setCustomPrompt}
-                            style={styles.promptInput}
-                            placeholder={intl.formatMessage({id: 'agents.channel_summary.ai_prompt_placeholder', defaultMessage: 'Ask AI about this channel'})}
-                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.48)}
-                            testID='agents.channel_summary.prompt_input'
-                            editable={!submitting}
-                            onSubmitEditing={handleCustomPromptSubmitDebounced}
-                            returnKeyType='send'
-                            onFocus={handlePromptFocus}
-                            onBlur={handlePromptBlur}
-                        />
-                        <TouchableOpacity
-                            onPress={handleCustomPromptSubmitDebounced}
-                            style={[
-                                styles.sendButton,
-                                (!customPrompt.trim() || submitting) && styles.sendButtonDisabled,
-                            ]}
-                            disabled={!customPrompt.trim() || submitting}
-                            testID='agents.channel_summary.prompt_submit'
-                        >
-                            <CompassIcon
-                                name='send'
-                                size={20}
-                                color='#FFFFFF'
-                            />
-                        </TouchableOpacity>
-                    </View>
+                    <FloatingTextInput
+                        label={intl.formatMessage({id: 'agents.channel_summary.ai_prompt_placeholder', defaultMessage: 'Ask AI about this channel'})}
+                        theme={theme}
+                        value={customPrompt}
+                        onChangeText={setCustomPrompt}
+                        testID='agents.channel_summary.prompt_input'
+                        editable={!submitting}
+                        onSubmitEditing={handleCustomPromptSubmitDebounced}
+                        returnKeyType='send'
+                        endAdornment={
+                            <TouchableOpacity
+                                onPress={handleCustomPromptSubmitDebounced}
+                                style={[
+                                    styles.sendButton,
+                                    (!customPrompt.trim() || submitting) && styles.sendButtonDisabled,
+                                ]}
+                                disabled={!customPrompt.trim() || submitting}
+                                testID='agents.channel_summary.prompt_submit'
+                            >
+                                <CompassIcon
+                                    name='send'
+                                    size={20}
+                                    color='#FFFFFF'
+                                />
+                            </TouchableOpacity>
+                        }
+                    />
                 </View>
             </View>
 

@@ -3,11 +3,11 @@
 
 import {type Agent} from '@agents/client/rest';
 import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
-import {FlatList, type ListRenderItemInfo, Text, TouchableOpacity, View} from 'react-native';
+import {FlatList, type ListRenderItemInfo, TouchableOpacity, View} from 'react-native';
 
 import {buildProfileImageUrl} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -59,7 +59,6 @@ const AgentSelectorPanel = ({
     onSelectAgent,
     onBack,
 }: Props) => {
-    const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
@@ -95,11 +94,13 @@ const AgentSelectorPanel = ({
 
     const renderEmpty = useCallback(() => (
         <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-                {intl.formatMessage({id: 'agents.selector.no_agents', defaultMessage: 'No agents available'})}
-            </Text>
+            <FormattedText
+                id='agents.selector.no_agents'
+                defaultMessage='No agents available'
+                style={styles.emptyText}
+            />
         </View>
-    ), [intl, styles.emptyContainer, styles.emptyText]);
+    ), [styles.emptyContainer, styles.emptyText]);
 
     const renderHeader = useCallback(() => (
         <View style={styles.headerRow}>
@@ -114,11 +115,13 @@ const AgentSelectorPanel = ({
                     color={theme.centerChannelColor}
                 />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>
-                {intl.formatMessage({id: 'agents.selector.title', defaultMessage: 'Select Agent'})}
-            </Text>
+            <FormattedText
+                id='agents.selector.title'
+                defaultMessage='Select Agent'
+                style={styles.headerTitle}
+            />
         </View>
-    ), [intl, onBack, styles.backButton, styles.headerRow, styles.headerTitle, theme.centerChannelColor]);
+    ), [onBack, styles.backButton, styles.headerRow, styles.headerTitle, theme.centerChannelColor]);
 
     return (
         <View style={styles.container}>

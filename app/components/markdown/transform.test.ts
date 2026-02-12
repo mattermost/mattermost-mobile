@@ -3311,13 +3311,9 @@ describe('Components.Markdown.transform', () => {
             });
         });
 
-        it('should parse team citation URLs', () => {
+        it('should return null for team-only URLs (not a supported citation entity)', () => {
             const result = parseCitationUrl('http://localhost:8066/missionops?view=citation');
-            expect(result).toEqual({
-                entityType: 'TEAM',
-                entityId: 'missionops',
-                linkUrl: 'http://localhost:8066/missionops?view=citation',
-            });
+            expect(result).toBeNull();
         });
 
         it('should handle view=citation with additional query params', () => {
@@ -3388,16 +3384,12 @@ describe('Components.Markdown.transform', () => {
                 });
             });
 
-            it('should handle team URLs with subpaths', () => {
+            it('should return null for team-only URLs with subpaths (not a supported citation entity)', () => {
                 const result = parseCitationUrl(
                     'http://localhost:8066/mattermost/myteam?view=citation',
                     serverUrlWithSubpath,
                 );
-                expect(result).toEqual({
-                    entityType: 'TEAM',
-                    entityId: 'myteam',
-                    linkUrl: 'http://localhost:8066/mattermost/myteam?view=citation',
-                });
+                expect(result).toBeNull();
             });
         });
 

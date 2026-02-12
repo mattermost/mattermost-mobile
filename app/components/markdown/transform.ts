@@ -4,10 +4,13 @@
 import {Node, type NodeType} from 'commonmark';
 import urlParse from 'url-parse';
 
+import {DeepLink} from '@constants';
+import {parseDeepLink} from '@utils/deep_link';
 import {escapeRegex} from '@utils/markdown';
 import {safeDecodeURIComponent} from '@utils/url';
 
 import type {HighlightWithoutNotificationKey, SearchPattern, UserMentionKey} from '@typings/global/markdown';
+import type {DeepLinkChannel, DeepLinkPermalink} from '@typings/launch';
 
 /* eslint-disable no-underscore-dangle */
 
@@ -387,18 +390,17 @@ export function parseTaskLists(ast: Node) {
 /**
  * Parse a citation URL to extract entity type and identifier.
  * Citation URLs must have view=citation as a query parameter.
+ * Uses parseDeepLink for URL structural parsing.
  *
  * URL patterns:
  * - Post: /team/pl/postId?view=citation
  * - Channel: /team/channels/channelName?view=citation
- * - Team: /team?view=citation (just the team slug)
  *
  * @param url - The URL to parse
  * @param serverUrl - Optional server URL to validate this is an internal link
  * @returns Parsed citation info or null if not a valid citation URL
  */
 export function parseCitationUrl(url: string, serverUrl?: string): {entityType: string; entityId: string; linkUrl: string} | null {
-    // Use urlParse for proper URL parsing
     const decodedUrl = safeDecodeURIComponent(url);
     const parsedUrl = urlParse(decodedUrl, true);
 
@@ -413,73 +415,38 @@ export function parseCitationUrl(url: string, serverUrl?: string): {entityType: 
         const normalizedServerHost = parsedServerUrl.hostname.toLowerCase();
         const normalizedUrlHost = parsedUrl.hostname.toLowerCase();
 
-        // Verify the URL's host matches the server's host
         if (normalizedUrlHost !== normalizedServerHost) {
             return null;
         }
 
-        // Verify the URL's port matches (if specified)
         if (parsedServerUrl.port && parsedUrl.port !== parsedServerUrl.port) {
             return null;
         }
     }
 
-    // Get the pathname, stripping any server subpath if serverUrl is provided
-    let pathname = parsedUrl.pathname;
-    if (serverUrl) {
-        const parsedServerUrl = urlParse(serverUrl);
+    // Use parseDeepLink to determine the entity type from the URL structure
+    const deepLink = parseDeepLink(decodedUrl);
 
-        // Get server's pathname without trailing slashes but keep the leading slash
-        const serverPath = parsedServerUrl.pathname.replace(/\/+$/, '');
-        if (serverPath && serverPath !== '/' && pathname.startsWith(serverPath)) {
-            pathname = pathname.substring(serverPath.length) || '/';
-        }
-    }
-
-    // Parse the path to determine entity type
-    // Post permalink: /team/pl/postId (postId is exactly 26 chars)
-    const postMatch = /\/pl\/([a-z0-9]{26})$/i.exec(pathname);
-    if (postMatch) {
-        return {
-            entityType: 'POST',
-            entityId: postMatch[1],
-            linkUrl: url,
-        };
-    }
-
-    // Channel permalink: /team/channels/channelName
-    // Channel names can contain: lowercase letters, numbers, hyphens, underscores, periods, and colons
-    // Note: entityId here is the channel NAME (from URL path), not the channel UUID.
-    // The InlineEntityLink component handles looking up the actual channel ID.
-    const channelMatch = /\/channels\/([@a-zA-Z\-_0-9][@a-zA-Z\-_0-9.:]*)$/.exec(pathname);
-    if (channelMatch) {
-        return {
-            entityType: 'CHANNEL',
-            entityId: channelMatch[1],
-            linkUrl: url,
-        };
-    }
-
-    // Team permalink: just /teamSlug (no /pl/ or /channels/)
-    // Extract the team slug from the path - it's the last segment
-    const pathSegments = pathname.split('/').filter(Boolean);
-
-    // For team URLs, we expect just the team slug in the path (after any subpath)
-    // URL format: http://host/[subpath/]teamSlug?view=citation
-    if (pathSegments.length === 1) {
-        const teamSlug = pathSegments[0];
-
-        // Team names follow a similar pattern but are more restrictive
-        if (/^[a-z0-9][a-z0-9\-_]*$/.test(teamSlug)) {
+    switch (deepLink.type) {
+        case DeepLink.Permalink: {
+            const data = deepLink.data as DeepLinkPermalink;
             return {
-                entityType: 'TEAM',
-                entityId: teamSlug,
+                entityType: 'POST',
+                entityId: data.postId,
                 linkUrl: url,
             };
         }
+        case DeepLink.Channel: {
+            const data = deepLink.data as DeepLinkChannel;
+            return {
+                entityType: 'CHANNEL',
+                entityId: data.channelName,
+                linkUrl: url,
+            };
+        }
+        default:
+            return null;
     }
-
-    return null;
 }
 
 /**

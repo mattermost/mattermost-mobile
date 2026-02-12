@@ -14,7 +14,6 @@ export async function checkIsAgentsPluginEnabled(serverUrl: string): Promise<{da
         return {data: response.available};
     } catch (error) {
         logDebug('checkIsAgentsPluginEnabled', 'Failed to check agents status', error);
-        setAgentsConfig(serverUrl, {pluginEnabled: false});
         return {error};
     }
 }

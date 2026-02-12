@@ -859,6 +859,7 @@ export async function dismissAllOverlays() {
 
 type BottomSheetArgs = {
     closeButtonId: string;
+    enableDynamicSizing?: boolean;
     initialSnapIndex?: number;
     footerComponent?: React.FC<BottomSheetFooterProps>;
     renderContent: () => React.ReactNode;
@@ -868,10 +869,11 @@ type BottomSheetArgs = {
     scrollable?: boolean;
 }
 
-export function bottomSheet({title, renderContent, footerComponent, snapPoints, initialSnapIndex = 1, theme, closeButtonId, scrollable = false}: BottomSheetArgs) {
+export function bottomSheet({title, renderContent, footerComponent, snapPoints, initialSnapIndex = 1, theme, closeButtonId, scrollable = false, enableDynamicSizing}: BottomSheetArgs) {
     if (isTablet()) {
         showModal(Screens.BOTTOM_SHEET, title, {
             closeButtonId,
+            enableDynamicSizing,
             initialSnapIndex,
             renderContent,
             footerComponent,
@@ -880,6 +882,7 @@ export function bottomSheet({title, renderContent, footerComponent, snapPoints, 
         }, bottomSheetModalOptions(theme, closeButtonId));
     } else {
         showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
+            enableDynamicSizing,
             initialSnapIndex,
             renderContent,
             footerComponent,

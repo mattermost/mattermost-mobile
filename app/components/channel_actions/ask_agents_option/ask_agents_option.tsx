@@ -4,13 +4,11 @@
 import ChannelSummarySheet from '@agents/components/channel_summary_sheet';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform} from 'react-native';
 
 import OptionItem from '@components/option_item';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
-import {bottomSheetSnapPoint} from '@utils/helpers';
 
 type Props = {
     channelId: string;
@@ -38,16 +36,12 @@ const AskAgentsOption = ({
             />
         );
 
-        // Use larger snap points on iOS to accommodate the inline date picker spinner
-        // iOS needs ~11 items worth of space (header + date fields + submit button + spinner picker)
-        // Android uses a modal date picker, so it needs less space
-        const itemCount = Platform.select({ios: 11, default: 7});
-
         bottomSheet({
             title: label,
             renderContent,
             closeButtonId: 'close-channel-summary',
-            snapPoints: [1, bottomSheetSnapPoint(itemCount, 48)],
+            enableDynamicSizing: true,
+            snapPoints: [1, '80%'],
             theme,
             initialSnapIndex: 1,
         });
