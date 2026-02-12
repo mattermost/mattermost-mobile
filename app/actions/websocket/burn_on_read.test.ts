@@ -3,16 +3,21 @@
 
 import {removePost} from '@actions/local/post';
 import {handleNewPostEvent, handlePostEdited} from '@actions/websocket/posts';
+import {ActionType} from '@constants';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
+import {getCurrentUser} from '@queries/servers/user';
 import TestHelper from '@test/test_helper';
 
-import {handleBoRPostRevealedEvent, handleBoRPostBurnedEvent} from './burn_on_read';
+import {handleBoRPostRevealedEvent, handleBoRPostBurnedEvent, handleBoRPostAllRevealed} from './burn_on_read';
+
+import type {ServerDatabase} from '@typings/database/database';
 
 jest.mock('@actions/websocket/posts');
 jest.mock('@queries/servers/post');
 jest.mock('@actions/local/post');
+jest.mock('@queries/servers/user');
 
 const serverUrl = 'burnOnRead.test.com';
 
@@ -23,6 +28,7 @@ describe('WebSocket Burn on Read Actions', () => {
     const mockedHandleNewPostEvent = jest.mocked(handleNewPostEvent);
     const mockedHandlePostEdited = jest.mocked(handlePostEdited);
     const mockedRemovePost = jest.mocked(removePost);
+    const mockedGetCurrentUser = jest.mocked(getCurrentUser);
 
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
@@ -57,8 +63,147 @@ describe('WebSocket Burn on Read Actions', () => {
             await handleBoRPostRevealedEvent(serverUrl, msg);
 
             expect(mockedGetPostById).toHaveBeenCalledWith(expect.any(Object), 'post1');
-            expect(mockedHandlePostEdited).toHaveBeenCalledWith(serverUrl, msg);
             expect(mockedHandleNewPostEvent).not.toHaveBeenCalled();
+        });
+
+        it('should merge recipients from message with existing post recipients', async () => {
+            const existingPost = TestHelper.fakePostModel({
+                id: 'post1',
+                metadata: {recipients: ['user1', 'user2']},
+            });
+            mockedGetPostById.mockResolvedValue(existingPost);
+
+            const msgWithRecipients = {
+                data: {
+                    post: JSON.stringify(post),
+                    recipients: ['user3', 'user4'],
+                },
+            } as WebSocketMessage;
+
+            await handleBoRPostRevealedEvent(serverUrl, msgWithRecipients);
+
+            expect(mockedHandlePostEdited).toHaveBeenCalled();
+            const calledMsg = mockedHandlePostEdited.mock.calls[0][1];
+            const updatedPost = JSON.parse(calledMsg.data.post);
+            expect(updatedPost.metadata.recipients).toEqual(['user1', 'user2', 'user3', 'user4']);
+        });
+
+        it('should deduplicate recipients when merging', async () => {
+            const existingPost = TestHelper.fakePostModel({
+                id: 'post1',
+                metadata: {recipients: ['user1', 'user2']},
+            });
+            mockedGetPostById.mockResolvedValue(existingPost);
+
+            const msgWithDuplicates = {
+                data: {
+                    post: JSON.stringify(post),
+                    recipients: ['user2', 'user3'],
+                },
+            } as WebSocketMessage;
+
+            await handleBoRPostRevealedEvent(serverUrl, msgWithDuplicates);
+
+            expect(mockedHandlePostEdited).toHaveBeenCalled();
+            const calledMsg = mockedHandlePostEdited.mock.calls[0][1];
+            const updatedPost = JSON.parse(calledMsg.data.post);
+            expect(updatedPost.metadata.recipients).toEqual(['user1', 'user2', 'user3']);
+        });
+
+        it('should handle existing post without recipients metadata', async () => {
+            const existingPost = TestHelper.fakePostModel({
+                id: 'post1',
+                metadata: {},
+            });
+            mockedGetPostById.mockResolvedValue(existingPost);
+
+            const msgWithRecipients = {
+                data: {
+                    post: JSON.stringify(post),
+                    recipients: ['user1', 'user2'],
+                },
+            } as WebSocketMessage;
+
+            await handleBoRPostRevealedEvent(serverUrl, msgWithRecipients);
+
+            expect(mockedHandlePostEdited).toHaveBeenCalled();
+            const calledMsg = mockedHandlePostEdited.mock.calls[0][1];
+            const updatedPost = JSON.parse(calledMsg.data.post);
+            expect(updatedPost.metadata.recipients).toEqual(['user1', 'user2']);
+        });
+
+        it('should preserve existing post metadata when adding recipients', async () => {
+            const postWithMetadata = TestHelper.fakePost({
+                id: 'post1',
+                channel_id: 'channel1',
+                user_id: 'user1',
+                create_at: 12345,
+                message: 'hello',
+                metadata: {embeds: [{type: 'permalink'} as PostEmbed]},
+            });
+            const existingPost = TestHelper.fakePostModel({
+                id: 'post1',
+                metadata: {recipients: ['user1']},
+            });
+            mockedGetPostById.mockResolvedValue(existingPost);
+
+            const msgWithMetadata = {
+                data: {
+                    post: JSON.stringify(postWithMetadata),
+                    recipients: ['user2'],
+                },
+            } as WebSocketMessage;
+
+            await handleBoRPostRevealedEvent(serverUrl, msgWithMetadata);
+
+            expect(mockedHandlePostEdited).toHaveBeenCalled();
+            const calledMsg = mockedHandlePostEdited.mock.calls[0][1];
+            const updatedPost = JSON.parse(calledMsg.data.post);
+            expect(updatedPost.metadata.embeds).toEqual([{type: 'permalink'}]);
+            expect(updatedPost.metadata.recipients).toEqual(['user1', 'user2']);
+        });
+
+        it('should handle empty recipients array in websocket message', async () => {
+            const existingPost = TestHelper.fakePostModel({
+                id: 'post1',
+                metadata: {recipients: ['user1', 'user2']},
+            });
+            mockedGetPostById.mockResolvedValue(existingPost);
+
+            const msgWithEmptyRecipients = {
+                data: {
+                    post: JSON.stringify(post),
+                    recipients: [],
+                },
+            } as WebSocketMessage;
+
+            await handleBoRPostRevealedEvent(serverUrl, msgWithEmptyRecipients);
+
+            expect(mockedHandlePostEdited).toHaveBeenCalled();
+            const calledMsg = mockedHandlePostEdited.mock.calls[0][1];
+            const updatedPost = JSON.parse(calledMsg.data.post);
+            expect(updatedPost.metadata.recipients).toEqual(['user1', 'user2']);
+        });
+
+        it('should handle undefined recipients in websocket message', async () => {
+            const existingPost = TestHelper.fakePostModel({
+                id: 'post1',
+                metadata: {recipients: ['user1', 'user2']},
+            });
+            mockedGetPostById.mockResolvedValue(existingPost);
+
+            const msgWithoutRecipients = {
+                data: {
+                    post: JSON.stringify(post),
+                },
+            } as WebSocketMessage;
+
+            await handleBoRPostRevealedEvent(serverUrl, msgWithoutRecipients);
+
+            expect(mockedHandlePostEdited).toHaveBeenCalled();
+            const calledMsg = mockedHandlePostEdited.mock.calls[0][1];
+            const updatedPost = JSON.parse(calledMsg.data.post);
+            expect(updatedPost.metadata.recipients).toEqual(['user1', 'user2']);
         });
 
         it('should handle malformed post data gracefully', async () => {
@@ -184,6 +329,117 @@ describe('WebSocket Burn on Read Actions', () => {
             expect(result).toHaveProperty('error');
             expect(result!.error).toBeInstanceOf(Error);
             expect(mockedRemovePost).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('handleBoRPostAllRevealed', () => {
+        const currentUser = TestHelper.fakeUserModel({id: 'user1'});
+        const burnOnReadPost = TestHelper.fakePostModel({
+            id: 'post1',
+            type: PostTypes.BURN_ON_READ,
+            userId: 'user1',
+        });
+
+        const msg = {
+            data: {
+                post_id: 'post1',
+                sender_expire_at: 67890,
+            },
+        } as WebSocketMessage;
+
+        beforeEach(() => {
+            const mockOperator = {
+                database: {},
+                handlePosts: jest.fn().mockResolvedValue({}),
+            };
+            DatabaseManager.serverDatabases[serverUrl] = {operator: mockOperator} as unknown as ServerDatabase;
+        });
+
+        it('should update post with expire_at when user owns the burn-on-read post', async () => {
+            const mockToApi = jest.fn().mockResolvedValue({
+                id: 'post1',
+                type: PostTypes.BURN_ON_READ,
+                user_id: 'user1',
+                metadata: {},
+            });
+            burnOnReadPost.toApi = mockToApi;
+
+            mockedGetPostById.mockResolvedValue(burnOnReadPost);
+            mockedGetCurrentUser.mockResolvedValue(currentUser);
+
+            const result = await handleBoRPostAllRevealed(serverUrl, msg);
+
+            expect(mockedGetPostById).toHaveBeenCalledWith(expect.any(Object), 'post1');
+            expect(mockedGetCurrentUser).toHaveBeenCalledWith(expect.any(Object));
+            expect(mockToApi).toHaveBeenCalled();
+            expect(DatabaseManager.serverDatabases[serverUrl]?.operator?.handlePosts).toHaveBeenCalledWith({
+                actionType: ActionType.POSTS.RECEIVED_NEW,
+                order: ['post1'],
+                posts: [{
+                    id: 'post1',
+                    type: PostTypes.BURN_ON_READ,
+                    user_id: 'user1',
+                    metadata: {expire_at: 67890},
+                }],
+                prepareRecordsOnly: false,
+            });
+            expect(result).toHaveProperty('post');
+            expect(result!.post!.metadata.expire_at).toBe(67890);
+        });
+
+        it('should return null when post does not exist locally', async () => {
+            mockedGetPostById.mockResolvedValue(undefined);
+
+            const result = await handleBoRPostAllRevealed(serverUrl, msg);
+
+            expect(mockedGetPostById).toHaveBeenCalledWith(expect.any(Object), 'post1');
+            expect(mockedGetCurrentUser).not.toHaveBeenCalled();
+            expect(result).toBeNull();
+        });
+
+        it('should return null when user does not own the post', async () => {
+            const otherUsersBoRPost = TestHelper.fakePostModel({
+                id: 'post1',
+                type: PostTypes.BURN_ON_READ,
+                userId: 'otheruser1',
+            });
+            mockedGetPostById.mockResolvedValue(otherUsersBoRPost);
+            mockedGetCurrentUser.mockResolvedValue(currentUser);
+
+            const result = await handleBoRPostAllRevealed(serverUrl, msg);
+
+            expect(mockedGetPostById).toHaveBeenCalledWith(expect.any(Object), 'post1');
+            expect(mockedGetCurrentUser).toHaveBeenCalledWith(expect.any(Object));
+            expect(DatabaseManager.serverDatabases[serverUrl]?.operator?.handlePosts).not.toHaveBeenCalled();
+            expect(result).toBeNull();
+        });
+
+        it('should handle missing server database gracefully', async () => {
+            const result = await handleBoRPostAllRevealed('invalid-server-url', msg);
+
+            expect(mockedGetPostById).not.toHaveBeenCalled();
+            expect(mockedGetCurrentUser).not.toHaveBeenCalled();
+            expect(result).toBeNull();
+        });
+
+        it('should handle missing operator gracefully', async () => {
+            DatabaseManager.serverDatabases[serverUrl] = {} as any;
+
+            const result = await handleBoRPostAllRevealed(serverUrl, msg);
+
+            expect(mockedGetPostById).not.toHaveBeenCalled();
+            expect(mockedGetCurrentUser).not.toHaveBeenCalled();
+            expect(result).toBeNull();
+        });
+
+        it('should handle errors gracefully and return error object', async () => {
+            mockedGetPostById.mockRejectedValue(new Error('Database error'));
+
+            const result = await handleBoRPostAllRevealed(serverUrl, msg);
+
+            expect(result).toHaveProperty('error');
+            expect(result!.error).toBeInstanceOf(Error);
+            expect(mockedGetCurrentUser).not.toHaveBeenCalled();
         });
     });
 });

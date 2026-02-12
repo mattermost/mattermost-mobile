@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 
-import {updateDraftPriority} from '@actions/local/draft';
+import {updateDraftBoRConfig, updateDraftPriority} from '@actions/local/draft';
 import SendDraft from '@components/draft_scheduled_post/draft_scheduled_post_actions/send_draft';
 import DraftInput from '@components/post_draft/draft_input/';
 import {PostPriorityType} from '@constants/post';
@@ -45,6 +45,7 @@ type Props = {
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
     postPriority: PostPriority;
+    postBoRConfig?: PostBoRConfig;
 
     draftType?: DraftType;
     postId?: string;
@@ -52,6 +53,7 @@ type Props = {
     channelDisplayName?: string;
     isFromDraftView?: boolean;
     draftReceiverUserName?: string;
+    location?: AvailableScreens;
 }
 
 export const INITIAL_PRIORITY = {
@@ -93,12 +95,18 @@ export default function SendHandler({
     isFromDraftView,
     draftType,
     postId,
+    postBoRConfig,
+    location,
 }: Props) {
     const serverUrl = useServerUrl();
 
     const handlePostPriority = useCallback((priority: PostPriority) => {
         updateDraftPriority(serverUrl, channelId, rootId, priority);
     }, [serverUrl, channelId, rootId]);
+
+    const handlePostBoRStatus = useCallback((config: PostBoRConfig) => {
+        updateDraftBoRConfig(serverUrl, channelId, rootId, config);
+    }, [channelId, rootId, serverUrl]);
 
     const {handleSendMessage, canSend} = useHandleSendMessage({
         value,
@@ -115,6 +123,7 @@ export default function SendHandler({
         channelType,
         postPriority,
         clearDraft,
+        postBoRConfig,
     });
 
     if (isFromDraftView) {
@@ -166,10 +175,13 @@ export default function SendHandler({
             maxMessageLength={maxMessageLength}
             updatePostInputTop={updatePostInputTop}
             postPriority={postPriority}
+            postBoRConfig={postBoRConfig}
             updatePostPriority={handlePostPriority}
+            updatePostBoRStatus={handlePostBoRStatus}
             persistentNotificationInterval={persistentNotificationInterval}
             persistentNotificationMaxRecipients={persistentNotificationMaxRecipients}
             setIsFocused={setIsFocused}
+            location={location}
         />
     );
 }

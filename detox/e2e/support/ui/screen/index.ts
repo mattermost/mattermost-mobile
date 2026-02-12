@@ -3,6 +3,7 @@
 
 import AboutScreen from './about';
 import AccountScreen from './account';
+import AddMembersScreen from './add_members';
 import AdvancedSettingsScreen from './advanced_settings';
 import AutoResponderNotificationSettingsScreen from './auto_responder_notification_settings';
 import BrowseChannelsScreen from './browse_channels';
@@ -10,6 +11,7 @@ import ChannelScreen from './channel';
 import ChannelDropdownMenuScreen from './channel_dropdown_menu';
 import ChannelInfoScreen from './channel_info';
 import ChannelListScreen from './channel_list';
+import ChannelSettingsScreen from './channel_settings';
 import ClockDisplaySettingsScreen from './clock_display_settings';
 import CreateDirectMessageScreen from './create_direct_message';
 import CreateOrEditChannelScreen from './create_or_edit_channel';
@@ -55,6 +57,7 @@ import UserProfileScreen from './user_profile';
 export {
     AboutScreen,
     AccountScreen,
+    AddMembersScreen,
     AdvancedSettingsScreen,
     AutoResponderNotificationSettingsScreen,
     BrowseChannelsScreen,
@@ -62,6 +65,7 @@ export {
     ChannelDropdownMenuScreen,
     ChannelInfoScreen,
     ChannelListScreen,
+    ChannelSettingsScreen,
     ClockDisplaySettingsScreen,
     CreateDirectMessageScreen,
     CreateOrEditChannelScreen,

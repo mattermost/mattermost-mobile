@@ -16,6 +16,7 @@ import {
     LoginScreen,
     ServerScreen,
     ChannelInfoScreen,
+    ChannelSettingsScreen,
 } from '@support/ui/screen';
 import {getAdminAccount, getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
@@ -42,7 +43,7 @@ describe('Channels - Convert to Private Channel', () => {
     });
 
     it('MM-T4972_1 - should be able to convert public channel to private and confirm', async () => {
-        // # Create a public channel screen, open channel info screen, and tap on convert to private channel option and confirm
+        // # Create a public channel screen, open channel info screen, go to channel settings, and tap on convert to private channel option and confirm
         const channelDisplayName = `Channel ${getRandomId()}`;
         await CreateOrEditChannelScreen.openCreateChannel();
         await CreateOrEditChannelScreen.displayNameInput.replaceText(channelDisplayName);
@@ -50,31 +51,37 @@ describe('Channels - Convert to Private Channel', () => {
         await wait(timeouts.TWO_SEC);
         await ChannelScreen.scheduledPostTooltipCloseButtonAdminAccount.tap();
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.convertToPrivateChannel(channelDisplayName, {confirm: true});
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.convertToPrivateChannel(channelDisplayName, {confirm: true});
 
-        // * Verify on channel info screen and convert to private channel option does not exist
-        await ChannelInfoScreen.toBeVisible();
-        await expect(ChannelInfoScreen.convertPrivateOption).not.toExist();
+        // * Verify on channel settings screen and convert to private channel option does not exist
+        await ChannelSettingsScreen.toBeVisible();
+        await expect(ChannelSettingsScreen.convertPrivateOption).not.toExist();
 
         // # Go back to channel list screen
+        await ChannelSettingsScreen.close();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
     });
 
     it('MM-T4972_2 - should be able to convert public channel to private and cancel', async () => {
-        // # Create a public channel screen, open channel info screen, and tap on convert to private channel option and cancel
+        // # Create a public channel screen, open channel info screen, go to channel settings, and tap on convert to private channel option and cancel
         const channelDisplayName = `Channel ${getRandomId()}`;
         await CreateOrEditChannelScreen.openCreateChannel();
         await CreateOrEditChannelScreen.displayNameInput.replaceText(channelDisplayName);
         await CreateOrEditChannelScreen.createButton.tap();
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.convertToPrivateChannel(channelDisplayName, {confirm: false});
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.convertToPrivateChannel(channelDisplayName, {confirm: false});
 
-        // * Verify on channel info screen and convert to private channel option still exists
-        await ChannelInfoScreen.toBeVisible();
-        await expect(ChannelInfoScreen.convertPrivateOption).toExist();
+        // * Verify on channel settings screen and convert to private channel option still exists
+        await ChannelSettingsScreen.toBeVisible();
+        await expect(ChannelSettingsScreen.convertPrivateOption).toExist();
 
         // # Go back to channel list screen
+        await ChannelSettingsScreen.close();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
     });

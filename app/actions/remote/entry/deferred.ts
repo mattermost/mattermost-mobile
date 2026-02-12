@@ -102,7 +102,7 @@ export async function restDeferredAppEntryActions(
                 };
 
                 /* eslint-disable-next-line no-await-in-loop */
-                await processEntryModels({operator, teamData: currentTeamData, chData: data, isCRTEnabled});
+                await processEntryModels(serverUrl, {operator, teamData: currentTeamData, chData: data, isCRTEnabled});
             }
 
             const uniqueChannelsData: MyChannelsRequest = {
