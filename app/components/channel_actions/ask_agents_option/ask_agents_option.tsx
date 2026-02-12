@@ -42,6 +42,7 @@ const AskAgentsOption = ({
             renderContent,
             closeButtonId: 'close-channel-summary',
             enableDynamicSizing: true,
+
             // iOS needs more space to accommodate the inline date picker spinner
             // Android uses a modal date picker, so it needs less space
             snapPoints: [1, Platform.select({ios: '65%', default: '50%'})!],
