@@ -3,7 +3,6 @@
 
 import {useMemo} from 'react';
 
-// See LICENSE.txt for license information.
 function useInitialValue<T>(factory: () => T) {
     // We only want the initial value, no updates.
     // eslint-disable-next-line react-hooks/exhaustive-deps
