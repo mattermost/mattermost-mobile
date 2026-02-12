@@ -10,6 +10,8 @@ import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {getDeviceToken} from '@queries/app/global';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
@@ -62,9 +64,11 @@ export const DeviceList = ({
         if (!serverUrl) {
             return;
         }
-        getDeviceToken().then((currentDeviceId) => {
-            fetchEnabledDevices(serverUrl, currentDeviceId);
-        });
+        getDeviceToken().
+            then((currentDeviceId) => fetchEnabledDevices(serverUrl, currentDeviceId)).
+            catch((error) => {
+                logError('failed to fetch e2ee enabled devices', getFullErrorMessage(error));
+            });
     }, [serverUrl]);
 
     const timezone = getUserTimezone(currentUser ?? undefined);

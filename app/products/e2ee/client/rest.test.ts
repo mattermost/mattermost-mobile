@@ -11,8 +11,8 @@ beforeEach(() => {
 });
 
 describe('fetchDevices', () => {
-    test('shoud fetch devices for current user', async () => {
-        const expectedUrl = '/plugins/e2ee/api/v1/devices';
+    test('should fetch devices for current user', async () => {
+        const expectedUrl = '/plugins/mattermost-e2ee/v1/devices';
         const expectedOptions = {method: 'get'};
         const mockResponse = {devices: [{
             device_id: 'device-1',
@@ -29,7 +29,7 @@ describe('fetchDevices', () => {
     });
 
     test('should return empty array when doFetch returns null', async () => {
-        const expectedUrl = '/plugins/e2ee/api/v1/devices';
+        const expectedUrl = '/plugins/mattermost-e2ee/v1/devices';
         const expectedOptions = {method: 'get'};
         const mockResponse = {devices: []};
 
