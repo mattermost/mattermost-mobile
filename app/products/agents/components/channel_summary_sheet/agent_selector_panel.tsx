@@ -5,6 +5,7 @@ import {type Agent} from '@agents/client/rest';
 import React, {useCallback, useMemo} from 'react';
 import {FlatList, type ListRenderItemInfo, TouchableOpacity, View} from 'react-native';
 
+import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrl} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -68,7 +69,8 @@ const AgentSelectorPanel = ({
         const urls: Record<string, string | undefined> = {};
         for (const agent of agents) {
             if (agent.id) {
-                urls[agent.id] = buildProfileImageUrl(serverUrl, agent.id);
+                const relativePath = buildProfileImageUrl(serverUrl, agent.id);
+                urls[agent.id] = relativePath ? buildAbsoluteUrl(serverUrl, relativePath) : undefined;
             }
         }
         return urls;

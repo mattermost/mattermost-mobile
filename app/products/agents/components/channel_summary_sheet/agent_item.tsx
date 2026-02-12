@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {type Agent} from '@agents/client/rest';
-import {Image} from 'expo-image';
 import React, {useCallback, useMemo} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import {ExpoImageAnimated} from '@components/expo_image';
+import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -53,6 +54,19 @@ const AgentItem = React.memo(({agent, profileImageUrl, currentAgentUsername, onS
         onSelect(agent);
     }, [onSelect, agent]);
 
+    const imageStyle = useMemo(() => ({
+        borderRadius: AVATAR_SIZE / 2,
+        backgroundColor: theme.centerChannelBg,
+        height: AVATAR_SIZE,
+        width: AVATAR_SIZE,
+    }), [theme.centerChannelBg]);
+
+    const iconStyle = useMemo(() => ({
+        color: changeOpacity(theme.centerChannelColor, 0.48),
+    }), [theme.centerChannelColor]);
+
+    const cacheId = agent.id ? `user-${agent.id}` : undefined;
+
     return (
         <TouchableOpacity
             onPress={handlePress}
@@ -60,11 +74,21 @@ const AgentItem = React.memo(({agent, profileImageUrl, currentAgentUsername, onS
             testID={`agents.selector.agent.${agent.username}`}
         >
             <View style={styles.agentInfo}>
-                <Image
-                    source={profileImageUrl ? {uri: profileImageUrl} : undefined}
-                    style={styles.agentAvatar}
-                    placeholder='account-outline'
-                />
+                {profileImageUrl ? (
+                    <ExpoImageAnimated
+                        id={cacheId!}
+                        source={{uri: profileImageUrl}}
+                        style={imageStyle}
+                    />
+                ) : (
+                    <View style={styles.agentAvatar}>
+                        <CompassIcon
+                            name={ACCOUNT_OUTLINE_IMAGE}
+                            size={AVATAR_SIZE}
+                            style={iconStyle}
+                        />
+                    </View>
+                )}
                 <Text style={styles.agentName}>
                     {agent.displayName || agent.username}
                 </Text>
