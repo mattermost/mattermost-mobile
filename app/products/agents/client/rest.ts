@@ -1,11 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type {ToolCall} from '@agents/types';
+
 export interface ClientAgentsMix {
     getAgentsRoute: () => string;
     stopGeneration: (postId: string) => Promise<void>;
     regenerateResponse: (postId: string) => Promise<void>;
     submitToolApproval: (postId: string, acceptedToolIds: string[]) => Promise<void>;
+    getToolCallPrivate: (postId: string) => Promise<ToolCall[]>;
+    getToolResultPrivate: (postId: string) => Promise<ToolCall[]>;
+    submitToolResult: (postId: string, acceptedToolIds: string[]) => Promise<void>;
 }
 
 const ClientAgents = (superclass: any) => class extends superclass {
@@ -30,6 +35,30 @@ const ClientAgents = (superclass: any) => class extends superclass {
     submitToolApproval = async (postId: string, acceptedToolIds: string[]) => {
         return this.doFetch(
             `${this.getAgentsRoute()}/post/${postId}/tool_call`,
+            {
+                method: 'post',
+                body: {accepted_tool_ids: acceptedToolIds},
+            },
+        );
+    };
+
+    getToolCallPrivate = async (postId: string): Promise<ToolCall[]> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/post/${postId}/tool_call_private`,
+            {method: 'get'},
+        );
+    };
+
+    getToolResultPrivate = async (postId: string): Promise<ToolCall[]> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/post/${postId}/tool_result_private`,
+            {method: 'get'},
+        );
+    };
+
+    submitToolResult = async (postId: string, acceptedToolIds: string[]) => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/post/${postId}/tool_result`,
             {
                 method: 'post',
                 body: {accepted_tool_ids: acceptedToolIds},

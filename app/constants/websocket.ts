@@ -109,6 +109,7 @@ const WebsocketEvents = {
 
     // Agents
     AGENTS_POST_UPDATE: 'custom_mattermost-ai_postupdate',
+    AGENTS_TOOL_CALL_STATUS: 'custom_mattermost-ai_tool_call_status_updated',
 
     // Burn on Read
     BOR_POST_REVEALED: 'post_revealed',

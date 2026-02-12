@@ -10,6 +10,8 @@ export const SNACK_BAR_TYPE = keyMirror({
     AGENT_STOP_ERROR: null,
     AGENT_REGENERATE_ERROR: null,
     AGENT_TOOL_APPROVAL_ERROR: null,
+    AGENT_TOOL_RESULT_ERROR: null,
+    AGENT_FETCH_PRIVATE_ERROR: null,
     CODE_COPIED: null,
     FAVORITE_CHANNEL: null,
     FOLLOW_THREAD: null,
@@ -62,6 +64,14 @@ const messages = defineMessages({
     AGENT_TOOL_APPROVAL_ERROR: {
         id: 'snack.bar.agent.tool.approval.error',
         defaultMessage: 'Failed to submit tool approval',
+    },
+    AGENT_TOOL_RESULT_ERROR: {
+        id: 'snack.bar.agent.tool.result.error',
+        defaultMessage: 'Failed to submit tool result',
+    },
+    AGENT_FETCH_PRIVATE_ERROR: {
+        id: 'snack.bar.agent.fetch.private.error',
+        defaultMessage: 'Failed to fetch private data',
     },
     CODE_COPIED: {
         id: 'snack.bar.code.copied',
@@ -149,6 +159,18 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     },
     AGENT_TOOL_APPROVAL_ERROR: {
         message: messages.AGENT_TOOL_APPROVAL_ERROR,
+        iconName: 'alert-outline',
+        hasAction: false,
+        type: MESSAGE_TYPE.ERROR,
+    },
+    AGENT_TOOL_RESULT_ERROR: {
+        message: messages.AGENT_TOOL_RESULT_ERROR,
+        iconName: 'alert-outline',
+        hasAction: false,
+        type: MESSAGE_TYPE.ERROR,
+    },
+    AGENT_FETCH_PRIVATE_ERROR: {
+        message: messages.AGENT_FETCH_PRIVATE_ERROR,
         iconName: 'alert-outline',
         hasAction: false,
         type: MESSAGE_TYPE.ERROR,
