@@ -15,7 +15,7 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FormattedDate from '@components/formatted_date';
-import BaseTag from '@components/tag/base_tag';
+import Tag from '@components/tag';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -57,19 +57,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.centerChannelColor,
     },
     thisDeviceLabel: {
-        ...typography('Body', 100),
-        color: changeOpacity(theme.centerChannelColor, 0.64),
+        ...typography('Body', 200),
+        color: theme.centerChannelColor,
     },
     chevron: {
         marginLeft: 'auto',
     },
     chevronIcon: {
         fontSize: 18,
-        color: changeOpacity(theme.centerChannelColor, 0.56),
+        color: changeOpacity(theme.centerChannelColor, 0.64),
     },
     subtitle: {
-        ...typography('Body', 75),
-        color: changeOpacity(theme.centerChannelColor, 0.64),
+        ...typography('Body', 100),
+        color: changeOpacity(theme.centerChannelColor, 0.75),
         marginTop: 4,
     },
     expandedContent: {
@@ -85,11 +85,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         gap: 4,
     },
     activityLabel: {
-        ...typography('Body', 75),
-        color: changeOpacity(theme.centerChannelColor, 0.64),
+        ...typography('Body', 50, 'SemiBold'),
+        color: changeOpacity(theme.centerChannelColor, 0.75),
     },
     activityValue: {
-        ...typography('Body', 200, 'SemiBold'),
+        ...typography('Body', 200),
         color: theme.centerChannelColor,
     },
     buttonsRow: {
@@ -254,7 +254,7 @@ export const Device = ({
                                 )}
                             </Text>
                         )}
-                        <BaseTag
+                        <Tag
                             icon={device.verified ? 'check' : 'shield-outline'}
                             message={device.verified
                                 ? intl.formatMessage({id: 'e2ee.device.verified', defaultMessage: 'Verified'})
