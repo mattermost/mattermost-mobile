@@ -73,7 +73,6 @@ describe('Search - Pinned Messages', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: channelPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
@@ -115,7 +114,6 @@ describe('Search - Pinned Messages', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
 
         const {post: pinnedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: channelPostItem} = ChannelScreen.getPostListPostItem(pinnedPost.id, message);
@@ -156,7 +154,6 @@ describe('Search - Pinned Messages', () => {
         // # Post a reply
         const replyMessage = `${updatedMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
-        await ChannelScreen.dismissKeyboard();
 
         // * Verify reply is posted
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -189,7 +186,6 @@ describe('Search - Pinned Messages', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
 
         const {post: pinnedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: channelPostItem} = ChannelScreen.getPostListPostItem(pinnedPost.id, message);
@@ -223,7 +219,6 @@ describe('Search - Pinned Messages', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
 
         const {post: pinnedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: channelPostItem} = ChannelScreen.getPostListPostItem(pinnedPost.id, message);

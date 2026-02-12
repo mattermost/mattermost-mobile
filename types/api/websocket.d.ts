@@ -21,3 +21,11 @@ type ThreadReadChangedData = {
     unread_mentions: number;
     unread_replies: number;
 };
+
+type PostTranslationUpdateData = {
+    language: string;
+    object_id: string;
+    src_lang: string;
+    state: PostTranslationState;
+    translation: string; // JSON-encoded PostTranslation['object']
+}

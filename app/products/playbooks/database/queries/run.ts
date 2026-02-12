@@ -97,3 +97,14 @@ export const queryPlaybookRunsByParticipantAndTeam = (database: Database, partic
         Q.sortBy('create_at', 'desc'),
     );
 };
+
+export const observeHasRunningPlaybookRunsInTeam = (database: Database, teamId: string) => {
+    return database.get<PlaybookRunModel>(PLAYBOOK_RUN).query(
+        Q.and(
+            Q.where('team_id', teamId),
+            Q.where('end_at', Q.eq(0)),
+        ),
+    ).observeCount().pipe(
+        switchMap((count) => of$(count > 0)),
+    );
+};

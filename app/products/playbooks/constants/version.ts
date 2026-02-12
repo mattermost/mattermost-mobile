@@ -4,3 +4,8 @@
 export const MINIMUM_MAJOR_VERSION = 2;
 export const MINIMUM_MINOR_VERSION = 3;
 export const MINIMUM_PATCH_VERSION = 0;
+
+// Minimum version required for summary editing feature
+export const SUMMARY_EDIT_MINIMUM_MAJOR_VERSION = 2;
+export const SUMMARY_EDIT_MINIMUM_MINOR_VERSION = 7;
+export const SUMMARY_EDIT_MINIMUM_PATCH_VERSION = 0;

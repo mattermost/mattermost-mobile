@@ -24,7 +24,7 @@ type Draft = {
     root_id: string;
     metadata?: PostMetadata;
     update_at: number;
-    type?: string;
+    type?: PostType;
 };
 
 type MyTeam = {

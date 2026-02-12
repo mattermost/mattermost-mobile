@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 
 import Tag from '@components/tag';
@@ -13,12 +13,15 @@ type Props = {
 }
 
 export default function BoRLabel({durationSeconds, id}: Props) {
-    const {formatMessage} = useIntl();
+    const intl = useIntl();
 
-    const message = formatMessage({
-        id: 'burn_on_read.label.title',
-        defaultMessage: 'BURN ON READ ({duration})',
-    }, {duration: formatTime(durationSeconds, true)});
+    const message = useMemo(() => {
+        const duration = formatTime(durationSeconds, true, intl);
+        return intl.formatMessage({
+            id: 'burn_on_read.label.title',
+            defaultMessage: 'BURN ON READ ({duration})',
+        }, {duration});
+    }, [durationSeconds, intl]);
 
     return (
         <Tag

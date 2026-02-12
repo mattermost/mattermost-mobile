@@ -118,7 +118,7 @@ class ThreadScreen {
     postMessage = async (message: string) => {
         // # Post message
         await this.postInput.tap();
-        await this.postInput.replaceText(message);
+        await this.postInput.replaceText(`${message}\n`);
         await this.tapSendButton();
 
         // # Wait for message to be rendered

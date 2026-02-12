@@ -60,7 +60,6 @@ describe('Messaging - Emojis and Reactions', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);
 
@@ -105,7 +104,6 @@ describe('Messaging - Emojis and Reactions', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EmojiPickerScreen.open();
@@ -140,7 +138,6 @@ describe('Messaging - Emojis and Reactions', () => {
         const message = 'brown fox :fox_face: lazy dog :dog:';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
 
         // * Verify message is posted with emojis
         const resolvedMessage = 'brown fox 🦊 lazy dog 🐶';
@@ -174,7 +171,6 @@ describe('Messaging - Emojis and Reactions', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await ChannelScreen.dismissKeyboard();
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const searchTerm = 'blahblahblahblah';
         await ChannelScreen.openPostOptionsFor(post.id, message);

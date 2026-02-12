@@ -23,7 +23,6 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import channelScreen from '@support/ui/screen/channel';
 import {timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
@@ -62,7 +61,6 @@ describe('Messaging - Channel Link', () => {
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         const channelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name}`;
         await ChannelScreen.postMessage(channelLink);
-        await channelScreen.dismissKeyboard();
 
         // # Tap on channel link
         await element(by.text(channelLink)).tap();
@@ -82,7 +80,6 @@ describe('Messaging - Channel Link', () => {
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         const channelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name}`;
         await ChannelScreen.postMessage(channelLink);
-        await channelScreen.dismissKeyboard();
 
         // # Wait for keyboard to dismiss and message to be visible
         await wait(timeouts.TWO_SEC);

@@ -58,7 +58,6 @@ describe('Threads - Save and Unsave Thread', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
-        await ChannelScreen.dismissKeyboard();
 
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
@@ -67,7 +66,6 @@ describe('Threads - Save and Unsave Thread', () => {
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
-        await ChannelScreen.dismissKeyboard();
         await ThreadScreen.back();
         await ChannelScreen.back();
         await GlobalThreadsScreen.open();
@@ -103,12 +101,10 @@ describe('Threads - Save and Unsave Thread', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
-        await ChannelScreen.dismissKeyboard();
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
-        await ChannelScreen.dismissKeyboard();
         await ThreadScreen.back();
         await ChannelScreen.back();
         await GlobalThreadsScreen.open();

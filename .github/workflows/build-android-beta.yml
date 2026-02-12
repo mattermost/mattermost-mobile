@@ -25,6 +25,9 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - test
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -61,3 +64,21 @@ jobs:
         with:
           name: android-build-beta-${{ github.run_id }}
           path: "*.apk"
+
+      # New AWS bucket deployment steps
+      - name: Configure AWS credentials new bucket
+        id: configure-aws-credentials-new-bucket
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.MM_MOBILE_RELEASE_AWS_ROLE_TO_ASSUME }}
+
+      - name: ci/upload-android-beta-new-bucket
+        env:
+          AWS_NEW_BUCKET_NAME: "${{ secrets.MM_MOBILE_RELEASE_AWS_NEW_BUCKET_NAME }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
+        run: |
+          echo "::group::Upload to new S3 bucket"
+          bundle exec fastlane android upload_artifacts_to_s3 --env android.beta
+          echo "::endgroup::"
+        working-directory: ./fastlane

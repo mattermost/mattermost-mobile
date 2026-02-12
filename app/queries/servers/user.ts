@@ -150,3 +150,20 @@ export const getUsersFromDMSorted = async (database: Database, memberIds: string
         return [];
     }
 };
+
+export const observeIsUserLanguageSupportedByAutotranslation = (database: Database) => {
+    const currentUser = observeCurrentUser(database);
+    const autoTranslationLanguages = observeConfigValue(database, 'AutoTranslationLanguages');
+
+    return combineLatest([currentUser, autoTranslationLanguages]).pipe(
+        switchMap(([user, languages]) => {
+            if (!user?.locale || !languages) {
+                return of$(false);
+            }
+            const userLocale = user.locale;
+            const languagesList = languages.split(',');
+            return of$(languagesList.includes(userLocale));
+        }),
+        distinctUntilChanged(),
+    );
+};

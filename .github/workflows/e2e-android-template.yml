@@ -128,7 +128,7 @@ jobs:
           device_os_version: ${{ env.SDK_VERSION }}
 
   e2e-android:
-    name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+    name: machine-${{ matrix.runId }}-api-${{ matrix.deviceOsVersion }}
     runs-on: ubuntu-latest-8-cores
     continue-on-error: true
     timeout-minutes: 240

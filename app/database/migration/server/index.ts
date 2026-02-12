@@ -28,7 +28,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 18,
+        toVersion: 19,
         steps: [
             createTable({
                 name: E2EE_ENABLED_DEVICES,
@@ -43,6 +43,23 @@ export default schemaMigrations({migrations: [
                     {name: 'os_version', type: 'string', isOptional: true},
                     {name: 'app_version', type: 'string', isOptional: true},
                     {name: 'verified', type: 'boolean'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 18,
+        steps: [
+            addColumns({
+                table: MY_CHANNEL,
+                columns: [
+                    {name: 'autotranslation_disabled', type: 'boolean'},
+                ],
+            }),
+            addColumns({
+                table: CHANNEL,
+                columns: [
+                    {name: 'autotranslation', type: 'boolean'},
                 ],
             }),
         ],
