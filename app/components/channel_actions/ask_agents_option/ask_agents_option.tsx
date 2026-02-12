@@ -4,6 +4,7 @@
 import ChannelSummarySheet from '@agents/components/channel_summary_sheet';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
+import {Platform} from 'react-native';
 
 import OptionItem from '@components/option_item';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
@@ -41,7 +42,9 @@ const AskAgentsOption = ({
             renderContent,
             closeButtonId: 'close-channel-summary',
             enableDynamicSizing: true,
-            snapPoints: [1, '65%'],
+            // iOS needs more space to accommodate the inline date picker spinner
+            // Android uses a modal date picker, so it needs less space
+            snapPoints: [1, Platform.select({ios: '65%', default: '50%'})!],
             theme,
             initialSnapIndex: 1,
         });
