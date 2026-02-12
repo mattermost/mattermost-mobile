@@ -47,7 +47,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
     emptyParagraph: {
         marginTop: 8,
         textAlign: 'center',
-        color: changeOpacity(theme.centerChannelColor, 0.72),
+        color: changeOpacity(theme.centerChannelColor, 0.75),
         ...typography('Body', 200),
     },
 }));
