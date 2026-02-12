@@ -19,6 +19,8 @@ export interface ClientChannelsMix {
     updateChannelPrivacy: (channelId: string, privacy: any) => Promise<Channel>;
     patchChannel: (channelId: string, channelPatch: Partial<Channel>) => Promise<Channel>;
     updateChannelNotifyProps: (props: ChannelNotifyProps & {channel_id: string; user_id: string}) => Promise<any>;
+    setChannelAutotranslation: (channelId: string, enabled: boolean) => Promise<Channel>;
+    setMyChannelAutotranslation: (channelId: string, enabled: boolean) => Promise<ChannelMembership>;
     getChannel: (channelId: string, groupLabel?: RequestGroupLabel) => Promise<Channel>;
     getChannelByName: (teamId: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
     getChannelByNameAndTeamName: (teamName: string, channelName: string, includeDeleted?: boolean) => Promise<Channel>;
@@ -154,6 +156,17 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         return this.doFetch(
             `${this.getChannelMemberRoute(props.channel_id, props.user_id)}/notify_props`,
             {method: 'put', body: props},
+        );
+    };
+
+    setChannelAutotranslation = async (channelId: string, enabled: boolean) => {
+        return this.patchChannel(channelId, {autotranslation: enabled});
+    };
+
+    setMyChannelAutotranslation = async (channelId: string, enabled: boolean) => {
+        return this.doFetch(
+            `${this.getChannelMemberRoute(channelId, 'me')}/autotranslation`,
+            {method: 'put', body: {autotranslation_disabled: !enabled}},
         );
     };
 

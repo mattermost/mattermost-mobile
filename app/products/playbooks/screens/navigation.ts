@@ -103,7 +103,7 @@ export async function goToAddChecklistItem(
     intl: IntlShape,
     theme: Theme,
     runName: string,
-    onSave: (title: string) => void,
+    onSave: (item: ChecklistItemInput) => void,
 ) {
     const title = intl.formatMessage({id: 'playbooks.checklist_item.add.title', defaultMessage: 'New Task'});
     const options = getSubtitleOptions(theme, runName);
@@ -112,16 +112,42 @@ export async function goToAddChecklistItem(
     }, options);
 }
 
-export async function goToRenamePlaybookRun(
+export async function goToEditChecklistItem(
+    intl: IntlShape,
+    theme: Theme,
+    runName: string,
+    currentTitle: string,
+    currentDescription: string | undefined,
+    onSave: (item: ChecklistItemInput) => void,
+) {
+    const title = intl.formatMessage({id: 'playbooks.checklist_item.edit.title', defaultMessage: 'Edit Task'});
+    const options = getSubtitleOptions(theme, runName);
+    goToScreen(Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM, title, {
+        currentTitle,
+        currentDescription,
+        onSave,
+    }, options);
+}
+
+export type GoToEditPlaybookRunOptions = {
+    canEditSummary?: boolean;
+};
+
+export async function goToEditPlaybookRun(
     intl: IntlShape,
     theme: Theme,
     currentTitle: string,
+    currentSummary: string,
     playbookRunId: string,
+    options?: GoToEditPlaybookRunOptions,
 ) {
-    const title = intl.formatMessage({id: 'playbooks.playbook_run.rename.title', defaultMessage: 'Rename playbook run'});
+    const {canEditSummary = true} = options ?? {};
+    const title = intl.formatMessage({id: 'playbooks.playbook_run.edit.title', defaultMessage: 'Edit playbook run'});
     goToScreen(Screens.PLAYBOOK_RENAME_RUN, title, {
         currentTitle,
+        currentSummary,
         playbookRunId,
+        canEditSummary,
     });
 }
 

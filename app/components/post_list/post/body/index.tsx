@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle} from 'react-native';
 
 import Files from '@components/files';
 import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
+import ErrorBoundary from '@components/markdown/error_boundary';
 import {Screens} from '@constants';
 import {THREAD} from '@constants/screens';
 import StatusUpdatePost from '@playbooks/components/status_update_post';
@@ -44,6 +46,7 @@ type BodyProps = {
     searchPatterns?: SearchPattern[];
     showAddReaction?: boolean;
     theme: Theme;
+    isChannelAutotranslated: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -87,10 +90,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Body = ({
-    appsEnabled, hasFiles, hasReactions, highlight, highlightReplyBar,
-    isCRTEnabled, isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAcknowledgementEnabled, isPostAddChannelMember,
-    location, post, searchPatterns, showAddReaction, theme,
+    appsEnabled,
+    hasFiles,
+    hasReactions,
+    highlight,
+    highlightReplyBar,
+    isCRTEnabled,
+    isEphemeral,
+    isFirstReply,
+    isJumboEmoji,
+    isLastReply,
+    isPendingOrFailed,
+    isPostAcknowledgementEnabled,
+    isPostAddChannelMember,
+    location,
+    post,
+    searchPatterns,
+    showAddReaction,
+    theme,
+    isChannelAutotranslated,
 }: BodyProps) => {
+    const intl = useIntl();
     const style = getStyleSheet(theme);
     const isEdited = postEdited(post);
     const isFailed = isPostFailed(post);
@@ -177,12 +197,14 @@ const Body = ({
                 post={post}
                 searchPatterns={searchPatterns}
                 theme={theme}
+                isChannelAutotranslated={isChannelAutotranslated}
             />
         );
     }
 
     const acknowledgementsVisible = isPostAcknowledgementEnabled && post.metadata?.priority?.requested_ack;
     const reactionsVisible = hasReactions && showAddReaction;
+
     if (!hasBeenDeleted) {
         body = (
             <View style={style.messageBody}>
@@ -229,19 +251,24 @@ const Body = ({
     }
 
     return (
-        <View
-            style={style.messageContainerWithReplyBar}
-            onLayout={onLayout}
+        <ErrorBoundary
+            error={intl.formatMessage({id: 'post.error', defaultMessage: 'There has been an error rendering this post.'})}
+            theme={theme}
         >
-            <View style={replyBarStyle}/>
-            {body}
-            {isFailed &&
-            <Failed
-                post={post}
-                theme={theme}
-            />
-            }
-        </View>
+            <View
+                style={style.messageContainerWithReplyBar}
+                onLayout={onLayout}
+            >
+                <View style={replyBarStyle}/>
+                {body}
+                {isFailed &&
+                <Failed
+                    post={post}
+                    theme={theme}
+                />
+                }
+            </View>
+        </ErrorBoundary>
     );
 };
 

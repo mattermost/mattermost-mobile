@@ -9,6 +9,7 @@ import {countUsersFromMentions, getPostById, prepareDeletePost, queryPostsById} 
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {generateId} from '@utils/general';
+import {safeParseJSON} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {getLastFetchedAtFromPosts} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
@@ -390,3 +391,31 @@ export function getUsersCountFromMentions(serverUrl: string, mentions: string[])
         return Promise.resolve(0);
     }
 }
+
+export const updatePostTranslation = async (serverUrl: string, postId: string, language: string, translation: PostTranslation) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const post = await getPostById(database, postId);
+        if (!post) {
+            return {error: 'Post not found'};
+        }
+        await database.write(async () => {
+            post.update((v) => {
+                // At this point, the metadata is a string, so we need to parse it
+                let metadata: PostMetadata = safeParseJSON(v.metadata as string) as PostMetadata;
+                if (!metadata) {
+                    metadata = {};
+                }
+                if (!metadata.translations) {
+                    metadata.translations = {};
+                }
+                metadata.translations[language] = translation;
+                v.metadata = JSON.stringify(metadata) as any;
+            });
+        });
+        return {error: undefined};
+    } catch (error) {
+        logError('Failed updatePostTranslation', error);
+        return {error};
+    }
+};

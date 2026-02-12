@@ -5,13 +5,15 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {Navigation} from '@constants';
+import {ActionType, Events, Navigation} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
+import {getPostById} from '@queries/servers/post';
 import {getCommonSystemValues, getTeamHistory} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
+import TestHelper from '@test/test_helper';
 
 import {
     switchToChannel,
@@ -27,6 +29,8 @@ import {
     updateChannelsDisplayName,
     showUnreadChannelsOnly,
     updateDmGmDisplayName,
+    deletePostsForChannelsWithAutotranslation,
+    deletePostsForChannel,
 } from './channel';
 
 import type {ChannelModel, MyChannelModel, SystemModel} from '@database/models/server';
@@ -770,19 +774,19 @@ describe('updateMyChannelFromWebsocket', () => {
     const serverUrl = 'baseHandler.test.com';
     const channelId = 'id1';
     const teamId = 'tId1';
-    const channel: Channel = {
+    const channel: Channel = TestHelper.fakeChannel({
         id: channelId,
         team_id: teamId,
         total_msg_count: 0,
         delete_at: 0,
-    } as Channel;
-    const channelMember: ChannelMembership = {
+    });
+    const channelMember: ChannelMembership = TestHelper.fakeChannelMember({
         id: 'id',
         user_id: 'userid',
         channel_id: channelId,
         msg_count: 0,
         roles: '',
-    } as ChannelMembership;
+    });
 
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
@@ -807,6 +811,27 @@ describe('updateMyChannelFromWebsocket', () => {
         expect(error).toBeUndefined();
         expect(model).toBeDefined();
         expect(model?.roles).toBe('channel_user');
+    });
+
+    it('calls deletePostsForChannel when autotranslation changes', async () => {
+        const post = TestHelper.fakePost({id: 'postid1', channel_id: channelId, root_id: ''});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: [post.id], posts: [post], prepareRecordsOnly: false});
+
+        await updateMyChannelFromWebsocket(serverUrl, {...channelMember, autotranslation_disabled: true}, false);
+
+        expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_DELETED_FOR_CHANNEL, {serverUrl, channelId});
+    });
+
+    it('updates member autotranslation from channelMember', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        await updateMyChannelFromWebsocket(serverUrl, {...channelMember, autotranslation_disabled: true}, false);
+
+        const member = await getMyChannel(operator.database, channelId);
+        expect(member?.autotranslationDisabled).toBe(true);
     });
 });
 
@@ -1131,5 +1156,188 @@ describe('updateDmGmDisplayName', () => {
         expect(channels?.length).toBe(2);
         expect((channels![0] as ChannelModel).displayName).toBe(user2.username);
         expect((channels![1] as ChannelModel).displayName).toBe(`${user2.username}, ${user3.username}`);
+    });
+});
+
+describe('deletePostsForChannel', () => {
+    const serverUrl = 'baseHandler.test.com';
+    let operator: ServerDataOperator;
+
+    const channelId = 'channelid1';
+    const teamId = 'tId1';
+    const channel: Channel = TestHelper.fakeChannel({
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+    });
+    const channelMember: ChannelMembership = TestHelper.fakeChannelMember({
+        id: 'id',
+        channel_id: channelId,
+        msg_count: 0,
+    });
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('handle not found database', async () => {
+        const {models, error} = await deletePostsForChannel('foo', channelId);
+        expect(models).toEqual([]);
+        expect(error).toBeTruthy();
+    });
+
+    it('channel not found', async () => {
+        const {models, error} = await deletePostsForChannel(serverUrl, 'nonexistent');
+        expect(models).toEqual([]);
+        expect(error).toBeFalsy();
+    });
+
+    it('channel with no posts', async () => {
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+
+        const {models, error} = await deletePostsForChannel(serverUrl, channelId);
+        expect(models).toEqual([]);
+        expect(error).toBeFalsy();
+    });
+
+    it('channel with posts - batch written and event emitted', async () => {
+        const post = TestHelper.fakePost({id: 'postid1', channel_id: channelId, root_id: ''});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post.id],
+            posts: [post],
+            prepareRecordsOnly: false,
+        });
+
+        const listener = jest.fn();
+        const subscription = DeviceEventEmitter.addListener(Events.POST_DELETED_FOR_CHANNEL, listener);
+
+        const {models, error} = await deletePostsForChannel(serverUrl, channelId);
+        subscription.remove();
+
+        expect(error).toBeFalsy();
+        expect(models.length).toBeGreaterThan(0);
+        expect(listener).toHaveBeenCalledTimes(1);
+        expect(listener).toHaveBeenCalledWith({serverUrl, channelId});
+
+        const myChannel = await getMyChannel(operator.database, channelId);
+        expect(myChannel?.lastFetchedAt).toBe(0);
+    });
+
+    it('prepareRecordsOnly true - no write and no emit', async () => {
+        const post = TestHelper.fakePost({id: 'postid2', channel_id: channelId, root_id: ''});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post.id],
+            posts: [post],
+            prepareRecordsOnly: false,
+        });
+
+        const listener = jest.fn();
+        const subscription = DeviceEventEmitter.addListener(Events.POST_DELETED_FOR_CHANNEL, listener);
+
+        const {models, error} = await deletePostsForChannel(serverUrl, channelId, true);
+        subscription.remove();
+
+        expect(error).toBeFalsy();
+        expect(models.length).toBeGreaterThan(0);
+        expect(listener).not.toHaveBeenCalled();
+
+        const myChannel = await getMyChannel(operator.database, channelId);
+        expect(myChannel?._preparedState).toBe('update');
+
+        // Batch the records to avoid the invariant error
+        await operator.batchRecords([...models], 'test');
+    });
+});
+
+describe('deletePostsForChannelsWithAutotranslation', () => {
+    const serverUrl = 'baseHandler.test.com';
+    let operator: ServerDataOperator;
+
+    const channelId = 'channelid1';
+    const teamId = 'tId1';
+    const channel: Channel = TestHelper.fakeChannel({
+        id: channelId,
+        team_id: teamId,
+        total_msg_count: 0,
+        autotranslation: true,
+    });
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('no myChannels with autotranslation - no deletes', async () => {
+        const channelMember: ChannelMembership = TestHelper.fakeChannelMember({
+            id: 'id',
+            channel_id: channelId,
+            msg_count: 0,
+            autotranslation_disabled: true,
+        });
+        const post = TestHelper.fakePost({id: 'postid1', channel_id: channelId, root_id: ''});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post.id],
+            posts: [post],
+            prepareRecordsOnly: false,
+        });
+
+        const {models, error} = await deletePostsForChannelsWithAutotranslation(serverUrl);
+        expect(error).toBeUndefined();
+        expect(models).toEqual([]);
+
+        const databasePost = await getPostById(operator.database, post.id);
+        expect(databasePost).toBeDefined();
+    });
+
+    it('myChannels with autotranslation - delete posts', async () => {
+        const channelMember: ChannelMembership = TestHelper.fakeChannelMember({
+            id: 'id',
+            channel_id: channelId,
+            msg_count: 0,
+            autotranslation_disabled: false,
+        });
+        const post = TestHelper.fakePost({id: 'postid1', channel_id: channelId, root_id: ''});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post.id],
+            posts: [post],
+            prepareRecordsOnly: false,
+        });
+
+        const {models, error} = await deletePostsForChannelsWithAutotranslation(serverUrl);
+        expect(error).toBeUndefined();
+        expect(models.length).toBeGreaterThan(0);
+        const databasePost = await getPostById(operator.database, post.id);
+        expect(databasePost).toBeUndefined();
+    });
+
+    it('handle error', async () => {
+        jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockImplementationOnce(() => {
+            throw new Error('DB error');
+        });
+        const {models, error} = await deletePostsForChannelsWithAutotranslation(serverUrl);
+        expect(models).toEqual([]);
+        expect(error).toBeTruthy();
     });
 });

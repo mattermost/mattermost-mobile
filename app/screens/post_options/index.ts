@@ -3,23 +3,24 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$, Observable} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatestWith, distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
+import {DEFAULT_LOCALE} from '@i18n';
 import AppsManager from '@managers/apps_manager';
-import {observeChannel, observeIsReadOnlyChannel} from '@queries/servers/channel';
+import {observeChannel, observeIsReadOnlyChannel, observeIsChannelAutotranslated, observeChannelInfo} from '@queries/servers/channel';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observeReactionsForPost} from '@queries/servers/reaction';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
 import {observeConfigIntValue, observeConfigValue, observeLicense} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
-import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
+import {isBoRPost, isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {toMilliseconds} from '@utils/datetime';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {isFromWebhook, isSystemMessage} from '@utils/post';
+import {getPostTranslation, isFromWebhook, isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import PostOptions from './post_options';
@@ -77,6 +78,7 @@ const withPost = withObservables([], ({post, database}: {post: Post | PostModel}
 
 const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sourceScreen, database, serverUrl}: EnhancedProps) => {
     const channel = observeChannel(database, post.channelId);
+    const channelInfo = observeChannelInfo(database, post.channelId);
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
     const currentUser = observeCurrentUser(database);
     const isLicensed = observeLicense(database).pipe(switchMap((lcs) => of$(lcs?.IsLicensed === 'true')));
@@ -85,7 +87,6 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
     const postEditTimeLimit = observeConfigIntValue(database, 'PostEditTimeLimit', -1);
     const bindings = AppsManager.observeBindings(serverUrl, AppBindingLocations.POST_MENU_ITEM);
     const borPost = isBoRPost(post);
-    const unrevealedBoRPost = isUnrevealedBoRPost(post);
 
     const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => observePermissionForChannel(database, c, u, Permissions.CREATE_POST, false)));
     const hasAddReactionPermission = currentUser.pipe(switchMap((u) => observePermissionForPost(database, post, u, Permissions.ADD_REACTION, true)));
@@ -140,18 +141,48 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         )),
     );
 
-    const canAddReaction = unrevealedBoRPost ? of$(false) : combineLatest([hasAddReactionPermission, channelIsReadOnly, isUnderMaxAllowedReactions, channelIsArchived]).pipe(
-        switchMap(([permission, readOnly, maxAllowed, isArchived]) => {
-            return of$(!isSystemMessage(post) && permission && !readOnly && !isArchived && maxAllowed && showAddReaction);
+    const canAddReaction = combineLatest([hasAddReactionPermission, channelIsReadOnly, isUnderMaxAllowedReactions, channelIsArchived, currentUser]).pipe(
+        switchMap(([permission, readOnly, maxAllowed, isArchived, user]) => {
+            // Can't react on unrevealed BoR posts of other users
+            const preventBoRReaction = isUnrevealedBoRPost(post) && post.userId !== user?.id;
+            return of$(!isSystemMessage(post) && permission && !readOnly && !isArchived && maxAllowed && showAddReaction && !preventBoRReaction);
         }),
     );
 
-    const canDelete = combineLatest([canDeletePostPermission, channelIsArchived, channelIsReadOnly, canPostPermission]).pipe(switchMap(([permission, isArchived, isReadOnly, canPost]) => {
-        return of$(permission && !isArchived && !isReadOnly && canPost);
+    const canDelete = combineLatest([canDeletePostPermission, channelIsArchived, channelIsReadOnly, canPostPermission, currentUser]).pipe(switchMap(([permission, isArchived, isReadOnly, canPost, user]) => {
+        const canDeleteBoRPost = borPost ? post.userId === user?.id : true;
+        return of$(permission && !isArchived && !isReadOnly && canPost && canDeleteBoRPost);
     }));
 
     const thread = observeIsCRTEnabled(database).pipe(
         switchMap((enabled) => (enabled ? observeThreadById(database, post.id) : of$(undefined))),
+    );
+
+    const canViewTranslation = observeIsChannelAutotranslated(database, post.channelId).pipe(
+        combineLatestWith(currentUser),
+        switchMap(([isAutotranslated, user]) => {
+            const translation = getPostTranslation(post, user?.locale || DEFAULT_LOCALE);
+            return of$(isAutotranslated && post.type === '' && translation?.state === 'ready');
+        }),
+        distinctUntilChanged(),
+    );
+
+    const showBoRReadReceipts = combineLatest([currentUser]).pipe(
+        switchMap(([user]) => {
+            return of$(isOwnBoRPost(post, user?.id));
+        }),
+    );
+
+    const borReceiptData = combineLatest([channelInfo]).pipe(
+        switchMap(([info]) => {
+            const revealedCount = post.metadata?.recipients?.length || 0;
+            const totalRecipients = info ? Math.max(0, info.memberCount - 1) : 0;
+
+            return of$({
+                revealedCount,
+                totalRecipients,
+            });
+        }),
     );
 
     return {
@@ -163,10 +194,14 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         combinedPost: of$(combinedPost),
         isSaved,
         canEdit,
+        canViewTranslation,
         post,
         thread,
         bindings,
         isBoRPost: of$(borPost),
+        showBoRReadReceipts,
+        borReceiptData,
+        currentUser,
     };
 });
 
