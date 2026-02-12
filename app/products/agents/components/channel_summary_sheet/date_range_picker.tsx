@@ -3,7 +3,7 @@
 
 import DateTimePicker, {type DateTimePickerEvent} from '@react-native-community/datetimepicker';
 import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Platform, TouchableOpacity, View} from 'react-native';
 import tinyColor from 'tinycolor2';
 
@@ -76,6 +76,13 @@ const DATE_FORMAT: FormattedDateFormat = {
     day: 'numeric',
 };
 
+const dateMessages = defineMessages({
+    sinceLabel: {id: 'agents.channel_summary.since', defaultMessage: 'Start'},
+    sincePlaceholder: {id: 'agents.channel_summary.since_placeholder', defaultMessage: 'Select date'},
+    untilLabel: {id: 'agents.channel_summary.until', defaultMessage: 'End'},
+    untilPlaceholder: {id: 'agents.channel_summary.until_placeholder', defaultMessage: 'Select date'},
+});
+
 type PickerTarget = 'since' | 'until' | undefined;
 
 type DateInputFieldProps = {
@@ -90,6 +97,7 @@ type DateInputFieldProps = {
     isActive: boolean;
 };
 
+// Note: labelId/placeholderId are declared via defineMessages above for i18n extraction
 const DateInputField = ({labelId, labelDefault, date, placeholderId, placeholderDefault, onPress, testID, styles, isActive}: DateInputFieldProps) => (
     <>
         <FormattedText
@@ -223,11 +231,11 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
 
             {/* Start Date */}
             <DateInputField
-                labelId='agents.channel_summary.since'
-                labelDefault='Start'
+                labelId={dateMessages.sinceLabel.id}
+                labelDefault={dateMessages.sinceLabel.defaultMessage!}
                 date={since}
-                placeholderId='agents.channel_summary.since_placeholder'
-                placeholderDefault='Select date'
+                placeholderId={dateMessages.sincePlaceholder.id}
+                placeholderDefault={dateMessages.sincePlaceholder.defaultMessage!}
                 onPress={openSincePicker}
                 testID='agents.channel_summary.date_from'
                 styles={styles}
@@ -236,11 +244,11 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
 
             {/* End Date */}
             <DateInputField
-                labelId='agents.channel_summary.until'
-                labelDefault='End'
+                labelId={dateMessages.untilLabel.id}
+                labelDefault={dateMessages.untilLabel.defaultMessage!}
                 date={until}
-                placeholderId='agents.channel_summary.until_placeholder'
-                placeholderDefault='Select date'
+                placeholderId={dateMessages.untilPlaceholder.id}
+                placeholderDefault={dateMessages.untilPlaceholder.defaultMessage!}
                 onPress={openUntilPicker}
                 testID='agents.channel_summary.date_to'
                 styles={styles}
