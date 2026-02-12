@@ -3,6 +3,8 @@
 
 /* eslint-disable max-lines */
 
+import {E2EE_TABLES} from '@e2ee/constants/database';
+
 import {MM_TABLES} from '@constants/database';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 
@@ -48,11 +50,12 @@ const {
 } = MM_TABLES.SERVER;
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
+const {E2EE_ENABLED_DEVICES} = E2EE_TABLES;
 
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 18,
+            version: 19,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -331,6 +334,34 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'metadata', type: 'string', isOptional: true},
                         {name: 'update_at', type: 'number'},
                         {name: 'type', type: 'string', isOptional: true},
+                    ],
+                },
+                [E2EE_ENABLED_DEVICES]: {
+                    name: E2EE_ENABLED_DEVICES,
+                    unsafeSql: undefined,
+                    columns: {
+                        device_id: {name: 'device_id', type: 'string'},
+                        device_name: {name: 'device_name', type: 'string'},
+                        signature_public_key: {name: 'signature_public_key', type: 'string', isOptional: true},
+                        is_current_device: {name: 'is_current_device', type: 'boolean'},
+                        created_at: {name: 'created_at', type: 'number'},
+                        last_active_at: {name: 'last_active_at', type: 'number', isOptional: true},
+                        revoke_at: {name: 'revoke_at', type: 'number', isOptional: true},
+                        os_version: {name: 'os_version', type: 'string', isOptional: true},
+                        app_version: {name: 'app_version', type: 'string', isOptional: true},
+                        verified: {name: 'verified', type: 'boolean'},
+                    },
+                    columnArray: [
+                        {name: 'device_id', type: 'string'},
+                        {name: 'device_name', type: 'string'},
+                        {name: 'signature_public_key', type: 'string', isOptional: true},
+                        {name: 'is_current_device', type: 'boolean'},
+                        {name: 'created_at', type: 'number'},
+                        {name: 'last_active_at', type: 'number', isOptional: true},
+                        {name: 'revoke_at', type: 'number', isOptional: true},
+                        {name: 'os_version', type: 'string', isOptional: true},
+                        {name: 'app_version', type: 'string', isOptional: true},
+                        {name: 'verified', type: 'boolean'},
                     ],
                 },
                 [FILE]: {

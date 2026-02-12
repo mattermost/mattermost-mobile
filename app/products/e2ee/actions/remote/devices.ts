@@ -21,7 +21,7 @@ export const fetchEnabledDevices = async (
         const client = NetworkManager.getClient(serverUrl);
 
         const sessions = await fetchSessions(serverUrl, 'me');
-        var byDeviceId = new Map();
+        let byDeviceId = new Map();
         if (sessions) {
             byDeviceId = new Map(sessions.
                 filter((s) => s.device_id).
@@ -30,7 +30,7 @@ export const fetchEnabledDevices = async (
                 }));
         }
 
-        var {devices} = await client.fetchDevices();
+        let {devices} = await client.fetchDevices();
         if (devices != null) {
             // extend device information from sessions in case device_id matches; set is_current_device from currentDeviceId
             devices = devices.map((device) => {
