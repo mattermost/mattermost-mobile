@@ -821,7 +821,7 @@ describe('updateMyChannelFromWebsocket', () => {
 
         await updateMyChannelFromWebsocket(serverUrl, {...channelMember, autotranslation_disabled: true}, false);
 
-        expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_DELETED_FOR_CHANNEL, {serverUrl, channelId});
+        expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_DELETED_FOR_CHANNEL, {serverUrl, channelId, teamId: channel.team_id});
     });
 
     it('updates member autotranslation from channelMember', async () => {
@@ -1226,7 +1226,7 @@ describe('deletePostsForChannel', () => {
         expect(error).toBeFalsy();
         expect(models.length).toBeGreaterThan(0);
         expect(listener).toHaveBeenCalledTimes(1);
-        expect(listener).toHaveBeenCalledWith({serverUrl, channelId});
+        expect(listener).toHaveBeenCalledWith({serverUrl, channelId, teamId: channel.team_id});
 
         const myChannel = await getMyChannel(operator.database, channelId);
         expect(myChannel?.lastFetchedAt).toBe(0);
