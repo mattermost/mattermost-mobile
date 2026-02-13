@@ -9,7 +9,7 @@ import DatabaseManager from '@database/manager';
 import {getUsersFromDMSorted, queryAllUsers} from '@queries/servers/user';
 import {hasTrailingSpaces} from '@utils/helpers';
 
-import {SECTION_KEY_GROUPS, SECTION_KEY_IN_CHANNEL, SECTION_KEY_OUT_OF_CHANNEL, SECTION_KEY_SPECIAL, SECTION_KEY_TEAM_MEMBERS, emptyGroupList} from './constants';
+import {SECTION_KEY_AGENTS, SECTION_KEY_GROUPS, SECTION_KEY_IN_CHANNEL, SECTION_KEY_OUT_OF_CHANNEL, SECTION_KEY_SPECIAL, SECTION_KEY_TEAM_MEMBERS, emptyGroupList} from './constants';
 
 import type {SpecialMention, UserMentionSections} from './types';
 import type GroupModel from '@typings/database/models/servers/group';
@@ -129,6 +129,10 @@ export const filterResults = (users: Array<UserModel | UserProfile>, term: strin
 };
 
 const sectionMessages = defineMessages({
+    agents: {
+        id: 'suggestion.mention.agents',
+        defaultMessage: 'Agents',
+    },
     members: {
         id: 'mobile.suggestion.members',
         defaultMessage: 'Members',
@@ -151,7 +155,7 @@ const sectionMessages = defineMessages({
     },
 });
 
-export const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChannel: Array<UserProfile | UserModel>, usersOutOfChannel: Array<UserProfile | UserModel>, groups: GroupModel[], showSpecialMentions: boolean, isLocal = false, isSearch = false) => {
+export const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChannel: Array<UserProfile | UserModel>, usersOutOfChannel: Array<UserProfile | UserModel>, groups: GroupModel[], showSpecialMentions: boolean, isLocal = false, isSearch = false, agents: Array<UserProfile | UserModel> = []) => {
     const newSections: UserMentionSections = [];
 
     if (isSearch) {
@@ -192,6 +196,14 @@ export const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersI
                 ...sectionMessages.users,
                 data: usersInChannel,
                 key: SECTION_KEY_IN_CHANNEL,
+            });
+        }
+
+        if (agents.length) {
+            newSections.push({
+                ...sectionMessages.agents,
+                data: agents,
+                key: SECTION_KEY_AGENTS,
             });
         }
 

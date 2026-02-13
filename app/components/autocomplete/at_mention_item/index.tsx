@@ -9,22 +9,28 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type AtMentionItemProps = {
     user: UserProfile | UserModel;
+    isAgent?: boolean;
+    showBadges?: boolean;
     onPress?: (username: string) => void;
     testID?: string;
 }
 
 const AtMentionItem = ({
     user,
+    isAgent,
+    showBadges,
     onPress,
     testID,
 }: AtMentionItemProps) => {
     const completeMention = useCallback((u: UserModel | UserProfile) => {
         onPress?.(u.username);
-    }, []);
+    }, [onPress]);
 
     return (
         <UserItem
             user={user}
+            isAgent={isAgent}
+            showBadges={showBadges}
             testID={testID}
             onUserPress={completeMention}
         />
