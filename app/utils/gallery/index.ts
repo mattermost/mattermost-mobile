@@ -9,10 +9,13 @@ import {Navigation, type Options, type OptionsLayout} from 'react-native-navigat
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
 import {Events, Screens} from '@constants';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {allOrientations, showOverlay} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {isImage, isVideo} from '@utils/file';
 import {generateId} from '@utils/general';
 import {urlSafeBase64Encode} from '@utils/security';
+import {showSnackBar} from '@utils/snack_bar';
 
 import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
 
@@ -146,6 +149,19 @@ export function measureViewInWindow(ref: RefObject<View>): Promise<{x: number; y
 }
 
 export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: number, items: GalleryItemType[], hideActions = false) {
+    // Check if the file at initialIndex is rejected by plugin
+    const initialItem = items[initialIndex];
+    if (initialItem?.id && EphemeralStore.isFileRejected(initialItem.id)) {
+        // Show error snackbar with the plugin's rejection reason
+        const rejectionReason = EphemeralStore.getRejectionReason(initialItem.id);
+        showSnackBar({
+            barType: SNACK_BAR_TYPE.FILE_DOWNLOAD_REJECTED,
+            customMessage: rejectionReason || undefined,
+            type: 'error',
+        });
+        return;
+    }
+
     Keyboard.dismiss();
     const props = {
         galleryIdentifier,

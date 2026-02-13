@@ -24,11 +24,11 @@ export default function PressableOpacity({children, onPress, style}: Props) {
 
     const cancelPressIn = useCallback(() => {
         cancelOpacity.value = withTiming(0.5, {duration: 100});
-    }, []);
+    }, [cancelOpacity]);
 
     const cancelPressOut = useCallback(() => {
         cancelOpacity.value = withTiming(1, {duration: 300});
-    }, []);
+    }, [cancelOpacity]);
 
     return (
         <Pressable

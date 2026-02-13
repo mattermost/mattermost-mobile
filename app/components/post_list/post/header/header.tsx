@@ -121,7 +121,7 @@ const Header = ({
     const usernameOverride = ensureString(post.props?.override_username);
     const intl = useIntl();
 
-    const showBoRIcon = useMemo(() => isUnrevealedBoRPost(post), [post, post.metadata?.expire_at]);
+    const showBoRIcon = useMemo(() => isUnrevealedBoRPost(post), [post]);
     const borExpireAt = post.metadata?.expire_at;
     const serverUrl = useServerUrl();
 
