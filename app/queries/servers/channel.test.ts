@@ -70,7 +70,7 @@ import {prepareChannels,
     observeIsChannelAutotranslated,
 } from './channel';
 import {queryRoles} from './role';
-import {getCurrentChannelId, observeConfigBooleanValue, observeCurrentChannelId, observeCurrentUserId} from './system';
+import {getCurrentChannelId, observeCurrentChannelId, observeCurrentUserId} from './system';
 import {observeTeammateNameDisplay} from './user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -79,7 +79,15 @@ import type ChannelInfoModel from '@typings/database/models/servers/channel_info
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 
 jest.mock('./role');
-jest.mock('./system');
+jest.mock('./system', () => {
+    const actual = jest.requireActual<typeof import('./system')>('./system');
+    return {
+        ...actual,
+        getCurrentChannelId: jest.fn(),
+        observeCurrentChannelId: jest.fn(),
+        observeCurrentUserId: jest.fn(),
+    };
+});
 jest.mock('./user');
 jest.mock('@utils/role');
 
@@ -1669,7 +1677,14 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
         const channelId = 'ch_observe';
 
         it('should emit true when EnableAutoTranslation is true and channel has autotranslation', async () => {
-            jest.mocked(observeConfigBooleanValue).mockReturnValue(of$(true));
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
             const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: true});
             await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
@@ -1681,7 +1696,14 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
         });
 
         it('should emit false when EnableAutoTranslation is false', async () => {
-            jest.mocked(observeConfigBooleanValue).mockReturnValue(of$(false));
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'false'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
             const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: true});
             await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
@@ -1693,7 +1715,14 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
         });
 
         it('should emit false when channel has autotranslation false', async () => {
-            jest.mocked(observeConfigBooleanValue).mockReturnValue(of$(true));
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
             const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: false});
             await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
@@ -1705,12 +1734,65 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
         });
 
         it('should emit false when channel is not found', async () => {
-            jest.mocked(observeConfigBooleanValue).mockReturnValue(of$(true));
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
             const subscriptionNext = jest.fn();
             const result = observeChannelAutotranslation(database, 'nonexistent');
             result.subscribe({next: subscriptionNext});
 
             expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit false when channel is DM and RestrictDMAndGMAutotranslation is true', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'true'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({
+                id: channelId,
+                type: General.DM_CHANNEL,
+                autotranslation: true,
+            });
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeChannelAutotranslation(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit true when channel is DM and RestrictDMAndGMAutotranslation is false', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({
+                id: channelId,
+                type: General.DM_CHANNEL,
+                autotranslation: true,
+            });
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeChannelAutotranslation(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(true);
         });
     });
 
@@ -1718,7 +1800,14 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
         const channelId = 'ch_is_autotranslated';
 
         it('should emit true when config and channel has autotranslation true and myChannel has autotranslation disabled false', async () => {
-            jest.mocked(observeConfigBooleanValue).mockReturnValue(of$(true));
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
             const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: true});
             const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation_disabled: false});
             await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
@@ -1732,7 +1821,14 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
         });
 
         it('should emit false when channel autotranslation is false', async () => {
-            jest.mocked(observeConfigBooleanValue).mockReturnValue(of$(true));
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
             const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: false});
             const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation_disabled: false});
             await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
@@ -1746,7 +1842,14 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
         });
 
         it('should emit false when myChannel autotranslation disabled is true', async () => {
-            jest.mocked(observeConfigBooleanValue).mockReturnValue(of$(true));
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
             const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: true});
             const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation_disabled: true});
             await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
@@ -1757,6 +1860,56 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
             result.subscribe({next: subscriptionNext});
 
             expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit false when channel is DM and RestrictDMAndGMAutotranslation is true', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'true'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({
+                id: channelId,
+                type: General.DM_CHANNEL,
+                autotranslation: true,
+            });
+            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation_disabled: false});
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel], myChannels: [myChannel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeIsChannelAutotranslated(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit true when channel is DM and RestrictDMAndGMAutotranslation is false', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({
+                id: channelId,
+                type: General.DM_CHANNEL,
+                autotranslation: true,
+            });
+            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation_disabled: false});
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel], myChannels: [myChannel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeIsChannelAutotranslated(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(true);
         });
     });
 });
