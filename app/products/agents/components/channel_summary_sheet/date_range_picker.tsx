@@ -3,7 +3,7 @@
 
 import DateTimePicker, {type DateTimePickerEvent} from '@react-native-community/datetimepicker';
 import React, {useCallback, useMemo, useState} from 'react';
-import {defineMessages, useIntl} from 'react-intl';
+import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
 import {Platform, TouchableOpacity, View} from 'react-native';
 import tinyColor from 'tinycolor2';
 
@@ -85,24 +85,23 @@ const dateMessages = defineMessages({
 
 type PickerTarget = 'since' | 'until' | undefined;
 
+const BACK_BUTTON_HIT_SLOP = {top: 16, bottom: 16, left: 16, right: 16};
+
 type DateInputFieldProps = {
-    labelId: string;
-    labelDefault: string;
+    label: MessageDescriptor;
     date: Date | undefined;
-    placeholderId: string;
-    placeholderDefault: string;
+    placeholder: MessageDescriptor;
     onPress: () => void;
     testID: string;
     styles: ReturnType<typeof getStyleSheet>;
     isActive: boolean;
 };
 
-// Note: labelId/placeholderId are declared via defineMessages above for i18n extraction
-const DateInputField = ({labelId, labelDefault, date, placeholderId, placeholderDefault, onPress, testID, styles, isActive}: DateInputFieldProps) => (
+const DateInputField = ({label, date, placeholder, onPress, testID, styles, isActive}: DateInputFieldProps) => (
     <>
         <FormattedText
-            id={labelId}
-            defaultMessage={labelDefault}
+            id={label.id}
+            defaultMessage={label.defaultMessage}
             style={styles.label}
         />
         <TouchableOpacity
@@ -118,8 +117,8 @@ const DateInputField = ({labelId, labelDefault, date, placeholderId, placeholder
                 />
             ) : (
                 <FormattedText
-                    id={placeholderId}
-                    defaultMessage={placeholderDefault}
+                    id={placeholder.id}
+                    defaultMessage={placeholder.defaultMessage}
                     style={styles.datePlaceholder}
                 />
             )}
@@ -213,7 +212,7 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
                 <TouchableOpacity
                     onPress={onCancel}
                     style={styles.backButton}
-                    hitSlop={{top: 16, bottom: 16, left: 16, right: 16}}
+                    hitSlop={BACK_BUTTON_HIT_SLOP}
                     testID='agents.channel_summary.date_picker.back'
                 >
                     <CompassIcon
@@ -231,11 +230,9 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
 
             {/* Start Date */}
             <DateInputField
-                labelId={dateMessages.sinceLabel.id}
-                labelDefault={dateMessages.sinceLabel.defaultMessage!}
+                label={dateMessages.sinceLabel}
                 date={since}
-                placeholderId={dateMessages.sincePlaceholder.id}
-                placeholderDefault={dateMessages.sincePlaceholder.defaultMessage!}
+                placeholder={dateMessages.sincePlaceholder}
                 onPress={openSincePicker}
                 testID='agents.channel_summary.date_from'
                 styles={styles}
@@ -244,11 +241,9 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
 
             {/* End Date */}
             <DateInputField
-                labelId={dateMessages.untilLabel.id}
-                labelDefault={dateMessages.untilLabel.defaultMessage!}
+                label={dateMessages.untilLabel}
                 date={until}
-                placeholderId={dateMessages.untilPlaceholder.id}
-                placeholderDefault={dateMessages.untilPlaceholder.defaultMessage!}
+                placeholder={dateMessages.untilPlaceholder}
                 onPress={openUntilPicker}
                 testID='agents.channel_summary.date_to'
                 styles={styles}

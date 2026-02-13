@@ -238,9 +238,13 @@ const ChannelSummarySheet = ({channelId}: Props) => {
         setShowDatePicker(false);
         setSubmitting(true);
 
+        // Normalize to UTC start/end of day to avoid missing data due to timezone conversion
+        const sinceUtc = new Date(Date.UTC(since.getFullYear(), since.getMonth(), since.getDate(), 0, 0, 0));
+        const untilUtc = new Date(Date.UTC(until.getFullYear(), until.getMonth(), until.getDate(), 23, 59, 59));
+
         const options: Record<string, string | number | undefined> = {
-            since: since.toISOString(),
-            until: until.toISOString(),
+            since: sinceUtc.toISOString(),
+            until: untilUtc.toISOString(),
         };
 
         if (customPrompt.trim()) {
@@ -346,7 +350,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
                                 <CompassIcon
                                     name='send'
                                     size={20}
-                                    color='#FFFFFF'
+                                    color={theme.buttonColor}
                                 />
                             </TouchableOpacity>
                         }
