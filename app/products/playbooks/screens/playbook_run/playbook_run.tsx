@@ -161,6 +161,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     markdownContainer: {
         width: '100%',
     },
+    markdownContainer: {
+        width: '100%',
+    },
 }));
 
 type Props = {
