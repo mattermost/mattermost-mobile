@@ -8,7 +8,7 @@ import {
     View,
     Platform,
 } from 'react-native';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {GalleryInit} from '@context/gallery';
 import {useTheme} from '@context/theme';
@@ -20,8 +20,7 @@ import UploadItem from './upload_item/upload_item_wrapper';
 
 const CONTAINER_HEIGHT_MAX = 80;
 const CONTAINER_HEIGHT_MIN = 0;
-const ERROR_HEIGHT_MAX = 20;
-const ERROR_HEIGHT_MIN = 0;
+const ERROR_FADE_IN_OUT_DURATION = 150;
 
 type Props = {
     currentUserId: string;
@@ -43,15 +42,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 0,
         },
         errorContainer: {
-            height: 0,
-        },
-        errorTextContainer: {
             marginTop: Platform.select({
                 ios: 4,
                 android: 2,
             }),
+            marginBottom: 6,
             marginHorizontal: 12,
-            flex: 1,
         },
         scrollView: {
             flex: 1,
@@ -79,16 +75,9 @@ function Uploads({
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    const errorHeight = useSharedValue(ERROR_HEIGHT_MIN);
     const containerHeight = useSharedValue(files.length ? CONTAINER_HEIGHT_MAX : CONTAINER_HEIGHT_MIN);
     const filesForGallery = useRef(files.filter((f) => !f.failed && !DraftEditPostUploadManager.isUploading(f.clientId!)));
     const hasFiles = files.length > 0;
-
-    const errorAnimatedStyle = useAnimatedStyle(() => {
-        return {
-            height: withTiming(errorHeight.value),
-        };
-    });
 
     const containerAnimatedStyle = useAnimatedStyle(() => {
         return {
@@ -103,14 +92,6 @@ function Uploads({
     useEffect(() => {
         filesForGallery.current = files.filter((f) => !f.failed && !DraftEditPostUploadManager.isUploading(f.clientId!));
     }, [files]);
-
-    useEffect(() => {
-        if (uploadFileError) {
-            errorHeight.value = ERROR_HEIGHT_MAX;
-        } else {
-            errorHeight.value = ERROR_HEIGHT_MIN;
-        }
-    }, [errorHeight, uploadFileError]);
 
     useEffect(() => {
         if (hasFiles) {
@@ -161,19 +142,17 @@ function Uploads({
                     </ScrollView>
                 </Animated.View>
 
+                {Boolean(uploadFileError) &&
                 <Animated.View
-                    style={[style.errorContainer, errorAnimatedStyle]}
+                    entering={FadeIn.duration(ERROR_FADE_IN_OUT_DURATION)}
+                    exiting={FadeOut.duration(ERROR_FADE_IN_OUT_DURATION)}
+                    style={style.errorContainer}
                 >
-                    {Boolean(uploadFileError) &&
-                    <View style={style.errorTextContainer}>
-
-                        <Text style={style.warning}>
-                            {uploadFileError}
-                        </Text>
-
-                    </View>
-                    }
+                    <Text style={style.warning}>
+                        {uploadFileError}
+                    </Text>
                 </Animated.View>
+                }
             </View>
         </GalleryInit>
     );
