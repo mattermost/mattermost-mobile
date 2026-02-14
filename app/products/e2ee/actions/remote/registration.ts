@@ -5,6 +5,7 @@ import E2EE from '@e2ee/constants/e2ee';
 import {generateSignatureKeyPair} from '@mattermost/e2ee';
 import {nativeApplicationVersion} from 'expo-application';
 import {deviceName, isDevice, modelName, osName, osVersion} from 'expo-device';
+import {sortBy} from 'lodash';
 import * as KeyChain from 'react-native-keychain';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
@@ -13,7 +14,7 @@ import {bytesToBase64} from '@utils/encoding';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError, logInfo} from '@utils/log';
 
-import {registerDevice} from './devices';
+import {fetchEnabledDevices, registerDevice} from './devices';
 
 function getDisplayDeviceName(): string {
     if (!isDevice) {
@@ -36,13 +37,13 @@ export const initE2eeDevice = async (serverUrl: string, userId: string) => {
 
     const e2eeEnabled = result.data || false;
     if (e2eeEnabled) {
-        // generate signing key
-        const alreadyInKeychain = await isInKeychain(serverUrl);
-        if (alreadyInKeychain) {
-            return {data: false};
-        }
-
         try {
+            // we know initialization has been done if signature key is already saved to keystore
+            const alreadyInKeychain = await isInKeychain(serverUrl);
+            if (alreadyInKeychain) {
+                return {data: false};
+            }
+
             // generate signing key may throw an error during generation
             const signingKey = generateSignatureKeyPair();
             const base64SigningKey = bytesToBase64(new Uint8Array(signingKey.blob));
@@ -55,25 +56,37 @@ export const initE2eeDevice = async (serverUrl: string, userId: string) => {
                 const deviceDisplayName = getDisplayDeviceName();
 
                 // post register device
-                const deviceId = await registerDevice(serverUrl, signingKey.publicKey, deviceDisplayName);
+                const response = await registerDevice(serverUrl, signingKey.publicKey, deviceDisplayName);
+
+                // set the device as verified if it is the first enabled device
+                const createdDevices = await fetchEnabledDevices(serverUrl, response.device_id);
+                let verified = false;
+                if ((createdDevices.devices?.length ?? 0) > 0) {
+                    const sorted = sortBy(createdDevices.devices ?? [], 'created_at');
+
+                    if (sorted[0].device_id === response.device_id) {
+                        verified = true;
+                    }
+                }
 
                 // generate identity
                 const identity = {
                     userId,
-                    deviceId,
+                    deviceId: response.device_id,
                 };
 
                 logInfo('generated identity is ', identity);
 
                 // save or update registered device data
-                updateDevices(serverUrl, [{
-                    device_id: deviceId,
+                await updateDevices(serverUrl, [{
+                    device_id: response.device_id,
                     device_name: deviceDisplayName,
                     signature_public_key: signingKey.publicKey,
                     created_at: now,
                     last_active_at: now,
                     app_version: nativeApplicationVersion ?? '',
                     os_version: osVersion ?? '',
+                    verified,
                 }]);
             }
 
@@ -117,30 +130,6 @@ export const removeFromKeychain = async (serverUrl: string) => {
     });
 };
 
-/* Add for DB caching
-const purgeIdentity = async (serverUrl: string) => {}
-
-export const setE2eeVersion = async (serverUrl: string, version: string) => {
-    try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        await operator.handleSystem({
-            systems: [{
-                id: SYSTEM_IDENTIFIERS.E2EE_VERSION,
-                value: version,
-            }],
-            prepareRecordsOnly: false,
-        });
-
-        if (version === '') {
-            await purgeIdentity(serverUrl);
-        }
-
-        return {data: true};
-    } catch (error) {
-        return {error};
-    }
-}; */
-
 export const checkIsE2eePluginEnabled = async (serverUrl: string) => {
     let manifests: ClientPluginManifest[] = [];
     try {
@@ -154,6 +143,6 @@ export const checkIsE2eePluginEnabled = async (serverUrl: string) => {
 
     const manifest = manifests.find((m) => m.id === E2EE.PluginId);
 
-    // await setE2eeVersion(serverUrl, manifest?.version || '');
+    // TODO implement database caching
     return {data: manifest != null};
 };

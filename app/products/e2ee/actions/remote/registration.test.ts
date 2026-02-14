@@ -55,7 +55,7 @@ beforeEach(() => {
     (KeyChain.resetGenericPassword as jest.Mock).mockResolvedValue(true);
 
     mockGenerateKey.mockReturnValue(testSigningKey);
-    mockClient.registerDevice.mockResolvedValue('device-id-123');
+    mockClient.registerDevice.mockResolvedValue({device_id: 'device-id-123'});
     mockUpdateDevices.mockResolvedValue({data: []});
 });
 

@@ -9,7 +9,7 @@ export interface ClientE2EEMix {
     // Devices
     fetchDevices: () => Promise<RegisteredDevicesReturn>;
     revokeDevice: (deviceId: string) => Promise<void>;
-    registerDevice: (signaturePublicKey: string, deviceName: string) => Promise<string>;
+    registerDevice: (signaturePublicKey: string, deviceName: string) => Promise<EnabledDeviceId>;
 }
 
 const ClientE2EE = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -34,13 +34,16 @@ const ClientE2EE = <TBase extends Constructor<ClientBase>>(superclass: TBase) =>
     };
     
     registerDevice = async (signaturePublicKey: string, deviceName: string) => {
-        return this.doFetch(`${this.getE2EERoute()}/devices`, {
-            body: {
-                signature_public_key: signaturePublicKey,
-                device_name: deviceName,
+        return this.doFetch(
+            `${this.getE2EERoute()}/devices`,
+            {
+                body: {
+                    signature_public_key: signaturePublicKey,
+                    device_name: deviceName,
+                },
+                method: 'post',
             },
-            method: 'post',
-        });
+        );
     };
 
 };
