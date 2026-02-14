@@ -19,9 +19,27 @@ export const submitInteractiveDialog = async (serverUrl: string, submission: Dia
         submission.channel_id = await getCurrentChannelId(database);
         submission.team_id = await getCurrentTeamId(database);
         const data = await client.submitInteractiveDialog(submission);
+
         return {data};
     } catch (error) {
         logDebug('error on submitInteractiveDialog', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const lookupInteractiveDialog = async (serverUrl: string, submission: DialogSubmission) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        submission.channel_id = await getCurrentChannelId(database);
+        submission.team_id = await getCurrentTeamId(database);
+
+        const data = await client.lookupInteractiveDialog(submission);
+        return {data};
+    } catch (error) {
+        logDebug('error on lookupInteractiveDialog', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
