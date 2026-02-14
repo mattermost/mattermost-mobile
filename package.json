@@ -216,7 +216,19 @@
     "test:coverage": "npm test -- --coverage",
     "test:watch": "npm test -- --watch",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",
-    "updatesnapshot": "NODE_OPTIONS=--max_old_space_size=12000 jest --updateSnapshot"
+    "updatesnapshot": "NODE_OPTIONS=--max_old_space_size=12000 jest --updateSnapshot",
+    "e2ee:enable": "./scripts/e2ee-enable.sh",
+    "e2ee:disable": "./scripts/e2ee-disable.sh",
+    "e2ee:status": "./scripts/e2ee-status.sh",
+    "e2ee:build": "npm run --prefix libraries/@mattermost/e2ee build",
+    "e2ee:clean": "npm run --prefix libraries/@mattermost/e2ee clean",
+    "e2ee:test:verify": "npm run --prefix libraries/@mattermost/e2ee test:verify",
+    "e2ee:test:ios": "npm run --prefix libraries/@mattermost/e2ee test:ios",
+    "e2ee:test:android": "npm run --prefix libraries/@mattermost/e2ee test:android",
+    "e2ee:test:dev": "npm run --prefix libraries/@mattermost/e2ee test:rust && npm run e2ee:test:verify && npm run e2ee:test:ios && npm run e2ee:test:android",
+    "e2ee:test:ci": "npm run tsc && npm run e2ee:test:verify",
+    "e2ee:test:ci:ios": "npm run e2ee:test:ci && npm run e2ee:test:ios",
+    "e2ee:test:ci:android": "npm run e2ee:test:ci && npm run e2ee:test:android"
   },
   "overrides": {
     "promise": "^8.3.0",

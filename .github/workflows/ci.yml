@@ -27,3 +27,31 @@ jobs:
         uses: ./.github/actions/test-coverage
         with:
           run_id: ${{ github.run_id }}
+
+  test-e2ee-android:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+      - name: ci/setup-e2ee
+        env:
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+        run: npm run e2ee:enable -- ci
+      - name: ci/test-e2ee-android
+        run: npm run e2ee:test:ci:android
+
+  test-e2ee-ios:
+    runs-on: macos-15
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+      - name: ci/setup-e2ee
+        env:
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+        run: npm run e2ee:enable -- ci
+      - name: ci/test-e2ee-ios
+        run: npm run e2ee:test:ci:ios
