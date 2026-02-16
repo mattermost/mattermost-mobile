@@ -4,13 +4,11 @@
 // NOTE : To implement migration, please follow this document
 // https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html
 
-import {E2EE_TABLES} from '@e2ee/constants/database';
 import {addColumns, createTable, schemaMigrations, unsafeExecuteSql} from '@nozbe/watermelondb/Schema/migrations';
 
 import {MM_TABLES} from '@constants/database';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 
-const {E2EE_ENABLED_DEVICES} = E2EE_TABLES;
 const {
     CHANNEL,
     CHANNEL_BOOKMARK,

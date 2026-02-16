@@ -3,8 +3,6 @@
 
 /* eslint-disable max-lines */
 
-import {E2EE_TABLES} from '@e2ee/constants/database';
-
 import {MM_TABLES} from '@constants/database';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 
