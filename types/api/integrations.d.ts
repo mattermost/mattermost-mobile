@@ -76,6 +76,12 @@ type DialogElement = {
     options: DialogOption[];
     multiselect?: boolean;
     refresh?: boolean;
+
+    // Date/DateTime fields
+    min_date?: string;
+    max_date?: string;
+    time_interval?: number;
+    datetime_config?: DateTimeConfig;
 };
 
 type InteractiveDialogConfig = {
@@ -123,5 +129,5 @@ type PostActionResponse = {
     trigger_id: string;
 };
 
-type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool'
+type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'date' | 'datetime'
 type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'
