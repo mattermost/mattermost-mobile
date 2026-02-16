@@ -71,35 +71,9 @@ export interface StreamingState {
 // Rewrite Types
 // ============================================================================
 
+export type {Agent} from './api';
+
 /**
  * Available rewrite action types
  */
 export type RewriteAction = 'shorten' | 'elaborate' | 'improve_writing' | 'fix_spelling' | 'simplify' | 'summarize' | 'custom';
-
-/**
- * Agent that can perform rewrites
- */
-export interface Agent {
-    id: string;
-    displayName: string;
-    username: string;
-    service_id: string;
-    service_type: string;
-}
-
-/**
- * Request payload for rewriting a message
- */
-export interface RewriteRequest {
-    agent_id?: string;
-    message: string;
-    action?: string;
-    custom_prompt?: string;
-}
-
-/**
- * Response from a rewrite request
- */
-export interface RewriteResponse {
-    rewritten_text: string;
-}

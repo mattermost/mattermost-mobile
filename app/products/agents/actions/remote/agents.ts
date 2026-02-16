@@ -20,7 +20,7 @@ export const fetchAgents = async (serverUrl: string) => {
         // Store agents in rewriteStore
         rewriteStore.setAgents(serverUrl, agents);
 
-        return {agents};
+        return {data: agents};
     } catch (error) {
         logDebug('[fetchAgents] Error:', getFullErrorMessage(error));
         return {error};
