@@ -13,7 +13,6 @@ interface ClientConfig {
     AndroidMinVersion: string;
     AppDownloadLink: string;
     AsymmetricSigningPublicKey: string;
-    AutoTranslationLanguages: string;
     AvailableLocales: string;
     BannerColor: string;
     BannerText: string;
@@ -48,7 +47,6 @@ interface ClientConfig {
     EmailLoginButtonTextColor: string;
     EmailNotificationContentsType: string;
     EnableBanner: string;
-    EnableAutoTranslation: string;
     EnableBotAccountCreation: string;
     EnableBurnOnRead: string;
     EnableChannelViewedMessages: string;
@@ -218,6 +216,11 @@ interface ClientConfig {
     WebsocketSecurePort: string;
     WebsocketURL: string;
     BurnOnReadDurationSeconds: string;
+
+    // Autotranslations
+    AutoTranslationLanguages: string;
+    EnableAutoTranslation: string;
+    RestrictDMAndGMAutotranslation: string;
 }
 
 type SecurityClientConfig = Pick<ClientConfig, 'MobileEnableBiometrics' | 'MobileJailbreakProtection' | 'MobilePreventScreenCapture' | 'SiteName'>

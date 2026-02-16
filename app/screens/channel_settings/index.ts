@@ -10,9 +10,8 @@ import {observeCallsConfig} from '@calls/state';
 import {General, Permissions} from '@constants';
 import {withServerUrl} from '@context/server';
 import {observeChannel} from '@queries/servers/channel';
-import {observePermissionForChannel, observePermissionForTeam, observeCanManageChannelSettings} from '@queries/servers/role';
+import {observePermissionForChannel, observePermissionForTeam, observeCanManageChannelSettings, observeCanManageChannelAutotranslations} from '@queries/servers/role';
 import {
-    observeConfigBooleanValue,
     observeConfigValue,
     observeCurrentTeamId,
 } from '@queries/servers/system';
@@ -175,7 +174,9 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
     );
 
     // Channel autotranslation observable
-    const isChannelAutotranslateEnabled = observeConfigBooleanValue(database, 'EnableAutoTranslation');
+    const canManageAutotranslations = currentUser.pipe(
+        switchMap((u) => (u ? observeCanManageChannelAutotranslations(database, channelId, u) : of$(false))),
+    );
 
     return {
         canArchive,
@@ -186,7 +187,7 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
         convertGMOptionAvailable,
         displayName: channel.pipe(switchMap((c) => of$(c?.displayName || ''))),
         isCallsEnabledInChannel,
-        isChannelAutotranslateEnabled,
+        canManageAutotranslations,
         isGuestUser,
         type,
     };
