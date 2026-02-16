@@ -111,7 +111,8 @@ const PostOptions = ({
     }, [
         canAddReaction, canCopyPermalink, canCopyText,
         canDelete, canEdit, shouldRenderFollow, shouldShowBindings,
-        canMarkAsUnread, canPin, canReply, canSavePost, canViewTranslation,
+        canMarkAsUnread, canPin, canReply, canSavePost, canViewTranslation, shouldShowBORReadReceipts,
+
     ]);
 
     const renderContent = () => {
