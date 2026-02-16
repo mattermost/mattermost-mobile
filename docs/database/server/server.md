@@ -1,4 +1,4 @@
-# Server Database - Schema Version 18
+# Server Database - Schema Version 19
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -97,6 +97,15 @@ files string #stringify (array)
 message string
 root_id string INDEX NULL FK >- Post.id
 type string NULL
+
+
+E2EEEnabledDevices
+-
+id PK string # server-generated
+device_id string # device identifier from the server
+signature_public_key string NULL # public key for signature verification
+is_current_device boolean # whether this record represents the current device
+verified boolean # whether the device is verified
 
 
 ScheduledPost
