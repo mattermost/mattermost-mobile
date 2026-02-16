@@ -45,3 +45,20 @@ export type AgentsStatusResponse = {
     available: boolean;
     reason?: string;
 };
+
+/**
+ * Request payload for rewriting a message
+ */
+export type RewriteRequest = {
+    agent_id?: string;
+    message: string;
+    action?: string;
+    custom_prompt?: string;
+};
+
+/**
+ * Response from a rewrite request
+ */
+export type RewriteResponse = {
+    rewritten_text: string;
+};

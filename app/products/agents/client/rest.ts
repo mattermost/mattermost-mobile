@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {Agent, AgentsResponse, AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse} from '@agents/types/api';
+import type {Agent, AgentsResponse, AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, RewriteRequest, RewriteResponse} from '@agents/types/api';
 
 export type {Agent};
 
@@ -17,6 +17,9 @@ export interface ClientAgentsMix {
         options?: ChannelAnalysisOptions,
     ) => Promise<ChannelAnalysisResponse>;
     submitToolApproval: (postId: string, acceptedToolIds: string[]) => Promise<void>;
+
+    // Rewrite methods
+    getRewrittenMessage: (message: string, action?: string, customPrompt?: string, agentId?: string) => Promise<string>;
     getAgentsStatus: () => Promise<AgentsStatusResponse>;
 }
 
@@ -83,6 +86,33 @@ const ClientAgents = (superclass: any) => class extends superclass {
                 body: {accepted_tool_ids: acceptedToolIds},
             },
         );
+    };
+
+    // =========================================================================
+    // Rewrite Methods
+    // =========================================================================
+
+    getRewrittenMessage = async (message: string, action?: string, customPrompt?: string, agentId?: string): Promise<string> => {
+        const body: RewriteRequest = {
+            agent_id: agentId,
+            message,
+            action,
+            custom_prompt: customPrompt,
+        };
+
+        const response = await this.doFetch(
+            `${this.urlVersion}/posts/rewrite`,
+            {method: 'post', body},
+            true,
+        ) as RewriteResponse;
+
+        // Handle cases where the AI returns plain text instead of the expected JSON format.
+        // If rewritten_text is undefined, treat the entire response as the rewritten message.
+        if (response.rewritten_text === undefined) {
+            return response as unknown as string;
+        }
+
+        return response.rewritten_text;
     };
 
     getAgentsStatus = async (): Promise<AgentsStatusResponse> => {

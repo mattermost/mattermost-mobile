@@ -107,6 +107,9 @@ export function useGalleryItem(
 
     useEffect(() => {
         gallery.registerItem(index, ref);
+
+    // Only register item once on mount - gallery, index, and ref are stable references
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onGestureEvent = () => {
