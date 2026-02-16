@@ -237,7 +237,7 @@ export const useHandleSendMessage = ({
         const toAllOrChannel = value ? DraftUtils.textContainsAtAllAtChannel(value) : false;
         const toHere = value ? DraftUtils.textContainsAtHere(value) : false;
 
-        if (value && value.indexOf('/') === 0 && !schedulingInfo) {
+        if (value.indexOf('/') === 0 && !schedulingInfo) {
             // Don't execute slash command when scheduling message
             sendCommand();
         } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && (toAllOrChannel || toHere)) {
