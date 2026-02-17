@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, render, screen, waitFor} from '@testing-library/react-native';
+import {fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {BackHandler} from 'react-native';
 
@@ -27,6 +27,7 @@ const displayThemeOtherProps = {
     componentId: 'DisplayTheme' as AvailableScreens,
     currentTeamId: '1',
     currentUserId: '1',
+    themeAutoSwitch: false,
 };
 
 describe('DisplayTheme', () => {
@@ -37,7 +38,7 @@ describe('DisplayTheme', () => {
     });
 
     it('should render with a few themes, denim selected', () => {
-        render(
+        renderWithIntl(
             <DisplayTheme
                 allowedThemeKeys={['denim', 'sapphire']}
                 {...displayThemeOtherProps}

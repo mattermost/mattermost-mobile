@@ -2,7 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
+import {queryDarkThemePreferences, queryThemeAutoSwitchPreference} from '@queries/servers/preference';
 import {
     observeAllowedThemesKeys,
     observeCurrentTeamId,
@@ -12,6 +15,19 @@ import {
 import DisplayTheme from './display_theme';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type PreferenceModel from '@typings/database/models/servers/preference';
+
+const parseDarkThemeType = (prefs: PreferenceModel[]) => {
+    if (prefs.length > 0) {
+        try {
+            const parsed = JSON.parse(prefs[0].value) as Theme;
+            return of$(parsed.type?.toLowerCase());
+        } catch {
+            // ignore
+        }
+    }
+    return of$(undefined);
+};
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
@@ -21,6 +37,16 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         allowedThemeKeys: observeAllowedThemesKeys(database),
         currentTeamId,
         currentUserId,
+        themeAutoSwitch: queryThemeAutoSwitchPreference(database).observeWithColumns(['value']).pipe(
+            switchMap((prefs) => of$(prefs.length > 0 && prefs[0].value === 'true')),
+        ),
+        darkThemeType: currentTeamId.pipe(
+            switchMap((teamId) =>
+                queryDarkThemePreferences(database, teamId).observeWithColumns(['value']).pipe(
+                    switchMap(parseDarkThemeType),
+                ),
+            ),
+        ),
     };
 });
 

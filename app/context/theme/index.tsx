@@ -3,11 +3,13 @@
 
 import {withObservables} from '@nozbe/watermelondb/react';
 import React, {type ComponentType, createContext, useEffect, useState} from 'react';
-import {Appearance} from 'react-native';
+import {Appearance, type ColorSchemeName} from 'react-native';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import useDidUpdate from '@hooks/did_update';
-import {queryThemePreferences} from '@queries/servers/preference';
+import {queryDarkThemePreferences, queryThemeAutoSwitchPreference, queryThemePreferences} from '@queries/servers/preference';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 
@@ -17,6 +19,8 @@ import type Database from '@nozbe/watermelondb/Database';
 type Props = {
     currentTeamId?: string;
     children: React.ReactNode;
+    darkThemes: PreferenceModel[];
+    themeAutoSwitch: boolean;
     themes: PreferenceModel[];
 }
 
@@ -50,42 +54,67 @@ const clearThemeCache = () => {
     }, 300);
 };
 
-const getTheme = (teamId: string | undefined, themes: PreferenceModel[]): Theme => {
-    if (teamId && themeCache.has(teamId)) {
-        return themeCache.get(teamId)!;
-    }
-
-    const newTheme = (() => {
-        if (teamId) {
-            const teamTheme = themes.find((t) => t.name === teamId) || themes[0];
-            if (teamTheme?.value) {
-                try {
-                    return setThemeDefaults(JSON.parse(teamTheme.value));
-                } catch {
-                    // no theme change
-                }
+const resolveThemeFromPreferences = (teamId: string | undefined, themes: PreferenceModel[], fallback: Theme): Theme => {
+    if (teamId) {
+        const teamTheme = themes.find((t) => t.name === teamId) || themes[0];
+        if (teamTheme?.value) {
+            try {
+                return setThemeDefaults(JSON.parse(teamTheme.value));
+            } catch {
+                // no theme change
             }
         }
-        return getDefaultThemeByAppearance();
-    })();
+    }
+    return fallback;
+};
 
-    themeCache.set(teamId || 'default', newTheme);
+const getTheme = (
+    teamId: string | undefined,
+    themes: PreferenceModel[],
+    isAutoSwitch = false,
+    darkThemes: PreferenceModel[] = [],
+    colorScheme: ColorSchemeName = Appearance.getColorScheme(),
+): Theme => {
+    const cacheKey = isAutoSwitch ? `${teamId || 'default'}_${colorScheme}` : (teamId || 'default');
+    if (themeCache.has(cacheKey)) {
+        return themeCache.get(cacheKey)!;
+    }
+
+    let newTheme: Theme;
+    if (isAutoSwitch) {
+        if (colorScheme === 'dark') {
+            newTheme = resolveThemeFromPreferences(teamId, darkThemes, Preferences.THEMES.onyx);
+        } else {
+            newTheme = resolveThemeFromPreferences(teamId, themes, Preferences.THEMES.denim);
+        }
+    } else {
+        newTheme = resolveThemeFromPreferences(teamId, themes, getDefaultThemeByAppearance());
+    }
+
+    themeCache.set(cacheKey, newTheme);
     return newTheme;
 };
 
-const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
-    const [theme, setTheme] = useState(() => getTheme(currentTeamId, themes));
+const ThemeProvider = ({currentTeamId, children, darkThemes, themeAutoSwitch, themes}: Props) => {
+    const [colorScheme, setColorScheme] = useState<ColorSchemeName>(Appearance.getColorScheme());
+    const [theme, setTheme] = useState(() => getTheme(currentTeamId, themes, themeAutoSwitch, darkThemes, colorScheme));
 
     useEffect(() => {
-        const listener = Appearance.addChangeListener(() => {
-            const newTheme = getTheme(currentTeamId, themes);
-            if (theme !== newTheme) {
-                setTheme(newTheme);
-            }
+        const listener = Appearance.addChangeListener(({colorScheme: newScheme}) => {
+            setColorScheme(newScheme);
         });
 
         return () => listener.remove();
-    }, [currentTeamId, themes, theme]);
+    }, []);
+
+    useEffect(() => {
+        const newTheme = getTheme(currentTeamId, themes, themeAutoSwitch, darkThemes, colorScheme);
+        if (theme !== newTheme) {
+            setTheme(newTheme);
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- theme is intentionally excluded to avoid infinite re-renders
+    }, [colorScheme, currentTeamId, darkThemes, themeAutoSwitch, themes]);
 
     useEffect(() => {
         updateThemeIfNeeded(theme);
@@ -93,11 +122,7 @@ const ThemeProvider = ({currentTeamId, children, themes}: Props) => {
 
     useDidUpdate(() => {
         clearThemeCache();
-    }, [themes]);
-
-    useDidUpdate(() => {
-        setTheme(getTheme(currentTeamId, themes));
-    }, [currentTeamId, themes]);
+    }, [themes, darkThemes, themeAutoSwitch]);
 
     return (<Provider value={theme}>{children}</Provider>);
 };
@@ -127,6 +152,10 @@ export function useTheme(): Theme {
 
 const enhancedThemeProvider = withObservables([], ({database}: {database: Database}) => ({
     currentTeamId: observeCurrentTeamId(database),
+    darkThemes: queryDarkThemePreferences(database).observeWithColumns(['value']),
+    themeAutoSwitch: queryThemeAutoSwitchPreference(database).observeWithColumns(['value']).pipe(
+        switchMap((prefs) => of$(prefs.length > 0 && prefs[0].value === 'true')),
+    ),
     themes: queryThemePreferences(database).observeWithColumns(['value']),
 }));
 

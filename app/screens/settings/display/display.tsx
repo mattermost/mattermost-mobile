@@ -57,12 +57,13 @@ type DisplayProps = {
     isCRTEnabled: boolean;
     isCRTSwitchEnabled: boolean;
     isThemeSwitchingEnabled: boolean;
+    themeAutoSwitch: boolean;
 }
 
-const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled, isCRTSwitchEnabled, isThemeSwitchingEnabled}: DisplayProps) => {
+const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled, isCRTSwitchEnabled, isThemeSwitchingEnabled, themeAutoSwitch}: DisplayProps) => {
     const intl = useIntl();
     const theme = useTheme();
-    const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser?.timezone]);
+    const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser]);
 
     const goToThemeSettings = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.SETTINGS_DISPLAY_THEME;
@@ -100,7 +101,7 @@ const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled,
                 <SettingItem
                     optionName='theme'
                     onPress={goToThemeSettings}
-                    info={theme.type!}
+                    info={themeAutoSwitch ? intl.formatMessage({id: 'display_settings.theme.auto', defaultMessage: 'Auto'}) : theme.type!}
                     testID='display_settings.theme.option'
                 />
             )}
