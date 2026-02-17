@@ -28,6 +28,16 @@ const autoSwitchDescription = defineMessage({
     defaultMessage: "Automatically switch between light and dark themes when your device's appearance changes",
 });
 
+const lightThemeHeader = defineMessage({
+    id: 'settings_display.theme.light_theme',
+    defaultMessage: 'Light Theme',
+});
+
+const darkThemeHeader = defineMessage({
+    id: 'settings_display.theme.dark_theme',
+    defaultMessage: 'Dark Theme',
+});
+
 type DisplayThemeProps = {
     allowedThemeKeys: string[];
     componentId: AvailableScreens;
@@ -162,10 +172,7 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
                     <SettingSeparator/>
                 </SettingBlock>
                 <SettingBlock
-                    headerText={{
-                        id: 'settings_display.theme.light_theme',
-                        defaultMessage: 'Light Theme',
-                    }}
+                    headerText={lightThemeHeader}
                 >
                     <ThemeTiles
                         allowedThemeKeys={allowedThemeKeys}
@@ -180,10 +187,7 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
                     )}
                 </SettingBlock>
                 <SettingBlock
-                    headerText={{
-                        id: 'settings_display.theme.dark_theme',
-                        defaultMessage: 'Dark Theme',
-                    }}
+                    headerText={darkThemeHeader}
                 >
                     <ThemeTiles
                         allowedThemeKeys={allowedThemeKeys}
