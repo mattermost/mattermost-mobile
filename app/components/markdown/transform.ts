@@ -2,10 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {Node, type NodeType} from 'commonmark';
+import urlParse from 'url-parse';
 
+import {DeepLink} from '@constants';
+import {parseDeepLink} from '@utils/deep_link';
 import {escapeRegex} from '@utils/markdown';
+import {safeDecodeURIComponent} from '@utils/url';
 
 import type {HighlightWithoutNotificationKey, SearchPattern, UserMentionKey} from '@typings/global/markdown';
+import type {DeepLinkChannel, DeepLinkPermalink} from '@typings/launch';
 
 /* eslint-disable no-underscore-dangle */
 
@@ -377,6 +382,118 @@ export function parseTaskLists(ast: Node) {
                 textNode.literal = literal.substring(match[0].length);
             }
         }
+    }
+
+    return ast;
+}
+
+/**
+ * Parse a citation URL to extract entity type and identifier.
+ * Citation URLs must have view=citation as a query parameter.
+ * Uses parseDeepLink for URL structural parsing.
+ *
+ * URL patterns:
+ * - Post: /team/pl/postId?view=citation
+ * - Channel: /team/channels/channelName?view=citation
+ *
+ * @param url - The URL to parse
+ * @param serverUrl - Optional server URL to validate this is an internal link
+ * @returns Parsed citation info or null if not a valid citation URL
+ */
+export function parseCitationUrl(url: string, serverUrl?: string): {entityType: string; entityId: string; linkUrl: string} | null {
+    const decodedUrl = safeDecodeURIComponent(url);
+    const parsedUrl = urlParse(decodedUrl, true);
+
+    // Check if view=citation is a proper query parameter
+    if (parsedUrl.query.view !== 'citation') {
+        return null;
+    }
+
+    // If serverUrl is provided, validate this is an internal link
+    if (serverUrl) {
+        const parsedServerUrl = urlParse(serverUrl);
+        const normalizedServerHost = parsedServerUrl.hostname.toLowerCase();
+        const normalizedUrlHost = parsedUrl.hostname.toLowerCase();
+
+        if (normalizedUrlHost !== normalizedServerHost) {
+            return null;
+        }
+
+        if (parsedServerUrl.port && parsedUrl.port !== parsedServerUrl.port) {
+            return null;
+        }
+    }
+
+    // Use parseDeepLink to determine the entity type from the URL structure
+    const deepLink = parseDeepLink(decodedUrl);
+
+    switch (deepLink.type) {
+        case DeepLink.Permalink: {
+            const data = deepLink.data as DeepLinkPermalink;
+            return {
+                entityType: 'POST',
+                entityId: data.postId,
+                linkUrl: url,
+            };
+        }
+        case DeepLink.Channel: {
+            const data = deepLink.data as DeepLinkChannel;
+            return {
+                entityType: 'CHANNEL',
+                entityId: data.channelName,
+                linkUrl: url,
+            };
+        }
+        default:
+            return null;
+    }
+}
+
+/**
+ * Process markdown links with ?view=citation query parameter and
+ * replace them with inline_entity_link nodes that will be rendered as clickable link icons.
+ *
+ * This handles the new citation format:
+ * - [text](http://server/team/pl/postId?view=citation) -> post citation
+ * - [text](http://server/team/channels/channelName?view=citation) -> channel citation
+ * - [text](http://server/team?view=citation) -> team citation
+ *
+ * @param ast - The AST to process
+ * @param serverUrl - Optional server URL to validate internal links only
+ */
+export function processInlineEntities(ast: Node, serverUrl?: string) {
+    const walker = ast.walker();
+
+    let e;
+    while ((e = walker.next())) {
+        if (!e.entering) {
+            continue;
+        }
+
+        const node: any = e.node;
+
+        // Look for link nodes with citation query parameter
+        if (node.type !== 'link' || !node.destination) {
+            continue;
+        }
+
+        const parsed = parseCitationUrl(node.destination, serverUrl);
+        if (!parsed) {
+            continue;
+        }
+
+        // Create the inline entity link node
+        const entityNode: any = new Node('inline_entity_link' as any);
+        entityNode.entityType = parsed.entityType;
+        entityNode.entityId = parsed.entityId;
+        entityNode.linkUrl = parsed.linkUrl;
+
+        // Replace the link node with the entity node
+        node.insertBefore(entityNode);
+        node.unlink();
+
+        // Resume at the entity node
+        walker.resumeAt(entityNode, false);
     }
 
     return ast;

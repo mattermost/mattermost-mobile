@@ -12,6 +12,7 @@ import {getLocalFileInfo} from '@actions/local/file';
 import {buildFilePreviewUrl, buildFileUrl, downloadFile} from '@actions/remote/file';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import EphemeralStore from '@store/ephemeral_store';
 import {alertDownloadFailed, alertFailedToOpenDocument, alertOnlyPDFSupported} from '@utils/document';
 import {getFullErrorMessage, isErrorWithMessage} from '@utils/errors';
 import {fileExists, getLocalFilePathFromFile, isAudio, isGif, isImage, isPdf, isVideo} from '@utils/file';
@@ -68,7 +69,11 @@ export const useImageAttachments = (filesInfo: FileInfo[]) => {
             const videoFile = isVideo(file);
             const audioFile = isAudio(file);
 
-            if (imageFile || videoFile || audioFile) {
+            // Check if file is rejected by plugin - treat rejected files as non-images
+            // so they display as file cards instead of broken image previews
+            const isRejected = file.id && EphemeralStore.isFileRejected(file.id);
+
+            if ((imageFile || videoFile || audioFile) && !isRejected) {
                 let uri;
                 if (file.localPath) {
                     uri = file.localPath;

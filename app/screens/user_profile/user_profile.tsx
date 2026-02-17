@@ -35,7 +35,7 @@ type Props = {
     isChannelAdmin: boolean;
     canManageAndRemoveMembers?: boolean;
     isCustomStatusEnabled: boolean;
-    isDirectMessage: boolean;
+    isDirectMessageWithUser: boolean;
     isDefaultChannel: boolean;
     isMilitaryTime: boolean;
     isSystemAdmin: boolean;
@@ -67,6 +67,22 @@ const messages = defineMessages({
 });
 const channelContextScreens: AvailableScreens[] = [Screens.CHANNEL, Screens.THREAD];
 
+type ShouldShowUserProfileOptionsProps = {
+    channelContext: boolean;
+    isDirectMessageWithUser: boolean;
+    manageMode: boolean;
+    override: boolean;
+};
+
+export function shouldShowUserProfileOptions({
+    channelContext,
+    isDirectMessageWithUser,
+    manageMode,
+    override,
+}: ShouldShowUserProfileOptionsProps) {
+    return (!isDirectMessageWithUser || !channelContext) && !override && !manageMode;
+}
+
 const UserProfile = ({
     canChangeMemberRoles,
     canManageAndRemoveMembers,
@@ -78,7 +94,7 @@ const UserProfile = ({
     isChannelAdmin,
     isCustomStatusEnabled,
     isDefaultChannel,
-    isDirectMessage,
+    isDirectMessageWithUser,
     isMilitaryTime,
     isSystemAdmin,
     isTeamAdmin,
@@ -114,7 +130,12 @@ const UserProfile = ({
     }
 
     const showCustomStatus = isCustomStatusEnabled && Boolean(customStatus) && !user.isBot && !isCustomStatusExpired(user);
-    const showUserProfileOptions = (!isDirectMessage || !channelContext) && !override && !manageMode;
+    const showUserProfileOptions = shouldShowUserProfileOptions({
+        channelContext,
+        isDirectMessageWithUser,
+        manageMode,
+        override,
+    });
     const showNickname = Boolean(user.nickname) && !override && !user.isBot && !manageMode;
     const showPosition = Boolean(user.position) && !override && !user.isBot && !manageMode;
     const showLocalTime = Boolean(localTime) && !override && !user.isBot && !manageMode;

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RewritingIndicator from '@agents/components/rewriting_indicator';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
@@ -199,6 +200,7 @@ function DraftInput({
 
     return (
         <>
+            <RewritingIndicator/>
             <Typing
                 channelId={channelId}
                 rootId={rootId}
@@ -209,7 +211,6 @@ function DraftInput({
                 style={style.inputWrapper}
                 testID={testID}
             >
-
                 <ScrollView
                     style={style.inputContainer}
                     contentContainerStyle={style.inputContentContainer}
