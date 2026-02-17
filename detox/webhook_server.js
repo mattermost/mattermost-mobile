@@ -22,6 +22,22 @@ const server = express();
 server.use(express.json());
 server.use(express.urlencoded({extended: true}));
 
+// Log all incoming requests (minimal for test performance)
+server.use((req, res, next) => {
+    console.log(`[${req.method}] ${req.url}`);
+    next();
+});
+
+// Add error handling for failed requests
+server.use((err, req, res, next) => {
+    console.error('=== SERVER ERROR ===');
+    console.error('Error:', err);
+    console.error('Request URL:', req.url);
+    console.error('Request Method:', req.method);
+    console.error('=== END SERVER ERROR ===');
+    next(err);
+});
+
 process.title = process.argv[2];
 
 server.get('/', ping);
@@ -31,6 +47,15 @@ server.post('/simple_dialog_request', onSimpleDialogRequest);
 server.post('/user_and_channel_dialog_request', onUserAndChannelDialogRequest);
 server.post('/dialog_submit', onDialogSubmit);
 server.post('/boolean_dialog_request', onBooleanDialogRequest);
+server.post('/simple_dialog_error_request', onSimpleDialogErrorRequest);
+server.post('/select_fields_dialog_request', onSelectFieldsDialogRequest);
+server.post('/multiselect_dynamic_dialog_request', onMultiselectDynamicDialogRequest);
+server.post('/dynamic_options', getDynamicOptions);
+server.post('/dynamic_multiselect_options', getDynamicMultiselectOptions);
+server.post('/multiform_dialog_request', onMultiformDialogRequest);
+server.post('/multiform_dialog_submit', onMultiformDialogSubmit);
+server.post('/field_refresh_dialog_request', onFieldRefreshDialogRequest);
+server.post('/field_refresh_dialog_submit', onFieldRefreshDialogSubmit);
 server.post('/slack_compatible_message_response', postSlackCompatibleMessageResponse);
 server.post('/send_message_to_channel', postSendMessageToChannel);
 server.post('/post_outgoing_webhook', postOutgoingWebhook);
@@ -192,6 +217,147 @@ function onBooleanDialogRequest(req, res) {
     return res.json({text: 'Simple dialog triggered via slash command!'});
 }
 
+function onSimpleDialogErrorRequest(req, res) {
+    const {body} = req;
+    if (body.trigger_id) {
+        const webhookBaseUrl = getWebhookBaseUrl();
+
+        // Create a simple dialog that will submit to the error endpoint
+        const dialog = {
+            trigger_id: body.trigger_id,
+            url: `${webhookBaseUrl}/dialog_submit_error`,
+            dialog: {
+                callback_id: 'simpleerrorcallbackid',
+                title: 'Simple Dialog Error Test',
+                icon_url: 'http://www.mattermost.org/wp-content/uploads/2016/04/icon.png',
+                submit_label: 'Submit Test',
+                notify_on_cancel: true,
+                state: 'somestate',
+                elements: [
+                    {
+                        display_name: 'Optional Text Field',
+                        name: 'optional_text',
+                        type: 'text',
+                        default: '',
+                        placeholder: 'Enter some text (will trigger error)...',
+                        help_text: 'This field will trigger a server error for testing',
+                        optional: true,
+                        min_length: 0,
+                        max_length: 100,
+                    },
+                ],
+            },
+        };
+        openDialog(dialog);
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.json({text: 'Error dialog triggered via slash command!'});
+}
+
+function onSelectFieldsDialogRequest(req, res) {
+    const {body} = req;
+    if (body.trigger_id) {
+        const webhookBaseUrl = getWebhookBaseUrl();
+
+        // Create a focused dialog with select field types for testing
+        const dialog = {
+            trigger_id: body.trigger_id,
+            url: `${webhookBaseUrl}/dialog_submit`,
+            dialog: {
+                callback_id: 'selectfieldscallbackid',
+                title: 'Select Fields Dialog Test',
+                icon_url: 'http://www.mattermost.org/wp-content/uploads/2016/04/icon.png',
+                submit_label: 'Submit Test',
+                notify_on_cancel: true,
+                state: 'somestate',
+                elements: [
+                    {
+                        display_name: 'Radio Option Selector',
+                        name: 'someradiooptions',
+                        type: 'radio',
+                        help_text: 'Choose your department',
+                        optional: false,
+                        options: [
+                            {
+                                text: 'Engineering',
+                                value: 'engineering',
+                            },
+                            {
+                                text: 'Sales',
+                                value: 'sales',
+                            },
+                            {
+                                text: 'Marketing',
+                                value: 'marketing',
+                            },
+                        ],
+                    },
+                    {
+                        display_name: 'Option Selector',
+                        name: 'someoptionselector',
+                        type: 'select',
+                        subtype: '',
+                        default: '',
+                        placeholder: 'Select an option...',
+                        help_text: 'Choose from static options',
+                        optional: false,
+                        min_length: 0,
+                        max_length: 0,
+                        data_source: '',
+                        options: [
+                            {
+                                text: 'Option1',
+                                value: 'opt1',
+                            },
+                            {
+                                text: 'Option2',
+                                value: 'opt2',
+                            },
+                            {
+                                text: 'Option3',
+                                value: 'opt3',
+                            },
+                        ],
+                    },
+                    {
+                        display_name: 'User Selector',
+                        name: 'someuserselector',
+                        type: 'select',
+                        subtype: '',
+                        default: '',
+                        placeholder: 'Select a user...',
+                        help_text: 'Choose a user from the team',
+                        optional: false,
+                        min_length: 0,
+                        max_length: 0,
+                        data_source: 'users',
+                        options: null,
+                    },
+                    {
+                        display_name: 'Channel Selector',
+                        name: 'somechannelselector',
+                        type: 'select',
+                        subtype: '',
+                        default: '',
+                        placeholder: 'Select a channel...',
+                        help_text: 'Choose a channel from the list',
+                        optional: true,
+                        min_length: 0,
+                        max_length: 0,
+                        data_source: 'channels',
+                        options: null,
+                    },
+                ],
+            },
+        };
+        openDialog(dialog);
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.json({text: 'Select fields dialog triggered via slash command!'});
+}
+
 function onDialogSubmit(req, res) {
     const {body} = req;
 
@@ -202,7 +368,68 @@ function onDialogSubmit(req, res) {
         message = 'Dialog cancelled';
         sendSysadminResponse(message, body.channel_id);
     } else {
-        message = 'Dialog submitted';
+        const submission = body.submission || {};
+
+        // Debug logging for dialog submissions (can be removed in production)
+        console.log('[POST] /dialog_submit - callback_id:', body.callback_id);
+
+        // For boolean dialog, post detailed submission values to channel
+        if (body.callback_id === 'booleancallbackid') {
+            const booleanValues = {
+                required_boolean: submission.required_boolean,
+                optional_boolean: submission.optional_boolean,
+                boolean_default_true: submission.boolean_default_true,
+                boolean_default_false: submission.boolean_default_false,
+            };
+
+            console.log('Boolean dialog submitted');
+
+            // Post structured submission results to channel for e2e verification
+            message = `Boolean Dialog Submitted:
+- required_boolean: ${booleanValues.required_boolean}
+- optional_boolean: ${booleanValues.optional_boolean}  
+- boolean_default_true: ${booleanValues.boolean_default_true}
+- boolean_default_false: ${booleanValues.boolean_default_false}`;
+        } else if (body.callback_id === 'textfieldscallbackid') {
+            const textValues = {
+                text_field: submission.text_field,
+                required_text: submission.required_text,
+                email_field: submission.email_field,
+                number_field: submission.number_field,
+                password_field: submission.password_field,
+                textarea_field: submission.textarea_field,
+            };
+
+            console.log('Text fields dialog submitted');
+
+            // Post structured submission results to channel for e2e verification
+            message = `Text Fields Dialog Submitted:
+- text_field: ${textValues.text_field}
+- required_text: ${textValues.required_text}
+- email_field: ${textValues.email_field}
+- number_field: ${textValues.number_field}
+- password_field: ${textValues.password_field}
+- textarea_field: ${textValues.textarea_field}`;
+        } else if (body.callback_id === 'selectfieldscallbackid') {
+            const selectValues = {
+                someradiooptions: submission.someradiooptions,
+                someoptionselector: submission.someoptionselector,
+                someuserselector: submission.someuserselector,
+                somechannelselector: submission.somechannelselector,
+            };
+
+            console.log('Select fields dialog submitted');
+
+            // Post structured submission results to channel for e2e verification
+            message = `Select Fields Dialog Submitted:
+- someradiooptions: ${selectValues.someradiooptions}
+- someoptionselector: ${selectValues.someoptionselector}
+- someuserselector: ${selectValues.someuserselector}
+- somechannelselector: ${selectValues.somechannelselector}`;
+        } else {
+            message = `Dialog submitted with values: ${JSON.stringify(submission)}`;
+        }
+
         sendSysadminResponse(message, body.channel_id);
     }
 
@@ -293,3 +520,180 @@ function postOutgoingWebhook(req, res) {
     };
     res.status(200).send(response);
 }
+
+function onMultiselectDynamicDialogRequest(req, res) {
+    const {body} = req;
+
+    if (body.trigger_id) {
+        const webhookBaseUrl = getWebhookBaseUrl();
+        const dialog = webhookUtils.getMultiselectDynamicDialog(body.trigger_id, webhookBaseUrl);
+        openDialog(dialog);
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.json({text: 'Multiselect dynamic dialog triggered via slash command!'});
+}
+
+function getDynamicOptions(req, res) {
+    const {body} = req;
+    const searchTerm = body.user_input || '';
+
+    // Respond immediately for test performance
+    const response = webhookUtils.getDynamicOptionsResponse(searchTerm);
+    res.status(200).json(response);
+}
+
+function getDynamicMultiselectOptions(req, res) {
+    const {body} = req;
+    const searchTerm = body.user_input || '';
+
+    // Respond immediately for test performance
+    const response = webhookUtils.getDynamicMultiselectOptionsResponse(searchTerm);
+    res.status(200).json(response);
+}
+
+// Multiform dialog endpoints
+function onMultiformDialogRequest(req, res) {
+    const {body} = req;
+
+    if (body.trigger_id) {
+        const webhookBaseUrl = getWebhookBaseUrl();
+        const dialog = webhookUtils.getMultiformDialog(body.trigger_id, webhookBaseUrl, 1);
+        openDialog(dialog);
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.json({text: 'Multiform dialog triggered via slash command!'});
+}
+
+function onMultiformDialogSubmit(req, res) {
+    const {body} = req;
+
+    const callbackId = body.callback_id;
+    let response;
+
+    if (callbackId === 'multiform_step_1') {
+        // Return step 2 dialog
+        const webhookBaseUrl = getWebhookBaseUrl();
+        const step2Dialog = webhookUtils.getMultiformDialog(body.trigger_id, webhookBaseUrl, 2);
+
+        response = {
+            type: 'form',
+            form: step2Dialog.dialog,
+        };
+    } else if (callbackId === 'multiform_step_2') {
+        // Return step 3 dialog
+        const webhookBaseUrl = getWebhookBaseUrl();
+        const step3Dialog = webhookUtils.getMultiformDialog(body.trigger_id, webhookBaseUrl, 3);
+
+        response = {
+            type: 'form',
+            form: step3Dialog.dialog,
+        };
+    } else if (callbackId === 'multiform_step_3') {
+        // Final submission - send success message to channel
+        const submissionText = Object.entries(body.submission).
+            map(([key, value]) => `${key}: ${value}`).
+            join('\n');
+
+        const message = `Multiform submission completed!\n\`\`\`\n${submissionText}\n\`\`\``;
+        sendSysadminResponse(message, body.channel_id);
+
+        response = {};
+    } else if (body.cancelled) {
+        // Handle cancellation
+        let stepNumber;
+        if (callbackId === 'multiform_step_1') {
+            stepNumber = 1;
+        } else if (callbackId === 'multiform_step_2') {
+            stepNumber = 2;
+        } else {
+            stepNumber = 3;
+        }
+        const message = `Multiform dialog was cancelled at step ${stepNumber}`;
+        sendSysadminResponse(message, body.channel_id);
+        response = {};
+    }
+
+    res.status(200).json(response);
+}
+
+// Field refresh dialog endpoints
+function onFieldRefreshDialogRequest(req, res) {
+    const {body} = req;
+
+    if (body.trigger_id) {
+        const webhookBaseUrl = getWebhookBaseUrl();
+
+        // Start with basic field refresh dialog (no project type selected)
+        const dialog = webhookUtils.getFieldRefreshDialog(body.trigger_id, webhookBaseUrl);
+        openDialog(dialog);
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.json({text: 'Field refresh dialog triggered via slash command!'});
+}
+
+function onFieldRefreshDialogSubmit(req, res) {
+    const {body} = req;
+
+    let response;
+
+    // Check if this is a refresh request (indicated by 'type': 'refresh' or selected_field)
+    if (body.type === 'refresh' || body.submission.selected_field) {
+
+        // Get the current project type from submission
+        const projectType = body.submission.project_type;
+
+        if (projectType && projectType !== 'unknown_type') {
+            // Return refreshed dialog with project-specific fields
+            const webhookBaseUrl = getWebhookBaseUrl();
+            const refreshedDialog = webhookUtils.getFieldRefreshDialog(body.trigger_id, webhookBaseUrl, projectType);
+
+            response = {
+                type: 'form',
+                form: refreshedDialog.dialog,
+            };
+        } else {
+            // Invalid project type - return error or basic dialog
+            const webhookBaseUrl = getWebhookBaseUrl();
+            const basicDialog = webhookUtils.getFieldRefreshDialog(body.trigger_id, webhookBaseUrl);
+
+            response = {
+                type: 'form',
+                form: basicDialog.dialog,
+            };
+        }
+    } else if (body.cancelled) {
+        // Handle cancellation
+        const message = 'Field refresh dialog was cancelled';
+        sendSysadminResponse(message, body.channel_id);
+        response = {};
+    } else {
+        // Final submission - send success message to channel
+        const submissionText = Object.entries(body.submission).
+            map(([key, value]) => `${key}: ${value}`).
+            join('\n');
+
+        const message = `Field refresh dialog submitted successfully!\n\`\`\`\n${submissionText}\n\`\`\``;
+        sendSysadminResponse(message, body.channel_id);
+
+        response = {};
+    }
+
+    res.status(200).json(response);
+}
+
+// Catch-all route for unmatched requests
+server.use((req, res) => {
+    res.status(404).json({
+        error: 'Not Found',
+        method: req.method,
+        url: req.originalUrl,
+        message: 'This endpoint does not exist on the webhook server',
+    });
+});
+
+server.listen(port, () => {
+    console.log(`Webhook test server listening on port ${port}!`);
+});

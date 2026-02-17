@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {Keyboard, SafeAreaView, StyleSheet, View} from 'react-native';
 
 import {updateScheduledPost} from '@actions/remote/scheduled_post';
-import DateTimeSelector from '@components/data_time_selector';
+import DateTimeSelector from '@components/date_time_selector';
 import Loading from '@components/loading';
 import {MESSAGE_TYPE, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';

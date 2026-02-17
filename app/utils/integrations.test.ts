@@ -227,6 +227,64 @@ describe('checkDialogElementForError', () => {
         expect(checkDialogElementForError(elemURL, 'http://example.com')).toBeNull();
         expect(checkDialogElementForError(elemRadio, 'option1')).toBeNull();
     });
+
+    describe('multiselect SELECT validation', () => {
+        const multiselectElement: DialogElement = {
+            name: 'multiselect_field',
+            type: 'select',
+            multiselect: true,
+            optional: false,
+            options: [
+                {text: 'Option A', value: 'optA'},
+                {text: 'Option B', value: 'optB'},
+                {text: 'Option C', value: 'optC'},
+            ],
+            display_name: 'Multi Select Field',
+            placeholder: '',
+            help_text: '',
+            default: '',
+            min_length: 0,
+            max_length: 0,
+            data_source: '',
+        };
+
+        test('should validate multiselect values correctly', () => {
+            // Valid multiselect array should pass
+            expect(checkDialogElementForError(multiselectElement, ['optA', 'optC'])).toBeNull();
+        });
+
+        test('should require at least one selection for required multiselect', () => {
+            // Empty array for required field should fail
+            expect(checkDialogElementForError(multiselectElement, [])).toEqual({
+                id: 'interactive_dialog.error.required',
+                defaultMessage: 'This field is required.',
+            });
+        });
+
+        test('should reject invalid options in multiselect array', () => {
+            // Invalid option in array should fail
+            expect(checkDialogElementForError(multiselectElement, ['optA', 'invalidOption'])).toEqual({
+                id: 'interactive_dialog.error.invalid_option',
+                defaultMessage: 'Must be a valid option',
+            });
+        });
+
+        test('should allow empty arrays for optional multiselect', () => {
+            // Optional multiselect can be empty
+            const optionalElement = {...multiselectElement, optional: true};
+            expect(checkDialogElementForError(optionalElement, [])).toBeNull();
+        });
+
+        test('should handle single valid option in multiselect', () => {
+            // Single valid option should pass
+            expect(checkDialogElementForError(multiselectElement, ['optB'])).toBeNull();
+        });
+
+        test('should handle all options selected', () => {
+            // All options selected should pass
+            expect(checkDialogElementForError(multiselectElement, ['optA', 'optB', 'optC'])).toBeNull();
+        });
+    });
 });
 
 describe('checkIfErrorsMatchElements', () => {
@@ -305,5 +363,72 @@ describe('selectKeyboardType', () => {
 
     test('returns default for unrecognized subtype', () => {
         expect(selectKeyboardType('unrecognized')).toBe('default');
+    });
+});
+
+describe('checkDialogElementForError - date/datetime fields', () => {
+    const baseElement: DialogElement = {
+        name: 'test_date',
+        type: 'date',
+        display_name: 'Test Date',
+        subtype: undefined,
+        default: '',
+        placeholder: '',
+        help_text: '',
+        optional: false,
+        min_length: 0,
+        max_length: 0,
+        data_source: '',
+        options: [],
+    };
+
+    test('returns required error for empty required date field', () => {
+        const result = checkDialogElementForError(baseElement, '');
+        expect(result).toEqual({
+            id: 'interactive_dialog.error.required',
+            defaultMessage: 'This field is required.',
+        });
+    });
+
+    test('returns required error for undefined required date field', () => {
+        const result = checkDialogElementForError(baseElement, undefined);
+        expect(result).toEqual({
+            id: 'interactive_dialog.error.required',
+            defaultMessage: 'This field is required.',
+        });
+    });
+
+    test('returns required error for null required date field', () => {
+        const result = checkDialogElementForError(baseElement, null);
+        expect(result).toEqual({
+            id: 'interactive_dialog.error.required',
+            defaultMessage: 'This field is required.',
+        });
+    });
+
+    test('returns no error for valid date value', () => {
+        const result = checkDialogElementForError(baseElement, '2026-02-12');
+        expect(result).toBeNull();
+    });
+
+    test('returns no error for optional empty date field', () => {
+        const optionalElement = {...baseElement, optional: true};
+        const result = checkDialogElementForError(optionalElement, '');
+        expect(result).toBeNull();
+    });
+
+    test('returns required error for empty required datetime field', () => {
+        const datetimeElement = {...baseElement, type: 'datetime' as InteractiveDialogElementType};
+        const result = checkDialogElementForError(datetimeElement, '');
+        expect(result).toEqual({
+            id: 'interactive_dialog.error.required',
+            defaultMessage: 'This field is required.',
+        });
+    });
+
+    test('returns no error for valid datetime value', () => {
+        const datetimeElement = {...baseElement, type: 'datetime' as InteractiveDialogElementType};
+        const result = checkDialogElementForError(datetimeElement, '2026-02-12T14:30:00Z');
+        expect(result).toBeNull();
     });
 });

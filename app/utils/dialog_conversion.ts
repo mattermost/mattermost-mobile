@@ -26,8 +26,14 @@ export function convertAppFormValuesToDialogSubmission(
     const submission: {[key: string]: string | number | boolean} = {};
     const errors: string[] = [];
 
+    // Early return if no values to process
+    const valueKeys = Object.keys(values);
+    if (valueKeys.length === 0) {
+        return {submission, errors};
+    }
+
     // Convert each form value back to dialog submission format
-    Object.keys(values).forEach((fieldName) => {
+    valueKeys.forEach((fieldName) => {
         const value = values[fieldName];
         const element = elements.find((e) => e.name === fieldName);
 
@@ -54,10 +60,18 @@ export function convertAppFormValuesToDialogSubmission(
 
             case DialogElementTypes.RADIO:
             case DialogElementTypes.SELECT:
-                // Handle AppSelectOption objects
-                if (isAppSelectOption(value)) {
+                // Handle multiselect arrays for SELECT fields only
+                if (element.type === DialogElementTypes.SELECT && element.multiselect && Array.isArray(value)) {
+                    // For multiselect, extract values from AppSelectOption array and join with commas
+                    const extractedValues = value.map((option) => (
+                        isAppSelectOption(option) ? (option.value || '') : String(option || '')
+                    )).filter((v) => v !== '');
+                    submission[fieldName] = extractedValues.join(',');
+                } else if (isAppSelectOption(value)) {
+                    // Single AppSelectOption object
                     submission[fieldName] = String(value.value || '');
                 } else {
+                    // Single string value
                     submission[fieldName] = String(value || '');
                 }
                 break;
@@ -92,7 +106,7 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
     if (element.type === DialogElementTypes.TEXT || element.type === DialogElementTypes.TEXTAREA) {
         appField.max_length = element.max_length;
         appField.min_length = element.min_length;
-        if (element.type !== DialogElementTypes.TEXTAREA) {
+        if (element.type !== DialogElementTypes.TEXTAREA && element.subtype) {
             appField.subtype = element.subtype;
         }
     }
@@ -102,6 +116,11 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
             label: option.text,
             value: option.value,
         }));
+
+        // Add multiselect support for select fields
+        if (element.type === DialogElementTypes.SELECT && element.multiselect) {
+            appField.multiselect = element.multiselect;
+        }
     }
 
     if (element.default) {
@@ -112,6 +131,18 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
         appField.hint = element.placeholder;
     }
 
+    // Preserve datetime configuration
+    if (element.type === DialogElementTypes.DATE || element.type === DialogElementTypes.DATETIME) {
+        appField.min_date = element.min_date;
+        appField.max_date = element.max_date;
+        appField.time_interval = element.time_interval;
+        appField.datetime_config = element.datetime_config;
+    }
+
+    // Field refresh should be controlled by the server-side dialog configuration
+    // The server should specify which fields trigger form refresh
+    appField.refresh = element.refresh;
+
     return appField;
 }
 
@@ -119,15 +150,29 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
  * Converts InteractiveDialogConfig to AppForm
  */
 export function convertDialogToAppForm(config: InteractiveDialogConfig): AppForm {
+    const convertedFields = config.dialog.elements?.map((element, index) => ({
+        ...convertDialogElementToAppField(element),
+        position: index,
+    })) || [];
+
+    // Set source only if source_url is provided or if any fields have refresh enabled (matching webapp behavior)
+    const hasRefreshFields = convertedFields.some((field) => field.refresh === true);
+    const sourceUrl = config.dialog.source_url;
+
     const form: AppForm = {
         title: config.dialog.title,
         header: config.dialog.introduction_text || undefined,
-        fields: config.dialog.elements?.map((element, index) => ({
-            ...convertDialogElementToAppField(element),
-            position: index,
-        })) || [],
+        fields: convertedFields,
         submit_buttons: undefined,
-        source: undefined,
+
+        // Pass through submit label from dialog config
+        submit_label: config.dialog.submit_label || undefined,
+
+        // Set source if sourceUrl is provided or if any fields have refresh enabled (matching webapp behavior)
+        source: ((sourceUrl && sourceUrl.trim()) || hasRefreshFields) ? {
+            path: sourceUrl || '/dialog/refresh',
+            expand: {},
+        } : undefined,
         submit: {
             path: '/dialog/submit',
             expand: {},

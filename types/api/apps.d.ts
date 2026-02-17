@@ -130,6 +130,7 @@ type AppForm = {
     footer?: string;
     icon?: string;
     submit_buttons?: string;
+    submit_label?: string;
     cancel_button?: boolean;
     submit_on_cancel?: boolean;
     fields?: AppField[];
@@ -189,6 +190,21 @@ type AppField = {
     subtype?: string;
     min_length?: number;
     max_length?: number;
+
+    // Date/DateTime props
+    min_date?: string;
+    max_date?: string;
+    time_interval?: number;
+    datetime_config?: DateTimeConfig;
+};
+
+type DateTimeConfig = {
+    time_interval?: number;
+    is_range?: boolean;
+    allow_single_day_range?: boolean;
+    range_layout?: 'horizontal' | 'vertical';
+    location_timezone?: string;
+    allow_manual_time_entry?: boolean;
 };
 
 type AutocompleteElement = AppField;

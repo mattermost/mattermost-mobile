@@ -1,20 +1,35 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import moment, {type Moment} from 'moment-timezone';
 import React, {useCallback, useMemo} from 'react';
-import {View} from 'react-native';
+import {View, Text} from 'react-native';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
+import DateTimeSelector from '@components/date_time_selector';
+import FormattedDate from '@components/formatted_date';
+import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
 import BoolSetting from '@components/settings/bool_setting';
 import RadioSetting from '@components/settings/radio_setting';
 import TextSetting from '@components/settings/text_setting';
-import {Screens, View as ViewConstants} from '@constants';
+import {Preferences, Screens, View as ViewConstants} from '@constants';
 import {AppFieldTypes, SelectableAppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
+import {observeCurrentUser} from '@queries/servers/user';
+import {parseDateInTimezone, resolveRelativeDate} from '@utils/date_utils';
 import {isAppSelectOption} from '@utils/dialog_utils';
+import {getCurrentMomentForTimezone} from '@utils/helpers';
 import {selectKeyboardType} from '@utils/integrations';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {getTimezone} from '@utils/user';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
@@ -26,6 +41,8 @@ export type Props = {
     value: AppFormValue;
     onChange: (name: string, value: AppFormValue) => void;
     performLookup: (name: string, userInput: string) => Promise<AppSelectOption[]>;
+    userTimezone: string;
+    isMilitaryTime: boolean;
 }
 
 const dialogOptionToAppSelectOption = (option: DialogOption): AppSelectOption => ({
@@ -39,6 +56,26 @@ const appSelectOptionToDialogOption = (option: AppSelectOption): DialogOption =>
 });
 
 const extractOptionValue = (v: AppSelectOption) => v.value || '';
+
+const getDateValue = (value: AppFormValue, timezone?: string, isDateTime = false): Moment | undefined => {
+    if (typeof value === 'string' && value) {
+        // Resolve relative dates FIRST (today, +1d, etc.)
+        const resolvedValue = resolveRelativeDate(value, timezone);
+
+        // Then parse the resolved date
+        const parsed = parseDateInTimezone(resolvedValue, timezone);
+
+        // For datetime fields with relative dates, set to current time (rounded)
+        if (isDateTime && parsed && value !== resolvedValue) {
+            // This was a relative date that got resolved, use current time
+            const currentTime = getCurrentMomentForTimezone(timezone || null);
+            return parsed.hour(currentTime.hour()).minute(currentTime.minute()).second(0);
+        }
+
+        return parsed || undefined;
+    }
+    return undefined;
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -67,14 +104,16 @@ function selectDataSource(fieldType: string): string {
     }
 }
 
-const AppsFormField = React.memo<Props>(({
+const AppsFormFieldComponent = ({
     field,
     name,
     errorText,
     value,
     onChange,
     performLookup,
-}) => {
+    userTimezone,
+    isMilitaryTime,
+}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -101,6 +140,18 @@ const AppsFormField = React.memo<Props>(({
 
         onChange(name, dialogOptionToAppSelectOption(newValue));
     }, [onChange, field, name]);
+
+    const handleDateChange = useCallback((selectedDate: Moment) => {
+        if (field.type === AppFieldTypes.DATE) {
+            // For date-only fields, use start of day to avoid timezone issues
+            const startOfDay = selectedDate.clone().startOf('day');
+            const dateString = startOfDay.format('YYYY-MM-DD');
+            onChange(name, dateString);
+        } else if (field.type === AppFieldTypes.DATETIME) {
+            // For datetime fields, return full ISO string
+            onChange(name, selectedDate.toISOString());
+        }
+    }, [name, onChange, field.type]);
 
     const getDynamicOptions = useCallback(async (userInput = ''): Promise<DialogOption[]> => {
         if (!field.name) {
@@ -247,11 +298,185 @@ const AppsFormField = React.memo<Props>(({
                 </View>
             );
         }
+        case AppFieldTypes.DATE:
+        case AppFieldTypes.DATETIME: {
+            // Determine timezone: location_timezone takes precedence over user timezone
+            const locationTimezone = field.datetime_config?.location_timezone;
+            const displayTimezone = locationTimezone || userTimezone;
+            const showTimezoneIndicator = Boolean(locationTimezone);
+
+            // Parse date with proper timezone handling
+            const isDateTimeField = field.type === AppFieldTypes.DATETIME;
+            const selectedDate = getDateValue(value, displayTimezone, isDateTimeField) || moment();
+            const hasValue = Boolean(value);
+
+            // Get timezone abbreviation for display
+            const timezoneAbbr = showTimezoneIndicator ? moment.tz(displayTimezone).format('z') : '';
+
+            // Resolve relative dates in min_date and max_date using display timezone
+            const resolvedMinDate = field.min_date ? resolveRelativeDate(field.min_date, displayTimezone) : undefined;
+            const resolvedMaxDate = field.max_date ? resolveRelativeDate(field.max_date, displayTimezone) : undefined;
+
+            // Calculate allowPastDates based on min_date (matching webapp logic)
+            const allowPastDates = useMemo(() => {
+                if (field.min_date && resolvedMinDate) {
+                    const minMoment = parseDateInTimezone(resolvedMinDate, displayTimezone);
+                    const currentMoment = getCurrentMomentForTimezone(displayTimezone);
+
+                    return !minMoment || minMoment.isBefore(currentMoment, 'day');
+                }
+
+                return true;
+            }, [field.min_date, resolvedMinDate, displayTimezone]);
+
+            const dateTimeStyles = {
+                container: {
+                    marginBottom: 24,
+                },
+                labelContainer: {
+                    flexDirection: 'row' as const,
+                    marginTop: 15,
+                    marginBottom: 10,
+                    marginLeft: 15,
+                    marginRight: 15,
+                    alignItems: 'center' as const,
+                    justifyContent: 'space-between' as const,
+                },
+                label: {
+                    fontSize: 14,
+                    color: theme.centerChannelColor,
+                    flexShrink: 1,
+                    marginRight: 8,
+                },
+                asterisk: {
+                    color: theme.errorTextColor,
+                    fontSize: 14,
+                },
+                dateTimeDisplay: {
+                    flexShrink: 0,
+                },
+                dateTimeText: {
+                    color: theme.linkColor,
+                    fontSize: 14,
+                },
+                helpText: {
+                    fontSize: 12,
+                    color: theme.centerChannelColor,
+                    marginLeft: 15,
+                    marginTop: 4,
+                    opacity: 0.64,
+                },
+                errorText: {
+                    fontSize: 12,
+                    color: theme.errorTextColor,
+                    marginLeft: 15,
+                    marginTop: 4,
+                },
+                timezoneIndicator: {
+                    flexDirection: 'row' as const,
+                    alignItems: 'center' as const,
+                    marginLeft: 15,
+                    marginBottom: 8,
+                    marginTop: -4,
+                },
+                timezoneText: {
+                    fontSize: 12,
+                    color: theme.centerChannelColor,
+                    opacity: 0.64,
+                    marginLeft: 4,
+                },
+            };
+
+            return (
+                <View style={dateTimeStyles.container}>
+                    <View style={dateTimeStyles.labelContainer}>
+                        <Text
+                            style={dateTimeStyles.label}
+                            numberOfLines={1}
+                            ellipsizeMode='tail'
+                        >
+                            {displayName}
+                            {field.is_required && <Text style={dateTimeStyles.asterisk}>{' *'}</Text>}
+                        </Text>
+
+                        {hasValue && (
+                            <View style={dateTimeStyles.dateTimeDisplay}>
+                                {field.type === AppFieldTypes.DATE ? (
+                                    <FormattedDate
+                                        value={selectedDate.toDate()}
+                                        format={{dateStyle: 'medium'}}
+                                        style={dateTimeStyles.dateTimeText}
+                                    />
+                                ) : (
+                                    <Text style={dateTimeStyles.dateTimeText}>
+                                        <FormattedDate
+                                            value={selectedDate.toDate()}
+                                            format={{dateStyle: 'medium'}}
+                                        />
+                                        {' at '}
+                                        <FormattedTime
+                                            isMilitaryTime={isMilitaryTime}
+                                            timezone={displayTimezone}
+                                            value={selectedDate.toDate()}
+                                        />
+                                    </Text>
+                                )}
+                            </View>
+                        )}
+                    </View>
+
+                    {showTimezoneIndicator && (
+                        <View style={dateTimeStyles.timezoneIndicator}>
+                            <Text style={dateTimeStyles.timezoneText}>
+                                {'🌍 Times in '}
+                                {timezoneAbbr}
+                            </Text>
+                        </View>
+                    )}
+
+                    <DateTimeSelector
+                        timezone={displayTimezone}
+                        theme={theme}
+                        handleChange={handleDateChange}
+                        initialDate={hasValue ? selectedDate : undefined}
+                        dateOnly={field.type === AppFieldTypes.DATE}
+                        allowPastDates={allowPastDates}
+                        minDate={resolvedMinDate}
+                        maxDate={resolvedMaxDate}
+                        minuteInterval={field.datetime_config?.time_interval || field.time_interval || 30}
+                        testID={testID}
+                    />
+
+                    {field.description && (
+                        <Text style={dateTimeStyles.helpText}>
+                            {field.description}
+                        </Text>
+                    )}
+                    {errorText && (
+                        <Text style={dateTimeStyles.errorText}>
+                            {errorText}
+                        </Text>
+                    )}
+                </View>
+            );
+        }
     }
 
     return null;
-});
+};
 
-AppsFormField.displayName = 'AppsFormField';
+AppsFormFieldComponent.displayName = 'AppsFormField';
 
-export default AppsFormField;
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
+    userTimezone: observeCurrentUser(database).pipe(
+        switchMap((user) => of$(getTimezone(user?.timezone))),
+    ),
+    isMilitaryTime: queryDisplayNamePreferences(database).
+        observeWithColumns(['value']).pipe(
+            switchMap(
+                (preferences) => of$(getDisplayNamePreferenceAsBool(preferences, Preferences.USE_MILITARY_TIME, false)),
+            ),
+        ),
+}));
+
+export default withDatabase(enhanced(AppsFormFieldComponent));

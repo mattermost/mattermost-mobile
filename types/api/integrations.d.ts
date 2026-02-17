@@ -72,7 +72,16 @@ type DialogElement = {
     min_length: number;
     max_length: number;
     data_source: string;
+    data_source_url?: string;
     options: DialogOption[];
+    multiselect?: boolean;
+    refresh?: boolean;
+
+    // Date/DateTime fields
+    min_date?: string;
+    max_date?: string;
+    time_interval?: number;
+    datetime_config?: DateTimeConfig;
 };
 
 type InteractiveDialogConfig = {
@@ -88,6 +97,7 @@ type InteractiveDialogConfig = {
         submit_label: string;
         notify_on_cancel: boolean;
         state: string;
+        source_url?: string;
     };
 };
 
@@ -119,5 +129,5 @@ type PostActionResponse = {
     trigger_id: string;
 };
 
-type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool'
+type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'date' | 'datetime'
 type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'

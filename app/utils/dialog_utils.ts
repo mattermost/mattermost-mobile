@@ -16,6 +16,7 @@ export function isAppSelectOption(value: any): value is AppSelectOption {
 export const DialogDataSources = {
     USERS: 'users',
     CHANNELS: 'channels',
+    DYNAMIC: 'dynamic',
 } as const;
 
 /**
@@ -27,6 +28,8 @@ export const DialogElementTypes = {
     SELECT: 'select' as const,
     RADIO: 'radio' as const,
     BOOL: 'bool' as const,
+    DATE: 'date' as const,
+    DATETIME: 'datetime' as const,
 } as const;
 
 /**
@@ -72,11 +75,18 @@ export function mapDialogTypeToAppFieldType(dialogType: InteractiveDialogElement
             if (dataSource === DialogDataSources.CHANNELS) {
                 return 'channel';
             }
+            if (dataSource === DialogDataSources.DYNAMIC) {
+                return 'dynamic_select';
+            }
             return 'static_select';
         case DialogElementTypes.RADIO:
             return 'radio';
         case DialogElementTypes.BOOL:
             return 'bool';
+        case DialogElementTypes.DATE:
+            return 'date';
+        case DialogElementTypes.DATETIME:
+            return 'datetime';
         default:
             return 'text';
     }
@@ -98,6 +108,10 @@ export function mapAppFieldTypeToDialogType(appFieldType: AppFieldType): Interac
             return DialogElementTypes.RADIO;
         case 'bool':
             return DialogElementTypes.BOOL;
+        case 'date':
+            return DialogElementTypes.DATE;
+        case 'datetime':
+            return DialogElementTypes.DATETIME;
         default:
             return DialogElementTypes.TEXT;
     }
@@ -112,6 +126,8 @@ export function getDataSourceForAppFieldType(appFieldType: AppFieldType): string
             return DialogDataSources.USERS;
         case 'channel':
             return DialogDataSources.CHANNELS;
+        case 'dynamic_select':
+            return DialogDataSources.DYNAMIC;
         default:
             return undefined;
     }
