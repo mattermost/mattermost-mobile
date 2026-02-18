@@ -3,32 +3,33 @@
 
 import {fetchEnabledDevices} from '@e2ee/actions/remote/devices';
 import {Device} from '@e2ee/screens/enabled_devices/device';
-import {useCallback, useEffect, useMemo} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {FlatList, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {getDeviceToken} from '@queries/app/global';
-import {getFullErrorMessage} from '@utils/errors';
-import {logError} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
 
-import type E2EEEnabledDeviceModel from '@e2ee/types/database/models/e2ee_enabled_devices';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    currentUser?: UserModel | null;
-    devices: E2EEEnabledDeviceModel[];
-};
+    currentUser?: UserModel;
+}
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
     separator: {
         height: 1,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         width: '100%',
+    },
+    loadingStyle: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     emptyContent: {
         flexGrow: 1,
@@ -52,48 +53,51 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export const DeviceList = ({
-    currentUser,
-    devices,
-}: Props) => {
+export const DeviceList = ({currentUser}: Props) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const serverUrl = useServerUrl();
+    const [devices, setDevices] = useState<DisplayDevice[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const timezone = getUserTimezone(currentUser);
 
     useEffect(() => {
         if (!serverUrl) {
             return;
         }
-        getDeviceToken().
-            then((currentDeviceId) => fetchEnabledDevices(serverUrl, currentDeviceId)).
-            catch((error) => {
-                logError('failed to fetch e2ee enabled devices', getFullErrorMessage(error));
-            });
+
+        setIsLoading(true);
+        fetchEnabledDevices(serverUrl).then((response) => {
+            if (response.devices) {
+                setDevices(response.devices);
+            }
+        }).finally(() => {
+            setIsLoading(false);
+        });
     }, [serverUrl]);
 
-    const timezone = getUserTimezone(currentUser ?? undefined);
+    const listEmptyComponent = useMemo(() => {
+        return (
+            <View style={style.emptyContainer}>
+                <FormattedText
+                    id='e2ee.device_list.empty.title'
+                    defaultMessage='No devices yet'
+                    style={style.emptyTitle}
+                    testID='e2ee.device_list.empty.title'
+                />
+                <FormattedText
+                    id='e2ee.device_list.empty.paragraph'
+                    defaultMessage='Devices with end-to-end encryption enabled will appear here.'
+                    style={style.emptyParagraph}
+                    testID='e2ee.device_list.empty.paragraph'
+                />
+            </View>
+        );
+    }, [style.emptyContainer, style.emptyParagraph, style.emptyTitle]);
 
-    const listEmptyComponent = useMemo(() => (
-        <View style={style.emptyContainer}>
-            <FormattedText
-                id='e2ee.device_list.empty.title'
-                defaultMessage='No devices yet'
-                style={style.emptyTitle}
-                testID='e2ee.device_list.empty.title'
-            />
-            <FormattedText
-                id='e2ee.device_list.empty.paragraph'
-                defaultMessage='Devices with end-to-end encryption enabled will appear here.'
-                style={style.emptyParagraph}
-                testID='e2ee.device_list.empty.paragraph'
-            />
-        </View>
-    ), [style.emptyContainer, style.emptyParagraph, style.emptyTitle]);
-
-    const renderItem = useCallback(({item}: {item: E2EEEnabledDeviceModel}) => (
+    const renderItem = useCallback(({item}: {item: DisplayDevice}) => (
         <Device
             device={item}
-            isThisDevice={item.isCurrentDevice}
             timezone={timezone}
         />
     ), [timezone]);
@@ -104,11 +108,20 @@ export const DeviceList = ({
         />
     ), [style.separator]);
 
+    if (isLoading) {
+        return (
+            <Loading
+                containerStyle={style.loadingStyle}
+                testID='e2ee.device_list.loading'
+            />
+        );
+    }
+
     return (
         <FlatList
             contentContainerStyle={devices.length ? undefined : style.emptyContent}
             data={devices}
-            keyExtractor={(item) => item.deviceId}
+            keyExtractor={(item) => item.device_id}
             ListEmptyComponent={listEmptyComponent}
             renderItem={renderItem}
             testID='e2ee.device_list.flat_list'

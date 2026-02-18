@@ -21,13 +21,10 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type E2EEEnabledDeviceModel from '@e2ee/types/database/models/e2ee_enabled_devices';
-
 const DATE_TIME_FORMAT = {dateStyle: 'long', timeStyle: 'short'} as const;
 
 type Props = {
-    device: E2EEEnabledDeviceModel;
-    isThisDevice?: boolean;
+    device: DisplayDevice;
     onRemoveDevice?: (deviceId: string) => void;
     onVerifyDevice?: (deviceId: string) => void;
     timezone: string | UserTimezone | null;
@@ -111,7 +108,7 @@ function DeviceDetails({
     theme,
     timezone,
 }: {
-    device: E2EEEnabledDeviceModel;
+    device: EnabledDevice;
     intl: ReturnType<typeof useIntl>;
     onRemoveDevice?: (deviceId: string) => void;
     onVerifyDevice?: (deviceId: string) => void;
@@ -120,15 +117,15 @@ function DeviceDetails({
     timezone: string | UserTimezone | null;
 }) {
     const handleRemove = usePreventDoubleTap(() => {
-        onRemoveDevice?.(device.deviceId);
+        onRemoveDevice?.(device.device_id);
     });
     const handleVerify = usePreventDoubleTap(() => {
-        onVerifyDevice?.(device.deviceId);
+        onVerifyDevice?.(device.device_id);
     });
 
     return (
         <>
-            {device.lastActiveAt != null && (
+            {device.last_active_at != null && (
                 <View style={styles.activityRow}>
                     <Text style={styles.activityLabel}>
                         {intl.formatMessage({id: 'e2ee.device.last_activity', defaultMessage: 'Last activity'})}
@@ -136,7 +133,7 @@ function DeviceDetails({
                     <FormattedDate
                         format={DATE_TIME_FORMAT}
                         timezone={timezone}
-                        value={device.lastActiveAt}
+                        value={device.last_active_at}
                         style={styles.activityValue}
                         testID='enabled_devices.device.last_activity'
                     />
@@ -152,7 +149,7 @@ function DeviceDetails({
                 <FormattedDate
                     format={DATE_TIME_FORMAT}
                     timezone={timezone}
-                    value={device.createdAt}
+                    value={device.created_at}
                     style={styles.activityValue}
                     testID='enabled_devices.device.first_active'
                 />
@@ -185,7 +182,6 @@ function DeviceDetails({
 
 export const Device = ({
     device,
-    isThisDevice = false,
     onRemoveDevice,
     onVerifyDevice,
     timezone,
@@ -216,26 +212,12 @@ export const Device = ({
         {left: windowWidth},
     ], [styles.expandedContent, styles.heightCalculator, windowWidth]);
 
-    const versionLine = useMemo(() => {
-        const parts: string[] = [];
-        if (device.osVersion) {
-            parts.push(device.osVersion);
-        }
-        if (device.appVersion) {
-            parts.push(intl.formatMessage(
-                {id: 'e2ee.device.app_version_short', defaultMessage: 'App version {version}'},
-                {version: device.appVersion},
-            ));
-        }
-        return parts.join(' • ') || '';
-    }, [device.osVersion, device.appVersion, intl]);
-
     return (
         <View style={styles.container}>
             <TouchableOpacity
                 onPress={toggleExpanded}
                 activeOpacity={0.7}
-                testID={`enabled_devices.device.${device.deviceId}`}
+                testID={`enabled_devices.device.${device.device_id}`}
             >
                 <View style={styles.headerRow}>
                     <View style={styles.nameAndBadge}>
@@ -243,11 +225,11 @@ export const Device = ({
                             style={styles.name}
                             numberOfLines={1}
                         >
-                            {device.deviceName === ''
+                            {device.device_name === ''
                                 ? intl.formatMessage({id: 'e2ee.device.unknown', defaultMessage: 'Unknown'})
-                                : device.deviceName}
+                                : device.device_name}
                         </Text>
-                        {isThisDevice && (
+                        {device.is_current_device && (
                             <Text style={styles.thisDeviceLabel}>
                                 {intl.formatMessage(
                                     {id: 'e2ee.device.this_device', defaultMessage: '(this device)'},
@@ -271,19 +253,11 @@ export const Device = ({
                         />
                     </View>
                 </View>
-                {versionLine ? (
-                    <Text
-                        style={styles.subtitle}
-                        numberOfLines={1}
-                    >
-                        {versionLine}
-                    </Text>
-                ) : null}
             </TouchableOpacity>
 
             <Animated.View
                 style={animatedExpandStyle}
-                testID={`enabled_devices.device.expanded.${device.deviceId}`}
+                testID={`enabled_devices.device.expanded.${device.device_id}`}
             >
                 <View style={styles.expandedContent}>
                     <DeviceDetails
@@ -301,7 +275,7 @@ export const Device = ({
             <View
                 style={calculatorStyle}
                 onLayout={contentOnLayout}
-                testID={`enabled_devices.device.expanded.calculator.${device.deviceId}`}
+                testID={`enabled_devices.device.expanded.calculator.${device.device_id}`}
             >
                 <DeviceDetails
                     device={device}

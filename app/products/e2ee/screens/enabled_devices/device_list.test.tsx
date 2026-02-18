@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchEnabledDevices} from '@e2ee/actions/remote/devices';
-import {act, type ComponentProps} from 'react';
+import {act} from 'react';
 import {StyleSheet} from 'react-native';
 
 import {fireEvent, renderWithIntl, waitFor} from '@test/intl-test-helper';
@@ -11,10 +11,6 @@ import {DeviceList} from './device_list';
 
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn(() => 'server-url'),
-}));
-
-jest.mock('@queries/app/global', () => ({
-    getDeviceToken: jest.fn().mockResolvedValue('current-device-id'),
 }));
 
 jest.mock('@e2ee/actions/remote/devices', () => ({
@@ -37,84 +33,72 @@ jest.mock('react-native-reanimated', () => {
     };
 });
 
+const mockDevice = (overrides: Partial<EnabledDevice & {is_current_device: boolean; verified: boolean}> = {}) => ({
+    device_id: 'device-1',
+    device_name: 'Device 1',
+    created_at: new Date('2021-01-01').getTime(),
+    last_active_at: new Date('2021-01-01').getTime(),
+    is_current_device: false,
+    verified: false,
+    ...overrides,
+});
+
 describe('DeviceList', () => {
-    it('provides empty list when no devices registered for e2ee', () => {
+    beforeEach(() => {
+        jest.mocked(fetchEnabledDevices).mockResolvedValue({devices: []});
+    });
+
+    it('should show empty state when no devices are returned from API', async () => {
         const {getByTestId} = renderWithIntl(
-            <DeviceList
-                currentUser={null}
-                devices={[]}
-            />,
+            <DeviceList/>,
         );
 
-        const deviceList = getByTestId('e2ee.device_list.flat_list');
-        expect(deviceList).toBeTruthy();
+        await waitFor(() => {
+            expect(fetchEnabledDevices).toHaveBeenCalledWith('server-url');
+        });
 
         expect(getByTestId('e2ee.device_list.empty.title')).toBeTruthy();
         expect(getByTestId('e2ee.device_list.empty.paragraph')).toBeTruthy();
     });
 
-    it('calls fetchEnabledDevices when serverUrl is available', async () => {
-        jest.mocked(fetchEnabledDevices).mockResolvedValue({devices: []});
-
-        const {getByTestId} = renderWithIntl(
-            <DeviceList
-                currentUser={null}
-                devices={[]}
-            />,
+    it('should call fetchEnabledDevices with serverUrl', async () => {
+        renderWithIntl(
+            <DeviceList/>,
         );
 
-        const deviceList = getByTestId('e2ee.device_list.flat_list');
-        expect(deviceList).toBeTruthy();
-
         await waitFor(() => {
-            expect(fetchEnabledDevices).toHaveBeenCalledWith('server-url', 'current-device-id');
+            expect(fetchEnabledDevices).toHaveBeenCalledWith('server-url');
         });
     });
 
-    it('displays devices in the list', async () => {
-        const props = {
-            currentUser: null,
-            devices: [
-                {
-                    deviceId: 'device-1',
-                    deviceName: 'Device 1',
-                    isCurrentDevice: false,
-                },
-            ],
-        } as ComponentProps<typeof DeviceList>;
+    it('should display devices returned from API', async () => {
+        const apiDevice = mockDevice();
+        jest.mocked(fetchEnabledDevices).mockResolvedValue({devices: [apiDevice]});
 
-        const {getByTestId, queryByText} = renderWithIntl(<DeviceList {...props}/>);
+        const {getByTestId} = renderWithIntl(
+            <DeviceList/>,
+        );
+
+        await waitFor(() => {
+            const deviceList = getByTestId('e2ee.device_list.flat_list');
+            expect(deviceList.props.data).toHaveLength(1);
+        });
 
         const deviceList = getByTestId('e2ee.device_list.flat_list');
-        expect(deviceList).toBeTruthy();
-
-        expect(deviceList.props.data).toHaveLength(1);
-        expect(deviceList.props.data[0]).toBe(props.devices[0]);
-        expect(queryByText('(this device)')).toBeNull();
+        expect(deviceList.props.data[0]).toBe(apiDevice);
     });
 
-    it('shows expanded device information when device is clicked', async () => {
-        const props = {
-            currentUser: null,
-            devices: [
-                {
-                    deviceId: 'device-1',
-                    deviceName: 'Device 1',
-                    isCurrentDevice: false,
-                    osVersion: '1.0.0',
-                    appVersion: '1.0.0',
-                    lastActiveAt: new Date('2021-01-01').getTime(),
-                    createdAt: new Date('2021-01-01').getTime(),
-                    verified: true,
-                },
-            ],
-        } as ComponentProps<typeof DeviceList>;
+    it('should show expanded device information when device is clicked', async () => {
+        const apiDevice = mockDevice({verified: true});
+        jest.mocked(fetchEnabledDevices).mockResolvedValue({devices: [apiDevice]});
 
-        const {getByTestId, getByText} = renderWithIntl(<DeviceList {...props}/>);
+        const {getByTestId, getByText} = renderWithIntl(
+            <DeviceList/>,
+        );
 
-        const deviceList = getByTestId('e2ee.device_list.flat_list');
-        expect(deviceList).toBeTruthy();
-        expect(deviceList.props.data).toHaveLength(1);
+        await waitFor(() => {
+            expect(getByTestId('e2ee.device_list.flat_list').props.data).toHaveLength(1);
+        });
 
         // Set height.value via calculator onLayout so expanded state can show height > 0
         await act(async () => {
@@ -136,24 +120,50 @@ describe('DeviceList', () => {
         expect(StyleSheet.flatten(expandedWrapper.props.style ?? {}).height).toBeGreaterThan(0);
     });
 
-    it('shows this device text for current device', async () => {
-        const props = {
-            currentUser: null,
-            devices: [
-                {
-                    deviceId: 'device-1',
-                    deviceName: 'Device 1',
-                    isCurrentDevice: true,
-                },
-            ],
-        } as ComponentProps<typeof DeviceList>;
+    it('should show this device text when API returns is_current_device', async () => {
+        const apiDevice = mockDevice({is_current_device: true});
+        jest.mocked(fetchEnabledDevices).mockResolvedValue({devices: [apiDevice]});
 
-        const {getByTestId, getByText} = renderWithIntl(<DeviceList {...props}/>);
+        const {getByText} = renderWithIntl(
+            <DeviceList/>,
+        );
 
-        const deviceList = getByTestId('e2ee.device_list.flat_list');
-        expect(deviceList).toBeTruthy();
-        expect(deviceList.props.data).toHaveLength(1);
+        await waitFor(() => {
+            expect(getByText('(this device)')).toBeTruthy();
+        });
+    });
 
-        expect(getByText('(this device)')).toBeTruthy();
+    it('should show loading indicator while fetch is in progress', async () => {
+        let resolveDevices!: (value: Awaited<ReturnType<typeof fetchEnabledDevices>>) => void;
+        jest.mocked(fetchEnabledDevices).mockReturnValue(
+            new Promise((resolve) => {
+                resolveDevices = resolve;
+            }),
+        );
+
+        const {getByTestId, queryByTestId} = renderWithIntl(
+            <DeviceList/>,
+        );
+
+        expect(getByTestId('e2ee.device_list.loading')).toBeTruthy();
+
+        await act(async () => {
+            resolveDevices({devices: []});
+        });
+
+        expect(queryByTestId('e2ee.device_list.loading')).toBeNull();
+    });
+
+    it('should show verified tag when API returns verified', async () => {
+        const apiDevice = mockDevice({verified: true});
+        jest.mocked(fetchEnabledDevices).mockResolvedValue({devices: [apiDevice]});
+
+        const {getByText} = renderWithIntl(
+            <DeviceList/>,
+        );
+
+        await waitFor(() => {
+            expect(getByText('Verified')).toBeTruthy();
+        });
     });
 });
