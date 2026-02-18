@@ -8,7 +8,7 @@ import {fetchPostById} from '@actions/remote/post';
 import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {Preferences} from '@constants';
-import {getDefaultThemeByAppearance} from '@context/theme';
+import {getDefaultThemeByAppearance, resolveThemeFromPreferences} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -21,7 +21,7 @@ import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import {isErrorWithStatusCode} from '@utils/errors';
 import {emitNotificationError} from '@utils/notification';
-import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
+import {updateThemeIfNeeded} from '@utils/theme';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
@@ -61,29 +61,19 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         const autoSwitchPrefs = await queryThemeAutoSwitchPreference(database).fetch();
         const isAutoSwitch = autoSwitchPrefs.length > 0 && autoSwitchPrefs[0].value === 'true';
 
-        let theme = getDefaultThemeByAppearance();
+        let theme: Theme;
         if (isAutoSwitch) {
             const colorScheme = Appearance.getColorScheme();
             if (colorScheme === 'dark') {
                 const darkThemes = await queryDarkThemePreferences(database, teamId).fetch();
-                if (darkThemes.length) {
-                    theme = setThemeDefaults(JSON.parse(darkThemes[0].value) as Theme);
-                } else {
-                    theme = Preferences.THEMES.onyx;
-                }
+                theme = resolveThemeFromPreferences(teamId, darkThemes, Preferences.THEMES.onyx);
             } else {
                 const themes = await queryThemePreferences(database, teamId).fetch();
-                if (themes.length) {
-                    theme = setThemeDefaults(JSON.parse(themes[0].value) as Theme);
-                } else {
-                    theme = Preferences.THEMES.denim;
-                }
+                theme = resolveThemeFromPreferences(teamId, themes, Preferences.THEMES.denim);
             }
         } else {
             const themes = await queryThemePreferences(database, teamId).fetch();
-            if (themes.length) {
-                theme = setThemeDefaults(JSON.parse(themes[0].value) as Theme);
-            }
+            theme = resolveThemeFromPreferences(teamId, themes, getDefaultThemeByAppearance());
         }
         updateThemeIfNeeded(theme, true);
     }

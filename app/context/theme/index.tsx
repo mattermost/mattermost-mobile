@@ -52,7 +52,7 @@ const clearThemeCache = () => {
     }, 300);
 };
 
-const resolveThemeFromPreferences = (teamId: string | undefined, themes: PreferenceModel[], fallback: Theme): Theme => {
+export const resolveThemeFromPreferences = (teamId: string | undefined, themes: PreferenceModel[], fallback: Theme): Theme => {
     if (teamId) {
         const teamTheme = themes.find((t) => t.name === teamId) || themes[0];
         if (teamTheme?.value) {
