@@ -51,6 +51,7 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
     const theme = useTheme();
     const intl = useIntl();
     const [autoSwitch, setAutoSwitch] = useState(themeAutoSwitch);
+    const [selectedLightTheme, setSelectedLightTheme] = useState<string | undefined>(theme.type?.toLowerCase());
     const [selectedDarkTheme, setSelectedDarkTheme] = useState<string | undefined>(darkThemeType ?? 'onyx');
     const [customTheme, setCustomTheme] = useState(theme.type?.toLowerCase() === 'custom' ? theme : undefined);
 
@@ -86,8 +87,6 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
     }, []);
 
     // Save all preferences on back navigation when auto-switch is ON
-    const [selectedLightTheme, setSelectedLightTheme] = useState<string | undefined>(theme.type?.toLowerCase());
-
     const saveAutoSwitchAndClose = useCallback(async () => {
         popTopScreen(componentId);
 
