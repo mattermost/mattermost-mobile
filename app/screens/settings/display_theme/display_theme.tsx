@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {defineMessage, useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 
 import {savePreference} from '@actions/remote/preference';
 import SettingBlock from '@components/settings/block';
@@ -23,19 +23,19 @@ import {ThemeTiles} from './theme_tiles';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-const autoSwitchDescription = defineMessage({
-    id: 'settings_display.theme.auto_switch_desc',
-    defaultMessage: "Automatically switch between light and dark themes when your device's appearance changes",
-});
-
-const lightThemeHeader = defineMessage({
-    id: 'settings_display.theme.light_theme',
-    defaultMessage: 'Light Theme',
-});
-
-const darkThemeHeader = defineMessage({
-    id: 'settings_display.theme.dark_theme',
-    defaultMessage: 'Dark Theme',
+const messages = defineMessages({
+    autoSwitchDescription: {
+        id: 'settings_display.theme.auto_switch_desc',
+        defaultMessage: "Automatically switch between light and dark themes when your device's appearance changes",
+    },
+    lightThemeHeader: {
+        id: 'settings_display.theme.light_theme',
+        defaultMessage: 'Light Theme',
+    },
+    darkThemeHeader: {
+        id: 'settings_display.theme.dark_theme',
+        defaultMessage: 'Dark Theme',
+    },
 });
 
 type DisplayThemeProps = {
@@ -159,7 +159,7 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
         return (
             <SettingContainer testID='theme_display_settings'>
                 <SettingBlock
-                    footerText={autoSwitchDescription}
+                    footerText={messages.autoSwitchDescription}
                 >
                     <SettingOption
                         action={setAutoSwitch}
@@ -171,7 +171,7 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
                     <SettingSeparator/>
                 </SettingBlock>
                 <SettingBlock
-                    headerText={lightThemeHeader}
+                    headerText={messages.lightThemeHeader}
                 >
                     <ThemeTiles
                         allowedThemeKeys={allowedThemeKeys}
@@ -186,7 +186,7 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
                     )}
                 </SettingBlock>
                 <SettingBlock
-                    headerText={darkThemeHeader}
+                    headerText={messages.darkThemeHeader}
                 >
                     <ThemeTiles
                         allowedThemeKeys={allowedThemeKeys}
@@ -201,7 +201,7 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
     return (
         <SettingContainer testID='theme_display_settings'>
             <SettingBlock
-                footerText={autoSwitchDescription}
+                footerText={messages.autoSwitchDescription}
             >
                 <SettingOption
                     action={setAutoSwitch}
