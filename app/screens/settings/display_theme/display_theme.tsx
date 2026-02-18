@@ -195,6 +195,12 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
                         onThemeChange={handleDarkThemeSelect}
                         selectedTheme={selectedDarkTheme}
                     />
+                    {customTheme && (
+                        <CustomTheme
+                            setTheme={handleDarkThemeSelect}
+                            displayTheme={selectedDarkTheme}
+                        />
+                    )}
                 </SettingBlock>
             </SettingContainer>
         );
