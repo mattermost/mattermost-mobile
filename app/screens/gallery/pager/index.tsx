@@ -32,13 +32,13 @@ const Pager = ({
     const pagerX = useSharedValue(0);
     const skipAnimation = useSharedValue(false);
 
-    const getPageTranslate = (i: number, w?: number) => {
+    const getPageTranslate = useCallback((i: number, w?: number) => {
         'worklet';
 
         const t = i * (w || sharedWidth.value);
         const g = gutterWidthToUse * i;
         return -(t + g);
-    };
+    }, [gutterWidthToUse, sharedWidth]);
 
     const toValueAnimation = useSharedValue(getPageTranslate(initialIndex, width));
 
@@ -79,7 +79,7 @@ const Pager = ({
         }
 
         runOnJS(updateIndex)(nextIndex);
-    }, []);
+    }, [onIndexChange]);
 
     const sharedValues: PagerSharedValues = useMemo(() => ({
         sharedWidth,
@@ -96,11 +96,22 @@ const Pager = ({
         onIndexChange: onIndexChangeCb,
         getPageTranslate,
         isPagerInProgress,
-
-    // the rest of the values are shared values,
-    // so they don't need to be included in the deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }), [gutterWidthToUse, activeIndex, onIndexChangeCb]);
+    }), [
+        sharedWidth,
+        gutterWidthToUse,
+        isActive,
+        velocity,
+        index,
+        length,
+        offsetX,
+        pagerX,
+        toValueAnimation,
+        totalWidth,
+        activeIndex,
+        onIndexChangeCb,
+        getPageTranslate,
+        isPagerInProgress,
+    ]);
 
     useEffect(() => {
         skipAnimation.value = true;

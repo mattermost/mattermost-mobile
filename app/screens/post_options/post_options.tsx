@@ -109,10 +109,19 @@ const PostOptions = ({
 
         return items;
     }, [
-        canAddReaction, canCopyPermalink, canCopyText,
-        canDelete, canEdit, shouldRenderFollow, shouldShowBindings,
-        canMarkAsUnread, canPin, canReply, canSavePost, canViewTranslation, shouldShowBORReadReceipts,
-
+        canAddReaction,
+        canCopyPermalink,
+        canCopyText,
+        canDelete,
+        canEdit,
+        shouldRenderFollow,
+        shouldShowBindings,
+        canMarkAsUnread,
+        canPin,
+        canReply,
+        canSavePost,
+        canViewTranslation,
+        shouldShowBORReadReceipts,
     ]);
 
     const renderContent = () => {

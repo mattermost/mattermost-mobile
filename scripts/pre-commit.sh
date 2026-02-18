@@ -129,7 +129,7 @@ if [ -n "$jsfiles" ]; then
     echo "Checking lint for:"
     for js in $jsfiles; do
         echo "$js"
-        e=$(node_modules/.bin/eslint --quiet --fix --config eslint.precommit.config.mjs $js)
+        e=$(node_modules/.bin/eslint --quiet --fix $js)
         if [ -n "$e" ]; then
             echo "ERROR: Check eslint hints."
             echo "$e"

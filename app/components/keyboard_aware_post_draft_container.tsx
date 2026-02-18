@@ -488,10 +488,7 @@ export const KeyboardAwarePostDraftContainer = ({
                 animated: false,
             });
         }
-
-        // ref is not required to be in deps because it is a stable reference
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [listRef]);
 
     // Android: Watch for emoji picker closing and restore scroll position when both height and bottomInset reach 0
     const isAndroid = Platform.OS === 'android';
@@ -558,25 +555,35 @@ export const KeyboardAwarePostDraftContainer = ({
         updateValue: updateValueRef.current,
         updateCursorPosition: updateCursorPositionRef.current,
         registerPostInputCallbacks,
-
-        // Shared values don't need to be in dependencies - they're stable references
-        // Only include non-shared-value dependencies that can actually change
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }), [
+        keyboardCurrentHeight,
+        bottomInset,
+        scrollOffset,
+        keyboardHeight,
+        scrollPosition,
         onScroll,
         postInputContainerHeight,
         inputRef,
         blurInput,
         focusInput,
         blurAndDismissKeyboard,
+        isKeyboardFullyOpen,
+        isKeyboardFullyClosed,
+        isKeyboardInTransition,
+        isInputAccessoryViewMode,
         showInputAccessoryView,
         setShowInputAccessoryView,
         lastKeyboardHeight,
+        inputAccessoryViewAnimatedHeight,
+        isTransitioningFromCustomView,
         closeInputAccessoryView,
         scrollToEnd,
         isEmojiSearchFocused,
-        setIsEmojiSearchFocused,
         registerCursorPosition,
+        preserveCursorPositionForEmojiPicker,
+        clearCursorPositionPreservation,
+        isInEmojiPickerTransition,
+        getPreservedCursorPosition,
         registerPostInputCallbacks,
     ]);
 

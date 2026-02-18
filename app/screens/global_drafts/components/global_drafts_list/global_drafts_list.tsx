@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {FlatList, InteractionManager, StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
@@ -10,6 +10,7 @@ import {Screens} from '@constants';
 import {DRAFT_SCHEDULED_POST_LAYOUT_PADDING, DRAFT_TYPE_DRAFT} from '@constants/draft';
 import {staticStyles} from '@constants/tooltip';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useDidMount from '@hooks/did_mount';
 import DraftTooltip from '@screens/global_drafts/draft_scheduled_post_tooltip';
 import {popTopScreen} from '@screens/navigation';
 
@@ -65,17 +66,14 @@ const GlobalDraftsList: React.FC<Props> = ({
 
     const firstDraftId = allDrafts.length ? allDrafts[0].id : '';
 
-    useEffect(() => {
+    useDidMount(() => {
         if (tutorialWatched) {
             return;
         }
         InteractionManager.runAfterInteractions(() => {
             setTooltipVisible(true);
         });
-
-        // This effect is intended to run only on the first mount, so dependencies are omitted intentionally.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     const collapse = useCallback(() => {
         popTopScreen(Screens.GLOBAL_DRAFTS);

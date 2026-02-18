@@ -65,7 +65,7 @@ export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelect
         if (selectedTime) {
             onSelectOption(selectedTime.valueOf().toString());
         }
-    }, [now, onSelectOption]);
+    }, [now, onCustomTimeSelected, onSelectOption]);
 
     const handleCustomTimeChange = useCallback((selectedTime: Moment) => {
         onSelectOption(selectedTime.valueOf().toString());

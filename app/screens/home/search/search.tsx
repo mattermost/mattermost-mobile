@@ -138,7 +138,11 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
 
     const onSnap = useCallback((offset: number, animated = true) => {
         scrollRef.current?.scrollToOffset({offset, animated});
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- scrollRef is a ref object, so its reference should not change between renders
+
+    // scrollRef is a ref object, so its reference should not change between renders
+    // Also, adding it to the dependency creates a use before define error, circular
+    // with the useCollapsibleHeader hook call later.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onSnapWithTimeout = useCallback((offset: number, animated = true) => {

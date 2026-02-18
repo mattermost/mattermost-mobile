@@ -12,6 +12,7 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import {useFetchingThreadState} from '@hooks/fetching_thread';
 import {useDebounce} from '@hooks/utils';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -73,14 +74,11 @@ const ThreadPostList = ({
     }, [posts, rootPost]);
 
     // If CRT is enabled, mark the thread as read on mount.
-    useEffect(() => {
+    useDidMount(() => {
         if (isCRTEnabled && thread?.isFollowing) {
             markThreadAsRead(serverUrl, teamId, rootPost.id);
         }
-
-        // We only want to mark the thread as read on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     // If CRT is enabled, When new post arrives and thread modal is open, mark thread as read.
     const oldPostsCount = useRef<number>(posts.length);
