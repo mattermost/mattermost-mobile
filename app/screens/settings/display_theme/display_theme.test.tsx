@@ -21,6 +21,7 @@ jest.mock('@context/theme', () => ({
     useTheme: jest.fn(),
 }));
 jest.mock('@actions/remote/preference');
+jest.mock('@hooks/navigate_back');
 jest.mock('@store/navigation_store');
 
 const displayThemeOtherProps = {
