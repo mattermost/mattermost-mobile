@@ -8,9 +8,6 @@ type EnabledDevice = {
     created_at: number;
     last_active_at: number;
     revoke_at?: number;
-    os_version?: string;
-    app_version?: string;
-    verified?: boolean;
 }
 
 type EnabledDevicesReturn = {

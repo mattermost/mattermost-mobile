@@ -1,61 +1,42 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchSessions, forceLogoutIfNecessary} from '@actions/remote/session';
+import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
+import type E2EEEnabledDeviceModel from '@e2ee/types/database/models/e2ee_enabled_devices';
+
 type EnabledDevicesResponse = {
-    devices?: EnabledDevice[];
+    devices?: Array<EnabledDevice & {is_current_device: boolean; verified: boolean}>;
     error?: unknown;
 }
 
 export const fetchEnabledDevices = async (
     serverUrl: string,
-    currentDeviceId: string,
 ): Promise<EnabledDevicesResponse> => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
 
-        const sessions = await fetchSessions(serverUrl, 'me');
-        let byDeviceId = new Map();
-        if (sessions) {
-            byDeviceId = new Map(sessions.
-                filter((s) => s.device_id).
-                map((s) => {
-                    return [s.device_id, s] as const;
-                }));
-        }
+        const result = await client.fetchDevices();
+        const devices = result.devices ?? [];
 
-        let {devices} = await client.fetchDevices();
-        if (devices != null) {
-            // extend device information from sessions in case device_id matches; set is_current_device from currentDeviceId
-            devices = devices.map((device) => {
-                const session = device.device_id ? byDeviceId.get(device.device_id) : undefined;
-                const extended = session
-                    ? {
-                        ...device,
-                        verified: true,
-                        device_name: device.device_name || session.props?.os || '',
-                        os_version: device.os_version ?? session.props?.os,
-                        app_version: device.app_version ?? session.props?.mobile_version,
-                    }
-                    : device;
-                return {
-                    ...extended,
-                    is_current_device: device.device_id === currentDeviceId,
-                };
-            });
-        }
+        // keeps local data just for active devices
+        const localData = await operator.handleDevices({devices}) as E2EEEnabledDeviceModel[];
 
-        await operator.handleDevices({devices: devices ?? []});
+        const byDeviceId = new Map(localData.map((data) => [data.deviceId, data]));
+        const devicesWithLocalData = devices.map((device) => ({
+            ...device,
+            is_current_device: byDeviceId.get(device.device_id)?.isCurrentDevice ?? false,
+            verified: byDeviceId.get(device.device_id)?.verified ?? false,
+        }));
 
-        return {devices};
+        return {devices: devicesWithLocalData};
     } catch (error) {
-        logDebug('fetchEnabledDevicesNoDb', getFullErrorMessage(error));
+        logDebug('fetchEnabledDevicesWithLocalData', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
