@@ -63,7 +63,7 @@ export default function DraftHandler(props: Props) {
     const clearDraft = useCallback(() => {
         removeDraft(serverUrl, channelId, rootId);
         updateValue('');
-    }, [serverUrl, channelId, rootId]);
+    }, [serverUrl, channelId, rootId, updateValue]);
 
     const addFiles = useCallback((newFiles: FileInfo[]) => {
         if (!newFiles.length) {
@@ -96,7 +96,7 @@ export default function DraftHandler(props: Props) {
         }
 
         newUploadError(null);
-    }, [intl, newUploadError, maxFileSize, serverUrl, files?.length, channelId, rootId]);
+    }, [intl, newUploadError, maxFileSize, serverUrl, files?.length, channelId, rootId, canUploadFiles, maxFileCount]);
 
     // This effect mainly handles keeping clean the uploadErrorHandlers, and
     // reinstantiate them on component mount and file retry.
@@ -118,6 +118,10 @@ export default function DraftHandler(props: Props) {
                 uploadErrorHandlers.current[file.clientId!] = DraftEditPostUploadManager.registerErrorHandler(file.clientId!, newUploadError);
             }
         }
+
+    // We don't care about `newUploadError` changes as long as
+    // it is up to date when the effect runs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [files]);
 
     return (

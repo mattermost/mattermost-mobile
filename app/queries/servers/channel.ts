@@ -11,7 +11,7 @@ import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {sanitizeLikeString} from '@helpers/database';
 import EphemeralStore from '@store/ephemeral_store';
-import {isDefaultChannel} from '@utils/channel';
+import {isDefaultChannel, isDMorGM} from '@utils/channel';
 import {hasPermission} from '@utils/role';
 import {isSystemAdmin} from '@utils/user';
 
@@ -287,9 +287,24 @@ export const observeMyChannelRoles = (database: Database, channelId: string) => 
 
 export const observeChannelAutotranslation = (database: Database, channelId: string) => {
     const enableAutoTranslation = observeConfigBooleanValue(database, 'EnableAutoTranslation');
+    const restrictDMAndGMAutotranslation = observeConfigBooleanValue(database, 'RestrictDMAndGMAutotranslation');
     const channel = observeChannel(database, channelId);
-    return combineLatest([enableAutoTranslation, channel]).pipe(
-        switchMap(([et, c]) => of$(Boolean(et && c?.autotranslation))),
+    return combineLatest([enableAutoTranslation, restrictDMAndGMAutotranslation, channel]).pipe(
+        map$(([et, r, c]) => {
+            if (!et) {
+                return false;
+            }
+
+            if (!c?.autotranslation) {
+                return false;
+            }
+
+            if (isDMorGM(c) && r) {
+                return false;
+            }
+
+            return true;
+        }),
         distinctUntilChanged(),
     );
 };
@@ -798,7 +813,26 @@ export const observeIsReadOnlyChannel = (database: Database, channelId: string) 
 
 export const observeIsChannelAutotranslated = (database: Database, channelId: string) => {
     const enableAutoTranslation = observeConfigBooleanValue(database, 'EnableAutoTranslation');
+    const restrictDMAndGMAutotranslation = observeConfigBooleanValue(database, 'RestrictDMAndGMAutotranslation');
     const channel = observeChannel(database, channelId);
     const myChannel = observeMyChannel(database, channelId);
-    return combineLatest([enableAutoTranslation, channel, myChannel]).pipe(map(([et, c, mc]) => Boolean(et && c?.autotranslation && !mc?.autotranslationDisabled)));
+    return combineLatest([enableAutoTranslation, restrictDMAndGMAutotranslation, channel, myChannel]).pipe(map(([et, r, c, mc]) => {
+        if (!et) {
+            return false;
+        }
+
+        if (!c?.autotranslation) {
+            return false;
+        }
+
+        if (mc?.autotranslationDisabled) {
+            return false;
+        }
+
+        if (isDMorGM(c) && r) {
+            return false;
+        }
+
+        return true;
+    }));
 };

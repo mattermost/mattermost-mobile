@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {BehaviorSubject} from 'rxjs';
 
 import {type CallsState, DefaultCallsState} from '@calls/types/calls';
+import useDidMount from '@hooks/did_mount';
 
 const callsStateSubjects: Dictionary<BehaviorSubject<CallsState>> = {};
 
@@ -33,7 +34,7 @@ export const useCallsState = (serverUrl: string) => {
 
     const callsStateSubject = getCallsStateSubject(serverUrl);
 
-    useEffect(() => {
+    useDidMount(() => {
         const subscription = callsStateSubject.subscribe((callsState) => {
             setState(callsState);
         });
@@ -41,7 +42,7 @@ export const useCallsState = (serverUrl: string) => {
         return () => {
             subscription?.unsubscribe();
         };
-    }, []);
+    });
 
     return state;
 };

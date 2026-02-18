@@ -28,6 +28,7 @@ import {MESSAGE_TYPE, SNACK_BAR_CONFIG} from '@constants/snack_bar';
 import {TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import SecurityManager from '@managers/security_manager';
 import {dismissOverlay} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -234,7 +235,7 @@ const SnackBar = ({
     };
 
     // This effect hides the snack bar after 3 seconds
-    useEffect(() => {
+    useDidMount(() => {
         mounted.current = true;
         baseTimer.current = setTimeout(() => {
             if (!isPanned.value) {
@@ -246,10 +247,7 @@ const SnackBar = ({
             stopTimers();
             mounted.current = false;
         };
-
-        // Only run on initial load
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
     useEffect(() => {

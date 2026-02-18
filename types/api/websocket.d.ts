@@ -23,9 +23,11 @@ type ThreadReadChangedData = {
 };
 
 type PostTranslationUpdateData = {
-    language: string;
     object_id: string;
-    src_lang: string;
-    state: PostTranslationState;
-    translation: string; // JSON-encoded PostTranslation['object']
+    translations: Record<string, {
+        state: 'ready' | 'skipped' | 'processing' | 'unavailable';
+        translation: string; // JSON-encoded PostTranslation['object']
+        translation_type?: string;
+        src_lang?: string;
+    }>;
 }

@@ -22,6 +22,7 @@ import Toast from '@components/toast';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useDidMount from '@hooks/did_mount';
 import {alertFailedToOpenDocument, alertOnlyPDFSupported} from '@utils/document';
 import {getFullErrorMessage} from '@utils/errors';
 import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission, isPdf, pathWithPrefix} from '@utils/file';
@@ -304,7 +305,7 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
         }
     };
 
-    useEffect(() => {
+    useDidMount(() => {
         mounted.current = true;
         setShowToast(true);
         startDownload();
@@ -312,7 +313,7 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
         return () => {
             mounted.current = false;
         };
-    }, []);
+    });
 
     useEffect(() => {
         let t: NodeJS.Timeout;
@@ -336,6 +337,10 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
         }
 
         return () => clearTimeout(t);
+
+    // This effect controls the timeout of the toast, so
+    // it should only run when `showToast` changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showToast]);
 
     return (

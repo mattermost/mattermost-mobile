@@ -51,6 +51,9 @@ const LoadingUnreads = () => {
             cancelAnimation(opacity);
             cancelAnimation(rotation);
         };
+
+    // We only want to update the animations when the loading state changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [loading]);
 
     if (!loading) {

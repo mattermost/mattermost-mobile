@@ -14,12 +14,14 @@ export const SNACK_BAR_TYPE = keyMirror({
     AGENT_FETCH_PRIVATE_ERROR: null,
     CODE_COPIED: null,
     FAVORITE_CHANNEL: null,
+    FILE_DOWNLOAD_REJECTED: null,
     FOLLOW_THREAD: null,
     INFO_COPIED: null,
     LINK_COPIED: null,
     LINK_COPY_FAILED: null,
     MESSAGE_COPIED: null,
     MUTE_CHANNEL: null,
+    PLUGIN_TOAST: null,
     REMOVE_CHANNEL_USER: null,
     TEXT_COPIED: null,
     UNFAVORITE_CHANNEL: null,
@@ -81,6 +83,10 @@ const messages = defineMessages({
         id: 'snack.bar.favorited.channel',
         defaultMessage: 'This channel was favorited',
     },
+    FILE_DOWNLOAD_REJECTED: {
+        id: 'snack.bar.file.download.rejected',
+        defaultMessage: 'File access blocked by plugin',
+    },
     FOLLOW_THREAD: {
         id: 'snack.bar.following.thread',
         defaultMessage: 'Thread followed',
@@ -124,6 +130,10 @@ const messages = defineMessages({
     UNFOLLOW_THREAD: {
         id: 'snack.bar.unfollow.thread',
         defaultMessage: 'Thread unfollowed',
+    },
+    PLUGIN_TOAST: {
+        id: 'snack.bar.plugin.toast',
+        defaultMessage: 'Notification',
     },
     PLAYBOOK_ERROR: {
         id: 'snack.bar.playbook.error',
@@ -185,6 +195,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         iconName: 'star',
         hasAction: true,
     },
+    FILE_DOWNLOAD_REJECTED: {
+        message: messages.FILE_DOWNLOAD_REJECTED,
+        iconName: 'alert-circle-outline',
+        hasAction: false,
+        type: MESSAGE_TYPE.ERROR,
+    },
     FOLLOW_THREAD: {
         message: messages.FOLLOW_THREAD,
         iconName: 'check',
@@ -242,6 +258,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         message: messages.UNFOLLOW_THREAD,
         iconName: 'check',
         hasAction: true,
+    },
+    PLUGIN_TOAST: {
+        message: messages.PLUGIN_TOAST,
+        iconName: 'information-outline',
+        hasAction: false,
+        type: MESSAGE_TYPE.DEFAULT,
     },
     PLAYBOOK_ERROR: {
         message: messages.PLAYBOOK_ERROR,

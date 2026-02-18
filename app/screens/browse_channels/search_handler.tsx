@@ -151,7 +151,7 @@ export default function SearchHandler(props: Props) {
 
     const isSearch = Boolean(term);
 
-    const doGetChannels = (t: string) => {
+    const doGetChannels = useCallback((t: string) => {
         let next: (typeof nextPublic | typeof nextShared | typeof nextArchived);
         let fetch: (typeof fetchChannels | typeof fetchSharedChannels | typeof fetchArchivedChannels);
         let page: (typeof publicPage | typeof sharedPage | typeof archivedPage);
@@ -187,13 +187,13 @@ export default function SearchHandler(props: Props) {
                 () => dispatch(StopAction),
             );
         }
-    };
+    }, [currentTeamId, serverUrl]);
 
     const onEndReached = useCallback(() => {
         if (!loading && !term) {
             doGetChannels(typeOfChannels);
         }
-    }, [typeOfChannels, loading, term]);
+    }, [loading, term, doGetChannels, typeOfChannels]);
 
     let activeChannels: Channel[];
     switch (typeOfChannels) {
@@ -210,7 +210,7 @@ export default function SearchHandler(props: Props) {
     const stopSearch = useCallback(() => {
         setSearchResults(defaultSearchResults);
         setTerm('');
-    }, [activeChannels]);
+    }, []);
 
     const doSearchChannels = useCallback((text: string) => {
         if (text) {
@@ -231,7 +231,7 @@ export default function SearchHandler(props: Props) {
         } else {
             stopSearch();
         }
-    }, [activeChannels, visibleChannels, joinedChannels, stopSearch]);
+    }, [searchResults, serverUrl, currentTeamId, stopSearch]);
 
     const changeChannelType = useCallback((channelType: string) => {
         setTypeOfChannels(channelType);
@@ -276,12 +276,20 @@ export default function SearchHandler(props: Props) {
         return () => {
             loadedChannels.current = async () => {/* Do nothing */};
         };
+
+    // We don't care about `doGetChannels` changes as long as
+    // it is up to date when the effect runs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [joinedChannels]);
 
     useEffect(() => {
         if (!isSearch) {
             doGetChannels(typeOfChannels);
         }
+
+    // We don't care about `doGetChannels` changes as long as
+    // it is up to date when the effect runs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [typeOfChannels, isSearch]);
 
     useDidUpdate(() => {

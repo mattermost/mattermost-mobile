@@ -36,3 +36,6 @@ export const CONTROL_SIGNALS = {
     TOOL_CALL: 'tool_call',
     ANNOTATIONS: 'annotations',
 } as const;
+
+export const DEFAULT_AGENT_BOT_USERNAME = 'ai-bot';
+export const AGENT_ANALYSIS_SUMMARY = 'summarize_channel';

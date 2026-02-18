@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import UserList from '@components/user_list';
 import {General} from '@constants';
+import useDidMount from '@hooks/did_mount';
 import {useDebounce} from '@hooks/utils';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
@@ -96,16 +97,13 @@ export default function ServerUserList({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [term]);
 
-    useEffect(() => {
+    useDidMount(() => {
         mounted.current = true;
         getProfiles();
         return () => {
             mounted.current = false;
         };
-
-        // We only want to get the profiles on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     const data = useMemo(() => {
         if (isSearch) {
