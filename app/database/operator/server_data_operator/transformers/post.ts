@@ -121,6 +121,7 @@ export const transformDraftRecord = ({action, database, value}: TransformerArgs<
         draft.files = raw?.files ?? emptyFileInfo;
         draft.metadata = raw?.metadata ?? emptyPostMetadata;
         draft.updateAt = raw.update_at ?? Date.now();
+        draft.type = raw.type ?? '';
     };
 
     return prepareBaseRecord({

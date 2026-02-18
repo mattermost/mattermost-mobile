@@ -264,7 +264,7 @@ const Checklist = ({
             >
                 {items.map((item, index) => (
                     <ChecklistItem
-                        key={item.id}
+                        key={`calc-${item.id}`}
                         item={item}
                         channelId={channelId}
                         checklistNumber={checklistNumber}

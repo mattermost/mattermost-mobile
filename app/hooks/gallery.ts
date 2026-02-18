@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useCallback, useEffect} from 'react';
+import {useCallback} from 'react';
 import {
     Easing, runOnJS, useAnimatedRef, useAnimatedStyle,
     useSharedValue,
@@ -9,6 +9,8 @@ import {
 } from 'react-native-reanimated';
 
 import {useGallery} from '@context/gallery';
+
+import useDidMount from './did_mount';
 
 export function diff(context: any, name: string, value: any) {
     'worklet';
@@ -105,9 +107,9 @@ export function useGalleryItem(
         };
     }, []);
 
-    useEffect(() => {
+    useDidMount(() => {
         gallery.registerItem(index, ref);
-    }, [gallery, index, ref]);
+    });
 
     const onGestureEvent = () => {
         'worklet';

@@ -57,7 +57,6 @@ describe('Threads - Reply to Thread', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
-        await ChannelScreen.dismissKeyboard();
 
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
@@ -66,7 +65,6 @@ describe('Threads - Reply to Thread', () => {
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
-        await ChannelScreen.dismissKeyboard();
         await ThreadScreen.back();
         await ChannelScreen.back();
         await GlobalThreadsScreen.open();
@@ -84,7 +82,6 @@ describe('Threads - Reply to Thread', () => {
         // # Add new reply to thread
         const newReplyMessage = `${parentMessage} new reply`;
         await ThreadScreen.postMessage(newReplyMessage);
-        await ChannelScreen.dismissKeyboard();
 
         // * Verify new reply is posted
         const {post: newReplyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -101,14 +98,12 @@ describe('Threads - Reply to Thread', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
-        await ChannelScreen.dismissKeyboard();
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
-        await ChannelScreen.dismissKeyboard();
 
         await ThreadScreen.back();
         await ChannelScreen.back();
@@ -126,7 +121,6 @@ describe('Threads - Reply to Thread', () => {
         // # Add new reply to thread
         const newReplyMessage = `${parentMessage} new reply`;
         await ThreadScreen.postMessage(newReplyMessage);
-        await ChannelScreen.dismissKeyboard();
 
         // * Verify new reply is posted
         const {post: newReplyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);

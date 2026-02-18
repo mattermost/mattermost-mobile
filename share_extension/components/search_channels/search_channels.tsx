@@ -48,7 +48,7 @@ const SearchChannels = ({
     const onPress = useCallback((channelId: string) => {
         setShareExtensionChannelId(channelId);
         navigation.goBack();
-    }, []);
+    }, [navigation]);
 
     const renderEmpty = useCallback(() => {
         if (term) {
@@ -60,7 +60,7 @@ const SearchChannels = ({
         }
 
         return null;
-    }, [term, theme]);
+    }, [term]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<ChannelModel>) => {
         return (
@@ -71,7 +71,7 @@ const SearchChannels = ({
                 theme={theme}
             />
         );
-    }, [showTeamName]);
+    }, [onPress, showTeamName, theme]);
 
     const data = useMemo(() => {
         const items: Array<ChannelModel|Channel|UserModel> = [...channelsMatchStart];

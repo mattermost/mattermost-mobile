@@ -102,7 +102,7 @@ export async function restDeferredAppEntryActions(
                 };
 
                 /* eslint-disable-next-line no-await-in-loop */
-                await processEntryModels({operator, teamData: currentTeamData, chData: data, isCRTEnabled});
+                await processEntryModels(serverUrl, {operator, teamData: currentTeamData, chData: data, isCRTEnabled});
             }
 
             const uniqueChannelsData: MyChannelsRequest = {
@@ -116,7 +116,7 @@ export async function restDeferredAppEntryActions(
 
         const processFinalInitializationTasks = async (uniqueChannelsData: MyChannelsRequest) => {
             try {
-                fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData?.user, false, false, groupLabel);
+                fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData?.user, false, true, groupLabel);
 
                 if (initialTeamId) {
                     const initialTeam = teamMap.get(initialTeamId);

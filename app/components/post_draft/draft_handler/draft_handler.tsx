@@ -13,6 +13,7 @@ import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/fil
 import SendHandler from '../send_handler';
 
 import type {ErrorHandlers} from '@typings/components/upload_error_handlers';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     testID?: string;
@@ -29,6 +30,7 @@ type Props = {
     updateValue: React.Dispatch<React.SetStateAction<string>>;
     value: string;
     setIsFocused: (isFocused: boolean) => void;
+    location?: AvailableScreens;
 }
 
 const emptyFileList: FileInfo[] = [];
@@ -49,6 +51,7 @@ export default function DraftHandler(props: Props) {
         updateValue,
         value,
         setIsFocused,
+        location,
     } = props;
 
     const serverUrl = useServerUrl();
@@ -60,7 +63,7 @@ export default function DraftHandler(props: Props) {
     const clearDraft = useCallback(() => {
         removeDraft(serverUrl, channelId, rootId);
         updateValue('');
-    }, [serverUrl, channelId, rootId]);
+    }, [serverUrl, channelId, rootId, updateValue]);
 
     const addFiles = useCallback((newFiles: FileInfo[]) => {
         if (!newFiles.length) {
@@ -93,7 +96,7 @@ export default function DraftHandler(props: Props) {
         }
 
         newUploadError(null);
-    }, [intl, newUploadError, maxFileSize, serverUrl, files?.length, channelId, rootId]);
+    }, [intl, newUploadError, maxFileSize, serverUrl, files?.length, channelId, rootId, canUploadFiles, maxFileCount]);
 
     // This effect mainly handles keeping clean the uploadErrorHandlers, and
     // reinstantiate them on component mount and file retry.
@@ -115,6 +118,10 @@ export default function DraftHandler(props: Props) {
                 uploadErrorHandlers.current[file.clientId!] = DraftEditPostUploadManager.registerErrorHandler(file.clientId!, newUploadError);
             }
         }
+
+    // We don't care about `newUploadError` changes as long as
+    // it is up to date when the effect runs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [files]);
 
     return (
@@ -135,6 +142,7 @@ export default function DraftHandler(props: Props) {
             updatePostInputTop={updatePostInputTop}
             updateValue={updateValue}
             setIsFocused={setIsFocused}
+            location={location}
         />
     );
 }

@@ -5,6 +5,7 @@ import {Image} from 'expo-image';
 import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation, Screens} from '@constants';
+import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
 import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
@@ -261,6 +262,53 @@ export async function updateDraftPriority(serverUrl: string, channelId: string, 
         return {draft};
     } catch (error) {
         logError('Failed updateDraftPriority', error);
+        return {error};
+    }
+}
+
+export async function updateDraftBoRConfig(serverUrl: string, channelId: string, rootId: string, postBoRConfig: PostBoRConfig, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const draft = await getDraft(database, channelId, rootId);
+        if (!draft) {
+            const newDraft: Draft = {
+                channel_id: channelId,
+                root_id: rootId,
+                update_at: Date.now(),
+                metadata: {
+                    borConfig: postBoRConfig,
+                },
+            };
+
+            if (postBoRConfig.enabled) {
+                newDraft.type = PostTypes.BURN_ON_READ;
+            } else {
+                newDraft.type = '';
+            }
+
+            return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
+        }
+
+        draft?.prepareUpdate((d) => {
+            d.metadata = {
+                ...d.metadata,
+                borConfig: postBoRConfig,
+            };
+
+            if (postBoRConfig.enabled) {
+                d.type = PostTypes.BURN_ON_READ;
+            } else {
+                d.type = '';
+            }
+        });
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([draft], 'updateDraftBoRConfig');
+        }
+
+        return {draft};
+    } catch (error) {
+        logError('Failed updateDraftBoRConfig', error);
         return {error};
     }
 }

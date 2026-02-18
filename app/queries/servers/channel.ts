@@ -5,13 +5,13 @@
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 import {of as of$, Observable, combineLatest} from 'rxjs';
-import {map as map$, switchMap, distinctUntilChanged, combineLatestWith} from 'rxjs/operators';
+import {map as map$, switchMap, distinctUntilChanged, combineLatestWith, map} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {sanitizeLikeString} from '@helpers/database';
 import EphemeralStore from '@store/ephemeral_store';
-import {isDefaultChannel} from '@utils/channel';
+import {isDefaultChannel, isDMorGM} from '@utils/channel';
 import {hasPermission} from '@utils/role';
 import {isSystemAdmin} from '@utils/user';
 
@@ -88,15 +88,15 @@ const buildChannelInfos = async (database: Database, channels: Channel[]) => {
     const channelInfos: ChannelInfo[] = [];
 
     const channelsQuery = await queryAllChannels(database);
-    const storedChannelsMap = channelsQuery.reduce<Record<string, ChannelModel>>((map, channel) => {
-        map[channel.id] = channel;
-        return map;
+    const storedChannelsMap = channelsQuery.reduce<Record<string, ChannelModel>>((acc, channel) => {
+        acc[channel.id] = channel;
+        return acc;
     }, {});
 
     const channelInfosQuery = await queryAllChannelsInfo(database);
-    const storedChannelInfosMap = channelInfosQuery.reduce<Record<string, ChannelInfoModel>>((map, info) => {
-        map[info.id] = info;
-        return map;
+    const storedChannelInfosMap = channelInfosQuery.reduce<Record<string, ChannelInfoModel>>((acc, info) => {
+        acc[info.id] = info;
+        return acc;
     }, {});
 
     for (const c of channels) {
@@ -285,6 +285,30 @@ export const observeMyChannelRoles = (database: Database, channelId: string) => 
     );
 };
 
+export const observeChannelAutotranslation = (database: Database, channelId: string) => {
+    const enableAutoTranslation = observeConfigBooleanValue(database, 'EnableAutoTranslation');
+    const restrictDMAndGMAutotranslation = observeConfigBooleanValue(database, 'RestrictDMAndGMAutotranslation');
+    const channel = observeChannel(database, channelId);
+    return combineLatest([enableAutoTranslation, restrictDMAndGMAutotranslation, channel]).pipe(
+        map$(([et, r, c]) => {
+            if (!et) {
+                return false;
+            }
+
+            if (!c?.autotranslation) {
+                return false;
+            }
+
+            if (isDMorGM(c) && r) {
+                return false;
+            }
+
+            return true;
+        }),
+        distinctUntilChanged(),
+    );
+};
+
 export const getChannelById = async (database: Database, channelId: string) => {
     try {
         const channel = await database.get<ChannelModel>(CHANNEL).find(channelId);
@@ -466,6 +490,19 @@ export const queryMyChannelsByTeam = (database: Database, teamId: string, includ
         Q.on(CHANNEL, Q.and(
             ...conditions,
         )),
+    );
+};
+
+export const queryMyChannelsByChannelIds = (database: Database, ids: string[]) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.where('id', Q.oneOf(ids)),
+    );
+};
+
+export const queryMyChannelsWithAutotranslation = (database: Database) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(CHANNEL, Q.where('autotranslation', Q.eq(true))),
+        Q.where('autotranslation_disabled', Q.eq(false)),
     );
 };
 
@@ -772,4 +809,30 @@ export const observeIsReadOnlyChannel = (database: Database, channelId: string) 
     return combineLatest([channel, user, experimentalTownSquareIsReadOnly]).pipe(
         switchMap(([c, u, readOnly]) => of$(isDefaultChannel(c) && !isSystemAdmin(u?.roles || '') && readOnly)),
     );
+};
+
+export const observeIsChannelAutotranslated = (database: Database, channelId: string) => {
+    const enableAutoTranslation = observeConfigBooleanValue(database, 'EnableAutoTranslation');
+    const restrictDMAndGMAutotranslation = observeConfigBooleanValue(database, 'RestrictDMAndGMAutotranslation');
+    const channel = observeChannel(database, channelId);
+    const myChannel = observeMyChannel(database, channelId);
+    return combineLatest([enableAutoTranslation, restrictDMAndGMAutotranslation, channel, myChannel]).pipe(map(([et, r, c, mc]) => {
+        if (!et) {
+            return false;
+        }
+
+        if (!c?.autotranslation) {
+            return false;
+        }
+
+        if (mc?.autotranslationDisabled) {
+            return false;
+        }
+
+        if (isDMorGM(c) && r) {
+            return false;
+        }
+
+        return true;
+    }));
 };

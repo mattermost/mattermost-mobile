@@ -50,6 +50,26 @@ class EphemeralStoreSingleton {
     // It is cleared any time the connection with the server is lost.
     private channelPlaybooksSynced: {[serverUrl: string]: Set<string>} = {};
 
+    // Track how many translations are being executed at the same time on the channel.
+    // We limit this to avoid overwhelming the device.
+    private runningTranslations = new Set<string>();
+
+    addRunningTranslation = (postId: string) => {
+        this.runningTranslations.add(postId);
+    };
+
+    removeRunningTranslation = (postId: string) => {
+        this.runningTranslations.delete(postId);
+    };
+
+    totalRunningTranslations = () => {
+        return this.runningTranslations.size;
+    };
+
+    // Track files that have been rejected by plugins (transient state)
+    // Maps file ID to rejection reason
+    private rejectedFiles = new Map<string, string>();
+
     setProcessingNotification = (v: string) => {
         this.processingNotification = v;
     };
@@ -302,6 +322,26 @@ class EphemeralStoreSingleton {
 
     clearChannelPlaybooksSynced = (serverUrl: string) => {
         delete this.channelPlaybooksSynced[serverUrl];
+    };
+
+    // Ephemeral control for rejected files
+    addRejectedFile = (fileId: string, rejectionReason?: string) => {
+        this.rejectedFiles.set(fileId, rejectionReason || '');
+
+        // Emit event so components can re-render with the updated rejection status
+        DeviceEventEmitter.emit(Events.FILE_REJECTED, {fileId});
+    };
+
+    isFileRejected = (fileId: string) => {
+        return this.rejectedFiles.has(fileId);
+    };
+
+    getRejectionReason = (fileId: string) => {
+        return this.rejectedFiles.get(fileId);
+    };
+
+    clearRejectedFiles = () => {
+        this.rejectedFiles.clear();
     };
 }
 

@@ -67,3 +67,13 @@ export interface StreamingState {
     annotations: Annotation[]; // Citations/annotations for the post
 }
 
+// ============================================================================
+// Rewrite Types
+// ============================================================================
+
+export type {Agent} from './api';
+
+/**
+ * Available rewrite action types
+ */
+export type RewriteAction = 'shorten' | 'elaborate' | 'improve_writing' | 'fix_spelling' | 'simplify' | 'summarize' | 'custom';

@@ -47,7 +47,7 @@ const ServerList = ({servers}: Props) => {
 
     const onAddServer = useCallback(async () => {
         addNewServer(theme);
-    }, [servers]);
+    }, [theme]);
 
     const renderServer = useCallback(({item: t, index}: ListRenderItemInfo<ServersModel>) => {
         return (
@@ -57,7 +57,7 @@ const ServerList = ({servers}: Props) => {
                 server={t}
             />
         );
-    }, []);
+    }, [serverUrl]);
 
     const List = useMemo(() => (isTablet ? FlatList : BottomSheetFlatList), [isTablet]);
 

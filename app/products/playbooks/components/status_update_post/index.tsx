@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
@@ -9,6 +9,7 @@ import {fetchUsersByIds} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
 import {useServerUrl} from '@context/server';
+import useDidMount from '@hooks/did_mount';
 import {isPostStatusUpdateProps} from '@playbooks/utils/types';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -87,14 +88,11 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
     const style = getStyleSheet(theme);
     const intl = useIntl();
 
-    useEffect(() => {
+    useDidMount(() => {
         if (statusUpdateProps) {
             fetchUsersByIds(serverUrl, statusUpdateProps.participantIds);
         }
-
-        // Only do this on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     if (!statusUpdateProps) {
         return (

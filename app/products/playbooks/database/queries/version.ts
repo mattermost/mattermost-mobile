@@ -6,7 +6,14 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {SYSTEM_IDENTIFIERS, MM_TABLES} from '@constants/database';
-import {MINIMUM_MAJOR_VERSION, MINIMUM_MINOR_VERSION, MINIMUM_PATCH_VERSION} from '@playbooks/constants/version';
+import {
+    MINIMUM_MAJOR_VERSION,
+    MINIMUM_MINOR_VERSION,
+    MINIMUM_PATCH_VERSION,
+    SUMMARY_EDIT_MINIMUM_MAJOR_VERSION,
+    SUMMARY_EDIT_MINIMUM_MINOR_VERSION,
+    SUMMARY_EDIT_MINIMUM_PATCH_VERSION,
+} from '@playbooks/constants/version';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import type SystemModel from '@typings/database/models/servers/system';
@@ -35,8 +42,35 @@ export function observeIsPlaybooksEnabled(database: Database) {
     return database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).query(
         Q.where('id', SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION),
     ).observeWithColumns(['value']).pipe(
-        switchMap((systems) => {
+        switchMap((systems: SystemModel[]) => {
             return of$(isPlaybooksEnabledFromSystemModel(systems));
+        }),
+    );
+}
+
+function isSummaryEditEnabledFromSystemModel(systems: SystemModel[]) {
+    const version = systems[0]?.value;
+    if (!version) {
+        return false;
+    }
+
+    return isMinimumServerVersion(
+        version,
+        SUMMARY_EDIT_MINIMUM_MAJOR_VERSION,
+        SUMMARY_EDIT_MINIMUM_MINOR_VERSION,
+        SUMMARY_EDIT_MINIMUM_PATCH_VERSION,
+    );
+}
+
+export async function fetchIsSummaryEditEnabled(database: Database) {
+    const systems = await queryPlaybooksVersion(database).fetch();
+    return isSummaryEditEnabledFromSystemModel(systems);
+}
+
+export function observeIsSummaryEditEnabled(database: Database) {
+    return queryPlaybooksVersion(database).observeWithColumns(['value']).pipe(
+        switchMap((systems: SystemModel[]) => {
+            return of$(isSummaryEditEnabledFromSystemModel(systems));
         }),
     );
 }
