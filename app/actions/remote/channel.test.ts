@@ -786,7 +786,7 @@ describe('setChannelAutotranslation', () => {
         expect(result.channel!.autotranslation).toBe(false);
         expect(mockClient.setChannelAutotranslation).toHaveBeenCalledWith(channelId, false);
 
-        expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_DELETED_FOR_CHANNEL, {serverUrl, channelId});
+        expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_DELETED_FOR_CHANNEL, {serverUrl, channelId, teamId});
     });
 
     it('should handle client error', async () => {
@@ -814,7 +814,7 @@ describe('setMyChannelAutotranslation', () => {
         expect(result.error).toBeUndefined();
         expect(result.data).toBe(true);
         expect(mockClient.setMyChannelAutotranslation).toHaveBeenCalledWith(channelId, false);
-        expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_DELETED_FOR_CHANNEL, {serverUrl, channelId});
+        expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_DELETED_FOR_CHANNEL, {serverUrl, channelId, teamId});
     });
 
     it('should handle client error', async () => {
