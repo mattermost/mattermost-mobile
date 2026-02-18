@@ -117,7 +117,9 @@ const ThemeProvider = ({currentTeamId, children, darkThemes, themeAutoSwitch, th
             setTheme(newTheme);
         }
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- theme is intentionally excluded to avoid infinite re-renders
+        // theme is excluded: the cache returns the same object reference on re-entry,
+        // so including it would only cause one unnecessary extra cycle before stabilizing.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [colorScheme, currentTeamId, darkThemes, themeAutoSwitch, themes]);
 
     useEffect(() => {
