@@ -38,6 +38,29 @@ const messages = defineMessages({
     },
 });
 
+type ThemeSectionProps = {
+    allowedThemeKeys: string[];
+    customTheme?: Theme;
+    onThemeChange: (themeKey: string) => void;
+    selectedTheme?: string;
+}
+
+const ThemeSection = ({allowedThemeKeys, customTheme, onThemeChange, selectedTheme}: ThemeSectionProps) => (
+    <>
+        <ThemeTiles
+            allowedThemeKeys={allowedThemeKeys}
+            onThemeChange={onThemeChange}
+            selectedTheme={selectedTheme}
+        />
+        {customTheme && (
+            <CustomTheme
+                setTheme={onThemeChange}
+                displayTheme={selectedTheme}
+            />
+        )}
+    </>
+);
+
 type DisplayThemeProps = {
     allowedThemeKeys: string[];
     componentId: AvailableScreens;
@@ -175,32 +198,22 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
                 <SettingBlock
                     headerText={messages.lightThemeHeader}
                 >
-                    <ThemeTiles
+                    <ThemeSection
                         allowedThemeKeys={allowedThemeKeys}
+                        customTheme={customTheme}
                         onThemeChange={handleLightThemeSelect}
                         selectedTheme={selectedLightTheme}
                     />
-                    {customTheme && (
-                        <CustomTheme
-                            setTheme={handleLightThemeSelect}
-                            displayTheme={selectedLightTheme}
-                        />
-                    )}
                 </SettingBlock>
                 <SettingBlock
                     headerText={messages.darkThemeHeader}
                 >
-                    <ThemeTiles
+                    <ThemeSection
                         allowedThemeKeys={allowedThemeKeys}
+                        customTheme={customTheme}
                         onThemeChange={handleDarkThemeSelect}
                         selectedTheme={selectedDarkTheme}
                     />
-                    {customTheme && (
-                        <CustomTheme
-                            setTheme={handleDarkThemeSelect}
-                            displayTheme={selectedDarkTheme}
-                        />
-                    )}
                 </SettingBlock>
             </SettingContainer>
         );
