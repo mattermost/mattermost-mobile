@@ -16,12 +16,12 @@ const ClientE2EE = <TBase extends Constructor<ClientBase>>(superclass: TBase) =>
     };
 
     fetchDevices = async () => {
-        const devices = await this.doFetch(
+        const result = await this.doFetch(
             `${this.getE2EERoute()}/devices`,
             {method: 'get'},
         );
 
-        return devices || {devices: []};
+        return {devices: Array.isArray(result) ? result : []};
     };
 
 };
