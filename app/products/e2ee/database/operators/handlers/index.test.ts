@@ -49,8 +49,8 @@ describe('E2EEHandler', () => {
 
         it('should sync existing devices with new ones', async () => {
             const initDevices = [
-                {device_id: 'device-1', device_name: 'Device 1'},
-                {device_id: 'device-2', device_name: 'Device 2'},
+                {device_id: 'device-1', device_name: 'Device 1', signature_public_key: 'key-1'},
+                {device_id: 'device-2', device_name: 'Device 2', signature_public_key: 'key-2'},
             ];
 
             await operator.handleDevices({devices: initDevices as EnabledDevice[]});
@@ -59,7 +59,7 @@ describe('E2EEHandler', () => {
             const spyOnBatchOperation = jest.spyOn(operator, 'batchRecords');
 
             const devices = [
-                {device_id: 'device-1', device_name: 'New Device 1'},
+                {device_id: 'device-1', signature_public_key: 'new-key-1'},
                 {device_id: 'device-3', device_name: 'Device 3'},
             ];
 

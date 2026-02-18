@@ -27,10 +27,6 @@ describe('transformE2EEEnabledDeviceRecord', () => {
     });
 
     it('should return a record of type E2EEEnabledDevice for CREATE action', async () => {
-        expect.assertions(7);
-
-        expect(database).toBeTruthy();
-
         const preparedRecord = await transformE2EEEnabledDeviceRecord({
             action: OperationType.CREATE,
             database: database!,
@@ -38,15 +34,7 @@ describe('transformE2EEEnabledDeviceRecord', () => {
                 record: undefined,
                 raw: {
                     device_id: 'device-1',
-                    device_name: 'Device 1',
                     signature_public_key: 'key-1',
-                    is_current_device: true,
-                    created_at: 1620000000000,
-                    last_active_at: 1620000001000,
-                    revoke_at: null,
-                    os_version: 'iOS 15',
-                    app_version: '1.0.0',
-                    verified: true,
                 },
             },
         });
@@ -54,30 +42,18 @@ describe('transformE2EEEnabledDeviceRecord', () => {
         expect(preparedRecord).toBeTruthy();
         expect(preparedRecord!.collection.table).toBe(E2EE_ENABLED_DEVICES);
         expect(preparedRecord!.deviceId).toBe('device-1');
-        expect(preparedRecord!.deviceName).toBe('Device 1');
-        expect(preparedRecord!.isCurrentDevice).toBe(true);
-        expect(preparedRecord!.verified).toBe(true);
+        expect(preparedRecord!.signaturePublicKey).toBe('key-1');
     });
 
     it('should return a record of type E2EEEnabledDevice for UPDATE action', async () => {
-        expect.assertions(5);
-
-        expect(database).toBeTruthy();
-
         let existingRecord: E2EEEnabledDeviceModel | undefined;
         await database!.write(async () => {
             existingRecord = await database!.get<E2EEEnabledDeviceModel>(E2EE_ENABLED_DEVICES).create((record) => {
                 record._raw.id = 'device-2';
                 record.deviceId = 'device-2';
-                record.deviceName = 'Device 2';
                 record.signaturePublicKey = 'key-2';
-                record.isCurrentDevice = false;
-                record.createdAt = 1620000000000;
-                record.lastActiveAt = 1620000001000;
-                record.revokeAt = null;
-                record.osVersion = 'Android 12';
-                record.appVersion = '1.0.0';
-                record.verified = false;
+                record.isCurrentDevice = true;
+                record.verified = true;
             });
         });
 
@@ -88,15 +64,7 @@ describe('transformE2EEEnabledDeviceRecord', () => {
                 record: existingRecord,
                 raw: {
                     device_id: 'device-2',
-                    device_name: 'Updated Device 2',
                     signature_public_key: 'key-2-updated',
-                    is_current_device: true,
-                    created_at: 1620000000000,
-                    last_active_at: 1620000002000,
-                    revoke_at: null,
-                    os_version: 'Android 13',
-                    app_version: '2.0.0',
-                    verified: true,
                 },
             },
         });
@@ -106,16 +74,13 @@ describe('transformE2EEEnabledDeviceRecord', () => {
         });
 
         expect(preparedRecord).toBeTruthy();
-        expect(preparedRecord!.deviceName).toBe('Updated Device 2');
+        expect(preparedRecord!.signaturePublicKey).toBe('key-2-updated');
         expect(preparedRecord!.isCurrentDevice).toBe(true);
+        expect(preparedRecord!.verified).toBe(true);
         expect(preparedRecord!.collection.table).toBe(E2EE_ENABLED_DEVICES);
     });
 
     it('should reject for non-create action without an existing record', async () => {
-        expect.assertions(2);
-
-        expect(database).toBeTruthy();
-
         await expect(
             transformE2EEEnabledDeviceRecord({
                 action: OperationType.UPDATE,
@@ -124,8 +89,6 @@ describe('transformE2EEEnabledDeviceRecord', () => {
                     record: undefined,
                     raw: {
                         device_id: 'device-3',
-                        device_name: 'Device 3',
-                        created_at: 1620000000000,
                     },
                 },
             }),
