@@ -107,6 +107,12 @@ const ThemeProvider = ({currentTeamId, children, darkThemes, themeAutoSwitch, th
         return () => listener.remove();
     }, []);
 
+    // Clear theme cache before re-resolving the theme, so getTheme
+    // doesn't return stale cached values when preferences change.
+    useDidUpdate(() => {
+        clearThemeCache();
+    }, [themes, darkThemes, themeAutoSwitch]);
+
     useEffect(() => {
         const newTheme = getTheme(currentTeamId, themes, themeAutoSwitch, darkThemes, colorScheme);
         if (theme !== newTheme) {
@@ -119,10 +125,6 @@ const ThemeProvider = ({currentTeamId, children, darkThemes, themeAutoSwitch, th
     useEffect(() => {
         updateThemeIfNeeded(theme);
     }, [theme]);
-
-    useDidUpdate(() => {
-        clearThemeCache();
-    }, [themes, darkThemes, themeAutoSwitch]);
 
     return (<Provider value={theme}>{children}</Provider>);
 };
