@@ -63,7 +63,8 @@ type DisplayProps = {
 const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled, isCRTSwitchEnabled, isThemeSwitchingEnabled, themeAutoSwitch}: DisplayProps) => {
     const intl = useIntl();
     const theme = useTheme();
-    const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only timezone is accessed from currentUser
+    const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser?.timezone]);
 
     const goToThemeSettings = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.SETTINGS_DISPLAY_THEME;
