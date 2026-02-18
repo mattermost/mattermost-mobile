@@ -162,13 +162,16 @@ export const useConnectionBanner = ({
         };
 
         priorities();
+
+    // We omit 'visible' from dependencies because we do not want
+    // to show again the banner the moment the banner is closed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         handleInternetUnreachableState,
         handleDisconnectedState,
         handleSlowNetworkState,
         handleConnectedState,
         handleConnectingState,
-        visible,
         appState,
     ]);
 
