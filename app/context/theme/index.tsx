@@ -4,12 +4,10 @@
 import {withObservables} from '@nozbe/watermelondb/react';
 import React, {type ComponentType, createContext, useEffect, useState} from 'react';
 import {Appearance, type ColorSchemeName} from 'react-native';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import useDidUpdate from '@hooks/did_update';
-import {queryDarkThemePreferences, queryThemeAutoSwitchPreference, queryThemePreferences} from '@queries/servers/preference';
+import {observeThemeAutoSwitchPreference, queryDarkThemePreferences, queryThemePreferences} from '@queries/servers/preference';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 
@@ -155,9 +153,7 @@ export function useTheme(): Theme {
 const enhancedThemeProvider = withObservables([], ({database}: {database: Database}) => ({
     currentTeamId: observeCurrentTeamId(database),
     darkThemes: queryDarkThemePreferences(database).observeWithColumns(['value']),
-    themeAutoSwitch: queryThemeAutoSwitchPreference(database).observeWithColumns(['value']).pipe(
-        switchMap((prefs) => of$(prefs.length > 0 && prefs[0].value === 'true')),
-    ),
+    themeAutoSwitch: observeThemeAutoSwitchPreference(database),
     themes: queryThemePreferences(database).observeWithColumns(['value']),
 }));
 

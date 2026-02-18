@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q} from '@nozbe/watermelondb';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -113,6 +115,12 @@ export const queryDarkThemePreferences = (database: Database, teamId?: string) =
 
 export const queryThemeAutoSwitchPreference = (database: Database) => {
     return queryPreferencesByCategoryAndName(database, DISPLAY_SETTINGS, Preferences.THEME_AUTO_SWITCH);
+};
+
+export const observeThemeAutoSwitchPreference = (database: Database) => {
+    return queryThemeAutoSwitchPreference(database).observeWithColumns(['value']).pipe(
+        switchMap((prefs) => of$(prefs.length > 0 && prefs[0].value === 'true')),
+    );
 };
 
 export const querySidebarPreferences = (database: Database, name?: string) => {

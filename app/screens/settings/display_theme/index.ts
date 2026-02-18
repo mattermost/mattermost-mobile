@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {queryDarkThemePreferences, queryThemeAutoSwitchPreference} from '@queries/servers/preference';
+import {observeThemeAutoSwitchPreference, queryDarkThemePreferences} from '@queries/servers/preference';
 import {
     observeAllowedThemesKeys,
     observeCurrentTeamId,
@@ -37,9 +37,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         allowedThemeKeys: observeAllowedThemesKeys(database),
         currentTeamId,
         currentUserId,
-        themeAutoSwitch: queryThemeAutoSwitchPreference(database).observeWithColumns(['value']).pipe(
-            switchMap((prefs) => of$(prefs.length > 0 && prefs[0].value === 'true')),
-        ),
+        themeAutoSwitch: observeThemeAutoSwitchPreference(database),
         darkThemeType: currentTeamId.pipe(
             switchMap((teamId) =>
                 queryDarkThemePreferences(database, teamId).observeWithColumns(['value']).pipe(
