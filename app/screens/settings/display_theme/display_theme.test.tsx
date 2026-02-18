@@ -256,6 +256,69 @@ describe('DisplayTheme', () => {
         jest.useRealTimers();
     });
 
+    it('should render light and dark theme sections when auto-switch is enabled', () => {
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire']}
+                {...displayThemeOtherProps}
+                themeAutoSwitch={true}
+            />);
+
+        expect(screen.getByTestId('theme_display_settings.auto_switch.toggle')).toBeTruthy();
+        expect(screen.getByText('Light Theme')).toBeTruthy();
+        expect(screen.getByText('Dark Theme')).toBeTruthy();
+    });
+
+    it('should hide light and dark sections when auto-switch is toggled off', () => {
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire']}
+                {...displayThemeOtherProps}
+                themeAutoSwitch={true}
+            />);
+
+        expect(screen.getByText('Light Theme')).toBeTruthy();
+        expect(screen.getByText('Dark Theme')).toBeTruthy();
+
+        const toggle = screen.getByTestId('theme_display_settings.auto_switch.toggle.toggled.true.button');
+        fireEvent(toggle, 'valueChange', false);
+
+        expect(screen.queryByText('Light Theme')).toBeNull();
+        expect(screen.queryByText('Dark Theme')).toBeNull();
+    });
+
+    it('should save light and dark theme preferences on back navigation when auto-switch is on', async () => {
+        (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValue('DisplayTheme');
+        const androidBackButtonHandler = jest.spyOn(BackHandler, 'addEventListener');
+
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire']}
+                {...displayThemeOtherProps}
+                themeAutoSwitch={true}
+            />,
+        );
+
+        // Trigger back navigation via Android back button (same handler as iOS back)
+        androidBackButtonHandler.mock.calls[0][1]();
+
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: Preferences.CATEGORIES.THEME,
+                    }),
+                    expect.objectContaining({
+                        category: Preferences.CATEGORIES.THEME_DARK,
+                    }),
+                ]),
+            );
+        });
+
+        expect(popTopScreen).toHaveBeenCalledTimes(1);
+    });
+
     it('should not allow user to select a theme rapidly', async () => {
         const numOfSavePreferenceCalls = 1;
         renderWithIntl(
