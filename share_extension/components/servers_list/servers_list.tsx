@@ -31,7 +31,7 @@ const keyExtractor = (item: ServersModel) => item.url;
 
 const ServersList = ({servers, theme}: Props) => {
     const intl = useIntl();
-    const data = useMemo(() => sortServersByDisplayName(servers, intl), [intl.locale, servers]);
+    const data = useMemo(() => sortServersByDisplayName(servers, intl), [intl, servers]);
 
     const renderServer = useCallback(({item}: ListRenderItemInfo<ServersModel>) => {
         return (

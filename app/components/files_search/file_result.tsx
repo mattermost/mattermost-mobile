@@ -64,7 +64,7 @@ const FileResult = ({
             setShowOptions(true);
             onOptionsPress(fInfo);
         });
-    }, []);
+    }, [height, onOptionsPress]);
 
     const handleSetAction = useCallback((action: GalleryAction) => {
         setAction(action);

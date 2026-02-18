@@ -76,7 +76,7 @@ export default defineConfig([
       ],
       "react/display-name": [2, { "ignoreTranspilerName": false }],
       "react/jsx-filename-extension": "off",
-      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/exhaustive-deps": "error",
       "camelcase": ["off", { "properties": "never" }],
       "@typescript-eslint/ban-types": "off",
       "@typescript-eslint/no-non-null-assertion": "off",

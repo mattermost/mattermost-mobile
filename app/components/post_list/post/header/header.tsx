@@ -148,12 +148,11 @@ const Header = ({
     const usernameOverride = ensureString(post.props?.override_username);
     const intl = useIntl();
 
-    /* eslint-disable react-hooks/exhaustive-deps -- expire_at triggers recomputation when post metadata changes */
-    const showBoRIcon = useMemo(
-        () => isUnrevealedBoRPost(post),
-        [post, post.metadata?.expire_at],
-    );
-    /* eslint-enable react-hooks/exhaustive-deps */
+    // We need to depend on the expire_at directly,
+    // since changes in it may not be reflected in the post object
+    // (it is still the same object reference).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const showBoRIcon = useMemo(() => isUnrevealedBoRPost(post), [post, post.metadata?.expire_at]);
     const borExpireAt = post.metadata?.expire_at;
     const serverUrl = useServerUrl();
 

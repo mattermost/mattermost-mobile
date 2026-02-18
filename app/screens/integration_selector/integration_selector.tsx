@@ -15,6 +15,7 @@ import {General, Screens, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useDidMount from '@hooks/did_mount';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {useDebounce} from '@hooks/utils';
 import SecurityManager from '@managers/security_manager';
@@ -388,17 +389,14 @@ function IntegrationSelector(
         };
     }, []);
 
-    useEffect(() => {
+    useDidMount(() => {
         if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
             getChannels();
         } else {
             // Static and dynamic option search
             searchDynamicOptions('');
         }
-
-        // We only want to get the channels on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     useEffect(() => {
         let listData: DataTypeList = integrationData;

@@ -114,7 +114,7 @@ const ShareFeedback = ({
             await goToNPSChannel(serverUrl);
             giveFeedbackAction(serverUrl);
         });
-    }, [close, intl, serverUrl]);
+    }, [close, componentId, serverUrl]);
 
     const onPressNo = useCallback(() => {
         close(() => dismissOverlay(componentId));
@@ -132,7 +132,7 @@ const ShareFeedback = ({
         if (finished) {
             runOnJS(doAfterAnimation)();
         }
-    }), []);
+    }), [doAfterAnimation]);
 
     return (
         <View

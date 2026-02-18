@@ -33,7 +33,7 @@ const GroupMessage = ({currentUserId, displayName, members}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const userIds = useMemo(() => members.map((cm) => cm.userId).filter((id) => id !== currentUserId),
-        [members.length, currentUserId]);
+        [members, currentUserId]);
 
     return (
         <>

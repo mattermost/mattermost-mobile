@@ -38,7 +38,7 @@ const ImageFileOverlay = ({value}: ImageFileOverlayProps) => {
             style.moreImagesText,
             {fontSize: Math.round(PixelRatio.roundToNearestPixel(24 * scale))},
         ];
-    }, [isTablet]);
+    }, [dimensions.scale, isTablet, style]);
 
     return (
         <View style={style.moreImagesWrapper}>
