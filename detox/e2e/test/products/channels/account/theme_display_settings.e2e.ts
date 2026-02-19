@@ -92,4 +92,117 @@ describe('Account - Settings - Theme Display Settings', () => {
         // * Verify denim option is selected
         await expect(ThemeDisplaySettingsScreen.denimOptionSelected).toBeVisible();
     });
+
+    it('MM-T5111_3 - should display auto-switch toggle on theme settings screen', async () => {
+        // * Verify the auto-switch toggle is visible and initially off
+        await expect(ThemeDisplaySettingsScreen.autoSwitchToggleOff).toBeVisible();
+
+        // * Verify all 5 theme options are still visible alongside the toggle
+        await expect(ThemeDisplaySettingsScreen.denimOption).toBeVisible();
+        await expect(ThemeDisplaySettingsScreen.sapphireOption).toBeVisible();
+        await expect(ThemeDisplaySettingsScreen.quartzOption).toBeVisible();
+        await expect(ThemeDisplaySettingsScreen.indigoOption).toBeVisible();
+        await expect(ThemeDisplaySettingsScreen.onyxOption).toBeVisible();
+    });
+
+    it('MM-T5111_4 - should be able to enable auto-switch and select light/dark themes', async () => {
+        // # Toggle auto-switch on
+        await ThemeDisplaySettingsScreen.toggleAutoSwitchOn();
+
+        // * Verify theme tiles are still visible (light section)
+        await expect(ThemeDisplaySettingsScreen.getLightThemeOption('denim')).toBeVisible();
+
+        // # Select Sapphire as light theme
+        await ThemeDisplaySettingsScreen.selectLightTheme('sapphire');
+
+        // # Select Indigo as dark theme
+        await ThemeDisplaySettingsScreen.selectDarkTheme('indigo');
+
+        // # Tap back to save
+        await ThemeDisplaySettingsScreen.back();
+
+        // * Verify display settings shows "Auto" for theme info
+        await DisplaySettingsScreen.toBeVisible();
+        await expect(DisplaySettingsScreen.themeOptionInfo).toHaveText('Auto');
+
+        // # Re-open theme settings
+        await ThemeDisplaySettingsScreen.open();
+
+        // * Verify auto-switch is on
+        await expect(ThemeDisplaySettingsScreen.autoSwitchToggleOn).toBeVisible();
+
+        // * Verify Sapphire is selected in light section
+        await expect(ThemeDisplaySettingsScreen.sapphireOptionSelected).toBeVisible();
+
+        // # Scroll to dark section
+        // * Verify Indigo is selected in dark section
+        await waitFor(ThemeDisplaySettingsScreen.indigoOptionSelected).toBeVisible().whileElement(by.id(ThemeDisplaySettingsScreen.testID.scrollView)).scroll(50, 'down');
+    });
+
+    it('MM-T5111_5 - should persist light and dark theme changes independently', async () => {
+        // # Change only the light theme to Quartz
+        await ThemeDisplaySettingsScreen.selectLightTheme('quartz');
+
+        // # Tap back to save
+        await ThemeDisplaySettingsScreen.back();
+
+        // * Verify display settings still shows "Auto"
+        await DisplaySettingsScreen.toBeVisible();
+        await expect(DisplaySettingsScreen.themeOptionInfo).toHaveText('Auto');
+
+        // # Re-open theme settings
+        await ThemeDisplaySettingsScreen.open();
+
+        // * Verify Quartz is selected in the light section
+        await expect(ThemeDisplaySettingsScreen.quartzOptionSelected).toBeVisible();
+
+        // * Verify Indigo is still selected in the dark section (unchanged)
+        await waitFor(ThemeDisplaySettingsScreen.indigoOptionSelected).toBeVisible().whileElement(by.id(ThemeDisplaySettingsScreen.testID.scrollView)).scroll(50, 'down');
+
+        // # Change only the dark theme to Onyx
+        await ThemeDisplaySettingsScreen.selectDarkTheme('onyx');
+
+        // # Tap back to save
+        await ThemeDisplaySettingsScreen.back();
+
+        // # Re-open theme settings
+        await ThemeDisplaySettingsScreen.open();
+
+        // * Verify Quartz is still selected in the light section
+        await expect(ThemeDisplaySettingsScreen.quartzOptionSelected).toBeVisible();
+
+        // * Verify Onyx is now selected in the dark section
+        await waitFor(ThemeDisplaySettingsScreen.onyxOptionSelected).toBeVisible().whileElement(by.id(ThemeDisplaySettingsScreen.testID.scrollView)).scroll(50, 'down');
+    });
+
+    it('MM-T5111_6 - should be able to disable auto-switch and return to single theme selection', async () => {
+        // # Toggle auto-switch off
+        await ThemeDisplaySettingsScreen.toggleAutoSwitchOff();
+
+        // * Verify standard single theme tiles are shown
+        await expect(ThemeDisplaySettingsScreen.denimOption).toBeVisible();
+        await expect(ThemeDisplaySettingsScreen.sapphireOption).toBeVisible();
+        await expect(ThemeDisplaySettingsScreen.quartzOption).toBeVisible();
+        await expect(ThemeDisplaySettingsScreen.indigoOption).toBeVisible();
+        await expect(ThemeDisplaySettingsScreen.onyxOption).toBeVisible();
+
+        // # Select Denim theme
+        await ThemeDisplaySettingsScreen.denimOption.tap();
+
+        // # Tap back to save
+        await ThemeDisplaySettingsScreen.back();
+
+        // * Verify display settings shows "Denim" (not "Auto")
+        await DisplaySettingsScreen.toBeVisible();
+        await expect(DisplaySettingsScreen.themeOptionInfo).toHaveText('Denim');
+
+        // # Re-open theme settings
+        await ThemeDisplaySettingsScreen.open();
+
+        // * Verify auto-switch is off
+        await expect(ThemeDisplaySettingsScreen.autoSwitchToggleOff).toBeVisible();
+
+        // * Verify Denim is selected
+        await expect(ThemeDisplaySettingsScreen.denimOptionSelected).toBeVisible();
+    });
 });
