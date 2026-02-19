@@ -78,8 +78,8 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
     const [selectedDarkTheme, setSelectedDarkTheme] = useState<string | undefined>(darkThemeType ?? 'onyx');
     const [customTheme, setCustomTheme] = useState(theme.type?.toLowerCase() === 'custom' ? theme : undefined);
 
-    // Track when the theme changes to a custom type (e.g. set by another client),
-    // so we can show the custom theme option in the theme picker.
+    // When the user selects any of the predefined theme when the current theme is custom, the custom theme will disappear.
+    // By storing the current theme in the state, the custom theme will remain, and the user can switch back to it.
     useDidUpdate(() => {
         if (theme.type?.toLowerCase() === 'custom') {
             setCustomTheme(theme);
