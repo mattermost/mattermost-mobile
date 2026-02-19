@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import ClientAgents, {type ClientAgentsMix} from '@agents/client/rest';
+import ClientE2EE, {type ClientE2EEMix} from '@e2ee/client/rest';
 
 import ClientCalls, {type ClientCallsMix} from '@calls/client/rest';
 import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
@@ -53,7 +54,8 @@ interface Client extends ClientBase,
     ClientPluginsMix,
     ClientNPSMix,
     ClientCustomAttributesMix,
-    ClientPlaybooksMix
+    ClientPlaybooksMix,
+    ClientE2EEMix
 {
     setClientCredentials: (token: string, preauthSecret?: string) => void;
     setCSRFToken: (csrfToken: string) => void;
@@ -83,6 +85,7 @@ class Client extends mix(ClientBase).with(
     ClientCustomAttributes,
     ClientScheduledPost,
     ClientPlaybooks,
+    ClientE2EE,
 ) {
     // eslint-disable-next-line no-useless-constructor
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string, preauthSecret?: string) {
