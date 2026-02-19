@@ -11,8 +11,8 @@ import OptionBox from '@components/option_box';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {setAssignee, setChecklistItemCommand, setDueDate, deleteChecklistItem} from '@playbooks/actions/remote/checklist';
-import {goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
+import {setAssignee, setChecklistItemCommand, setDueDate, deleteChecklistItem, updateChecklistItemTitleAndDescription} from '@playbooks/actions/remote/checklist';
+import {goToEditChecklistItem, goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
 import {getDueDateString} from '@playbooks/utils/time';
 import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
@@ -120,6 +120,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         flexDirection: 'row',
         alignItems: 'flex-start',
         gap: 12,
+    },
+    titleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        flex: 1,
+    },
+    editIcon: {
+        fontSize: 18,
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+        paddingHorizontal: 4,
+    },
+    editIconPressed: {
+        opacity: 0.2,
     },
     taskTitle: {
         ...typography('Body', 300, 'Regular'),
@@ -333,6 +347,18 @@ const ChecklistItemBottomSheet = ({
         );
     }, [assignee?.id, handleRemove, handleSelect, intl, participantIds, runName, theme]);
 
+    const handleEditItem = useCallback(async (itemInput: ChecklistItemInput) => {
+        const res = await updateChecklistItemTitleAndDescription(serverUrl, runId, item.id, checklistNumber, itemNumber, itemInput);
+        if (res.error) {
+            showPlaybookErrorSnackbar();
+        }
+    }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
+
+    const openEditItemModal = useCallback(() => {
+        const itemDescription = ('description' in item && item.description) || undefined;
+        goToEditChecklistItem(intl, theme, runName, item.title, itemDescription, handleEditItem);
+    }, [intl, theme, runName, item, handleEditItem]);
+
     const renderTaskDetails = () => (
         <View style={styles.taskDetailsContainer}>
             <OptionItem
@@ -431,14 +457,28 @@ const ChecklistItemBottomSheet = ({
                     checked={isChecked}
                     onPress={handleCheck}
                 />
-                <View style={styles.flex}>
-                    <Text style={styles.taskTitle}>
-                        {item.title}
-                    </Text>
-                    {Boolean(item.description) && (
-                        <Text style={styles.taskDescription}>
-                            {item.description}
+                <View style={styles.titleContainer}>
+                    <View style={styles.flex}>
+                        <Text style={styles.taskTitle}>
+                            {item.title}
                         </Text>
+                        {(item.description) && (
+                            <Text style={styles.taskDescription}>
+                                {item.description}
+                            </Text>
+                        )}
+                    </View>
+                    {!isDisabled && (
+                        <Pressable
+                            onPress={openEditItemModal}
+                            style={({pressed}) => pressed && styles.editIconPressed}
+                            testID='checklist_item.edit_button'
+                        >
+                            <CompassIcon
+                                name='pencil-outline'
+                                style={styles.editIcon}
+                            />
+                        </Pressable>
                     )}
                 </View>
             </View>

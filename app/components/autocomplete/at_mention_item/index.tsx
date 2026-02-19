@@ -20,7 +20,7 @@ const AtMentionItem = ({
 }: AtMentionItemProps) => {
     const completeMention = useCallback((u: UserModel | UserProfile) => {
         onPress?.(u.username);
-    }, []);
+    }, [onPress]);
 
     return (
         <UserItem

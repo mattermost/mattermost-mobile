@@ -13,6 +13,7 @@ import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/fil
 import SendHandler from '../send_handler';
 
 import type {ErrorHandlers} from '@typings/components/upload_error_handlers';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     testID?: string;
@@ -30,6 +31,7 @@ type Props = {
     value: string;
     setIsFocused: (isFocused: boolean) => void;
     onPostCreated?: (postId: string) => void;
+    location?: AvailableScreens;
 }
 
 const emptyFileList: FileInfo[] = [];
@@ -51,6 +53,7 @@ export default function DraftHandler(props: Props) {
         value,
         setIsFocused,
         onPostCreated,
+        location,
     } = props;
 
     const serverUrl = useServerUrl();
@@ -138,6 +141,7 @@ export default function DraftHandler(props: Props) {
             updateValue={updateValue}
             setIsFocused={setIsFocused}
             onPostCreated={onPostCreated}
+            location={location}
         />
     );
 }

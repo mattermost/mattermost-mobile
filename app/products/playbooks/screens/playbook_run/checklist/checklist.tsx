@@ -157,8 +157,8 @@ const Checklist = ({
         goToRenameChecklist(intl, theme, playbookRunName, checklist.title, handleRename);
     }, [intl, theme, playbookRunName, checklist.title, handleRename]);
 
-    const handleAddItem = useCallback(async (title: string) => {
-        const res = await addChecklistItem(serverUrl, playbookRunId, checklistNumber, title);
+    const handleAddItem = useCallback(async (item: ChecklistItemInput) => {
+        const res = await addChecklistItem(serverUrl, playbookRunId, checklistNumber, item);
         if ('error' in res && res.error) {
             showPlaybookErrorSnackbar();
             logError('error on addChecklistItem', getFullErrorMessage(res.error));
@@ -264,7 +264,7 @@ const Checklist = ({
             >
                 {items.map((item, index) => (
                     <ChecklistItem
-                        key={item.id}
+                        key={`calc-${item.id}`}
                         item={item}
                         channelId={channelId}
                         checklistNumber={checklistNumber}

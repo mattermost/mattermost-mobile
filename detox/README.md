@@ -79,6 +79,30 @@ npm run e2e:ios-test
 npm run e2e:android-test path to test file.
 ```
 
+### Disabling Password Autofill (Optional)
+
+iOS password autofill can interfere with login tests by automatically filling credentials. To disable this feature on your simulator:
+
+```sh
+# Interactive mode - select simulator from list
+npm run e2e:ios-disable-autofill
+
+# Or specify simulator ID directly
+npm run e2e:ios-disable-autofill -- --simulator-id SIMULATOR_UDID
+```
+
+**When to use this:**
+- Before running iOS E2E tests if you notice password fields being auto-filled
+- When login tests fail unexpectedly due to autofill interference
+- After creating a new iOS simulator for testing
+
+**Note:** CI environments automatically disable this setting, so this is only needed for local development.
+
+**Finding your simulator ID:**
+```sh
+xcrun simctl list devices | grep Booted
+```
+
 #### TIP : For iOS, you can download the simulator from `~Mobile: Test build` or `~Release: Mobile Apps` channel in the community.
 
 ### Results
@@ -157,4 +181,3 @@ To run Playbooks tests:
 For complete documentation, see:
 - [Wix Pilot Technical Overview](https://wix-pilot.com/docs/guides/technical-overview)
 - [Pilot Best Practices Guide](https://wix-pilot.com/docs/guides/pilot-best-practices)
-

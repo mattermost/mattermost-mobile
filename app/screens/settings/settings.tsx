@@ -55,7 +55,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
         setButtons(componentId, {
             leftButtons: [closeButton],
         });
-    }, []);
+    }, [closeButton, componentId]);
 
     useAndroidHardwareBackHandler(componentId, close);
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, []);

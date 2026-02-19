@@ -15,6 +15,7 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import {Screens, Launch, DeepLink} from '@constants';
+import useDidMount from '@hooks/did_mount';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {getServerCredentials} from '@init/credentials';
@@ -171,7 +172,7 @@ const Server = ({
         return () => unsubscribe.remove();
     }, [componentId, url]);
 
-    useEffect(() => {
+    useDidMount(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
             if (LocalConfig.ShowOnboarding && animated) {
                 popTopScreen(Screens.SERVER);
@@ -188,10 +189,7 @@ const Server = ({
         PushNotifications.registerIfNeeded();
 
         return () => backHandler.remove();
-
-        // We register the back handler and the push notifications only on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
 

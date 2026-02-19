@@ -8,6 +8,7 @@ import {of as of$} from 'rxjs';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
@@ -63,6 +64,10 @@ import {prepareChannels,
     queryChannelMembers,
     queryChannelsForAutocomplete,
     observeChannelMembers,
+    queryMyChannelsByChannelIds,
+    queryMyChannelsWithAutotranslation,
+    observeChannelAutotranslation,
+    observeIsChannelAutotranslated,
 } from './channel';
 import {queryRoles} from './role';
 import {getCurrentChannelId, observeCurrentChannelId, observeCurrentUserId} from './system';
@@ -74,7 +79,15 @@ import type ChannelInfoModel from '@typings/database/models/servers/channel_info
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 
 jest.mock('./role');
-jest.mock('./system');
+jest.mock('./system', () => {
+    const actual = jest.requireActual<typeof import('./system')>('./system');
+    return {
+        ...actual,
+        getCurrentChannelId: jest.fn(),
+        observeCurrentChannelId: jest.fn(),
+        observeCurrentUserId: jest.fn(),
+    };
+});
 jest.mock('./user');
 jest.mock('@utils/role');
 
@@ -1577,6 +1590,326 @@ describe('Channel Observations', () => {
         expect(mockQuery).toHaveBeenCalledWith(Q.where('channel_id', channelId));
         result.subscribe((value) => {
             expect(value).toEqual(mockMembers);
+        });
+    });
+});
+
+describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', () => {
+    const serverUrl = 'channelQueries.test.com';
+    let database: Database;
+    let operator: ServerDataOperator;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = serverDatabaseAndOperator.database;
+        operator = serverDatabaseAndOperator.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    describe('queryMyChannelsByChannelIds', () => {
+        it('should return myChannels for given ids', async () => {
+            const channel1 = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1'});
+            const channel2 = TestHelper.fakeChannel({id: 'ch2', team_id: 'team1'});
+            const myCh1 = TestHelper.fakeChannelMember({id: 'ch1', channel_id: 'ch1'});
+            const myCh2 = TestHelper.fakeChannelMember({id: 'ch2', channel_id: 'ch2'});
+            await operator.handleChannel({channels: [channel1, channel2], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel1, channel2], myChannels: [myCh1, myCh2], prepareRecordsOnly: false});
+
+            const result = queryMyChannelsByChannelIds(database, ['ch1', 'ch2']);
+            const fetched = await result.fetch();
+
+            expect(fetched.length).toBe(2);
+            expect(fetched.map((c) => c.id).sort()).toEqual(['ch1', 'ch2']);
+        });
+
+        it('should return empty when no matching ids', async () => {
+            const result = queryMyChannelsByChannelIds(database, ['nonexistent']);
+            const fetched = await result.fetch();
+            expect(fetched.length).toBe(0);
+        });
+    });
+
+    describe('queryMyChannelsWithAutotranslation', () => {
+        it('should return only myChannels with channel autotranslation enabled and user autotranslation not disabled', async () => {
+            const channel1 = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1', autotranslation: true});
+            const channel2 = TestHelper.fakeChannel({id: 'ch2', team_id: 'team1', autotranslation: true});
+            const myCh1 = TestHelper.fakeChannelMember({id: 'ch1', channel_id: 'ch1', autotranslation_disabled: false});
+            const myCh2 = TestHelper.fakeChannelMember({id: 'ch2', channel_id: 'ch2', autotranslation_disabled: true});
+            await operator.handleChannel({channels: [channel1, channel2], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel1, channel2], myChannels: [myCh1, myCh2], prepareRecordsOnly: false});
+
+            const result = queryMyChannelsWithAutotranslation(database);
+            const fetched = await result.fetch();
+
+            expect(fetched.length).toBe(1);
+            expect(fetched[0].id).toBe('ch1');
+            expect(fetched[0].autotranslationDisabled).toBe(false);
+        });
+
+        it('should exclude channels that have autotranslation disabled at channel level', async () => {
+            const channel1 = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1', autotranslation: false});
+            const myCh1 = TestHelper.fakeChannelMember({id: 'ch1', channel_id: 'ch1', autotranslation_disabled: false});
+            await operator.handleChannel({channels: [channel1], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel1], myChannels: [myCh1], prepareRecordsOnly: false});
+
+            const result = queryMyChannelsWithAutotranslation(database);
+            const fetched = await result.fetch();
+            expect(fetched.length).toBe(0);
+        });
+
+        it('should return empty when no myChannels have autotranslation disabled false', async () => {
+            const channel1 = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1', autotranslation: true});
+            const myCh1 = TestHelper.fakeChannelMember({id: 'ch1', channel_id: 'ch1', autotranslation_disabled: true});
+            await operator.handleChannel({channels: [channel1], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel1], myChannels: [myCh1], prepareRecordsOnly: false});
+
+            const result = queryMyChannelsWithAutotranslation(database);
+            const fetched = await result.fetch();
+            expect(fetched.length).toBe(0);
+        });
+    });
+
+    describe('observeChannelAutotranslation', () => {
+        const channelId = 'ch_observe';
+
+        it('should emit true when EnableAutoTranslation is true and channel has autotranslation', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: true});
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeChannelAutotranslation(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(true);
+        });
+
+        it('should emit false when EnableAutoTranslation is false', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'false'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: true});
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeChannelAutotranslation(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit false when channel has autotranslation false', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: false});
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeChannelAutotranslation(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit false when channel is not found', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const subscriptionNext = jest.fn();
+            const result = observeChannelAutotranslation(database, 'nonexistent');
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit false when channel is DM and RestrictDMAndGMAutotranslation is true', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'true'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({
+                id: channelId,
+                type: General.DM_CHANNEL,
+                autotranslation: true,
+            });
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeChannelAutotranslation(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit true when channel is DM and RestrictDMAndGMAutotranslation is false', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({
+                id: channelId,
+                type: General.DM_CHANNEL,
+                autotranslation: true,
+            });
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeChannelAutotranslation(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(true);
+        });
+    });
+
+    describe('observeIsChannelAutotranslated', () => {
+        const channelId = 'ch_is_autotranslated';
+
+        it('should emit true when config and channel has autotranslation true and myChannel has autotranslation disabled false', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: true});
+            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation_disabled: false});
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel], myChannels: [myChannel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeIsChannelAutotranslated(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(true);
+        });
+
+        it('should emit false when channel autotranslation is false', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: false});
+            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation_disabled: false});
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel], myChannels: [myChannel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeIsChannelAutotranslated(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit false when myChannel autotranslation disabled is true', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({id: channelId, team_id: 'team1', autotranslation: true});
+            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation_disabled: true});
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel], myChannels: [myChannel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeIsChannelAutotranslated(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit false when channel is DM and RestrictDMAndGMAutotranslation is true', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'true'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({
+                id: channelId,
+                type: General.DM_CHANNEL,
+                autotranslation: true,
+            });
+            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation_disabled: false});
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel], myChannels: [myChannel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeIsChannelAutotranslated(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit true when channel is DM and RestrictDMAndGMAutotranslation is false', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableAutoTranslation', value: 'true'},
+                    {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            const channel = TestHelper.fakeChannel({
+                id: channelId,
+                type: General.DM_CHANNEL,
+                autotranslation: true,
+            });
+            const myChannel = TestHelper.fakeChannelMember({id: channelId, channel_id: channelId, autotranslation_disabled: false});
+            await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel], myChannels: [myChannel], prepareRecordsOnly: false});
+
+            const subscriptionNext = jest.fn();
+            const result = observeIsChannelAutotranslated(database, channelId);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(true);
         });
     });
 });

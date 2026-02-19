@@ -28,6 +28,7 @@ import {MESSAGE_TYPE, SNACK_BAR_CONFIG} from '@constants/snack_bar';
 import {TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import SecurityManager from '@managers/security_manager';
 import {dismissOverlay} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -54,7 +55,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         text: {
             color: theme.centerChannelBg,
         },
-        undo: {
+        action: {
             color: theme.centerChannelBg,
             ...typography('Body', 100, 'SemiBold'),
         },
@@ -101,6 +102,7 @@ const SnackBar = ({
     sourceScreen,
     customMessage,
     type,
+    actionText,
 }: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const intl = useIntl();
@@ -120,7 +122,7 @@ const SnackBar = ({
         config = {
             message: defaultMessage,
             iconName: DEFAULT_ICON,
-            canUndo: false,
+            hasAction: false,
             type,
         };
     }
@@ -233,7 +235,7 @@ const SnackBar = ({
     };
 
     // This effect hides the snack bar after 3 seconds
-    useEffect(() => {
+    useDidMount(() => {
         mounted.current = true;
         baseTimer.current = setTimeout(() => {
             if (!isPanned.value) {
@@ -245,7 +247,7 @@ const SnackBar = ({
             stopTimers();
             mounted.current = false;
         };
-    }, []);
+    });
 
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
     useEffect(() => {
@@ -301,10 +303,10 @@ const SnackBar = ({
                             textStyle={styles.text}
                             testID='toast'
                         >
-                            {config.canUndo && onAction && (
+                            {config.hasAction && onAction && (
                                 <TouchableOpacity onPress={onUndoPressHandler}>
-                                    <Text style={styles.undo}>
-                                        {intl.formatMessage({
+                                    <Text style={styles.action}>
+                                        {actionText || intl.formatMessage({
                                             id: 'snack.bar.undo',
                                             defaultMessage: 'Undo',
                                         })}

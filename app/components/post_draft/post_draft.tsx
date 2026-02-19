@@ -103,6 +103,7 @@ function PostDraft({
             value={value}
             setIsFocused={setIsFocused}
             onPostCreated={onPostCreated}
+            location={location}
         />
     );
 

@@ -54,6 +54,18 @@ export default schemaMigrations({migrations: [
                     {name: 'update_at', type: 'number', isIndexed: true},
                 ],
             }),
+            addColumns({
+                table: MY_CHANNEL,
+                columns: [
+                    {name: 'autotranslation_disabled', type: 'boolean'},
+                ],
+            }),
+            addColumns({
+                table: CHANNEL,
+                columns: [
+                    {name: 'autotranslation', type: 'boolean'},
+                ],
+            }),
         ],
     },
     {

@@ -40,7 +40,7 @@ type ChannelListProps = {
     lastChannelId?: string;
     scheduledPostsEnabled?: boolean;
     agentsEnabled?: boolean;
-    playbooksEnabled?: boolean;
+    showPlaybooksButton?: boolean;
 };
 
 const getTabletWidth = (moreThanOneTeam: boolean) => {
@@ -60,7 +60,7 @@ const CategoriesList = ({
     lastChannelId,
     scheduledPostsEnabled,
     agentsEnabled,
-    playbooksEnabled,
+    showPlaybooksButton,
 }: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -143,14 +143,14 @@ const CategoriesList = ({
     }, [agentsEnabled, activeScreen]);
 
     const playbooksButtonComponent = useMemo(() => {
-        if (!playbooksEnabled) {
+        if (!showPlaybooksButton) {
             return null;
         }
 
         return (
             <PlaybooksButton/>
         );
-    }, [playbooksEnabled]);
+    }, [showPlaybooksButton]);
 
     const content = useMemo(() => {
         if (!hasChannels) {

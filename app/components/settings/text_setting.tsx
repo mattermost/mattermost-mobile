@@ -85,7 +85,7 @@ function TextSetting({
     const style = getStyleSheet(theme);
 
     const inputContainerStyle = useMemo(() => (disabled ? [style.inputContainer, style.disabled] : style.inputContainer), [style, disabled]);
-    const inputStyle = useMemo(() => (multiline ? style.multiline : style.input), [multiline]);
+    const inputStyle = useMemo(() => (multiline ? style.multiline : style.input), [multiline, style]);
 
     const actualKeyboardType: KeyboardTypeOptions = keyboardType === 'url' ? Platform.select({android: 'default', default: 'url'}) : keyboardType;
 

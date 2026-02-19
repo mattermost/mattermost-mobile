@@ -81,7 +81,7 @@ const OptionBox = ({
         }
 
         return style;
-    }, [activated, containerStyle, theme, isDestructive]);
+    }, [styles, containerStyle, isDestructive, theme.dndIndicator, theme.buttonBg, activated]);
 
     const handleOnPress = useCallback(() => {
         if (activeIconName || activeText) {
