@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {E2EEEnabledDeviceModel} from '@e2ee/database/models';
+import {E2EERegisteredDeviceModel} from '@e2ee/database/models';
 import {Database, Q} from '@nozbe/watermelondb';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import logger from '@nozbe/watermelondb/utils/common/logger';
@@ -52,7 +52,7 @@ class DatabaseManagerSingleton {
         this.appModels = [InfoModel, GlobalModel, ServersModel];
         this.serverModels = [
             CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel, ChannelInfoModel, ChannelMembershipModel, ConfigModel,
-            CustomEmojiModel, CustomProfileFieldModel, CustomProfileAttributeModel, DraftModel, E2EEEnabledDeviceModel, FileModel,
+            CustomEmojiModel, CustomProfileFieldModel, CustomProfileAttributeModel, DraftModel, E2EERegisteredDeviceModel, FileModel,
             GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             ScheduledPostModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,

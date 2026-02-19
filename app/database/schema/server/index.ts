@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {E2EEEnabledDeviceSchema} from '@e2ee/database/schema';
+import {E2EERegisteredDeviceSchema} from '@e2ee/database/schema';
 import {type AppSchema, appSchema} from '@nozbe/watermelondb';
 
 import {PlaybookRunSchema, PlaybookChecklistSchema, PlaybookChecklistItemSchema, PlaybookRunAttributeSchema, PlaybookRunAttributeValueSchema} from '@playbooks/database/schema';
@@ -59,7 +59,7 @@ export const serverSchema: AppSchema = appSchema({
         CustomProfileFieldSchema,
         CustomProfileAttributeSchema,
         DraftSchema,
-        E2EEEnabledDeviceSchema,
+        E2EERegisteredDeviceSchema,
         FileSchema,
         GroupSchema,
         GroupChannelSchema,

@@ -5,16 +5,16 @@ import {E2EE_TABLES} from '@e2ee/constants/database';
 import {field} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
-import type E2EEEnabledDeviceModelInterface from '@e2ee/types/database/models/e2ee_enabled_devices';
+import type E2EERegisteredDeviceModelInterface from '@e2ee/types/database/models/e2ee_registered_devices';
 
-const {E2EE_ENABLED_DEVICES} = E2EE_TABLES;
+const {E2EE_REGISTERED_DEVICES} = E2EE_TABLES;
 
 /**
- * The E2EEEnabledDevices model represents an E2EE-enabled device in the Mattermost app.
+ * The E2EERegisteredDevices model represents an E2EE-registered device in the Mattermost app.
  */
-export default class E2EEEnabledDeviceModel extends Model implements E2EEEnabledDeviceModelInterface {
-    /** table (name) : E2EEEnabledDevices */
-    static table = E2EE_ENABLED_DEVICES;
+export default class E2EERegisteredDeviceModel extends Model implements E2EERegisteredDeviceModelInterface {
+    /** table (name) : E2EERegisteredDevices */
+    static table = E2EE_REGISTERED_DEVICES;
 
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {};

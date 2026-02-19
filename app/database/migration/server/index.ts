@@ -23,7 +23,7 @@ const {
     SCHEDULED_POST,
 } = MM_TABLES.SERVER;
 
-const {E2EE_ENABLED_DEVICES} = E2EE_TABLES;
+const {E2EE_REGISTERED_DEVICES} = E2EE_TABLES;
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 
 export default schemaMigrations({migrations: [
@@ -31,7 +31,7 @@ export default schemaMigrations({migrations: [
         toVersion: 19,
         steps: [
             createTable({
-                name: E2EE_ENABLED_DEVICES,
+                name: E2EE_REGISTERED_DEVICES,
                 columns: [
                     {name: 'device_id', type: 'string'},
                     {name: 'signature_public_key', type: 'string', isOptional: true},

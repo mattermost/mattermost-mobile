@@ -4,10 +4,10 @@
 import {E2EE_TABLES} from '@e2ee/constants/database';
 import {tableSchema} from '@nozbe/watermelondb';
 
-const {E2EE_ENABLED_DEVICES} = E2EE_TABLES;
+const {E2EE_REGISTERED_DEVICES} = E2EE_TABLES;
 
 export default tableSchema({
-    name: E2EE_ENABLED_DEVICES,
+    name: E2EE_REGISTERED_DEVICES,
     columns: [
         {name: 'device_id', type: 'string'},
         {name: 'signature_public_key', type: 'string', isOptional: true},

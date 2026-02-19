@@ -99,7 +99,7 @@ root_id string INDEX NULL FK >- Post.id
 type string NULL
 
 
-E2EEEnabledDevices
+E2EERegisteredDevices
 -
 id PK string # server-generated
 device_id string # device identifier from the server

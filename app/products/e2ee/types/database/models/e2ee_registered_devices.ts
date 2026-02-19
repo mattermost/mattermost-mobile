@@ -5,10 +5,10 @@ import type {Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
 
 /**
- * The E2EEEnabledDevice model represents local data for an E2EE-enabled device in the Mattermost app.
+ * The E2EERegisteredDevice model represents local data for an E2EE-registered device in the Mattermost app.
  */
-declare class E2EEEnabledDeviceModel extends Model {
-    /** table (name) : E2EEEnabledDevices */
+declare class E2EERegisteredDeviceModel extends Model {
+    /** table (name) : E2EERegisteredDevices */
     static table: string;
 
     /** associations : Describes every relationship to this table. */
@@ -27,4 +27,4 @@ declare class E2EEEnabledDeviceModel extends Model {
     verified: boolean;
 }
 
-export default E2EEEnabledDeviceModel;
+export default E2EERegisteredDeviceModel;

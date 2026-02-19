@@ -49,7 +49,7 @@ const {
     USER,
 } = MM_TABLES.SERVER;
 
-const {E2EE_ENABLED_DEVICES} = E2EE_TABLES;
+const {E2EE_REGISTERED_DEVICES} = E2EE_TABLES;
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 
 describe('*** Test schema for SERVER database ***', () => {
@@ -336,8 +336,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'type', type: 'string', isOptional: true},
                     ],
                 },
-                [E2EE_ENABLED_DEVICES]: {
-                    name: E2EE_ENABLED_DEVICES,
+                [E2EE_REGISTERED_DEVICES]: {
+                    name: E2EE_REGISTERED_DEVICES,
                     unsafeSql: undefined,
                     columns: {
                         device_id: {name: 'device_id', type: 'string'},
