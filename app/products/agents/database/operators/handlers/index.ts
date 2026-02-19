@@ -17,13 +17,11 @@ import type ServerDataOperatorBase from '@database/operator/server_data_operator
 type HandleAIBotsArgs = {
     prepareRecordsOnly: boolean;
     bots?: LLMBot[];
-    deleteNotPresent?: boolean;
 };
 
 type HandleAIThreadsArgs = {
     prepareRecordsOnly: boolean;
     threads?: AIThread[];
-    deleteNotPresent?: boolean;
 };
 
 const {AI_BOT, AI_THREAD} = AGENTS_TABLES;
@@ -41,7 +39,7 @@ const AgentsHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superc
      * @param {LLMBot[]} [args.bots] - The AI bot records to handle.
      * @returns {Promise<Model[]>} - A promise that resolves to an array of handled AI bot records.
      */
-    handleAIBots = async ({bots, prepareRecordsOnly, deleteNotPresent}: HandleAIBotsArgs): Promise<Model[]> => {
+    handleAIBots = async ({bots, prepareRecordsOnly}: HandleAIBotsArgs): Promise<Model[]> => {
         const batchRecords: Model[] = [];
         const uniqueRaws = getUniqueRawsBy({raws: bots ?? [], key: 'id'});
         const incomingIds = new Set(uniqueRaws.map((raw) => raw.id));
@@ -70,11 +68,9 @@ const AgentsHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superc
             batchRecords.push(...records);
         }
 
-        if (deleteNotPresent) {
-            for (const record of existingRecords) {
-                if (!incomingIds.has(record.id)) {
-                    batchRecords.push(record.prepareDestroyPermanently());
-                }
+        for (const record of existingRecords) {
+            if (!incomingIds.has(record.id)) {
+                batchRecords.push(record.prepareDestroyPermanently());
             }
         }
 
@@ -92,7 +88,7 @@ const AgentsHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superc
      * @param {AIThread[]} [args.threads] - The AI thread records to handle.
      * @returns {Promise<Model[]>} - A promise that resolves to an array of handled AI thread records.
      */
-    handleAIThreads = async ({threads, prepareRecordsOnly, deleteNotPresent}: HandleAIThreadsArgs): Promise<Model[]> => {
+    handleAIThreads = async ({threads, prepareRecordsOnly}: HandleAIThreadsArgs): Promise<Model[]> => {
         const batchRecords: Model[] = [];
         const uniqueRaws = getUniqueRawsBy({raws: threads ?? [], key: 'id'});
         const incomingIds = new Set(uniqueRaws.map((raw) => raw.id));
@@ -121,11 +117,9 @@ const AgentsHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superc
             batchRecords.push(...records);
         }
 
-        if (deleteNotPresent) {
-            for (const record of existingRecords) {
-                if (!incomingIds.has(record.id)) {
-                    batchRecords.push(record.prepareDestroyPermanently());
-                }
+        for (const record of existingRecords) {
+            if (!incomingIds.has(record.id)) {
+                batchRecords.push(record.prepareDestroyPermanently());
             }
         }
 

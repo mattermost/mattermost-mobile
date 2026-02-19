@@ -28,7 +28,6 @@ export async function fetchAIThreads(
         await operator.handleAIThreads({
             threads,
             prepareRecordsOnly: false,
-            deleteNotPresent: true,
         });
 
         return {threads};

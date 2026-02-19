@@ -25,7 +25,6 @@ export async function fetchAIBots(
         await operator.handleAIBots({
             bots: response.bots,
             prepareRecordsOnly: false,
-            deleteNotPresent: true,
         });
 
         return {
