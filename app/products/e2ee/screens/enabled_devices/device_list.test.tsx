@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchEnabledDevices} from '@e2ee/actions/remote/devices';
+import {fetchRegisteredDevices} from '@e2ee/actions/remote/devices';
 import {act} from 'react';
 import {StyleSheet} from 'react-native';
 
@@ -14,7 +14,7 @@ jest.mock('@context/server', () => ({
 }));
 
 jest.mock('@e2ee/actions/remote/devices', () => ({
-    fetchEnabledDevices: jest.fn(),
+    fetchRegisteredDevices: jest.fn(),
 }));
 
 jest.mock('react-native-reanimated', () => {
@@ -33,7 +33,7 @@ jest.mock('react-native-reanimated', () => {
     };
 });
 
-const mockDevice = (overrides: Partial<EnabledDevice & {is_current_device: boolean; verified: boolean}> = {}) => ({
+const mockDevice = (overrides: Partial<RegisteredDevice & {is_current_device: boolean; verified: boolean}> = {}) => ({
     device_id: 'device-1',
     device_name: 'Device 1',
     created_at: new Date('2021-01-01').getTime(),
@@ -45,7 +45,7 @@ const mockDevice = (overrides: Partial<EnabledDevice & {is_current_device: boole
 
 describe('DeviceList', () => {
     beforeEach(() => {
-        jest.mocked(fetchEnabledDevices).mockResolvedValue({devices: []});
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: []});
     });
 
     it('should show empty state when no devices are returned from API', async () => {
@@ -54,26 +54,26 @@ describe('DeviceList', () => {
         );
 
         await waitFor(() => {
-            expect(fetchEnabledDevices).toHaveBeenCalledWith('server-url');
+            expect(fetchRegisteredDevices).toHaveBeenCalledWith('server-url');
         });
 
         expect(getByTestId('e2ee.device_list.empty.title')).toBeTruthy();
         expect(getByTestId('e2ee.device_list.empty.paragraph')).toBeTruthy();
     });
 
-    it('should call fetchEnabledDevices with serverUrl', async () => {
+    it('should call fetchRegisteredDevices with serverUrl', async () => {
         renderWithIntl(
             <DeviceList/>,
         );
 
         await waitFor(() => {
-            expect(fetchEnabledDevices).toHaveBeenCalledWith('server-url');
+            expect(fetchRegisteredDevices).toHaveBeenCalledWith('server-url');
         });
     });
 
     it('should display devices returned from API', async () => {
         const apiDevice = mockDevice();
-        jest.mocked(fetchEnabledDevices).mockResolvedValue({devices: [apiDevice]});
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
 
         const {getByTestId} = renderWithIntl(
             <DeviceList/>,
@@ -90,7 +90,7 @@ describe('DeviceList', () => {
 
     it('should show expanded device information when device is clicked', async () => {
         const apiDevice = mockDevice({verified: true});
-        jest.mocked(fetchEnabledDevices).mockResolvedValue({devices: [apiDevice]});
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
 
         const {getByTestId, getByText} = renderWithIntl(
             <DeviceList/>,
@@ -122,7 +122,7 @@ describe('DeviceList', () => {
 
     it('should show this device text when API returns is_current_device', async () => {
         const apiDevice = mockDevice({is_current_device: true});
-        jest.mocked(fetchEnabledDevices).mockResolvedValue({devices: [apiDevice]});
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
 
         const {getByText} = renderWithIntl(
             <DeviceList/>,
@@ -134,8 +134,8 @@ describe('DeviceList', () => {
     });
 
     it('should show loading indicator while fetch is in progress', async () => {
-        let resolveDevices!: (value: Awaited<ReturnType<typeof fetchEnabledDevices>>) => void;
-        jest.mocked(fetchEnabledDevices).mockReturnValue(
+        let resolveDevices!: (value: Awaited<ReturnType<typeof fetchRegisteredDevices>>) => void;
+        jest.mocked(fetchRegisteredDevices).mockReturnValue(
             new Promise((resolve) => {
                 resolveDevices = resolve;
             }),
@@ -156,7 +156,7 @@ describe('DeviceList', () => {
 
     it('should show verified tag when API returns verified', async () => {
         const apiDevice = mockDevice({verified: true});
-        jest.mocked(fetchEnabledDevices).mockResolvedValue({devices: [apiDevice]});
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
 
         const {getByText} = renderWithIntl(
             <DeviceList/>,

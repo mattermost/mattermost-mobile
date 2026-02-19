@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchEnabledDevices} from '@e2ee/actions/remote/devices';
+import {fetchRegisteredDevices} from '@e2ee/actions/remote/devices';
 import {Device} from '@e2ee/screens/enabled_devices/device';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {FlatList, View} from 'react-native';
@@ -67,7 +67,7 @@ export const DeviceList = ({currentUser}: Props) => {
         }
 
         setIsLoading(true);
-        fetchEnabledDevices(serverUrl).then((response) => {
+        fetchRegisteredDevices(serverUrl).then((response) => {
             if (response.devices) {
                 setDevices(response.devices);
             }

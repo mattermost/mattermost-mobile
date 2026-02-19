@@ -108,7 +108,7 @@ function DeviceDetails({
     theme,
     timezone,
 }: {
-    device: EnabledDevice;
+    device: RegisteredDevice;
     intl: ReturnType<typeof useIntl>;
     onRemoveDevice?: (deviceId: string) => void;
     onVerifyDevice?: (deviceId: string) => void;

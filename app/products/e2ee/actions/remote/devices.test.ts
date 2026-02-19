@@ -7,7 +7,7 @@ import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
-import {fetchEnabledDevices} from './devices';
+import {fetchRegisteredDevices} from './devices';
 
 import type {Database} from '@nozbe/watermelondb';
 
@@ -28,7 +28,7 @@ jest.mock('@utils/errors', () => ({
 
 const serverUrl = 'baseHandler.test.com';
 
-const mockDevicesResponse: EnabledDevicesReturn = {
+const mockDevicesResponse: RegisteredDevicesReturn = {
     devices: [
         {
             device_id: 'device-1',
@@ -72,9 +72,9 @@ beforeEach(() => {
     mockClient.fetchDevices.mockResolvedValue(mockDevicesResponse);
 });
 
-describe('fetchEnabledDevices', () => {
+describe('fetchRegisteredDevices', () => {
     it('should fetch devices successfully and call handleDevices to keep local data in sync', async () => {
-        const result = await fetchEnabledDevices(serverUrl);
+        const result = await fetchRegisteredDevices(serverUrl);
 
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
@@ -103,7 +103,7 @@ describe('fetchEnabledDevices', () => {
             {deviceId: 'device-2', isCurrentDevice: false, verified: false},
         ]);
 
-        const result = await fetchEnabledDevices(serverUrl);
+        const result = await fetchRegisteredDevices(serverUrl);
 
         expect(result.devices).toHaveLength(2);
         expect(result.devices![0]).toMatchObject({
@@ -122,14 +122,14 @@ describe('fetchEnabledDevices', () => {
         jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementationOnce(throwFunc);
         jest.mocked(getFullErrorMessage).mockReturnValueOnce('error');
 
-        const result = await fetchEnabledDevices(serverUrl);
+        const result = await fetchRegisteredDevices(serverUrl);
 
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
         expect(result.devices).toBeUndefined();
         expect(mockClient.fetchDevices).not.toHaveBeenCalled();
         expect(mockHandleDevices).not.toHaveBeenCalled();
-        expect(logDebug).toHaveBeenCalledWith('fetchEnabledDevicesWithLocalData', 'error');
+        expect(logDebug).toHaveBeenCalledWith('fetchRegisteredDevicesWithLocalData', 'error');
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, expect.any(Error));
     });
 
@@ -138,7 +138,7 @@ describe('fetchEnabledDevices', () => {
         mockClient.fetchDevices.mockRejectedValueOnce(apiError);
         jest.mocked(getFullErrorMessage).mockReturnValueOnce('API error');
 
-        const result = await fetchEnabledDevices(serverUrl);
+        const result = await fetchRegisteredDevices(serverUrl);
 
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
@@ -146,14 +146,14 @@ describe('fetchEnabledDevices', () => {
         expect(result.devices).toBeUndefined();
         expect(mockClient.fetchDevices).toHaveBeenCalled();
         expect(mockHandleDevices).not.toHaveBeenCalled();
-        expect(logDebug).toHaveBeenCalledWith('fetchEnabledDevicesWithLocalData', 'API error');
+        expect(logDebug).toHaveBeenCalledWith('fetchRegisteredDevicesWithLocalData', 'API error');
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, apiError);
     });
 
     it('should handle null devices from API and call handleDevices with empty array', async () => {
         mockClient.fetchDevices.mockResolvedValueOnce({devices: null});
 
-        const result = await fetchEnabledDevices(serverUrl);
+        const result = await fetchRegisteredDevices(serverUrl);
 
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();

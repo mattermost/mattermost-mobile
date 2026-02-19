@@ -7,7 +7,7 @@ import DatabaseManager from '@database/manager';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
-const {E2EE_ENABLED_DEVICES} = E2EE_TABLES;
+const {E2EE_REGISTERED_DEVICES} = E2EE_TABLES;
 
 describe('E2EEHandler', () => {
     let operator: ServerDataOperator;
@@ -40,7 +40,7 @@ describe('E2EEHandler', () => {
                 {device_name: 'Device 3'},
             ];
 
-            const result = await operator.handleDevices({devices: devices as EnabledDevice[]});
+            const result = await operator.handleDevices({devices: devices as RegisteredDevice[]});
             expect(result).toBeDefined();
             expect(result.length).toBe(2);
             expect(spyOnPrepareRecords).toHaveBeenCalledTimes(1);
@@ -53,7 +53,7 @@ describe('E2EEHandler', () => {
                 {device_id: 'device-2', device_name: 'Device 2', signature_public_key: 'key-2'},
             ];
 
-            await operator.handleDevices({devices: initDevices as EnabledDevice[]});
+            await operator.handleDevices({devices: initDevices as RegisteredDevice[]});
 
             const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');
             const spyOnBatchOperation = jest.spyOn(operator, 'batchRecords');
@@ -63,7 +63,7 @@ describe('E2EEHandler', () => {
                 {device_id: 'device-3', device_name: 'Device 3'},
             ];
 
-            const result = await operator.handleDevices({devices: devices as EnabledDevice[]});
+            const result = await operator.handleDevices({devices: devices as RegisteredDevice[]});
             expect(result).toBeDefined();
             expect(result.length).toBe(3);
 
@@ -78,8 +78,8 @@ describe('E2EEHandler', () => {
             const {database} = operator;
 
             // Verify that the devices table contains just 2 records
-            const enabledDeviceRecords = await database.get(E2EE_ENABLED_DEVICES).query().fetch();
-            expect(enabledDeviceRecords.length).toBe(2);
+            const registeredDeviceRecords = await database.get(E2EE_REGISTERED_DEVICES).query().fetch();
+            expect(registeredDeviceRecords.length).toBe(2);
         });
     });
 });

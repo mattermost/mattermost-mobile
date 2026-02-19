@@ -7,7 +7,7 @@ export interface ClientE2EEMix {
     getE2EERoute: () => string;
 
     // Devices
-    fetchDevices: () => Promise<EnabledDevicesReturn>;
+    fetchDevices: () => Promise<RegisteredDevicesReturn>;
 }
 
 const ClientE2EE = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {

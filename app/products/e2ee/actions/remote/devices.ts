@@ -7,16 +7,16 @@ import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
-import type E2EEEnabledDeviceModel from '@e2ee/types/database/models/e2ee_enabled_devices';
+import type E2EERegisteredDeviceModel from '@e2ee/types/database/models/e2ee_registered_devices';
 
-type EnabledDevicesResponse = {
-    devices?: Array<EnabledDevice & {is_current_device: boolean; verified: boolean}>;
+type RegisteredDevicesResponse = {
+    devices?: Array<RegisteredDevice & {is_current_device: boolean; verified: boolean}>;
     error?: unknown;
 }
 
-export const fetchEnabledDevices = async (
+export const fetchRegisteredDevices = async (
     serverUrl: string,
-): Promise<EnabledDevicesResponse> => {
+): Promise<RegisteredDevicesResponse> => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
@@ -25,7 +25,7 @@ export const fetchEnabledDevices = async (
         const devices = result.devices ?? [];
 
         // keeps local data just for active devices
-        const localData = await operator.handleDevices({devices}) as E2EEEnabledDeviceModel[];
+        const localData = await operator.handleDevices({devices}) as E2EERegisteredDeviceModel[];
 
         const byDeviceId = new Map(localData.map((data) => [data.deviceId, data]));
         const devicesWithLocalData = devices.map((device) => ({
@@ -36,7 +36,7 @@ export const fetchEnabledDevices = async (
 
         return {devices: devicesWithLocalData};
     } catch (error) {
-        logDebug('fetchEnabledDevicesWithLocalData', getFullErrorMessage(error));
+        logDebug('fetchRegisteredDevicesWithLocalData', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
