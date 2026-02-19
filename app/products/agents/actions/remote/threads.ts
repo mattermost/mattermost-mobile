@@ -23,14 +23,13 @@ export async function fetchAIThreads(
         // Handle null/undefined response from API - treat as empty array
         const threads = Array.isArray(response) ? response : [];
 
-        // Store threads in database
-        if (threads.length) {
-            const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            await operator.handleAIThreads({
-                threads,
-                prepareRecordsOnly: false,
-            });
-        }
+        // Store threads in database and remove any that no longer exist on the server
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleAIThreads({
+            threads,
+            prepareRecordsOnly: false,
+            deleteNotPresent: true,
+        });
 
         return {threads};
     } catch (error) {

@@ -83,6 +83,7 @@ const AgentsButton = ({
 
     return (
         <Pressable
+            style={({pressed}) => [pressed && {opacity: 0.72}]}
             onPress={handlePress}
             testID='channel_list.agents.button'
         >

@@ -16,6 +16,7 @@ import {safeParseJSON} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const HIT_SLOP_VERTICAL = 4;
+const BUTTON_HIT_SLOP = {top: HIT_SLOP_VERTICAL, bottom: HIT_SLOP_VERTICAL, left: 0, right: 0};
 
 interface ToolCardProps {
     tool: ToolCall;
@@ -339,7 +340,7 @@ const ToolCard = ({
                         disabled={isProcessing}
                         style={[styles.button, isProcessing && styles.buttonDisabled]}
                         activeOpacity={0.7}
-                        hitSlop={{top: HIT_SLOP_VERTICAL, bottom: HIT_SLOP_VERTICAL, left: 0, right: 0}}
+                        hitSlop={BUTTON_HIT_SLOP}
                     >
                         <FormattedText
                             id='agents.tool_call.approve'
@@ -352,7 +353,7 @@ const ToolCard = ({
                         disabled={isProcessing}
                         style={[styles.button, isProcessing && styles.buttonDisabled]}
                         activeOpacity={0.7}
-                        hitSlop={{top: HIT_SLOP_VERTICAL, bottom: HIT_SLOP_VERTICAL, left: 0, right: 0}}
+                        hitSlop={BUTTON_HIT_SLOP}
                     >
                         <FormattedText
                             id='agents.tool_call.reject'

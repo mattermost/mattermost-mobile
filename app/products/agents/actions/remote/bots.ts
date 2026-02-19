@@ -20,14 +20,13 @@ export async function fetchAIBots(
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAIBots();
 
-        // Store bots in database
-        if (response.bots?.length) {
-            const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            await operator.handleAIBots({
-                bots: response.bots,
-                prepareRecordsOnly: false,
-            });
-        }
+        // Store bots in database and remove any that no longer exist on the server
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleAIBots({
+            bots: response.bots,
+            prepareRecordsOnly: false,
+            deleteNotPresent: true,
+        });
 
         return {
             bots: response.bots,
