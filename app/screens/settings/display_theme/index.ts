@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeThemeAutoSwitchPreference, queryDarkThemePreferences} from '@queries/servers/preference';
+import {observeThemeAutoSwitchPreference, queryDarkThemePreferences, queryThemePreferences} from '@queries/servers/preference';
 import {
     observeAllowedThemesKeys,
     observeCurrentTeamId,
@@ -17,11 +17,10 @@ import DisplayTheme from './display_theme';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
-const parseDarkThemeType = (prefs: PreferenceModel[]) => {
+const parseTheme = (prefs: PreferenceModel[]) => {
     if (prefs.length > 0) {
         try {
-            const parsed = JSON.parse(prefs[0].value) as Theme;
-            return of$(parsed.type?.toLowerCase());
+            return of$(JSON.parse(prefs[0].value) as Theme);
         } catch {
             // ignore
         }
@@ -38,10 +37,17 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         currentTeamId,
         currentUserId,
         themeAutoSwitch: observeThemeAutoSwitchPreference(database),
-        darkThemeType: currentTeamId.pipe(
+        lightTheme: currentTeamId.pipe(
+            switchMap((teamId) =>
+                queryThemePreferences(database, teamId).observeWithColumns(['value']).pipe(
+                    switchMap(parseTheme),
+                ),
+            ),
+        ),
+        darkTheme: currentTeamId.pipe(
             switchMap((teamId) =>
                 queryDarkThemePreferences(database, teamId).observeWithColumns(['value']).pipe(
-                    switchMap(parseDarkThemeType),
+                    switchMap(parseTheme),
                 ),
             ),
         ),

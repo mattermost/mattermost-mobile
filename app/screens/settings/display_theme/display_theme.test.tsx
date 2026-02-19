@@ -269,7 +269,7 @@ describe('DisplayTheme', () => {
         expect(screen.getByText('Dark Theme')).toBeTruthy();
     });
 
-    it('should hide light and dark sections when auto-switch is toggled off', () => {
+    it('should hide light and dark sections and save preference when auto-switch is toggled off', async () => {
         renderWithIntl(
             <DisplayTheme
                 allowedThemeKeys={['denim', 'sapphire']}
@@ -285,12 +285,22 @@ describe('DisplayTheme', () => {
 
         expect(screen.queryByText('Light Theme')).toBeNull();
         expect(screen.queryByText('Dark Theme')).toBeNull();
+
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
+                        name: Preferences.THEME_AUTO_SWITCH,
+                        value: 'false',
+                    }),
+                ]),
+            );
+        });
     });
 
-    it('should save light and dark theme preferences on back navigation when auto-switch is on', async () => {
-        (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValue('DisplayTheme');
-        const androidBackButtonHandler = jest.spyOn(BackHandler, 'addEventListener');
-
+    it('should save light theme immediately when tapping a tile in auto-switch mode', async () => {
         renderWithIntl(
             <DisplayTheme
                 allowedThemeKeys={['denim', 'sapphire']}
@@ -299,8 +309,9 @@ describe('DisplayTheme', () => {
             />,
         );
 
-        // Trigger back navigation via Android back button (same handler as iOS back)
-        androidBackButtonHandler.mock.calls[0][1]();
+        // In auto-switch mode, each theme tile appears in both the Light and Dark sections
+        const [lightSapphire] = screen.getAllByTestId('theme_display_settings.sapphire.option');
+        fireEvent.press(lightSapphire);
 
         await waitFor(() => {
             expect(savePreference).toHaveBeenCalledWith(
@@ -308,15 +319,66 @@ describe('DisplayTheme', () => {
                 expect.arrayContaining([
                     expect.objectContaining({
                         category: Preferences.CATEGORIES.THEME,
-                    }),
-                    expect.objectContaining({
-                        category: Preferences.CATEGORIES.THEME_DARK,
+                        value: expect.stringContaining('"type":"Sapphire"'),
                     }),
                 ]),
             );
         });
+    });
 
-        expect(popTopScreen).toHaveBeenCalledTimes(1);
+    it('should save dark theme immediately when tapping a tile in auto-switch mode', async () => {
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire', 'onyx']}
+                {...displayThemeOtherProps}
+                themeAutoSwitch={true}
+            />,
+        );
+
+        // In auto-switch mode, each theme tile appears in both the Light and Dark sections
+        const [, darkOnyx] = screen.getAllByTestId('theme_display_settings.onyx.option');
+        fireEvent.press(darkOnyx);
+
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: Preferences.CATEGORIES.THEME_DARK,
+                        value: expect.stringContaining('"type":"Onyx"'),
+                    }),
+                ]),
+            );
+        });
+    });
+
+    it('should save custom dark theme immediately when tapping custom tile in auto-switch mode', async () => {
+        const customDark: Theme = {...Preferences.THEMES.onyx, type: 'custom', sidebarBg: '#ff0000'};
+
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire']}
+                {...displayThemeOtherProps}
+                darkTheme={customDark}
+                themeAutoSwitch={true}
+            />,
+        );
+
+        // The custom dark tile is in the dark section
+        const customTile = screen.getByTestId('theme_display_settings.custom.option');
+        fireEvent.press(customTile);
+
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: Preferences.CATEGORIES.THEME_DARK,
+                        value: expect.stringContaining('"sidebarBg":"#ff0000"'),
+                    }),
+                ]),
+            );
+        });
     });
 
     it('should not allow user to select a theme rapidly', async () => {

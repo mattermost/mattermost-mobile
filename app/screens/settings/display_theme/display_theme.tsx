@@ -43,9 +43,14 @@ type ThemeSectionProps = {
     customTheme?: Theme;
     onThemeChange: (themeKey: string) => void;
     selectedTheme?: string;
-}
+};
 
-const ThemeSection = ({allowedThemeKeys, customTheme, onThemeChange, selectedTheme}: ThemeSectionProps) => (
+const ThemeSection = ({
+    allowedThemeKeys,
+    customTheme,
+    onThemeChange,
+    selectedTheme,
+}: ThemeSectionProps) => (
     <>
         <ThemeTiles
             allowedThemeKeys={allowedThemeKeys}
@@ -66,138 +71,135 @@ type DisplayThemeProps = {
     componentId: AvailableScreens;
     currentTeamId: string;
     currentUserId: string;
-    darkThemeType?: string;
+    darkTheme?: Theme;
+    lightTheme?: Theme;
     themeAutoSwitch: boolean;
-}
-const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUserId, darkThemeType, themeAutoSwitch}: DisplayThemeProps) => {
+};
+const DisplayTheme = ({
+    allowedThemeKeys,
+    componentId,
+    currentTeamId,
+    currentUserId,
+    darkTheme,
+    lightTheme,
+    themeAutoSwitch,
+}: DisplayThemeProps) => {
     const serverUrl = useServerUrl();
-    const theme = useTheme();
+    const activeTheme = useTheme();
     const intl = useIntl();
+    const lightThemeType = lightTheme?.type?.toLowerCase();
+    const darkThemeType = darkTheme?.type?.toLowerCase();
     const [autoSwitch, setAutoSwitch] = useState(themeAutoSwitch);
-    const [selectedLightTheme, setSelectedLightTheme] = useState<string | undefined>(theme.type?.toLowerCase());
+    const [selectedLightTheme, setSelectedLightTheme] = useState<string | undefined>(lightThemeType ?? activeTheme.type?.toLowerCase());
     const [selectedDarkTheme, setSelectedDarkTheme] = useState<string | undefined>(darkThemeType ?? 'onyx');
-    const [customTheme, setCustomTheme] = useState(theme.type?.toLowerCase() === 'custom' ? theme : undefined);
+    const getInitialCustomTheme = () => {
+        if (lightThemeType === 'custom') {
+            return lightTheme;
+        }
+        if (activeTheme.type?.toLowerCase() === 'custom') {
+            return activeTheme;
+        }
+        return undefined;
+    };
+    const [customTheme, setCustomTheme] = useState(getInitialCustomTheme);
+    const [customDarkTheme, setCustomDarkTheme] = useState(
+        darkThemeType === 'custom' ? darkTheme : undefined,
+    );
 
     // When the user selects any of the predefined theme when the current theme is custom, the custom theme will disappear.
     // By storing the current theme in the state, the custom theme will remain, and the user can switch back to it.
     useDidUpdate(() => {
-        if (theme.type?.toLowerCase() === 'custom') {
-            setCustomTheme(theme);
+        if (lightThemeType === 'custom') {
+            setCustomTheme(lightTheme);
+        } else if (activeTheme.type?.toLowerCase() === 'custom') {
+            setCustomTheme(activeTheme);
         }
-    }, [theme.type]);
+    }, [lightThemeType, activeTheme.type]);
+
+    useDidUpdate(() => {
+        if (darkThemeType === 'custom') {
+            setCustomDarkTheme(darkTheme);
+        }
+    }, [darkThemeType]);
+
+    const handleAutoSwitchToggle = useCallback(async (enabled: boolean) => {
+        setAutoSwitch(enabled);
+        await savePreference(serverUrl, [{
+            category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
+            name: Preferences.THEME_AUTO_SWITCH,
+            user_id: currentUserId,
+            value: enabled ? 'true' : 'false',
+        }]);
+    }, [currentUserId, serverUrl]);
 
     const close = () => popTopScreen(componentId);
 
     // When auto-switch is OFF, save theme immediately on tap (existing behavior)
-    const handleImmediateThemeChange = usePreventDoubleTap(useCallback(async (themeKey: string) => {
-        const allowedTheme = allowedThemeKeys.find((tk) => tk === themeKey);
-        const themeJson = Preferences.THEMES[allowedTheme as ThemeKey] || customTheme;
+    const handleImmediateThemeChange = usePreventDoubleTap(
+        useCallback(
+            async (themeKey: string) => {
+                const allowedTheme = allowedThemeKeys.find((tk) => tk === themeKey);
+                const themeJson = Preferences.THEMES[allowedTheme as ThemeKey] || customTheme;
 
-        const pref: PreferenceType = {
-            category: Preferences.CATEGORIES.THEME,
-            name: currentTeamId,
-            user_id: currentUserId,
-            value: JSON.stringify(themeJson),
-        };
-        await savePreference(serverUrl, [pref]);
-    }, [allowedThemeKeys, currentTeamId, currentUserId, customTheme, serverUrl]));
-
-    // When auto-switch is ON, track light theme selection locally
-    const handleLightThemeSelect = useCallback((themeKey: string) => {
-        setSelectedLightTheme(themeKey);
-    }, []);
-
-    const handleDarkThemeSelect = useCallback((themeKey: string) => {
-        setSelectedDarkTheme(themeKey);
-    }, []);
-
-    // Save all preferences on back navigation when auto-switch is ON
-    const saveAutoSwitchAndClose = useCallback(async () => {
-        popTopScreen(componentId);
-
-        const prefs: PreferenceType[] = [];
-
-        // Save auto-switch preference
-        if (autoSwitch !== themeAutoSwitch) {
-            prefs.push({
-                category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
-                name: Preferences.THEME_AUTO_SWITCH,
-                user_id: currentUserId,
-                value: autoSwitch ? 'true' : 'false',
-            });
-        }
-
-        if (autoSwitch) {
-            // Save light theme
-            const lightThemeJson = Preferences.THEMES[selectedLightTheme as ThemeKey] || customTheme;
-            if (lightThemeJson) {
-                prefs.push({
+                const pref: PreferenceType = {
                     category: Preferences.CATEGORIES.THEME,
                     name: currentTeamId,
                     user_id: currentUserId,
-                    value: JSON.stringify(lightThemeJson),
-                });
-            }
+                    value: JSON.stringify(themeJson),
+                };
+                await savePreference(serverUrl, [pref]);
+            },
+            [allowedThemeKeys, currentTeamId, currentUserId, customTheme, serverUrl],
+        ),
+    );
 
-            // Save dark theme
-            const darkThemeJson = Preferences.THEMES[selectedDarkTheme as ThemeKey];
-            if (darkThemeJson) {
-                prefs.push({
-                    category: Preferences.CATEGORIES.THEME_DARK,
-                    name: currentTeamId,
-                    user_id: currentUserId,
-                    value: JSON.stringify(darkThemeJson),
-                });
-            }
-        }
-
-        if (prefs.length) {
-            await savePreference(serverUrl, prefs);
-        }
-    }, [autoSwitch, componentId, currentTeamId, currentUserId, customTheme, selectedDarkTheme, selectedLightTheme, serverUrl, themeAutoSwitch]);
-
-    // When turning off auto-switch, also save the preference on close
-    const saveDisableAutoSwitchAndClose = useCallback(async () => {
-        popTopScreen(componentId);
-
-        if (autoSwitch !== themeAutoSwitch) {
+    // When auto-switch is ON, save theme immediately on tap
+    const handleLightThemeSelect = useCallback(async (themeKey: string) => {
+        setSelectedLightTheme(themeKey);
+        const themeJson = Preferences.THEMES[themeKey as ThemeKey] || customTheme;
+        if (themeJson) {
             await savePreference(serverUrl, [{
-                category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
-                name: Preferences.THEME_AUTO_SWITCH,
+                category: Preferences.CATEGORIES.THEME,
+                name: currentTeamId,
                 user_id: currentUserId,
-                value: 'false',
+                value: JSON.stringify(themeJson),
             }]);
         }
-    }, [autoSwitch, componentId, currentUserId, serverUrl, themeAutoSwitch]);
+    }, [currentTeamId, currentUserId, customTheme, serverUrl]);
 
-    let backHandler = close;
-    if (autoSwitch) {
-        backHandler = saveAutoSwitchAndClose;
-    } else if (autoSwitch !== themeAutoSwitch) {
-        backHandler = saveDisableAutoSwitchAndClose;
-    }
+    const handleDarkThemeSelect = useCallback(async (themeKey: string) => {
+        setSelectedDarkTheme(themeKey);
+        const themeJson = Preferences.THEMES[themeKey as ThemeKey] || customDarkTheme;
+        if (themeJson) {
+            await savePreference(serverUrl, [{
+                category: Preferences.CATEGORIES.THEME_DARK,
+                name: currentTeamId,
+                user_id: currentUserId,
+                value: JSON.stringify(themeJson),
+            }]);
+        }
+    }, [currentTeamId, currentUserId, customDarkTheme, serverUrl]);
 
-    useBackNavigation(backHandler);
-    useAndroidHardwareBackHandler(componentId, backHandler);
+    useBackNavigation(close);
+    useAndroidHardwareBackHandler(componentId, close);
 
     if (autoSwitch) {
         return (
             <SettingContainer testID='theme_display_settings'>
-                <SettingBlock
-                    footerText={messages.autoSwitchDescription}
-                >
+                <SettingBlock footerText={messages.autoSwitchDescription}>
                     <SettingOption
-                        action={setAutoSwitch}
-                        label={intl.formatMessage({id: 'settings_display.theme.auto_switch_label', defaultMessage: 'Automatically switch between themes'})}
+                        action={handleAutoSwitchToggle}
+                        label={intl.formatMessage({
+                            id: 'settings_display.theme.auto_switch_label',
+                            defaultMessage: 'Automatically switch between themes',
+                        })}
                         selected={autoSwitch}
                         testID='theme_display_settings.auto_switch.toggle'
                         type='toggle'
                     />
                     <SettingSeparator/>
                 </SettingBlock>
-                <SettingBlock
-                    headerText={messages.lightThemeHeader}
-                >
+                <SettingBlock headerText={messages.lightThemeHeader}>
                     <ThemeSection
                         allowedThemeKeys={allowedThemeKeys}
                         customTheme={customTheme}
@@ -205,12 +207,10 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
                         selectedTheme={selectedLightTheme}
                     />
                 </SettingBlock>
-                <SettingBlock
-                    headerText={messages.darkThemeHeader}
-                >
+                <SettingBlock headerText={messages.darkThemeHeader}>
                     <ThemeSection
                         allowedThemeKeys={allowedThemeKeys}
-                        customTheme={customTheme}
+                        customTheme={customDarkTheme}
                         onThemeChange={handleDarkThemeSelect}
                         selectedTheme={selectedDarkTheme}
                     />
@@ -221,12 +221,13 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
 
     return (
         <SettingContainer testID='theme_display_settings'>
-            <SettingBlock
-                footerText={messages.autoSwitchDescription}
-            >
+            <SettingBlock footerText={messages.autoSwitchDescription}>
                 <SettingOption
-                    action={setAutoSwitch}
-                    label={intl.formatMessage({id: 'settings_display.theme.auto_switch_label', defaultMessage: 'Automatically switch between themes'})}
+                    action={handleAutoSwitchToggle}
+                    label={intl.formatMessage({
+                        id: 'settings_display.theme.auto_switch_label',
+                        defaultMessage: 'Automatically switch between themes',
+                    })}
                     selected={autoSwitch}
                     testID='theme_display_settings.auto_switch.toggle'
                     type='toggle'
@@ -236,7 +237,7 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
             <ThemeTiles
                 allowedThemeKeys={allowedThemeKeys}
                 onThemeChange={handleImmediateThemeChange}
-                selectedTheme={theme.type}
+                selectedTheme={activeTheme.type}
             />
             {customTheme && (
                 <CustomTheme
