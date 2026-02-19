@@ -4,6 +4,7 @@
 // NOTE : To implement migration, please follow this document
 // https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html
 
+import {E2EE_TABLES} from '@e2ee/constants/database';
 import {addColumns, createTable, schemaMigrations, unsafeExecuteSql} from '@nozbe/watermelondb/Schema/migrations';
 
 import {MM_TABLES} from '@constants/database';
@@ -22,9 +23,24 @@ const {
     SCHEDULED_POST,
 } = MM_TABLES.SERVER;
 
+const {E2EE_REGISTERED_DEVICES} = E2EE_TABLES;
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 19,
+        steps: [
+            createTable({
+                name: E2EE_REGISTERED_DEVICES,
+                columns: [
+                    {name: 'device_id', type: 'string'},
+                    {name: 'signature_public_key', type: 'string', isOptional: true},
+                    {name: 'is_current_device', type: 'boolean'},
+                    {name: 'verified', type: 'boolean'},
+                ],
+            }),
+        ],
+    },
     {
         toVersion: 18,
         steps: [
