@@ -13,3 +13,6 @@ export const adminUsername = process.env.ADMIN_USERNAME || 'sysadmin';
 export const adminPassword = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 export const ldapServer = process.env.LDAP_SERVER || '127.0.0.1';
 export const ldapPort = process.env.LDAP_PORT || 389;
+
+// LibreTranslate mock for auto-translation e2e tests (run with: node detox/mock_libre_translate.js)
+export const libreTranslateMockUrl = process.env.LIBRE_TRANSLATE_MOCK_URL || 'http://localhost:3010';
