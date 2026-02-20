@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {AIBotsResponse, AIThread} from '@agents/types';
+import type {AIBotsResponse, AIThread, ToolCall} from '@agents/types';
 import type {Agent, AgentsResponse, AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, RewriteRequest, RewriteResponse} from '@agents/types/api';
 
 export type {Agent};
@@ -20,6 +20,9 @@ export interface ClientAgentsMix {
         options?: ChannelAnalysisOptions,
     ) => Promise<ChannelAnalysisResponse>;
     submitToolApproval: (postId: string, acceptedToolIds: string[]) => Promise<void>;
+    getToolCallPrivate: (postId: string) => Promise<ToolCall[]>;
+    getToolResultPrivate: (postId: string) => Promise<ToolCall[]>;
+    submitToolResult: (postId: string, acceptedToolIds: string[]) => Promise<void>;
 
     // Rewrite methods
     getRewrittenMessage: (message: string, action?: string, customPrompt?: string, agentId?: string) => Promise<string>;
@@ -98,6 +101,30 @@ const ClientAgents = (superclass: any) => class extends superclass {
     submitToolApproval = async (postId: string, acceptedToolIds: string[]) => {
         return this.doFetch(
             `${this.getAgentsRoute()}/post/${postId}/tool_call`,
+            {
+                method: 'post',
+                body: {accepted_tool_ids: acceptedToolIds},
+            },
+        );
+    };
+
+    getToolCallPrivate = async (postId: string): Promise<ToolCall[]> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/post/${postId}/tool_call_private`,
+            {method: 'get'},
+        );
+    };
+
+    getToolResultPrivate = async (postId: string): Promise<ToolCall[]> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/post/${postId}/tool_result_private`,
+            {method: 'get'},
+        );
+    };
+
+    submitToolResult = async (postId: string, acceptedToolIds: string[]) => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/post/${postId}/tool_result`,
             {
                 method: 'post',
                 body: {accepted_tool_ids: acceptedToolIds},

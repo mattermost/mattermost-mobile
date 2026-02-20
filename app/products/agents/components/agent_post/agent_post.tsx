@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
+import {fetchToolCallPrivate, fetchToolResultPrivate} from '@agents/actions/remote/tool_private';
 import {useStreamingState} from '@agents/store/streaming_store';
-import {type Annotation, type ToolCall} from '@agents/types';
-import {isPostRequester} from '@agents/utils';
-import React, {useCallback, useMemo} from 'react';
+import {ToolApprovalStage, type Annotation, type ToolCall} from '@agents/types';
+import {getToolApprovalStage, isPostRequester, isToolCallRedacted, mergeToolCalls} from '@agents/utils';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
@@ -56,17 +57,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-interface AgentPostProps {
+export interface AgentPostProps {
     post: PostModel;
     currentUserId?: string;
     location: AvailableScreens;
+    isDM: boolean;
 }
 
 /**
  * Custom post component for agent responses
  * Handles streaming text updates and displays animated cursor during generation
  */
-const AgentPost = ({post, currentUserId, location}: AgentPostProps) => {
+const AgentPost = ({post, currentUserId, location, isDM}: AgentPostProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -123,13 +125,97 @@ const AgentPost = ({post, currentUserId, location}: AgentPostProps) => {
         return currentUserId ? isPostRequester(post, currentUserId) : false;
     }, [post, currentUserId]);
 
+    // Channel tool calling state
+    const [privateToolCalls, setPrivateToolCalls] = useState<ToolCall[] | null>(null);
+    const [privateToolResults, setPrivateToolResults] = useState<ToolCall[] | null>(null);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- post.props is the reactive value that drives redaction state
+    const isRedacted = useMemo(() => isToolCallRedacted(post), [post.props]);
+
+    const approvalStage = useMemo(
+        () => getToolApprovalStage(post, toolCalls),
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- post.props drives stage changes
+        [post.props, toolCalls],
+    );
+
+    const canApprove = isRequester;
+    const canExpand = isDM || isRequester;
+    const showArguments = isDM || (isRequester && (!isRedacted || privateToolCalls !== null));
+    const showResults = isDM || (isRequester && (!isRedacted || privateToolResults !== null));
+
+    const mergedToolCalls = useMemo(() => {
+        if (approvalStage === ToolApprovalStage.Result && privateToolResults) {
+            return mergeToolCalls(toolCalls, privateToolResults);
+        }
+        if (privateToolCalls) {
+            return mergeToolCalls(toolCalls, privateToolCalls);
+        }
+        return toolCalls;
+    }, [toolCalls, privateToolCalls, privateToolResults, approvalStage]);
+
+    // Fetch private tool call data when in Phase 1
+    useEffect(() => {
+        let cancelled = false;
+        if (isRedacted && isRequester && approvalStage === ToolApprovalStage.Call && toolCalls.length > 0 && !privateToolCalls) {
+            fetchToolCallPrivate(serverUrl, post.id).then(({data, error}) => {
+                if (cancelled) {
+                    return;
+                }
+                if (data) {
+                    setPrivateToolCalls(data);
+                }
+                if (error) {
+                    showSnackBar({barType: SNACK_BAR_TYPE.AGENT_FETCH_PRIVATE_ERROR});
+                }
+            });
+        }
+        return () => {
+            cancelled = true;
+        };
+    }, [isRedacted, isRequester, approvalStage, toolCalls, privateToolCalls, serverUrl, post.id]);
+
+    // Fetch private tool results when in Phase 2
+    useEffect(() => {
+        let cancelled = false;
+        if (isRedacted && isRequester && approvalStage === ToolApprovalStage.Result && !privateToolResults) {
+            fetchToolResultPrivate(serverUrl, post.id).then(({data, error}) => {
+                if (cancelled) {
+                    return;
+                }
+                if (data) {
+                    setPrivateToolResults(data);
+                }
+                if (error) {
+                    showSnackBar({barType: SNACK_BAR_TYPE.AGENT_FETCH_PRIVATE_ERROR});
+                }
+            });
+        }
+        return () => {
+            cancelled = true;
+        };
+    }, [isRedacted, isRequester, approvalStage, privateToolResults, serverUrl, post.id]);
+
+    // Clear private data when streaming tool calls change
+    const prevStreamingToolCallsRef = useRef(streamingState?.toolCalls);
+    useEffect(() => {
+        const currentToolCalls = streamingState?.toolCalls;
+        const hadToolCalls = prevStreamingToolCallsRef.current != null;
+        prevStreamingToolCallsRef.current = currentToolCalls;
+
+        // Clear when new streaming tool calls arrive OR when streaming ends
+        if (currentToolCalls || hadToolCalls) {
+            setPrivateToolCalls(null);
+            setPrivateToolResults(null);
+        }
+    }, [streamingState?.toolCalls]);
+
     // Determine if generation is in progress (generating or reasoning)
     const isGenerationInProgress = isGenerating || isReasoningLoading;
 
     // Show controls based on state and permissions
     const showStopButton = isGenerationInProgress && isRequester;
     const hasContent = displayMessage !== '' || reasoningSummary !== '';
-    const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent;
+    const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent && isDM;
 
     // Handler for stop button
     const handleStop = useCallback(async () => {
@@ -179,10 +265,15 @@ const AgentPost = ({post, currentUserId, location}: AgentPostProps) => {
                     )}
                 </View>
             )}
-            {toolCalls.length > 0 && (
+            {mergedToolCalls.length > 0 && (
                 <ToolApprovalSet
                     postId={post.id}
-                    toolCalls={toolCalls}
+                    toolCalls={mergedToolCalls}
+                    approvalStage={approvalStage}
+                    canApprove={canApprove}
+                    canExpand={canExpand}
+                    showArguments={showArguments}
+                    showResults={showResults}
                 />
             )}
             {annotations.length > 0 && (

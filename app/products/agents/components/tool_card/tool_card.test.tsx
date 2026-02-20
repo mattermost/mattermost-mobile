@@ -34,6 +34,7 @@ describe('ToolCard', () => {
         onToggleCollapse: jest.fn(),
         onApprove: jest.fn(),
         onReject: jest.fn(),
+        approvalStage: null,
     });
 
     describe('tool name display', () => {
