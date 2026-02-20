@@ -16,6 +16,10 @@ class ChannelSettingsScreen {
         convertPrivateOption: 'channel_settings.convert_private.option',
         archiveChannelOption: 'channel_settings.archive_channel.option',
         unarchiveChannelOption: 'channel_settings.unarchive_channel.option',
+        channelAutotranslationOptionToggledOn: 'channel_settings.channel_autotranslation.option.toggled.true',
+        channelAutotranslationOptionToggledOff: 'channel_settings.channel_autotranslation.option.toggled.false',
+        channelAutotranslationToggleOnButton: 'channel_settings.channel_autotranslation.option.toggled.true.toggled.true.button',
+        channelAutotranslationToggleOffButton: 'channel_settings.channel_autotranslation.option.toggled.false.toggled.false.button',
     };
 
     channelSettingsScreen = element(by.id(this.testID.channelSettingsScreen));
@@ -25,6 +29,10 @@ class ChannelSettingsScreen {
     convertPrivateOption = element(by.id(this.testID.convertPrivateOption));
     archiveChannelOption = element(by.id(this.testID.archiveChannelOption));
     unarchiveChannelOption = element(by.id(this.testID.unarchiveChannelOption));
+    channelAutotranslationOptionToggledOn = element(by.id(this.testID.channelAutotranslationOptionToggledOn));
+    channelAutotranslationOptionToggledOff = element(by.id(this.testID.channelAutotranslationOptionToggledOff));
+    channelAutotranslationToggleOnButton = element(by.id(this.testID.channelAutotranslationToggleOnButton));
+    channelAutotranslationToggleOffButton = element(by.id(this.testID.channelAutotranslationToggleOffButton));
 
     toBeVisible = async () => {
         await waitFor(this.channelSettingsScreen).toExist().withTimeout(timeouts.TEN_SEC);

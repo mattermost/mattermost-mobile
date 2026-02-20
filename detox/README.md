@@ -110,6 +110,38 @@ xcrun simctl list devices | grep Booted
 The Local Runs generate artifacts under `detox/artifacts/ios-debug-**` or `detox/artifacts/android-debug-**`.
 You can see the html report, failure screenshot under that folder.
 
+# Auto-Translation E2E Tests
+
+Auto-translation tests require a running LibreTranslate mock and a Mattermost server with auto-translation enabled and the translation plugin configured to use the mock.
+
+### 1. Start the LibreTranslate mock
+
+From the project root or the `detox` folder:
+
+```sh
+node detox/mock_libre_translate.js
+```
+
+The mock listens on port 3010 by default. Set `PORT` to use another port. Optional: set `LIBRE_TRANSLATE_MOCK_URL` (e.g. `http://localhost:3010`) when running tests if the mock is on a different host/port.
+
+### 2. Server configuration
+
+- Enable auto-translation on the server (e.g. **EnableAutoTranslation** in config).
+- Configure the translation plugin (e.g. mattermost-plugin-autotranslate) to use the LibreTranslate API URL pointing at the mock.
+- For the app running in the emulator/device to reach the mock, use a URL reachable from the device (e.g. `http://10.0.2.2:3010` for Android emulator, or your machine’s IP and the mock port). Configure this in the plugin/translation service settings on the server.
+
+### 3. Run auto-translation tests
+
+```sh
+npm run e2e:android-test e2e/test/products/channels/autotranslation
+# or
+npm run e2e:ios-test e2e/test/products/channels/autotranslation
+```
+
+Tests use `setMockSourceLanguage` from `@support/libre_translate_mock` to set the mock’s detected source language (e.g. so messages are treated as Spanish and translated for an English-preference user).
+
+---
+
 # Playbooks Tests (AI-Powered Testing)
 
 The Playbooks tests leverage AI-powered testing through the Wix Pilot framework, enabling natural language test creation and execution.
