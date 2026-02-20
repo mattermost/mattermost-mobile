@@ -11,6 +11,10 @@ export function loadAgentsScreen(screenName: string | number) {
             return withServerDatabase(require('@agents/screens/agent_chat').default);
         case Screens.AGENT_THREADS_LIST:
             return withServerDatabase(require('@agents/screens/agent_threads_list').default);
+        case Screens.AGENTS_SELECTOR:
+            return withServerDatabase(require('@agents/screens/agent_selector').default);
+        case Screens.AGENTS_REWRITE_OPTIONS:
+            return withServerDatabase(require('@agents/screens/rewrite_options').default);
         default:
             return undefined;
     }

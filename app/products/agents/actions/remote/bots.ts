@@ -4,7 +4,7 @@
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 import type {LLMBot} from '@agents/types';
 
@@ -26,6 +26,20 @@ export async function fetchAIBots(
             bots: response.bots,
             prepareRecordsOnly: false,
         });
+
+        // Refresh bot user profiles to keep User.deleteAt current.
+        // This prevents stale deactivation status from showing "archived channel" in agent chat.
+        const botUserIds = (response.bots || []).map((b) => b.id).filter(Boolean);
+        if (botUserIds.length) {
+            try {
+                const profiles = await client.getProfilesByIds(botUserIds);
+                if (profiles.length) {
+                    await operator.handleUsers({users: profiles, prepareRecordsOnly: false});
+                }
+            } catch (profileError) {
+                logDebug('[fetchAIBots] Failed to refresh bot user profiles', getFullErrorMessage(profileError));
+            }
+        }
 
         return {
             bots: response.bots,

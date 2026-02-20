@@ -40,8 +40,12 @@ const AgentsHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superc
      * @returns {Promise<Model[]>} - A promise that resolves to an array of handled AI bot records.
      */
     handleAIBots = async ({bots, prepareRecordsOnly}: HandleAIBotsArgs): Promise<Model[]> => {
+        if (!bots?.length) {
+            return [];
+        }
+
         const batchRecords: Model[] = [];
-        const uniqueRaws = getUniqueRawsBy({raws: bots ?? [], key: 'id'});
+        const uniqueRaws = getUniqueRawsBy({raws: bots, key: 'id'});
         const incomingIds = new Set(uniqueRaws.map((raw) => raw.id));
 
         const existingRecords = await this.database.collections.get<AiBotModel>(AI_BOT).query().fetch();
@@ -89,8 +93,12 @@ const AgentsHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superc
      * @returns {Promise<Model[]>} - A promise that resolves to an array of handled AI thread records.
      */
     handleAIThreads = async ({threads, prepareRecordsOnly}: HandleAIThreadsArgs): Promise<Model[]> => {
+        if (!threads?.length) {
+            return [];
+        }
+
         const batchRecords: Model[] = [];
-        const uniqueRaws = getUniqueRawsBy({raws: threads ?? [], key: 'id'});
+        const uniqueRaws = getUniqueRawsBy({raws: threads, key: 'id'});
         const incomingIds = new Set(uniqueRaws.map((raw) => raw.id));
 
         const existingRecords = await this.database.collections.get<AiThreadModel>(AI_THREAD).query().fetch();
