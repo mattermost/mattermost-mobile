@@ -48,7 +48,7 @@ type PermalinkPreviewProps = {
     location: AvailableScreens;
     parentLocation?: string;
     parentPostId?: string;
-    autotranslationsEnabled?: boolean;
+    autotranslationsEnabled: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
