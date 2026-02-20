@@ -5,6 +5,7 @@ import {fetchAIBots} from '@agents/actions/remote/bots';
 import {AgentsIntro} from '@agents/components/illustrations';
 import BotSelectorItem from '@agents/screens/agent_chat/bot_selector_item';
 import {goToAgentThreadsList} from '@agents/screens/navigation';
+import {PortalProvider} from '@gorhom/portal';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, Text, TouchableOpacity, View} from 'react-native';
@@ -374,42 +375,44 @@ const AgentChat = ({
             </View>
 
             {/* Main content */}
-            <View
-                style={styles.mainContent}
-                onLayout={onLayout}
-            >
-                <View style={styles.content}>
-                    <View style={styles.introContent}>
-                        <AgentsIntro theme={theme}/>
-                        <Text style={styles.welcomeText}>
-                            {intl.formatMessage({
-                                id: 'agents.chat.intro_title',
-                                defaultMessage: 'Ask Agents anything',
-                            })}
-                        </Text>
-                        <Text style={styles.descriptionText}>
-                            {intl.formatMessage({
-                                id: 'agents.chat.intro_description',
-                                defaultMessage: 'Agents are here to help.',
-                            })}
-                        </Text>
-                        {error && <Text style={styles.errorText}>{error}</Text>}
+            <PortalProvider>
+                <View
+                    style={styles.mainContent}
+                    onLayout={onLayout}
+                >
+                    <View style={styles.content}>
+                        <View style={styles.introContent}>
+                            <AgentsIntro theme={theme}/>
+                            <Text style={styles.welcomeText}>
+                                {intl.formatMessage({
+                                    id: 'agents.chat.intro_title',
+                                    defaultMessage: 'Ask Agents anything',
+                                })}
+                            </Text>
+                            <Text style={styles.descriptionText}>
+                                {intl.formatMessage({
+                                    id: 'agents.chat.intro_description',
+                                    defaultMessage: 'Agents are here to help.',
+                                })}
+                            </Text>
+                            {error && <Text style={styles.errorText}>{error}</Text>}
+                        </View>
                     </View>
-                </View>
 
-                {channelId && (
-                    <ExtraKeyboardProvider>
-                        <PostDraft
-                            channelId={channelId}
-                            testID='agent_chat.post_draft'
-                            containerHeight={containerHeight}
-                            isChannelScreen={false}
-                            location={Screens.AGENT_CHAT}
-                            onPostCreated={handlePostCreated}
-                        />
-                    </ExtraKeyboardProvider>
-                )}
-            </View>
+                    {channelId && (
+                        <ExtraKeyboardProvider>
+                            <PostDraft
+                                channelId={channelId}
+                                testID='agent_chat.post_draft'
+                                containerHeight={containerHeight}
+                                isChannelScreen={false}
+                                location={Screens.AGENT_CHAT}
+                                onPostCreated={handlePostCreated}
+                            />
+                        </ExtraKeyboardProvider>
+                    )}
+                </View>
+            </PortalProvider>
         </View>
     );
 };

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ToolCallStatus, type ToolCall} from '@agents/types';
+import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import React, {type ComponentProps} from 'react';
 
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
@@ -242,6 +242,119 @@ describe('ToolCard', () => {
             const {queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
             expect(queryByText('Response')).toBeNull();
+        });
+    });
+
+    describe('result phase UI', () => {
+        const getResultPhaseProps = (): ComponentProps<typeof ToolCard> => ({
+            ...getBaseProps(),
+            tool: createMockTool({
+                status: ToolCallStatus.Success,
+                result: 'Search completed successfully',
+            }),
+            approvalStage: ToolApprovalStage.Result,
+            isCollapsed: false,
+            isProcessing: false,
+            localDecision: undefined,
+        });
+
+        it('should show share and keep private buttons in result phase with success status', () => {
+            const props = getResultPhaseProps();
+            const {getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByText('Share')).toBeTruthy();
+            expect(getByText('Keep private')).toBeTruthy();
+        });
+
+        it('should show share and keep private buttons in result phase with error status', () => {
+            const props = getResultPhaseProps();
+            props.tool = createMockTool({
+                status: ToolCallStatus.Error,
+                result: 'An error occurred',
+            });
+            const {getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByText('Share')).toBeTruthy();
+            expect(getByText('Keep private')).toBeTruthy();
+        });
+
+        it('should not show result phase buttons when not in result phase', () => {
+            const props = getResultPhaseProps();
+            props.approvalStage = null;
+            const {queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(queryByText('Share')).toBeNull();
+            expect(queryByText('Keep private')).toBeNull();
+        });
+
+        it('should not show result phase buttons when local decision is made', () => {
+            const props = getResultPhaseProps();
+            props.localDecision = true;
+            const {queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(queryByText('Share')).toBeNull();
+            expect(queryByText('Keep private')).toBeNull();
+        });
+
+        it('should call onApprove when share is pressed', () => {
+            const props = getResultPhaseProps();
+            const {getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            fireEvent.press(getByText('Share'));
+            expect(props.onApprove).toHaveBeenCalledWith('tool-123');
+        });
+
+        it('should call onReject when keep private is pressed', () => {
+            const props = getResultPhaseProps();
+            const {getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            fireEvent.press(getByText('Keep private'));
+            expect(props.onReject).toHaveBeenCalledWith('tool-123');
+        });
+
+        it('should show warning callout in result phase with results', () => {
+            const props = getResultPhaseProps();
+            const {getByTestId, getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByTestId('agents.tool_card.tool-123.warning')).toBeTruthy();
+            expect(getByText('Review tool response')).toBeTruthy();
+        });
+
+        it('should not show warning callout when not in result phase', () => {
+            const props = getResultPhaseProps();
+            props.approvalStage = null;
+            const {queryByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(queryByTestId('agents.tool_card.tool-123.warning')).toBeNull();
+        });
+    });
+
+    describe('testIDs', () => {
+        it('should have testIDs on approve and reject buttons', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({status: ToolCallStatus.Pending});
+            props.isProcessing = false;
+            props.localDecision = undefined;
+            const {getByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByTestId('agents.tool_card.tool-123.approve')).toBeTruthy();
+            expect(getByTestId('agents.tool_card.tool-123.reject')).toBeTruthy();
+        });
+
+        it('should have testIDs on share and keep private buttons in result phase', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({
+                status: ToolCallStatus.Success,
+                result: 'result data',
+            });
+            props.approvalStage = ToolApprovalStage.Result;
+            props.isCollapsed = false;
+            props.isProcessing = false;
+            props.localDecision = undefined;
+            const {getByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByTestId('agents.tool_card.tool-123.share')).toBeTruthy();
+            expect(getByTestId('agents.tool_card.tool-123.keep_private')).toBeTruthy();
         });
     });
 });
