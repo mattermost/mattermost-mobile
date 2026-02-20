@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {updateDevices} from '@e2ee/actions/local/devices';
+
+import {addDevice} from '@e2ee/actions/local/devices';
 import E2EE from '@e2ee/constants/e2ee';
 import {generateSignatureKeyPair} from '@mattermost/e2ee';
-import {nativeApplicationVersion} from 'expo-application';
-import {deviceName, isDevice, modelName, osName, osVersion} from 'expo-device';
-import {sortBy} from 'lodash';
+import {deviceName, isDevice, modelName, osName} from 'expo-device';
 import * as KeyChain from 'react-native-keychain';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
@@ -14,7 +13,7 @@ import {bytesToBase64} from '@utils/encoding';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError, logInfo} from '@utils/log';
 
-import {fetchEnabledDevices, registerDevice} from './devices';
+import {registerDevice} from './devices';
 
 function getDisplayDeviceName(): string {
     if (!isDevice) {
@@ -31,12 +30,12 @@ function getDisplayDeviceName(): string {
 export const initE2eeDevice = async (serverUrl: string, userId: string) => {
     const result = await checkIsE2eePluginEnabled(serverUrl);
     if (result.error) {
-        logError(result.error);
+        logError('[initE2eeDevice]', result.error);
         return {error: result.error};
     }
 
-    const e2eeEnabled = result.data || false;
-    if (e2eeEnabled) {
+    const e2eePluginEnabled = result.data || false;
+    if (e2eePluginEnabled) {
         try {
             // we know initialization has been done if signature key is already saved to keystore
             const alreadyInKeychain = await isInKeychain(serverUrl);
@@ -52,42 +51,19 @@ export const initE2eeDevice = async (serverUrl: string, userId: string) => {
             const storedValue = await storeInKeychain(serverUrl, base64SigningKey);
             const storedType = storedValue ? storedValue.storage : undefined;
             if (storedType) {
-                const now = new Date().getTime();
                 const deviceDisplayName = getDisplayDeviceName();
 
                 // post register device
-                const response = await registerDevice(serverUrl, signingKey.publicKey, deviceDisplayName);
-
-                // set the device as verified if it is the first enabled device
-                const createdDevices = await fetchEnabledDevices(serverUrl, response.device_id);
-                let verified = false;
-                if ((createdDevices.devices?.length ?? 0) > 0) {
-                    const sorted = sortBy(createdDevices.devices ?? [], 'created_at');
-
-                    if (sorted[0].device_id === response.device_id) {
-                        verified = true;
-                    }
+                const registerResult = await registerDevice(serverUrl, signingKey.publicKey, deviceDisplayName);
+                if ('error' in registerResult) {
+                    return {error: registerResult.error};
                 }
 
-                // generate identity
-                const identity = {
-                    userId,
-                    deviceId: response.device_id,
-                };
+                // add current device
+                const {data} = await addDevice(serverUrl, registerResult.device_id, signingKey.publicKey);
 
-                logInfo('generated identity is ', identity);
-
-                // save or update registered device data
-                await updateDevices(serverUrl, [{
-                    device_id: response.device_id,
-                    device_name: deviceDisplayName,
-                    signature_public_key: signingKey.publicKey,
-                    created_at: now,
-                    last_active_at: now,
-                    app_version: nativeApplicationVersion ?? '',
-                    os_version: osVersion ?? '',
-                    verified,
-                }]);
+                // log generated identity
+                logInfo('[initE2eeDevice] generated identity is ', {userId, deviceId: data?.[0].deviceId});
             }
 
             return {data: true};
@@ -95,10 +71,10 @@ export const initE2eeDevice = async (serverUrl: string, userId: string) => {
             // we reset keychain in case signing key information was set in case of error.
             const removed = await removeFromKeychain(serverUrl);
             if (!removed) {
-                logInfo('failure while removing existing key from keychain');
+                logInfo('[initE2eeDevice] failure while removing existing key from keychain');
             }
 
-            logDebug('error during e2ee device initialization', getFullErrorMessage(error));
+            logDebug('[initE2eeDevice] error during e2ee device initialization', getFullErrorMessage(error));
             forceLogoutIfNecessary(serverUrl, error);
             return {error};
         }

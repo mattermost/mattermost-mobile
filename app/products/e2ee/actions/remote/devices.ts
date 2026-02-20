@@ -23,8 +23,14 @@ export const registerDevice = async (
     signaturePublicKey: string,
     deviceName: string,
 ) => {
-    const client = NetworkManager.getClient(serverUrl);
-    return client.registerDevice(signaturePublicKey, deviceName);
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return await client.registerDevice(signaturePublicKey, deviceName);
+    } catch (error) {
+        logDebug('registerDevice', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
 };
 
 export const fetchRegisteredDevices = async (

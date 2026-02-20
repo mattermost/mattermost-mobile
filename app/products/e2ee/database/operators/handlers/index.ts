@@ -15,10 +15,16 @@ type HandleDevicesArgs = {
     devices: RegisteredDevice[];
 }
 
+type HandleCurrentDeviceArgs = {
+    deviceId: string;
+    signaturePublicKey: string;
+}
+
 const {E2EE_REGISTERED_DEVICES} = E2EE_TABLES;
 
 export interface E2EEHandlerMix {
     handleDevices: (args: HandleDevicesArgs) => Promise<Model[]>;
+    handleCurrentDevice: (args: HandleCurrentDeviceArgs) => Promise<E2EERegisteredDeviceModel[]>;
 }
 
 const E2EEHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
@@ -57,6 +63,23 @@ const E2EEHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         }, 'handleDevices');
 
         return records;
+    };
+
+    handleCurrentDevice = async ({deviceId, signaturePublicKey}: HandleCurrentDeviceArgs): Promise<E2EERegisteredDeviceModel[]> => {
+        return this.handleRecords({
+            buildKeyRecordBy: (record) => record.deviceId,
+            fieldName: 'device_id',
+            tableName: E2EE_REGISTERED_DEVICES,
+            prepareRecordsOnly: false,
+            createOrUpdateRawValues: [{
+                device_id: deviceId,
+                signature_public_key: signaturePublicKey,
+                is_current_device: true,
+                verified: true,
+            }],
+            deleteRawValues: [],
+            transformer: transformE2EERegisteredDeviceRecord,
+        }, 'handleCurrentDevice');
     };
 };
 

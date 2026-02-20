@@ -9,7 +9,7 @@ export interface ClientE2EEMix {
     // Devices
     fetchDevices: () => Promise<RegisteredDevicesReturn>;
     revokeDevice: (deviceId: string) => Promise<void>;
-    registerDevice: (signaturePublicKey: string, deviceName: string) => Promise<EnabledDeviceId>;
+    registerDevice: (signaturePublicKey: string, deviceName: string) => Promise<RegisteredDeviceId>;
 }
 
 const ClientE2EE = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {

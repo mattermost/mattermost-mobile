@@ -6,22 +6,13 @@ import DatabaseManager from '@database/manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
-export const updateDevices = async (serverUrl: string, devices: EnabledDevice[]) => {
+export const addDevice = async (serverUrl: string, deviceId: string, signaturePublicKey: string) => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const updatedDevices = await operator.handleDevices({
-            devices,
-        });
-
-        if (updatedDevices.length !== devices.length) {
-            return {
-                error: 'wrong number of handled devices',
-            };
-        }
-
-        return {data: updatedDevices};
+        const result = await operator.handleCurrentDevice({deviceId, signaturePublicKey});
+        return {data: result};
     } catch (error) {
-        logDebug('addDeviceDb', getFullErrorMessage(error));
+        logDebug('addDevice', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

@@ -17,16 +17,11 @@ jest.mock('@mattermost/e2ee', () => ({
 jest.mock('expo-device', () => ({
     isDevice: true,
     modelName: 'TestDevice',
-    osVersion: '17',
 }));
 
-jest.mock('expo-application', () => ({
-    nativeApplicationVersion: '1.0',
-}));
-
-const mockUpdateDevices = jest.fn();
+const mockAddDevice = jest.fn();
 jest.mock('@e2ee/actions/local/devices', () => ({
-    updateDevices: (...args: unknown[]) => mockUpdateDevices(...args),
+    addDevice: (...args: unknown[]) => mockAddDevice(...args),
 }));
 
 const serverUrl = 'baseHandler.test.com';
@@ -56,7 +51,7 @@ beforeEach(() => {
 
     mockGenerateKey.mockReturnValue(testSigningKey);
     mockClient.registerDevice.mockResolvedValue({device_id: 'device-id-123'});
-    mockUpdateDevices.mockResolvedValue({data: []});
+    mockAddDevice.mockResolvedValue({data: []});
 });
 
 describe('initE2eeDevice', () => {
@@ -68,7 +63,7 @@ describe('initE2eeDevice', () => {
         expect(result).toEqual({data: false});
         expect(KeyChain.setGenericPassword).not.toHaveBeenCalled();
         expect(mockClient.registerDevice).not.toHaveBeenCalled();
-        expect(mockUpdateDevices).not.toHaveBeenCalled();
+        expect(mockAddDevice).not.toHaveBeenCalled();
 
         expect(mockGenerateKey).not.toHaveBeenCalled();
     });
@@ -81,7 +76,7 @@ describe('initE2eeDevice', () => {
         expect(result).toEqual({data: false});
         expect(KeyChain.setGenericPassword).not.toHaveBeenCalled();
         expect(mockClient.registerDevice).not.toHaveBeenCalled();
-        expect(mockUpdateDevices).not.toHaveBeenCalled();
+        expect(mockAddDevice).not.toHaveBeenCalled();
 
         expect(mockGenerateKey).not.toHaveBeenCalled();
     });
@@ -96,7 +91,7 @@ describe('initE2eeDevice', () => {
         expect(result).toEqual({error: expect.any(Error)});
         expect(KeyChain.setGenericPassword).not.toHaveBeenCalled();
         expect(mockClient.registerDevice).not.toHaveBeenCalled();
-        expect(mockUpdateDevices).not.toHaveBeenCalled();
+        expect(mockAddDevice).not.toHaveBeenCalled();
     });
 
     it('should store device in DB and key in keychain on success', async () => {
@@ -116,17 +111,10 @@ describe('initE2eeDevice', () => {
             'TestDevice',
         );
 
-        expect(mockUpdateDevices).toHaveBeenCalledWith(
+        expect(mockAddDevice).toHaveBeenCalledWith(
             serverUrl,
-            expect.arrayContaining([
-                expect.objectContaining({
-                    device_id: 'device-id-123',
-                    device_name: 'TestDevice',
-                    signature_public_key: testSigningKey.publicKey,
-                    app_version: '1.0',
-                    os_version: '17',
-                }),
-            ]),
+            'device-id-123',
+            testSigningKey.publicKey,
         );
     });
 

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchRegisteredDevices, revokeRegisteredDevice} from '@e2ee/actions/remote/devices';
-import {Device} from '@e2ee/screens/enabled_devices/device';
+import {Device} from '@e2ee/screens/registered_devices/device';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {FlatList, View} from 'react-native';
 

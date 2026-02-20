@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-type EnabledDeviceId = {
+type RegisteredDeviceId = {
     device_id: string;
 }
 
-type RegisteredDevice = EnabledDeviceId & {
+type RegisteredDevice = RegisteredDeviceId & {
     signature_public_key?: string;
     device_name: string;
     created_at: number;

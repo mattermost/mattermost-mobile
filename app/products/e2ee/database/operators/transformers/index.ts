@@ -17,6 +17,8 @@ type RegisteredDeviceRaw = {
     /** Required: device identifier from the server. */
     device_id: string;
     signature_public_key?: string | null;
+    is_current_device?: boolean;
+    verified?: boolean;
 };
 
 /**
@@ -42,6 +44,8 @@ export const transformE2EERegisteredDeviceRecord = ({
         device._raw.id = isCreateAction ? raw.device_id : record!.id;
         device.deviceId = raw.device_id;
         device.signaturePublicKey = raw.signature_public_key ?? record?.signaturePublicKey ?? null;
+        device.isCurrentDevice = raw.is_current_device ?? record?.isCurrentDevice ?? false;
+        device.verified = raw.verified ?? record?.verified ?? false;
     };
 
     return prepareBaseRecord({

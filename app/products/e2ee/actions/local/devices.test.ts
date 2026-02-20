@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {updateDevices} from '@e2ee/actions/local/devices';
+import {addDevice} from '@e2ee/actions/local/devices';
 
 import DatabaseManager from '@database/manager';
 
@@ -19,34 +19,30 @@ afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
-describe('updateDevices', () => {
+describe('addDevice', () => {
     it('should handle not found database', async () => {
-        const {error} = await updateDevices('bad-url', []);
+        const {error} = await addDevice('bad-url', 'device-id', 'key');
         expect(error).toBeDefined();
         expect((error as Error).message).toContain('bad-url database not found');
     });
 
-    it('should handle devices successfully', async () => {
-        await operator.handleDevices({devices: [{
-            device_id: 'device-id',
-            device_name: 'existing',
-            created_at: 1,
-            last_active_at: 1,
-        }]});
-
-        const {data} = await updateDevices(serverUrl, [{
-            device_id: 'device-id',
-            device_name: 'new',
-            created_at: 2,
-            last_active_at: 2,
-        }, {
-            device_id: 'second-device-id',
-            device_name: 'second',
-            created_at: 3,
-            last_active_at: 3,
-        }]);
+    it('should create new device successfully', async () => {
+        const handleCurrentDeviceSpy = jest.spyOn(operator, 'handleCurrentDevice');
+        const {data} = await addDevice(serverUrl, 'device-id', 'key');
 
         expect(data).toBeDefined();
-        expect(data!.length).toBe(2);
+        expect(handleCurrentDeviceSpy).toHaveBeenCalledWith({deviceId: 'device-id', signaturePublicKey: 'key'});
+    });
+
+    it('should handle existing data for current device successfully', async () => {
+        await operator.handleCurrentDevice({
+            deviceId: 'device-id',
+            signaturePublicKey: 'key',
+        });
+
+        const {data} = await addDevice(serverUrl, 'device-id-2', 'key-2');
+
+        expect(data).toBeDefined();
+        expect(data!.length).toBe(1);
     });
 });
