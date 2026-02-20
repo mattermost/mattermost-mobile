@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q} from '@nozbe/watermelondb';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -15,7 +17,7 @@ import type {ServerDatabase} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
 const {SERVER: {PREFERENCE}} = MM_TABLES;
-const {ADVANCED_SETTINGS, DISPLAY_SETTINGS, EMOJI, SAVED_POST, SIDEBAR_SETTINGS, THEME} = Preferences.CATEGORIES;
+const {ADVANCED_SETTINGS, DISPLAY_SETTINGS, EMOJI, SAVED_POST, SIDEBAR_SETTINGS, THEME, THEME_DARK} = Preferences.CATEGORIES;
 
 export async function prepareMyPreferences(operator: ServerDataOperator, preferences: PreferenceType[], sync = false): Promise<PreferenceModel[]> {
     return operator.handlePreferences({
@@ -105,6 +107,20 @@ export const querySavedPostsPreferences = (database: Database, postId?: string, 
 
 export const queryThemePreferences = (database: Database, teamId?: string) => {
     return queryPreferencesByCategoryAndName(database, THEME, teamId);
+};
+
+export const queryDarkThemePreferences = (database: Database, teamId?: string) => {
+    return queryPreferencesByCategoryAndName(database, THEME_DARK, teamId);
+};
+
+export const queryThemeAutoSwitchPreference = (database: Database) => {
+    return queryPreferencesByCategoryAndName(database, DISPLAY_SETTINGS, Preferences.THEME_AUTO_SWITCH);
+};
+
+export const observeThemeAutoSwitchPreference = (database: Database) => {
+    return queryThemeAutoSwitchPreference(database).observeWithColumns(['value']).pipe(
+        switchMap((prefs) => of$(prefs.length > 0 && prefs[0].value === 'true')),
+    );
 };
 
 export const querySidebarPreferences = (database: Database, name?: string) => {

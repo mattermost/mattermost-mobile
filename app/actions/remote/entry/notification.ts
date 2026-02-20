@@ -1,24 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Appearance} from 'react-native';
+
 import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostById} from '@actions/remote/post';
 import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
-import {getDefaultThemeByAppearance} from '@context/theme';
+import {Preferences} from '@constants';
+import {getDefaultThemeByAppearance, resolveThemeFromPreferences} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {queryThemePreferences} from '@queries/servers/preference';
+import {queryDarkThemePreferences, queryThemeAutoSwitchPreference, queryThemePreferences} from '@queries/servers/preference';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import {isErrorWithStatusCode} from '@utils/errors';
 import {emitNotificationError} from '@utils/notification';
-import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
+import {updateThemeIfNeeded} from '@utils/theme';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
@@ -55,10 +58,22 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         // When opening the app from a push notification the theme may not be set in the EphemeralStore
         // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
         // not match the theme
-        const themes = await queryThemePreferences(database, teamId).fetch();
-        let theme = getDefaultThemeByAppearance();
-        if (themes.length) {
-            theme = setThemeDefaults(JSON.parse(themes[0].value) as Theme);
+        const autoSwitchPrefs = await queryThemeAutoSwitchPreference(database).fetch();
+        const isAutoSwitch = autoSwitchPrefs.length > 0 && autoSwitchPrefs[0].value === 'true';
+
+        let theme: Theme;
+        if (isAutoSwitch) {
+            const colorScheme = Appearance.getColorScheme();
+            if (colorScheme === 'dark') {
+                const darkThemes = await queryDarkThemePreferences(database, teamId).fetch();
+                theme = resolveThemeFromPreferences(teamId, darkThemes, Preferences.THEMES.onyx);
+            } else {
+                const themes = await queryThemePreferences(database, teamId).fetch();
+                theme = resolveThemeFromPreferences(teamId, themes, Preferences.THEMES.denim);
+            }
+        } else {
+            const themes = await queryThemePreferences(database, teamId).fetch();
+            theme = resolveThemeFromPreferences(teamId, themes, getDefaultThemeByAppearance());
         }
         updateThemeIfNeeded(theme, true);
     }
