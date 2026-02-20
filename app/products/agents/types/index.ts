@@ -78,6 +78,67 @@ export interface StreamingState {
     annotations: Annotation[]; // Citations/annotations for the post
 }
 
+/**
+ * AI thread data structure from the server
+ */
+export interface AIThread {
+    id: string; // Post ID
+    message: string; // Preview text
+    title: string; // Thread title
+    channel_id: string; // DM channel with bot
+    reply_count: number; // Number of replies
+    update_at: number; // Last update timestamp
+}
+
+/**
+ * Channel access level values
+ */
+export const ChannelAccessLevel = {
+    All: 0,
+    Allow: 1,
+    Block: 2,
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+export type ChannelAccessLevel = typeof ChannelAccessLevel[keyof typeof ChannelAccessLevel];
+
+/**
+ * User access level values
+ */
+export const UserAccessLevel = {
+    All: 0,
+    Allow: 1,
+    Block: 2,
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+export type UserAccessLevel = typeof UserAccessLevel[keyof typeof UserAccessLevel];
+
+/**
+ * LLM Bot data structure
+ */
+export interface LLMBot {
+    id: string;
+    displayName: string;
+    username: string;
+    lastIconUpdate: number;
+    dmChannelID: string;
+    channelAccessLevel: ChannelAccessLevel;
+    channelIDs: string[];
+    userAccessLevel: UserAccessLevel;
+    userIDs: string[];
+    teamIDs: string[];
+}
+
+/**
+ * AI Bots response from the server
+ */
+export interface AIBotsResponse {
+    bots: LLMBot[];
+    searchEnabled: boolean;
+    allowUnsafeLinks: boolean;
+}
+
 // ============================================================================
 // Rewrite Types
 // ============================================================================

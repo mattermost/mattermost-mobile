@@ -67,6 +67,10 @@ npm run clean                 # Clean build artifacts
 
 **DatabaseManager** singleton (`app/database/manager/index.ts`) manages all instances. Data operations go through operators with transformers/handlers/comparators.
 
+**Sync handlers must handle the full lifecycle: create, update, AND delete.** When a handler syncs data from the server (e.g., `handleAIBots`, `handlePlaybookRuns`), it must also remove records that no longer exist on the server. Compare the full set of existing DB records against incoming data and call `prepareDestroyPermanently()` on stale records. Never write a sync handler that only creates/updates.
+
+**Schema documentation**: When adding or modifying database tables, update `docs/database/server/server.md` (or `app_database/app-database.md`) and bump the schema version number in the header.
+
 **Database directory**:
 - iOS: App Group directory (shared with extensions)
 - Android: `${documentDirectory}/databases/`
@@ -264,6 +268,8 @@ Located at `libraries/@mattermost/`:
 - Test components with long strings to ensure proper text handling
 - Use constants from `PREFERENCES.THEMES` instead of hardcoded colors
 - **Use `react-native-reanimated`** instead of React Native's `Animated` API for all animations (better performance, runs on UI thread)
+- **`Pressable` must have pressed feedback**: Always add visual feedback via the style callback, e.g., `style={({pressed}) => [pressed && {opacity: 0.72}]}`. A `Pressable` without pressed state feels broken.
+- **Extract static objects used as props into module-level constants**: Objects like `hitSlop`, `contentContainerStyle`, or any non-dynamic prop object should be a `const` outside the component to avoid creating new references on every render.
 - **Use `usePreventDoubleTap` hook** for button press handlers to prevent accidental double submissions
 - **Use `useServerUrl()` hook** instead of passing `serverUrl` as a prop - it's available via context
 - **Use existing components**: Check for `<Loading>` instead of `<ActivityIndicator>`, `safeParseJSON()` instead of try/catch JSON.parse
