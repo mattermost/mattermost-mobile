@@ -3,9 +3,11 @@
 
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
+import {View} from 'react-native';
 
 import {showPermalink} from '@actions/remote/permalink';
 import Markdown from '@components/markdown';
+import TranslateIcon from '@components/post_list/post/header/translate_icon';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -26,6 +28,14 @@ jest.mock('@components/markdown', () => ({
 }));
 jest.mocked(Markdown).mockImplementation((props) =>
     React.createElement('Text', {testID: 'markdown'}, props.value),
+);
+
+jest.mock('@components/post_list/post/header/translate_icon', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(TranslateIcon).mockImplementation(() =>
+    React.createElement(View, {testID: 'translate-icon'}, null),
 );
 
 describe('components/post_list/post/body/content/permalink_preview/PermalinkPreview', () => {
@@ -118,6 +128,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         isOriginPostDeleted: false,
         parentLocation: Screens.CHANNEL,
         parentPostId: 'parent-post-123',
+        autotranslationsEnabled: false,
     };
 
     it('should render permalink preview correctly', () => {
@@ -490,6 +501,138 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             expect(getByText('Post with empty files')).toBeTruthy();
 
             expect(queryByTestId('permalink-files-container')).toBeNull();
+        });
+    });
+
+    describe('autotranslationsEnabled', () => {
+        it('should not render TranslateIcon when autotranslationsEnabled is false', () => {
+            const {queryByTestId} = renderPermalinkPreview({
+                ...baseProps,
+                autotranslationsEnabled: false,
+            });
+
+            expect(queryByTestId('translate-icon')).toBeNull();
+        });
+
+        it('should render TranslateIcon when autotranslationsEnabled is true', () => {
+            const {getByTestId} = renderPermalinkPreview({
+                ...baseProps,
+                autotranslationsEnabled: true,
+            });
+
+            expect(getByTestId('translate-icon')).toBeTruthy();
+        });
+
+        it('should display translated message when autotranslationsEnabled is true and translation is ready', () => {
+            const originalMessage = 'Original message';
+            const translatedMessage = 'Translated message';
+            const props = {
+                ...baseProps,
+                autotranslationsEnabled: true,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: TestHelper.fakePost({
+                        id: 'post-123',
+                        user_id: 'user-123',
+                        message: originalMessage,
+                        create_at: 1234567890000,
+                        edit_at: 0,
+                        metadata: {
+                            translations: {
+                                en: {
+                                    state: 'ready' as const,
+                                    object: {message: translatedMessage},
+                                },
+                            },
+                            embeds: [{
+                                type: 'opengraph' as PostEmbedType,
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Example Title',
+                                    description: 'Example Description',
+                                },
+                            }],
+                        },
+                    }),
+                },
+            };
+            const {getByText} = renderPermalinkPreview(props);
+
+            expect(getByText(translatedMessage)).toBeTruthy();
+        });
+
+        it('should display original message when autotranslationsEnabled is true but translation is not ready', () => {
+            const originalMessage = 'Original message only';
+            const props = {
+                ...baseProps,
+                autotranslationsEnabled: true,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: TestHelper.fakePost({
+                        id: 'post-123',
+                        user_id: 'user-123',
+                        message: originalMessage,
+                        create_at: 1234567890000,
+                        edit_at: 0,
+                        metadata: {
+                            translations: {
+                                en: {
+                                    state: 'processing' as const,
+                                    object: {message: ''},
+                                },
+                            },
+                            embeds: [{
+                                type: 'opengraph' as PostEmbedType,
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Example Title',
+                                    description: 'Example Description',
+                                },
+                            }],
+                        },
+                    }),
+                },
+            };
+            const {getByText} = renderPermalinkPreview(props);
+
+            expect(getByText(originalMessage)).toBeTruthy();
+        });
+
+        it('should display original message when autotranslationsEnabled is false regardless of translation', () => {
+            const originalMessage = 'Original message';
+            const props = {
+                ...baseProps,
+                autotranslationsEnabled: false,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: TestHelper.fakePost({
+                        id: 'post-123',
+                        user_id: 'user-123',
+                        message: originalMessage,
+                        create_at: 1234567890000,
+                        edit_at: 0,
+                        metadata: {
+                            translations: {
+                                en: {
+                                    state: 'ready' as const,
+                                    object: {message: 'Translated message'},
+                                },
+                            },
+                            embeds: [{
+                                type: 'opengraph' as PostEmbedType,
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Example Title',
+                                    description: 'Example Description',
+                                },
+                            }],
+                        },
+                    }),
+                },
+            };
+            const {getByText} = renderPermalinkPreview(props);
+
+            expect(getByText(originalMessage)).toBeTruthy();
         });
     });
 });
