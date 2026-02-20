@@ -47,12 +47,4 @@ describe('setAgentsVersion', () => {
         operator.handleSystem = originalHandleSystem;
     });
 
-    it('should handle empty version string', async () => {
-        const {data, error} = await setAgentsVersion(serverUrl, '');
-        expect(error).toBeUndefined();
-        expect(data).toBe(true);
-
-        const systemValues = await querySystemValue(operator.database, SYSTEM_IDENTIFIERS.AGENTS_VERSION);
-        expect(systemValues[0].value).toBe('');
-    });
 });

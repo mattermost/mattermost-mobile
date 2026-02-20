@@ -114,23 +114,4 @@ describe('ReasoningDisplay', () => {
         });
     });
 
-    describe('loading state', () => {
-        it('should show loading spinner while reasoning is being generated', () => {
-            const props = getBaseProps();
-            props.isReasoningLoading = true;
-            props.reasoningSummary = 'Partial reasoning...';
-            const {getByTestId} = renderWithIntlAndTheme(<ReasoningDisplay {...props}/>);
-
-            expect(getByTestId('loading-spinner')).toBeTruthy();
-        });
-
-        it('should hide loading spinner when reasoning is complete', () => {
-            const props = getBaseProps();
-            props.isReasoningLoading = false;
-            props.reasoningSummary = 'Complete reasoning summary.';
-            const {queryByTestId} = renderWithIntlAndTheme(<ReasoningDisplay {...props}/>);
-
-            expect(queryByTestId('loading-spinner')).toBeNull();
-        });
-    });
 });

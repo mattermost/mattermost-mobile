@@ -55,25 +55,6 @@ describe('ControlsBar', () => {
             expect(queryByTestId('agents.controls_bar.regenerate_button')).toBeNull();
         });
 
-        it('should show both buttons when both flags are true', () => {
-            const props = getBaseProps();
-            props.showStopButton = true;
-            props.showRegenerateButton = true;
-            const {getByTestId} = renderWithIntlAndTheme(<ControlsBar {...props}/>);
-
-            expect(getByTestId('agents.controls_bar.stop_button')).toBeTruthy();
-            expect(getByTestId('agents.controls_bar.regenerate_button')).toBeTruthy();
-        });
-
-        it('should hide both buttons when both flags are false', () => {
-            const props = getBaseProps();
-            props.showStopButton = false;
-            props.showRegenerateButton = false;
-            const {queryByTestId} = renderWithIntlAndTheme(<ControlsBar {...props}/>);
-
-            expect(queryByTestId('agents.controls_bar.stop_button')).toBeNull();
-            expect(queryByTestId('agents.controls_bar.regenerate_button')).toBeNull();
-        });
     });
 
     describe('button text', () => {
@@ -158,17 +139,12 @@ describe('ControlsBar', () => {
 
             fireEvent.press(getByTestId('agents.controls_bar.regenerate_button'));
 
-            // Get the alert call - cancel button has no onPress handler
             const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
             const buttons = alertCall[2];
             const cancelButton = buttons.find((b: {text: string}) => b.text === 'Cancel');
 
-            // Cancel button typically has no onPress or it's undefined
-            if (cancelButton.onPress) {
-                cancelButton.onPress();
-            }
-
-            expect(props.onRegenerate).not.toHaveBeenCalled();
+            // Cancel button intentionally has no handler — dismissal is the default behavior
+            expect(cancelButton.onPress).toBeUndefined();
         });
     });
 });

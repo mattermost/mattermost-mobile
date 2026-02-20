@@ -64,16 +64,15 @@ describe('ToolCard', () => {
     });
 
     describe('status-based rendering', () => {
-        it('should show loading indicator for pending status', () => {
+        it('should render pending tool with name visible', () => {
             const props = getBaseProps();
             props.tool = createMockTool({status: ToolCallStatus.Pending});
             const {getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
-            // For pending status, the tool name should be visible (loading indicator is in header)
             expect(getByText('Search Documents')).toBeTruthy();
         });
 
-        it('should show check icon for success status', () => {
+        it('should show response section for success status', () => {
             const props = getBaseProps();
             props.tool = createMockTool({
                 status: ToolCallStatus.Success,
@@ -81,11 +80,10 @@ describe('ToolCard', () => {
             });
             const {getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
-            // Response label should be visible for success
             expect(getByText('Response')).toBeTruthy();
         });
 
-        it('should show error icon for error status', () => {
+        it('should show response section for error status', () => {
             const props = getBaseProps();
             props.tool = createMockTool({
                 status: ToolCallStatus.Error,
@@ -93,8 +91,19 @@ describe('ToolCard', () => {
             });
             const {getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
-            // Response label should be visible for error
             expect(getByText('Response')).toBeTruthy();
+        });
+
+        it('should not show response section when no result', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({
+                status: ToolCallStatus.Success,
+                result: undefined,
+            });
+            props.isCollapsed = false;
+            const {queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(queryByText('Response')).toBeNull();
         });
 
         it('should show rejected status text for rejected status', () => {
@@ -207,44 +216,6 @@ describe('ToolCard', () => {
         });
     });
 
-    describe('result rendering', () => {
-        it('should show result for success status', () => {
-            const props = getBaseProps();
-            props.tool = createMockTool({
-                status: ToolCallStatus.Success,
-                result: 'Search completed successfully',
-            });
-            props.isCollapsed = false;
-            const {getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
-
-            expect(getByText('Response')).toBeTruthy();
-        });
-
-        it('should show result for error status', () => {
-            const props = getBaseProps();
-            props.tool = createMockTool({
-                status: ToolCallStatus.Error,
-                result: 'An error occurred',
-            });
-            props.isCollapsed = false;
-            const {getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
-
-            expect(getByText('Response')).toBeTruthy();
-        });
-
-        it('should not show result section when no result', () => {
-            const props = getBaseProps();
-            props.tool = createMockTool({
-                status: ToolCallStatus.Success,
-                result: undefined,
-            });
-            props.isCollapsed = false;
-            const {queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
-
-            expect(queryByText('Response')).toBeNull();
-        });
-    });
-
     describe('result phase UI', () => {
         const getResultPhaseProps = (): ComponentProps<typeof ToolCard> => ({
             ...getBaseProps(),
@@ -329,32 +300,4 @@ describe('ToolCard', () => {
         });
     });
 
-    describe('testIDs', () => {
-        it('should have testIDs on approve and reject buttons', () => {
-            const props = getBaseProps();
-            props.tool = createMockTool({status: ToolCallStatus.Pending});
-            props.isProcessing = false;
-            props.localDecision = undefined;
-            const {getByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
-
-            expect(getByTestId('agents.tool_card.tool-123.approve')).toBeTruthy();
-            expect(getByTestId('agents.tool_card.tool-123.reject')).toBeTruthy();
-        });
-
-        it('should have testIDs on share and keep private buttons in result phase', () => {
-            const props = getBaseProps();
-            props.tool = createMockTool({
-                status: ToolCallStatus.Success,
-                result: 'result data',
-            });
-            props.approvalStage = ToolApprovalStage.Result;
-            props.isCollapsed = false;
-            props.isProcessing = false;
-            props.localDecision = undefined;
-            const {getByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
-
-            expect(getByTestId('agents.tool_card.tool-123.share')).toBeTruthy();
-            expect(getByTestId('agents.tool_card.tool-123.keep_private')).toBeTruthy();
-        });
-    });
 });

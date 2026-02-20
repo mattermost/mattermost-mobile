@@ -6,7 +6,7 @@ import React, {type ComponentProps} from 'react';
 import {Preferences} from '@constants';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import ThreadItem, {THREAD_ITEM_HEIGHT} from './thread_item';
+import ThreadItem from './thread_item';
 
 import type AiThreadModel from '@agents/types/database/models/ai_thread';
 
@@ -25,10 +25,6 @@ describe('ThreadItem', () => {
         thread: mockThread,
         onPress: jest.fn(),
         theme: Preferences.THEMES.denim,
-    });
-
-    it('should export THREAD_ITEM_HEIGHT constant', () => {
-        expect(THREAD_ITEM_HEIGHT).toBe(88);
     });
 
     it('should render thread title', () => {

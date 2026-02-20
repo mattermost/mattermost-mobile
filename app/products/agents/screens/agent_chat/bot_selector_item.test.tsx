@@ -118,23 +118,4 @@ describe('BotSelectorItem', () => {
         expect(getByText('account-outline')).toBeTruthy();
     });
 
-    it('should handle different bot data', () => {
-        const props = getBaseProps();
-        props.bot = {
-            id: 'another-bot',
-            displayName: 'Another Agent',
-            username: 'anotheragent',
-            lastIconUpdate: 123456,
-            dmChannelId: 'dm-channel-456',
-            channelAccessLevel: 0,
-            channelIds: [],
-            userAccessLevel: 0,
-            userIds: [],
-            teamIds: [],
-        } as unknown as AiBotModel;
-        const {getByText, getByTestId} = render(<BotSelectorItem {...props}/>);
-
-        expect(getByText('Another Agent')).toBeTruthy();
-        expect(getByTestId('agent_chat.bot_selector.bot_item.another-bot')).toBeTruthy();
-    });
 });

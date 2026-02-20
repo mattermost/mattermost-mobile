@@ -7,11 +7,13 @@ import {logError} from '@utils/log';
 
 import {fetchAIThreads} from './threads';
 
+const mockOperator = {
+    handleAIThreads: jest.fn(),
+};
+
 jest.mock('@database/manager', () => ({
     getServerDatabaseAndOperator: jest.fn(() => ({
-        operator: {
-            handleAIThreads: jest.fn(),
-        },
+        operator: mockOperator,
     })),
 }));
 jest.mock('@managers/network_manager');
@@ -33,7 +35,7 @@ beforeEach(() => {
 });
 
 describe('fetchAIThreads', () => {
-    it('should return threads array on success', async () => {
+    it('should persist threads to database and return them', async () => {
         const mockThreads = [
             {id: 'thread1', channelId: 'channel1'},
             {id: 'thread2', channelId: 'channel2'},
@@ -42,9 +44,25 @@ describe('fetchAIThreads', () => {
 
         const result = await fetchAIThreads(serverUrl);
 
-        expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
         expect(mockClient.getAIThreads).toHaveBeenCalled();
+        expect(mockOperator.handleAIThreads).toHaveBeenCalledWith({
+            threads: mockThreads,
+            prepareRecordsOnly: false,
+        });
         expect(result.threads).toEqual(mockThreads);
+        expect(result.error).toBeUndefined();
+    });
+
+    it('should normalize null API response to empty array', async () => {
+        mockClient.getAIThreads.mockResolvedValue(null);
+
+        const result = await fetchAIThreads(serverUrl);
+
+        expect(mockOperator.handleAIThreads).toHaveBeenCalledWith({
+            threads: [],
+            prepareRecordsOnly: false,
+        });
+        expect(result.threads).toEqual([]);
         expect(result.error).toBeUndefined();
     });
 

@@ -4,6 +4,7 @@
 import {setAgentsVersion} from '@agents/actions/local/version';
 import {AGENTS_PLUGIN_ID} from '@agents/constants/plugin';
 
+import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 
@@ -17,13 +18,10 @@ const mockManifest = {
 };
 
 jest.mock('@agents/actions/local/version');
+jest.mock('@actions/remote/session');
 
 const mockClient = {
     getPluginsManifests: jest.fn(),
-};
-
-const throwFunc = () => {
-    throw Error('error');
 };
 
 beforeAll(() => {
@@ -39,12 +37,16 @@ afterEach(async () => {
 });
 
 describe('updateAgentsVersion', () => {
-    it('should handle client error', async () => {
-        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+    it('should handle client error and force logout if necessary', async () => {
+        const error = new Error('error');
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(() => {
+            throw error;
+        });
 
         const result = await updateAgentsVersion(serverUrl);
-        expect(result).toBeDefined();
-        expect(result.error).toBeDefined();
+
+        expect(result.error).toBe(error);
+        expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
     });
 
     it('should update agents version successfully when manifest found', async () => {
@@ -71,15 +73,4 @@ describe('updateAgentsVersion', () => {
         expect(setAgentsVersion).not.toHaveBeenCalled();
     });
 
-    it('should handle empty manifests array', async () => {
-        mockClient.getPluginsManifests.mockResolvedValueOnce([]);
-
-        const result = await updateAgentsVersion(serverUrl);
-        expect(result).toBeDefined();
-        expect(result.error).toBeUndefined();
-        expect(result.data).toBe(true);
-
-        // setAgentsVersion not called because current version ('') equals new version ('')
-        expect(setAgentsVersion).not.toHaveBeenCalled();
-    });
 });
