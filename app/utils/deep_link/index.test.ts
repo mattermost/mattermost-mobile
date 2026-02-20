@@ -174,7 +174,7 @@ describe('parseAndHandleDeepLink', () => {
     it('should create direct message for DirectMessage deep link', async () => {
         jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://existingserver.com');
         jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://existingserver.com');
-        (queryUsersByUsername as jest.Mock).mockReturnValueOnce(TestHelper.fakeQuery([TestHelper.fakeUserModel({id: 'user-id'})]));
+        jest.mocked(queryUsersByUsername).mockReturnValueOnce(TestHelper.fakeQuery([TestHelper.fakeUserModel({id: 'user-id'})]));
         const result = await parseAndHandleDeepLink('https://existingserver.com/team/messages/@user-id', intl);
         expect(makeDirectChannel).toHaveBeenCalledWith('https://existingserver.com', 'user-id', '', true);
         expect(result).toEqual({error: false});
@@ -183,8 +183,8 @@ describe('parseAndHandleDeepLink', () => {
     it('should fetch user and create direct message if user not found locally', async () => {
         jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://existingserver.com');
         jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://existingserver.com');
-        jest.mocked(fetchUsersByUsernames).mockResolvedValueOnce({users: [TestHelper.fakeUser({id: 'user-id'})]});
         jest.mocked(queryUsersByUsername).mockReturnValueOnce(TestHelper.fakeQuery([]));
+        jest.mocked(fetchUsersByUsernames).mockResolvedValueOnce({users: [TestHelper.fakeUser({id: 'user-id'})]});
         const result = await parseAndHandleDeepLink('https://existingserver.com/team/messages/@user-id', intl);
         expect(makeDirectChannel).toHaveBeenCalledWith('https://existingserver.com', 'user-id', '', true);
         expect(result).toEqual({error: false});

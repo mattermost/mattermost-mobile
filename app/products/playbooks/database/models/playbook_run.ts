@@ -154,4 +154,18 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
 
         return preparedModels;
     };
+
+    prepareDestroyWithRelations = async (): Promise<Model[]> => {
+        const preparedModels: Model[] = [this.prepareDestroyPermanently()];
+
+        const checklists = await this.checklists?.fetch();
+        if (checklists?.length) {
+            for await (const checklist of checklists) {
+                const preparedChecklist = await checklist.prepareDestroyWithRelations();
+                preparedModels.push(...preparedChecklist);
+            }
+        }
+
+        return preparedModels;
+    };
 }
