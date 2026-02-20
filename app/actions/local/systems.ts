@@ -265,7 +265,7 @@ export async function dataRetentionCleanPosts(serverUrl: string, postIds: string
         const batchSize = 1000;
         const deletePromises = [];
         for (let i = 0; i < postIds.length; i += batchSize) {
-            const batch = postIds.slice(i, batchSize);
+            const batch = postIds.slice(i, i + batchSize);
             deletePromises.push(
                 deletePosts(serverUrl, batch),
             );
