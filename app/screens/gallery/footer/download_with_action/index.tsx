@@ -25,7 +25,7 @@ import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
 import {alertFailedToOpenDocument, alertOnlyPDFSupported} from '@utils/document';
 import {getFullErrorMessage} from '@utils/errors';
-import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission, isPdf, pathWithPrefix} from '@utils/file';
+import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission, isPdf, lookupMimeType, pathWithPrefix} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
 import {logDebug} from '@utils/log';
 import {previewPdf} from '@utils/navigation';
@@ -207,6 +207,12 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
     const saveImageOrVideo = async (path: string) => {
         if (mounted.current) {
             try {
+                const mimeType = lookupMimeType(item.name || path);
+
+                if (mimeType === 'application/octet-stream') {
+                    saveFile(path);
+                    return;
+                }
                 const cameraType = item.type === 'avatar' ? 'image' : item.type;
                 await CameraRoll.saveAsset(path, {
                     type: cameraType === 'image' ? 'photo' : 'video',
