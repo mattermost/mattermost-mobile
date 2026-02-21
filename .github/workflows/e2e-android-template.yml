@@ -4,7 +4,19 @@ on:
   workflow_call:
     inputs:
       MM_TEST_SERVER_URL:
-        description: "The test server URL"
+        description: "The test server URL (for backwards compatibility, use SITE_1_URL)"
+        required: false
+        type: string
+      SITE_1_URL:
+        description: "Site 1 server URL"
+        required: false
+        type: string
+      SITE_2_URL:
+        description: "Site 2 server URL"
+        required: false
+        type: string
+      SITE_3_URL:
+        description: "Site 3 server URL"
         required: false
         type: string
       MM_TEST_USER_NAME:
@@ -73,10 +85,10 @@ env:
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
   HEADLESS: "true"
   TYPE: ${{ inputs.run-type }}
-  PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
-  SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
-  SITE_2_URL: "https://mobile-e2e-site-2.test.mattermost.cloud"
-  SITE_3_URL: "https://mobile-e2e-site-3.test.mattermost.cloud"
+  PULL_REQUEST: ${{ github.event.pull_request.number && format('https://github.com/mattermost/mattermost-mobile/pull/{0}', github.event.pull_request.number) || '' }}
+  SITE_1_URL: ${{ inputs.SITE_1_URL || inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
+  SITE_2_URL: ${{ inputs.SITE_2_URL || 'https://mobile-e2e-site-2.test.mattermost.cloud' }}
+  SITE_3_URL: ${{ inputs.SITE_3_URL || 'https://mobile-e2e-site-3.test.mattermost.cloud' }}
   ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
   JIRA_PROJECT_KEY: "MM"
   ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
@@ -217,7 +229,22 @@ jobs:
           yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-34" "system-images;android-34;default;x86_64" "system-images;android-34;google_apis;x86_64"
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
-        
+
+      - name: Cache Android Emulator & AVD
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/system-images
+            /usr/local/lib/android/sdk/emulator
+            ~/.android/avd
+          key: >
+            android-emulator-
+            ${{ runner.os }}-
+            ${{ runner.arch }}-
+            api-34
+          restore-keys: |
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-
+
       - name: Create and run Android Emulator
         run: |
           cd detox
