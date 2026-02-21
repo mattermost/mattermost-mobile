@@ -25,6 +25,13 @@ setup_permissions([
   "PhotoLibrary"
 ])
 
+# Conditional E2EE support
+e2ee_enabled = ENV['E2EE_ENABLED'] == 'true' || ENV['E2EE_ENABLED'] == '1'
+
+if e2ee_enabled
+  puts "🔐 E2EE features enabled"
+end
+
 # Conditional Intune MAM support
 intune_enabled = ENV['INTUNE_ENABLED'] == 'true' || ENV['INTUNE_ENABLED'] == '1'
 
@@ -52,6 +59,11 @@ target 'Mattermost' do
   pod 'CocoaLumberjack', :modular_headers => true
   pod 'TurboLogIOSNative', :git => 'https://github.com/larkox/react-native-turbo-log-ios-native.git', :modular_headers => true
 
+  # Conditional E2EE pod (internal builds only)
+  if e2ee_enabled
+    pod 'MattermostE2ee', :path => '../node_modules/@mattermost/e2ee'
+  end
+
   # Conditional Intune MAM pod (internal builds only)
   if intune_enabled
     pod 'mattermost-intune', :path => '../libraries/@mattermost/intune'
@@ -73,37 +85,45 @@ target 'MattermostShare' do
 end
 
 post_install do |installer|
-    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
-    react_native_post_install(
-      installer,
-      config[:reactNativePath],
-      :mac_catalyst_enabled => false
-    )
+  # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+  react_native_post_install(
+    installer,
+    config[:reactNativePath],
+    :mac_catalyst_enabled => false
+  )
 
-    installer.pods_project.targets.each do |t|
-      t.build_configurations.each do |bc|
-        bc.build_settings['SWIFT_VERSION']        = '5.9'
-        bc.build_settings['OTHER_LDFLAGS']        = ['$(inherited)', '-ObjC']
-        bc.build_settings['STRIP_SWIFT_SYMBOLS']  = 'NO'
-        bc.build_settings['ENABLE_BITCODE']       = 'NO'
-      end
+  installer.pods_project.targets.each do |t|
+    t.build_configurations.each do |bc|
+      bc.build_settings['SWIFT_VERSION']        = '5.9'
+      bc.build_settings['OTHER_LDFLAGS']        = ['$(inherited)', '-ObjC']
+      bc.build_settings['STRIP_SWIFT_SYMBOLS']  = 'NO'
+      bc.build_settings['ENABLE_BITCODE']       = 'NO'
     end
 
-    # ensure stdlib is embedded for Gekidou to work correctly in extensions
-    %w[NotificationService MattermostShare].each do |ext_name|
-      target = installer.aggregate_targets.flat_map(&:user_project).flat_map(&:targets).find { |x| x.name == ext_name }
-      next unless target
-      target.build_configurations.each do |c|
-        c.build_settings['APPLICATION_EXTENSION_API_ONLY'] = 'YES'
-        c.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
-      end
-    end
-
-    # make sure the main app is NOT extension-only
-    app_target = installer.aggregate_targets.flat_map(&:user_project).flat_map(&:targets).find { |t| t.name == 'Mattermost' }
-    if app_target
-      app_target.build_configurations.each do |c|
-        c.build_settings.delete('APPLICATION_EXTENSION_API_ONLY')
+    # Configure C++ settings for MattermostE2ee pod
+    if t.name == 'MattermostE2ee'
+      t.build_configurations.each do |config|
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+        config.build_settings['CLANG_CXX_LIBRARY']           = 'libc++'
       end
     end
   end
+
+  # ensure stdlib is embedded for Gekidou to work correctly in extensions
+  %w[NotificationService MattermostShare].each do |ext_name|
+    target = installer.aggregate_targets.flat_map(&:user_project).flat_map(&:targets).find { |x| x.name == ext_name }
+    next unless target
+    target.build_configurations.each do |c|
+      c.build_settings['APPLICATION_EXTENSION_API_ONLY'] = 'YES'
+      c.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
+    end
+  end
+
+  # make sure the main app is NOT extension-only
+  app_target = installer.aggregate_targets.flat_map(&:user_project).flat_map(&:targets).find { |t| t.name == 'Mattermost' }
+  if app_target
+    app_target.build_configurations.each do |c|
+      c.build_settings.delete('APPLICATION_EXTENSION_API_ONLY')
+    end
+  end
+end

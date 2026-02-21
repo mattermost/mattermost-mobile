@@ -133,3 +133,8 @@ libraries/@mattermost/intune/*
 node_modules/@mattermost/intune
 # Claude Code
 .claude/settings.local.json
+
+# E2EE library (source-available repository - internal builds only)
+libraries/@mattermost/e2ee/
+node_modules/@mattermost/e2ee
+.e2ee-dev-mode

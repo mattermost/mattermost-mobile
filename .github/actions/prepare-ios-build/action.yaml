@@ -2,6 +2,10 @@ name: prepare-ios-build
 description: Action to prepare environment for ios build
 
 inputs:
+  e2ee-enabled:
+    description: 'Enable E2EE features'
+    required: false
+    default: 'false'
   intune-enabled:
     description: 'Enable Intune MAM features (requires Xcode 26.1+)'
     required: false
@@ -20,6 +24,11 @@ runs:
 
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
+
+    - name: ci/setup-e2ee
+      if: inputs.e2ee-enabled == 'true'
+      shell: bash
+      run: npm run e2ee:enable -- ci
 
     - name: ci/setup-intune
       if: inputs.intune-enabled == 'true'
@@ -45,16 +54,18 @@ runs:
         path: |
           ios/Pods
           libraries/@mattermost/intune/ios/Frameworks
-        key: ${{ runner.os }}-pods-v4-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-${{ hashFiles('ios/Podfile.lock') }}-${{ github.ref_name }}
+        key: ${{ runner.os }}-pods-v4-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-e2ee-${{ inputs.e2ee-enabled }}-${{ hashFiles('ios/Podfile.lock') }}-${{ github.ref_name }}
         restore-keys: |
-          ${{ runner.os }}-pods-v4-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-${{ hashFiles('ios/Podfile.lock') }}-
+          ${{ runner.os }}-pods-v4-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-e2ee-${{ inputs.e2ee-enabled }}-${{ hashFiles('ios/Podfile.lock') }}-
 
     - name: ci/install-pods-dependencies
       shell: bash
       env:
         INTUNE_ENABLED: ${{ inputs.intune-enabled }}
+        E2EE_ENABLED: ${{ inputs.e2ee-enabled }}
       run: |
         echo "::group::install-pods-dependencies"
+        echo "E2EE_ENABLED=$E2EE_ENABLED"
         echo "INTUNE_ENABLED=$INTUNE_ENABLED"
         npm run ios-gems
         npm run pod-install

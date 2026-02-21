@@ -2,6 +2,10 @@ name: prepare-android-build
 description: Action to prepare environment for android build
 
 inputs:
+  e2ee-enabled:
+    description: 'Enable E2EE features'
+    required: false
+    default: 'false'
   sign:
     description: Flag to enable android package signing
     default: "true"
@@ -17,6 +21,19 @@ runs:
       run: |
         echo "::group::Apply 16KB page size compatibility patch"
         npm run apply-16kb-pagesize-patch
+        echo "::endgroup::"
+
+    - name: ci/setup-e2ee
+      if: inputs.e2ee-enabled == 'true'
+      shell: bash
+      run: npm run e2ee:enable -- ci
+
+    - name: ci/clear-android-autolinking-cache
+      if: inputs.e2ee-enabled == 'true'
+      shell: bash
+      run: |
+        echo "::group::Clear Android autolinking cache for E2EE"
+        rm -rf android/.gradle android/build/generated/autolinking
         echo "::endgroup::"
 
     - name: ci/setup-java

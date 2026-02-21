@@ -11,6 +11,9 @@ on:
         description: "The mattermost mobile version to test"
         required: true
 
+env:
+  E2EE_ENABLED: 'true'
+
 jobs:
   ## This is picked up after the finish for cleanup
   upload-cmt-server-detals:
@@ -80,6 +83,10 @@ jobs:
 
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
+        with:
+          e2ee-enabled: ${{ env.E2EE_ENABLED }}
+        env:
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
       - name: Build iOS Simulator
         env:

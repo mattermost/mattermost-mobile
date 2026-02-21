@@ -15,6 +15,7 @@ concurrency:
 
 env:
   INTUNE_ENABLED: 'true'
+  E2EE_ENABLED: 'true'
 
 jobs:
   update-initial-status-ios:
@@ -60,6 +61,9 @@ jobs:
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+          e2ee-enabled: ${{ env.E2EE_ENABLED }}
+        env:
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
       - name: Set .env with RUNNING_E2E=true
         run: |
@@ -100,6 +104,8 @@ jobs:
 
       - name: Prepare Android Build
         uses: ./.github/actions/prepare-android-build
+        with:
+          e2ee-enabled: ${{ env.E2EE_ENABLED }}
         env:
           STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
           STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
