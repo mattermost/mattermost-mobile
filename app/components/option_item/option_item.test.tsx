@@ -40,6 +40,7 @@ describe('OptionItem', () => {
         const label = getByText('Test Option');
         expect(label).toBeTruthy();
         expect(label).toHaveStyle({fontWeight: '400'});
+        expect(label.props.numberOfLines).toBe(2);
 
         // No description
         expect(queryByTestId('option-item.description')).toBeNull();
@@ -63,6 +64,16 @@ describe('OptionItem', () => {
         expect(queryByTestId('option-item.toggled.true.button')).toBeNull();
         expect(queryByTestId('option-item.remove.button')).toBeNull();
         expect(queryByTestId('option-item.arrow.icon')).toBeNull();
+    });
+
+    it('respects custom label number of lines', () => {
+        const props = getBaseProps();
+        props.labelNumberOfLines = 1;
+
+        const {getByText} = renderWithIntlAndTheme(<OptionItem {...props}/>);
+
+        const label = getByText('Test Option');
+        expect(label.props.numberOfLines).toBe(1);
     });
 
     it('renders with description when provided', () => {
