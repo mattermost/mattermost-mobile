@@ -8,7 +8,7 @@ import {StyleSheet, Text, TouchableOpacity, View, type StyleProp, type ViewStyle
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import ProfilePicture from '@components/profile_picture';
-import {BotTag, GuestTag} from '@components/tag';
+import {AgentTag, BotTag, GuestTag} from '@components/tag';
 import {useTheme} from '@context/theme';
 import {nonBreakingString} from '@utils/strings';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
@@ -23,6 +23,7 @@ type Props = {
     containerStyle?: StyleProp<ViewStyle>;
     currentUserId: string;
     includeMargin?: boolean;
+    isAgent?: boolean;
     size?: number;
     testID?: string;
     isCustomStatusEnabled: boolean;
@@ -92,6 +93,7 @@ const UserItem = ({
     user,
     containerStyle,
     currentUserId,
+    isAgent = false,
     size = 24,
     testID,
     isCustomStatusEnabled,
@@ -196,7 +198,10 @@ const UserItem = ({
                                 </Text>
                             )}
                         </Text>
-                        {showBadges && bot && (
+                        {showBadges && isAgent && (
+                            <AgentTag testID={`${userItemTestId}.agent.tag`}/>
+                        )}
+                        {showBadges && bot && !isAgent && (
                             <BotTag testID={`${userItemTestId}.bot.tag`}/>
                         )}
                         {showBadges && guest && !hideGuestTags && (

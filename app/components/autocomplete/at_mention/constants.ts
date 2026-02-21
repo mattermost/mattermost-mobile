@@ -10,6 +10,7 @@ export const SECTION_KEY_IN_CHANNEL = 'inChannel';
 export const SECTION_KEY_OUT_OF_CHANNEL = 'outChannel';
 export const SECTION_KEY_SPECIAL = 'special';
 export const SECTION_KEY_GROUPS = 'groups';
+export const SECTION_KEY_AGENTS = 'agents';
 
 export const emptyUserlList: Array<UserModel | UserProfile> = [];
 export const emptySectionList: UserMentionSections = [];
