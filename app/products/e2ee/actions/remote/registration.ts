@@ -5,15 +5,24 @@ import {addDevice} from '@e2ee/actions/local/devices';
 import E2EE from '@e2ee/constants/e2ee';
 import {generateSignatureKeyPair} from '@mattermost/e2ee';
 import {deviceName, isDevice, modelName, osName} from 'expo-device';
+import {defineMessages} from 'react-intl';
 import * as KeyChain from 'react-native-keychain';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import NetworkManager from '@managers/network_manager';
 import {bytesToBase64} from '@utils/encoding';
 import {getFullErrorMessage} from '@utils/errors';
+import {getIntlShape} from '@utils/general';
 import {logDebug, logError, logInfo} from '@utils/log';
 
 import {registerDevice} from './devices';
+
+const messages = defineMessages({
+    keychainUnavailable: {
+        id: 'e2ee.init.keychain_unavailable',
+        defaultMessage: 'This device\'s secure storage is unavailable. End-to-end encryption could not be enabled.',
+    },
+});
 
 function getDisplayDeviceName(): string {
     if (!isDevice) {
@@ -64,6 +73,9 @@ export const initE2eeDevice = async (serverUrl: string, userId: string) => {
 
                 // log generated identity
                 logInfo('[initE2eeDevice] generated identity is ', {userId, deviceId: data?.[0].deviceId});
+            } else {
+                const intl = getIntlShape();
+                return {error: new Error(intl.formatMessage(messages.keychainUnavailable))};
             }
 
             return {data: true};

@@ -37,6 +37,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {setTeamLoading} from '@store/team_load_store';
+import {getFullErrorMessage} from '@utils/errors';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 
@@ -99,7 +100,10 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
     }
 
     checkIsAgentsPluginEnabled(serverUrl);
-    initE2eeDevice(serverUrl, currentUserId);
+    const result = await initE2eeDevice(serverUrl, currentUserId);
+    if (result.error) {
+        EphemeralStore.setE2eeInitError(serverUrl, getFullErrorMessage(result.error));
+    }
 
     await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
 

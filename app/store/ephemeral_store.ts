@@ -54,6 +54,8 @@ class EphemeralStoreSingleton {
     // We limit this to avoid overwhelming the device.
     private runningTranslations = new Set<string>();
 
+    private e2eeInitErrors: {[serverUrl: string]: string} = {};
+
     addRunningTranslation = (postId: string) => {
         this.runningTranslations.add(postId);
     };
@@ -342,6 +344,19 @@ class EphemeralStoreSingleton {
 
     clearRejectedFiles = () => {
         this.rejectedFiles.clear();
+    };
+
+    // Ephemeral for E2EE initialization issues
+    setE2eeInitError = (serverUrl: string, error: string) => {
+        this.e2eeInitErrors[serverUrl] = error;
+    };
+
+    getE2eeInitError = (serverUrl: string) => {
+        return this.e2eeInitErrors[serverUrl];
+    };
+
+    clearE2eeInitError = (serverUrl: string) => {
+        delete this.e2eeInitErrors[serverUrl];
     };
 }
 
