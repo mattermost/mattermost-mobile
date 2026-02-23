@@ -7,3 +7,5 @@ export default {
     PluginId,
     KeychainSigningKey,
 };
+
+export const EPHEMERAL_DEVICE_ID = '__ephemeral__';

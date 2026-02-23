@@ -44,6 +44,6 @@ describe('fetchDevices', () => {
 
         jest.mocked(client.doFetch).mockRejectedValue(mockError);
 
-        expect(client.fetchDevices()).rejects.toThrow('Network error');
+        await expect(client.fetchDevices()).rejects.toThrow('Network error');
     });
 });
