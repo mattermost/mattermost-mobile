@@ -3,13 +3,16 @@
 
 import {addDevice} from '@e2ee/actions/local/devices';
 import E2EE from '@e2ee/constants/e2ee';
+import {getCurrentDevice} from '@e2ee/database/queries/devices';
 import {generateSignatureKeyPair} from '@mattermost/e2ee';
 import {deviceName, isDevice, modelName, osName} from 'expo-device';
 import {defineMessages} from 'react-intl';
 import * as KeyChain from 'react-native-keychain';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
+import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import EphemeralStore from '@store/ephemeral_store';
 import {bytesToBase64} from '@utils/encoding';
 import {getFullErrorMessage} from '@utils/errors';
 import {getIntlShape} from '@utils/general';
@@ -47,8 +50,9 @@ export const initE2eeDevice = async (serverUrl: string, userId: string) => {
     if (e2eePluginEnabled) {
         try {
             // we know initialization has been done if signature key is already saved to keystore
-            const alreadyInKeychain = await isInKeychain(serverUrl);
-            if (alreadyInKeychain) {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const currentDevice = await getCurrentDevice(database);
+            if (currentDevice) {
                 return {data: false};
             }
 
@@ -65,42 +69,38 @@ export const initE2eeDevice = async (serverUrl: string, userId: string) => {
                 // post register device
                 const registerResult = await registerDevice(serverUrl, signingKey.publicKey, deviceDisplayName);
                 if ('error' in registerResult) {
-                    return {error: registerResult.error};
+                    throw registerResult.error;
                 }
 
                 // add current device
                 const {data} = await addDevice(serverUrl, registerResult.device_id, signingKey.publicKey);
 
                 // log generated identity
-                logInfo('[initE2eeDevice] generated identity is ', {userId, deviceId: data?.[0].deviceId});
+                logInfo('[initE2eeDevice] generated identity is ', {userId, deviceId: data?.[0]?.deviceId});
             } else {
                 const intl = getIntlShape();
-                return {error: new Error(intl.formatMessage(messages.keychainUnavailable))};
+                throw new Error(intl.formatMessage(messages.keychainUnavailable));
             }
 
+            EphemeralStore.clearE2eeInitStatus(serverUrl);
             return {data: true};
         } catch (error) {
-            // we reset keychain in case signing key information was set in case of error.
+            // we reset keychain in case signing key information was set even in case of error.
             const removed = await removeFromKeychain(serverUrl);
             if (!removed) {
                 logInfo('[initE2eeDevice] failure while removing existing key from keychain');
             }
 
-            logDebug('[initE2eeDevice] error during e2ee device initialization', getFullErrorMessage(error));
+            const errorMessage = getFullErrorMessage(error);
+            EphemeralStore.addInitE2eeDeviceStatus(serverUrl, getDisplayDeviceName(), errorMessage);
+
+            logDebug('[initE2eeDevice] error during e2ee device initialization', errorMessage);
             forceLogoutIfNecessary(serverUrl, error);
             return {error};
         }
-
     }
 
     return {data: false};
-};
-
-export const isInKeychain = async (serverUrl: string) => {
-    return KeyChain.hasGenericPassword({
-        server: serverUrl,
-        service: E2EE.KeychainSigningKey,
-    });
 };
 
 export const storeInKeychain = async (serverUrl: string, encodedKey: string) => {

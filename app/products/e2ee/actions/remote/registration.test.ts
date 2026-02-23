@@ -5,9 +5,17 @@ import {initE2eeDevice} from '@e2ee/actions/remote/registration';
 import E2EE from '@e2ee/constants/e2ee';
 import * as KeyChain from 'react-native-keychain';
 
+import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import EphemeralStore from '@store/ephemeral_store';
 
 jest.mock('react-native-keychain');
+jest.mock('@store/ephemeral_store');
+
+const mockGetCurrentDevice = jest.fn();
+jest.mock('@e2ee/database/queries/devices', () => ({
+    getCurrentDevice: (...args: unknown[]) => mockGetCurrentDevice(...args),
+}));
 
 const mockGenerateKey = jest.fn();
 jest.mock('@mattermost/e2ee', () => ({
@@ -39,13 +47,16 @@ const mockClient = {
 beforeAll(() => {
     // @ts-expect-error mock for test
     NetworkManager.getClient = () => mockClient;
+
+    // @ts-expect-error mock for test
+    DatabaseManager.getServerDatabaseAndOperator = () => ({database: {}});
 });
 
 beforeEach(() => {
     jest.clearAllMocks();
 
+    mockGetCurrentDevice.mockResolvedValue(undefined);
     mockClient.getPluginsManifests.mockResolvedValue([{id: E2EE.PluginId}]);
-    (KeyChain.hasGenericPassword as jest.Mock).mockResolvedValue(false);
     (KeyChain.setGenericPassword as jest.Mock).mockResolvedValue({storage: 'KeystoreAESCBC' as const});
     (KeyChain.resetGenericPassword as jest.Mock).mockResolvedValue(true);
 
@@ -68,8 +79,8 @@ describe('initE2eeDevice', () => {
         expect(mockGenerateKey).not.toHaveBeenCalled();
     });
 
-    it('when signature key is already generated it should skip initialization', async () => {
-        (KeyChain.hasGenericPassword as jest.Mock).mockResolvedValue(true);
+    it('when current device is already registered it should skip initialization', async () => {
+        mockGetCurrentDevice.mockResolvedValueOnce({deviceId: 'device-id-123'});
 
         const result = await initE2eeDevice(serverUrl, userId);
 
@@ -129,5 +140,36 @@ describe('initE2eeDevice', () => {
             server: serverUrl,
             service: E2EE.KeychainSigningKey,
         });
+    });
+
+    it('failure to save in keychain sets correspondent error status in ephemeral store', async () => {
+        (KeyChain.setGenericPassword as jest.Mock).mockResolvedValueOnce(false);
+
+        await initE2eeDevice(serverUrl, userId);
+
+        expect(jest.mocked(EphemeralStore.addInitE2eeDeviceStatus)).toHaveBeenCalledWith(
+            serverUrl,
+            'TestDevice',
+            expect.any(String),
+        );
+    });
+
+    it('failure to register device with server sets error status in ephemeral store', async () => {
+        mockClient.registerDevice.mockRejectedValueOnce(new Error('400 Bad Request'));
+
+        await initE2eeDevice(serverUrl, userId);
+
+        expect(jest.mocked(EphemeralStore.addInitE2eeDeviceStatus)).toHaveBeenCalledWith(
+            serverUrl,
+            'TestDevice',
+            expect.any(String),
+        );
+    });
+
+    it('on success ephemeral store for init e2ee state is cleared', async () => {
+        await initE2eeDevice(serverUrl, userId);
+
+        expect(jest.mocked(EphemeralStore.clearE2eeInitStatus)).toHaveBeenCalledWith(serverUrl);
+        expect(jest.mocked(EphemeralStore.addInitE2eeDeviceStatus)).not.toHaveBeenCalled();
     });
 });
