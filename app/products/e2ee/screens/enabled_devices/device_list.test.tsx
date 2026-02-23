@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchRegisteredDevices} from '@e2ee/actions/remote/devices';
+import {fetchRegisteredDevices, revokeRegisteredDevice} from '@e2ee/actions/remote/devices';
 import {act} from 'react';
 import {StyleSheet} from 'react-native';
 
 import {fireEvent, renderWithIntl, waitFor} from '@test/intl-test-helper';
+import {showRevokeDeviceErrorSnackbar} from '@utils/snack_bar';
 
 import {DeviceList} from './device_list';
 
@@ -15,6 +16,11 @@ jest.mock('@context/server', () => ({
 
 jest.mock('@e2ee/actions/remote/devices', () => ({
     fetchRegisteredDevices: jest.fn(),
+    revokeRegisteredDevice: jest.fn(),
+}));
+
+jest.mock('@utils/snack_bar', () => ({
+    showRevokeDeviceErrorSnackbar: jest.fn(),
 }));
 
 jest.mock('react-native-reanimated', () => {
@@ -43,9 +49,28 @@ const mockDevice = (overrides: Partial<RegisteredDevice & {is_current_device: bo
     ...overrides,
 });
 
+const expandDevice = async (
+    getByTestId: ReturnType<typeof renderWithIntl>['getByTestId'],
+    getByText: ReturnType<typeof renderWithIntl>['getByText'],
+    deviceId: string,
+    deviceName: string,
+) => {
+    await act(async () => {
+        fireEvent(
+            getByTestId(`enabled_devices.device.expanded.calculator.${deviceId}`),
+            'onLayout',
+            {nativeEvent: {layout: {x: 0, y: 0, width: 100, height: 100}}},
+        );
+    });
+    await act(async () => {
+        fireEvent.press(getByText(deviceName));
+    });
+};
+
 describe('DeviceList', () => {
     beforeEach(() => {
         jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: []});
+        jest.mocked(revokeRegisteredDevice).mockResolvedValue({});
     });
 
     it('should show empty state when no devices are returned from API', async () => {
@@ -221,5 +246,65 @@ describe('DeviceList', () => {
         await waitFor(() => {
             expect(getByText('Verified')).toBeTruthy();
         });
+    });
+
+    it('should remove device from the list on successful revoke', async () => {
+        const apiDevice = mockDevice();
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
+
+        const {getByTestId, getAllByTestId, getByText, queryByText} = renderWithIntl(<DeviceList/>);
+
+        await waitFor(() => {
+            expect(getByTestId('e2ee.device_list.flat_list').props.data).toHaveLength(1);
+        });
+
+        await expandDevice(getByTestId, getByText, 'device-1', 'Device 1');
+
+        await act(async () => {
+            fireEvent.press(getAllByTestId('enabled_devices.device.remove')[0]);
+        });
+
+        expect(revokeRegisteredDevice).toHaveBeenCalledWith('server-url', 'device-1');
+        expect(queryByText('Device 1')).toBeNull();
+    });
+
+    it('should show error snackbar and keep device in list on failed revoke', async () => {
+        const apiDevice = mockDevice();
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
+        jest.mocked(revokeRegisteredDevice).mockResolvedValueOnce({error: new Error('failed')});
+
+        const {getByTestId, getAllByTestId, getByText} = renderWithIntl(<DeviceList/>);
+
+        await waitFor(() => {
+            expect(getByTestId('e2ee.device_list.flat_list').props.data).toHaveLength(1);
+        });
+
+        await expandDevice(getByTestId, getByText, 'device-1', 'Device 1');
+
+        await act(async () => {
+            fireEvent.press(getAllByTestId('enabled_devices.device.remove')[0]);
+        });
+
+        expect(showRevokeDeviceErrorSnackbar).toHaveBeenCalled();
+        expect(getByText('Device 1')).toBeTruthy();
+    });
+
+    it('should not call revoke when pressing remove on current device', async () => {
+        const apiDevice = mockDevice({is_current_device: true});
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
+
+        const {getByTestId, getAllByTestId, getByText} = renderWithIntl(<DeviceList/>);
+
+        await waitFor(() => {
+            expect(getByTestId('e2ee.device_list.flat_list').props.data).toHaveLength(1);
+        });
+
+        await expandDevice(getByTestId, getByText, 'device-1', 'Device 1');
+
+        await act(async () => {
+            fireEvent.press(getAllByTestId('enabled_devices.device.remove')[0]);
+        });
+
+        expect(revokeRegisteredDevice).not.toHaveBeenCalled();
     });
 });

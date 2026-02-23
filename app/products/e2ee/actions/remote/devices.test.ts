@@ -7,7 +7,7 @@ import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
-import {fetchRegisteredDevices} from './devices';
+import {fetchRegisteredDevices, revokeRegisteredDevice} from './devices';
 
 import type {Database} from '@nozbe/watermelondb';
 
@@ -51,6 +51,7 @@ const mockOperator = {handleDevices: mockHandleDevices};
 
 const mockClient = {
     fetchDevices: jest.fn(),
+    revokeDevice: jest.fn(),
 };
 
 const throwFunc = () => {
@@ -70,6 +71,7 @@ beforeAll(() => {
 beforeEach(() => {
     jest.clearAllMocks();
     mockClient.fetchDevices.mockResolvedValue(mockDevicesResponse);
+    mockClient.revokeDevice.mockResolvedValue(undefined);
 });
 
 describe('fetchRegisteredDevices', () => {
@@ -159,5 +161,26 @@ describe('fetchRegisteredDevices', () => {
         expect(result.error).toBeUndefined();
         expect(result.devices).toEqual([]);
         expect(mockHandleDevices).toHaveBeenCalledWith({devices: []});
+    });
+});
+
+describe('revokeRegisteredDevice', () => {
+    it('should call revokeDevice on the client and return no error on success', async () => {
+        const result = await revokeRegisteredDevice(serverUrl, 'device-1');
+
+        expect(mockClient.revokeDevice).toHaveBeenCalledWith('device-1');
+        expect(result.error).toBeUndefined();
+    });
+
+    it('should return error and call forceLogoutIfNecessary on API failure', async () => {
+        const apiError = new Error('revoke failed');
+        mockClient.revokeDevice.mockRejectedValueOnce(apiError);
+        jest.mocked(getFullErrorMessage).mockReturnValueOnce('revoke failed');
+
+        const result = await revokeRegisteredDevice(serverUrl, 'device-1');
+
+        expect(result.error).toBe(apiError);
+        expect(logDebug).toHaveBeenCalledWith('[revokeRegisteredDevice]', 'revoke failed');
+        expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, apiError);
     });
 });

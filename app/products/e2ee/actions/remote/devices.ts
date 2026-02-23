@@ -14,6 +14,10 @@ type RegisteredDevicesResponse = {
     error?: unknown;
 }
 
+type RevokeDeviceResponse = {
+    error?: unknown;
+}
+
 export const fetchRegisteredDevices = async (
     serverUrl: string,
 ): Promise<RegisteredDevicesResponse> => {
@@ -37,6 +41,21 @@ export const fetchRegisteredDevices = async (
         return {devices: devicesWithLocalData};
     } catch (error) {
         logDebug('fetchRegisteredDevicesWithLocalData', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const revokeRegisteredDevice = async (
+    serverUrl: string,
+    deviceId: string,
+): Promise<RevokeDeviceResponse> => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.revokeDevice(deviceId);
+        return {};
+    } catch (error) {
+        logDebug('[revokeRegisteredDevice]', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

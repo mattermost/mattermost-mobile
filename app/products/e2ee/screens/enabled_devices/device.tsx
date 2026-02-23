@@ -25,7 +25,7 @@ const DATE_TIME_FORMAT = {dateStyle: 'long', timeStyle: 'short'} as const;
 
 type Props = {
     device: DisplayDevice;
-    onRemoveDevice?: (deviceId: string) => void;
+    onRevokeDevice?: (deviceId: string) => Promise<void>;
     onVerifyDevice?: (deviceId: string) => void;
     timezone: string | UserTimezone | null;
 };
@@ -102,7 +102,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 function DeviceDetails({
     device,
     intl,
-    onRemoveDevice,
+    onRevokeDevice,
     onVerifyDevice,
     styles,
     theme,
@@ -110,15 +110,22 @@ function DeviceDetails({
 }: {
     device: DisplayDevice;
     intl: ReturnType<typeof useIntl>;
-    onRemoveDevice?: (deviceId: string) => void;
+    onRevokeDevice?: (deviceId: string) => Promise<void>;
     onVerifyDevice?: (deviceId: string) => void;
     styles: ReturnType<typeof getStyleSheet>;
     theme: Theme;
     timezone: string | UserTimezone | null;
 }) {
+    const [isRevoking, setIsRevoking] = useState(false);
+
     const handleRemove = usePreventDoubleTap(() => {
-        onRemoveDevice?.(device.device_id);
+        if (isRevoking) {
+            return;
+        }
+        setIsRevoking(true);
+        onRevokeDevice?.(device.device_id)?.finally(() => setIsRevoking(false));
     });
+
     const handleVerify = usePreventDoubleTap(() => {
         onVerifyDevice?.(device.device_id);
     });
@@ -165,6 +172,7 @@ function DeviceDetails({
                         isDestructive={true}
                         emphasis='tertiary'
                         size='s'
+                        disabled={isRevoking}
                         testID='enabled_devices.device.remove'
                     />
                 </View>
@@ -186,7 +194,7 @@ function DeviceDetails({
 
 export const Device = ({
     device,
-    onRemoveDevice,
+    onRevokeDevice,
     onVerifyDevice,
     timezone,
 }: Props) => {
@@ -267,7 +275,7 @@ export const Device = ({
                     <DeviceDetails
                         device={device}
                         intl={intl}
-                        onRemoveDevice={onRemoveDevice}
+                        onRevokeDevice={onRevokeDevice}
                         onVerifyDevice={onVerifyDevice}
                         styles={styles}
                         theme={theme}
@@ -284,7 +292,7 @@ export const Device = ({
                 <DeviceDetails
                     device={device}
                     intl={intl}
-                    onRemoveDevice={onRemoveDevice}
+                    onRevokeDevice={onRevokeDevice}
                     onVerifyDevice={onVerifyDevice}
                     styles={styles}
                     theme={theme}

@@ -8,6 +8,7 @@ export interface ClientE2EEMix {
 
     // Devices
     fetchDevices: () => Promise<RegisteredDevicesReturn>;
+    revokeDevice: (deviceId: string) => Promise<void>;
 }
 
 const ClientE2EE = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -22,6 +23,13 @@ const ClientE2EE = <TBase extends Constructor<ClientBase>>(superclass: TBase) =>
         );
 
         return {devices: Array.isArray(result) ? result : []};
+    };
+
+    revokeDevice = async (deviceId: string) => {
+        await this.doFetch(
+            `${this.getE2EERoute()}/devices/${deviceId}`,
+            {method: 'delete'},
+        );
     };
 
 };

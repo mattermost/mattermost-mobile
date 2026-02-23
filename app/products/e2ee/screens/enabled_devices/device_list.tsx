@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchRegisteredDevices} from '@e2ee/actions/remote/devices';
+import {fetchRegisteredDevices, revokeRegisteredDevice} from '@e2ee/actions/remote/devices';
 import {Device} from '@e2ee/screens/enabled_devices/device';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {FlatList, View} from 'react-native';
@@ -10,6 +10,7 @@ import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {showRevokeDeviceErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
@@ -95,12 +96,26 @@ export const DeviceList = ({currentUser}: Props) => {
         );
     }, [style.emptyContainer, style.emptyParagraph, style.emptyTitle]);
 
+    const handleRevokeDevice = useCallback(async (deviceId: string) => {
+        const device = devices.find((d) => d.device_id === deviceId);
+        if (!device || device.is_current_device) {
+            return;
+        }
+        const {error} = await revokeRegisteredDevice(serverUrl, deviceId);
+        if (error) {
+            showRevokeDeviceErrorSnackbar();
+        } else {
+            setDevices(devices.filter((d) => d.device_id !== deviceId));
+        }
+    }, [devices, serverUrl]);
+
     const renderItem = useCallback(({item}: {item: DisplayDevice}) => (
         <Device
             device={item}
             timezone={timezone}
+            onRevokeDevice={handleRevokeDevice}
         />
-    ), [timezone]);
+    ), [handleRevokeDevice, timezone]);
 
     const renderSeparator = useCallback(() => (
         <View
