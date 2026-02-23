@@ -154,6 +154,62 @@ describe('DeviceList', () => {
         expect(queryByTestId('e2ee.device_list.loading')).toBeNull();
     });
 
+    it('should show "Revoke and remove device" button and no verify button when device is verified', async () => {
+        const apiDevice = mockDevice({verified: true});
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
+
+        const {getByTestId, getAllByText, getByText, queryAllByTestId} = renderWithIntl(
+            <DeviceList/>,
+        );
+
+        await waitFor(() => {
+            expect(getByTestId('e2ee.device_list.flat_list').props.data).toHaveLength(1);
+        });
+
+        await act(async () => {
+            fireEvent(
+                getByTestId('enabled_devices.device.expanded.calculator.device-1'),
+                'onLayout',
+                {nativeEvent: {layout: {x: 0, y: 0, width: 100, height: 100}}},
+            );
+        });
+
+        await act(async () => {
+            fireEvent.press(getByText('Device 1'));
+        });
+
+        expect(getAllByText('Revoke and remove device').length).toBeGreaterThan(0);
+        expect(queryAllByTestId('enabled_devices.device.verify')).toHaveLength(0);
+    });
+
+    it('should show "Remove device" button and verify button when device is unverified', async () => {
+        const apiDevice = mockDevice({verified: false});
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
+
+        const {getByTestId, getAllByTestId, getAllByText, getByText} = renderWithIntl(
+            <DeviceList/>,
+        );
+
+        await waitFor(() => {
+            expect(getByTestId('e2ee.device_list.flat_list').props.data).toHaveLength(1);
+        });
+
+        await act(async () => {
+            fireEvent(
+                getByTestId('enabled_devices.device.expanded.calculator.device-1'),
+                'onLayout',
+                {nativeEvent: {layout: {x: 0, y: 0, width: 100, height: 100}}},
+            );
+        });
+
+        await act(async () => {
+            fireEvent.press(getByText('Device 1'));
+        });
+
+        expect(getAllByText('Remove device').length).toBeGreaterThan(0);
+        expect(getAllByTestId('enabled_devices.device.verify').length).toBeGreaterThan(0);
+    });
+
     it('should show verified tag when API returns verified', async () => {
         const apiDevice = mockDevice({verified: true});
         jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});

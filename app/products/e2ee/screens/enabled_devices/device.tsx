@@ -108,7 +108,7 @@ function DeviceDetails({
     theme,
     timezone,
 }: {
-    device: RegisteredDevice;
+    device: DisplayDevice;
     intl: ReturnType<typeof useIntl>;
     onRemoveDevice?: (deviceId: string) => void;
     onVerifyDevice?: (deviceId: string) => void;
@@ -158,7 +158,9 @@ function DeviceDetails({
                 <View style={styles.buttonFlex}>
                     <Button
                         theme={theme}
-                        text={intl.formatMessage({id: 'e2ee.device.remove', defaultMessage: 'Remove device'})}
+                        text={device.verified
+                            ? intl.formatMessage({id: 'e2ee.device.revoke_and_remove', defaultMessage: 'Revoke and remove device'})
+                            : intl.formatMessage({id: 'e2ee.device.remove', defaultMessage: 'Remove device'})}
                         onPress={handleRemove}
                         isDestructive={true}
                         emphasis='tertiary'
@@ -166,15 +168,17 @@ function DeviceDetails({
                         testID='enabled_devices.device.remove'
                     />
                 </View>
-                <View style={styles.buttonFlex}>
-                    <Button
-                        theme={theme}
-                        text={intl.formatMessage({id: 'e2ee.device.verify', defaultMessage: 'Verify device'})}
-                        onPress={handleVerify}
-                        size='s'
-                        testID='enabled_devices.device.verify'
-                    />
-                </View>
+                {!device.verified && (
+                    <View style={styles.buttonFlex}>
+                        <Button
+                            theme={theme}
+                            text={intl.formatMessage({id: 'e2ee.device.verify', defaultMessage: 'Verify device'})}
+                            onPress={handleVerify}
+                            size='s'
+                            testID='enabled_devices.device.verify'
+                        />
+                    </View>
+                )}
             </View>
         </>
     );
