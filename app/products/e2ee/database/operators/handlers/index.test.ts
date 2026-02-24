@@ -108,5 +108,26 @@ describe('E2EEHandler', () => {
             expect(spyOnBatchOperation).toHaveBeenCalledTimes(1);
         });
 
+        it('deletes previous current device record when registering a new one', async () => {
+            await operator.handleCurrentDevice({
+                deviceId: 'device-1',
+                signaturePublicKey: 'key-1',
+            });
+
+            const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');
+
+            await operator.handleCurrentDevice({
+                deviceId: 'device-2',
+                signaturePublicKey: 'key-2',
+            });
+
+            const [prepareArgs] = spyOnPrepareRecords.mock.calls[0];
+            expect(prepareArgs.createRaws).toHaveLength(1); // device-2 created
+            expect(prepareArgs.deleteRaws).toHaveLength(1); // device-1 deleted
+
+            const records = await operator.database.get(E2EE_REGISTERED_DEVICES).query().fetch();
+            expect(records).toHaveLength(1);
+            expect((records[0] as any).deviceId).toBe('device-2');
+        });
     });
 });

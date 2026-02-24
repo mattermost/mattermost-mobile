@@ -4,13 +4,13 @@
 import {addDevice} from '@e2ee/actions/local/devices';
 import E2EE from '@e2ee/constants/e2ee';
 import {getCurrentDevice} from '@e2ee/database/queries/devices';
-import {generateSignatureKeyPair} from '@mattermost/e2ee';
 import {deviceName, isDevice, modelName, osName} from 'expo-device';
 import {defineMessages} from 'react-intl';
 import * as KeyChain from 'react-native-keychain';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
+import E2EEManager from '@managers/e2ee_manager';
 import NetworkManager from '@managers/network_manager';
 import EphemeralStore from '@store/ephemeral_store';
 import {bytesToBase64} from '@utils/encoding';
@@ -57,7 +57,12 @@ export const initE2eeDevice = async (serverUrl: string, userId: string) => {
             }
 
             // generate signing key may throw an error during generation
-            const signingKey = generateSignatureKeyPair();
+            const signingKey = E2EEManager.generateSignatureKeyPair();
+            if (!signingKey) {
+                // if e2ee native library is not available just skip e2ee initialization
+                return {data: false};
+            }
+
             const base64SigningKey = bytesToBase64(new Uint8Array(signingKey.blob));
 
             // store signing key in keychain

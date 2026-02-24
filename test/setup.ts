@@ -118,8 +118,7 @@ jest.mock('@managers/e2ee_manager', () => ({
     __esModule: true,
     default: {
         isAvailable: jest.fn(() => false),
-        greet: jest.fn(() => null),
-        helloFromRust: jest.fn(() => null),
+        generateSignatureKeyPair: jest.fn(() => null),
     },
 }));
 
@@ -383,8 +382,7 @@ jest.mock('@mattermost/intune', () => ({
 // Mock E2EE module - use virtual: true since module may not exist when E2EE is disabled
 jest.mock('@mattermost/e2ee', () => ({
     __esModule: true,
-    greet: jest.fn(() => 'mocked greeting'),
-    helloFromRust: jest.fn(() => 'mocked hello'),
+    generateSignatureKeyPair: jest.fn(() => null),
 }), {virtual: true});
 
 // Create a working DeviceEventEmitter mock

@@ -6,6 +6,7 @@ import E2EE from '@e2ee/constants/e2ee';
 import * as KeyChain from 'react-native-keychain';
 
 import DatabaseManager from '@database/manager';
+import E2EEManager from '@managers/e2ee_manager';
 import NetworkManager from '@managers/network_manager';
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -15,11 +16,6 @@ jest.mock('@store/ephemeral_store');
 const mockGetCurrentDevice = jest.fn();
 jest.mock('@e2ee/database/queries/devices', () => ({
     getCurrentDevice: (...args: unknown[]) => mockGetCurrentDevice(...args),
-}));
-
-const mockGenerateKey = jest.fn();
-jest.mock('@mattermost/e2ee', () => ({
-    generateSignatureKeyPair: (...args: unknown[]) => mockGenerateKey(...args),
 }));
 
 jest.mock('expo-device', () => ({
@@ -60,7 +56,7 @@ beforeEach(() => {
     (KeyChain.setGenericPassword as jest.Mock).mockResolvedValue({storage: 'KeystoreAESCBC' as const});
     (KeyChain.resetGenericPassword as jest.Mock).mockResolvedValue(true);
 
-    mockGenerateKey.mockReturnValue(testSigningKey);
+    jest.mocked(E2EEManager.generateSignatureKeyPair).mockReturnValue(testSigningKey);
     mockClient.registerDevice.mockResolvedValue({device_id: 'device-id-123'});
     mockAddDevice.mockResolvedValue({data: []});
 });
@@ -76,7 +72,7 @@ describe('initE2eeDevice', () => {
         expect(mockClient.registerDevice).not.toHaveBeenCalled();
         expect(mockAddDevice).not.toHaveBeenCalled();
 
-        expect(mockGenerateKey).not.toHaveBeenCalled();
+        expect(E2EEManager.generateSignatureKeyPair).not.toHaveBeenCalled();
     });
 
     it('when current device is already registered it should skip initialization', async () => {
@@ -89,11 +85,22 @@ describe('initE2eeDevice', () => {
         expect(mockClient.registerDevice).not.toHaveBeenCalled();
         expect(mockAddDevice).not.toHaveBeenCalled();
 
-        expect(mockGenerateKey).not.toHaveBeenCalled();
+        expect(E2EEManager.generateSignatureKeyPair).not.toHaveBeenCalled();
+    });
+
+    it('when e2ee native library is not available it should skip initialization', async () => {
+        jest.mocked(E2EEManager.generateSignatureKeyPair).mockReturnValueOnce(null);
+
+        const result = await initE2eeDevice(serverUrl, userId);
+
+        expect(result).toEqual({data: false});
+        expect(KeyChain.setGenericPassword).not.toHaveBeenCalled();
+        expect(mockClient.registerDevice).not.toHaveBeenCalled();
+        expect(mockAddDevice).not.toHaveBeenCalled();
     });
 
     it('should return error when key generation fails', async () => {
-        mockGenerateKey.mockImplementationOnce(() => {
+        jest.mocked(E2EEManager.generateSignatureKeyPair).mockImplementationOnce(() => {
             throw new Error('key generation failed');
         });
 
