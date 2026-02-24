@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {RemoveDeviceConfirmation} from '@e2ee/screens/enabled_devices/remove_device_confirmation';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -116,15 +117,15 @@ function DeviceDetails({
     theme: Theme;
     timezone: string | UserTimezone | null;
 }) {
-    const [isRevoking, setIsRevoking] = useState(false);
+    const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
 
     const handleRemove = usePreventDoubleTap(() => {
-        if (isRevoking) {
-            return;
-        }
-        setIsRevoking(true);
-        onRevokeDevice?.(device.device_id)?.finally(() => setIsRevoking(false));
+        setIsConfirmationVisible(true);
     });
+
+    const handleConfirmRemove = useCallback(async () => {
+        await onRevokeDevice?.(device.device_id);
+    }, [device.device_id, onRevokeDevice]);
 
     const handleVerify = usePreventDoubleTap(() => {
         onVerifyDevice?.(device.device_id);
@@ -172,7 +173,6 @@ function DeviceDetails({
                         isDestructive={true}
                         emphasis='tertiary'
                         size='s'
-                        disabled={isRevoking}
                         testID='enabled_devices.device.remove'
                     />
                 </View>
@@ -188,6 +188,11 @@ function DeviceDetails({
                     </View>
                 )}
             </View>
+            <RemoveDeviceConfirmation
+                visible={isConfirmationVisible}
+                onDismiss={() => setIsConfirmationVisible(false)}
+                onRemove={handleConfirmRemove}
+            />
         </>
     );
 }

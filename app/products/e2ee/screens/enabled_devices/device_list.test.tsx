@@ -67,6 +67,19 @@ const expandDevice = async (
     });
 };
 
+const openRemoveDialog = async (
+    getByTestId: ReturnType<typeof renderWithIntl>['getByTestId'],
+    getAllByTestId: ReturnType<typeof renderWithIntl>['getAllByTestId'],
+    getByText: ReturnType<typeof renderWithIntl>['getByText'],
+    deviceId: string,
+    deviceName: string,
+) => {
+    await expandDevice(getByTestId, getByText, deviceId, deviceName);
+    await act(async () => {
+        fireEvent.press(getAllByTestId('enabled_devices.device.remove')[0]);
+    });
+};
+
 describe('DeviceList', () => {
     beforeEach(() => {
         jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: []});
@@ -248,63 +261,147 @@ describe('DeviceList', () => {
         });
     });
 
-    it('should remove device from the list on successful revoke', async () => {
+    it('should show confirmation dialog when pressing remove button', async () => {
         const apiDevice = mockDevice();
         jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
 
-        const {getByTestId, getAllByTestId, getByText, queryByText} = renderWithIntl(<DeviceList/>);
+        const {getByTestId, getAllByTestId, getByText} = renderWithIntl(<DeviceList/>);
 
         await waitFor(() => {
             expect(getByTestId('e2ee.device_list.flat_list').props.data).toHaveLength(1);
         });
 
-        await expandDevice(getByTestId, getByText, 'device-1', 'Device 1');
+        await openRemoveDialog(getByTestId, getAllByTestId, getByText, 'device-1', 'Device 1');
 
-        await act(async () => {
-            fireEvent.press(getAllByTestId('enabled_devices.device.remove')[0]);
-        });
-
-        expect(revokeRegisteredDevice).toHaveBeenCalledWith('server-url', 'device-1');
-        expect(queryByText('Device 1')).toBeNull();
+        expect(getByTestId('e2ee.remove_device_confirmation.card')).toBeTruthy();
     });
 
-    it('should show error snackbar and keep device in list on failed revoke', async () => {
+    it('should dismiss confirmation dialog when cancel is pressed without calling revoke', async () => {
+        const apiDevice = mockDevice();
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
+
+        const {getByTestId, getAllByTestId, getByText, queryByTestId} = renderWithIntl(<DeviceList/>);
+
+        await waitFor(() => {
+            expect(getByTestId('e2ee.device_list.flat_list').props.data).toHaveLength(1);
+        });
+
+        await openRemoveDialog(getByTestId, getAllByTestId, getByText, 'device-1', 'Device 1');
+
+        await act(async () => {
+            fireEvent.press(getByTestId('e2ee.remove_device_confirmation.cancel'));
+        });
+
+        expect(queryByTestId('e2ee.remove_device_confirmation.card')).toBeNull();
+        expect(revokeRegisteredDevice).not.toHaveBeenCalled();
+        expect(getByText('Device 1')).toBeTruthy();
+    });
+
+    it('should have remove button disabled when confirmation input is empty or contains wrong word', async () => {
+        const apiDevice = mockDevice();
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
+
+        const {getByTestId, getAllByTestId, getByText} = renderWithIntl(<DeviceList/>);
+
+        await waitFor(() => {
+            expect(getByTestId('e2ee.device_list.flat_list').props.data).toHaveLength(1);
+        });
+
+        await openRemoveDialog(getByTestId, getAllByTestId, getByText, 'device-1', 'Device 1');
+
+        expect(getByTestId('e2ee.remove_device_confirmation.remove').props.accessibilityState.disabled).toBe(true);
+
+        await act(async () => {
+            fireEvent.changeText(getByTestId('e2ee.remove_device_confirmation.input'), 'wrong');
+        });
+
+        expect(getByTestId('e2ee.remove_device_confirmation.remove').props.accessibilityState.disabled).toBe(true);
+    });
+
+    it('should enable remove button when "remove" is typed and disable it again when input changes', async () => {
+        const apiDevice = mockDevice();
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
+
+        const {getByTestId, getAllByTestId, getByText} = renderWithIntl(<DeviceList/>);
+
+        await waitFor(() => {
+            expect(getByTestId('e2ee.device_list.flat_list').props.data).toHaveLength(1);
+        });
+
+        await openRemoveDialog(getByTestId, getAllByTestId, getByText, 'device-1', 'Device 1');
+
+        await act(async () => {
+            fireEvent.changeText(getByTestId('e2ee.remove_device_confirmation.input'), 'remove');
+        });
+
+        expect(getByTestId('e2ee.remove_device_confirmation.remove').props.accessibilityState.disabled).toBe(false);
+
+        await act(async () => {
+            fireEvent.changeText(getByTestId('e2ee.remove_device_confirmation.input'), 'remove1');
+        });
+
+        expect(getByTestId('e2ee.remove_device_confirmation.remove').props.accessibilityState.disabled).toBe(true);
+    });
+
+    it('should disable remove button while revoking and dismiss dialog on success', async () => {
+        const apiDevice = mockDevice();
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
+
+        let resolveRevoke!: (value: Awaited<ReturnType<typeof revokeRegisteredDevice>>) => void;
+        jest.mocked(revokeRegisteredDevice).mockReturnValueOnce(
+            new Promise((resolve) => {
+                resolveRevoke = resolve;
+            }),
+        );
+
+        const {getByTestId, getAllByTestId, getByText, queryByTestId} = renderWithIntl(<DeviceList/>);
+
+        await waitFor(() => {
+            expect(getByTestId('e2ee.device_list.flat_list').props.data).toHaveLength(1);
+        });
+
+        await openRemoveDialog(getByTestId, getAllByTestId, getByText, 'device-1', 'Device 1');
+
+        await act(async () => {
+            fireEvent.changeText(getByTestId('e2ee.remove_device_confirmation.input'), 'remove');
+        });
+
+        await act(async () => {
+            fireEvent.press(getByTestId('e2ee.remove_device_confirmation.remove'));
+        });
+
+        expect(getByTestId('e2ee.remove_device_confirmation.remove').props.accessibilityState.disabled).toBe(true);
+
+        await act(async () => {
+            resolveRevoke({});
+        });
+
+        expect(queryByTestId('e2ee.remove_device_confirmation.card')).toBeNull();
+    });
+
+    it('should show error snackbar and dismiss dialog on failed revoke', async () => {
         const apiDevice = mockDevice();
         jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
         jest.mocked(revokeRegisteredDevice).mockResolvedValueOnce({error: new Error('failed')});
 
-        const {getByTestId, getAllByTestId, getByText} = renderWithIntl(<DeviceList/>);
+        const {getByTestId, getAllByTestId, getByText, queryByTestId} = renderWithIntl(<DeviceList/>);
 
         await waitFor(() => {
             expect(getByTestId('e2ee.device_list.flat_list').props.data).toHaveLength(1);
         });
 
-        await expandDevice(getByTestId, getByText, 'device-1', 'Device 1');
+        await openRemoveDialog(getByTestId, getAllByTestId, getByText, 'device-1', 'Device 1');
 
         await act(async () => {
-            fireEvent.press(getAllByTestId('enabled_devices.device.remove')[0]);
+            fireEvent.changeText(getByTestId('e2ee.remove_device_confirmation.input'), 'remove');
+        });
+
+        await act(async () => {
+            fireEvent.press(getByTestId('e2ee.remove_device_confirmation.remove'));
         });
 
         expect(showRevokeDeviceErrorSnackbar).toHaveBeenCalled();
+        expect(queryByTestId('e2ee.remove_device_confirmation.card')).toBeNull();
         expect(getByText('Device 1')).toBeTruthy();
-    });
-
-    it('should not call revoke when pressing remove on current device', async () => {
-        const apiDevice = mockDevice({is_current_device: true});
-        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [apiDevice]});
-
-        const {getByTestId, getAllByTestId, getByText} = renderWithIntl(<DeviceList/>);
-
-        await waitFor(() => {
-            expect(getByTestId('e2ee.device_list.flat_list').props.data).toHaveLength(1);
-        });
-
-        await expandDevice(getByTestId, getByText, 'device-1', 'Device 1');
-
-        await act(async () => {
-            fireEvent.press(getAllByTestId('enabled_devices.device.remove')[0]);
-        });
-
-        expect(revokeRegisteredDevice).not.toHaveBeenCalled();
     });
 });
