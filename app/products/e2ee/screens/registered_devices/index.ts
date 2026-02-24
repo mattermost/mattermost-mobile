@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceList} from '@e2ee/screens/enabled_devices/device_list';
+import {DeviceList} from '@e2ee/screens/registered_devices/device_list';
 import withDatabase from '@nozbe/watermelondb/react/withDatabase';
 import withObservables from '@nozbe/watermelondb/react/withObservables';
 

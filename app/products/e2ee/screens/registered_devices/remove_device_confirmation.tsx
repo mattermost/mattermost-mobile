@@ -89,8 +89,11 @@ export const RemoveDeviceConfirmation = ({visible, onDismiss, onRemove}: Props) 
 
     const handleRemove = useCallback(async () => {
         setIsRemoving(true);
-        await onRemove();
-        onDismiss();
+        try {
+            await onRemove();
+        } finally {
+            onDismiss();
+        }
     }, [onDismiss, onRemove]);
 
     const canRemove = confirmText === CONFIRM_WORD && !isRemoving;

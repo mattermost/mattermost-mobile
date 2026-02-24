@@ -2,9 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {fetchRegisteredDevices, revokeRegisteredDevice} from '@e2ee/actions/remote/devices';
+import {EPHEMERAL_DEVICE_ID} from '@e2ee/constants/e2ee';
 import {act} from 'react';
 import {StyleSheet} from 'react-native';
 
+import EphemeralStore from '@store/ephemeral_store';
 import {fireEvent, renderWithIntl, waitFor} from '@test/intl-test-helper';
 import {showRevokeDeviceErrorSnackbar} from '@utils/snack_bar';
 
@@ -21,6 +23,13 @@ jest.mock('@e2ee/actions/remote/devices', () => ({
 
 jest.mock('@utils/snack_bar', () => ({
     showRevokeDeviceErrorSnackbar: jest.fn(),
+}));
+
+jest.mock('@store/ephemeral_store', () => ({
+    __esModule: true,
+    default: {
+        getInitE2eeDeviceStatus: jest.fn(),
+    },
 }));
 
 jest.mock('react-native-reanimated', () => {
@@ -84,6 +93,7 @@ describe('DeviceList', () => {
     beforeEach(() => {
         jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: []});
         jest.mocked(revokeRegisteredDevice).mockResolvedValue({});
+        jest.mocked(EphemeralStore.getInitE2eeDeviceStatus).mockReset();
     });
 
     it('should show empty state when no devices are returned from API', async () => {
@@ -403,5 +413,40 @@ describe('DeviceList', () => {
         expect(showRevokeDeviceErrorSnackbar).toHaveBeenCalled();
         expect(queryByTestId('e2ee.remove_device_confirmation.card')).toBeNull();
         expect(getByText('Device 1')).toBeTruthy();
+    });
+
+    it('should show ephemeral device with error bubble when no current device in fetched list', async () => {
+        jest.mocked(EphemeralStore.getInitE2eeDeviceStatus).mockReturnValue({deviceName: 'iPhone 17 Pro', error: 'Key generation failed'});
+
+        const {getByText, queryByTestId} = renderWithIntl(
+            <DeviceList/>,
+        );
+
+        await waitFor(() => {
+            expect(getByText('iPhone 17 Pro')).toBeTruthy();
+        });
+
+        expect(getByText('(this device)')).toBeTruthy();
+        expect(getByText('Unverified')).toBeTruthy();
+        expect(getByText('Device could not be registered for E2EE')).toBeTruthy();
+        expect(getByText('Key generation failed')).toBeTruthy();
+        expect(queryByTestId('enabled_devices.device.remove')).toBeNull();
+        expect(queryByTestId('enabled_devices.device.verify')).toBeNull();
+    });
+
+    it('should ignore ephemeral store when fetched list already has current device', async () => {
+        jest.mocked(EphemeralStore.getInitE2eeDeviceStatus).mockReturnValue({deviceName: 'Ephemeral Device', error: 'Some error'});
+        const currentDevice = mockDevice({is_current_device: true, device_name: 'Fetched Current Device'});
+        jest.mocked(fetchRegisteredDevices).mockResolvedValue({devices: [currentDevice]});
+
+        const {getByText, queryByTestId} = renderWithIntl(
+            <DeviceList/>,
+        );
+
+        await waitFor(() => {
+            expect(getByText('Fetched Current Device')).toBeTruthy();
+        });
+
+        expect(queryByTestId(`enabled_devices.device.${EPHEMERAL_DEVICE_ID}`)).toBeNull();
     });
 });

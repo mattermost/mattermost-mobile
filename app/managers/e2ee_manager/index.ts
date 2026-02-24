@@ -6,6 +6,7 @@ import {NativeModules} from 'react-native';
 import {logWarning} from '@utils/log';
 
 import type {E2EESpec} from './types';
+import type {SignatureKeyPairAdapter} from '@mattermost/e2ee';
 
 // Check native module availability first (doesn't throw like require would)
 const isNativeModuleAvailable = Boolean(NativeModules.MattermostE2ee);
@@ -28,30 +29,16 @@ if (isNativeModuleAvailable) {
  */
 class E2EEManagerSingleton {
     /**
-     * Check if E2EE is available
+     * Generates a new ed25519 signature key pair
+     *
+     * @returns type containing public key and a blob representing the key pair as bytes
      */
-    isAvailable(): boolean {
-        return E2EE !== null;
-    }
-
-    /**
-     * Greet function (for testing)
-     */
-    greet(name: string): string | null {
+    generateSignatureKeyPair(): SignatureKeyPairAdapter | null {
         if (!E2EE) {
             return null;
         }
-        return E2EE.greet(name);
-    }
 
-    /**
-     * Hello from Rust (for testing)
-     */
-    helloFromRust(): string | null {
-        if (!E2EE) {
-            return null;
-        }
-        return E2EE.helloFromRust();
+        return E2EE.generateSignatureKeyPair();
     }
 }
 

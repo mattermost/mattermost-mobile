@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {RemoveDeviceConfirmation} from '@e2ee/screens/enabled_devices/remove_device_confirmation';
+import {RemoveDeviceConfirmation} from '@e2ee/screens/registered_devices/remove_device_confirmation';
+import {EPHEMERAL_DEVICE_ID} from '@e2ee/constants/e2ee';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -97,6 +98,29 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     buttonFlex: {
         flex: 1,
+    },
+    errorBubble: {
+        borderRadius: 8,
+        padding: 12,
+        backgroundColor: changeOpacity(theme.errorTextColor, 0.08),
+        flexDirection: 'row',
+        gap: 10,
+        alignItems: 'flex-start',
+    },
+    errorIcon: {
+        color: theme.errorTextColor,
+    },
+    errorContent: {
+        flex: 1,
+    },
+    errorTitle: {
+        ...typography('Body', 100, 'SemiBold'),
+        color: theme.centerChannelColor,
+    },
+    errorMessage: {
+        ...typography('Body', 100),
+        color: changeOpacity(theme.centerChannelColor, 0.75),
+        marginTop: 2,
     },
 }));
 
@@ -229,11 +253,14 @@ export const Device = ({
         {left: windowWidth},
     ], [styles.expandedContent, styles.heightCalculator, windowWidth]);
 
+    const isEphemeral = device.device_id === EPHEMERAL_DEVICE_ID;
+
     return (
         <View style={styles.container}>
             <TouchableOpacity
                 onPress={toggleExpanded}
-                activeOpacity={0.7}
+                disabled={isEphemeral}
+                activeOpacity={isEphemeral ? 1 : 0.7}
                 testID={`enabled_devices.device.${device.device_id}`}
             >
                 <View style={styles.headerRow}>
@@ -262,48 +289,80 @@ export const Device = ({
                             size='xs'
                         />
                     </View>
-                    <View style={styles.chevron}>
-                        <CompassIcon
-                            name={expanded ? 'chevron-up' : 'chevron-down'}
-                            size={20}
-                            style={styles.chevronIcon}
-                        />
-                    </View>
+                    {!isEphemeral && (
+                        <View style={styles.chevron}>
+                            <CompassIcon
+                                name={expanded ? 'chevron-up' : 'chevron-down'}
+                                size={20}
+                                style={styles.chevronIcon}
+                            />
+                        </View>
+                    )}
                 </View>
             </TouchableOpacity>
 
-            <Animated.View
-                style={animatedExpandStyle}
-                testID={`enabled_devices.device.expanded.${device.device_id}`}
-            >
-                <View style={styles.expandedContent}>
-                    <DeviceDetails
-                        device={device}
-                        intl={intl}
-                        onRevokeDevice={onRevokeDevice}
-                        onVerifyDevice={onVerifyDevice}
-                        styles={styles}
-                        theme={theme}
-                        timezone={timezone}
-                    />
-                </View>
-            </Animated.View>
+            {isEphemeral ? (
+                device.error && (
+                    <View
+                        style={styles.expandedContent}
+                        testID={`enabled_devices.device.expanded.${device.device_id}`}
+                    >
+                        <View
+                            style={styles.errorBubble}
+                            testID='e2ee.device.error_bubble'
+                        >
+                            <CompassIcon
+                                name='alert-outline'
+                                size={18}
+                                style={styles.errorIcon}
+                            />
+                            <View style={styles.errorContent}>
+                                <Text style={styles.errorTitle}>
+                                    {intl.formatMessage({id: 'e2ee.device.registration_error.title', defaultMessage: 'Device could not be registered for E2EE'})}
+                                </Text>
+                                <Text style={styles.errorMessage}>
+                                    {device.error}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                )
+            ) : (
+                <>
+                    <Animated.View
+                        style={animatedExpandStyle}
+                        testID={`enabled_devices.device.expanded.${device.device_id}`}
+                    >
+                        <View style={styles.expandedContent}>
+                            <DeviceDetails
+                                device={device}
+                                intl={intl}
+                                onRevokeDevice={onRevokeDevice}
+                                onVerifyDevice={onVerifyDevice}
+                                styles={styles}
+                                theme={theme}
+                                timezone={timezone}
+                            />
+                        </View>
+                    </Animated.View>
 
-            <View
-                style={calculatorStyle}
-                onLayout={contentOnLayout}
-                testID={`enabled_devices.device.expanded.calculator.${device.device_id}`}
-            >
-                <DeviceDetails
-                    device={device}
-                    intl={intl}
-                    onRevokeDevice={onRevokeDevice}
-                    onVerifyDevice={onVerifyDevice}
-                    styles={styles}
-                    theme={theme}
-                    timezone={timezone}
-                />
-            </View>
+                    <View
+                        style={calculatorStyle}
+                        onLayout={contentOnLayout}
+                        testID={`enabled_devices.device.expanded.calculator.${device.device_id}`}
+                    >
+                        <DeviceDetails
+                            device={device}
+                            intl={intl}
+                            onRevokeDevice={onRevokeDevice}
+                            onVerifyDevice={onVerifyDevice}
+                            styles={styles}
+                            theme={theme}
+                            timezone={timezone}
+                        />
+                    </View>
+                </>
+            )}
         </View>
     );
 };

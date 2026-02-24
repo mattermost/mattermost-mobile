@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {fetchRegisteredDevices, revokeRegisteredDevice} from '@e2ee/actions/remote/devices';
-import {Device} from '@e2ee/screens/enabled_devices/device';
+import {EPHEMERAL_DEVICE_ID} from '@e2ee/constants/e2ee';
+import {Device} from '@e2ee/screens/registered_devices/device';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {FlatList, View} from 'react-native';
 
@@ -11,6 +12,7 @@ import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {showRevokeDeviceErrorSnackbar} from '@utils/snack_bar';
+import EphemeralStore from '@store/ephemeral_store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserTimezone} from '@utils/user';
@@ -67,14 +69,37 @@ export const DeviceList = ({currentUser}: Props) => {
             return;
         }
 
-        setIsLoading(true);
-        fetchRegisteredDevices(serverUrl).then((response) => {
-            if (response.devices) {
-                setDevices(response.devices);
+        const load = async () => {
+            setIsLoading(true);
+            try {
+                const response = await fetchRegisteredDevices(serverUrl);
+                const fetched = response.devices ?? [];
+                const hasCurrentDevice = fetched.some((d) => d.is_current_device);
+
+                if (!hasCurrentDevice) {
+                    const ephemeralStatus = EphemeralStore.getInitE2eeDeviceStatus(serverUrl);
+                    if (ephemeralStatus != null) {
+                        const synthetic: DisplayDevice = {
+                            device_id: EPHEMERAL_DEVICE_ID,
+                            device_name: ephemeralStatus.deviceName,
+                            created_at: 0,
+                            last_active_at: 0,
+                            is_current_device: true,
+                            verified: false,
+                            error: ephemeralStatus.error,
+                        };
+                        setDevices([synthetic, ...fetched]);
+                        return;
+                    }
+                }
+
+                setDevices(fetched);
+            } finally {
+                setIsLoading(false);
             }
-        }).finally(() => {
-            setIsLoading(false);
-        });
+        };
+
+        load();
     }, [serverUrl]);
 
     const listEmptyComponent = useMemo(() => {

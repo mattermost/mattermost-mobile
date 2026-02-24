@@ -18,6 +18,21 @@ type RevokeDeviceResponse = {
     error?: unknown;
 }
 
+export const registerDevice = async (
+    serverUrl: string,
+    signaturePublicKey: string,
+    deviceName: string,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return await client.registerDevice(signaturePublicKey, deviceName);
+    } catch (error) {
+        logDebug('registerDevice', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
 export const fetchRegisteredDevices = async (
     serverUrl: string,
 ): Promise<RegisteredDevicesResponse> => {

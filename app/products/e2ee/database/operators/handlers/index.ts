@@ -15,10 +15,16 @@ type HandleDevicesArgs = {
     devices: RegisteredDevice[];
 }
 
+type HandleCurrentDeviceArgs = {
+    deviceId: string;
+    signaturePublicKey: string;
+}
+
 const {E2EE_REGISTERED_DEVICES} = E2EE_TABLES;
 
 export interface E2EEHandlerMix {
     handleDevices: (args: HandleDevicesArgs) => Promise<Model[]>;
+    handleCurrentDevice: (args: HandleCurrentDeviceArgs) => Promise<E2EERegisteredDeviceModel[]>;
 }
 
 const E2EEHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
@@ -57,6 +63,38 @@ const E2EEHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         }, 'handleDevices');
 
         return records;
+    };
+
+    handleCurrentDevice = async ({deviceId, signaturePublicKey}: HandleCurrentDeviceArgs): Promise<E2EERegisteredDeviceModel[]> => {
+        const allExisting = await this.database.collections.
+            get<E2EERegisteredDeviceModel>(E2EE_REGISTERED_DEVICES).
+            query().
+            fetch();
+
+        // we delete previous records flagged as current device in case those exist since those are now not valid anymore
+        const deleteRawValues = allExisting.
+            filter((rec) => rec.isCurrentDevice && rec.deviceId !== deviceId).
+            map((rec) => ({device_id: rec.deviceId}));
+
+        const createOrUpdateRawValues = getUniqueRawsBy({
+            raws: [{
+                device_id: deviceId,
+                signature_public_key: signaturePublicKey,
+                is_current_device: true,
+                verified: true,
+            }],
+            key: 'device_id',
+        });
+
+        return this.handleRecords({
+            buildKeyRecordBy: (record) => record.deviceId,
+            fieldName: 'device_id',
+            tableName: E2EE_REGISTERED_DEVICES,
+            prepareRecordsOnly: false,
+            createOrUpdateRawValues,
+            deleteRawValues,
+            transformer: transformE2EERegisteredDeviceRecord,
+        }, 'handleCurrentDevice');
     };
 };
 

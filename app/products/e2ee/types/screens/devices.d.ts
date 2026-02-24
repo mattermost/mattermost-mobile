@@ -4,4 +4,5 @@
 type DisplayDevice = RegisteredDevice & {
     is_current_device: boolean;
     verified: boolean;
+    error?: string;
 }
