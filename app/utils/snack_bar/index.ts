@@ -87,3 +87,9 @@ export const showBoRPostErrorSnackbar = (message?: string) => {
         customMessage: message,
     });
 };
+
+export const showRevokeDeviceErrorSnackbar = () => {
+    return showSnackBar({
+        barType: SNACK_BAR_TYPE.E2EE_REVOKE_DEVICE_ERROR,
+    });
+};

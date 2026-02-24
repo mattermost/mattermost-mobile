@@ -33,6 +33,7 @@ export const SNACK_BAR_TYPE = keyMirror({
     PLAYBOOK_ERROR: null,
     ENABLE_TRANSLATION: null,
     BOR_POST_EXPIRED: null,
+    E2EE_REVOKE_DEVICE_ERROR: null,
 });
 
 export const MESSAGE_TYPE = {
@@ -136,6 +137,10 @@ const messages = defineMessages({
     BOR_POST_EXPIRED: {
         id: 'snack.bar.bor_post_expired.error',
         defaultMessage: 'This burn-on-read post has expired and can no longer be revealed.',
+    },
+    E2EE_REVOKE_DEVICE_ERROR: {
+        id: 'snack.bar.e2ee.revoke_device.error',
+        defaultMessage: 'Failure revoking device',
     },
 });
 
@@ -256,6 +261,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     },
     BOR_POST_EXPIRED: {
         message: messages.BOR_POST_EXPIRED,
+        iconName: 'alert-outline',
+        hasAction: false,
+        type: MESSAGE_TYPE.ERROR,
+    },
+    E2EE_REVOKE_DEVICE_ERROR: {
+        message: messages.E2EE_REVOKE_DEVICE_ERROR,
         iconName: 'alert-outline',
         hasAction: false,
         type: MESSAGE_TYPE.ERROR,

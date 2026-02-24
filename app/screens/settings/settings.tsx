@@ -74,6 +74,13 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
         goToScreen(screen, title);
     }, [intl]));
 
+    const goToE2EEDevices = usePreventDoubleTap(useCallback(() => {
+        const screen = Screens.E2EE_DEVICES;
+        const title = intl.formatMessage({id: 'settings.e2ee_devices', defaultMessage: 'End-to-End Encryption Devices'});
+
+        goToScreen(screen, title);
+    }, [intl]));
+
     const goToAbout = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.ABOUT;
         const title = intl.formatMessage({id: 'settings.about', defaultMessage: 'About {appTitle}'}, {appTitle: serverName});
@@ -110,6 +117,11 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
                 onPress={goToAdvancedSettings}
                 optionName='advanced_settings'
                 testID='settings.advanced_settings.option'
+            />
+            <SettingItem
+                onPress={goToE2EEDevices}
+                optionName='e2ee_devices'
+                testID='settings.e2ee_devices.option'
             />
             <SettingItem
                 icon='information-outline'
