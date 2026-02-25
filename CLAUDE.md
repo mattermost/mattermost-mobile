@@ -27,6 +27,8 @@ When testing features that require mobile device interaction:
 
 ## Key Commands
 
+> **iOS Simulator Setup:** For detailed iOS simulator setup instructions, troubleshooting CocoaPods issues, and build debugging, see [CLAUDE-IOS-SIMULATOR.md](./CLAUDE-IOS-SIMULATOR.md).
+
 ```bash
 # Setup
 npm run pod-install           # iOS CocoaPods (or pod-install-m1 for M1 Macs)
@@ -143,6 +145,8 @@ Located at `libraries/@mattermost/`:
 
 ## Testing
 
+**Testing guide:** See [docs/testing_guide.md](docs/testing_guide.md) for how to add and structure unit tests.
+
 ### Test Organization
 - **Jest coverage excludes** `/components/` and `/screens/` directories
 - Mock database manager at `app/database/manager/__mocks__/index.ts`
@@ -233,7 +237,12 @@ Located at `libraries/@mattermost/`:
 - **Prefer const objects over enums** for better tree-shaking: `export const Status = { Pending: 0, Done: 1 } as const;` with companion type `export type Status = typeof Status[keyof typeof Status];`
 
 ### React Hooks
-- **Always explain why dependencies are omitted** from exhaustive-deps with specific comments
+- **`react-hooks/exhaustive-deps` is enforced as error** - incomplete or incorrect dependency arrays will fail CI. Fix deps or use the dedicated hooks below when the omission is intentional.
+- **Always explain why dependencies are omitted** from exhaustive-deps with specific comments (and prefer the dedicated hooks below for common cases).
+- **Run-on-mount effects**: Use **`useDidMount`** from `@hooks/did_mount` instead of `useEffect(callback, [])` with an eslint-disable. The hook encapsulates the "run only on mount" intent and the single exhaustive-deps exception.
+- **Initial value only (no updates)**: Use **`useInitialValue`** from `@hooks/initial_value` instead of `useMemo(factory, [])` with an eslint-disable when the value must be computed once and never recomputed.
+- **Nested property as dependency**: When the meaningful dependency is a nested property (e.g. `currentUser?.notifyProps`) because the parent object reference may not change when that property changes, depend on that property in the array and add an eslint-disable with a comment explaining why. See `useNotificationProps` and `useUserTimezoneProps` in `app/hooks/` for the pattern.
+- **`useDidUpdate`**: The hook takes a dependency list from the caller; the implementation uses an eslint-disable with the comment that dependencies are provided by the caller.
 - Don't over-optimize with `useMemo` - only use for expensive calculations or objects passed as props to children
 - Use `useCallback` for render functions passed to components, not for functions called within render
 - Move module-level constants outside components

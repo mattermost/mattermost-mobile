@@ -19,6 +19,7 @@ describe('Quick Actions', () => {
         testID: 'test-quick-actions',
         canUploadFiles: true,
         fileCount: 0,
+        isAgentsEnabled: true,
         isPostPriorityEnabled: true,
         canShowPostPriority: true,
         canShowSlashCommands: true,

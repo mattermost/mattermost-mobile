@@ -25,7 +25,7 @@ const LoadCategoriesError = () => {
         if (error) {
             setLoading(false);
         }
-    }, []);
+    }, [serverUrl]);
 
     return (
         <LoadingError

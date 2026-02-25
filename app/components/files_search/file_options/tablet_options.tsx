@@ -58,7 +58,7 @@ const TabletOptions = ({
 
     const toggleOverlay = useCallback(() => {
         setShowOptions(false);
-    }, []);
+    }, [setShowOptions]);
 
     const overlayStyle = useMemo(() => ({
         marginTop: openUp ? 0 : openDownMargin,

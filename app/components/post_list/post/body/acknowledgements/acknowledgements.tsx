@@ -81,7 +81,7 @@ const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, loc
     const style = getStyleSheet(theme);
 
     const isCurrentAuthor = post.userId === currentUserId;
-    const acknowledgements = post.metadata?.acknowledgements || [];
+    const acknowledgements = useMemo(() => post.metadata?.acknowledgements || [], [post.metadata?.acknowledgements]);
 
     const acknowledgedAt = useMemo(() => {
         if (acknowledgements.length > 0) {
@@ -92,7 +92,7 @@ const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, loc
             }
         }
         return 0;
-    }, [acknowledgements]);
+    }, [acknowledgements, currentUserId]);
 
     const handleOnPress = useCallback(() => {
         if ((acknowledgedAt && moreThan5minAgo(acknowledgedAt)) || isCurrentAuthor) {

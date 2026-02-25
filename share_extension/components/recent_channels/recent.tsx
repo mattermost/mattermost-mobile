@@ -32,7 +32,7 @@ const RecentList = ({recentChannels, showTeamName, theme}: Props) => {
     const onPress = useCallback((channelId: string) => {
         setShareExtensionChannelId(channelId);
         navigation.goBack();
-    }, []);
+    }, [navigation]);
 
     const renderSectionHeader = useCallback(() => (
         <RecentHeader theme={theme}/>
@@ -47,7 +47,7 @@ const RecentList = ({recentChannels, showTeamName, theme}: Props) => {
                 theme={theme}
             />
         );
-    }, [onPress, showTeamName]);
+    }, [onPress, showTeamName, theme]);
 
     useEffect(() => {
         setSections(buildSections(recentChannels));

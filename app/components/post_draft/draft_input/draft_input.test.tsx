@@ -24,6 +24,12 @@ const SERVER_URL = 'https://appv1.mattermost.com';
 // this is needed to when using the useServerUrl hook
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn(() => SERVER_URL),
+    withServerUrl: (Component: React.ComponentType<any>) => (props: any) => (
+        <Component
+            {...props}
+            serverUrl={SERVER_URL}
+        />
+    ),
 }));
 
 jest.mock('@screens/navigation', () => ({

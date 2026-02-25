@@ -33,7 +33,7 @@ const EmojiPickerScreen = ({closeButtonId, componentId, file, imageUrl, onEmojiP
     const handleEmojiPress = useCallback((emoji: string) => {
         onEmojiPress(emoji);
         DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
-    }, []);
+    }, [onEmojiPress]);
 
     const renderContent = useCallback(() => {
         return (
@@ -44,7 +44,7 @@ const EmojiPickerScreen = ({closeButtonId, componentId, file, imageUrl, onEmojiP
                 testID='emoji_picker'
             />
         );
-    }, []);
+    }, [file, handleEmojiPress, imageUrl]);
 
     return (
         <BottomSheet

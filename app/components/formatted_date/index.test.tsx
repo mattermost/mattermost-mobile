@@ -13,6 +13,9 @@ import FormattedDate, {type FormattedDateFormat} from './index';
 
 jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
+    logError: jest.fn(),
+    logInfo: jest.fn(),
+    logWarning: jest.fn(),
 }));
 
 const DATE = new Date('2024-10-26T10:01:04.653Z');

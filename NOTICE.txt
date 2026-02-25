@@ -22,6 +22,21 @@ A spec-compliant polyfill for Intl.DateTimeFormat fully tested by the official E
 
 ---
 
+## @formatjs/intl-displaynames
+
+This product contains '@formatjs/intl-displaynames' by Linjie Ding.
+
+Polyfill for: https://tc39.es/proposal-intl-displaynames
+
+* HOMEPAGE:
+  * https://github.com/formatjs/formatjs
+
+* LICENSE: MIT
+
+
+
+---
+
 ## @formatjs/intl-getcanonicallocales
 
 This product contains '@formatjs/intl-getcanonicallocales' by FormatJS.

@@ -59,7 +59,7 @@ describe('post utils', () => {
                 props: {},
             });
 
-            const result = areConsecutivePosts(post, previousPost);
+            const result = areConsecutivePosts(post, previousPost, 'en');
             expect(result).toBe(true);
         });
 
@@ -75,7 +75,7 @@ describe('post utils', () => {
                 props: {},
             });
 
-            const result = areConsecutivePosts(post, previousPost);
+            const result = areConsecutivePosts(post, previousPost, 'en');
             expect(result).toBe(false);
         });
     });

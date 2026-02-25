@@ -12,6 +12,9 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('@utils/log', () => ({
     logDebug: () => '',
+    logError: jest.fn(),
+    logInfo: jest.fn(),
+    logWarning: jest.fn(),
 }));
 
 const {

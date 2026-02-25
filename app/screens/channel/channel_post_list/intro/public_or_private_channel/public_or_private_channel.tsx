@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
@@ -9,6 +9,7 @@ import {fetchChannelCreator} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
 import {General, Permissions} from '@constants';
 import {useServerUrl} from '@context/server';
+import useDidMount from '@hooks/did_mount';
 import {hasPermission} from '@utils/role';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -93,11 +94,11 @@ const PublicOrPrivateChannel = ({channel, creator, roles, theme}: Props) => {
         return <PrivateChannel theme={theme}/>;
     }, [channel.type, theme]);
 
-    useEffect(() => {
+    useDidMount(() => {
         if (!creator && channel.creatorId) {
             fetchChannelCreator(serverUrl, channel.id);
         }
-    }, []);
+    });
 
     const canManagePeople = useMemo(() => {
         if (channel.deleteAt !== 0) {

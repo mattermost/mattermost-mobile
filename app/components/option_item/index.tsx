@@ -57,6 +57,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             minHeight: ITEM_HEIGHT,
             gap: 12,
             justifyContent: 'space-between',
+            paddingVertical: 12,
+        },
+        disabled: {
+            opacity: 0.6,
         },
         destructive: {
             color: theme.dndIndicator,
@@ -114,6 +118,7 @@ export type OptionItemProps = {
     action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void);
     description?: string;
     destructive?: boolean;
+    disabled?: boolean;
     icon?: string;
     iconColor?: string;
     info?: string | UserChipData;
@@ -127,6 +132,7 @@ export type OptionItemProps = {
     value?: string;
     onLayout?: (event: LayoutChangeEvent) => void;
     descriptionNumberOfLines?: number;
+    labelNumberOfLines?: number;
     longInfo?: boolean;
     nonDestructiveDescription?: boolean;
     isRadioCheckmark?: boolean;
@@ -136,6 +142,7 @@ const OptionItem = ({
     action,
     description,
     destructive,
+    disabled = false,
     icon,
     iconColor,
     info,
@@ -149,6 +156,7 @@ const OptionItem = ({
     value,
     onLayout,
     descriptionNumberOfLines,
+    labelNumberOfLines = 2,
     longInfo,
     nonDestructiveDescription = false,
     isRadioCheckmark = false,
@@ -161,8 +169,9 @@ const OptionItem = ({
 
     const labelContainerStyle = useMemo(() => {
         const extraStyle = longInfo ? {flex: undefined} : {};
-        return [styles.labelContainer, extraStyle];
-    }, [longInfo, styles.labelContainer]);
+        const alignmentStyle = description ? {alignItems: 'flex-start' as const} : {};
+        return [styles.labelContainer, extraStyle, alignmentStyle];
+    }, [longInfo, styles.labelContainer, description]);
 
     const labelStyle = useMemo(() => {
         return isInLine ? styles.inlineLabel : styles.label;
@@ -193,6 +202,10 @@ const OptionItem = ({
         const extraStyle = longInfo ? styles.shrink : {};
         return [styles.actionContainer, extraStyle];
     }, [longInfo, styles.actionContainer, styles.shrink]);
+
+    const containerStyle = useMemo(() => {
+        return disabled ? [styles.container, styles.disabled] : styles.container;
+    }, [disabled, styles.container, styles.disabled]);
 
     let actionComponent;
     let radioComponent;
@@ -297,7 +310,7 @@ const OptionItem = ({
     const component = (
         <View
             testID={testID}
-            style={styles.container}
+            style={containerStyle}
             onLayout={onLayout}
         >
             <View style={labelContainerStyle}>
@@ -315,7 +328,7 @@ const OptionItem = ({
                     <Text
                         style={labelTextStyle}
                         testID={`${testID}.label`}
-                        numberOfLines={1}
+                        numberOfLines={labelNumberOfLines}
                     >
                         {label}
                     </Text>

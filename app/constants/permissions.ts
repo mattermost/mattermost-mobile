@@ -159,4 +159,8 @@ export default {
     EDIT_BOOKMARK_PRIVATE_CHANNEL: 'edit_bookmark_private_channel',
     DELETE_BOOKMARK_PUBLIC_CHANNEL: 'delete_bookmark_public_channel',
     DELETE_BOOKMARK_PRIVATE_CHANNEL: 'delete_bookmark_private_channel',
+
+    // Autotranslations
+    MANAGE_PUBLIC_CHANNEL_AUTO_TRANSLATION: 'manage_public_channel_auto_translation',
+    MANAGE_PRIVATE_CHANNEL_AUTO_TRANSLATION: 'manage_private_channel_auto_translation',
 };
