@@ -28,6 +28,11 @@ jest.mocked(Markdown).mockImplementation((props) =>
     React.createElement('Text', {testID: 'markdown'}, props.value),
 );
 
+jest.mock('./permalink_files', () => ({
+    __esModule: true,
+    default: () => require('react').createElement('View', {testID: 'permalink-files-container'}),
+}));
+
 describe('components/post_list/post/body/content/permalink_preview/PermalinkPreview', () => {
     let database: Database;
     let operator: ServerDataOperator;

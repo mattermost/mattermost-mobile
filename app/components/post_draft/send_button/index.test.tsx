@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {of} from 'rxjs';
 
 import {storeGlobal} from '@actions/app/global';
 import {Tutorial} from '@constants';
@@ -16,6 +17,12 @@ import EnhancedSendButton from './index';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 
+const mockObserveTutorialWatched = jest.fn(() => of(false));
+
+jest.mock('@queries/app/global', () => ({
+    observeTutorialWatched: (...args: unknown[]) => mockObserveTutorialWatched.apply(null, args),
+}));
+
 jest.mock('./send_button', () => ({
     __esModule: true,
     default: jest.fn(),
@@ -29,7 +36,14 @@ describe('SendButton', () => {
     let database: Database;
     let operator: ServerDataOperator;
 
+    const renderEnhancedSendButton = async (props: Parameters<typeof EnhancedSendButton>[0]) => {
+        return renderWithEverything(<EnhancedSendButton {...props}/>, {database});
+    };
+
     beforeEach(async () => {
+        mockObserveTutorialWatched.mockReset();
+        mockObserveTutorialWatched.mockReturnValue(of(false));
+
         await DatabaseManager.init([serverUrl]);
         const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         database = serverDatabaseAndOperator.database;
@@ -52,15 +66,23 @@ describe('SendButton', () => {
     };
 
     it('should return false if the scheduled post tutorial is not watched', async () => {
-        const {getByTestId} = renderWithEverything(<EnhancedSendButton {...defaultProps}/>, {database});
-        const sendButton = getByTestId('send-button');
-        expect(sendButton.props.scheduledPostFeatureTooltipWatched).toBe(false);
+        mockObserveTutorialWatched.mockReturnValue(of(false));
+
+        const {getByTestId} = await renderEnhancedSendButton(defaultProps);
+
+        await waitFor(() => {
+            const sendButton = getByTestId('send-button');
+            expect(sendButton.props.scheduledPostFeatureTooltipWatched).toBe(false);
+        });
     });
 
     it('should return true if the scheduled post tutorial is watched', async () => {
         await storeGlobal(Tutorial.SCHEDULED_POST, 'true', false);
+        mockObserveTutorialWatched.mockReturnValue(of(true));
+
+        const {getByTestId} = await renderEnhancedSendButton(defaultProps);
+
         await waitFor(() => {
-            const {getByTestId} = renderWithEverything(<EnhancedSendButton {...defaultProps}/>, {database});
             const sendButton = getByTestId('send-button');
             expect(sendButton.props.scheduledPostFeatureTooltipWatched).toBe(true);
         });

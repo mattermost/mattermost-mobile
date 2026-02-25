@@ -26,6 +26,10 @@ jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn(() => false),
 }));
 
+jest.mock('@screens/bottom_sheet', () => {
+    return ({renderContent}: {renderContent: () => JSX.Element}) => renderContent();
+});
+
 describe('AttachmentOptions', () => {
     const mockDismissBottomSheet = dismissBottomSheet as jest.Mock;
     const mockAttachFileFromPhotoGallery = jest.fn();

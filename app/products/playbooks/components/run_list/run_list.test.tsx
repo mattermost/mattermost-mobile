@@ -29,6 +29,11 @@ jest.mock('@playbooks/screens/navigation', () => ({
     goToSelectPlaybook: jest.fn(),
 }));
 
+jest.mock('@components/section_notice', () => ({
+    __esModule: true,
+    default: ({title}: {title: string}) => require('react').createElement('Text', null, title),
+}));
+
 describe('RunList', () => {
     const componentId = 'TestScreen' as AvailableScreens;
     const inProgressRun = TestHelper.fakePlaybookRunModel({

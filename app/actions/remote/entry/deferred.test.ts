@@ -70,18 +70,20 @@ describe('actions/remote/entry/deferred', () => {
             const chData = undefined;
             const meData = undefined;
 
-            await deferredAppEntryActions(
-                serverUrl,
-                since,
-                currentUserId,
-                currentUserLocale,
-                preferences,
-                config,
-                license,
-                teamData,
-                chData,
-                meData,
-            );
+            await act(async () => {
+                await deferredAppEntryActions(
+                    serverUrl,
+                    since,
+                    currentUserId,
+                    currentUserLocale,
+                    preferences,
+                    config,
+                    license,
+                    teamData,
+                    chData,
+                    meData,
+                );
+            });
 
             expect(autoUpdateTimezone).toHaveBeenCalledWith(serverUrl, undefined);
         });
@@ -131,20 +133,22 @@ describe('actions/remote/entry/deferred', () => {
                 user_id: 'user1',
             }];
 
-            await restDeferredAppEntryActions(
-                serverUrl,
-                since,
-                currentUserId,
-                currentUserLocale,
-                preferences,
-                defaultConfig,
-                license,
-                defaultTeamData,
-                defaultChData,
-                defaultMeData,
-                initialTeamId,
-                initialChannelId,
-            );
+            await act(async () => {
+                await restDeferredAppEntryActions(
+                    serverUrl,
+                    since,
+                    currentUserId,
+                    currentUserLocale,
+                    preferences,
+                    defaultConfig,
+                    license,
+                    defaultTeamData,
+                    defaultChData,
+                    defaultMeData,
+                    initialTeamId,
+                    initialChannelId,
+                );
+            });
 
             expect(fetchMissingDirectChannelsInfo).toHaveBeenCalled();
             expect(updateAllUsersSince).toHaveBeenCalledWith(serverUrl, since, false, undefined);
@@ -168,18 +172,20 @@ describe('actions/remote/entry/deferred', () => {
             const chData = undefined;
             const meData = undefined;
 
-            await restDeferredAppEntryActions(
-                serverUrl,
-                since,
-                currentUserId,
-                currentUserLocale,
-                preferences,
-                config,
-                license,
-                teamData,
-                chData,
-                meData,
-            );
+            await act(async () => {
+                await restDeferredAppEntryActions(
+                    serverUrl,
+                    since,
+                    currentUserId,
+                    currentUserLocale,
+                    preferences,
+                    config,
+                    license,
+                    teamData,
+                    chData,
+                    meData,
+                );
+            });
 
             expect(updateAllUsersSince).toHaveBeenCalledWith(serverUrl, since, false, undefined);
             expect(updateCanJoinTeams).toHaveBeenCalledWith(serverUrl);
@@ -256,18 +262,20 @@ describe('actions/remote/entry/deferred', () => {
                 ],
             } as MyChannelsRequest;
 
-            await restDeferredAppEntryActions(
-                serverUrl,
-                since,
-                currentUserId,
-                currentUserLocale,
-                preferences,
-                defaultConfig,
-                license,
-                teamData,
-                chData,
-                defaultMeData,
-            );
+            await act(async () => {
+                await restDeferredAppEntryActions(
+                    serverUrl,
+                    since,
+                    currentUserId,
+                    currentUserLocale,
+                    preferences,
+                    defaultConfig,
+                    license,
+                    teamData,
+                    chData,
+                    defaultMeData,
+                );
+            });
 
             expect(fetchMissingDirectChannelsInfo).toHaveBeenCalledWith(
                 serverUrl,

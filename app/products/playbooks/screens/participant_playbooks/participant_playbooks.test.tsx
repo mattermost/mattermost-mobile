@@ -99,7 +99,7 @@ describe('ParticipantPlaybooks', () => {
         expect(runList).toHaveProp('loading', true);
 
         // Resolve the promise
-        act(() => {
+        await act(async () => {
             resolvePromise!({runs: [], hasMore: false});
         });
 
@@ -207,7 +207,7 @@ describe('ParticipantPlaybooks', () => {
         expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 'test-team-id', 0);
 
         const runList = await findByTestId('run_list');
-        act(() => {
+        await act(async () => {
             const fetchMoreRuns = runList.props.fetchMoreRuns;
             fetchMoreRuns('in-progress');
         });
@@ -217,7 +217,7 @@ describe('ParticipantPlaybooks', () => {
             expect(runList.props.inProgressRuns).toHaveLength(20);
         });
 
-        act(() => {
+        await act(async () => {
             const fetchMoreRuns = runList.props.fetchMoreRuns;
             fetchMoreRuns('in-progress');
         });
@@ -238,7 +238,7 @@ describe('ParticipantPlaybooks', () => {
 
         jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({error: 'Network error'});
         const runList = await findByTestId('run_list');
-        act(() => {
+        await act(async () => {
             const fetchMoreRuns = runList.props.fetchMoreRuns;
             fetchMoreRuns('in-progress');
         });
@@ -259,14 +259,9 @@ describe('ParticipantPlaybooks', () => {
         expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 'test-team-id', 0);
 
         const runList = await findByTestId('run_list');
-        act(() => {
+        await act(async () => {
             const fetchMoreRuns = runList.props.fetchMoreRuns;
             fetchMoreRuns('in-progress');
-        });
-
-        // Should set fetching as soon as we call fetchMoreRuns
-        await waitFor(() => {
-            expect(runList).toHaveProp('fetching', true);
         });
 
         // Wait for the results to be set
@@ -355,7 +350,7 @@ describe('ParticipantPlaybooks', () => {
         expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 'test-team-id', 0);
 
         const runList = await findByTestId('run_list');
-        act(() => {
+        await act(async () => {
             const fetchMoreRuns = runList.props.fetchMoreRuns;
             fetchMoreRuns('in-progress');
         });

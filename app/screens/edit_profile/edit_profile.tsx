@@ -128,6 +128,8 @@ const EditProfile = ({
     }, [componentId, rightButton, isTablet]);
 
     useEffect(() => {
+        let isMounted = true;
+
         const loadCustomAttributes = async () => {
             if (!currentUser) {
                 return;
@@ -144,12 +146,16 @@ const EditProfile = ({
             const reqTime = Date.now();
             lastRequest.current = reqTime;
             const {error: fetchError, attributes} = await fetchCustomProfileAttributes(serverUrl, currentUser.id);
-            if (!fetchError && attributes && lastRequest.current === reqTime) {
+            if (isMounted && !fetchError && attributes && lastRequest.current === reqTime) {
                 setUserInfo((prev) => ({...prev, customAttributes: attributes}));
             }
         };
 
         loadCustomAttributes();
+
+        return () => {
+            isMounted = false;
+        };
     }, [currentUser, serverUrl, enableCustomAttributes, customAttributesSet]);
 
     const resetScreenForProfileError = useCallback((resetError: unknown) => {

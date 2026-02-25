@@ -85,7 +85,10 @@ describe('useHandleSendMessage', () => {
         });
     });
 
-    afterEach(() => {
+    afterEach(async () => {
+        await act(async () => {
+            await Promise.resolve();
+        });
         jest.clearAllMocks();
     });
 
@@ -95,7 +98,7 @@ describe('useHandleSendMessage', () => {
         expect(result.current.canSend).toBe(true);
 
         await act(async () => {
-            result.current.handleSendMessage();
+            await result.current.handleSendMessage();
         });
 
         expect(createPost).toHaveBeenCalledWith(
@@ -133,7 +136,7 @@ describe('useHandleSendMessage', () => {
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
         await act(async () => {
-            result.current.handleSendMessage();
+            await result.current.handleSendMessage();
         });
 
         expect(createPost).toHaveBeenCalledWith(
@@ -159,7 +162,7 @@ describe('useHandleSendMessage', () => {
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
         await act(async () => {
-            result.current.handleSendMessage();
+            await result.current.handleSendMessage();
         });
 
         expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_LIST_SCROLL_TO_BOTTOM, Screens.THREAD);
@@ -191,7 +194,7 @@ describe('useHandleSendMessage', () => {
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
         await act(async () => {
-            result.current.handleSendMessage();
+            await result.current.handleSendMessage();
         });
 
         expect(DraftUtils.alertAttachmentFail).toHaveBeenCalled();
@@ -213,7 +216,7 @@ describe('useHandleSendMessage', () => {
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
         await act(async () => {
-            result.current.handleSendMessage();
+            await result.current.handleSendMessage();
         });
 
         expect(createPost).not.toHaveBeenCalled();
@@ -231,7 +234,7 @@ describe('useHandleSendMessage', () => {
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
         await act(async () => {
-            result.current.handleSendMessage();
+            await result.current.handleSendMessage();
         });
 
         expect(executeCommand).toHaveBeenCalledWith(
@@ -257,7 +260,7 @@ describe('useHandleSendMessage', () => {
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
         await act(async () => {
-            result.current.handleSendMessage();
+            await result.current.handleSendMessage();
         });
 
         expect(executeCommand).toHaveBeenCalled();
@@ -280,7 +283,7 @@ describe('useHandleSendMessage', () => {
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
         await act(async () => {
-            result.current.handleSendMessage();
+            await result.current.handleSendMessage();
         });
 
         expect(handleCallsSlashCommand).toHaveBeenCalledWith(
@@ -307,7 +310,7 @@ describe('useHandleSendMessage', () => {
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
         await act(async () => {
-            result.current.handleSendMessage();
+            await result.current.handleSendMessage();
         });
 
         expect(handleCallsSlashCommand).toHaveBeenCalled();
@@ -331,7 +334,7 @@ describe('useHandleSendMessage', () => {
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
         await act(async () => {
-            result.current.handleSendMessage();
+            await result.current.handleSendMessage();
         });
 
         expect(mockConfirmOutOfOffice).toHaveBeenCalledWith(
@@ -357,7 +360,7 @@ describe('useHandleSendMessage', () => {
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
         await act(async () => {
-            result.current.handleSendMessage();
+            await result.current.handleSendMessage();
         });
 
         expect(handleGotoLocation).toHaveBeenCalledWith(
@@ -412,6 +415,10 @@ describe('useHandleSendMessage', () => {
 
         renderHook(() => useHandleSendMessage(props), {wrapper});
 
+        await act(async () => {
+            await Promise.resolve();
+        });
+
         expect(getChannelTimezones).toHaveBeenCalledWith(
             'https://server.com',
             'channel-id',
@@ -433,7 +440,7 @@ describe('useHandleSendMessage', () => {
         const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
         await act(async () => {
-            result.current.handleSendMessage();
+            await result.current.handleSendMessage();
         });
 
         expect(DraftUtils.alertChannelWideMention).toHaveBeenCalled();
@@ -672,7 +679,7 @@ describe('useHandleSendMessage', () => {
         expect(result.current.canSend).toBe(true);
 
         await act(async () => {
-            result.current.handleSendMessage();
+            await result.current.handleSendMessage();
         });
 
         expect(createPost).toHaveBeenCalledWith(

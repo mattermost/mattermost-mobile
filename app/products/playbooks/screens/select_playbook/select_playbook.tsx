@@ -118,6 +118,7 @@ function SelectPlaybook({
 
     const page = useRef<number>(-1);
     const hasMore = useRef<boolean>(true);
+    const isMountedRef = useRef(true);
 
     // Callbacks
     const clearSearch = useCallback(() => {
@@ -133,6 +134,10 @@ function SelectPlaybook({
                 team_id: currentTeamId,
                 page: page.current + 1,
             });
+
+            if (!isMountedRef.current) {
+                return;
+            }
 
             if (result.data) {
                 setData((prev) => [...prev, ...result.data.items]);
@@ -164,6 +169,10 @@ function SelectPlaybook({
                 sort: 'last_run_at',
             });
 
+            if (!isMountedRef.current) {
+                return;
+            }
+
             if (result.data) {
                 setSearchResults(result.data.items);
             } else {
@@ -178,6 +187,7 @@ function SelectPlaybook({
 
     useEffect(() => {
         return () => {
+            isMountedRef.current = false;
             if (searchTimeoutId.current) {
                 clearTimeout(searchTimeoutId.current);
                 searchTimeoutId.current = null;

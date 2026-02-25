@@ -122,6 +122,8 @@ const PostUpdate = ({
     }, [rightButton, componentId]);
 
     useEffect(() => {
+        let isMounted = true;
+
         async function initialLoad() {
             let calculatedFollowersCount = 0;
             let calculatedBroadcastChannelCount = 0;
@@ -153,6 +155,10 @@ const PostUpdate = ({
                 }
             }
 
+            if (!isMounted) {
+                return;
+            }
+
             setFollowersCount(calculatedFollowersCount);
             setBroadcastChannelCount(calculatedBroadcastChannelCount);
             setUpdateMessage(calculatedDefaultMessage);
@@ -161,6 +167,10 @@ const PostUpdate = ({
         }
 
         initialLoad();
+
+        return () => {
+            isMounted = false;
+        };
 
     // This is the initial load, so we don't need to re-run it on every change
     // eslint-disable-next-line react-hooks/exhaustive-deps
