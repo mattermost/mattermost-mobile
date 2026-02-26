@@ -84,6 +84,21 @@ export default class ClientTracking {
         }
 
         setServerCredentials(this.apiClient.baseUrl, bearerToken, preauthSecret);
+
+        // Propagate the Authorization header to the native client so that image
+        // requests routed through Glide's RCTClientRequestInterceptor (via
+        // adaptRCTRequest) include authentication. Without this the native
+        // client headers only carry X-Requested-With / User-Agent and rely
+        // solely on the BearerTokenInterceptor having captured the token from a
+        // prior API response — which may not have happened yet on fresh installs.
+        const nativeHeaders: Record<string, string> = {
+            [ClientConstants.HEADER_AUTH]: `${ClientConstants.HEADER_BEARER} ${bearerToken}`,
+        };
+        this.apiClient.addHeaders(nativeHeaders).catch(() => {
+            // Best-effort: the native client may not exist yet during early
+            // initialisation. The BearerTokenInterceptor will still act as a
+            // fallback once it captures the token from a server response.
+        });
     }
 
     setCSRFToken(csrfToken: string) {
