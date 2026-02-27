@@ -4,7 +4,6 @@
 import {TOUCH_TARGET_SIZE} from '@agents/constants';
 import React, {useCallback, useState} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -90,27 +89,16 @@ const CitationsList = ({annotations}: CitationsListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const [isExpanded, setIsExpanded] = useState(false);
-    const animatedHeight = useSharedValue(0);
-    const opacity = useSharedValue(0);
 
     const handleToggle = useCallback(() => {
-        const newExpanded = !isExpanded;
-        setIsExpanded(newExpanded);
-        animatedHeight.value = withTiming(newExpanded ? 1 : 0, {duration: 250});
-        opacity.value = withTiming(newExpanded ? 1 : 0, {duration: 250});
-    }, [isExpanded, animatedHeight, opacity]);
+        setIsExpanded((prevExpanded) => !prevExpanded);
+    }, []);
 
     const handleCitationPress = useCallback((url: string) => {
         if (url) {
             tryOpenURL(url);
         }
     }, []);
-
-    const listAnimatedStyle = useAnimatedStyle(() => ({
-        opacity: opacity.value,
-        maxHeight: animatedHeight.value === 0 ? 0 : undefined,
-        overflow: 'hidden',
-    }));
 
     return (
         <View style={styles.container}>
@@ -140,7 +128,7 @@ const CitationsList = ({annotations}: CitationsListProps) => {
             </TouchableOpacity>
 
             {isExpanded && (
-                <Animated.View style={[styles.citationsList, listAnimatedStyle]}>
+                <View style={styles.citationsList}>
                     {annotations.map((annotation, idx) => (
                         <TouchableOpacity
                             key={`citation-${annotation.index}-${idx}`}
@@ -176,7 +164,7 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                             />
                         </TouchableOpacity>
                     ))}
-                </Animated.View>
+                </View>
             )}
         </View>
     );
