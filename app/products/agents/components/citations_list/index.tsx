@@ -4,6 +4,7 @@
 import {TOUCH_TARGET_SIZE} from '@agents/constants';
 import React, {useCallback, useState} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
+import Animated, {FadeIn, FadeOut, LinearTransition} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -41,6 +42,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         citationsList: {
             marginTop: 4,
+            overflow: 'hidden',
         },
         citationItem: {
             flexDirection: 'row',
@@ -128,10 +130,15 @@ const CitationsList = ({annotations}: CitationsListProps) => {
             </TouchableOpacity>
 
             {isExpanded && (
-                <View style={styles.citationsList}>
-                    {annotations.map((annotation, idx) => (
+                <Animated.View
+                    entering={FadeIn.duration(220)}
+                    exiting={FadeOut.duration(180)}
+                    layout={LinearTransition.duration(250)}
+                    style={styles.citationsList}
+                >
+                    {annotations.map((annotation) => (
                         <TouchableOpacity
-                            key={`citation-${annotation.index}-${idx}`}
+                            key={`citation-${annotation.index}-${annotation.url}`}
                             onPress={() => handleCitationPress(annotation.url)}
                             style={styles.citationItem}
                             testID={`citations.list.item.${annotation.index}`}
@@ -164,7 +171,7 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                             />
                         </TouchableOpacity>
                     ))}
-                </View>
+                </Animated.View>
             )}
         </View>
     );
