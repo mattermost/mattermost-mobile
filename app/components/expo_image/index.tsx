@@ -60,6 +60,7 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
         }
 
         const sourceHeaders = shouldAttachServerAuthHeaders(props.source?.uri, serverUrl) && requestHeaders ? {...requestHeaders, ...props.source?.headers} : props.source?.headers;
+        delete sourceHeaders?.Accept;
 
         // Only add cacheKey and cachePath if id is provided (i.e., not memory-only caching)
         if (id) {
@@ -84,6 +85,7 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
         }
 
         const placeholderHeaders = shouldAttachServerAuthHeaders(props.placeholder?.uri, serverUrl) && requestHeaders ? {...requestHeaders, ...props.placeholder?.headers} : props.placeholder?.headers;
+        delete placeholderHeaders?.Accept;
 
         // If placeholder has a uri and id is provided, add cachePath and cacheKey
         if (props.placeholder.uri && id) {
