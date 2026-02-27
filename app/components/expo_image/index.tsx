@@ -22,7 +22,19 @@ function shouldAttachServerAuthHeaders(uri: string | undefined, serverUrl: strin
         return false;
     }
 
-    return uri.startsWith(serverUrl) && uri.includes('/api/v4/');
+    try {
+        const requestUrl = new URL(uri);
+        const serverBaseUrl = new URL(serverUrl);
+
+        if (requestUrl.origin !== serverBaseUrl.origin) {
+            return false;
+        }
+
+        return requestUrl.pathname.startsWith('/api/v4/');
+    } catch {
+        // On any parsing error, do not attach auth headers
+        return false;
+    }
 }
 
 const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
