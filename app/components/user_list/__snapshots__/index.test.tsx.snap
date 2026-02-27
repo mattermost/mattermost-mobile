@@ -809,6 +809,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
                   {
                     "cacheKey": "user-1-123456",
                     "cachePath": "",
+                    "headers": undefined,
                     "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
                   },
                 ]
@@ -1152,6 +1153,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
                   {
                     "cacheKey": "user-1-123456",
                     "cachePath": "",
+                    "headers": undefined,
                     "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
                   },
                 ]
@@ -1533,6 +1535,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
                   {
                     "cacheKey": "user-1-123456",
                     "cachePath": "",
+                    "headers": undefined,
                     "uri": "https://community.mattermost.com/api/v4/users/1/image?_=123456",
                   },
                 ]
@@ -1775,6 +1778,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
                   {
                     "cacheKey": "user-2-123456",
                     "cachePath": "",
+                    "headers": undefined,
                     "uri": "https://community.mattermost.com/api/v4/users/2/image?_=123456",
                   },
                 ]
