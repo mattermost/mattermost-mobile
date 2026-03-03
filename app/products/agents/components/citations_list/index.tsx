@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {TOUCH_TARGET_SIZE} from '@agents/constants';
-import React, {useCallback, useState} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
-import Animated, {FadeIn, FadeOut, LinearTransition} from 'react-native-reanimated';
+import React, {useCallback, useEffect, useState} from 'react';
+import {type LayoutChangeEvent, Text, TouchableOpacity, View} from 'react-native';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -41,8 +41,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginLeft: 8,
         },
         citationsList: {
-            marginTop: 4,
             overflow: 'hidden',
+        },
+        citationsContentWrapper: {
+            position: 'absolute',
+            width: '100%',
         },
         citationItem: {
             flexDirection: 'row',
@@ -91,9 +94,21 @@ const CitationsList = ({annotations}: CitationsListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const [isExpanded, setIsExpanded] = useState(false);
+    const progress = useSharedValue(0);
+    const contentHeight = useSharedValue(0);
+
+    useEffect(() => {
+        progress.value = withTiming(isExpanded ? 1 : 0, {duration: 250});
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- progress is a stable shared value ref
+    }, [isExpanded]);
 
     const handleToggle = useCallback(() => {
-        setIsExpanded((prevExpanded) => !prevExpanded);
+        setIsExpanded((prev) => !prev);
+    }, []);
+
+    const handleContentLayout = useCallback((e: LayoutChangeEvent) => {
+        contentHeight.value = e.nativeEvent.layout.height;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- contentHeight is a stable shared value ref
     }, []);
 
     const handleCitationPress = useCallback((url: string) => {
@@ -101,6 +116,15 @@ const CitationsList = ({annotations}: CitationsListProps) => {
             tryOpenURL(url);
         }
     }, []);
+
+    const collapsibleStyle = useAnimatedStyle(() => {
+        const p = progress.value;
+        return {
+            height: contentHeight.value > 0 ? p * contentHeight.value : 0,
+            opacity: p,
+            marginTop: p * 4,
+        };
+    });
 
     return (
         <View style={styles.container}>
@@ -129,12 +153,10 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                 />
             </TouchableOpacity>
 
-            {isExpanded && (
-                <Animated.View
-                    entering={FadeIn.duration(220)}
-                    exiting={FadeOut.duration(180)}
-                    layout={LinearTransition.duration(250)}
-                    style={styles.citationsList}
+            <Animated.View style={[styles.citationsList, collapsibleStyle]}>
+                <View
+                    onLayout={handleContentLayout}
+                    style={styles.citationsContentWrapper}
                 >
                     {annotations.map((annotation) => (
                         <TouchableOpacity
@@ -171,8 +193,8 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                             />
                         </TouchableOpacity>
                     ))}
-                </Animated.View>
-            )}
+                </View>
+            </Animated.View>
         </View>
     );
 };
