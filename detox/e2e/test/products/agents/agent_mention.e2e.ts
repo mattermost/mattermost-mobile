@@ -220,19 +220,34 @@ describe('Autocomplete - Agent Mention', () => {
                 return;
             }
 
-            // # Find agent bots
+            // # Find agent bots — fail if the plugin is active but none exist
             agentBots = await getAgentBots(siteOneUrl, testTeam.id);
             if (agentBots.length === 0) {
-                // eslint-disable-next-line no-console
-                console.log('Skipping agent-specific tests: no agent bots found');
-                return;
+                throw new Error(
+                    'Agent plugin (mattermost-ai) is active but no agent bots were discovered. ' +
+                    'Ensure at least one agent is configured on the test server.',
+                );
             }
 
             agentBot = agentBots[0];
 
             // # Ensure agent bot is in the team and channel
-            await Team.apiAddUserToTeam(siteOneUrl, agentBot.user_id, testTeam.id).catch(() => { /* ignore */ });
-            await Channel.apiAddUserToChannel(siteOneUrl, agentBot.user_id, testChannel.id).catch(() => { /* ignore */ });
+            try {
+                await Team.apiAddUserToTeam(siteOneUrl, agentBot.user_id, testTeam.id);
+            } catch (err: any) {
+                const msg = err?.message ?? '';
+                if (!msg.includes('already') && !msg.includes('is_member')) {
+                    throw err;
+                }
+            }
+            try {
+                await Channel.apiAddUserToChannel(siteOneUrl, agentBot.user_id, testChannel.id);
+            } catch (err: any) {
+                const msg = err?.message ?? '';
+                if (!msg.includes('already') && !msg.includes('is_member')) {
+                    throw err;
+                }
+            }
         });
 
         it('should display agent with AGENT tag in at-mention autocomplete', async () => {
