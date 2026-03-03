@@ -91,7 +91,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                 edit_at: 0,
                 metadata: {
                     embeds: [{
-                        type: 'opengraph' as PostEmbedType,
+                        type: 'opengraph',
                         url: 'https://example.com',
                         data: {
                             title: 'Example Title',
@@ -152,7 +152,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             ...baseProps,
             embedData: {
                 ...baseProps.embedData,
-                post: undefined as unknown as Post,
+                post: undefined,
             },
             post: undefined,
         };
@@ -225,7 +225,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                     message: 'Test message',
                     metadata: {
                         embeds: [{
-                            type: 'opengraph' as PostEmbedType,
+                            type: 'opengraph',
                             url: 'https://example.com',
                             data: {
                                 title: 'Example Title',
@@ -273,7 +273,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                     message: longMessage,
                     metadata: {
                         embeds: [{
-                            type: 'opengraph' as PostEmbedType,
+                            type: 'opengraph',
                             url: 'https://example.com',
                             data: {
                                 title: 'Example Title',
@@ -301,7 +301,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                     message: '',
                     metadata: {
                         embeds: [{
-                            type: 'opengraph' as PostEmbedType,
+                            type: 'opengraph',
                             url: 'https://example.com',
                             data: {
                                 title: 'Example Title',
@@ -330,7 +330,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                     create_at: 1234567890000,
                     metadata: {
                         embeds: [{
-                            type: 'opengraph' as PostEmbedType,
+                            type: 'opengraph',
                             url: 'https://example.com',
                             data: {
                                 title: 'Example Title',
@@ -377,7 +377,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                         metadata: {
                             files: [fileInfo],
                             embeds: [{
-                                type: 'opengraph' as PostEmbedType,
+                                type: 'opengraph',
                                 url: 'https://example.com',
                                 data: {
                                     title: 'Example Title',
@@ -423,7 +423,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                         metadata: {
                             files: fileInfos,
                             embeds: [{
-                                type: 'opengraph' as PostEmbedType,
+                                type: 'opengraph',
                                 url: 'https://example.com',
                                 data: {
                                     title: 'Example Title',
@@ -453,7 +453,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                         message: 'Post without files',
                         metadata: {
                             embeds: [{
-                                type: 'opengraph' as PostEmbedType,
+                                type: 'opengraph',
                                 url: 'https://example.com',
                                 data: {
                                     title: 'Example Title',
@@ -484,7 +484,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                         metadata: {
                             files: [],
                             embeds: [{
-                                type: 'opengraph' as PostEmbedType,
+                                type: 'opengraph',
                                 url: 'https://example.com',
                                 data: {
                                     title: 'Example Title',
@@ -540,12 +540,12 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                         metadata: {
                             translations: {
                                 en: {
-                                    state: 'ready' as const,
+                                    state: 'ready',
                                     object: {message: translatedMessage},
                                 },
                             },
                             embeds: [{
-                                type: 'opengraph' as PostEmbedType,
+                                type: 'opengraph',
                                 url: 'https://example.com',
                                 data: {
                                     title: 'Example Title',
@@ -577,12 +577,12 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                         metadata: {
                             translations: {
                                 en: {
-                                    state: 'processing' as const,
+                                    state: 'processing',
                                     object: {message: ''},
                                 },
                             },
                             embeds: [{
-                                type: 'opengraph' as PostEmbedType,
+                                type: 'opengraph',
                                 url: 'https://example.com',
                                 data: {
                                     title: 'Example Title',
@@ -614,12 +614,12 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                         metadata: {
                             translations: {
                                 en: {
-                                    state: 'ready' as const,
+                                    state: 'ready',
                                     object: {message: 'Translated message'},
                                 },
                             },
                             embeds: [{
-                                type: 'opengraph' as PostEmbedType,
+                                type: 'opengraph',
                                 url: 'https://example.com',
                                 data: {
                                     title: 'Example Title',
@@ -632,6 +632,45 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             };
             const {getByText} = renderPermalinkPreview(props);
 
+            expect(getByText(originalMessage)).toBeTruthy();
+        });
+
+        it('should not translate custom posts or show TranslateIcon when autotranslationsEnabled is true', () => {
+            const originalMessage = 'Custom message';
+            const translatedMessage = 'Translated custom message';
+            const props = {
+                ...baseProps,
+                autotranslationsEnabled: true,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: TestHelper.fakePost({
+                        id: 'system-post-123',
+                        user_id: 'user-123',
+                        type: 'custom_llmbot',
+                        message: originalMessage,
+                        create_at: 1234567890000,
+                        edit_at: 0,
+                        metadata: {
+                            translations: {
+                                en: {
+                                    state: 'ready',
+                                    object: {message: translatedMessage},
+                                },
+                            },
+                            embeds: [{
+                                type: 'opengraph',
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Example Title',
+                                    description: 'Example Description',
+                                },
+                            }],
+                        },
+                    }),
+                },
+            };
+            const {queryByTestId, getByText} = renderPermalinkPreview(props);
+            expect(queryByTestId('translate-icon')).toBeNull();
             expect(getByText(originalMessage)).toBeTruthy();
         });
     });
