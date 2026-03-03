@@ -526,22 +526,35 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         it('should display translated message when autotranslationsEnabled is true and translation is ready', () => {
             const originalMessage = 'Original message';
             const translatedMessage = 'Translated message';
-
-            const translatedPost = TestHelper.fakePostModel({
-                message: originalMessage,
-                metadata: {
-                    translations: {
-                        en: {
-                            state: 'ready',
-                            object: {message: translatedMessage},
-                        },
-                    },
-                },
-            });
             const props = {
                 ...baseProps,
                 autotranslationsEnabled: true,
-                post: translatedPost,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: TestHelper.fakePost({
+                        id: 'post-123',
+                        user_id: 'user-123',
+                        message: originalMessage,
+                        create_at: 1234567890000,
+                        edit_at: 0,
+                        metadata: {
+                            translations: {
+                                en: {
+                                    state: 'ready',
+                                    object: {message: translatedMessage},
+                                },
+                            },
+                            embeds: [{
+                                type: 'opengraph',
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Example Title',
+                                    description: 'Example Description',
+                                },
+                            }],
+                        },
+                    }),
+                },
             };
             const {getByText} = renderPermalinkPreview(props);
 
@@ -549,22 +562,36 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         });
 
         it('should display original message when autotranslationsEnabled is true but translation is not ready', () => {
-            const originalMessage = 'Original message';
-            const translatedPost = TestHelper.fakePostModel({
-                message: originalMessage,
-                metadata: {
-                    translations: {
-                        en: {
-                            state: 'processing',
-                            object: {message: ''},
-                        },
-                    },
-                },
-            });
+            const originalMessage = 'Original message only';
             const props = {
                 ...baseProps,
                 autotranslationsEnabled: true,
-                post: translatedPost,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: TestHelper.fakePost({
+                        id: 'post-123',
+                        user_id: 'user-123',
+                        message: originalMessage,
+                        create_at: 1234567890000,
+                        edit_at: 0,
+                        metadata: {
+                            translations: {
+                                en: {
+                                    state: 'processing',
+                                    object: {message: ''},
+                                },
+                            },
+                            embeds: [{
+                                type: 'opengraph',
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Example Title',
+                                    description: 'Example Description',
+                                },
+                            }],
+                        },
+                    }),
+                },
             };
             const {getByText} = renderPermalinkPreview(props);
 
@@ -573,22 +600,35 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
 
         it('should display original message when autotranslationsEnabled is false regardless of translation', () => {
             const originalMessage = 'Original message';
-            const translatedMessage = 'Translated message';
-            const translatedPost = TestHelper.fakePostModel({
-                message: originalMessage,
-                metadata: {
-                    translations: {
-                        en: {
-                            state: 'ready',
-                            object: {message: translatedMessage},
-                        },
-                    },
-                },
-            });
             const props = {
                 ...baseProps,
                 autotranslationsEnabled: false,
-                post: translatedPost,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: TestHelper.fakePost({
+                        id: 'post-123',
+                        user_id: 'user-123',
+                        message: originalMessage,
+                        create_at: 1234567890000,
+                        edit_at: 0,
+                        metadata: {
+                            translations: {
+                                en: {
+                                    state: 'ready',
+                                    object: {message: 'Translated message'},
+                                },
+                            },
+                            embeds: [{
+                                type: 'opengraph',
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Example Title',
+                                    description: 'Example Description',
+                                },
+                            }],
+                        },
+                    }),
+                },
             };
             const {getByText} = renderPermalinkPreview(props);
 
@@ -598,22 +638,36 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         it('should not translate custom posts or show TranslateIcon when autotranslationsEnabled is true', () => {
             const originalMessage = 'Custom message';
             const translatedMessage = 'Translated custom message';
-            const translatedPost = TestHelper.fakePostModel({
-                message: originalMessage,
-                type: 'custom_llmbot',
-                metadata: {
-                    translations: {
-                        en: {
-                            state: 'ready',
-                            object: {message: translatedMessage},
-                        },
-                    },
-                },
-            });
             const props = {
                 ...baseProps,
                 autotranslationsEnabled: true,
-                post: translatedPost,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: TestHelper.fakePost({
+                        id: 'system-post-123',
+                        user_id: 'user-123',
+                        type: 'custom_llmbot',
+                        message: originalMessage,
+                        create_at: 1234567890000,
+                        edit_at: 0,
+                        metadata: {
+                            translations: {
+                                en: {
+                                    state: 'ready',
+                                    object: {message: translatedMessage},
+                                },
+                            },
+                            embeds: [{
+                                type: 'opengraph',
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Example Title',
+                                    description: 'Example Description',
+                                },
+                            }],
+                        },
+                    }),
+                },
             };
             const {queryByTestId, getByText} = renderPermalinkPreview(props);
             expect(queryByTestId('translate-icon')).toBeNull();
