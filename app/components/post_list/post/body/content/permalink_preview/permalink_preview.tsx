@@ -169,16 +169,15 @@ const PermalinkPreview = ({
     }
 
     const {
-        post: embedPost,
         channel_display_name,
         channel_type,
     } = embedData;
 
-    const translation = embedPost ? getPostTranslation(embedPost, locale) : undefined;
+    const translation = post ? getPostTranslation(post, locale) : undefined;
 
     const truncatedMessage = useMemo(() => {
-        let msg = embedPost?.message ?? '';
-        if (autotranslationsEnabled && embedPost?.type === '') {
+        let msg = post?.message ?? '';
+        if (autotranslationsEnabled && post?.type === '') {
             if (translation?.state === 'ready') {
                 msg = getPostTranslatedMessage(msg, translation);
             }
@@ -194,7 +193,7 @@ const PermalinkPreview = ({
         }
 
         return cleanMessage;
-    }, [autotranslationsEnabled, embedPost?.message, embedPost?.type, translation]);
+    }, [autotranslationsEnabled, post?.message, post?.type, translation]);
 
     const isEdited = useMemo(() => embedData && embedData.post && embedData.post.edit_at > 0, [embedData]);
 
@@ -265,10 +264,10 @@ const PermalinkPreview = ({
                             <FormattedTime
                                 timezone={getUserTimezone(currentUser)}
                                 isMilitaryTime={isMilitaryTime}
-                                value={embedPost?.create_at ?? 0}
+                                value={post.createAt}
                                 style={styles.timestamp}
                             />
-                            {autotranslationsEnabled && embedPost?.type === '' && (
+                            {autotranslationsEnabled && post.type === '' && (
                                 <TranslateIcon
                                     translationState={translation?.state}
                                 />
