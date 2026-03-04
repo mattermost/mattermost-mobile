@@ -166,6 +166,13 @@ export const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersI
                 key: SECTION_KEY_TEAM_MEMBERS,
             });
         }
+        if (agents.length) {
+            newSections.push({
+                ...sectionMessages.agents,
+                data: agents,
+                key: SECTION_KEY_AGENTS,
+            });
+        }
     } else if (isLocal) {
         if (teamMembers.length) {
             newSections.push({

@@ -46,8 +46,11 @@ const isAgentsPluginActive = async (baseUrl: string): Promise<boolean> => {
         const response = await client.get(`${baseUrl}/api/v4/plugins`);
         const plugins = response.data;
         return plugins.active?.some((p: any) => p.id === AGENTS_PLUGIN_ID) ?? false;
-    } catch {
-        return false;
+    } catch (err) {
+        const {error, status} = getResponseFromError(err);
+        throw new Error(
+            `[isAgentsPluginActive] Failed to read plugins (status ${status}): ${JSON.stringify(error)}`,
+        );
     }
 };
 
@@ -77,11 +80,12 @@ const apiGetBots = async (baseUrl: string): Promise<any> => {
 const getAgentBots = async (baseUrl: string, teamId: string): Promise<any[]> => {
     const {bots, error} = await apiGetBots(baseUrl);
     if (error || !bots) {
-        return [];
+        throw new Error(
+            `[getAgentBots] Failed to fetch bots: ${JSON.stringify(error ?? 'no bots returned')}`,
+        );
     }
 
     try {
-        // Query the autocomplete API which returns agents in a dedicated field.
         const response = await client.get(
             `${baseUrl}/api/v4/users/autocomplete?in_team=${teamId}&name=`,
         );
@@ -90,8 +94,11 @@ const getAgentBots = async (baseUrl: string, teamId: string): Promise<any[]> => 
         );
 
         return bots.filter((bot: any) => bot.delete_at === 0 && agentUserIds.has(bot.user_id));
-    } catch {
-        return [];
+    } catch (err) {
+        const {error: autocompleteError, status} = getResponseFromError(err);
+        throw new Error(
+            `[getAgentBots] Failed to fetch autocomplete agents (status ${status}): ${JSON.stringify(autocompleteError)}`,
+        );
     }
 };
 
