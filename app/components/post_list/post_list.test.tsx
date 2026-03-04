@@ -52,6 +52,12 @@ describe('components/post_list/PostList', () => {
         Platform.select = jest.fn().mockImplementation((obj) => obj.ios);
     });
 
+    afterEach(async () => {
+        await act(async () => {
+            await Promise.resolve();
+        });
+    });
+
     const mockPostModel = (overrides: Partial<PostModel> = {}): PostModel => ({
         id: 'post-id',
         channelId: 'channel-id',

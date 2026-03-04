@@ -399,6 +399,10 @@ describe('ChecklistItem', () => {
         const BottomSheetComponent = args.renderContent;
         const {getByTestId} = renderWithIntl(<BottomSheetComponent/>);
         const bottomSheetRenderedComponent = getByTestId('checklist-item-bottom-sheet-component');
+
+        jest.mocked(updateChecklistItem).mockResolvedValue({data: true});
+        jest.mocked(skipChecklistItem).mockResolvedValue({data: true});
+        jest.mocked(runChecklistItem).mockResolvedValue({data: true});
         expect(bottomSheetRenderedComponent.props.item).toBe(props.item);
         expect(bottomSheetRenderedComponent.props.teammateNameDisplay).toBe(props.teammateNameDisplay);
         expect(bottomSheetRenderedComponent.props.runId).toBe(props.playbookRunId);
@@ -406,19 +410,25 @@ describe('ChecklistItem', () => {
         expect(bottomSheetRenderedComponent.props.itemNumber).toBe(props.itemNumber);
         expect(bottomSheetRenderedComponent.props.channelId).toBe(props.channelId);
 
-        bottomSheetRenderedComponent.props.onCheck();
+        await act(async () => {
+            await bottomSheetRenderedComponent.props.onCheck();
+        });
 
         await waitFor(() => {
             expect(updateChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.item.id, props.checklistNumber, props.itemNumber, 'closed');
         });
 
-        bottomSheetRenderedComponent.props.onSkip();
+        await act(async () => {
+            await bottomSheetRenderedComponent.props.onSkip();
+        });
 
         await waitFor(() => {
             expect(skipChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.item.id, props.checklistNumber, props.itemNumber);
         });
 
-        bottomSheetRenderedComponent.props.onRunCommand();
+        await act(async () => {
+            await bottomSheetRenderedComponent.props.onRunCommand();
+        });
 
         await waitFor(() => {
             expect(runChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.checklistNumber, props.itemNumber);

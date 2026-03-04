@@ -124,11 +124,21 @@ describe('PostUpdate', () => {
         jest.mocked(postStatusUpdate).mockResolvedValue({data: true});
     });
 
-    it('should render loading state initially', () => {
+    afterEach(async () => {
+        await act(async () => {
+            await Promise.resolve();
+        });
+    });
+
+    it('should render loading state initially', async () => {
         const props = getBaseProps();
-        const {getByTestId} = renderWithIntlAndTheme(<PostUpdate {...props}/>);
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
         expect(getByTestId('loader')).toBeTruthy();
+
+        await waitFor(() => {
+            expect(queryByTestId('loader')).toBeNull();
+        });
     });
 
     it('should render correctly after loading', async () => {

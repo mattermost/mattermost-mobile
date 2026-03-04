@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {screen} from '@testing-library/react-native';
-import React from 'react';
 
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@constants/draft';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -18,6 +17,10 @@ import type ScheduledPostModel from '@typings/database/models/servers/scheduled_
 jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn().mockReturnValue(false),
 }));
+
+jest.mock('@screens/bottom_sheet', () => {
+    return ({renderContent}: {renderContent: () => JSX.Element}) => renderContent();
+});
 
 describe('DraftScheduledPostOptions', () => {
     let database: Database;

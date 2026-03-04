@@ -536,9 +536,13 @@ describe('SelectPlaybook', () => {
         });
     });
 
-    it('handles Android back button', () => {
+    it('handles Android back button', async () => {
         const props = getBaseProps();
         renderWithIntlAndTheme(<SelectPlaybook {...props}/>);
+
+        await waitFor(() => {
+            expect(fetchPlaybooks).toHaveBeenCalledTimes(1);
+        });
 
         expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(props.componentId, expect.any(Function));
 

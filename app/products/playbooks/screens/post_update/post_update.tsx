@@ -123,6 +123,7 @@ const PostUpdate = ({
     }, [rightButton, componentId]);
 
     useDidMount(() => {
+        let isMounted = true;
         async function initialLoad() {
             let calculatedFollowersCount = 0;
             let calculatedBroadcastChannelCount = 0;
@@ -154,6 +155,10 @@ const PostUpdate = ({
                 }
             }
 
+            if (!isMounted) {
+                return;
+            }
+
             setFollowersCount(calculatedFollowersCount);
             setBroadcastChannelCount(calculatedBroadcastChannelCount);
             setUpdateMessage(calculatedDefaultMessage);
@@ -162,6 +167,9 @@ const PostUpdate = ({
         }
 
         initialLoad();
+        return () => {
+            isMounted = false;
+        };
     });
 
     const onNextUpdateSelected = useCallback((value: SelectedDialogOption) => {
