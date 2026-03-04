@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {replenishKeyPackages} from '@e2ee/actions/remote/key_packages';
 import {initE2eeDevice} from '@e2ee/actions/remote/registration';
 import {DeviceEventEmitter} from 'react-native';
 
@@ -52,6 +53,7 @@ jest.mock('@utils/helpers', () => ({
     isTablet: jest.fn().mockReturnValue(false),
 }));
 
+jest.mock('@e2ee/actions/remote/key_packages');
 jest.mock('@e2ee/actions/remote/registration');
 jest.mock('@playbooks/actions/websocket/reconnect');
 
@@ -110,6 +112,7 @@ describe('WebSocket Index Actions', () => {
             expect(deferredAppEntryActions).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
             expect(initE2eeDevice).toHaveBeenCalledWith(serverUrl, currentUserId);
+            expect(replenishKeyPackages).toHaveBeenCalledWith(serverUrl, currentUserId);
         });
 
         it('should handle error when server database not found', async () => {
@@ -167,6 +170,7 @@ describe('WebSocket Index Actions', () => {
             expect(AppsManager.refreshAppBindings).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
             expect(initE2eeDevice).toHaveBeenCalledWith(serverUrl, currentUserId);
+            expect(replenishKeyPackages).toHaveBeenCalledWith(serverUrl, currentUserId);
         });
 
         it('should fetch posts for channel screen', async () => {

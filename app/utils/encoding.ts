@@ -11,6 +11,15 @@ export function bytesToBase64(bytes: Uint8Array): string {
     return base64.encode(binary);
 }
 
+export function base64ToBytes(b64: string): Uint8Array {
+    const binary = base64.decode(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+}
+
 export function bytesToBase64Url(bytes: Uint8Array): string {
     const b64 = bytesToBase64(bytes);
     return b64.replace(/\+/g, '-').replace(/\//g, '_').split('=').join('');

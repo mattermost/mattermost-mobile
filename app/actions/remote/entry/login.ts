@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {initializeE2EEManager} from '@e2ee/setup';
+
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
@@ -36,6 +38,7 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
         const credentials = await getServerCredentials(serverUrl);
         if (credentials?.token) {
             const intunePolicy = await IntuneManager.getPolicy(serverUrl);
+            initializeE2EEManager(serverUrl);
             SecurityManager.addServer(serverUrl, clData.config, false, intunePolicy);
             WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
             await WebsocketManager.initializeClient(serverUrl, 'Login');

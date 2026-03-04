@@ -10,6 +10,9 @@ export interface ClientE2EEMix {
     fetchDevices: () => Promise<RegisteredDevicesReturn>;
     revokeDevice: (deviceId: string) => Promise<void>;
     registerDevice: (signaturePublicKey: string, deviceName: string) => Promise<RegisteredDeviceId>;
+
+    // Key Packages
+    countKeyPackages: () => Promise<KeyPackageCountReturn>;
 }
 
 const ClientE2EE = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -32,7 +35,7 @@ const ClientE2EE = <TBase extends Constructor<ClientBase>>(superclass: TBase) =>
             {method: 'delete'},
         );
     };
-    
+
     registerDevice = async (signaturePublicKey: string, deviceName: string) => {
         return this.doFetch(
             `${this.getE2EERoute()}/devices`,
@@ -44,6 +47,14 @@ const ClientE2EE = <TBase extends Constructor<ClientBase>>(superclass: TBase) =>
                 method: 'post',
             },
         );
+    };
+
+    countKeyPackages = async () => {
+        const result = await this.doFetch(
+            `${this.getE2EERoute()}/keypackages/self/count`,
+            {method: 'get'},
+        );
+        return result || {available: 0, last_resort: false};
     };
 
 };

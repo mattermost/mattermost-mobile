@@ -16,3 +16,8 @@ type RegisteredDevice = RegisteredDeviceId & {
 type RegisteredDevicesReturn = {
     devices: RegisteredDevice[];
 }
+
+type KeyPackageCountReturn = {
+    available: number;
+    last_resort: boolean;
+}

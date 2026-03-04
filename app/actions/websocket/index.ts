@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
+import {replenishKeyPackages} from '@e2ee/actions/remote/key_packages';
 import {initE2eeDevice} from '@e2ee/actions/remote/registration';
 
 import {markChannelAsViewed} from '@actions/local/channel';
@@ -100,6 +101,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
     checkIsAgentsPluginEnabled(serverUrl);
     await initE2eeDevice(serverUrl, currentUserId);
+    replenishKeyPackages(serverUrl, currentUserId);
 
     await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
 
