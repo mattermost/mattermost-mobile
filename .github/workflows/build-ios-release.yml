@@ -135,7 +135,7 @@ jobs:
       - name: ci/upload-ios-simulator-new-bucket
         env:
           TAG: "${{ github.ref_name }}"
-          AWS_NEW_BUCKET_NAME: "${{ secrets.MM_MOBILE_BETA_AWS_NEW_BUCKET_NAME }}"
+          AWS_NEW_BUCKET_NAME: "${{ secrets.MM_MOBILE_RELEASE_AWS_NEW_BUCKET_NAME }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
         run: bundle exec fastlane ios simulator --env ios.simulator output_file:"Mattermost-simulator-x86_64.app.zip"
         working-directory: ./fastlane
