@@ -109,7 +109,12 @@ describe('PlaybookRuns', () => {
 
     it('calls fetchMoreRuns when show more button is pressed and paginates', async () => {
         const moreRuns1 = TestHelper.fakePlaybookRun({id: 'more-run-1'});
-        jest.mocked(fetchFinishedRunsForChannel).mockResolvedValue({runs: [moreRuns1], has_more: true});
+        let resolvePromise: (() => void) | undefined;
+        jest.mocked(fetchFinishedRunsForChannel).mockImplementation(() => {
+            return new Promise<{runs: PlaybookRun[]; has_more: boolean}>((resolve) => {
+                resolvePromise = () => resolve({runs: [moreRuns1], has_more: true});
+            });
+        });
         const {getByTestId} = renderWithIntl(
             <PlaybookRuns
                 allRuns={[inProgressRun]}
@@ -126,6 +131,14 @@ describe('PlaybookRuns', () => {
         });
 
         await waitFor(() => {
+            expect(runList.props.fetching).toBe(true);
+        });
+
+        await act(async () => {
+            resolvePromise!();
+        });
+
+        await waitFor(() => {
             expect(fetchFinishedRunsForChannel).toHaveBeenCalledWith('server-url', 'channel-id-1', 0);
             expect(runList.props.finishedRuns).toHaveLength(1);
             expect(runList.props.finishedRuns[0]).toBe(moreRuns1);
@@ -135,9 +148,21 @@ describe('PlaybookRuns', () => {
 
         fetchMoreRuns = runList.props.fetchMoreRuns;
         const moreRuns2 = TestHelper.fakePlaybookRun({id: 'more-run-2'});
-        jest.mocked(fetchFinishedRunsForChannel).mockResolvedValue({runs: [moreRuns2], has_more: true});
+        jest.mocked(fetchFinishedRunsForChannel).mockImplementation(() => {
+            return new Promise<{runs: PlaybookRun[]; has_more: boolean}>((resolve) => {
+                resolvePromise = () => resolve({runs: [moreRuns2], has_more: true});
+            });
+        });
         await act(async () => {
             fetchMoreRuns('finished');
+        });
+
+        await waitFor(() => {
+            expect(runList.props.fetching).toBe(true);
+        });
+
+        await act(async () => {
+            resolvePromise!();
         });
 
         await waitFor(() => {

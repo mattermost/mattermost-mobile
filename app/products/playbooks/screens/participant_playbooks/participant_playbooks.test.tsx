@@ -259,9 +259,29 @@ describe('ParticipantPlaybooks', () => {
         expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 'test-team-id', 0);
 
         const runList = await findByTestId('run_list');
+
+        // Use a deferred promise so we can observe the intermediate fetching state
+        const moreRuns = getMockRuns(10, 10);
+        let resolvePromise: ((value: {runs: PlaybookRun[]; hasMore: boolean}) => void) | undefined;
+        jest.mocked(fetchPlaybookRunsPageForParticipant).mockImplementation(() => {
+            return new Promise((resolve) => {
+                resolvePromise = resolve;
+            });
+        });
+
         await act(async () => {
             const fetchMoreRuns = runList.props.fetchMoreRuns;
             fetchMoreRuns('in-progress');
+        });
+
+        // Should set fetching as soon as we call fetchMoreRuns
+        await waitFor(() => {
+            expect(runList).toHaveProp('fetching', true);
+        });
+
+        // Resolve the fetch
+        await act(async () => {
+            resolvePromise!({runs: moreRuns, hasMore: false});
         });
 
         // Wait for the results to be set
