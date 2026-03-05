@@ -3,8 +3,6 @@
 
 /* eslint-disable max-lines */
 
-import {act} from '@testing-library/react-native';
-
 import {fetchMyChannelsForTeam, fetchMissingDirectChannelsInfo, type MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
@@ -72,20 +70,18 @@ describe('actions/remote/entry/deferred', () => {
             const chData = undefined;
             const meData = undefined;
 
-            await act(async () => {
-                await deferredAppEntryActions(
-                    serverUrl,
-                    since,
-                    currentUserId,
-                    currentUserLocale,
-                    preferences,
-                    config,
-                    license,
-                    teamData,
-                    chData,
-                    meData,
-                );
-            });
+            await deferredAppEntryActions(
+                serverUrl,
+                since,
+                currentUserId,
+                currentUserLocale,
+                preferences,
+                config,
+                license,
+                teamData,
+                chData,
+                meData,
+            );
 
             expect(autoUpdateTimezone).toHaveBeenCalledWith(serverUrl, undefined);
         });
@@ -94,6 +90,8 @@ describe('actions/remote/entry/deferred', () => {
     describe('restDeferredAppEntryActions', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         global.setTimeout = jest.fn((cb) => cb()) as any;
+
+        const flushPromises = () => new Promise((resolve) => process.nextTick(resolve));
 
         const since = 123456789;
         const currentUserId = 'user1';
@@ -135,22 +133,21 @@ describe('actions/remote/entry/deferred', () => {
                 user_id: 'user1',
             }];
 
-            await act(async () => {
-                await restDeferredAppEntryActions(
-                    serverUrl,
-                    since,
-                    currentUserId,
-                    currentUserLocale,
-                    preferences,
-                    defaultConfig,
-                    license,
-                    defaultTeamData,
-                    defaultChData,
-                    defaultMeData,
-                    initialTeamId,
-                    initialChannelId,
-                );
-            });
+            await restDeferredAppEntryActions(
+                serverUrl,
+                since,
+                currentUserId,
+                currentUserLocale,
+                preferences,
+                defaultConfig,
+                license,
+                defaultTeamData,
+                defaultChData,
+                defaultMeData,
+                initialTeamId,
+                initialChannelId,
+            );
+            await flushPromises();
 
             expect(fetchMissingDirectChannelsInfo).toHaveBeenCalled();
             expect(updateAllUsersSince).toHaveBeenCalledWith(serverUrl, since, false, undefined);
@@ -175,20 +172,19 @@ describe('actions/remote/entry/deferred', () => {
             const chData = undefined;
             const meData = undefined;
 
-            await act(async () => {
-                await restDeferredAppEntryActions(
-                    serverUrl,
-                    since,
-                    currentUserId,
-                    currentUserLocale,
-                    preferences,
-                    config,
-                    license,
-                    teamData,
-                    chData,
-                    meData,
-                );
-            });
+            await restDeferredAppEntryActions(
+                serverUrl,
+                since,
+                currentUserId,
+                currentUserLocale,
+                preferences,
+                config,
+                license,
+                teamData,
+                chData,
+                meData,
+            );
+            await flushPromises();
 
             expect(updateAllUsersSince).toHaveBeenCalledWith(serverUrl, since, false, undefined);
             expect(updateCanJoinTeams).toHaveBeenCalledWith(serverUrl);
@@ -230,22 +226,21 @@ describe('actions/remote/entry/deferred', () => {
                 ],
             } as MyChannelsRequest;
 
-            await act(async () => {
-                await restDeferredAppEntryActions(
-                    serverUrl,
-                    since,
-                    currentUserId,
-                    currentUserLocale,
-                    preferences,
-                    config,
-                    license,
-                    teamData,
-                    chData,
-                    defaultMeData,
-                    'team1',
-                    'channel1',
-                );
-            });
+            await restDeferredAppEntryActions(
+                serverUrl,
+                since,
+                currentUserId,
+                currentUserLocale,
+                preferences,
+                config,
+                license,
+                teamData,
+                chData,
+                defaultMeData,
+                'team1',
+                'channel1',
+            );
+            await flushPromises();
 
             expect(fetchTeamsThreads).toHaveBeenCalled();
             expect(fetchPostsForUnreadChannels).toHaveBeenCalled();
@@ -265,20 +260,19 @@ describe('actions/remote/entry/deferred', () => {
                 ],
             } as MyChannelsRequest;
 
-            await act(async () => {
-                await restDeferredAppEntryActions(
-                    serverUrl,
-                    since,
-                    currentUserId,
-                    currentUserLocale,
-                    preferences,
-                    defaultConfig,
-                    license,
-                    teamData,
-                    chData,
-                    defaultMeData,
-                );
-            });
+            await restDeferredAppEntryActions(
+                serverUrl,
+                since,
+                currentUserId,
+                currentUserLocale,
+                preferences,
+                defaultConfig,
+                license,
+                teamData,
+                chData,
+                defaultMeData,
+            );
+            await flushPromises();
 
             expect(fetchMissingDirectChannelsInfo).toHaveBeenCalledWith(
                 serverUrl,
@@ -331,20 +325,19 @@ describe('actions/remote/entry/deferred', () => {
                 ],
             } as MyChannelsRequest;
 
-            await act(async () => {
-                await restDeferredAppEntryActions(
-                    serverUrl,
-                    since,
-                    currentUserId,
-                    currentUserLocale,
-                    preferences,
-                    config,
-                    license,
-                    teamData,
-                    chData,
-                    defaultMeData,
-                );
-            });
+            await restDeferredAppEntryActions(
+                serverUrl,
+                since,
+                currentUserId,
+                currentUserLocale,
+                preferences,
+                config,
+                license,
+                teamData,
+                chData,
+                defaultMeData,
+            );
+            await flushPromises();
 
             expect(processEntryModels).toHaveBeenCalledWith(serverUrl,
                 expect.objectContaining({
