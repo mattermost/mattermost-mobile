@@ -391,6 +391,11 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     }, [isFocused]);
 
     useDidUpdate(() => {
+        if (searchTerm && searchTerm !== lastSearchedValue) {
+            // searchTerm changed (case for hashtag tap) — useEffect handles it; skip to avoid double search
+            return;
+        }
+
         if (isFocused && lastSearchedValue && showResults) {
             // requestAnimationFrame for smooth UI updates
             requestAnimationFrame(() => {
