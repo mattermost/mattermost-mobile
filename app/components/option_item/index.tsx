@@ -132,6 +132,7 @@ export type OptionItemProps = {
     value?: string;
     onLayout?: (event: LayoutChangeEvent) => void;
     descriptionNumberOfLines?: number;
+    labelNumberOfLines?: number;
     longInfo?: boolean;
     nonDestructiveDescription?: boolean;
     isRadioCheckmark?: boolean;
@@ -155,6 +156,7 @@ const OptionItem = ({
     value,
     onLayout,
     descriptionNumberOfLines,
+    labelNumberOfLines = 2,
     longInfo,
     nonDestructiveDescription = false,
     isRadioCheckmark = false,
@@ -326,7 +328,7 @@ const OptionItem = ({
                     <Text
                         style={labelTextStyle}
                         testID={`${testID}.label`}
-                        numberOfLines={1}
+                        numberOfLines={labelNumberOfLines}
                     >
                         {label}
                     </Text>

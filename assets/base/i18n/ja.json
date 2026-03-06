@@ -565,7 +565,6 @@
   "mobile.calls_not_connected": "現在のチャンネルのCallに接続していません。",
   "mobile.calls_ok": "OK",
   "mobile.calls_okay": "OK",
-  "mobile.calls_open_channel": "チャンネルを開く",
   "mobile.calls_participant_limit_title_GA": "この通話は定員に達しています",
   "mobile.calls_participant_rec": "ホストがこの会議のレコーディングを開始しました。会議に参加し続けることで、レコーディングに同意したことになります。",
   "mobile.calls_participant_rec_title": "レコーディング中",

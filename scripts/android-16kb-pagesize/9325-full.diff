@@ -36,19 +36,19 @@ index 08eb45fcd9..914911c17a 100644
 +  ]
  }
 diff --git a/app/components/expo_image/index.tsx b/app/components/expo_image/index.tsx
-index 9dbffd7ca6..bd70fffb9c 100644
+index b2723fb..1ed5e15 100644
 --- a/app/components/expo_image/index.tsx
 +++ b/app/components/expo_image/index.tsx
-@@ -8,6 +8,8 @@ import Animated from 'react-native-reanimated';
- import {useServerUrl} from '@context/server';
+@@ -9,6 +9,8 @@ import {useServerUrl} from '@context/server';
+ import NetworkManager from '@managers/network_manager';
  import {urlSafeBase64Encode} from '@utils/security';
- 
+
 +import type {SharedRefType} from 'expo';
 +
  type ExpoImagePropsWithId = ImageProps & {id: string};
  type ExpoImagePropsMemoryOnly = ImageProps & {cachePolicy: 'memory'; id?: string};
  type ExpoImageProps = ExpoImagePropsWithId | ExpoImagePropsMemoryOnly;
-@@ -25,13 +27,13 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
+@@ -54,8 +56,8 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
       * for filesystem path compatibility (avoiding special characters in directory names).
       */
      const cachePath = useMemo(() => urlSafeBase64Encode(serverUrl), [serverUrl]);
@@ -58,16 +58,19 @@ index 9dbffd7ca6..bd70fffb9c 100644
 +        if (typeof props.source === 'number' || typeof props.source === 'string' || Array.isArray(props.source) || !props.source) {
              return props.source;
          }
- 
+
+@@ -63,7 +65,7 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
+         delete sourceHeaders?.Accept;
+
          // Only add cacheKey and cachePath if id is provided (i.e., not memory-only caching)
 -        if (id) {
 +        if (id && typeof props.source === 'object' && 'uri' in props.source) {
              return {
                  ...props.source,
-                 cacheKey: id,
-@@ -43,13 +45,13 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
-     }, [id, props.source, cachePath]);
- 
+                 headers: sourceHeaders,
+@@ -79,8 +81,8 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
+     }, [id, props.source, cachePath, requestHeaders, serverUrl]);
+
      // Process placeholder to add cachePath and cacheKey if it has a uri
 -    const placeholder: ImageSource | undefined = useMemo(() => {
 -        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string') {
@@ -75,14 +78,17 @@ index 9dbffd7ca6..bd70fffb9c 100644
 +        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string' || Array.isArray(props.placeholder)) {
              return props.placeholder;
          }
- 
+
+@@ -88,7 +90,7 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
+         delete placeholderHeaders?.Accept;
+
          // If placeholder has a uri and id is provided, add cachePath and cacheKey
 -        if (props.placeholder.uri && id) {
 +        if (typeof props.placeholder === 'object' && 'uri' in props.placeholder && props.placeholder.uri && id) {
              return {
                  ...props.placeholder,
-                 cacheKey: `${id}-thumb`,
-@@ -74,13 +76,13 @@ ExpoImage.displayName = 'ExpoImage';
+                 headers: placeholderHeaders,
+@@ -117,13 +119,13 @@ ExpoImage.displayName = 'ExpoImage';
  const ExpoImageBackground = ({id, ...props}: ExpoImageBackgroundProps) => {
      const serverUrl = useServerUrl();
      const cachePath = useMemo(() => urlSafeBase64Encode(serverUrl), [serverUrl]);
@@ -92,16 +98,16 @@ index 9dbffd7ca6..bd70fffb9c 100644
 +        if (typeof props.source === 'number' || typeof props.source === 'string' || Array.isArray(props.source) || !props.source) {
              return props.source;
          }
- 
+
          // Only add cacheKey and cachePath if id is provided (i.e., not memory-only caching)
 -        if (id) {
 +        if (id && typeof props.source === 'object' && 'uri' in props.source) {
              return {
                  ...props.source,
                  cacheKey: id,
-@@ -92,13 +94,13 @@ const ExpoImageBackground = ({id, ...props}: ExpoImageBackgroundProps) => {
+@@ -135,13 +137,13 @@ const ExpoImageBackground = ({id, ...props}: ExpoImageBackgroundProps) => {
      }, [id, props.source, cachePath]);
- 
+
      // Process placeholder to add cachePath and cacheKey if it has a uri
 -    const placeholder: ImageSource | undefined = useMemo(() => {
 -        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string') {
@@ -109,7 +115,7 @@ index 9dbffd7ca6..bd70fffb9c 100644
 +        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string' || Array.isArray(props.placeholder)) {
              return props.placeholder;
          }
- 
+
          // If placeholder has a uri and id is provided, add cachePath and cacheKey
 -        if (props.placeholder.uri && id) {
 +        if (typeof props.placeholder === 'object' && 'uri' in props.placeholder && props.placeholder.uri && id) {

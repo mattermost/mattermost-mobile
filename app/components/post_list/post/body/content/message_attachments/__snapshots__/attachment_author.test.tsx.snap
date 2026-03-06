@@ -31,6 +31,7 @@ exports[`AttachmentAuthor it matches snapshot when both name and icon are provid
         {
           "cacheKey": "attachment-author-icon-aHR0cHM6Ly9pbWFnZXMuY29tL2ltYWdlLnBuZw==",
           "cachePath": "",
+          "headers": undefined,
           "uri": "https://images.com/image.png",
         },
       ]
@@ -95,6 +96,7 @@ exports[`AttachmentAuthor it matches snapshot when only icon is provided 1`] = `
         {
           "cacheKey": "attachment-author-icon-aHR0cHM6Ly9pbWFnZXMuY29tL2ltYWdlLnBuZw==",
           "cachePath": "",
+          "headers": undefined,
           "uri": "https://images.com/image.png",
         },
       ]

@@ -68,10 +68,8 @@ jobs:
       - name: Build iOS Simulator
         env:
           TAG: "${{ github.event.pull_request.head.sha }}"
-          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
-          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-        run: bundle exec fastlane ios simulator --env ios.simulator
+        run: bundle exec fastlane ios simulator --env ios.simulator skip_upload_to_s3_bucket:true
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
