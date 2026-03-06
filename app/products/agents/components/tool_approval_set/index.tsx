@@ -36,6 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             marginTop: 8,
             marginBottom: 12,
+            marginLeft: -15,
             gap: 8,
         },
         statusBar: {

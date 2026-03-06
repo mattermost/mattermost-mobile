@@ -17,6 +17,9 @@ import {safeParseJSON} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+const HIT_SLOP_VERTICAL = 4;
+const BUTTON_HIT_SLOP = {top: HIT_SLOP_VERTICAL, bottom: HIT_SLOP_VERTICAL, left: 0, right: 0};
+
 interface ToolCardProps {
     tool: ToolCall;
     isCollapsed: boolean;
@@ -34,7 +37,7 @@ interface ToolCardProps {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            marginBottom: 4,
+            marginBottom: 0,
         },
         header: {
             flexDirection: 'row',
@@ -55,7 +58,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 100),
         },
         argumentsContainer: {
-            marginLeft: 24,
+            marginLeft: 13,
         },
         markdownText: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
@@ -67,21 +70,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             gap: 8,
             paddingTop: 8,
             paddingBottom: 8,
-            paddingLeft: 24,
+            paddingLeft: 13,
         },
         responseLabelText: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
             ...typography('Body', 100),
         },
         resultContainer: {
-            marginLeft: 24,
+            marginLeft: 13,
         },
         statusContainer: {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
             marginTop: 16,
-            paddingLeft: 24,
+            paddingLeft: 13,
         },
         statusText: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
@@ -105,6 +108,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 8,
             paddingHorizontal: 16,
             justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: 32,
         },
         buttonDisabled: {
             opacity: 0.5,
@@ -452,6 +457,7 @@ const ToolCard = ({
                         disabled={isProcessing}
                         style={[styles.button, isProcessing && styles.buttonDisabled]}
                         activeOpacity={0.7}
+                        hitSlop={BUTTON_HIT_SLOP}
                         testID={`${testIdPrefix}.approve`}
                     >
                         <FormattedText
@@ -465,6 +471,7 @@ const ToolCard = ({
                         disabled={isProcessing}
                         style={[styles.button, isProcessing && styles.buttonDisabled]}
                         activeOpacity={0.7}
+                        hitSlop={BUTTON_HIT_SLOP}
                         testID={`${testIdPrefix}.reject`}
                     >
                         <FormattedText

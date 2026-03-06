@@ -4,6 +4,7 @@
 // NOTE : To implement migration, please follow this document
 // https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html
 
+import {AGENTS_TABLES} from '@agents/constants/database';
 import {addColumns, createTable, schemaMigrations, unsafeExecuteSql} from '@nozbe/watermelondb/Schema/migrations';
 
 import {MM_TABLES} from '@constants/database';
@@ -23,11 +24,36 @@ const {
 } = MM_TABLES.SERVER;
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
+const {AI_BOT, AI_THREAD} = AGENTS_TABLES;
 
 export default schemaMigrations({migrations: [
     {
         toVersion: 18,
         steps: [
+            createTable({
+                name: AI_BOT,
+                columns: [
+                    {name: 'display_name', type: 'string'},
+                    {name: 'username', type: 'string'},
+                    {name: 'last_icon_update', type: 'number'},
+                    {name: 'dm_channel_id', type: 'string', isIndexed: true},
+                    {name: 'channel_access_level', type: 'number'},
+                    {name: 'channel_ids', type: 'string'},
+                    {name: 'user_access_level', type: 'number'},
+                    {name: 'user_ids', type: 'string'},
+                    {name: 'team_ids', type: 'string'},
+                ],
+            }),
+            createTable({
+                name: AI_THREAD,
+                columns: [
+                    {name: 'message', type: 'string'},
+                    {name: 'title', type: 'string'},
+                    {name: 'channel_id', type: 'string', isIndexed: true},
+                    {name: 'reply_count', type: 'number'},
+                    {name: 'update_at', type: 'number', isIndexed: true},
+                ],
+            }),
             addColumns({
                 table: MY_CHANNEL,
                 columns: [
