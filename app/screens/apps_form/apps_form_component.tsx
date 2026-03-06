@@ -20,7 +20,7 @@ import SecurityManager from '@managers/security_manager';
 import {filterEmptyOptions} from '@utils/apps';
 import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType} from '@utils/dialog_utils';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
-import {logWarning} from '@utils/log';
+import {logDebug, logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
@@ -67,17 +67,22 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 function fieldsAsElements(fields?: AppField[]): DialogElement[] {
     return fields?.filter((f) => Boolean(f.name)).map((f) => {
         return {
-            name: f.name,
+            name: f.name || '',
+            display_name: f.label || '',
             type: mapAppFieldTypeToDialogType(f.type || 'text'),
             subtype: f.subtype,
+            default: f.value || '',
+            placeholder: f.hint || '',
+            help_text: f.description || '',
             optional: !f.is_required,
-            min_length: f.min_length,
-            max_length: f.max_length,
+            min_length: f.min_length || 0,
+            max_length: f.max_length || 0,
             data_source: getDataSourceForAppFieldType(f.type || 'text'),
             options: f.options?.map((option) => ({
                 text: option.label || '',
                 value: option.value || '',
             })),
+            multiselect: f.multiselect,
         } as DialogElement;
     }) || [];
 }
@@ -168,18 +173,19 @@ function AppsFormComponent({
         if (submitButtons) {
             return undefined;
         }
+        const submitLabel = form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'});
         return {
             ...buildNavigationButton(
                 SUBMIT_BUTTON_ID,
                 'interactive_dialog.submit.button',
                 undefined,
-                intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'}),
+                submitLabel,
             ),
             enabled: !submitting,
             showAsAction: 'always' as const,
             color: theme.sidebarHeaderTextColor,
         };
-    }, [theme.sidebarHeaderTextColor, submitButtons, submitting, intl]);
+    }, [theme.sidebarHeaderTextColor, submitButtons, submitting, intl, form.submit_label]);
 
     const rightButtons = useMemo(() => (rightButton ? [rightButton] : []), [rightButton]);
 
@@ -239,6 +245,7 @@ function AppsFormComponent({
     const onChange = useCallback((name: string, value: AppFormValue) => {
         const field = form.fields?.find((f) => f.name === name);
         if (!field) {
+            logDebug('AppsFormComponent: Field not found for onChange', {name});
             return;
         }
 
