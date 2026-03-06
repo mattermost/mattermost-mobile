@@ -10,6 +10,8 @@ import CitationsList from './index';
 
 import type {Annotation} from '@agents/types';
 
+jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
+
 jest.mock('@utils/url', () => ({
     tryOpenURL: jest.fn(),
     getUrlDomain: jest.fn((url: string) => {
