@@ -10,8 +10,6 @@ import CitationsList from './index';
 
 import type {Annotation} from '@agents/types';
 
-jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
-
 jest.mock('@utils/url', () => ({
     tryOpenURL: jest.fn(),
     getUrlDomain: jest.fn((url: string) => {
@@ -63,35 +61,30 @@ describe('CitationsList', () => {
     });
 
     describe('expand/collapse', () => {
-        it('should be collapsed by default', () => {
+        it('should render toggle button', () => {
             const props = getBaseProps();
-            const {queryByTestId} = renderWithIntlAndTheme(<CitationsList {...props}/>);
+            const {getByTestId} = renderWithIntlAndTheme(<CitationsList {...props}/>);
 
-            // Citation items should not be visible when collapsed
-            expect(queryByTestId('citations.list.item.1')).toBeNull();
+            expect(getByTestId('citations.list.toggle')).toBeTruthy();
         });
 
-        it('should expand when toggle pressed', () => {
+        it('should render citation items (always mounted for animation)', () => {
+            const props = getBaseProps();
+            const {getByTestId} = renderWithIntlAndTheme(<CitationsList {...props}/>);
+
+            // Items are always in the tree; collapse is handled via animated height
+            expect(getByTestId('citations.list.item.1')).toBeTruthy();
+        });
+
+        it('should toggle without error when pressed multiple times', () => {
             const props = getBaseProps();
             const {getByTestId} = renderWithIntlAndTheme(<CitationsList {...props}/>);
 
             fireEvent.press(getByTestId('citations.list.toggle'));
-
-            // Citation item should now be visible
-            expect(getByTestId('citations.list.item.1')).toBeTruthy();
-        });
-
-        it('should collapse when toggle pressed again', () => {
-            const props = getBaseProps();
-            const {getByTestId, queryByTestId} = renderWithIntlAndTheme(<CitationsList {...props}/>);
-
-            // Expand
             fireEvent.press(getByTestId('citations.list.toggle'));
-            expect(getByTestId('citations.list.item.1')).toBeTruthy();
 
-            // Collapse
-            fireEvent.press(getByTestId('citations.list.toggle'));
-            expect(queryByTestId('citations.list.item.1')).toBeNull();
+            // Items remain accessible after toggling
+            expect(getByTestId('citations.list.item.1')).toBeTruthy();
         });
     });
 
