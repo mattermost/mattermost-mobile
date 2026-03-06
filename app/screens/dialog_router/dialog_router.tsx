@@ -5,7 +5,7 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {type IntlShape, useIntl} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
-import {submitInteractiveDialog} from '@actions/remote/integrations';
+import {submitInteractiveDialog, lookupInteractiveDialog} from '@actions/remote/integrations';
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import AppsFormComponent from '@screens/apps_form/apps_form_component';
@@ -234,12 +234,12 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
     }
 
     // Create performLookupCall for dynamic select fields
-    const performLookupCall = useCallback(async (field: AppField, values: AppFormValues, userInput: AppFormValue): Promise<DoAppCallResult<AppLookupResponse>> => {
-        if (!field || !config?.dialog?.elements) {
+    const performLookupCall = useCallback(async (field: AppField): Promise<DoAppCallResult<AppLookupResponse>> => {
+        if (!field || !currentConfig?.dialog?.elements) {
             return {data: {type: 'ok', data: {items: []}}};
         }
 
-        const elements = config.dialog.elements || [];
+        const elements = currentConfig.dialog.elements || [];
         const element = findDialogElement(elements, field.name ?? '');
 
         if (!element || element.data_source !== 'dynamic' || !element.data_source_url) {
@@ -247,15 +247,37 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
         }
 
         try {
-            // Make the dynamic lookup request using InteractiveDialogAdapter
-            const result = await InteractiveDialogAdapter.performDynamicLookup(element, String(userInput || ''), serverUrl, config);
-            return {data: {type: 'ok', data: {items: result}}};
+            const submission: DialogSubmission = {
+                url: element.data_source_url,
+                callback_id: currentConfig.dialog.callback_id || '',
+                state: currentConfig.dialog.state || '',
+                user_id: '',
+                channel_id: '',
+                team_id: '',
+                cancelled: false,
+                submission: {
+                    selected_field: element.name,
+                },
+            };
+
+            const result = await lookupInteractiveDialog(serverUrl, submission);
+
+            if (result?.data && typeof result.data === 'object' && 'items' in result.data) {
+                const responseData = result.data as {items: DialogOption[]};
+                if (Array.isArray(responseData.items)) {
+                    return {data: {type: 'ok', data: {items: responseData.items.map((opt: DialogOption) => ({label: opt.text || '', value: opt.value || ''}))}}};
+                }
+            }
+
+            if (result?.error) {
+                logDebug('[DialogRouter.performLookupCall]', getFullErrorMessage(result.error));
+            }
         } catch (error) {
-            // Return empty items on error to avoid breaking autocomplete UI
             logDebug('[DialogRouter.performLookupCall]', getFullErrorMessage(error));
-            return {data: {type: 'ok', data: {items: []}}};
         }
-    }, [config, serverUrl]);
+
+        return {data: {type: 'ok', data: {items: []}}};
+    }, [currentConfig, serverUrl]);
 
     // Create refreshOnSelect for Interactive Dialog field refresh support
     const refreshOnSelect = useCallback(async (field: AppField, values: AppFormValues): Promise<DoAppCallResult<FormResponseData>> => {
