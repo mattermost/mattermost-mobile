@@ -13,7 +13,7 @@ import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from '@constants/autocomplete
 import {useServerUrl} from '@context/server';
 import {useDebounce} from '@hooks/utils';
 
-import {SECTION_KEY_GROUPS, SECTION_KEY_SPECIAL, emptyGroupList, emptySectionList, emptyUserlList} from './constants';
+import {SECTION_KEY_AGENTS, SECTION_KEY_GROUPS, SECTION_KEY_SPECIAL, emptyGroupList, emptySectionList, emptyUserlList} from './constants';
 import {checkSpecialMentions, filterResults, getAllUsers, getMatchTermForAtMention, keyExtractor, makeSections, searchGroups, sortReceivedUsers} from './utils';
 
 import type {SpecialMention, UserMentionSections} from './types';
@@ -56,6 +56,7 @@ const AtMention = ({
     const [sections, setSections] = useState<UserMentionSections>(emptySectionList);
     const [usersInChannel, setUsersInChannel] = useState<Array<UserProfile | UserModel>>(emptyUserlList);
     const [usersOutOfChannel, setUsersOutOfChannel] = useState<Array<UserProfile | UserModel>>(emptyUserlList);
+    const [agents, setAgents] = useState<Array<UserProfile | UserModel>>(emptyUserlList);
     const [groups, setGroups] = useState<GroupModel[]>(emptyGroupList);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
@@ -83,6 +84,7 @@ const AtMention = ({
 
         setUseLocal(Boolean(error));
         if (error) {
+            setAgents(emptyUserlList);
             let fallbackUsers = localUsers;
             if (!fallbackUsers) {
                 fallbackUsers = await getAllUsers(sUrl);
@@ -95,9 +97,16 @@ const AtMention = ({
             const filteredUsers = filterResults(fallbackUsers, term);
             setFilteredLocalUsers(filteredUsers.length ? filteredUsers : emptyUserlList);
         } else if (receivedUsers) {
-            const [sortedMembers, sortedOutOfChannel] = await sortReceivedUsers(sUrl, term, receivedUsers?.users, receivedUsers?.out_of_channel);
+            const receivedAgents = receivedUsers.agents ?? [];
+            const agentIds = new Set(receivedAgents.map((a) => a.id));
+
+            const usersOnly = receivedUsers.users.filter((u) => !agentIds.has(u.id));
+            const outOfChannelOnly = receivedUsers.out_of_channel?.filter((u) => !agentIds.has(u.id));
+
+            const [sortedMembers, sortedOutOfChannel] = await sortReceivedUsers(sUrl, term, usersOnly, outOfChannelOnly);
             setUsersInChannel(sortedMembers.length ? sortedMembers : emptyUserlList);
             setUsersOutOfChannel(sortedOutOfChannel.length ? sortedOutOfChannel : emptyUserlList);
+            setAgents(receivedAgents.length ? receivedAgents : emptyUserlList);
         }
 
         setLoading(false);
@@ -112,6 +121,7 @@ const AtMention = ({
     const resetState = () => {
         setUsersInChannel(emptyUserlList);
         setUsersOutOfChannel(emptyUserlList);
+        setAgents(emptyUserlList);
         setGroups(emptyGroupList);
         setFilteredLocalUsers(emptyUserlList);
         setSections(emptySectionList);
@@ -181,16 +191,30 @@ const AtMention = ({
         );
     }, [completeMention]);
 
+    const renderAgentMentions = useCallback((item: UserProfile | UserModel) => {
+        return (
+            <AtMentionItem
+                user={item}
+                isAgent={true}
+                showBadges={true}
+                onPress={completeMention}
+                testID='autocomplete.at_mention_item'
+            />
+        );
+    }, [completeMention]);
+
     const renderItem = useCallback(({item, section}: SectionListRenderItemInfo<SpecialMention | GroupModel | UserProfile>) => {
         switch (section.key) {
             case SECTION_KEY_SPECIAL:
                 return renderSpecialMentions(item as SpecialMention);
             case SECTION_KEY_GROUPS:
                 return renderGroupMentions(item as GroupModel);
+            case SECTION_KEY_AGENTS:
+                return renderAgentMentions(item as UserProfile);
             default:
                 return renderAtMentions(item as UserProfile);
         }
-    }, [renderSpecialMentions, renderGroupMentions, renderAtMentions]);
+    }, [renderSpecialMentions, renderGroupMentions, renderAgentMentions, renderAtMentions]);
 
     const renderSectionHeader = useCallback(({section}: SectionListRenderItemInfo<SpecialMention | GroupModel | UserProfile>) => {
         return (
@@ -239,7 +263,7 @@ const AtMention = ({
         if (useLocal) {
             newSections = makeSections(filteredLocalUsers, [], [], groups, showSpecialMentions, true, buildMemberSection);
         } else {
-            newSections = makeSections(teamMembers, usersInChannel, usersOutOfChannel, groups, showSpecialMentions, buildMemberSection);
+            newSections = makeSections(teamMembers, usersInChannel, usersOutOfChannel, groups, showSpecialMentions, false, buildMemberSection, agents);
         }
         const nSections = newSections.length;
 
@@ -254,7 +278,7 @@ const AtMention = ({
         onShowingChange(Boolean(nSections));
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [!useLocal && usersInChannel, !useLocal && usersOutOfChannel, groups, loading, channelId, useLocal && filteredLocalUsers]);
+    }, [!useLocal && usersInChannel, !useLocal && usersOutOfChannel, !useLocal && agents, groups, loading, channelId, useLocal && filteredLocalUsers]);
 
     if (sections.length === 0 || noResultsTerm != null) {
         // If we are not in an active state or the mention has been completed return null so nothing is rendered
