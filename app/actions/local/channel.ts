@@ -540,7 +540,7 @@ export async function deletePostsForChannel(serverUrl: string, channelId: string
 
         if (preparedModels.length && !prepareRecordsOnly) {
             await operator.batchRecords(preparedModels, 'deletePostsForChannel');
-            DeviceEventEmitter.emit(Events.POST_DELETED_FOR_CHANNEL, {serverUrl, channelId});
+            DeviceEventEmitter.emit(Events.POST_DELETED_FOR_CHANNEL, {serverUrl, channelId, teamId: channel.teamId});
         }
 
         return {error: false, models: preparedModels};

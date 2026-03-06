@@ -10,14 +10,18 @@ export const SNACK_BAR_TYPE = keyMirror({
     AGENT_STOP_ERROR: null,
     AGENT_REGENERATE_ERROR: null,
     AGENT_TOOL_APPROVAL_ERROR: null,
+    AGENT_TOOL_RESULT_ERROR: null,
+    AGENT_FETCH_PRIVATE_ERROR: null,
     CODE_COPIED: null,
     FAVORITE_CHANNEL: null,
+    FILE_DOWNLOAD_REJECTED: null,
     FOLLOW_THREAD: null,
     INFO_COPIED: null,
     LINK_COPIED: null,
     LINK_COPY_FAILED: null,
     MESSAGE_COPIED: null,
     MUTE_CHANNEL: null,
+    PLUGIN_TOAST: null,
     REMOVE_CHANNEL_USER: null,
     TEXT_COPIED: null,
     UNFAVORITE_CHANNEL: null,
@@ -63,6 +67,14 @@ const messages = defineMessages({
         id: 'snack.bar.agent.tool.approval.error',
         defaultMessage: 'Failed to submit tool approval',
     },
+    AGENT_TOOL_RESULT_ERROR: {
+        id: 'snack.bar.agent.tool.result.error',
+        defaultMessage: 'Failed to submit tool result',
+    },
+    AGENT_FETCH_PRIVATE_ERROR: {
+        id: 'snack.bar.agent.fetch.private.error',
+        defaultMessage: 'Failed to fetch private data',
+    },
     CODE_COPIED: {
         id: 'snack.bar.code.copied',
         defaultMessage: 'Code copied to clipboard',
@@ -70,6 +82,10 @@ const messages = defineMessages({
     FAVORITE_CHANNEL: {
         id: 'snack.bar.favorited.channel',
         defaultMessage: 'This channel was favorited',
+    },
+    FILE_DOWNLOAD_REJECTED: {
+        id: 'snack.bar.file.download.rejected',
+        defaultMessage: 'File access blocked by plugin',
     },
     FOLLOW_THREAD: {
         id: 'snack.bar.following.thread',
@@ -115,6 +131,10 @@ const messages = defineMessages({
         id: 'snack.bar.unfollow.thread',
         defaultMessage: 'Thread unfollowed',
     },
+    PLUGIN_TOAST: {
+        id: 'snack.bar.plugin.toast',
+        defaultMessage: 'Notification',
+    },
     PLAYBOOK_ERROR: {
         id: 'snack.bar.playbook.error',
         defaultMessage: 'Unable to perform action. Please try again later.',
@@ -153,6 +173,18 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         hasAction: false,
         type: MESSAGE_TYPE.ERROR,
     },
+    AGENT_TOOL_RESULT_ERROR: {
+        message: messages.AGENT_TOOL_RESULT_ERROR,
+        iconName: 'alert-outline',
+        hasAction: false,
+        type: MESSAGE_TYPE.ERROR,
+    },
+    AGENT_FETCH_PRIVATE_ERROR: {
+        message: messages.AGENT_FETCH_PRIVATE_ERROR,
+        iconName: 'alert-outline',
+        hasAction: false,
+        type: MESSAGE_TYPE.ERROR,
+    },
     CODE_COPIED: {
         message: messages.CODE_COPIED,
         iconName: 'content-copy',
@@ -162,6 +194,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         message: messages.FAVORITE_CHANNEL,
         iconName: 'star',
         hasAction: true,
+    },
+    FILE_DOWNLOAD_REJECTED: {
+        message: messages.FILE_DOWNLOAD_REJECTED,
+        iconName: 'alert-circle-outline',
+        hasAction: false,
+        type: MESSAGE_TYPE.ERROR,
     },
     FOLLOW_THREAD: {
         message: messages.FOLLOW_THREAD,
@@ -220,6 +258,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         message: messages.UNFOLLOW_THREAD,
         iconName: 'check',
         hasAction: true,
+    },
+    PLUGIN_TOAST: {
+        message: messages.PLUGIN_TOAST,
+        iconName: 'information-outline',
+        hasAction: false,
+        type: MESSAGE_TYPE.DEFAULT,
     },
     PLAYBOOK_ERROR: {
         message: messages.PLAYBOOK_ERROR,

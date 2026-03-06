@@ -35,10 +35,7 @@ const PickerFooter = (props: BottomSheetFooterProps) => {
         waitForSheetExtended(animatedSheetState, () => {
             selectEmojiCategoryBarSection(index);
         });
-
-        // animatedSheetState and expand are stable and don't need to be in dependencies to avoid unnecessary callback recreation
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [animatedSheetState, expand]);
 
     const animatedStyle = useAnimatedStyle(() => {
         const paddingBottom = withTiming(

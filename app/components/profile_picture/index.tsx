@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {type StyleProp, View, type ViewStyle} from 'react-native';
 
 import {fetchStatusInBatch} from '@actions/remote/user';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useDidMount from '@hooks/did_mount';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Image from './image';
@@ -75,11 +76,11 @@ const ProfilePicture = ({
     const style = getStyleSheet(theme);
     const isBot = author && (('isBot' in author) ? author.isBot : author.is_bot);
 
-    useEffect(() => {
+    useDidMount(() => {
         if (!isBot && author && !author.status && showStatus) {
             fetchStatusInBatch(serverUrl, author.id);
         }
-    }, []);
+    });
 
     const viewStyle = useMemo(
         () => [style.container, {width: size, height: size}, containerStyle],

@@ -1468,6 +1468,42 @@ export const fetchGroupMessageMembersCommonTeams = async (serverUrl: string, cha
     }
 };
 
+export async function switchToChannelByName(serverUrl: string, channelName: string, teamName?: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        let teamId = '';
+        if (teamName) {
+            const team = await getTeamByName(database, teamName);
+            teamId = team?.id || '';
+        }
+        if (!teamId) {
+            teamId = await getCurrentTeamId(database) || '';
+        }
+
+        let channelId = '';
+        const channel = await getChannelByName(database, teamId, channelName);
+        if (channel) {
+            channelId = channel.id;
+        } else {
+            const fetchResult = await fetchChannelByName(serverUrl, teamId, channelName, true);
+            if (fetchResult.channel) {
+                channelId = fetchResult.channel.id;
+            }
+        }
+
+        if (channelId) {
+            await switchToChannelById(serverUrl, channelId, teamId);
+        }
+
+        return {};
+    } catch (error) {
+        logDebug('error on switchToChannelByName', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+}
+
 export const convertGroupMessageToPrivateChannel = async (serverUrl: string, channelId: string, targetTeamId: string, displayName: string) => {
     try {
         const name = generateChannelNameFromDisplayName(displayName);

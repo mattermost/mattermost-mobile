@@ -131,6 +131,10 @@ export const usePermissionsChecker = (micPermissionsGranted: boolean) => {
         if (!micPermissionsGranted) {
             asyncFn();
         }
+
+    // We don't care about `micPermissionsGranted` changes as long as
+    // it is up to date when the effect runs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [appState]);
 
     return hasPermission;

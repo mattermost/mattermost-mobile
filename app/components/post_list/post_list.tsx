@@ -183,10 +183,7 @@ const PostList = ({
         listRef?.current?.scrollToOffset({offset: targetOffset, animated: true});
 
         setShowScrollToEndBtn(false);
-
-        // Shared values don't need to be in dependencies - they're stable references
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [listRef]);
+    }, [inputAccessoryViewAnimatedHeight, keyboardHeight, listRef]);
 
     useEffect(() => {
         const t = setTimeout(() => {

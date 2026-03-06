@@ -33,6 +33,7 @@ exports[`AttachmentFooter it matches snapshot when both footer and footer_icon a
         {
           "cacheKey": "attachment-footer-icon-aHR0cHM6Ly9pbWFnZXMuY29tL2ltYWdlLnBuZw==",
           "cachePath": "",
+          "headers": undefined,
           "uri": "https://images.com/image.png",
         },
       ]

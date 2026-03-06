@@ -409,18 +409,18 @@ export async function handlePostAcknowledgementRemoved(serverUrl: string, msg: W
 export async function handlePostTranslationUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
     try {
         const translationData: PostTranslationUpdateData = msg.data;
-        const translationObject: PostTranslation['object'] = translationData.translation ? JSON.parse(translationData.translation) : undefined;
         const locale = await getCurrentUserLocale(serverUrl);
-        if (locale !== translationData.language) {
+        const myLanguageTranslation = translationData.translations[locale];
+
+        if (!myLanguageTranslation) {
             return;
         }
-        if (locale === translationData.src_lang) {
-            return;
-        }
-        await updatePostTranslation(serverUrl, translationData.object_id, translationData.language, {
+
+        const translationObject: PostTranslation['object'] = myLanguageTranslation?.translation ? JSON.parse(myLanguageTranslation.translation) : undefined;
+        await updatePostTranslation(serverUrl, translationData.object_id, locale, {
             object: translationObject,
-            state: translationData.state,
-            source_lang: translationData.src_lang,
+            state: myLanguageTranslation.state,
+            source_lang: myLanguageTranslation.src_lang,
         });
     } catch (error) {
         // Do nothing

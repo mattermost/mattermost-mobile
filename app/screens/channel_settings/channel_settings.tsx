@@ -33,7 +33,7 @@ type Props = {
     convertGMOptionAvailable: boolean;
     displayName: string;
     isCallsEnabledInChannel: boolean;
-    isChannelAutotranslateEnabled: boolean;
+    canManageAutotranslations: boolean;
     type?: ChannelType;
 }
 
@@ -66,7 +66,7 @@ const ChannelSettings = ({
     convertGMOptionAvailable,
     displayName,
     isCallsEnabledInChannel,
-    isChannelAutotranslateEnabled,
+    canManageAutotranslations,
     type,
 }: Props) => {
     const theme = useTheme();
@@ -116,7 +116,7 @@ const ChannelSettings = ({
                     {convertGMOptionAvailable &&
                         <ConvertToChannelLabel channelId={channelId}/>
                     }
-                    {canManageSettings && isChannelAutotranslateEnabled &&
+                    {canManageAutotranslations &&
                         <ChannelAutotranslation channelId={channelId}/>
                     }
                     {(canArchive || canUnarchive) &&

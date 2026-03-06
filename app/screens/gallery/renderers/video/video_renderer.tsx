@@ -147,10 +147,7 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
             videoRef.current?.seek(0.0);
         }
         setPaused(false);
-
-    // No need for shared values
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [duration]);
+    }, [currentTime, duration]);
 
     const onPause = useCallback(() => {
         setPaused(true);
@@ -163,18 +160,12 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
     const onRewind = useCallback(() => {
         const newTime = Math.max(0, currentTime.value - seekSeconds);
         videoRef.current?.seek(newTime);
-
-    // No need for shared values
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [seekSeconds]);
+    }, [currentTime, seekSeconds]);
 
     const onForward = useCallback(() => {
         const newTime = Math.min(duration, currentTime.value + seekSeconds);
         videoRef.current?.seek(newTime);
-
-    // No need for shared values
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [duration, seekSeconds]);
+    }, [currentTime, duration, seekSeconds]);
 
     const onRateChange = useCallback((rate: number) => {
         setPlaybackRate(rate);

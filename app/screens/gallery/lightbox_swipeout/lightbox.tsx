@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {type ImageSource} from 'expo-image';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {type ImageStyle, type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated, {
     interpolate, runOnJS, runOnUI,
@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import {ExpoImageAnimated} from '@components/expo_image';
+import useDidMount from '@hooks/did_mount';
 import {calculateDimensions} from '@utils/images';
 
 import {pagerTimingConfig} from '../animation_config/timing';
@@ -77,7 +78,7 @@ export default function Lightbox({
         });
     };
 
-    useEffect(() => {
+    useDidMount(() => {
         runOnUI(animateOnMount)();
 
         return () => {
@@ -86,10 +87,7 @@ export default function Lightbox({
                 childLayoutTimeoutRef.current = undefined;
             }
         };
-
-        // We only want to run this on mount and unmount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     const {width: tw, height: th} = useMemo(() => calculateDimensions(
         target.height,

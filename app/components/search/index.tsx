@@ -84,21 +84,24 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     const searchCancelButtonTestID = `${props.testID}.search.cancel.button`;
     const searchInputTestID = `${props.testID}.search.input`;
 
+    const onCancelProp = props.onCancel;
+    const onClearProp = props.onClear;
+    const onChangeTextProp = props.onChangeText;
     const onCancel = useCallback(() => {
         Keyboard.dismiss();
         setValue('');
-        props.onCancel?.();
-    }, [props.onCancel]);
+        onCancelProp?.();
+    }, [onCancelProp]);
 
     const onClear = useCallback(() => {
         setValue('');
-        props.onClear?.();
-    }, [props.onClear]);
+        onClearProp?.();
+    }, [onClearProp]);
 
     const onChangeText = useCallback((text: string) => {
         setValue(text);
-        props.onChangeText?.(text);
-    }, [props.onChangeText]);
+        onChangeTextProp?.(text);
+    }, [onChangeTextProp]);
 
     const cancelButtonProps = useMemo(() => ({
         buttonTextStyle: {

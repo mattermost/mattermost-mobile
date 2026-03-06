@@ -57,6 +57,7 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {
@@ -363,14 +364,10 @@ const CallScreen = ({
         id: 'mobile.calls_stop_recording',
         defaultMessage: 'Stop Recording',
     });
-    const openChannelOptionTitle = intl.formatMessage({
-        id: 'mobile.calls_open_channel',
-        defaultMessage: 'Open Channel',
-    });
     const showCCTitle = intl.formatMessage({id: 'mobile.calls_show_cc', defaultMessage: 'Show live captions'});
     const hideCCTitle = intl.formatMessage({id: 'mobile.calls_hide_cc', defaultMessage: 'Hide live captions'});
 
-    useEffect(() => {
+    useDidMount(() => {
         const setOrientation = () => {
             mergeNavigationOptions('Call', {
                 layout: {
@@ -418,7 +415,7 @@ const CallScreen = ({
 
             unsetOrientation();
         };
-    }, []);
+    });
 
     const leaveCallHandler = useCallback(() => {
         leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId || '', popTopScreen);
@@ -448,7 +445,7 @@ const CallScreen = ({
         }
 
         await startCallRecording(currentCall.serverUrl, currentCall.channelId);
-    }, [currentCall?.channelId, currentCall?.serverUrl]);
+    }, [currentCall]);
 
     const stopRecording = useCallback(async () => {
         const stop = await stopRecordingConfirmationAlert(intl, EnableTranscriptions);
@@ -464,7 +461,7 @@ const CallScreen = ({
         }
 
         await stopCallRecording(currentCall.serverUrl, currentCall.channelId);
-    }, [currentCall?.channelId, currentCall?.serverUrl, EnableTranscriptions]);
+    }, [intl, EnableTranscriptions, currentCall]);
 
     const toggleCC = useCallback(async () => {
         Keyboard.dismiss();
@@ -495,7 +492,7 @@ const CallScreen = ({
         await DatabaseManager.setActiveServerDatabase(currentCall.serverUrl);
         WebsocketManager.initializeClient(currentCall.serverUrl, 'Server Switch');
         await goToScreen(Screens.THREAD, callThreadOptionTitle, {rootId: currentCall.threadId});
-    }, [currentCall?.serverUrl, currentCall?.threadId, fromThreadScreen, componentId, callThreadOptionTitle]);
+    }, [currentCall, componentId, fromThreadScreen, callThreadOptionTitle]);
 
     // The user should receive a recording alert if all of the following conditions apply:
     // - Recording has started, recording has not ended
@@ -581,10 +578,26 @@ const CallScreen = ({
             title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
             theme,
         });
-    }, [intl, theme, isHost, EnableRecordings, waitingForRecording, recording, startRecording,
-        recordOptionTitle, stopRecording, stopRecordingOptionTitle, style, switchToThread,
-        callThreadOptionTitle, openChannelOptionTitle, ccAvailable, toggleCC, showCC, hideCCTitle,
-        showCCTitle]);
+    }, [
+        isHost,
+        EnableRecordings,
+        ccAvailable,
+        intl,
+        theme,
+        showStartRecording,
+        startRecording,
+        recordOptionTitle,
+        showStopRecording,
+        style,
+        stopRecording,
+        stopRecordingOptionTitle,
+        switchToThread,
+        callThreadOptionTitle,
+        toggleCC,
+        showCC,
+        hideCCTitle,
+        showCCTitle,
+    ]);
 
     const collapse = useCallback(() => {
         popTopScreen(componentId);
@@ -611,6 +624,10 @@ const CallScreen = ({
         } else {
             setCenterUsers(true);
         }
+
+    // We don't care about `avatarSize`, `screenShareOn`, and `smallerAvatar` changes as long as
+    // it is up to date when the effect runs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [layout, numSessions]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
