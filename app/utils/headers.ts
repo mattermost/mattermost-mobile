@@ -5,7 +5,19 @@ export function getResponseHeader(headers: Record<string, string> | undefined, n
     if (!headers) {
         return undefined;
     }
+    const direct = headers[name];
+    if (direct !== undefined) {
+        return direct;
+    }
     const lowerName = name.toLowerCase();
-    const key = Object.keys(headers).find((k) => k.toLowerCase() === lowerName);
-    return key ? headers[key] : undefined;
+    const lowerDirect = headers[lowerName];
+    if (lowerDirect !== undefined) {
+        return lowerDirect;
+    }
+    for (const key in headers) {
+        if (key.toLowerCase() === lowerName) {
+            return headers[key];
+        }
+    }
+    return undefined;
 }

@@ -14,7 +14,7 @@ describe('getResponseHeader', () => {
         expect(getResponseHeader(headers, 'X-Reject-Reason')).toBe('pre-auth');
     });
 
-    it('should return the value when lookup name is lowercase but header is mixed case', () => {
+    it('should return the value when lookup name is lowercase but header is uppercase', () => {
         const headers = {'X-REJECT-REASON': 'pre-auth'};
         expect(getResponseHeader(headers, 'x-reject-reason')).toBe('pre-auth');
     });
