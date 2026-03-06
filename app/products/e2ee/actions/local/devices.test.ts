@@ -40,7 +40,7 @@ describe('addDevice', () => {
             signaturePublicKey: 'key',
         });
 
-        const {data} = await addDevice(serverUrl, 'device-id-2', 'key-2');
+        const {data} = await addDevice(serverUrl, 'device-id', 'key-2');
 
         expect(data).toBeDefined();
         expect(data!.length).toBe(1);

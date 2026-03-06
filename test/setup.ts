@@ -117,8 +117,9 @@ jest.mock('@managers/intune_manager', () => ({
 jest.mock('@managers/e2ee_manager', () => ({
     __esModule: true,
     default: {
-        isAvailable: jest.fn(() => false),
+        initialize: jest.fn(),
         generateSignatureKeyPair: jest.fn(() => null),
+        generateKeyPackages: jest.fn(() => null),
     },
 }));
 
