@@ -233,11 +233,7 @@ jobs:
             /usr/local/lib/android/sdk/system-images
             /usr/local/lib/android/sdk/emulator
             ~/.android/avd
-          key: >
-            android-emulator-
-            ${{ runner.os }}-
-            ${{ runner.arch }}-
-            api-34
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-api-34
           restore-keys: |
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
