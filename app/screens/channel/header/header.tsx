@@ -329,6 +329,7 @@ const ChannelHeader = ({
                     name='translate'
                     size={16}
                     color={changeOpacity(theme.sidebarHeaderTextColor, 0.72)}
+                    testID='channel_header.autotranslation.icon'
                 />
             );
         }

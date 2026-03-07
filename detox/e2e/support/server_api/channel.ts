@@ -207,6 +207,28 @@ export const apiRestoreChannel = async (baseUrl: string, channelId: string): Pro
 };
 
 /**
+ * Update a channel member's roles.
+ * See https://api.mattermost.com/#operation/UpdateChannelMemberRoles
+ * @param {string} baseUrl - the base server URL
+ * @param {string} channelId - The channel ID
+ * @param {string} userId - The user ID
+ * @param {string} roles - Space-delimited list of role names (e.g. 'channel_user channel_admin')
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiUpdateChannelMemberRoles = async (baseUrl: string, channelId: string, userId: string, roles: string): Promise<any> => {
+    try {
+        const response = await client.put(
+            `${baseUrl}/api/v4/channels/${channelId}/members/${userId}/roles`,
+            {roles},
+        );
+
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Remove user from channel.
  * See https://api.mattermost.com/#operation/RemoveUserFromChannel
  * @param {string} baseUrl - the base server URL
@@ -271,6 +293,7 @@ export const Channel = {
     apiGetUnreadMessages,
     apiRestoreChannel,
     apiRemoveUserFromChannel,
+    apiUpdateChannelMemberRoles,
     apiViewChannel,
     generateRandomChannel,
 };
