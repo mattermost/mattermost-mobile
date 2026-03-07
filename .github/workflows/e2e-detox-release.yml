@@ -1,9 +1,11 @@
 name: Detox E2E Tests Release
+# NOTE: The push trigger has been removed. Release branch E2E runs are now
+# owned by Matterwick, which provisions dedicated cloud servers on push and
+# dispatches e2e-detox-pr.yml. This file can be triggered manually for
+# ad-hoc runs against the permanent servers if needed.
 
 on:
-  push:
-    branches:
-      - release-*
+  workflow_dispatch:
 
 env:
   INTUNE_ENABLED: 'true'
