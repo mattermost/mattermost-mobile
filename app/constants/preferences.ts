@@ -14,6 +14,7 @@ export const CATEGORIES_TO_KEEP = {
     SIDEBAR_SETTINGS: 'sidebar_settings',
     TEAMS_ORDER: 'teams_order',
     THEME: 'theme',
+    THEME_DARK: 'theme_dark',
     SYSTEM_NOTICE: 'system_notice',
 };
 
@@ -61,6 +62,7 @@ const Preferences = {
     ADVANCED_FILTER_JOIN_LEAVE: 'join_leave',
     ADVANCED_CODE_BLOCK_ON_CTRL_ENTER: 'code_block_ctrl_enter',
     ADVANCED_SEND_ON_CTRL_ENTER: 'send_on_ctrl_enter',
+    THEME_AUTO_SWITCH: 'theme_auto_switch',
     THEMES: {
         denim: {
             type: 'Denim',

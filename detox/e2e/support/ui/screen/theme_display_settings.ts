@@ -10,6 +10,8 @@ class ThemeDisplaySettingsScreen {
         themeDisplaySettingsScreen: 'theme_display_settings.screen',
         backButton: 'screen.back.button',
         scrollView: 'theme_display_settings.scroll_view',
+        autoSwitchToggleOff: 'theme_display_settings.auto_switch.toggle.toggled.false.button',
+        autoSwitchToggleOn: 'theme_display_settings.auto_switch.toggle.toggled.true.button',
         denimOption: 'theme_display_settings.denim.option',
         denimOptionSelected: 'theme_display_settings.denim.option.selected',
         sapphireOption: 'theme_display_settings.sapphire.option',
@@ -27,6 +29,8 @@ class ThemeDisplaySettingsScreen {
     themeDisplaySettingsScreen = element(by.id(this.testID.themeDisplaySettingsScreen));
     backButton = element(by.id(this.testID.backButton));
     scrollView = element(by.id(this.testID.scrollView));
+    autoSwitchToggleOff = element(by.id(this.testID.autoSwitchToggleOff));
+    autoSwitchToggleOn = element(by.id(this.testID.autoSwitchToggleOn));
     denimOption = element(by.id(this.testID.denimOption));
     denimOptionSelected = element(by.id(this.testID.denimOptionSelected));
     sapphireOption = element(by.id(this.testID.sapphireOption));
@@ -56,6 +60,37 @@ class ThemeDisplaySettingsScreen {
     back = async () => {
         await this.backButton.tap();
         await expect(this.themeDisplaySettingsScreen).not.toBeVisible();
+    };
+
+    toggleAutoSwitchOn = async () => {
+        await this.autoSwitchToggleOff.tap();
+        await expect(this.autoSwitchToggleOn).toBeVisible();
+    };
+
+    toggleAutoSwitchOff = async () => {
+        await this.autoSwitchToggleOn.tap();
+        await expect(this.autoSwitchToggleOff).toBeVisible();
+    };
+
+    // When auto-switch is on, theme tiles appear in both light (index 0) and dark (index 1) sections.
+    getLightThemeOption = (themeKey: string) => {
+        return element(by.id(`theme_display_settings.${themeKey}.option`)).atIndex(0);
+    };
+
+    getDarkThemeOption = (themeKey: string) => {
+        return element(by.id(`theme_display_settings.${themeKey}.option`)).atIndex(1);
+    };
+
+    selectLightTheme = async (themeKey: string) => {
+        await this.scrollView.scrollTo('top');
+        const option = this.getLightThemeOption(themeKey);
+        await option.tap();
+    };
+
+    selectDarkTheme = async (themeKey: string) => {
+        const option = this.getDarkThemeOption(themeKey);
+        await waitFor(option).toBeVisible().whileElement(by.id(this.testID.scrollView)).scroll(50, 'down');
+        await option.tap();
     };
 }
 

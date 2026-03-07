@@ -7,7 +7,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
-import {queryDisplayNamePreferences} from '@queries/servers/preference';
+import {observeThemeAutoSwitchPreference, queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeAllowedThemesKeys, observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCRTUserPreferenceDisplay, observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
@@ -36,6 +36,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
                     (preferences) => of$(getDisplayNamePreferenceAsBool(preferences, Preferences.USE_MILITARY_TIME)),
                 ),
             ),
+        themeAutoSwitch: observeThemeAutoSwitchPreference(database),
         currentUser: observeCurrentUser(database),
     };
 });
