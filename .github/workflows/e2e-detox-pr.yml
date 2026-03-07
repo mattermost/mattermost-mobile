@@ -8,27 +8,14 @@ on:
       - main
     types:
       - labeled
-
   workflow_dispatch:
     inputs:
-      SITE_1_URL:
-        description: "Site 1 server URL"
-        required: true
-        type: string
-      SITE_2_URL:
-        description: "Site 2 server URL"
-        required: true
-        type: string
-      SITE_3_URL:
-        description: "Site 3 server URL"
-        required: true
-        type: string
       MOBILE_VERSION:
-        description: "Mobile version to test"
+        description: "The mobile app commit SHA to test"
         required: true
         type: string
       PLATFORM:
-        description: "ios, android, or both"
+        description: "Mobile platform to test: ios, android, or both"
         required: false
         default: "both"
         type: choice
@@ -36,9 +23,33 @@ on:
           - ios
           - android
           - both
+      SITE_1_URL:
+        description: "URL of the first Mattermost test server"
+        required: true
+        type: string
+      SITE_2_URL:
+        description: "URL of the second Mattermost test server"
+        required: false
+        type: string
+      SITE_3_URL:
+        description: "URL of the third Mattermost test server"
+        required: false
+        type: string
+      pr_number:
+        description: "PR number to remove E2E label from after tests complete"
+        required: false
+        type: string
+      run_type:
+        description: "Run type for test reporting (PR/RELEASE/MASTER/MAIN). Defaults to PR."
+        required: false
+        default: "PR"
+        type: string
 
 concurrency:
-  group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}-${{ github.event.label.name || 'manual' }}"
+  # For PR label events: key on PR number + label to cancel previous runs of the same label.
+  # For workflow_dispatch (Matterwick): key on pr_number input (or run_id for labelless runs like nightly)
+  # so simultaneous dispatches for different PRs don't cancel each other.
+  group: "${{ github.workflow }}-${{ github.event_name == 'workflow_dispatch' && (inputs.pr_number || github.run_id) || format('{0}-{1}', github.event.pull_request.number, github.event.label.name) }}"
   cancel-in-progress: true
 
 env:
@@ -274,63 +285,135 @@ jobs:
               }
             });
 
-  # Jobs for workflow_dispatch triggered runs (Matterwick E2E provisioning)
-  run-ios-tests-on-workflow-dispatch:
+  # -------------------------------------------------------
+  # workflow_dispatch path (triggered by Matterwick)
+  # Skips the build step is intentionally not skipped here —
+  # we build from the provided MOBILE_VERSION SHA so tests
+  # run against the exact PR commit.
+  # -------------------------------------------------------
+
+  build-ios-simulator-dispatch:
     if: github.event_name == 'workflow_dispatch' && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-    name: iOS (Matterwick E2E)
+    runs-on: macos-26
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Prepare iOS Build
+        uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+
+      - name: Set .env with RUNNING_E2E=true
+        run: echo "RUNNING_E2E=true" > .env
+
+      - name: Build iOS Simulator
+        env:
+          TAG: ${{ inputs.MOBILE_VERSION }}
+          GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+        run: bundle exec fastlane ios simulator --env ios.simulator skip_upload_to_s3_bucket:true
+        working-directory: ./fastlane
+
+      - name: Upload iOS Simulator Build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-*.app.zip
+
+  build-android-apk-dispatch:
+    if: github.event_name == 'workflow_dispatch' && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+    runs-on: ubuntu-latest-8-cores
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      - name: Detox build
+        run: |
+          cd detox
+          npm ci --prefer-offline --no-audit --no-fund
+          npm run e2e:android-inject-settings
+          npm run e2e:android-build
+
+      - name: Upload Android Build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: android-build-files-${{ github.run_id }}
+          path: "android/app/build/**/*"
+
+  run-ios-tests-on-dispatch:
+    if: github.event_name == 'workflow_dispatch' && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
+    name: iOS (dispatch)
+    needs:
+      - build-ios-simulator-dispatch
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
-      run-type: "PR"
-      SITE_1_URL: ${{ inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      run-type: ${{ inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
+      MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
+      MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
     secrets: inherit
 
-  run-android-tests-on-workflow-dispatch:
+  run-android-tests-on-dispatch:
     if: github.event_name == 'workflow_dispatch' && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
-    name: Android (Matterwick E2E)
+    name: Android (dispatch)
+    needs:
+      - build-android-apk-dispatch
     uses: ./.github/workflows/e2e-android-template.yml
     with:
-      run-type: "PR"
-      SITE_1_URL: ${{ inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ inputs.SITE_3_URL }}
-      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       run-android-tests: true
+      run-type: ${{ inputs.run_type || 'PR' }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
+      MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
+      MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
     secrets: inherit
 
-  remove-e2e-label-on-workflow-dispatch:
+  e2e-remove-matterwick-label:
+    name: Remove Matterwick E2E label from PR
     runs-on: ubuntu-22.04
-    if: github.event_name == 'workflow_dispatch'
-    needs: []
-    permissions:
-      issues: write
-      actions: read
-    continue-on-error: true
+    needs:
+      - run-ios-tests-on-dispatch
+      - run-android-tests-on-dispatch
+    if: always() && github.event_name == 'workflow_dispatch' && inputs.pr_number != ''
     steps:
-      - name: Remove E2E/Run label when triggered via Matterwick
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      - name: e2e/remove-label-from-pr
+        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        continue-on-error: true # Label might have been removed manually
         with:
           script: |
-            try {
-              // Get the current run to check if it's associated with a PR
-              const run = await github.rest.actions.getWorkflowRun({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                run_id: context.runId
-              });
-
-              // Try to find associated PR
-              if (run.data.pull_requests && run.data.pull_requests.length > 0) {
-                const prNumber = run.data.pull_requests[0].number;
+            const prNumber = parseInt(process.env.PR_NUMBER);
+            if (!prNumber) return;
+            const labels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
+            for (const label of labels) {
+              try {
                 await github.rest.issues.removeLabel({
+                  issue_number: prNumber,
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  issue_number: prNumber,
-                  name: 'E2E/Run'
+                  name: label,
                 });
+              } catch (_) {
+                // Label may not exist on this PR, ignore
               }
-            } catch (error) {
-              console.log('Label removal skipped - not associated with a PR');
             }
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}

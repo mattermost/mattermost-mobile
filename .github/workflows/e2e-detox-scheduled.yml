@@ -1,8 +1,11 @@
 name: Detox E2E Tests (Scheduled)
+# NOTE: The cron trigger has been removed. Scheduled E2E runs are now owned by
+# Matterwick via e2e-nightly-trigger.yml, which provisions dedicated cloud servers
+# instead of the hardcoded permanent servers used here. This file can be triggered
+# manually for ad-hoc runs against the permanent servers if needed.
 
 on:
-  schedule:
-    - cron: "0 0 * * 4,5" # Wednesday and Thursday midnight
+  workflow_dispatch:
 
 env:
   INTUNE_ENABLED: 'true'
