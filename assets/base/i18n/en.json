@@ -1251,6 +1251,7 @@
   "post_body.deleted": "(message deleted)",
   "post_header.translation_processing": "Translating...",
   "post_header.visible_message": "(Only visible to you)",
+  "post_info.ai_generated": "AI",
   "post_info.auto_responder": "Automatic Reply",
   "post_info.bot": "Bot",
   "post_info.del": "Delete",

@@ -87,4 +87,37 @@ describe('Header', () => {
 
         expect(screen.queryByTestId('expiry-timer')).toBeVisible();
     });
+
+    it('should show AI generated tag when post has ai_generated_by props', () => {
+        const aiPost = TestHelper.fakePostModel({
+            props: {
+                ai_generated_by: 'bot_user_id',
+                ai_generated_by_username: 'aibot',
+            },
+        });
+
+        renderWithIntlAndTheme(
+            <Header
+                {...defaultProps}
+                post={aiPost}
+            />,
+        );
+
+        expect(screen.queryByTestId('post_header.ai_generated.tag')).toBeVisible();
+    });
+
+    it('should not show AI generated tag when post has no ai_generated_by props', () => {
+        const normalPost = TestHelper.fakePostModel({
+            props: {},
+        });
+
+        renderWithIntlAndTheme(
+            <Header
+                {...defaultProps}
+                post={normalPost}
+            />,
+        );
+
+        expect(screen.queryByTestId('post_header.ai_generated.tag')).toBeNull();
+    });
 });

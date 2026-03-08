@@ -16,7 +16,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
 import {isUnrevealedBoRPost} from '@utils/bor';
-import {getPostTranslation, postUserDisplayName} from '@utils/post';
+import {getPostTranslation, hasAiGeneratedMetadata, postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {ensureString} from '@utils/types';
 import {typography} from '@utils/typography';
@@ -182,6 +182,7 @@ const Header = ({
                     />
                     {(!isSystemPost || isAutoResponse) && (
                         <HeaderTag
+                            isAiGenerated={hasAiGeneratedMetadata(post)}
                             isAutoResponder={isAutoResponse}
                             isAutomation={isWebHook || author?.isBot}
                             showGuestTag={author?.isGuest && !hideGuestTags}

@@ -15,6 +15,7 @@ import {toMilliseconds} from '@utils/datetime';
 import {
     areConsecutivePosts,
     isFromWebhook,
+    hasAiGeneratedMetadata,
     isEdited,
     isPostEphemeral,
     isPostFailed,
@@ -78,6 +79,38 @@ describe('post utils', () => {
             const result = areConsecutivePosts(post, previousPost, 'en');
             expect(result).toBe(false);
         });
+
+        it('should return false when ai_generated_by status differs between posts', () => {
+            const post = TestHelper.fakePostModel({
+                userId: 'user1',
+                createAt: 1000,
+                props: {ai_generated_by: 'bot1', ai_generated_by_username: 'aibot'},
+            });
+            const previousPost = TestHelper.fakePostModel({
+                userId: 'user1',
+                createAt: 500,
+                props: {},
+            });
+
+            const result = areConsecutivePosts(post, previousPost, 'en');
+            expect(result).toBe(false);
+        });
+
+        it('should return true when both posts have the same ai_generated_by', () => {
+            const post = TestHelper.fakePostModel({
+                userId: 'user1',
+                createAt: 1000,
+                props: {ai_generated_by: 'bot1', ai_generated_by_username: 'aibot'},
+            });
+            const previousPost = TestHelper.fakePostModel({
+                userId: 'user1',
+                createAt: 500,
+                props: {ai_generated_by: 'bot1', ai_generated_by_username: 'aibot'},
+            });
+
+            const result = areConsecutivePosts(post, previousPost, 'en');
+            expect(result).toBe(true);
+        });
     });
 
     describe('isFromWebhook', () => {
@@ -101,6 +134,58 @@ describe('post utils', () => {
 
             const result = isFromWebhook(post);
             expect(result).toBe(false);
+        });
+    });
+
+    describe('hasAiGeneratedMetadata', () => {
+        it('should return true when both ai_generated_by and ai_generated_by_username are set', () => {
+            const post = TestHelper.fakePostModel({
+                props: {
+                    ai_generated_by: 'bot_user_id',
+                    ai_generated_by_username: 'aibot',
+                },
+            });
+
+            expect(hasAiGeneratedMetadata(post)).toBe(true);
+        });
+
+        it('should return false when ai_generated_by is missing', () => {
+            const post = TestHelper.fakePostModel({
+                props: {
+                    ai_generated_by_username: 'aibot',
+                },
+            });
+
+            expect(hasAiGeneratedMetadata(post)).toBe(false);
+        });
+
+        it('should return false when ai_generated_by_username is missing', () => {
+            const post = TestHelper.fakePostModel({
+                props: {
+                    ai_generated_by: 'bot_user_id',
+                },
+            });
+
+            expect(hasAiGeneratedMetadata(post)).toBe(false);
+        });
+
+        it('should return false when props are empty', () => {
+            const post = TestHelper.fakePostModel({
+                props: {},
+            });
+
+            expect(hasAiGeneratedMetadata(post)).toBe(false);
+        });
+
+        it('should return false when values are empty strings', () => {
+            const post = TestHelper.fakePostModel({
+                props: {
+                    ai_generated_by: '',
+                    ai_generated_by_username: '',
+                },
+            });
+
+            expect(hasAiGeneratedMetadata(post)).toBe(false);
         });
     });
 
