@@ -137,12 +137,10 @@ jobs:
         if: ${{ inputs.cmt_run_id != '0' && inputs.cmt_run_id != '' }}
         env:
           MATTERWICK_URL: ${{ vars.MATTERWICK_URL }}
-          CLEANUP_TOKEN: ${{ secrets.MATTERWICK_CLEANUP_SECRET }}
           CMT_RUN_ID: ${{ inputs.cmt_run_id }}
         run: |
           curl -s -X POST "${MATTERWICK_URL}/cleanup_e2e" \
             -H "Content-Type: application/json" \
-            -H "X-Cleanup-Token: ${CLEANUP_TOKEN}" \
             -d "{\"repo\": \"mattermost-mobile\", \"run_id\": ${CMT_RUN_ID}}" \
             --fail-with-body || echo "Cleanup request failed (non-fatal)"
 
