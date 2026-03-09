@@ -42,6 +42,10 @@ const ServerVersion = ({isAdmin, lastChecked, version}: ServerVersionProps) => {
             // Only display the Alert if the TOS does not need to show first
             handleUnsupportedServer(serverUrl, isAdmin, intl);
         }
+
+    // We don't care about `intl` changes as long as
+    // it is up to date when the effect runs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [version, isAdmin, lastChecked, serverUrl]);
 
     return null;

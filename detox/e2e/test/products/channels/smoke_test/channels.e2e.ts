@@ -29,6 +29,7 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
+    ChannelSettingsScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
@@ -157,7 +158,9 @@ describe('Smoke Test - Channels', () => {
         await CreateOrEditChannelScreen.headerInput.typeText('\nheader1\nheader2');
         await CreateOrEditChannelScreen.saveButton.tap();
 
-        // * Verify on channel info screen and changes have been saved
+        // * Verify on channel info screen and changes have been saved (close channel settings first to return to channel info)
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.close();
         await ChannelInfoScreen.toBeVisible();
         await expect(element(by.text(`Channel header: ${testChannel.display_name.toLowerCase()}\nheader1\nheader2`))).toBeVisible();
 
@@ -193,13 +196,15 @@ describe('Smoke Test - Channels', () => {
     });
 
     it('MM-T4774_6 - should be able to archive and leave a channel', async () => {
-        // # Open a channel screen, open channel info screen, and tap on archive channel option and confirm
+        // # Open a channel screen, open channel info screen, go to channel settings, and tap on archive channel option and confirm
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.archivePublicChannel({confirm: true});
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.archivePublicChannel({confirm: true});
     });
 });

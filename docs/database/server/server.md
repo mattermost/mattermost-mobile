@@ -1,4 +1,4 @@
-# Server Database - Schema Version 14
+# Server Database - Schema Version 18
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -41,6 +41,7 @@ type string
 update_at number
 banner_info string
 abac_policy_enforced boolean
+autotranslation boolean
 
 
 ChannelInfo
@@ -178,6 +179,7 @@ mentions_count number
 message_count number
 roles string
 viewed_at number
+autotranslation_disabled boolean
 
 
 MyChannelSettings

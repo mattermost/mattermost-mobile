@@ -29,6 +29,12 @@ jest.mock('@screens/navigation', () => ({
 
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn().mockReturnValue('https://server.com'),
+    withServerUrl: (Component: React.ComponentType<any>) => (props: any) => (
+        <Component
+            {...props}
+            serverUrl={'https://server.com'}
+        />
+    ),
 }));
 
 jest.mock('@components/draft_scheduled_post_header', () => () => null);

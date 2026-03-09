@@ -346,6 +346,31 @@ describe('useConnectionBanner', () => {
             });
         });
 
+        it('should not re-show banner the moment it closes (effect omits visible from deps)', () => {
+            jest.useFakeTimers();
+
+            const {result} = renderHook(() => useConnectionBanner({
+                websocketState: 'connected' as WebsocketConnectedState,
+                networkPerformanceState: 'normal' as NetworkPerformanceState,
+                netInfo: createMockNetInfo(false),
+                appState: 'active',
+                intl: mockIntl,
+            }));
+
+            expect(result.current.visible).toBe(true);
+            expect(result.current.bannerText).toBe('The server is not reachable');
+
+            // Auto-close: the hook sets a 2s timeout when showing internet unreachable. Advance
+            // time so closeCallback runs. visible becomes false; netInfo is still unreachable.
+            act(() => {
+                jest.advanceTimersByTime(2100);
+            });
+
+            expect(result.current.visible).toBe(false);
+
+            jest.useRealTimers();
+        });
+
         it('should not show other banners when one is already visible with timeout', async () => {
             const {result, rerender} = renderHook(
                 (props) => useConnectionBanner(props),

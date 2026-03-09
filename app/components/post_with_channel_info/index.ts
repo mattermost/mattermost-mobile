@@ -4,6 +4,7 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 
+import {observeIsChannelAutotranslated} from '@queries/servers/channel';
 import {observePostSaved} from '@queries/servers/post';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 
@@ -21,6 +22,7 @@ const enhance = withObservables(['post', 'skipSavedPostsHighlight'], ({database,
     return {
         isCRTEnabled: observeIsCRTEnabled(database),
         isSaved: skipSavedPostsHighlight ? of$(false) : observePostSaved(database, post.id),
+        isChannelAutotranslated: observeIsChannelAutotranslated(database, post.channelId),
     };
 });
 

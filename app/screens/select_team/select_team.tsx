@@ -11,6 +11,7 @@ import {addCurrentUserToTeam, fetchTeamsForComponent, handleTeamChange} from '@a
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useDidMount from '@hooks/did_mount';
 import SecurityManager from '@managers/security_manager';
 import {logDebug} from '@utils/log';
 import {alertTeamAddError} from '@utils/navigation';
@@ -69,6 +70,8 @@ const SelectTeam = ({
 
     const [otherTeams, setOtherTeams] = useState<Team[]>([]);
 
+    const shouldRedirectToHome = (nTeams > 0) && firstTeamId;
+
     const loadTeams = useCallback(async () => {
         setLoading(true);
         const resp = await fetchTeamsForComponent(serverUrl, page.current);
@@ -112,17 +115,20 @@ const SelectTeam = ({
             return;
         }
 
-        if ((nTeams > 0) && firstTeamId) {
+        if (shouldRedirectToHome) {
             resettingToHome.current = true;
             handleTeamChange(serverUrl, firstTeamId).then(() => {
                 resetToHome();
             });
         }
-    }, [(nTeams > 0) && firstTeamId]);
 
-    useEffect(() => {
+    // We only want to run this effect when the shouldRedirectToHome value changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [shouldRedirectToHome]);
+
+    useDidMount(() => {
         loadTeams();
-    }, []);
+    });
 
     let body;
     if (joining || (loading && !otherTeams.length)) {

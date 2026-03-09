@@ -108,6 +108,9 @@ export function useViewPosition(viewRef: RefObject<View>, deps: React.Dependency
                 }
             });
         }
+
+    // The deps should be passed by the caller.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [...deps, isTablet, height, viewRef, modalPosition]);
 
     return modalPosition;

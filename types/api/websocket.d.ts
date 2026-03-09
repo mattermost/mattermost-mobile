@@ -21,3 +21,13 @@ type ThreadReadChangedData = {
     unread_mentions: number;
     unread_replies: number;
 };
+
+type PostTranslationUpdateData = {
+    object_id: string;
+    translations: Record<string, {
+        state: 'ready' | 'skipped' | 'processing' | 'unavailable';
+        translation: string; // JSON-encoded PostTranslation['object']
+        translation_type?: string;
+        src_lang?: string;
+    }>;
+}

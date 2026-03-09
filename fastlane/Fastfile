@@ -438,7 +438,8 @@ platform :ios do
     )
   end
 
-  lane :simulator do
+  lane :simulator do |options|
+    skip_upload_to_s3_bucket = options[:skip_upload_to_s3_bucket] == true
     UI.success('Building iOS app for simulator')
 
     # Detect the host architecture
@@ -461,10 +462,12 @@ platform :ios do
       output_file: output_file,
     )
 
-    upload_file_to_s3({
-      :os_type => "ios",
-      :file => output_file
-    })
+    unless skip_upload_to_s3_bucket
+      upload_file_to_s3({
+        :os_type => "ios",
+        :file => output_file
+      })
+    end
   end
 
   desc 'Upload artifacts to S3'

@@ -7,6 +7,7 @@ import {Alert, DeviceEventEmitter, Linking, NativeEventEmitter} from 'react-nati
 import semver from 'semver';
 
 import {switchToChannelById} from '@actions/remote/channel';
+import {batchTeamThreadSync} from '@actions/remote/thread';
 import {Device, Events, Sso} from '@constants';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
 import DatabaseManager from '@database/manager';
@@ -46,11 +47,16 @@ class GlobalEventHandlerSingleton {
         DeviceEventEmitter.addListener(Events.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
         splitViewEmitter.addListener('SplitViewChanged', this.onSplitViewChanged);
         Linking.addEventListener('url', this.onDeepLink);
+        DeviceEventEmitter.addListener(Events.POST_DELETED_FOR_CHANNEL, this.onPostDeletedForChannel);
     }
 
     init = () => {
         this.JavascriptAndNativeErrorHandler = require('@utils/error_handling').default;
         this.JavascriptAndNativeErrorHandler?.initializeErrorHandling();
+    };
+
+    onPostDeletedForChannel = async ({serverUrl, teamId}: {serverUrl: string; teamId: string}) => {
+        batchTeamThreadSync(serverUrl, teamId);
     };
 
     onDeepLink = async (event: LinkingCallbackArg) => {

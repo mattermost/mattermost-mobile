@@ -20,6 +20,11 @@ export const TOUCH_TARGET_SIZE = 44;
 export const AGENT_WEBSOCKET_EVENT = 'custom_mattermost-ai_postupdate';
 
 /**
+ * WebSocket event name for tool call status updates in channels
+ */
+export const AGENT_TOOL_CALL_STATUS_EVENT = 'custom_mattermost-ai_tool_call_status_updated';
+
+/**
  * Control signal values from WebSocket messages
  */
 export const CONTROL_SIGNALS = {
@@ -31,3 +36,6 @@ export const CONTROL_SIGNALS = {
     TOOL_CALL: 'tool_call',
     ANNOTATIONS: 'annotations',
 } as const;
+
+export const DEFAULT_AGENT_BOT_USERNAME = 'ai-bot';
+export const AGENT_ANALYSIS_SUMMARY = 'summarize_channel';
