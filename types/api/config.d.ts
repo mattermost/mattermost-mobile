@@ -22,6 +22,8 @@ interface ClientConfig {
     BuildHash: string;
     BuildHashEnterprise: string;
     BuildNumber: string;
+    BurnOnReadMaximumTimeToLiveSeconds: string;
+    BurnOnReadDurationSeconds: string;
     CloseUnusedDirectMessages: string;
     CollapsedThreads: string;
     CustomBrandText: string;
@@ -46,6 +48,7 @@ interface ClientConfig {
     EmailNotificationContentsType: string;
     EnableBanner: string;
     EnableBotAccountCreation: string;
+    EnableBurnOnRead: string;
     EnableChannelViewedMessages: string;
     EnableClientMetrics?: string;
     EnableCluster: string;
@@ -126,6 +129,7 @@ interface ClientConfig {
     FeatureFlagPostPriority?: string;
     FeatureFlagChannelBookmarks?: string;
     FeatureFlagCustomProfileAttributes?: string;
+    FeatureFlagInteractiveDialogAppsForm?: string;
     ForgotPasswordLink?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
@@ -212,6 +216,11 @@ interface ClientConfig {
     WebsocketSecurePort: string;
     WebsocketURL: string;
     BurnOnReadDurationSeconds: string;
+
+    // Autotranslations
+    AutoTranslationLanguages: string;
+    EnableAutoTranslation: string;
+    RestrictDMAndGMAutotranslation: string;
 }
 
 type SecurityClientConfig = Pick<ClientConfig, 'MobileEnableBiometrics' | 'MobileJailbreakProtection' | 'MobilePreventScreenCapture' | 'SiteName'>

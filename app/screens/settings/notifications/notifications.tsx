@@ -12,10 +12,11 @@ import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAppState} from '@hooks/device';
+import useNotificationProps from '@hooks/notification_props';
 import {popTopScreen} from '@screens/navigation';
 import {gotoSettingsScreen} from '@screens/settings/config';
 import {logError} from '@utils/log';
-import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
+import {getEmailInterval, getEmailIntervalTexts} from '@utils/user';
 
 import NotificationsDisabledNotice from './notifications_disabled_notice';
 import SendTestNotificationNotice from './send_test_notification_notice';
@@ -65,11 +66,7 @@ const Notifications = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
-    // We need to depend on the notifyProps object directly,
-    // since changes in it may not be reflected in the currentUser object
-    // (it is still the same object reference).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
+    const notifyProps = useNotificationProps(currentUser);
     const callsRingingEnabled = useMemo(() => getCallsConfig(serverUrl).EnableRinging, [serverUrl]);
     const [isRegistered, setIsRegistered] = useState(true);
 

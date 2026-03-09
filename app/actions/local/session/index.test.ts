@@ -342,5 +342,29 @@ describe('session actions', () => {
 
             expect(resetMomentLocale).toHaveBeenCalledWith();
         });
+
+        it('should remove user credentials but preserve pre-auth secret on logout (removeServer=false)', async () => {
+            await terminateSession(mockServerUrl, false);
+
+            // Verify user credentials are removed
+            expect(removeServerCredentials).toHaveBeenCalledWith(mockServerUrl);
+
+            // Verify database is deleted (not destroyed)
+            expect(DatabaseManager.deleteServerDatabase).toHaveBeenCalledWith(mockServerUrl);
+            expect(DatabaseManager.destroyServerDatabase).not.toHaveBeenCalled();
+
+            // Note: removeServerCredentials now only removes the token, not the pre-auth secret
+            // The pre-auth secret is only removed when destroyServerDatabase is called
+        });
+
+        it('should call destroyServerDatabase which removes pre-auth secret on server removal (removeServer=true)', async () => {
+            await terminateSession(mockServerUrl, true);
+
+            // Verify database is destroyed (which will remove pre-auth secret internally)
+            expect(DatabaseManager.destroyServerDatabase).toHaveBeenCalledWith(mockServerUrl);
+            expect(DatabaseManager.deleteServerDatabase).not.toHaveBeenCalled();
+
+            // Note: destroyServerDatabase internally calls removePreauthSecret
+        });
     });
 });

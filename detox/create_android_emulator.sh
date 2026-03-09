@@ -38,7 +38,7 @@ create_avd() {
     sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/default/${cpu_arch_family}/|g" "$AVD_NAME/config.ini"
     sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${AVD_NAME}/pixel_4_xl_skin|g" "$AVD_NAME/config.ini"
 
-    echo "hw.cpu.ncore=5" >> "$AVD_NAME/config.ini"
+    echo "hw.cpu.ncore=7" >> "$AVD_NAME/config.ini"
     echo "Android virtual device successfully created: ${AVD_NAME}"
 }
 
@@ -51,9 +51,9 @@ start_adb_server() {
 start_emulator() {
     echo "Starting the emulator..."
     local emulator_opts="-avd $AVD_NAME -no-snapshot -no-boot-anim -no-audio -gpu off -no-window"
-    
+
     if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
-        emulator $emulator_opts -gpu host -accel on -qemu -m 4096 &
+        emulator $emulator_opts -gpu host -accel on -qemu -m 8192 &
     else
         emulator $emulator_opts -gpu guest -verbose -qemu -vnc :0
     fi
@@ -64,11 +64,22 @@ wait_for_emulator() {
 
     echo "Waiting for emulator to boot..."
     adb wait-for-device
+
+    local boot_timeout=300  # 5 minutes max
+    local boot_elapsed=0
     until [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do
+        if [[ $boot_elapsed -ge $boot_timeout ]]; then
+            echo "Emulator failed to boot within 5 minutes"
+            exit 1
+        fi
         echo "Waiting for emulator to fully boot..."
         sleep 10
+        boot_elapsed=$((boot_elapsed + 10))
     done
     echo "Emulator is fully booted."
+    sleep 15
+    adb shell pm list packages > /dev/null 2>&1
+    echo "Emulator is fully ready."
 }
 
 install_app() {
@@ -82,7 +93,6 @@ start_server() {
     cd ..
     RUNNING_E2E=true npm run start &
     local timeout=120 interval=5 elapsed=0
-    sleep $timeout
 
     until nc -z localhost 8081; do
         if [[ $elapsed -ge $timeout ]]; then

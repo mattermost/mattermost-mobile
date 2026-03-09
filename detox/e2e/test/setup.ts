@@ -15,6 +15,59 @@ const RETRY_DELAY = 5000;
 let isFirstLaunch = true;
 
 /**
+ * Verify Detox connection to app is healthy
+ * @param maxAttempts - Maximum number of verification attempts
+ * @param delayMs - Delay between attempts in milliseconds
+ * @returns {Promise<void>}
+ */
+async function verifyDetoxConnection(maxAttempts = 3, delayMs = 2000): Promise<void> {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            // Simple health check: verify device is responsive
+            device.getPlatform();
+            console.info(`✅ Detox connection verified on attempt ${attempt}`);
+            return;
+        } catch (error) {
+            console.warn(`❌ Detox connection check failed on attempt ${attempt}/${maxAttempts}: ${(error as Error).message}`);
+
+            if (attempt < maxAttempts) {
+                await new Promise((resolve) => setTimeout(resolve, delayMs * attempt)); // Exponential backoff
+            }
+        }
+    }
+
+    throw new Error('Detox connection verification failed after maximum attempts');
+}
+
+/**
+ * Wait for app to be ready (database initialized, bridge ready)
+ * @param timeoutMs - Maximum time to wait in milliseconds
+ * @returns {Promise<void>}
+ */
+async function waitForAppReady(timeoutMs = 10000): Promise<void> {
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < timeoutMs) {
+        try {
+            // Check if app is responsive by looking for a basic UI element
+            // Try server screen first, then channel list screen
+            try {
+                await waitFor(element(by.id('server.screen'))).toBeVisible().withTimeout(2000);
+            } catch {
+                await waitFor(element(by.id('channel_list.screen'))).toBeVisible().withTimeout(2000);
+            }
+            console.info('✅ App is ready');
+            return;
+        } catch {
+            // App not ready yet, wait a bit
+            await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+    }
+
+    throw new Error(`App failed to become ready within ${timeoutMs}ms`);
+}
+
+/**
  * Launch the app with retry mechanism
  * @returns {Promise<void>}
  */
@@ -56,30 +109,20 @@ export async function launchAppWithRetry(): Promise<void> {
                 });
             }
 
-            // Verify app is connected by executing a simple command
-            await device.reloadReactNative();
             console.info(`✅ App launched successfully on attempt ${attempt}`);
-            return; // Success, exit the function
+            return;
 
         } catch (error) {
             lastError = error;
             console.warn(`❌ App launch failed on attempt ${attempt}/${MAX_RETRY_ATTEMPTS}: ${(error as Error).message}`);
 
-            // If this is the last attempt, don't wait
             if (attempt < MAX_RETRY_ATTEMPTS) {
                 console.warn(`Waiting ${RETRY_DELAY}ms before retrying...`);
                 await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-
-                // Force a new instance on retry
-                if (!isFirstLaunch && attempt > 1) {
-                    console.warn('Forcing new instance for next attempt');
-                    isFirstLaunch = true;
-                }
             }
         }
     }
 
-    // If we get here, all attempts failed
     throw new Error(`Failed to launch app after ${MAX_RETRY_ATTEMPTS} attempts. Last error: ${(lastError as Error).message}`);
 }
 
@@ -88,29 +131,31 @@ export async function launchAppWithRetry(): Promise<void> {
  * @returns {Promise<void>}
  */
 async function initializeClaudePromptHandler(): Promise<void> {
-    if (process.env.ANTHROPIC_API_KEY) {
+    try {
+        if (!process.env.ANTHROPIC_API_KEY) {
+            return;
+        }
         const promptHandler = new ClaudePromptHandler(process.env.ANTHROPIC_API_KEY);
         pilot.init(promptHandler);
-    } else {
-        console.info('To use ClaudePromptHandler, please set the ANTHROPIC_API_KEY environment variable.');
+    } catch (e) {
+        console.warn('Claude init failed, continuing without AI:', e);
     }
 }
 
 beforeAll(async () => {
+    // Reset flag to ensure each test file starts with a clean app launch
+    isFirstLaunch = true;
+    await launchAppWithRetry();
+
+    // Verify Detox connection is healthy after app launch
+    await verifyDetoxConnection();
+
+    // Wait for app to be fully ready (database initialized, bridge ready)
+    await waitForAppReady();
     await initializeClaudePromptHandler();
 
     // Login as sysadmin and reset server configuration
     await System.apiCheckSystemHealth(siteOneUrl);
     await User.apiAdminLogin(siteOneUrl);
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
-    await launchAppWithRetry();
-});
-
-// Add this to speed up test cleanup
-afterAll(async () => {
-    try {
-        await device.terminateApp();
-    } catch (error) {
-        console.error('Error terminating app:', error);
-    }
 });

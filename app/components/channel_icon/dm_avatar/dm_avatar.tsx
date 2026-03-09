@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React from 'react';
 
 import {fetchUserByIdBatched} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useDidMount from '@hooks/did_mount';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -49,11 +50,11 @@ const DmAvatar = ({
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
-    useEffect(() => {
+    useDidMount(() => {
         if (authorId && !author) {
             fetchUserByIdBatched(serverUrl, authorId);
         }
-    }, []);
+    });
     if (author?.deleteAt) {
         return (
             <CompassIcon

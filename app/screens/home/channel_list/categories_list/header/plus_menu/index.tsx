@@ -57,7 +57,7 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels, canInvitePeople}: Pro
             Screens.INVITE,
             intl.formatMessage({id: 'invite.title', defaultMessage: 'Invite'}),
         );
-    }, [intl, theme]);
+    }, [intl]);
 
     return (
         <>

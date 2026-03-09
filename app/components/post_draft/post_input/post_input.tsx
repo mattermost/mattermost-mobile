@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useRewrite} from '@agents/hooks';
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import PasteableTextInput, {type PastedFile, type PasteInputRef} from '@mattermost/react-native-paste-input';
@@ -10,7 +11,7 @@ import {
     Alert, AppState, type AppStateStatus, DeviceEventEmitter, type EmitterSubscription, Keyboard,
     type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
 } from 'react-native';
-import {runOnUI} from 'react-native-reanimated';
+import Animated, {cancelAnimation, Easing, runOnUI, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
 import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
@@ -141,26 +142,33 @@ export default function PostInput({
         scrollOffset,
         registerCursorPosition,
         registerPostInputCallbacks,
+        isInEmojiPickerTransition,
+        getPreservedCursorPosition,
+        clearCursorPositionPreservation,
     } = useKeyboardAnimationContext();
 
     // Register cursor position updates with context
+    // Always update cursorPositionRef, even when input accessory view is shown,
+    // so emoji insertion works correctly at cursor position
     useEffect(() => {
-        if (showInputAccessoryView) {
-            return;
-        }
         if (registerCursorPosition) {
-            registerCursorPosition(cursorPosition);
+            // Pass value length so registerCursorPosition can check if cursor is reset to end
+            registerCursorPosition(cursorPosition, value.length);
         }
-    }, [registerCursorPosition, cursorPosition, showInputAccessoryView]);
+    }, [registerCursorPosition, cursorPosition, showInputAccessoryView, value]);
 
     // Register updateValue and updateCursorPosition with context
     useEffect(() => {
         if (registerPostInputCallbacks) {
             registerPostInputCallbacks(updateValue, updateCursorPosition);
         }
-    }, [registerPostInputCallbacks, updateValue, updateCursorPosition]);
+
+        // updateValue and updateCursorPosition are stable setState functions, don't need to be in deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [registerPostInputCallbacks]);
 
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
+    const {isProcessing} = useRewrite();
 
     const lastTypingEventSent = useRef(0);
 
@@ -186,6 +194,28 @@ export default function PostInput({
     const pasteInputStyle = useMemo(() => {
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
+
+    // Pulsing animation for when AI rewrite is processing
+    const pulseOpacity = useSharedValue(1);
+    const pulsingAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: pulseOpacity.value,
+    }));
+
+    useEffect(() => {
+        if (isProcessing) {
+            pulseOpacity.value = withRepeat(
+                withTiming(0.5, {duration: 400, easing: Easing.inOut(Easing.ease)}),
+                -1,
+                true,
+            );
+        } else {
+            pulseOpacity.value = withTiming(1, {duration: 200});
+        }
+
+        return () => {
+            cancelAnimation(pulseOpacity);
+        };
+    }, [isProcessing, pulseOpacity]);
 
     const onBlur = useCallback(() => {
         handleDraftUpdate({
@@ -220,7 +250,11 @@ export default function PostInput({
         // This must happen before closing the emoji picker
         setIsEmojiSearchFocused(false);
 
-        // Close emoji picker immediately
+        const wasEmojiPickerOpen = showInputAccessoryView;
+        if (wasEmojiPickerOpen) {
+            updateCursorPosition(value.length);
+            clearCursorPositionPreservation?.();
+        }
         setShowInputAccessoryView(false);
 
         if (Platform.OS === 'android') {
@@ -278,9 +312,6 @@ export default function PostInput({
                 }
             }, 1000);
         }
-
-        // Shared values don't need to be in dependencies - they're stable references
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         isDismissingEmojiPicker,
         focusTimeoutRef,
@@ -288,8 +319,18 @@ export default function PostInput({
         isEmojiSearchFocused,
         setIsFocused,
         setIsEmojiSearchFocused,
-        setShowInputAccessoryView,
         showInputAccessoryView,
+        setShowInputAccessoryView,
+        updateCursorPosition,
+        value.length,
+        clearCursorPositionPreservation,
+        keyboardTranslateY,
+        inputAccessoryViewAnimatedHeight,
+        isInputAccessoryViewMode,
+        isTransitioningFromCustomView,
+        bottomInset,
+        scrollOffset,
+        keyboardHeight,
         lastKeyboardHeight,
     ]);
 
@@ -328,13 +369,36 @@ export default function PostInput({
     }, [intl, longMessageAlertShown, maxMessageLength]);
 
     const handlePostDraftSelectionChanged = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData> | null, fromHandleTextChange = false) => {
-        if (showInputAccessoryView && !fromHandleTextChange) {
-            return;
-        }
+        // Always update cursor position, even when input accessory view is shown,
+        // so emoji insertion works correctly at cursor position
         const cp = fromHandleTextChange ? cursorPosition : event!.nativeEvent.selection.end;
 
+        // Check if cursor is being reset to end when we're transitioning to emoji picker
+        // This happens when keyboard is dismissed - the TextInput selection resets to end
+        // Only block if we're actually in a transition period (emoji picker opening or just opened)
+        const isInTransition = isInEmojiPickerTransition?.();
+        const preservedPosition = isInTransition ? getPreservedCursorPosition?.() : null;
+
+        const isCursorAtEnd = cp === value.length;
+        const cursorPositionChanged = cp !== cursorPosition;
+        const hasPreservedPosition = preservedPosition !== null;
+        const preservedPositionChanged = preservedPosition !== cp;
+        const isResettingToEnd = isCursorAtEnd && cursorPositionChanged && hasPreservedPosition && preservedPositionChanged;
+        const isPreservedPositionWithinBounds = hasPreservedPosition && preservedPosition! < value.length;
+
+        // If we're opening emoji picker and cursor is being reset to end, ignore it and keep the preserved position
+        if (!fromHandleTextChange && isResettingToEnd && isInTransition && isPreservedPositionWithinBounds) {
+            return;
+        }
+
+        // When emoji picker is open, ignore cursor position updates that move to the end
+        // unless the value length changed (user typed something).
+        if (showInputAccessoryView && !fromHandleTextChange && isCursorAtEnd && cursorPositionChanged) {
+            return;
+        }
+
         updateCursorPosition(cp);
-    }, [showInputAccessoryView, cursorPosition, updateCursorPosition]);
+    }, [cursorPosition, updateCursorPosition, showInputAccessoryView, value.length, isInEmojiPickerTransition, getPreservedCursorPosition]);
 
     const handleTextChange = useCallback((newValue: string) => {
         if (!shouldProcessEvent(newValue)) {
@@ -479,31 +543,34 @@ export default function PostInput({
     useHardwareKeyboardEvents(events);
 
     return (
-        <PasteableTextInput
-            allowFontScaling={true}
-            disableCopyPaste={disableCopyAndPaste}
-            disableFullscreenUI={true}
-            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-            multiline={true}
-            onBlur={onBlur}
-            onChangeText={handleTextChange}
-            onFocus={onFocus}
-            onPress={Platform.OS === 'android' ? handlePress : undefined}
-            onPaste={onPaste}
-            onSelectionChange={handlePostDraftSelectionChanged}
-            placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
-            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-            ref={inputRef}
-            showSoftInputOnFocus={Platform.OS === 'android' ? (!showInputAccessoryView || isManuallyFocusingAfterEmojiDismiss) : true}
-            smartPunctuation='disable'
-            submitBehavior='newline'
-            style={pasteInputStyle}
-            testID={testID}
-            underlineColorAndroid='transparent'
-            textContentType='none'
-            value={value}
-            autoCapitalize='sentences'
-            nativeID={testID}
-        />
+        <Animated.View style={pulsingAnimatedStyle}>
+            <PasteableTextInput
+                allowFontScaling={true}
+                disableCopyPaste={disableCopyAndPaste}
+                disableFullscreenUI={true}
+                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                multiline={true}
+                onBlur={onBlur}
+                onChangeText={handleTextChange}
+                onFocus={onFocus}
+                onPress={Platform.OS === 'android' ? handlePress : undefined}
+                onPaste={onPaste}
+                onSelectionChange={handlePostDraftSelectionChanged}
+                placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
+                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                ref={inputRef}
+                showSoftInputOnFocus={Platform.OS === 'android' ? (!showInputAccessoryView || isManuallyFocusingAfterEmojiDismiss) : true}
+                smartPunctuation='disable'
+                submitBehavior='newline'
+                style={pasteInputStyle}
+                testID={testID}
+                underlineColorAndroid='transparent'
+                textContentType='none'
+                value={value}
+                autoCapitalize='sentences'
+                editable={!isProcessing}
+                nativeID={testID}
+            />
+        </Animated.View>
     );
 }

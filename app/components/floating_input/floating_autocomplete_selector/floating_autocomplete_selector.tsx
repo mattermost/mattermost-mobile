@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {type IntlShape, useIntl} from 'react-intl';
 import {Text, View, type StyleProp, type TextStyle, type ViewStyle} from 'react-native';
 
@@ -10,6 +10,7 @@ import {Screens, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
+import useDidMount from '@hooks/did_mount';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {getChannelById} from '@queries/servers/channel';
 import {getUserById} from '@queries/servers/user';
@@ -155,7 +156,9 @@ function AutoCompleteSelector({
     }), [title, dataSource, handleSelect, options, getDynamicOptions, selected, isMultiselect]));
 
     // Handle the text for the default value.
-    useEffect(() => {
+    // We want to run this only in the first render, since it is only for the default value.
+    // Future changes in the selected value will update the itemText accordingly.
+    useDidMount(() => {
         if (!selected) {
             return;
         }
@@ -172,11 +175,7 @@ function AutoCompleteSelector({
         Promise.all(namePromises).then((names) => {
             setItemText(names.join(', '));
         });
-
-        // We want to run this only in the first render, since it is only for the default value.
-        // Future changes in the selected value will update the itemText accordingly.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     const inputStyle = useMemo(() => {
         const res: StyleProp<ViewStyle> = [style.input];

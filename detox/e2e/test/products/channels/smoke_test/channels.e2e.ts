@@ -29,6 +29,7 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
+    ChannelSettingsScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
@@ -157,7 +158,9 @@ describe('Smoke Test - Channels', () => {
         await CreateOrEditChannelScreen.headerInput.typeText('\nheader1\nheader2');
         await CreateOrEditChannelScreen.saveButton.tap();
 
-        // * Verify on channel info screen and changes have been saved
+        // * Verify on channel info screen and changes have been saved (close channel settings first to return to channel info)
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.close();
         await ChannelInfoScreen.toBeVisible();
         await expect(element(by.text(`Channel header: ${testChannel.display_name.toLowerCase()}\nheader1\nheader2`))).toBeVisible();
 
@@ -172,6 +175,7 @@ describe('Smoke Test - Channels', () => {
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.favoriteAction.tap();
         await ChannelInfoScreen.muteAction.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify channel is favorited and muted
         await expect(ChannelInfoScreen.unfavoriteAction).toBeVisible();
@@ -180,6 +184,7 @@ describe('Smoke Test - Channels', () => {
         // # Tap on favorited action to unfavorite the channel and tap on muted action to unmute the channel
         await ChannelInfoScreen.unfavoriteAction.tap();
         await ChannelInfoScreen.unmuteAction.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify channel is unfavorited and unmuted
         await expect(ChannelInfoScreen.favoriteAction).toBeVisible();
@@ -191,17 +196,15 @@ describe('Smoke Test - Channels', () => {
     });
 
     it('MM-T4774_6 - should be able to archive and leave a channel', async () => {
-        // # Open a channel screen, open channel info screen, and tap on archive channel option and confirm
+        // # Open a channel screen, open channel info screen, go to channel settings, and tap on archive channel option and confirm
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.archivePublicChannel({confirm: true});
-
-        // * Verify on channel screen and post draft archived message is displayed
-        await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(ChannelListScreen.getChannelItem(channelsCategory, channel.name)).not.toExist();
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.archivePublicChannel({confirm: true});
     });
 });

@@ -70,6 +70,7 @@ export const timeouts = {
     HALF_SEC: SECOND / 2,
     ONE_SEC: SECOND,
     TWO_SEC: SECOND * 2,
+    THREE_SEC: SECOND * 3,
     FOUR_SEC: SECOND * 4,
     TEN_SEC: SECOND * 10,
     HALF_MIN: MINUTE / 2,
@@ -82,10 +83,18 @@ export const timeouts = {
  * Retry a function with reload
  * @param {function} func - function to retry
  * @param {number} retries - number of retries
+ * @param {string} serverUrl - optional server URL to reconnect after reload
+ * @param {string} serverDisplayName - optional server display name to reconnect after reload
  * @return {Promise<void>} - promise that resolves when the function succeeds
  * @throws {Error} - if the function fails after the specified number of retries
  */
-export async function retryWithReload(func: () => Promise<void>, retries: number = 2): Promise<void> {
+export async function retryWithReload(
+    func: () => Promise<void>,
+    retries: number = 2,
+    ServerScreen: any,
+    serverUrl?: string,
+    serverDisplayName?: string,
+): Promise<void> {
     for (let attempt = 0; attempt <= retries; attempt++) {
         try {
             // eslint-disable-next-line no-await-in-loop
@@ -96,10 +105,57 @@ export async function retryWithReload(func: () => Promise<void>, retries: number
                 // eslint-disable-next-line no-await-in-loop
                 await device.reloadReactNative();
                 // eslint-disable-next-line no-await-in-loop
-                await new Promise((res) => setTimeout(res, 3000));
+                await new Promise((res) => setTimeout(res, 10000));
+
+                // If server connection details provided, reconnect after reload
+                if (serverUrl && serverDisplayName) {
+                    // Dynamically import to avoid circular dependencies
+                    // eslint-disable-next-line no-await-in-loop
+                    await ServerScreen.connectToServer(serverUrl, serverDisplayName);
+                }
             } else {
                 throw err;
             }
         }
     }
+}
+
+/**
+ * Poll for an element to become visible without waiting for React Native bridge to be idle.
+ * This is useful when the bridge is busy with animations or state updates but the UI is already rendered.
+ *
+ * @param {Detox.NativeElement} detoxElement - The Detox element to wait for
+ * @param {number} timeout - Maximum time to wait in milliseconds (default: 10 seconds)
+ * @param {number} pollInterval - How often to check in milliseconds (default: 500ms)
+ * @return {Promise<void>} - Resolves when element is visible, throws if timeout is reached
+ * @throws {Error} - If element is not visible after timeout
+ *
+ * @example
+ * const button = element(by.id('my.button'));
+ * await waitForElementToBeVisible(button, timeouts.TEN_SEC);
+ */
+export async function waitForElementToBeVisible(
+    detoxElement: Detox.NativeElement,
+    timeout: number = timeouts.TEN_SEC,
+    pollInterval: number = timeouts.HALF_SEC,
+): Promise<void> {
+    const {expect: detoxExpect} = require('detox');
+    const startTime = Date.now();
+    /* eslint-disable no-await-in-loop */
+    while (Date.now() - startTime < timeout) {
+        try {
+            await detoxExpect(detoxElement).toBeVisible();
+            return; // Element found and visible
+        } catch (error) {
+            // Element not visible yet, wait and try again
+            if ((Date.now() - startTime) + pollInterval >= timeout) {
+                // About to timeout, throw the error
+                throw error;
+            }
+            await wait(pollInterval);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    // Final check - will throw if still not found
+    await detoxExpect(detoxElement).toBeVisible();
 }

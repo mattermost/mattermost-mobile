@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React from 'react';
 import {type StyleProp, Text, type TextStyle} from 'react-native';
 
 import {fetchUserOrGroupsByMentionsInBatch} from '@actions/remote/user';
 import {useServerUrl} from '@context/server';
 import GroupModel from '@database/models/server/group';
+import useDidMount from '@hooks/did_mount';
 import {useMemoMentionedGroup, useMemoMentionedUser} from '@hooks/markdown';
 import {displayUsername} from '@utils/user';
 
@@ -33,15 +34,12 @@ const AtMention = ({
     const group = useMemoMentionedGroup(groups, user, mentionName);
 
     // Effects
-    useEffect(() => {
+    useDidMount(() => {
         // Fetches and updates the local db store with the mention
         if (!user?.username && !group?.name) {
             fetchUserOrGroupsByMentionsInBatch(serverUrl, mentionName);
         }
-
-        // Only fetch the user or group on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     let mention;
 

@@ -3,13 +3,26 @@
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {MINIMUM_MAJOR_VERSION, MINIMUM_MINOR_VERSION, MINIMUM_PATCH_VERSION} from '@playbooks/constants/version';
+import {
+    MINIMUM_MAJOR_VERSION,
+    MINIMUM_MINOR_VERSION,
+    MINIMUM_PATCH_VERSION,
+    SUMMARY_EDIT_MINIMUM_MAJOR_VERSION,
+    SUMMARY_EDIT_MINIMUM_MINOR_VERSION,
+    SUMMARY_EDIT_MINIMUM_PATCH_VERSION,
+} from '@playbooks/constants/version';
 
-import {fetchIsPlaybooksEnabled, observeIsPlaybooksEnabled} from './version';
+import {
+    fetchIsPlaybooksEnabled,
+    fetchIsSummaryEditEnabled,
+    observeIsPlaybooksEnabled,
+    observeIsSummaryEditEnabled,
+} from './version';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
 const MINIMUM_VERSION = `${MINIMUM_MAJOR_VERSION}.${MINIMUM_MINOR_VERSION}.${MINIMUM_PATCH_VERSION}`;
+const MINIMUM_SUMMARY_VERSION = `${SUMMARY_EDIT_MINIMUM_MAJOR_VERSION}.${SUMMARY_EDIT_MINIMUM_MINOR_VERSION}.${SUMMARY_EDIT_MINIMUM_PATCH_VERSION}`;
 
 describe('Playbook Version Queries', () => {
     let operator: ServerDataOperator;
@@ -219,6 +232,108 @@ describe('Playbook Version Queries', () => {
             });
 
             const result = await fetchIsPlaybooksEnabled(operator.database);
+            expect(result).toBe(false);
+        });
+    });
+
+    describe('observeIsSummaryEditEnabled', () => {
+        it('should return false when no playbooks version is set', async () => {
+            const subscriptionNext = jest.fn();
+            const result = observeIsSummaryEditEnabled(operator.database);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it(`should return true when playbooks version meets minimum requirements (${MINIMUM_SUMMARY_VERSION})`, async () => {
+            const subscriptionNext = jest.fn();
+            const result = observeIsSummaryEditEnabled(operator.database);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+            subscriptionNext.mockClear();
+
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: MINIMUM_SUMMARY_VERSION}],
+                prepareRecordsOnly: false,
+            });
+
+            expect(subscriptionNext).toHaveBeenCalledWith(true);
+        });
+
+        it('should react to version changes', async () => {
+            const subscriptionNext = jest.fn();
+            const result = observeIsSummaryEditEnabled(operator.database);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+            subscriptionNext.mockClear();
+
+            const aboveVersion = `${SUMMARY_EDIT_MINIMUM_MAJOR_VERSION + 1}.${SUMMARY_EDIT_MINIMUM_MINOR_VERSION + 1}.${SUMMARY_EDIT_MINIMUM_PATCH_VERSION + 1}`;
+            const belowVersion = `${SUMMARY_EDIT_MINIMUM_MAJOR_VERSION - 1}.${SUMMARY_EDIT_MINIMUM_MINOR_VERSION}.${SUMMARY_EDIT_MINIMUM_PATCH_VERSION}`;
+
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: aboveVersion}],
+                prepareRecordsOnly: false,
+            });
+
+            expect(subscriptionNext).toHaveBeenCalledWith(true);
+            subscriptionNext.mockClear();
+
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: belowVersion}],
+                prepareRecordsOnly: false,
+            });
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+    });
+
+    describe('fetchIsSummaryEditEnabled', () => {
+        it('should return false when no playbooks version is set', async () => {
+            const result = await fetchIsSummaryEditEnabled(operator.database);
+            expect(result).toBe(false);
+        });
+
+        it(`should return true when playbooks version meets minimum requirements (${MINIMUM_SUMMARY_VERSION})`, async () => {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: MINIMUM_SUMMARY_VERSION}],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await fetchIsSummaryEditEnabled(operator.database);
+            expect(result).toBe(true);
+        });
+
+        it('should return true when playbooks version has higher major version', async () => {
+            const higherVersion = `${SUMMARY_EDIT_MINIMUM_MAJOR_VERSION + 1}.0.0`;
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: higherVersion}],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await fetchIsSummaryEditEnabled(operator.database);
+            expect(result).toBe(true);
+        });
+
+        it('should handle empty version string', async () => {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: ''}],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await fetchIsSummaryEditEnabled(operator.database);
+            expect(result).toBe(false);
+        });
+
+        it('should return false when playbooks version is below minimum', async () => {
+            const belowVersion = `${SUMMARY_EDIT_MINIMUM_MAJOR_VERSION - 1}.${SUMMARY_EDIT_MINIMUM_MINOR_VERSION}.${SUMMARY_EDIT_MINIMUM_PATCH_VERSION}`;
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: belowVersion}],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await fetchIsSummaryEditEnabled(operator.database);
             expect(result).toBe(false);
         });
     });

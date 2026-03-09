@@ -10,6 +10,7 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {Events, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
+import {getPreauthSecret} from '@init/credentials';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerByIdentifier} from '@queries/app/servers';
@@ -26,6 +27,7 @@ jest.mock('@queries/app/servers');
 jest.mock('@queries/servers/system');
 jest.mock('@database/manager');
 jest.mock('@managers/security_manager');
+jest.mock('@init/credentials');
 
 jest.mock('@managers/websocket_manager');
 jest.mock('@utils/log');
@@ -181,5 +183,55 @@ describe('switchToServerAndLogin', () => {
 
         expect(SecurityManager.isDeviceJailbroken).toHaveBeenCalledWith('serverUrl');
         expect(callback).toHaveBeenCalled();
+    });
+
+    it('should retrieve and use pre-auth secret when reconnecting after logout', async () => {
+        const server = {url: 'serverUrl', displayName: 'Server'} as ServersModel;
+        const config = {DiagnosticId: 'diagId'} as ClientConfig;
+        const license = {} as ClientLicense;
+        const preauthSecret = 'test-secret-123';
+
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(getPreauthSecret).mockResolvedValueOnce(preauthSecret);
+        jest.mocked(doPing).mockResolvedValueOnce({});
+        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
+        jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
+
+        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+
+        expect(getPreauthSecret).toHaveBeenCalledWith('serverUrl');
+        expect(doPing).toHaveBeenCalledWith('serverUrl', true, 5000, preauthSecret);
+    });
+
+    it('should work correctly when no pre-auth secret is stored', async () => {
+        const server = {url: 'serverUrl', displayName: 'Server'} as ServersModel;
+        const config = {DiagnosticId: 'diagId'} as ClientConfig;
+        const license = {} as ClientLicense;
+
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(getPreauthSecret).mockResolvedValueOnce(undefined);
+        jest.mocked(doPing).mockResolvedValueOnce({});
+        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
+        jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
+
+        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+
+        expect(getPreauthSecret).toHaveBeenCalledWith('serverUrl');
+        expect(doPing).toHaveBeenCalledWith('serverUrl', true, 5000, undefined);
+    });
+
+    it('should pass pre-auth secret to doPing even when ping fails', async () => {
+        const server = {url: 'serverUrl'} as ServersModel;
+        const preauthSecret = 'test-secret-456';
+
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(getPreauthSecret).mockResolvedValueOnce(preauthSecret);
+        jest.mocked(doPing).mockResolvedValueOnce({error: 'ping error'});
+
+        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+
+        expect(getPreauthSecret).toHaveBeenCalledWith('serverUrl');
+        expect(doPing).toHaveBeenCalledWith('serverUrl', true, 5000, preauthSecret);
+        expect(alertServerError).toHaveBeenCalledWith(intl, 'ping error');
     });
 });

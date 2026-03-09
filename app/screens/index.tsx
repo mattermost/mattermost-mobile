@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {loadAgentsScreen} from '@agents/screens';
 import {Provider as EMMProvider} from '@mattermost/react-native-emm';
 import React, {type ComponentType} from 'react';
 import {IntlProvider} from 'react-intl';
@@ -85,6 +86,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CHANNEL_NOTIFICATION_PREFERENCES:
             screen = withServerDatabase(require('@screens/channel_notification_preferences').default);
             break;
+        case Screens.CHANNEL_SETTINGS:
+            screen = withServerDatabase(require('@screens/channel_settings').default);
+            break;
         case Screens.CHANNEL_FILES:
             screen = withServerDatabase(require('@screens/channel_files').default);
             break;
@@ -150,6 +154,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.INTERACTIVE_DIALOG:
             screen = withServerDatabase(require('@screens/interactive_dialog').default);
+            break;
+        case Screens.DIALOG_ROUTER:
+            screen = withServerDatabase(require('@screens/dialog_router').default);
             break;
         case Screens.INTEGRATION_SELECTOR:
             screen = withServerDatabase(require('@screens/integration_selector').default);
@@ -293,6 +300,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.USER_PROFILE:
             screen = withServerDatabase(require('@screens/user_profile').default);
             break;
+        case Screens.SHOW_TRANSLATION:
+            screen = withServerDatabase(require('@screens/show_translation').default);
+            break;
         case Screens.CALL:
             screen = withServerDatabase(require('@calls/screens/call_screen').default);
             break;
@@ -305,6 +315,10 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SCHEDULED_POST_OPTIONS:
             screen = withServerDatabase(require('@screens/scheduled_post_options').default);
             break;
+    }
+
+    if (!screen) {
+        screen = loadAgentsScreen(screenName);
     }
 
     if (!screen) {

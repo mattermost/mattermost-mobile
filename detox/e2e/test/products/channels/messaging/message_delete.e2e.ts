@@ -24,8 +24,8 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Delete', () => {
     const serverOneDisplayName = 'Server 1';
@@ -60,14 +60,13 @@ describe('Messaging - Message Delete', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
 
         // # Open post options for the message that was just posted, tap delete option and confirm
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify post message is deleted
-        await expect(postListPostItem).not.toExist();
+        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -82,7 +81,6 @@ describe('Messaging - Message Delete', () => {
         // * Verify message is added to post list
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
 
         // # Open post options for the message that was just posted, tap delete option and cancel
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -100,8 +98,11 @@ describe('Messaging - Message Delete', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);
+        await waitFor(parentPostListPostItem).toExist().withTimeout(timeouts.FOUR_SEC);
+
         await parentPostListPostItem.tap();
 
         // * Verify on thread screen
@@ -110,13 +111,17 @@ describe('Messaging - Message Delete', () => {
         // # Post a reply, open post options for the reply message, tap delete option and confirm
         const replyMessage = `${message} reply`;
         await ThreadScreen.postMessage(replyMessage);
+
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem: replyPostListPostItem} = ChannelScreen.getPostListPostItem(replyPost.id, replyMessage);
+        const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
+        await waitFor(replyPostListPostItem).toExist().withTimeout(timeouts.FOUR_SEC);
+
         await ThreadScreen.openPostOptionsFor(replyPost.id, replyMessage);
         await PostOptionsScreen.deletePost({confirm: true});
+        await wait(timeouts.TWO_SEC);
 
         // * Verify reply message is deleted
-        await expect(replyPostListPostItem).not.toExist();
+        await waitFor(replyPostListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ThreadScreen.back();

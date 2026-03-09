@@ -18,6 +18,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {useAppState} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServerDisplayName} from '@queries/app/servers';
 import ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -132,15 +133,19 @@ export const CallNotification = ({
     const [serverName, setServerName] = useState('');
     const moreThanOneServer = servers.length > 1;
 
-    useEffect(() => {
+    useDidMount(() => {
         const channelMembers = members?.filter((m) => m.userId !== currentUserId);
         if (!channelMembers?.length) {
             fetchProfilesInChannel(serverUrl, incomingCall.channelID, currentUserId, undefined, false);
         }
-    }, []);
+    });
 
     useEffect(() => {
         playIncomingCallsRinging(incomingCall.serverUrl, incomingCall.callID, userStatus || '');
+
+    // We don't care about `userStatus` changes as long as
+    // it is up to date when the effect runs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [incomingCall.serverUrl, incomingCall.callID, appState]);
 
     // We only need to getServerDisplayName once
@@ -165,7 +170,7 @@ export const CallNotification = ({
     const onDismissPress = useCallback(() => {
         removeIncomingCall(serverUrl, incomingCall.callID, incomingCall.channelID);
         dismissIncomingCall(incomingCall.serverUrl, incomingCall.channelID);
-    }, [incomingCall]);
+    }, [incomingCall, serverUrl]);
 
     let message: React.ReactElement;
     if (incomingCall.type === ChannelType.DM) {

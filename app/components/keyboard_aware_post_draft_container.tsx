@@ -110,14 +110,69 @@ export const KeyboardAwarePostDraftContainer = ({
     // Ref to store cursor position from PostInput
     const cursorPositionRef = useRef<number>(0);
 
-    // Function to register cursor position updates from PostInput
-    const registerCursorPosition = useCallback((cursorPosition: number) => {
-        cursorPositionRef.current = cursorPosition;
+    // Ref to track if we're transitioning to emoji picker (to preserve cursor position)
+    const isOpeningEmojiPickerRef = useRef<boolean>(false);
+
+    // Ref to store preserved cursor position when opening emoji picker
+    const preservedCursorPositionRef = useRef<number | null>(null);
+
+    // Ref to store the last cursor position before emoji picker opened
+    // This is kept even after emoji picker opens to detect late resets
+    const lastCursorPositionBeforeEmojiPickerRef = useRef<number | null>(null);
+
+    // Function to preserve cursor position when opening emoji picker
+    const preserveCursorPositionForEmojiPicker = useCallback(() => {
+        preservedCursorPositionRef.current = cursorPositionRef.current;
+        lastCursorPositionBeforeEmojiPickerRef.current = cursorPositionRef.current;
+        isOpeningEmojiPickerRef.current = true;
     }, []);
+
+    // Function to register cursor position updates from PostInput
+    const registerCursorPosition = useCallback((cursorPosition: number, valueLength?: number) => {
+        const previousPosition = cursorPositionRef.current;
+
+        const preservedPosition = preservedCursorPositionRef.current ?? lastCursorPositionBeforeEmojiPickerRef.current;
+        const isInTransitionPeriod = isOpeningEmojiPickerRef.current || (showInputAccessoryView && lastCursorPositionBeforeEmojiPickerRef.current !== null);
+
+        if (isInTransitionPeriod && preservedPosition !== null) {
+            let isResettingToEnd = false;
+            if (typeof valueLength === 'number') {
+                isResettingToEnd = cursorPosition === valueLength && cursorPosition !== preservedPosition;
+            } else {
+                isResettingToEnd = cursorPosition !== preservedPosition &&
+                    previousPosition !== cursorPosition &&
+                    cursorPosition > preservedPosition &&
+                    (previousPosition === preservedPosition || previousPosition < preservedPosition);
+            }
+
+            if (isResettingToEnd) {
+                cursorPositionRef.current = preservedPosition;
+                return;
+            }
+        }
+
+        cursorPositionRef.current = cursorPosition;
+    }, [showInputAccessoryView]);
 
     // Refs to store PostInput callbacks
     const updateValueRef = useRef<React.Dispatch<React.SetStateAction<string>> | null>(null);
     const updateCursorPositionRef = useRef<React.Dispatch<React.SetStateAction<number>> | null>(null);
+
+    // Function to check if we're in emoji picker transition period
+    const isInEmojiPickerTransition = useCallback(() => {
+        return isOpeningEmojiPickerRef.current || (showInputAccessoryView && lastCursorPositionBeforeEmojiPickerRef.current !== null);
+    }, [showInputAccessoryView]);
+
+    // Function to get preserved cursor position if in transition
+    const getPreservedCursorPosition = useCallback(() => {
+        return preservedCursorPositionRef.current ?? lastCursorPositionBeforeEmojiPickerRef.current;
+    }, []);
+
+    // Function to clear preservation flags after emoji is inserted
+    const clearCursorPositionPreservation = useCallback(() => {
+        preservedCursorPositionRef.current = null;
+        lastCursorPositionBeforeEmojiPickerRef.current = null;
+    }, []);
 
     // Function to register PostInput callbacks
     const registerPostInputCallbacks = useCallback((
@@ -127,12 +182,6 @@ export const KeyboardAwarePostDraftContainer = ({
         updateValueRef.current = updateValueFn;
         updateCursorPositionRef.current = updateCursorPositionFn;
 
-        if (updateValueFn) {
-            updateValueFn((currentValue: string) => {
-                cursorPositionRef.current = currentValue.length;
-                return currentValue;
-            });
-        }
     }, []);
 
     // Ref to track if a layout update is already scheduled
@@ -387,6 +436,8 @@ export const KeyboardAwarePostDraftContainer = ({
     // After emoji picker renders, adjust heights and scroll to keep messages visible
     useEffect(() => {
         if (showInputAccessoryView) {
+            isOpeningEmojiPickerRef.current = false;
+
             // Wait one frame to ensure emoji picker has rendered
             requestAnimationFrame(() => {
                 const emojiPickerHeight = inputAccessoryViewAnimatedHeight.value;
@@ -437,10 +488,7 @@ export const KeyboardAwarePostDraftContainer = ({
                 animated: false,
             });
         }
-
-        // ref is not required to be in deps because it is a stable reference
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [listRef]);
 
     // Android: Watch for emoji picker closing and restore scroll position when both height and bottomInset reach 0
     const isAndroid = Platform.OS === 'android';
@@ -500,28 +548,42 @@ export const KeyboardAwarePostDraftContainer = ({
         setIsEmojiSearchFocused,
         cursorPositionRef,
         registerCursorPosition,
+        preserveCursorPositionForEmojiPicker,
+        clearCursorPositionPreservation,
+        isInEmojiPickerTransition,
+        getPreservedCursorPosition,
         updateValue: updateValueRef.current,
         updateCursorPosition: updateCursorPositionRef.current,
         registerPostInputCallbacks,
-
-        // Shared values don't need to be in dependencies - they're stable references
-        // Only include non-shared-value dependencies that can actually change
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }), [
+        keyboardCurrentHeight,
+        bottomInset,
+        scrollOffset,
+        keyboardHeight,
+        scrollPosition,
         onScroll,
         postInputContainerHeight,
         inputRef,
         blurInput,
         focusInput,
         blurAndDismissKeyboard,
+        isKeyboardFullyOpen,
+        isKeyboardFullyClosed,
+        isKeyboardInTransition,
+        isInputAccessoryViewMode,
         showInputAccessoryView,
         setShowInputAccessoryView,
         lastKeyboardHeight,
+        inputAccessoryViewAnimatedHeight,
+        isTransitioningFromCustomView,
         closeInputAccessoryView,
         scrollToEnd,
         isEmojiSearchFocused,
-        setIsEmojiSearchFocused,
         registerCursorPosition,
+        preserveCursorPositionForEmojiPicker,
+        clearCursorPositionPreservation,
+        isInEmojiPickerTransition,
+        getPreservedCursorPosition,
         registerPostInputCallbacks,
     ]);
 

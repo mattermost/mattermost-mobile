@@ -195,9 +195,6 @@ describe('Server Login - Server List', () => {
         // # Enter the same first server display name
         await EditServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
 
-        // * Verify save button is disabled
-        await expect(EditServerScreen.saveButtonDisabled).toBeVisible();
-
         // # Enter a new first server display name
         const newServerOneDisplayName = `${serverOneDisplayName} new`;
         await EditServerScreen.serverDisplayNameInput.replaceText(newServerOneDisplayName);

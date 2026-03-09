@@ -18,6 +18,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useKeyboardOverlap} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import useDidUpdate from '@hooks/did_update';
 import {useInputPropagation} from '@hooks/input';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
@@ -122,12 +123,9 @@ const EditPost = ({
         return !hasUploadingFiles && !tooLong && (messageChanged || filesChanged);
     }, [postMessage, postFiles, editingMessage, maxPostSize, files]);
 
-    useEffect(() => {
+    useDidMount(() => {
         toggleSaveButton(false);
-
-        // No dependencies to avoid unnecessary re-renders since this is a one-time effect
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     useEffect(() => {
         const t = setTimeout(() => {

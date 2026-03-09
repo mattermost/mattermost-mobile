@@ -133,7 +133,7 @@ const CreateOrEditChannel = ({
         base.showAsAction = 'always';
         base.color = theme.sidebarHeaderTextColor;
         return base;
-    }, [editing, theme.sidebarHeaderTextColor, intl, canSave]);
+    }, [editing, formatMessage, canSave, theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
         setButtons(componentId, {
@@ -148,7 +148,7 @@ const CreateOrEditChannel = ({
                 leftButtons: [makeCloseButton(icon)],
             });
         }
-    }, [theme, isModal]);
+    }, [theme, isModal, componentId]);
 
     useEffect(() => {
         setCanSave(
@@ -159,7 +159,7 @@ const CreateOrEditChannel = ({
                 type !== channel.type
             ),
         );
-    }, [channel, displayName, purpose, header, type]);
+    }, [channel, displayName, purpose, header, type, channelInfo]);
 
     const isValidDisplayName = useCallback((): boolean => {
         if (isDirect(channel)) {
@@ -175,7 +175,7 @@ const CreateOrEditChannel = ({
             return false;
         }
         return true;
-    }, [channel, displayName]);
+    }, [channel, displayName, intl]);
 
     const onCreateChannel = useCallback(async () => {
         dispatch({type: RequestActions.START});
@@ -197,7 +197,7 @@ const CreateOrEditChannel = ({
         dispatch({type: RequestActions.COMPLETE});
         close(componentId, isModal);
         switchToChannelById(serverUrl, createdChannel.channel!.id, createdChannel.channel!.team_id);
-    }, [serverUrl, type, displayName, header, isModal, purpose, isValidDisplayName]);
+    }, [isValidDisplayName, serverUrl, displayName, purpose, header, type, componentId, isModal]);
 
     const onUpdateChannel = useCallback(async () => {
         if (!channel) {
@@ -228,11 +228,11 @@ const CreateOrEditChannel = ({
         }
         dispatch({type: RequestActions.COMPLETE});
         close(componentId, isModal);
-    }, [channel?.id, channel?.type, displayName, header, isModal, purpose, isValidDisplayName]);
+    }, [channel, isValidDisplayName, header, displayName, purpose, serverUrl, componentId, isModal]);
 
     const handleClose = useCallback(() => {
         close(componentId, isModal);
-    }, [isModal]);
+    }, [componentId, isModal]);
 
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, handleClose, [handleClose]);
     useNavButtonPressed(CREATE_BUTTON_ID, componentId, onCreateChannel, [onCreateChannel]);
