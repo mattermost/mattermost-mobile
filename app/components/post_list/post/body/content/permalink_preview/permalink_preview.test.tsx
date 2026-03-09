@@ -12,6 +12,7 @@ import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import PermalinkPreview from './permalink_preview';
+import PermalinkFiles from './permalink_files';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
@@ -28,10 +29,10 @@ jest.mocked(Markdown).mockImplementation((props) =>
     React.createElement('Text', {testID: 'markdown'}, props.value),
 );
 
-jest.mock('./permalink_files', () => ({
-    __esModule: true,
-    default: () => require('react').createElement('View', {testID: 'permalink-files-container'}),
-}));
+jest.mock('./permalink_files');
+jest.mocked(PermalinkFiles).mockImplementation((props) =>
+    React.createElement('View', {testID: 'permalink-files-container', ...props}),
+);
 
 describe('components/post_list/post/body/content/permalink_preview/PermalinkPreview', () => {
     let database: Database;

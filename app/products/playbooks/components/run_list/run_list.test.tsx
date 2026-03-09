@@ -4,10 +4,11 @@
 import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
-import DatabaseManager from '@database/manager';
 import {goToSelectPlaybook} from '@playbooks/screens/navigation';
-import {renderWithEverything, renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+
+import SectionNotice from '@components/section_notice';
 
 import EmptyState from './empty_state';
 import PlaybookCard from './playbook_card';
@@ -29,10 +30,8 @@ jest.mock('@playbooks/screens/navigation', () => ({
     goToSelectPlaybook: jest.fn(),
 }));
 
-jest.mock('@components/section_notice', () => ({
-    __esModule: true,
-    default: ({title}: {title: string}) => require('react').createElement('Text', null, title),
-}));
+jest.mock('@components/section_notice');
+jest.mocked(SectionNotice).mockImplementation((props) => React.createElement('SectionNotice', {...props, testID: 'section-notice'}));
 
 describe('RunList', () => {
     const componentId = 'TestScreen' as AvailableScreens;
@@ -253,28 +252,24 @@ describe('RunList', () => {
         );
     });
 
-    it('shows cached warning when showCachedWarning is true', async () => {
-        // This test needs the database because it uses a Markdown component
-        // underneath the SectionNotice component.
-        const serverUrl = 'server-url';
-        await DatabaseManager.init([serverUrl]);
-        const database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
-
+    it('shows cached warning when showCachedWarning is true', () => {
         const props = getBaseProps();
         props.inProgressRuns = [inProgressRun];
         props.showCachedWarning = true;
-        const {getByText} = renderWithEverything(<RunList {...props}/>, {database});
+        const {getByTestId} = renderWithIntlAndTheme(<RunList {...props}/>);
 
-        expect(getByText('Cannot reach the server')).toBeTruthy();
+        const sectionNotice = getByTestId('section-notice');
+        expect(sectionNotice).toBeTruthy();
+        expect(sectionNotice.props.title).toBe('Cannot reach the server');
     });
 
     it('hides cached warning when showCachedWarning is false', () => {
         const props = getBaseProps();
         props.inProgressRuns = [inProgressRun];
         props.showCachedWarning = false;
-        const {queryByText} = renderWithIntlAndTheme(<RunList {...props}/>);
+        const {queryByTestId} = renderWithIntlAndTheme(<RunList {...props}/>);
 
-        expect(queryByText('Cannot reach the server')).toBeNull();
+        expect(queryByTestId('section-notice')).toBeNull();
     });
 
     it('renders multiple runs correctly', () => {
