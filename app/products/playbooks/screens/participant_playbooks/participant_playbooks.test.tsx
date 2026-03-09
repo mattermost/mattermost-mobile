@@ -209,7 +209,7 @@ describe('ParticipantPlaybooks', () => {
         const runList = await findByTestId('run_list');
         await act(async () => {
             const fetchMoreRuns = runList.props.fetchMoreRuns;
-            fetchMoreRuns('in-progress');
+            await fetchMoreRuns('in-progress');
         });
 
         await waitFor(() => {
@@ -219,7 +219,7 @@ describe('ParticipantPlaybooks', () => {
 
         await act(async () => {
             const fetchMoreRuns = runList.props.fetchMoreRuns;
-            fetchMoreRuns('in-progress');
+            await fetchMoreRuns('in-progress');
         });
 
         await waitFor(() => {
@@ -240,7 +240,7 @@ describe('ParticipantPlaybooks', () => {
         const runList = await findByTestId('run_list');
         await act(async () => {
             const fetchMoreRuns = runList.props.fetchMoreRuns;
-            fetchMoreRuns('in-progress');
+            await fetchMoreRuns('in-progress');
         });
 
         await waitFor(() => {
@@ -271,7 +271,7 @@ describe('ParticipantPlaybooks', () => {
 
         await act(async () => {
             const fetchMoreRuns = runList.props.fetchMoreRuns;
-            fetchMoreRuns('in-progress');
+            await fetchMoreRuns('in-progress');
         });
 
         // Should set fetching as soon as we call fetchMoreRuns
@@ -372,7 +372,7 @@ describe('ParticipantPlaybooks', () => {
         const runList = await findByTestId('run_list');
         await act(async () => {
             const fetchMoreRuns = runList.props.fetchMoreRuns;
-            fetchMoreRuns('in-progress');
+            await fetchMoreRuns('in-progress');
         });
 
         await waitFor(() => {
