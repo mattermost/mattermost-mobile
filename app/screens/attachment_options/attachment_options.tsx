@@ -161,7 +161,8 @@ const AttachmentOptions: React.FC<Props> = ({
             if (!zipFilePath) {
                 throw new Error('createZipFile returned empty path');
             }
-            const fileInfoResult = await getInfoAsync(zipFilePath, {size: true});
+            const zipUri = pathWithPrefix('file://', zipFilePath);
+            const fileInfoResult = await getInfoAsync(zipUri, {size: true});
             if (!fileInfoResult.exists) {
                 throw new Error('Zip file does not exist after creation');
             }
@@ -171,7 +172,7 @@ const AttachmentOptions: React.FC<Props> = ({
                 mime_type: 'application/zip',
                 extension: 'zip',
                 size: fileInfoResult.size,
-                localPath: pathWithPrefix('file://', zipFilePath),
+                localPath: zipUri,
             };
             onUploadFiles([fileInfo]);
         } catch (error) {
