@@ -9,5 +9,6 @@ export interface QuickActionAttachmentProps {
     maxFilesReached: boolean;
     maxFileCount: number;
     onUploadFiles: (files: Asset[]) => void;
+    showAttachLogs?: boolean;
     testID?: string;
 }

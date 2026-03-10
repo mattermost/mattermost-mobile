@@ -924,6 +924,7 @@ export function openAttachmentOptions(
         onUploadFiles: (files: Asset[]) => void;
         maxFilesReached: boolean;
         canUploadFiles: boolean;
+        showAttachLogs?: boolean;
         testID?: string;
         fileCount?: number;
         maxFileCount?: number;

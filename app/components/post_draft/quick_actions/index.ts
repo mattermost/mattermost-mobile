@@ -4,11 +4,15 @@
 import {observeIsAgentsEnabled} from '@agents/queries/agents';
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
+import {combineLatest} from 'rxjs';
+import {map} from 'rxjs/operators';
 
+import {Preferences} from '@constants';
 import {withServerUrl} from '@context/server';
 import {observeIsBoREnabled, observeIsPostPriorityEnabled} from '@queries/servers/post';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCanUploadFiles} from '@queries/servers/security';
-import {observeMaxFileCount} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeMaxFileCount} from '@queries/servers/system';
 
 import QuickActions from './quick_actions';
 
@@ -21,6 +25,12 @@ type EnhancedProps = WithDatabaseArgs & {
 const enhanced = withObservables([], ({database, serverUrl}: EnhancedProps) => {
     const canUploadFiles = observeCanUploadFiles(database);
     const maxFileCount = observeMaxFileCount(database);
+    const allowDownloadLogs = observeConfigBooleanValue(database, 'AllowDownloadLogs', true);
+    const attachLogsPref = queryPreferencesByCategoryAndName(
+        database,
+        Preferences.CATEGORIES.ADVANCED_SETTINGS,
+        Preferences.ATTACH_APP_LOGS,
+    ).observe();
 
     return {
         canUploadFiles,
@@ -28,6 +38,9 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhancedProps) => {
         isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
         isBoREnabled: observeIsBoREnabled(database),
         maxFileCount,
+        showAttachLogs: combineLatest([allowDownloadLogs, attachLogsPref]).pipe(
+            map(([allowed, prefs]) => allowed && prefs?.[0]?.value === 'true'),
+        ),
     };
 });
 
