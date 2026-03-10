@@ -8,7 +8,7 @@ import {goToAgentThreadsList} from '@agents/screens/navigation';
 import {PortalProvider} from '@gorhom/portal';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, Text, TouchableOpacity, View} from 'react-native';
+import {type LayoutChangeEvent, Pressable, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {createDirectChannel} from '@actions/remote/channel';
@@ -16,11 +16,11 @@ import {buildAbsoluteUrl} from '@actions/remote/file';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {buildProfileImageUrl} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import PostDraft from '@components/post_draft';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -29,6 +29,7 @@ import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet, dismissBottomSheet, popTopScreen} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type AiBotModel from '@agents/types/database/models/ai_bot';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -68,9 +69,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     headerTitle: {
         color: theme.sidebarText,
-        fontFamily: 'Metropolis-SemiBold',
-        fontSize: 18,
-        lineHeight: 24,
+        ...typography('Heading', 300),
     },
     headerSubtitle: {
         flexDirection: 'row',
@@ -79,9 +78,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     headerSubtitleText: {
         color: changeOpacity(theme.sidebarText, 0.72),
-        fontFamily: 'OpenSans',
-        fontSize: 12,
-        lineHeight: 16,
+        ...typography('Body', 75),
     },
     headerRight: {
         width: 100,
@@ -109,15 +106,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingBottom: 32,
     },
     welcomeText: {
-        fontSize: 25,
-        fontFamily: 'Metropolis-SemiBold',
-        lineHeight: 30,
         color: theme.centerChannelColor,
+        ...typography('Heading', 600),
     },
     descriptionText: {
-        fontSize: 16,
-        lineHeight: 24,
         color: theme.centerChannelColor,
+        ...typography('Body', 200),
     },
     loadingContainer: {
         flex: 1,
@@ -126,10 +120,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.centerChannelBg,
     },
     errorText: {
-        fontSize: 14,
         color: theme.errorTextColor,
         textAlign: 'center',
         marginTop: 16,
+        ...typography('Body', 100),
     },
 }));
 
@@ -314,9 +308,9 @@ const AgentChat = ({
                 <View style={styles.headerContent}>
                     {/* Left - Back button */}
                     <View style={styles.headerLeft}>
-                        <TouchableOpacity
+                        <Pressable
                             onPress={exit}
-                            style={styles.headerIconButton}
+                            style={({pressed}) => [styles.headerIconButton, pressed && {opacity: 0.72}]}
                             testID='agent_chat.back_button'
                         >
                             <CompassIcon
@@ -324,29 +318,33 @@ const AgentChat = ({
                                 size={20}
                                 color={changeOpacity(theme.sidebarText, 0.56)}
                             />
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
 
                     {/* Center - Title and bot selector */}
-                    <TouchableOpacity
+                    <Pressable
                         onPress={handleBotSelectorPress}
-                        style={styles.headerCenter}
+                        style={({pressed}) => [styles.headerCenter, pressed && bots.length > 1 && {opacity: 0.72}]}
                         disabled={bots.length <= 1}
                         testID='agent_chat.bot_selector'
                     >
-                        <Text style={styles.headerTitle}>
-                            {intl.formatMessage({
-                                id: 'agents.chat.title',
-                                defaultMessage: 'Agents',
-                            })}
-                        </Text>
+                        <FormattedText
+                            id='agents.chat.title'
+                            defaultMessage='Agents'
+                            style={styles.headerTitle}
+                        />
                         <View style={styles.headerSubtitle}>
-                            <Text style={styles.headerSubtitleText}>
-                                {selectedBot?.displayName || intl.formatMessage({
-                                    id: 'agents.chat.select_agent',
-                                    defaultMessage: 'Select an agent',
-                                })}
-                            </Text>
+                            {selectedBot ? (
+                                <Text style={styles.headerSubtitleText}>
+                                    {selectedBot.displayName}
+                                </Text>
+                            ) : (
+                                <FormattedText
+                                    id='agents.chat.select_agent'
+                                    defaultMessage='Select an agent'
+                                    style={styles.headerSubtitleText}
+                                />
+                            )}
                             {bots.length > 1 && (
                                 <CompassIcon
                                     name='chevron-down'
@@ -355,13 +353,13 @@ const AgentChat = ({
                                 />
                             )}
                         </View>
-                    </TouchableOpacity>
+                    </Pressable>
 
                     {/* Right - History icon */}
                     <View style={styles.headerRight}>
-                        <TouchableOpacity
+                        <Pressable
                             onPress={handleHistoryPress}
-                            style={styles.headerIconButton}
+                            style={({pressed}) => [styles.headerIconButton, pressed && {opacity: 0.72}]}
                             testID='agent_chat.history_button'
                         >
                             <CompassIcon
@@ -369,7 +367,7 @@ const AgentChat = ({
                                 size={20}
                                 color={theme.sidebarText}
                             />
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
                 </View>
             </View>
@@ -383,33 +381,29 @@ const AgentChat = ({
                     <View style={styles.content}>
                         <View style={styles.introContent}>
                             <AgentsIntro theme={theme}/>
-                            <Text style={styles.welcomeText}>
-                                {intl.formatMessage({
-                                    id: 'agents.chat.intro_title',
-                                    defaultMessage: 'Ask Agents anything',
-                                })}
-                            </Text>
-                            <Text style={styles.descriptionText}>
-                                {intl.formatMessage({
-                                    id: 'agents.chat.intro_description',
-                                    defaultMessage: 'Agents are here to help.',
-                                })}
-                            </Text>
+                            <FormattedText
+                                id='agents.chat.intro_title'
+                                defaultMessage='Ask Agents anything'
+                                style={styles.welcomeText}
+                            />
+                            <FormattedText
+                                id='agents.chat.intro_description'
+                                defaultMessage='Agents are here to help.'
+                                style={styles.descriptionText}
+                            />
                             {error && <Text style={styles.errorText}>{error}</Text>}
                         </View>
                     </View>
 
                     {channelId && (
-                        <ExtraKeyboardProvider>
-                            <PostDraft
-                                channelId={channelId}
-                                testID='agent_chat.post_draft'
-                                containerHeight={containerHeight}
-                                isChannelScreen={false}
-                                location={Screens.AGENT_CHAT}
-                                onPostCreated={handlePostCreated}
-                            />
-                        </ExtraKeyboardProvider>
+                        <PostDraft
+                            channelId={channelId}
+                            testID='agent_chat.post_draft'
+                            containerHeight={containerHeight}
+                            isChannelScreen={false}
+                            location={Screens.AGENT_CHAT}
+                            onPostCreated={handlePostCreated}
+                        />
                     )}
                 </View>
             </PortalProvider>

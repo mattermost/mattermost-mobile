@@ -18,6 +18,9 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 const HIT_SLOP_VERTICAL = 4;
+
+// Indent to align content under the tool name (past the chevron icon column)
+const CONTENT_INDENT = 13;
 const BUTTON_HIT_SLOP = {top: HIT_SLOP_VERTICAL, bottom: HIT_SLOP_VERTICAL, left: 0, right: 0};
 
 interface ToolCardProps {
@@ -37,7 +40,6 @@ interface ToolCardProps {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            marginBottom: 0,
         },
         header: {
             flexDirection: 'row',
@@ -58,7 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 100),
         },
         argumentsContainer: {
-            marginLeft: 13,
+            marginLeft: CONTENT_INDENT,
         },
         markdownText: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
@@ -70,21 +72,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             gap: 8,
             paddingTop: 8,
             paddingBottom: 8,
-            paddingLeft: 13,
+            paddingLeft: CONTENT_INDENT,
         },
         responseLabelText: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
             ...typography('Body', 100),
         },
         resultContainer: {
-            marginLeft: 13,
+            marginLeft: CONTENT_INDENT,
         },
         statusContainer: {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
             marginTop: 16,
-            paddingLeft: 13,
+            paddingLeft: CONTENT_INDENT,
         },
         statusText: {
             color: changeOpacity(theme.centerChannelColor, 0.75),

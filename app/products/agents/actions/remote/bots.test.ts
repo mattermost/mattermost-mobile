@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fetchMissingProfilesByIds} from '@actions/remote/user';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
@@ -9,7 +10,6 @@ import {fetchAIBots} from './bots';
 
 const mockOperator = {
     handleAIBots: jest.fn(),
-    handleUsers: jest.fn(),
 };
 
 jest.mock('@database/manager', () => ({
@@ -17,6 +17,7 @@ jest.mock('@database/manager', () => ({
         operator: mockOperator,
     })),
 }));
+jest.mock('@actions/remote/user');
 jest.mock('@managers/network_manager');
 jest.mock('@utils/errors');
 jest.mock('@utils/log');
@@ -25,7 +26,6 @@ const serverUrl = 'https://test.mattermost.com';
 
 const mockClient = {
     getAIBots: jest.fn(),
-    getProfilesByIds: jest.fn(),
 };
 
 beforeAll(() => {
@@ -44,7 +44,6 @@ describe('fetchAIBots', () => {
             allowUnsafeLinks: false,
         };
         mockClient.getAIBots.mockResolvedValue(mockResponse);
-        mockClient.getProfilesByIds.mockResolvedValue([]);
 
         const result = await fetchAIBots(serverUrl);
 
@@ -59,23 +58,17 @@ describe('fetchAIBots', () => {
         expect(result.error).toBeUndefined();
     });
 
-    it('should refresh bot user profiles on success', async () => {
-        const mockProfiles = [{id: 'bot1', username: 'testbot', delete_at: 0}];
+    it('should refresh missing bot user profiles on success', async () => {
         const mockResponse = {
             bots: [{id: 'bot1', name: 'Test Bot'}],
             searchEnabled: false,
             allowUnsafeLinks: false,
         };
         mockClient.getAIBots.mockResolvedValue(mockResponse);
-        mockClient.getProfilesByIds.mockResolvedValue(mockProfiles);
 
         await fetchAIBots(serverUrl);
 
-        expect(mockClient.getProfilesByIds).toHaveBeenCalledWith(['bot1']);
-        expect(mockOperator.handleUsers).toHaveBeenCalledWith({
-            users: mockProfiles,
-            prepareRecordsOnly: false,
-        });
+        expect(fetchMissingProfilesByIds).toHaveBeenCalledWith(serverUrl, ['bot1']);
     });
 
     it('should handle profile refresh failure gracefully', async () => {
@@ -85,7 +78,7 @@ describe('fetchAIBots', () => {
             allowUnsafeLinks: false,
         };
         mockClient.getAIBots.mockResolvedValue(mockResponse);
-        mockClient.getProfilesByIds.mockRejectedValue(new Error('profile fetch failed'));
+        jest.mocked(fetchMissingProfilesByIds).mockRejectedValue(new Error('profile fetch failed'));
 
         const result = await fetchAIBots(serverUrl);
 

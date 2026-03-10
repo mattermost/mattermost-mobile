@@ -3,12 +3,13 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, TouchableOpacity} from 'react-native';
+import {View, Text, Pressable} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type AiThreadModel from '@agents/types/database/models/ai_thread';
 
@@ -41,19 +42,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     threadTitle: {
         flex: 1,
-        fontSize: 16,
-        fontWeight: '600',
         color: theme.centerChannelColor,
+        ...typography('Body', 200, 'SemiBold'),
     },
     threadTimestamp: {
-        fontSize: 11,
         color: changeOpacity(theme.centerChannelColor, 0.64),
         marginLeft: 8,
+        ...typography('Body', 50),
     },
     threadPreview: {
-        fontSize: 16,
         color: theme.centerChannelColor,
-        lineHeight: 24,
+        ...typography('Body', 200),
     },
     threadMeta: {
         flexDirection: 'row',
@@ -61,11 +60,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         gap: 4,
     },
     threadReplyCount: {
-        fontSize: 12,
-        fontWeight: '600',
         color: changeOpacity(theme.centerChannelColor, 0.64),
         paddingHorizontal: 8,
         paddingVertical: 4.5,
+        ...typography('Body', 75, 'SemiBold'),
     },
     agentTag: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -74,11 +72,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingVertical: 2,
     },
     agentTagText: {
-        fontSize: 10,
-        fontWeight: '600',
         color: theme.centerChannelColor,
         textTransform: 'uppercase',
         letterSpacing: 0.2,
+        ...typography('Body', 25, 'SemiBold'),
     },
 }));
 
@@ -91,9 +88,9 @@ const ThreadItem = ({thread, onPress, botName, theme}: Props) => {
     }, [thread, onPress]);
 
     return (
-        <TouchableOpacity
+        <Pressable
             onPress={handlePress}
-            style={styles.threadItem}
+            style={({pressed}) => [styles.threadItem, pressed && {opacity: 0.72}]}
             testID={`agent_thread.${thread.id}`}
         >
             <View style={styles.threadContent}>
@@ -141,7 +138,7 @@ const ThreadItem = ({thread, onPress, botName, theme}: Props) => {
                     )}
                 </View>
             </View>
-        </TouchableOpacity>
+        </Pressable>
     );
 };
 

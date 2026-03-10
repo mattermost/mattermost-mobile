@@ -5,6 +5,7 @@ import {AGENTS_TABLES} from '@agents/constants/database';
 import {type Model} from '@nozbe/watermelondb';
 
 import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {logDebug} from '@utils/log';
 
 import {shouldUpdateAiBotRecord, shouldUpdateAiThreadRecord} from '../comparators';
 import {transformAiBotRecord, transformAiThreadRecord} from '../transformers';
@@ -41,6 +42,7 @@ const AgentsHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superc
      */
     handleAIBots = async ({bots, prepareRecordsOnly}: HandleAIBotsArgs): Promise<Model[]> => {
         if (!bots?.length) {
+            logDebug('[AgentsHandler.handleAIBots] No bots to handle');
             return [];
         }
 
@@ -94,6 +96,7 @@ const AgentsHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superc
      */
     handleAIThreads = async ({threads, prepareRecordsOnly}: HandleAIThreadsArgs): Promise<Model[]> => {
         if (!threads?.length) {
+            logDebug('[AgentsHandler.handleAIThreads] No threads to handle');
             return [];
         }
 

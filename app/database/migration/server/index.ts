@@ -28,7 +28,7 @@ const {AI_BOT, AI_THREAD} = AGENTS_TABLES;
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 18,
+        toVersion: 19,
         steps: [
             createTable({
                 name: AI_BOT,
@@ -54,6 +54,11 @@ export default schemaMigrations({migrations: [
                     {name: 'update_at', type: 'number', isIndexed: true},
                 ],
             }),
+        ],
+    },
+    {
+        toVersion: 18,
+        steps: [
             addColumns({
                 table: MY_CHANNEL,
                 columns: [

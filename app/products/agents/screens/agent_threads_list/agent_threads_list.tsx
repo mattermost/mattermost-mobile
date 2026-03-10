@@ -8,17 +8,19 @@ import {goToAgentChat} from '@agents/screens/navigation';
 import {FlashList, type ListRenderItem} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, TouchableOpacity, RefreshControl} from 'react-native';
+import {View, Text, Pressable, RefreshControl} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type AiBotModel from '@agents/types/database/models/ai_bot';
 import type AiThreadModel from '@agents/types/database/models/ai_thread';
@@ -60,9 +62,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     headerTitle: {
         color: theme.sidebarText,
-        fontFamily: 'Metropolis-SemiBold',
-        fontSize: 18,
-        lineHeight: 24,
+        ...typography('Heading', 300),
     },
     headerRight: {
         width: 100,
@@ -95,22 +95,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginBottom: 16,
     },
     emptyTitle: {
-        fontSize: 20,
-        fontWeight: '600',
         color: theme.centerChannelColor,
         marginBottom: 8,
         textAlign: 'center',
+        ...typography('Body', 400, 'SemiBold'),
     },
     emptyDescription: {
-        fontSize: 14,
         color: changeOpacity(theme.centerChannelColor, 0.64),
         textAlign: 'center',
-        lineHeight: 20,
+        ...typography('Body', 100),
     },
     errorText: {
-        fontSize: 14,
         color: theme.errorTextColor,
         textAlign: 'center',
+        ...typography('Body', 100),
     },
     listContent: {
         paddingVertical: 0,
@@ -230,12 +228,11 @@ const AgentThreadsList = ({
                         color={theme.errorTextColor}
                         style={styles.emptyIcon}
                     />
-                    <Text style={[styles.emptyTitle, {color: theme.errorTextColor}]}>
-                        {intl.formatMessage({
-                            id: 'agents.threads_list.error_title',
-                            defaultMessage: 'Unable to load conversations',
-                        })}
-                    </Text>
+                    <FormattedText
+                        id='agents.threads_list.error_title'
+                        defaultMessage='Unable to load conversations'
+                        style={[styles.emptyTitle, {color: theme.errorTextColor}]}
+                    />
                     <Text style={styles.errorText}>{error}</Text>
                 </View>
             );
@@ -249,21 +246,19 @@ const AgentThreadsList = ({
                     color={changeOpacity(theme.centerChannelColor, 0.32)}
                     style={styles.emptyIcon}
                 />
-                <Text style={styles.emptyTitle}>
-                    {intl.formatMessage({
-                        id: 'agents.threads_list.empty_title',
-                        defaultMessage: 'No conversations yet',
-                    })}
-                </Text>
-                <Text style={styles.emptyDescription}>
-                    {intl.formatMessage({
-                        id: 'agents.threads_list.empty_description',
-                        defaultMessage: 'Your conversations with agents will appear here. Start a new conversation to get started.',
-                    })}
-                </Text>
+                <FormattedText
+                    id='agents.threads_list.empty_title'
+                    defaultMessage='No conversations yet'
+                    style={styles.emptyTitle}
+                />
+                <FormattedText
+                    id='agents.threads_list.empty_description'
+                    defaultMessage='Your conversations with agents will appear here. Start a new conversation to get started.'
+                    style={styles.emptyDescription}
+                />
             </View>
         );
-    }, [error, intl, styles, theme]);
+    }, [error, styles, theme]);
 
     // Show loading only on first load with no cached data
     if (loading && threads.length === 0) {
@@ -283,9 +278,9 @@ const AgentThreadsList = ({
                 <View style={styles.headerContent}>
                     {/* Left - Back button */}
                     <View style={styles.headerLeft}>
-                        <TouchableOpacity
+                        <Pressable
                             onPress={exit}
-                            style={styles.headerIconButton}
+                            style={({pressed}) => [styles.headerIconButton, pressed && {opacity: 0.72}]}
                             testID='agent_threads_list.back_button'
                         >
                             <CompassIcon
@@ -293,24 +288,23 @@ const AgentThreadsList = ({
                                 size={20}
                                 color={changeOpacity(theme.sidebarText, 0.56)}
                             />
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
 
                     {/* Center - Title */}
                     <View style={styles.headerCenter}>
-                        <Text style={styles.headerTitle}>
-                            {intl.formatMessage({
-                                id: 'agents.threads_list.title',
-                                defaultMessage: 'Agent chat history',
-                            })}
-                        </Text>
+                        <FormattedText
+                            id='agents.threads_list.title'
+                            defaultMessage='Agent chat history'
+                            style={styles.headerTitle}
+                        />
                     </View>
 
                     {/* Right - New chat button */}
                     <View style={styles.headerRight}>
-                        <TouchableOpacity
+                        <Pressable
                             onPress={handleNewChat}
-                            style={styles.headerIconButton}
+                            style={({pressed}) => [styles.headerIconButton, pressed && {opacity: 0.72}]}
                             testID='agent_threads_list.new_chat_button'
                         >
                             <CompassIcon
@@ -318,7 +312,7 @@ const AgentThreadsList = ({
                                 size={20}
                                 color={theme.sidebarText}
                             />
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
                 </View>
             </View>

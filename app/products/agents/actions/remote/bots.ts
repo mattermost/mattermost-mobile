@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fetchMissingProfilesByIds} from '@actions/remote/user';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
@@ -29,13 +30,11 @@ export async function fetchAIBots(
 
         // Refresh bot user profiles to keep User.deleteAt current.
         // This prevents stale deactivation status from showing "archived channel" in agent chat.
+        // Only fetches profiles not already in the DB.
         const botUserIds = (response.bots || []).map((b) => b.id).filter(Boolean);
         if (botUserIds.length) {
             try {
-                const profiles = await client.getProfilesByIds(botUserIds);
-                if (profiles.length) {
-                    await operator.handleUsers({users: profiles, prepareRecordsOnly: false});
-                }
+                await fetchMissingProfilesByIds(serverUrl, botUserIds);
             } catch (profileError) {
                 logDebug('[fetchAIBots] Failed to refresh bot user profiles', getFullErrorMessage(profileError));
             }
