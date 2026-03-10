@@ -20,6 +20,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     shouldHighlightActive?: boolean;
@@ -28,8 +29,8 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     icon: {
         color: changeOpacity(theme.sidebarText, 0.5),
-        fontSize: 24,
         marginRight: 12,
+        ...typography('Body', 500),
     },
     iconActive: {
         color: theme.sidebarText,
