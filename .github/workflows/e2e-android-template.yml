@@ -39,10 +39,20 @@ on:
         type: string
         default: 'false'
       low_bandwidth_mode:
-        description: "Enable low bandwidth mode"
+        description: "Enable low bandwidth mode (legacy - prefer network_profile)"
         required: false
         type: boolean
         default: false
+      network_profile:
+        description: "Network degradation profile (lte, slow_3g, edge_2g, satellite, flapping)"
+        required: false
+        type: string
+        default: ""
+      test_filter:
+        description: "Test filter pattern (e.g., 'degradation' to run only degradation tests)"
+        required: false
+        type: string
+        default: ""
       android_avd_name:
         description: "Android Emulator name"
         required: false
@@ -218,12 +228,37 @@ jobs:
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
         
+      - name: Remove protocol from test server URL
+        id: remove-protocol
+        if: ${{ inputs.low_bandwidth_mode || inputs.network_profile != '' }}
+        run: |
+          echo "SITE_1_HOST=${{ env.SITE_1_URL }}" | sed -e 's/http:\/\///g' -e 's/https:\/\///g' >> ${GITHUB_OUTPUT}
+
+      - name: Apply Network Throttling
+        if: ${{ inputs.low_bandwidth_mode || inputs.network_profile != '' }}
+        uses: ./.github/actions/bandwidth-throttling-linux
+        with:
+          test_server_host: ${{ steps.remove-protocol.outputs.SITE_1_HOST }}
+          profile: ${{ inputs.network_profile }}
+          download_speed: "3300"
+          upload_speed: "3300"
+          latency: "500"
+
       - name: Create and run Android Emulator
         run: |
           cd detox
           chmod +x ./create_android_emulator.sh
           CI=true ./create_android_emulator.sh ${{ env.SDK_VERSION }} ${{ env.AVD_NAME }} ${{ matrix.specs }}
         continue-on-error: true # We want to run all the tests
+        env:
+          LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode || inputs.network_profile != '' }}
+          NETWORK_PROFILE: ${{ inputs.network_profile }}
+
+      - name: Reset Network Settings
+        if: ${{ (inputs.low_bandwidth_mode || inputs.network_profile != '') && always() }}
+        run: |
+          sudo tc qdisc del dev eth0 root 2>/dev/null || true
+          echo "Network throttling disabled"
 
       - name: Upload Android Test Report
         if: always()

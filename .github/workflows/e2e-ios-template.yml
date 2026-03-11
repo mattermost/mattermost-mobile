@@ -45,10 +45,20 @@ on:
         type: string
         default: "iOS 26.2"
       low_bandwidth_mode:
-        description: "Enable low bandwidth mode"
+        description: "Enable low bandwidth mode (legacy - prefer network_profile)"
         required: false
         type: boolean
         default: false
+      network_profile:
+        description: "Network degradation profile (lte, slow_3g, edge_2g, satellite, flapping)"
+        required: false
+        type: string
+        default: ""
+      test_filter:
+        description: "Test filter pattern (e.g., 'degradation' to run only degradation tests)"
+        required: false
+        type: string
+        default: ""
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -124,7 +134,7 @@ jobs:
     name: machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
     runs-on: macos-15
     continue-on-error: true
-    timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
+    timeout-minutes: ${{ (inputs.low_bandwidth_mode || inputs.network_profile != '') && 240 || 180 }}
     env:
       IOS: true
     needs:
@@ -158,14 +168,15 @@ jobs:
           # delete zip file
           rm -f mobile-artifacts/*.zip
 
-      - name: Prepare Low Bandwidth Environment
+      - name: Prepare Degraded Network Environment
         id: prepare-low-bandwidth
         uses: ./.github/actions/prepare-low-bandwidth
-        if: ${{ inputs.low_bandwidth_mode }}
+        if: ${{ inputs.low_bandwidth_mode || inputs.network_profile != '' }}
         with:
           test_server_url: ${{ env.SITE_1_URL }}
           device_name: ${{ env.DEVICE_NAME }}
-          # all these value should be configurable
+          network_profile: ${{ inputs.network_profile }}
+          # Fallback values for legacy low_bandwidth_mode (when no profile specified)
           download_speed: "3300"
           upload_speed: "3300"
           latency: "500"
@@ -250,7 +261,7 @@ jobs:
           echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
 
       - name: Start Proxy
-        if: ${{ inputs.low_bandwidth_mode }}
+        if: ${{ inputs.low_bandwidth_mode || inputs.network_profile != '' }}
         id: start-proxy
         uses: ./.github/actions/start-proxy
         with:
@@ -333,7 +344,8 @@ jobs:
           DETOX_LOGLEVEL: "debug"
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
-          LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
+          LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode || inputs.network_profile != '' }}
+          NETWORK_PROFILE: ${{ inputs.network_profile }}
 
       - name: Cleanup Simulator State
         if: always()
@@ -356,7 +368,7 @@ jobs:
           echo "✅ Simulator cleanup complete"
 
       - name: reset network settings
-        if: ${{ inputs.low_bandwidth_mode || failure() }}
+        if: ${{ inputs.low_bandwidth_mode || inputs.network_profile != '' || failure() }}
         run: |
           networksetup -setwebproxystate Ethernet "off"
           networksetup -setsecurewebproxystate Ethernet "off"
@@ -367,7 +379,7 @@ jobs:
           sleep 5;
 
       - name: Upload mitmdump Flow Output
-        if: ${{ inputs.low_bandwidth_mode }}
+        if: ${{ inputs.low_bandwidth_mode || inputs.network_profile != '' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-mitmdump-flow-output-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}

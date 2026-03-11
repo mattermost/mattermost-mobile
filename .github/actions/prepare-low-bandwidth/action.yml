@@ -1,5 +1,5 @@
 name: Prepare Low Bandwidth Environment (MacOS & iOS Simulators only)
-description: prepare any workflow for low bandwidth testing
+description: Prepare any workflow for low bandwidth or degraded network testing
 
 inputs:
   test_server_url:
@@ -8,59 +8,84 @@ inputs:
   device_name:
     description: The iOS simulator name
     required: true
+  network_profile:
+    description: "Network profile to use (lte, slow_3g, edge_2g, satellite, flapping)"
+    required: false
+    default: ""
   download_speed:
-    description: The download speed limit (in Kbit/s)
+    description: The download speed limit (in Kbit/s) - used if profile is not set
     required: false
     default: "3300"
   upload_speed:
-    description: The upload speed limit (in Kbit/s)
+    description: The upload speed limit (in Kbit/s) - used if profile is not set
     required: false
     default: "3300"
   latency:
-    description: The latency (in ms) each way
+    description: The latency (in ms) each way - used if profile is not set
     required: false
     default: "500"
 
+outputs:
+  effective_profile:
+    description: The network profile that was applied
+    value: ${{ steps.throttle-bandwidth.outputs.effective_profile }}
+  timeout_multiplier:
+    description: Recommended timeout multiplier for this profile
+    value: ${{ steps.throttle-bandwidth.outputs.timeout_multiplier }}
 
 runs:
   using: composite
   steps:
-      - name: delete the zip file and trash (to free up space)
+      - name: Delete the zip file and trash (to free up space)
         shell: bash
         run: |
           rm -rf mobile-artifacts/*.zip
           sudo rm -rf ~/.Trash/*
 
-      - name: check disk space
+      - name: Check disk space
         shell: bash
         run: df -h
 
-      - name: remove protocol from SITE_1_URL
+      - name: Remove protocol from test server URL
         id: remove-protocol
         shell: bash
         run: |
           echo "SITE_1_HOST=${{ inputs.test_server_url }}" | sed -e 's/http:\/\///g' -e 's/https:\/\///g' >> ${GITHUB_OUTPUT}
 
-      - name: Throttle Bandwidth 1
+      - name: Throttle Bandwidth (attempt 1)
         id: throttle-bandwidth-1
         continue-on-error: true
         uses: ./.github/actions/bandwidth-throttling
         with: 
           test_server_host: ${{ steps.remove-protocol.outputs.SITE_1_HOST }}
+          profile: ${{ inputs.network_profile }}
           download_speed: ${{ inputs.download_speed }}
           upload_speed: ${{ inputs.upload_speed }}
           latency: ${{ inputs.latency }}
 
-      - name: Throttle Bandwidth 2
+      - name: Throttle Bandwidth (attempt 2 with reset)
         if: steps.throttle-bandwidth-1.outcome != 'success'
         id: throttle-bandwidth-2
         uses: ./.github/actions/bandwidth-throttling
         with: 
           test_server_host: ${{ steps.remove-protocol.outputs.SITE_1_HOST }}
-          download_speed: ${{ inputs.download_speed}}
+          profile: ${{ inputs.network_profile }}
+          download_speed: ${{ inputs.download_speed }}
           upload_speed: ${{ inputs.upload_speed }}
           latency: ${{ inputs.latency }}
           disable: "true"
+
+      - name: Set throttle outputs
+        id: throttle-bandwidth
+        shell: bash
+        run: |
+          if [ "${{ steps.throttle-bandwidth-1.outcome }}" == "success" ]; then
+            echo "effective_profile=${{ steps.throttle-bandwidth-1.outputs.effective_profile }}" >> $GITHUB_OUTPUT
+            echo "timeout_multiplier=${{ steps.throttle-bandwidth-1.outputs.timeout_multiplier }}" >> $GITHUB_OUTPUT
+          else
+            echo "effective_profile=${{ steps.throttle-bandwidth-2.outputs.effective_profile }}" >> $GITHUB_OUTPUT
+            echo "timeout_multiplier=${{ steps.throttle-bandwidth-2.outputs.timeout_multiplier }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Install mitmproxy & pm2 (process manager)
         id: install-mitmproxy-pm2
@@ -89,7 +114,7 @@ runs:
           simulator_udid=$(xcrun simctl list devices "${{ inputs.device_name }}" -j | jq '.devices' | jq '."com.apple.CoreSimulator.SimRuntime.iOS-17-4"[0]["udid"]')
           echo "simulator_udid="$(echo $simulator_udid) >> ${GITHUB_OUTPUT}
 
-      - name: install certificate
+      - name: Install certificate
         shell: bash
         run: |
           sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
@@ -101,6 +126,6 @@ runs:
 
           sleep 5;
 
-      - name: show me booted simulators
+      - name: Show booted simulators
         shell: bash
         run: xcrun simctl list devices booted | grep Booted
