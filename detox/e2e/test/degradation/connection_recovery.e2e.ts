@@ -36,7 +36,6 @@ describe('Degradation - Connection Recovery', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
-    let testUser: any;
     const timeoutMultiplier = getTimeoutMultiplier();
 
     beforeAll(async () => {
@@ -46,7 +45,6 @@ describe('Degradation - Connection Recovery', () => {
 
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-        testUser = user;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -125,9 +123,7 @@ describe('Degradation - Connection Recovery', () => {
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, apiMessage);
 
-        await waitFor(postListPostItem)
-            .toBeVisible()
-            .withTimeout(timeouts.ONE_MIN * timeoutMultiplier);
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.ONE_MIN * timeoutMultiplier);
 
         // # Go back to channel list screen
         await ChannelScreen.back();

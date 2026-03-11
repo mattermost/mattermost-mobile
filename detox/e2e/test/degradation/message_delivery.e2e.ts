@@ -37,7 +37,6 @@ describe('Degradation - Message Delivery', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
-    let testUser: any;
     const timeoutMultiplier = getTimeoutMultiplier();
 
     beforeAll(async () => {
@@ -47,7 +46,6 @@ describe('Degradation - Message Delivery', () => {
 
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-        testUser = user;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -78,9 +76,7 @@ describe('Degradation - Message Delivery', () => {
 
         // * Wait for message to appear in post list (with extended timeout for degraded network)
         // Under degraded conditions, this may take significantly longer
-        await waitFor(ChannelScreen.postInput)
-            .not.toHaveValue(message)
-            .withTimeout(timeouts.ONE_MIN * timeoutMultiplier);
+        await waitFor(ChannelScreen.postInput).not.toHaveValue(message).withTimeout(timeouts.ONE_MIN * timeoutMultiplier);
 
         // * Verify message eventually appears (allow time for server round-trip)
         await wait(timeouts.TEN_SEC * timeoutMultiplier);
@@ -99,6 +95,7 @@ describe('Degradation - Message Delivery', () => {
     it('DDIL-T002 - should show loading state for slow message send', async () => {
         // Skip this test under normal network conditions as it requires degraded network
         if (!isDegradedNetwork()) {
+            // eslint-disable-next-line no-console
             console.log('Skipping test - not running under degraded network');
             return;
         }
@@ -119,9 +116,7 @@ describe('Degradation - Message Delivery', () => {
         await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
 
         // * Wait for message to complete sending
-        await waitFor(ChannelScreen.sendButtonDisabled)
-            .toBeVisible()
-            .withTimeout(timeouts.TWO_MIN * timeoutMultiplier);
+        await waitFor(ChannelScreen.sendButtonDisabled).toBeVisible().withTimeout(timeouts.TWO_MIN * timeoutMultiplier);
 
         // * Verify message was delivered
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -142,9 +137,9 @@ describe('Degradation - Message Delivery', () => {
         ];
 
         // # Send multiple messages in sequence
+        // eslint-disable-next-line no-await-in-loop
         for (const message of messages) {
             await ChannelScreen.postMessage(message);
-            // Small delay between messages to ensure order
             await wait(timeouts.ONE_SEC);
         }
 
@@ -153,9 +148,7 @@ describe('Degradation - Message Delivery', () => {
 
         // * Verify all messages arrived in order via API
         const response = await Post.apiGetPostsInChannel(siteOneUrl, testChannel.id);
-        const recentPosts = response.order
-            .slice(0, 3)
-            .map((id: string) => response.posts[id].message);
+        const recentPosts = response.order.slice(0, 3).map((id: string) => response.posts[id].message);
 
         // Posts are ordered newest-first, so reverse for chronological order
         const chronologicalPosts = recentPosts.reverse();
