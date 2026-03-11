@@ -157,9 +157,9 @@ describe('Degradation - Message Delivery', () => {
         const {posts} = await Post.apiGetPostsInChannel(siteOneUrl, testChannel.id);
 
         // Filter to find only our test messages (by matching the unique message content)
-        const ourPosts = posts
-            .map((p: {message: string}) => p.message)
-            .filter((msg: string) => messages.some((m) => msg === m));
+        const ourPosts = posts.
+            map((p: {message: string}) => p.message).
+            filter((msg: string) => messages.some((m) => msg === m));
 
         // Verify we found all our messages
         expect(ourPosts.length).toBe(messages.length);
