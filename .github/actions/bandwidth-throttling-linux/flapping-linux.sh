@@ -4,8 +4,23 @@
 
 set -e
 
+# Detect the primary network interface
+INTERFACE=$(ip route | grep default | awk '{print $5}' | head -n1)
+if [ -z "$INTERFACE" ]; then
+    INTERFACE="eth0"
+fi
+
 echo "Starting flapping network simulation (Linux)"
+echo "Using network interface: $INTERFACE"
 echo "PID: $$"
+
+# Cleanup function to reset network on exit
+cleanup() {
+    echo "[$(date '+%H:%M:%S')] Cleaning up tc rules..."
+    sudo tc qdisc del dev "$INTERFACE" root 2>/dev/null || true
+    exit 0
+}
+trap cleanup SIGTERM SIGINT EXIT
 
 # Function to apply network settings using tc/netem
 apply_settings() {
@@ -17,11 +32,11 @@ apply_settings() {
     echo "[$(date '+%H:%M:%S')] Switching to state: $state_name"
     
     # Remove existing rules
-    sudo tc qdisc del dev eth0 root 2>/dev/null || true
+    sudo tc qdisc del dev "$INTERFACE" root 2>/dev/null || true
     
     if [ "$state_name" = "disconnected" ]; then
         # 100% packet loss = disconnected
-        sudo tc qdisc add dev eth0 root netem loss 100%
+        sudo tc qdisc add dev "$INTERFACE" root netem loss 100%
     else
         # Build netem options
         NETEM_OPTS="delay ${latency}ms"
@@ -30,12 +45,12 @@ apply_settings() {
         fi
         
         # Add netem for delay/loss
-        sudo tc qdisc add dev eth0 root handle 1: netem $NETEM_OPTS
+        sudo tc qdisc add dev "$INTERFACE" root handle 1: netem $NETEM_OPTS
         
         # Add rate limiting
         RATE="${download}kbit"
         BURST="$((download / 8))kb"
-        sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate $RATE burst $BURST latency 50ms
+        sudo tc qdisc add dev "$INTERFACE" parent 1: handle 2: tbf rate $RATE burst $BURST latency 50ms
     fi
 }
 

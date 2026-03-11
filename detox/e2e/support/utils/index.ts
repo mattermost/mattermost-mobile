@@ -4,6 +4,8 @@
 import {adminEmail, adminPassword, adminUsername} from '@support/test_config';
 import {v4 as uuidv4} from 'uuid';
 
+import {getTimeoutMultiplier} from './network_profiles';
+
 export * from './email';
 export * from './detoxhelpers';
 export * from './network_profiles';
@@ -63,8 +65,6 @@ export const getAdminAccount = () => {
         email: adminEmail,
     };
 };
-
-import {getTimeoutMultiplier} from './network_profiles';
 
 // Get timeout multiplier from network profile (supports both new NETWORK_PROFILE and legacy LOW_BANDWIDTH_MODE)
 const TIMEOUT_MULTIPLIER = getTimeoutMultiplier();

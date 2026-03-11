@@ -115,8 +115,8 @@ describe('Degradation - Message Delivery', () => {
         // This validates the app provides appropriate feedback during slow operations
         await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
 
-        // * Wait for message to complete sending
-        await waitFor(ChannelScreen.sendButtonDisabled).toBeVisible().withTimeout(timeouts.TWO_MIN * timeoutMultiplier);
+        // * Wait for message to complete sending (input clears when sent)
+        await waitFor(ChannelScreen.postInput).toHaveText('').withTimeout(timeouts.TWO_MIN * timeoutMultiplier);
 
         // * Verify message was delivered
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -136,10 +136,11 @@ describe('Degradation - Message Delivery', () => {
             `Third message ${getRandomId()}`,
         ];
 
-        // # Send multiple messages in sequence
-        // eslint-disable-next-line no-await-in-loop
+        // # Send multiple messages in sequence (sequential await is intentional for test ordering)
         for (const message of messages) {
+            // eslint-disable-next-line no-await-in-loop
             await ChannelScreen.postMessage(message);
+            // eslint-disable-next-line no-await-in-loop
             await wait(timeouts.ONE_SEC);
         }
 

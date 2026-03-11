@@ -48,11 +48,6 @@ on:
         required: false
         type: string
         default: ""
-      test_filter:
-        description: "Test filter pattern (e.g., 'degradation' to run only degradation tests)"
-        required: false
-        type: string
-        default: ""
       android_avd_name:
         description: "Android Emulator name"
         required: false

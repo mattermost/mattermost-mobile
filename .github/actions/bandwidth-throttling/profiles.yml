@@ -54,7 +54,8 @@ profiles:
     upload_kbps: 256
     latency_ms: 200
     packet_loss_percent: 0
-    # Flapping pattern (handled by flapping.sh script)
+    # NOTE: This pattern is documentation only - actual behavior is hardcoded in
+    # flapping.sh (macOS) and flapping-linux.sh. Update those scripts to change timing.
     pattern:
       - state: "connected"
         duration_sec: 30

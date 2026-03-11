@@ -187,7 +187,7 @@ jobs:
           echo "# DDIL/Degradation Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Network Profiles Tested" >> $GITHUB_STEP_SUMMARY
-          echo '${{ needs.setup-matrix.outputs.profiles }}' | jq -r '.[]' | while read profile; do
+          echo '${{ needs.setup-matrix.outputs.profiles }}' | jq -r '.[]' | while read -r profile; do
             echo "- $profile" >> $GITHUB_STEP_SUMMARY
           done
           echo "" >> $GITHUB_STEP_SUMMARY

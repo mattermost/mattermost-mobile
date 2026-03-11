@@ -86,6 +86,8 @@ export function getCurrentNetworkProfile(): NetworkProfile {
     }
 
     // Backward compatibility with LOW_BANDWIDTH_MODE
+    // Legacy mode uses 3300/3300/500 settings from prepare-low-bandwidth action
+    // Map to slow_3g for timeout multiplier (3x) - close enough for test timing purposes
     if (process.env.LOW_BANDWIDTH_MODE === 'true') {
         return 'slow_3g';
     }

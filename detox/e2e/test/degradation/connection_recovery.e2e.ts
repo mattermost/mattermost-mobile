@@ -157,21 +157,14 @@ describe('Degradation - Connection Recovery', () => {
         await ChannelScreen.back();
     });
 
-    it('DDIL-T013 - should show connection status indicator appropriately', async () => {
-        // This test validates that the app shows appropriate UI feedback
-        // about connection state under degraded conditions
-
-        // Note: The specific testIDs for connection banner may vary
-        // Update these based on actual component implementation
+    it('DDIL-T013 - should deliver messages under extended degraded conditions', async () => {
+        // This test validates basic message delivery under prolonged degraded conditions
 
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // * Under degraded conditions, the app should still be functional
-        // even if showing slow connection indicators
-
-        // # Send a message to verify functionality
-        const message = `Connection test ${getRandomId()} - ${getCurrentNetworkProfile()}`;
+        // # Send a message to verify functionality under degraded network
+        const message = `Extended degradation test ${getRandomId()} - ${getCurrentNetworkProfile()}`;
         await ChannelScreen.postMessage(message);
 
         // * Allow extended time for delivery under degraded network

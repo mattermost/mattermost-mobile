@@ -7,15 +7,19 @@
 
 set -e
 
-TEST_SERVER_HOST="$1"
-
-if [ -z "$TEST_SERVER_HOST" ]; then
-    echo "Error: test_server_host is required"
-    exit 1
-fi
+# TEST_SERVER_HOST is kept for logging/diagnostic purposes only
+TEST_SERVER_HOST="${1:-unspecified}"
 
 echo "Starting flapping network simulation for host: $TEST_SERVER_HOST"
 echo "PID: $$"
+
+# Cleanup function to reset network on exit
+cleanup() {
+    echo "[$(date '+%H:%M:%S')] Cleaning up dnctl pipes..."
+    sudo dnctl -q pipe flush 2>/dev/null || true
+    exit 0
+}
+trap cleanup SIGTERM SIGINT EXIT
 
 # Function to apply network settings
 apply_settings() {
