@@ -153,11 +153,12 @@ describe('Degradation - Message Delivery', () => {
         await wait(cappedTimeout(timeouts.TEN_SEC, timeoutMultiplier));
 
         // * Verify all messages arrived in order via API
-        const response = await Post.apiGetPostsInChannel(siteOneUrl, testChannel.id);
+        // apiGetPostsInChannel returns {posts: Post[]} where posts is an ordered array (newest first)
+        const {posts} = await Post.apiGetPostsInChannel(siteOneUrl, testChannel.id);
 
         // Filter to find only our test messages (by matching the unique message content)
-        const ourPosts = response.order
-            .map((id: string) => response.posts[id].message)
+        const ourPosts = posts
+            .map((p: {message: string}) => p.message)
             .filter((msg: string) => messages.some((m) => msg === m));
 
         // Verify we found all our messages
