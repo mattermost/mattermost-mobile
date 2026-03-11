@@ -223,6 +223,7 @@ describe('SearchScreen', () => {
         await waitFor(() => {
             const searchInput = getByTestId('navigation.header.search_bar.search.input');
             expect(searchInput.props.value).toBe('#hashtag');
+            expect(searchPosts).toHaveBeenCalled();
         });
 
         const searchInput = getByTestId('navigation.header.search_bar.search.input');
