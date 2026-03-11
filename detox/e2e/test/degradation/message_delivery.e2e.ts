@@ -33,6 +33,11 @@ import {
 } from '@support/utils';
 import {expect} from 'detox';
 
+// Cap scaled timeouts to prevent extremely long waits (max 3 minutes)
+const MAX_SCALED_TIMEOUT = 3 * 60 * 1000;
+const cappedTimeout = (baseTimeout: number, multiplier: number) =>
+    Math.min(baseTimeout * multiplier, MAX_SCALED_TIMEOUT);
+
 describe('Degradation - Message Delivery', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -76,10 +81,10 @@ describe('Degradation - Message Delivery', () => {
 
         // * Wait for message to appear in post list (with extended timeout for degraded network)
         // Under degraded conditions, this may take significantly longer
-        await waitFor(ChannelScreen.postInput).not.toHaveValue(message).withTimeout(timeouts.ONE_MIN * timeoutMultiplier);
+        await waitFor(ChannelScreen.postInput).not.toHaveValue(message).withTimeout(cappedTimeout(timeouts.ONE_MIN, timeoutMultiplier));
 
         // * Verify message eventually appears (allow time for server round-trip)
-        await wait(timeouts.TEN_SEC * timeoutMultiplier);
+        await wait(cappedTimeout(timeouts.TEN_SEC, timeoutMultiplier));
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         expect(post.message).toBe(message);
@@ -116,7 +121,7 @@ describe('Degradation - Message Delivery', () => {
         await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
 
         // * Wait for message to complete sending (input clears when sent)
-        await waitFor(ChannelScreen.postInput).toHaveText('').withTimeout(timeouts.TWO_MIN * timeoutMultiplier);
+        await waitFor(ChannelScreen.postInput).toHaveText('').withTimeout(cappedTimeout(timeouts.TWO_MIN, timeoutMultiplier));
 
         // * Verify message was delivered
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -145,14 +150,21 @@ describe('Degradation - Message Delivery', () => {
         }
 
         // * Allow time for all messages to sync
-        await wait(timeouts.TEN_SEC * timeoutMultiplier);
+        await wait(cappedTimeout(timeouts.TEN_SEC, timeoutMultiplier));
 
         // * Verify all messages arrived in order via API
         const response = await Post.apiGetPostsInChannel(siteOneUrl, testChannel.id);
-        const recentPosts = response.order.slice(0, 3).map((id: string) => response.posts[id].message);
+
+        // Filter to find only our test messages (by matching the unique message content)
+        const ourPosts = response.order
+            .map((id: string) => response.posts[id].message)
+            .filter((msg: string) => messages.some((m) => msg === m));
+
+        // Verify we found all our messages
+        expect(ourPosts.length).toBe(messages.length);
 
         // Posts are ordered newest-first, so reverse for chronological order
-        const chronologicalPosts = recentPosts.reverse();
+        const chronologicalPosts = ourPosts.reverse();
 
         for (let i = 0; i < messages.length; i++) {
             expect(chronologicalPosts[i]).toBe(messages[i]);

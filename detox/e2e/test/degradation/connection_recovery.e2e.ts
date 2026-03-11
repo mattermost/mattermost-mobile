@@ -32,6 +32,11 @@ import {
 } from '@support/utils';
 import {expect} from 'detox';
 
+// Cap scaled timeouts to prevent extremely long waits (max 3 minutes)
+const MAX_SCALED_TIMEOUT = 3 * 60 * 1000;
+const cappedTimeout = (baseTimeout: number, multiplier: number) =>
+    Math.min(baseTimeout * multiplier, MAX_SCALED_TIMEOUT);
+
 describe('Degradation - Connection Recovery', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -88,7 +93,7 @@ describe('Degradation - Connection Recovery', () => {
         await ChannelScreen.postMessage(afterMessage);
 
         // * Allow time for sync under degraded conditions
-        await wait(timeouts.TEN_SEC * timeoutMultiplier);
+        await wait(cappedTimeout(timeouts.TEN_SEC, timeoutMultiplier));
 
         // * Verify message was sent
         const {post: afterPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -117,13 +122,13 @@ describe('Degradation - Connection Recovery', () => {
         await device.launchApp({newInstance: false});
 
         // * Allow time for sync under degraded conditions
-        await wait(timeouts.TEN_SEC * timeoutMultiplier);
+        await wait(cappedTimeout(timeouts.TEN_SEC, timeoutMultiplier));
 
         // * Verify the message appears in the channel
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, apiMessage);
 
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.ONE_MIN * timeoutMultiplier);
+        await waitFor(postListPostItem).toBeVisible().withTimeout(cappedTimeout(timeouts.ONE_MIN, timeoutMultiplier));
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -149,7 +154,7 @@ describe('Degradation - Connection Recovery', () => {
         await ChannelScreen.postMessage(message);
 
         // * Verify message sent successfully
-        await wait(timeouts.TEN_SEC * timeoutMultiplier);
+        await wait(cappedTimeout(timeouts.TEN_SEC, timeoutMultiplier));
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         expect(post.message).toBe(message);
 
@@ -168,7 +173,7 @@ describe('Degradation - Connection Recovery', () => {
         await ChannelScreen.postMessage(message);
 
         // * Allow extended time for delivery under degraded network
-        await wait(timeouts.HALF_MIN * timeoutMultiplier);
+        await wait(cappedTimeout(timeouts.HALF_MIN, timeoutMultiplier));
 
         // * Verify message was delivered
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
