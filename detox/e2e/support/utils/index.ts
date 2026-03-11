@@ -6,6 +6,7 @@ import {v4 as uuidv4} from 'uuid';
 
 export * from './email';
 export * from './detoxhelpers';
+export * from './network_profiles';
 
 /**
  * Explicit `wait` should not normally used but made available for special cases.
@@ -63,8 +64,12 @@ export const getAdminAccount = () => {
     };
 };
 
-const SECOND = 1000 * (process.env.LOW_BANDWIDTH_MODE === 'true' ? 5 : 1);
-const MINUTE = 60 * 1000;
+import {getTimeoutMultiplier} from './network_profiles';
+
+// Get timeout multiplier from network profile (supports both new NETWORK_PROFILE and legacy LOW_BANDWIDTH_MODE)
+const TIMEOUT_MULTIPLIER = getTimeoutMultiplier();
+const SECOND = 1000 * TIMEOUT_MULTIPLIER;
+const MINUTE = 60 * 1000 * TIMEOUT_MULTIPLIER;
 
 export const timeouts = {
     HALF_SEC: SECOND / 2,
