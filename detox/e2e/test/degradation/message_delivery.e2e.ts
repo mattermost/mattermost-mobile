@@ -27,22 +27,20 @@ import {
     timeouts,
     wait,
     getCurrentNetworkProfile,
-    getTimeoutMultiplier,
     getNetworkProfileInfo,
     isDegradedNetwork,
 } from '@support/utils';
 import {expect} from 'detox';
 
-// Cap scaled timeouts to prevent extremely long waits (max 3 minutes)
-const MAX_SCALED_TIMEOUT = 3 * 60 * 1000;
-const cappedTimeout = (baseTimeout: number, multiplier: number) =>
-    Math.min(baseTimeout * multiplier, MAX_SCALED_TIMEOUT);
+// Cap timeouts to prevent extremely long waits (max 3 minutes)
+// Note: timeouts.* are already scaled by getTimeoutMultiplier() in index.ts
+const MAX_TIMEOUT = 3 * 60 * 1000;
+const cappedTimeout = (timeout: number) => Math.min(timeout, MAX_TIMEOUT);
 
 describe('Degradation - Message Delivery', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
-    const timeoutMultiplier = getTimeoutMultiplier();
 
     beforeAll(async () => {
         // Log network profile for debugging - visible in test output
@@ -81,10 +79,10 @@ describe('Degradation - Message Delivery', () => {
 
         // * Wait for message to appear in post list (with extended timeout for degraded network)
         // Under degraded conditions, this may take significantly longer
-        await waitFor(ChannelScreen.postInput).not.toHaveValue(message).withTimeout(cappedTimeout(timeouts.ONE_MIN, timeoutMultiplier));
+        await waitFor(ChannelScreen.postInput).not.toHaveValue(message).withTimeout(cappedTimeout(timeouts.ONE_MIN));
 
         // * Verify message eventually appears (allow time for server round-trip)
-        await wait(cappedTimeout(timeouts.TEN_SEC, timeoutMultiplier));
+        await wait(cappedTimeout(timeouts.TEN_SEC));
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         expect(post.message).toBe(message);
@@ -97,14 +95,9 @@ describe('Degradation - Message Delivery', () => {
         await ChannelScreen.back();
     });
 
-    it('DDIL-T002 - should show loading state for slow message send', async () => {
-        // Skip this test under normal network conditions as it requires degraded network
-        if (!isDegradedNetwork()) {
-            // eslint-disable-next-line no-console
-            console.log('Skipping test - not running under degraded network');
-            return;
-        }
-
+    // This test requires degraded network to observe loading states
+    const degradedOnlyTest = isDegradedNetwork() ? it : it.skip;
+    degradedOnlyTest('DDIL-T002 - should show loading state for slow message send', async () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
@@ -121,7 +114,7 @@ describe('Degradation - Message Delivery', () => {
         await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
 
         // * Wait for message to complete sending (input clears when sent)
-        await waitFor(ChannelScreen.postInput).toHaveText('').withTimeout(cappedTimeout(timeouts.TWO_MIN, timeoutMultiplier));
+        await waitFor(ChannelScreen.postInput).toHaveText('').withTimeout(cappedTimeout(timeouts.TWO_MIN));
 
         // * Verify message was delivered
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -150,7 +143,7 @@ describe('Degradation - Message Delivery', () => {
         }
 
         // * Allow time for all messages to sync
-        await wait(cappedTimeout(timeouts.TEN_SEC, timeoutMultiplier));
+        await wait(cappedTimeout(timeouts.TEN_SEC));
 
         // * Verify all messages arrived in order via API
         // apiGetPostsInChannel returns {posts: Post[]} where posts is an ordered array (newest first)

@@ -14,11 +14,12 @@ echo "Starting flapping network simulation (Linux)"
 echo "Using network interface: $INTERFACE"
 echo "PID: $$"
 
-# Cleanup function to reset network on exit
+# Cleanup function to reset network on exit (preserves exit status)
 cleanup() {
+    local exit_status=$?
     echo "[$(date '+%H:%M:%S')] Cleaning up tc rules..."
     sudo tc qdisc del dev "$INTERFACE" root 2>/dev/null || true
-    exit 0
+    exit $exit_status
 }
 trap cleanup SIGTERM SIGINT EXIT
 
