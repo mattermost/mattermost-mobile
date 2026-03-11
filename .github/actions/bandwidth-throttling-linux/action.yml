@@ -1,0 +1,168 @@
+name: bandwidth-throttling-linux
+description: Action to throttle the bandwidth on Linux runners (for Android E2E) using tc/netem
+
+inputs:
+  test_server_host:
+    description: The host of the test server, no protocol
+    required: true
+  profile:
+    description: "Network profile to use (lte, slow_3g, edge_2g, satellite, flapping). Overrides individual settings."
+    required: false
+    default: ""
+  download_speed:
+    description: The download speed limit (in Kbit/s) - used if profile is not set
+    required: false
+    default: "3300"
+  upload_speed:
+    description: The upload speed limit (in Kbit/s) - used if profile is not set
+    required: false
+    default: "3300"
+  latency:
+    description: The latency (in ms) each way - used if profile is not set
+    required: false
+    default: "500"
+  packet_loss:
+    description: Packet loss percentage (0-100) - used if profile is not set
+    required: false
+    default: "0"
+  disable:
+    description: Disable throttling
+    required: false
+    default: "false"
+
+outputs:
+  effective_profile:
+    description: The profile that was applied
+    value: ${{ steps.resolve-profile.outputs.profile }}
+  timeout_multiplier:
+    description: Recommended timeout multiplier for this profile
+    value: ${{ steps.resolve-profile.outputs.timeout_multiplier }}
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve network profile settings
+      id: resolve-profile
+      shell: bash
+      run: |
+        PROFILE="${{ inputs.profile }}"
+        
+        # Profile-based settings (same as macOS version)
+        case "$PROFILE" in
+          lte)
+            DOWNLOAD=10000
+            UPLOAD=5000
+            LATENCY=30
+            PACKET_LOSS=0
+            TIMEOUT_MULT=1
+            ;;
+          slow_3g)
+            DOWNLOAD=400
+            UPLOAD=128
+            LATENCY=300
+            PACKET_LOSS=2
+            TIMEOUT_MULT=3
+            ;;
+          edge_2g)
+            DOWNLOAD=50
+            UPLOAD=25
+            LATENCY=500
+            PACKET_LOSS=5
+            TIMEOUT_MULT=10
+            ;;
+          satellite)
+            DOWNLOAD=1000
+            UPLOAD=256
+            LATENCY=700
+            PACKET_LOSS=1
+            TIMEOUT_MULT=5
+            ;;
+          flapping)
+            DOWNLOAD=1000
+            UPLOAD=256
+            LATENCY=200
+            PACKET_LOSS=0
+            TIMEOUT_MULT=5
+            ;;
+          *)
+            DOWNLOAD=${{ inputs.download_speed }}
+            UPLOAD=${{ inputs.upload_speed }}
+            LATENCY=${{ inputs.latency }}
+            PACKET_LOSS=${{ inputs.packet_loss }}
+            TIMEOUT_MULT=1
+            PROFILE="custom"
+            ;;
+        esac
+        
+        echo "download=$DOWNLOAD" >> $GITHUB_OUTPUT
+        echo "upload=$UPLOAD" >> $GITHUB_OUTPUT
+        echo "latency=$LATENCY" >> $GITHUB_OUTPUT
+        echo "packet_loss=$PACKET_LOSS" >> $GITHUB_OUTPUT
+        echo "timeout_multiplier=$TIMEOUT_MULT" >> $GITHUB_OUTPUT
+        echo "profile=$PROFILE" >> $GITHUB_OUTPUT
+        
+        echo "Network profile: $PROFILE"
+        echo "  Download: ${DOWNLOAD} Kbit/s"
+        echo "  Upload: ${UPLOAD} Kbit/s"
+        echo "  Latency: ${LATENCY} ms"
+        echo "  Packet Loss: ${PACKET_LOSS}%"
+        echo "  Timeout Multiplier: ${TIMEOUT_MULT}x"
+
+    - name: Disable existing throttling
+      if: ${{ inputs.disable == 'true' }}
+      shell: bash
+      run: |
+        # Remove any existing tc rules
+        sudo tc qdisc del dev eth0 root 2>/dev/null || true
+        echo "Network throttling disabled"
+
+    - name: Apply network throttling with tc/netem
+      if: ${{ inputs.disable != 'true' }}
+      shell: bash
+      run: |
+        # Remove any existing rules
+        sudo tc qdisc del dev eth0 root 2>/dev/null || true
+        
+        DOWNLOAD="${{ steps.resolve-profile.outputs.download }}"
+        LATENCY="${{ steps.resolve-profile.outputs.latency }}"
+        PACKET_LOSS="${{ steps.resolve-profile.outputs.packet_loss }}"
+        
+        echo "Applying network throttling..."
+        
+        # Build netem options
+        NETEM_OPTS="delay ${LATENCY}ms"
+        if [ "$PACKET_LOSS" != "0" ]; then
+          NETEM_OPTS="$NETEM_OPTS loss ${PACKET_LOSS}%"
+        fi
+        
+        # Add root qdisc with netem for delay and packet loss
+        sudo tc qdisc add dev eth0 root handle 1: netem $NETEM_OPTS
+        
+        # Add tbf (token bucket filter) for rate limiting
+        # burst = rate / 8 (bytes per second / 8 = 1 second of buffer)
+        # latency = how long packets can wait in queue
+        RATE="${DOWNLOAD}kbit"
+        BURST="$((DOWNLOAD / 8))kb"
+        
+        sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate $RATE burst $BURST latency 50ms
+        
+        echo "Network throttling applied:"
+        echo "  Profile: ${{ steps.resolve-profile.outputs.profile }}"
+        sudo tc qdisc show dev eth0
+
+    - name: Start flapping simulation
+      if: ${{ inputs.profile == 'flapping' && inputs.disable != 'true' }}
+      shell: bash
+      run: |
+        # Start the flapping script in background
+        nohup ${{ github.action_path }}/flapping-linux.sh &
+        FLAPPING_PID=$!
+        echo "FLAPPING_PID=$FLAPPING_PID" >> $GITHUB_ENV
+        echo "Started flapping simulation with PID: $FLAPPING_PID"
+
+    - name: Test connection after throttling
+      if: ${{ inputs.disable != 'true' }}
+      shell: bash
+      run: |
+        echo "Testing connection with throttling applied..."
+        curl -o /dev/null -m 30 --retry 2 -s -w 'Total: %{time_total}s\n' 'https://${{ inputs.test_server_host }}/api/v4/system/ping?get_server_status=true' || echo "Connection test completed (may have timed out under heavy throttling)"
