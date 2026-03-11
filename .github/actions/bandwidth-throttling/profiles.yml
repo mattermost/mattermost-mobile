@@ -1,0 +1,87 @@
+# Network Degradation Profiles for DDIL Testing
+# These profiles simulate various real-world network conditions
+#
+# Usage: Pass the profile name to the bandwidth-throttling action
+# Example: profile: slow_3g
+#
+# Reference:
+# - ITU-T G.114: 0-150ms one-way delay preferred, 150-400ms acceptable
+# - STANAG 5066: HF radio data communications (2.4-9.6 kbps typical)
+# - 3GPP specs: Mission-critical communications requirements
+
+profiles:
+  # Baseline - good LTE connection (for comparison)
+  lte:
+    description: "Good LTE/4G connection - baseline for comparison"
+    download_kbps: 10000
+    upload_kbps: 5000
+    latency_ms: 30
+    packet_loss_percent: 0
+    use_case: "Urban 4G, optimal conditions"
+
+  # Degraded 3G - rural or congested areas
+  slow_3g:
+    description: "Slow 3G - rural or congested network"
+    download_kbps: 400
+    upload_kbps: 128
+    latency_ms: 300
+    packet_loss_percent: 2
+    use_case: "Rural coverage, network congestion, indoor"
+
+  # Edge/2G - minimal connectivity
+  edge_2g:
+    description: "Edge/2G - minimal cellular connectivity"
+    download_kbps: 50
+    upload_kbps: 25
+    latency_ms: 500
+    packet_loss_percent: 5
+    use_case: "Remote areas, basement, elevator transition"
+
+  # Satellite - high latency
+  satellite:
+    description: "GEO Satellite - high latency connection"
+    download_kbps: 1000
+    upload_kbps: 256
+    latency_ms: 700
+    packet_loss_percent: 1
+    use_case: "Maritime, aviation, remote installations"
+
+  # Flapping - intermittent connectivity (special handling required)
+  flapping:
+    description: "Intermittent connectivity - connection drops and recovers"
+    # Base settings when connected
+    download_kbps: 1000
+    upload_kbps: 256
+    latency_ms: 200
+    packet_loss_percent: 0
+    # Flapping pattern (handled by flapping.sh script)
+    pattern:
+      - state: "connected"
+        duration_sec: 30
+      - state: "disconnected"
+        duration_sec: 5
+      - state: "slow_3g"
+        duration_sec: 30
+      - state: "disconnected"
+        duration_sec: 3
+      - state: "connected"
+        duration_sec: 30
+    use_case: "Tunnel, elevator, train, moving vehicle"
+
+# Timeout multipliers for each profile
+# Tests should multiply their standard timeouts by this factor
+timeout_multipliers:
+  lte: 1
+  slow_3g: 3
+  edge_2g: 10
+  satellite: 5
+  flapping: 5
+
+# Recommended test subsets per profile
+# Running full test suite under severe degradation is too slow
+test_scope:
+  lte: "full"           # Run all tests
+  slow_3g: "critical"   # Run critical path only
+  edge_2g: "minimal"    # Run minimal smoke tests
+  satellite: "critical" # Run critical path only
+  flapping: "minimal"   # Run minimal smoke tests

@@ -1,71 +1,185 @@
 name: bandwidth-throttling
-description: Action to throttle the bandwidth on MacOS runner
+description: Action to throttle the bandwidth on MacOS runner with support for network profiles
 
 inputs:
   test_server_host:
     description: The host of the test server, no protocol
     required: true
+  profile:
+    description: "Network profile to use (lte, slow_3g, edge_2g, satellite, flapping). Overrides individual settings."
+    required: false
+    default: ""
   download_speed:
-    description: The download speed limit (in Kbit/s)
+    description: The download speed limit (in Kbit/s) - used if profile is not set
     required: false
     default: "3300"
   upload_speed:
-    description: The upload speed limit (in Kbit/s)
+    description: The upload speed limit (in Kbit/s) - used if profile is not set
     required: false
     default: "3300"
   latency:
-    description: The latency (in ms) each way
+    description: The latency (in ms) each way - used if profile is not set
     required: false
     default: "500"
+  packet_loss:
+    description: Packet loss percentage (0-100) - used if profile is not set
+    required: false
+    default: "0"
   disable:
     description: Disable throttling
     required: false
     default: "false"
 
+outputs:
+  effective_profile:
+    description: The profile that was applied
+    value: ${{ steps.resolve-profile.outputs.profile }}
+  timeout_multiplier:
+    description: Recommended timeout multiplier for this profile
+    value: ${{ steps.resolve-profile.outputs.timeout_multiplier }}
+
 runs:
   using: composite
   steps:
-    - name: disable first
+    - name: Resolve network profile settings
+      id: resolve-profile
+      shell: bash
+      run: |
+        PROFILE="${{ inputs.profile }}"
+        
+        # Profile-based settings
+        case "$PROFILE" in
+          lte)
+            DOWNLOAD=10000
+            UPLOAD=5000
+            LATENCY=30
+            PACKET_LOSS=0
+            TIMEOUT_MULT=1
+            ;;
+          slow_3g)
+            DOWNLOAD=400
+            UPLOAD=128
+            LATENCY=300
+            PACKET_LOSS=2
+            TIMEOUT_MULT=3
+            ;;
+          edge_2g)
+            DOWNLOAD=50
+            UPLOAD=25
+            LATENCY=500
+            PACKET_LOSS=5
+            TIMEOUT_MULT=10
+            ;;
+          satellite)
+            DOWNLOAD=1000
+            UPLOAD=256
+            LATENCY=700
+            PACKET_LOSS=1
+            TIMEOUT_MULT=5
+            ;;
+          flapping)
+            # Base settings for flapping - actual flapping handled separately
+            DOWNLOAD=1000
+            UPLOAD=256
+            LATENCY=200
+            PACKET_LOSS=0
+            TIMEOUT_MULT=5
+            ;;
+          *)
+            # Use individual inputs if no profile specified
+            DOWNLOAD=${{ inputs.download_speed }}
+            UPLOAD=${{ inputs.upload_speed }}
+            LATENCY=${{ inputs.latency }}
+            PACKET_LOSS=${{ inputs.packet_loss }}
+            TIMEOUT_MULT=1
+            PROFILE="custom"
+            ;;
+        esac
+        
+        echo "download=$DOWNLOAD" >> $GITHUB_OUTPUT
+        echo "upload=$UPLOAD" >> $GITHUB_OUTPUT
+        echo "latency=$LATENCY" >> $GITHUB_OUTPUT
+        echo "packet_loss=$PACKET_LOSS" >> $GITHUB_OUTPUT
+        echo "timeout_multiplier=$TIMEOUT_MULT" >> $GITHUB_OUTPUT
+        echo "profile=$PROFILE" >> $GITHUB_OUTPUT
+        
+        echo "Network profile: $PROFILE"
+        echo "  Download: ${DOWNLOAD} Kbit/s"
+        echo "  Upload: ${UPLOAD} Kbit/s"
+        echo "  Latency: ${LATENCY} ms"
+        echo "  Packet Loss: ${PACKET_LOSS}%"
+        echo "  Timeout Multiplier: ${TIMEOUT_MULT}x"
+
+    - name: Disable existing throttling first
       if: ${{ inputs.disable == 'true' }}
       shell: bash
       continue-on-error: true
       run: |
-        sudo pfctl -d
+        sudo pfctl -d 2>/dev/null || true
+        sudo dnctl -q flush 2>/dev/null || true
+        sudo dnctl -q pipe flush 2>/dev/null || true
+        sleep 2
 
-        sleep 2;
-
-    - name: throttle bandwidth down
+    - name: Apply network throttling
+      if: ${{ inputs.disable != 'true' }}
       shell: bash
       run: |
-        # reset pf and dnctl
-        sudo dnctl -q flush
-        sudo dnctl -q pipe flush
-        sudo pfctl -f /etc/pf.conf
-        sudo pfctl -E
+        # Reset pf and dnctl
+        sudo dnctl -q flush 2>/dev/null || true
+        sudo dnctl -q pipe flush 2>/dev/null || true
+        sudo pfctl -f /etc/pf.conf 2>/dev/null || true
+        sudo pfctl -E 2>/dev/null || true
 
-        sleep 2;
+        sleep 2
 
-        sudo pfctl -d
-        sudo dnctl -q flush
-        sudo dnctl -q pipe flush
+        sudo pfctl -d 2>/dev/null || true
+        sudo dnctl -q flush 2>/dev/null || true
+        sudo dnctl -q pipe flush 2>/dev/null || true
 
-
+        # Set up packet filter rules
         echo "dummynet in from ${{ inputs.test_server_host }} to ! 127.0.0.1 pipe 1
         dummynet out from ! 127.0.0.1 to ${{ inputs.test_server_host }} pipe 2" | sudo pfctl -f -
         
-        # pipe 1 is download
-        sudo dnctl pipe 1 config bw ${{ inputs.download_speed }}Kbit/s delay ${{ inputs.latency }}ms
+        # Configure download pipe (pipe 1)
+        DOWNLOAD_OPTS="bw ${{ steps.resolve-profile.outputs.download }}Kbit/s delay ${{ steps.resolve-profile.outputs.latency }}ms"
+        if [ "${{ steps.resolve-profile.outputs.packet_loss }}" != "0" ]; then
+          # Convert percentage to decimal (e.g., 2% -> 0.02)
+          PLR=$(echo "scale=4; ${{ steps.resolve-profile.outputs.packet_loss }} / 100" | bc)
+          DOWNLOAD_OPTS="$DOWNLOAD_OPTS plr $PLR"
+        fi
+        sudo dnctl pipe 1 config $DOWNLOAD_OPTS
         
-        # pipe 2 is upload
-        sudo dnctl pipe 2 config bw ${{ inputs.upload_speed }}Kbit/s delay ${{ inputs.latency }}ms
+        # Configure upload pipe (pipe 2)
+        UPLOAD_OPTS="bw ${{ steps.resolve-profile.outputs.upload }}Kbit/s delay ${{ steps.resolve-profile.outputs.latency }}ms"
+        if [ "${{ steps.resolve-profile.outputs.packet_loss }}" != "0" ]; then
+          PLR=$(echo "scale=4; ${{ steps.resolve-profile.outputs.packet_loss }} / 100" | bc)
+          UPLOAD_OPTS="$UPLOAD_OPTS plr $PLR"
+        fi
+        sudo dnctl pipe 2 config $UPLOAD_OPTS
 
-        sleep 5;
+        sleep 5
         
         sudo pfctl -E
 
-        sleep 5;
+        sleep 5
+        
+        echo "Network throttling applied:"
+        echo "  Profile: ${{ steps.resolve-profile.outputs.profile }}"
+        sudo dnctl show
 
-    - name: test curl after throttling
+    - name: Start flapping simulation
+      if: ${{ inputs.profile == 'flapping' && inputs.disable != 'true' }}
       shell: bash
       run: |
-        curl -o /dev/null -m 20 --retry 2 -s -w 'Total: %{time_total}s\n' 'https://${{ inputs.test_server_host }}/api/v4/system/ping?get_server_status=true'
+        # Start the flapping script in background
+        nohup ${{ github.action_path }}/flapping.sh "${{ inputs.test_server_host }}" &
+        FLAPPING_PID=$!
+        echo "FLAPPING_PID=$FLAPPING_PID" >> $GITHUB_ENV
+        echo "Started flapping simulation with PID: $FLAPPING_PID"
+
+    - name: Test connection after throttling
+      if: ${{ inputs.disable != 'true' }}
+      shell: bash
+      run: |
+        echo "Testing connection with throttling applied..."
+        curl -o /dev/null -m 30 --retry 2 -s -w 'Total: %{time_total}s\n' 'https://${{ inputs.test_server_host }}/api/v4/system/ping?get_server_status=true'
