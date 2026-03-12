@@ -7,10 +7,13 @@ on:
     branches:
       - main
     types:
+      - opened
+      - synchronize
+      - reopened
       - labeled
 
 concurrency:
-  group: "${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.event.label.name }}"
+  group: "${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.event.label.name || 'smoke' }}"
   cancel-in-progress: true
 
 env:
@@ -47,7 +50,7 @@ jobs:
           status: pending
 
   update-initial-status-ios-smoke:
-    if: contains(github.event.label.name, 'E2E iOS smoke tests for PR')
+    if: github.event.action != 'labeled' || contains(github.event.label.name, 'E2E iOS smoke tests for PR')
     runs-on: ubuntu-22.04
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
@@ -62,7 +65,7 @@ jobs:
 
   update-initial-status-android-smoke:
     runs-on: ubuntu-22.04
-    if: contains(github.event.label.name, 'E2E Android smoke tests for PR')
+    if: github.event.action != 'labeled' || contains(github.event.label.name, 'E2E Android smoke tests for PR')
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
@@ -75,7 +78,7 @@ jobs:
           status: pending
 
   build-ios-simulator-smoke:
-    if: contains(github.event.label.name, 'E2E iOS smoke tests for PR')
+    if: github.event.action != 'labeled' || contains(github.event.label.name, 'E2E iOS smoke tests for PR')
     runs-on: macos-26
     needs:
       - update-initial-status-ios-smoke
@@ -108,7 +111,7 @@ jobs:
 
   build-android-apk-smoke:
     runs-on: ubuntu-latest-8-cores
-    if: contains(github.event.label.name, 'E2E Android smoke tests for PR')
+    if: github.event.action != 'labeled' || contains(github.event.label.name, 'E2E Android smoke tests for PR')
     needs:
       - update-initial-status-android-smoke
     env:
@@ -261,7 +264,7 @@ jobs:
     secrets: inherit
 
   run-ios-smoke-tests-on-pr:
-    if: contains(github.event.label.name, 'E2E iOS smoke tests for PR')
+    if: github.event.action != 'labeled' || contains(github.event.label.name, 'E2E iOS smoke tests for PR')
     name: iOS Smoke
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
@@ -286,7 +289,7 @@ jobs:
     secrets: inherit
 
   run-android-smoke-tests-on-pr:
-    if: contains(github.event.label.name, 'E2E Android smoke tests for PR')
+    if: github.event.action != 'labeled' || contains(github.event.label.name, 'E2E Android smoke tests for PR')
     name: Android Smoke
     uses: ./.github/workflows/e2e-android-template.yml
     needs:
@@ -335,7 +338,7 @@ jobs:
 
   update-final-status-ios-smoke:
     runs-on: ubuntu-22.04
-    if: contains(github.event.label.name, 'E2E iOS smoke tests for PR')
+    if: github.event.action != 'labeled' || contains(github.event.label.name, 'E2E iOS smoke tests for PR')
     needs:
       - run-ios-smoke-tests-on-pr
     steps:
@@ -352,7 +355,7 @@ jobs:
 
   update-final-status-android-smoke:
     runs-on: ubuntu-22.04
-    if: contains(github.event.label.name, 'E2E Android smoke tests for PR')
+    if: github.event.action != 'labeled' || contains(github.event.label.name, 'E2E Android smoke tests for PR')
     needs:
       - run-android-smoke-tests-on-pr
     steps:
@@ -413,6 +416,7 @@ jobs:
 
   e2e-remove-ios-smoke-label:
     runs-on: ubuntu-22.04
+    if: contains(github.event.label.name, 'E2E iOS smoke tests for PR')
     needs:
       - run-ios-smoke-tests-on-pr
     steps:
@@ -435,6 +439,7 @@ jobs:
 
   e2e-remove-android-smoke-label:
     runs-on: ubuntu-22.04
+    if: contains(github.event.label.name, 'E2E Android smoke tests for PR')
     needs:
       - run-android-smoke-tests-on-pr
     steps:

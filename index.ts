@@ -3,7 +3,7 @@
 
 import {RUNNING_E2E} from '@env';
 import TurboLogger from '@mattermost/react-native-turbo-log';
-import {LogBox, Platform, UIManager} from 'react-native';
+import {DevSettings, LogBox, Platform, UIManager} from 'react-native';
 import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
 import 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
@@ -27,6 +27,7 @@ TurboLogger.configure({
 if (__DEV__) {
     LogBox.ignoreLogs([
         'new NativeEventEmitter',
+        "Component 'RCTImageView' re-registered bubbling event",
     ]);
 
     // Ignore all notifications if running e2e
@@ -34,6 +35,9 @@ if (__DEV__) {
     logInfo(`RUNNING_E2E: ${RUNNING_E2E}, isRunningE2e: ${isRunningE2e}`);
     if (isRunningE2e) {
         LogBox.ignoreAllLogs(true);
+
+        // Suppress the "Open Debugger" toast that appears when Metro connects in debug builds
+        DevSettings.setHotLoadingEnabled?.(false);
     }
 }
 
