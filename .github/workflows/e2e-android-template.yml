@@ -43,16 +43,26 @@ on:
         required: false
         type: boolean
         default: false
+      search_path:
+        description: "Path to search for test specs (use for smoke test subset)"
+        required: false
+        type: string
+        default: "detox/e2e/test"
+      parallelism:
+        description: "Number of parallel test shards"
+        required: false
+        type: number
+        default: 10
       android_avd_name:
         description: "Android Emulator name"
         required: false
         type: string
-        default: "detox_pixel_4_xl"
+        default: "detox_pixel_8"
       android_api_level:
         description: "Android API level"
         required: false
         type: string
-        default: "34"
+        default: "35"
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -121,8 +131,8 @@ jobs:
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
-          parallelism: 10
-          search_path: detox/e2e/test
+          parallelism: ${{ inputs.parallelism }}
+          search_path: ${{ inputs.search_path }}
           device_name: ${{ env.AVD_NAME }}
           device_os_version: ${{ env.SDK_VERSION }}
 
@@ -157,13 +167,15 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Prepare Android Build
-        uses: ./.github/actions/prepare-android-build
-        env:
-          STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
-          STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
-          STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
-          MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Cache detox node_modules
+        uses: actions/cache@v4
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-detox-deps-
 
       - name: Install Detox Dependencies
         run: |
@@ -214,7 +226,7 @@ jobs:
 
       - name: Install Android SDK components
         run: |
-          yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-34" "system-images;android-34;default;x86_64" "system-images;android-34;google_apis;x86_64"
+          yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-35" "system-images;android-35;google_apis;x86_64"
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
         

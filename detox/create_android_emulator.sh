@@ -1,13 +1,13 @@
 #!/bin/bash
-# Reference: Download Android (AOSP) Emulators - https://github.com/wix/Detox/blob/master/docs/guide/android-dev-env.md#android-aosp-emulators
+# Reference: https://wix.github.io/Detox/docs/guide/android-dev-env
 
 set -ex
 set -o pipefail
 
-SDK_VERSION=${1:-34}  # First argument is SDK version
-AVD_BASE_NAME=${2:-"detox_pixel_4_xl_api_34"}  # Second argument is AVD base name
+SDK_VERSION=${1:-35}           # First argument is SDK version
+AVD_BASE_NAME=${2:-"detox_pixel_8"}  # Second argument is AVD base name (no api suffix — added below)
 AVD_NAME="${AVD_BASE_NAME}_api_${SDK_VERSION}"
-TEST_FILES=${@:3} # Capture all remaining arguments as Detox test files
+TEST_FILES=${@:3}              # Capture all remaining arguments as Detox test files
 
 setup_avd_home() {
     if [[ "$CI" == "true" ]]; then
@@ -28,17 +28,15 @@ create_avd() {
     local cpu_arch_family cpu_arch
     read cpu_arch_family cpu_arch < <(get_cpu_architecture)
 
-    avdmanager create avd -n "$AVD_NAME" -k "system-images;android-${SDK_VERSION};google_apis;${cpu_arch_family}" -p "$AVD_NAME" -d 'pixel_5'
+    avdmanager create avd -n "$AVD_NAME" -k "system-images;android-${SDK_VERSION};google_apis;${cpu_arch_family}" -p "$AVD_NAME" -d 'pixel_8'
 
     cp -r android_emulator/ "$AVD_NAME/"
     sed -i -e "s|AvdId = change_avd_id|AvdId = ${AVD_NAME}|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|avd.ini.displayname = change_avd_displayname|avd.ini.displayname = Detox Pixel 4 XL API ${SDK_VERSION}|g" "$AVD_NAME/config.ini"
+    sed -i -e "s|avd.ini.displayname = change_avd_displayname|avd.ini.displayname = Detox Pixel 8 API ${SDK_VERSION}|g" "$AVD_NAME/config.ini"
     sed -i -e "s|abi.type = change_type|abi.type = ${cpu_arch_family}|g" "$AVD_NAME/config.ini"
     sed -i -e "s|hw.cpu.arch = change_cpu_arch|hw.cpu.arch = ${cpu_arch}|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/default/${cpu_arch_family}/|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${AVD_NAME}/pixel_4_xl_skin|g" "$AVD_NAME/config.ini"
+    sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/google_apis/${cpu_arch_family}/|g" "$AVD_NAME/config.ini"
 
-    echo "hw.cpu.ncore=7" >> "$AVD_NAME/config.ini"
     echo "Android virtual device successfully created: ${AVD_NAME}"
 }
 
@@ -120,7 +118,7 @@ run_detox_tests() {
 
 main() {
     setup_avd_home
-    
+
     if ! emulator -list-avds | grep -q "$AVD_NAME"; then
         create_avd
     else

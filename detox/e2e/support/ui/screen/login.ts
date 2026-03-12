@@ -60,6 +60,18 @@ class LoginScreen {
         await expect(this.loginScreen).not.toBeVisible();
     };
 
+    dismissSavePasswordIfVisible = async () => {
+        if (isAndroid()) {
+            return;
+        }
+        try {
+            await waitFor(element(by.text('Not Now'))).toBeVisible().withTimeout(3000);
+            await element(by.text('Not Now')).tap();
+        } catch {
+            // No "Save Password?" dialog visible
+        }
+    };
+
     loginWithRetryIfStuck = async (user: any = {}) => {
         await this.toBeVisible();
         await this.usernameInput.tap({x: 150, y: 10});
@@ -68,6 +80,9 @@ class LoginScreen {
         await this.passwordInput.replaceText(user.newUser.password);
         await this.loginFormInfoText.tap();
         await this.signinButton.tap();
+
+        // Dismiss iOS "Save Password?" system dialog if it appears after login
+        await this.dismissSavePasswordIfVisible();
 
         await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
     };
@@ -112,6 +127,7 @@ class LoginScreen {
         await this.passwordInput.replaceText(user.password);
         await this.loginFormInfoText.tap();
         await this.signinButton.tap();
+        await this.dismissSavePasswordIfVisible();
         await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
     };
 }

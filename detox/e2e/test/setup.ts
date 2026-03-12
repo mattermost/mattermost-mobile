@@ -44,7 +44,7 @@ async function verifyDetoxConnection(maxAttempts = 3, delayMs = 2000): Promise<v
  * @param timeoutMs - Maximum time to wait in milliseconds
  * @returns {Promise<void>}
  */
-async function waitForAppReady(timeoutMs = 10000): Promise<void> {
+async function waitForAppReady(timeoutMs = 30000): Promise<void> {
     const startTime = Date.now();
 
     while (Date.now() - startTime < timeoutMs) {
@@ -65,6 +65,28 @@ async function waitForAppReady(timeoutMs = 10000): Promise<void> {
     }
 
     throw new Error(`App failed to become ready within ${timeoutMs}ms`);
+}
+
+/**
+ * Dismiss React Native RedBox error overlay if visible in debug builds.
+ * Native errors (e.g. RCTImageView event re-registration) are thrown before
+ * JS runs and cannot be suppressed via LogBox — dismiss them here instead.
+ */
+async function dismissRedBoxIfVisible(): Promise<void> {
+    if (device.getPlatform() !== 'ios') {
+        return;
+    }
+    try {
+        // Prefer "Reload" to reconnect to Metro rather than "Dismiss" which leaves app with no bundle
+        await waitFor(element(by.text('Reload'))).toBeVisible().withTimeout(2000);
+        await element(by.text('Reload')).tap();
+        console.info('ℹ️ Tapped Reload on native RedBox to reconnect to Metro');
+
+        // Give Metro time to serve the bundle
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+    } catch {
+        // No RedBox visible, continue normally
+    }
 }
 
 /**
@@ -110,6 +132,10 @@ export async function launchAppWithRetry(): Promise<void> {
             }
 
             console.info(`✅ App launched successfully on attempt ${attempt}`);
+
+            // Dismiss any native RedBox error overlay that may appear in debug builds
+            // (e.g. 'RCTImageView re-registered bubbling event' warning on iOS)
+            await dismissRedBoxIfVisible();
             return;
 
         } catch (error) {
@@ -156,6 +182,9 @@ beforeAll(async () => {
 
     // Login as sysadmin and reset server configuration
     await System.apiCheckSystemHealth(siteOneUrl);
-    await User.apiAdminLogin(siteOneUrl);
+    const {error: loginError} = await User.apiAdminLogin(siteOneUrl);
+    if (loginError) {
+        throw new Error(`Admin login failed: ${JSON.stringify(loginError)}`);
+    }
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
 });

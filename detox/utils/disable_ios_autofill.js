@@ -294,15 +294,15 @@ async function main() {
         console.log(`Target: ${selectedSimulator.name} (${selectedSimulator.os})`);
         console.log(`Using simulator: ${selectedSimulator.name} (${selectedSimulator.os})`);
     } else {
-        // Automatically select iPhone 17 Pro with iOS 26.2
+        // Automatically select iPhone 17 Pro on any iOS 26.x version
         selectedSimulator = simulators.find((sim) =>
             sim.name === 'iPhone 17 Pro' &&
-            sim.os === 'iOS 26.2',
+            sim.os.startsWith('iOS 26.'),
         );
 
         if (!selectedSimulator) {
-            console.error('Error: iPhone 17 Pro (iOS 26.2) simulator not found');
-            console.error('Please create this simulator in Xcode first.');
+            console.error('Error: No iPhone 17 Pro running iOS 26.x found');
+            console.error('Please create an iPhone 17 Pro simulator with iOS 26.x in Xcode first.');
             console.error('\nAvailable simulators:');
             simulators.forEach((sim) => {
                 const stateIndicator = sim.state === 'Booted' ? '🟢' : '⚪';

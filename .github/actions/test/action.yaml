@@ -11,7 +11,17 @@ runs:
       shell: bash
       run: |
         echo "::group::check-styles"
-        npm run check
+        npm run lint &
+        LINT_PID=$!
+        npm run tsc &
+        TSC_PID=$!
+        wait $LINT_PID
+        LINT_EXIT=$?
+        wait $TSC_PID
+        TSC_EXIT=$?
+        if [ $LINT_EXIT -ne 0 ] || [ $TSC_EXIT -ne 0 ]; then
+          exit 1
+        fi
         echo "::endgroup::"
 
     - name: ci/run-tests

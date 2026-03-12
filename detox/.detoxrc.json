@@ -40,7 +40,7 @@
     "android.emulator": {
       "type": "android.emulator",
       "device": {
-        "avdName": "detox_pixel_4_xl_api_34"
+        "avdName": "detox_pixel_8_api_35"
       },
       "environment": {
         "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
@@ -90,7 +90,6 @@
     }
   },
   "session": {
-    "sessionId": "mobile-test-session",
     "debugSynchronization": 20000,
     "autoStart": true
   },

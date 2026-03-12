@@ -43,12 +43,22 @@ on:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 26.2"
+        default: "iOS 26.3"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
         type: boolean
         default: false
+      search_path:
+        description: "Path to search for test specs (use for smoke test subset)"
+        required: false
+        type: string
+        default: "detox/e2e/test"
+      parallelism:
+        description: "Number of parallel test shards"
+        required: false
+        type: number
+        default: 10
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -65,7 +75,7 @@ env:
   BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
   COMMIT_HASH: ${{ github.sha }}
   DEVICE_NAME: ${{ inputs.ios_device_name }}
-  DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
+  DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name || 'iOS 26.3' }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
   HEADLESS: "true"
   TYPE: ${{ inputs.run-type }}
@@ -115,8 +125,8 @@ jobs:
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
-          parallelism: 10
-          search_path: detox/e2e/test
+          parallelism: ${{ inputs.parallelism }}
+          search_path: ${{ inputs.search_path }}
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
@@ -140,6 +150,15 @@ jobs:
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
+
+      - name: Cache Homebrew packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/Homebrew
+            /usr/local/Cellar/applesimutils
+          key: ${{ runner.os }}-brew-applesimutils-v1
+          restore-keys: ${{ runner.os }}-brew-applesimutils-
 
       - name: Install Homebrew Dependencies
         run: |
@@ -169,6 +188,13 @@ jobs:
           download_speed: "3300"
           upload_speed: "3300"
           latency: "500"
+
+      - name: Cache detox node_modules
+        uses: actions/cache@v4
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-detox-deps-
 
       - name: Install Detox Dependencies
         run: cd detox && npm i

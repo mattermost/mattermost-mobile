@@ -19,6 +19,7 @@ class Autocomplete {
         sectionChannelMentionList: 'autocomplete.channel_mention.section_list',
         flatEmojiSuggestionList: 'autocomplete.emoji_suggestion.flat_list',
         flatSlashSuggestionList: 'autocomplete.slash_suggestion.flat_list',
+        dateSuggestionList: 'autocomplete.date_suggestion.flat_list',
     };
 
     autocomplete = element(by.id(this.testID.autocomplete));
@@ -26,6 +27,7 @@ class Autocomplete {
     sectionChannelMentionList = element(by.id(this.testID.sectionChannelMentionList));
     flatEmojiSuggestionList = element(by.id(this.testID.flatEmojiSuggestionList));
     flatSlashSuggestionList = element(by.id(this.testID.flatSlashSuggestionList));
+    dateSuggestionList = element(by.id(this.testID.dateSuggestionList));
 
     getAtMentionItem = (userId: string) => {
         const atMentionItemTestId = `${this.testID.atMentionItemPrefix}${userId}`;

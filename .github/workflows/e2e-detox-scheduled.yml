@@ -96,9 +96,14 @@ jobs:
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.gradle/caches/modules-2/
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: ${{ runner.os }}-gradle-
+          path: |
+            ~/.gradle/caches/modules-2/
+            ~/.gradle/caches/jars-*/
+            ~/.gradle/caches/transforms-*/
+            ~/.gradle/wrapper/dists/
+          key: ${{ runner.os }}-gradle-v2-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-v2-
 
       - name: Detox build
         run: |
