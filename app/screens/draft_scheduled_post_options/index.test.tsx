@@ -18,10 +18,6 @@ jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn().mockReturnValue(false),
 }));
 
-jest.mock('@screens/bottom_sheet', () => {
-    return ({renderContent}: {renderContent: () => JSX.Element}) => renderContent();
-});
-
 describe('DraftScheduledPostOptions', () => {
     let database: Database;
     beforeAll(async () => {

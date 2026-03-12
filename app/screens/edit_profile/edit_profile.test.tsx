@@ -123,7 +123,8 @@ jest.mock('@database/manager', () => {
 
 jest.mock('@queries/servers/custom_profile', () => {
     const mockSubscribeFunction = jest.fn().mockImplementation((callback) => {
-        callback([]);
+        // Simulate an immediate callback with empty data
+        setTimeout(() => callback([]), 0);
         return {
             unsubscribe: jest.fn(),
         };
@@ -181,12 +182,6 @@ describe('EditProfile', () => {
 
         // Reset logError mock
         mockLogError.mockClear();
-    });
-
-    afterEach(async () => {
-        await act(async () => {
-            await Promise.resolve();
-        });
     });
 
     it('should update custom attribute value while preserving name and sort order', async () => {
@@ -625,10 +620,9 @@ describe('EditProfile', () => {
             />,
         );
 
-        await waitFor(() => {
-            const scrollView = screen.getByTestId('edit_profile.scroll_view');
-            expect(scrollView).toBeTruthy();
-        });
+        // Verify the ProfileForm component is rendered (which means customFields was passed)
+        const scrollView = screen.getByTestId('edit_profile.scroll_view');
+        expect(scrollView).toBeTruthy();
     });
 
     describe('SAML Field Handling', () => {

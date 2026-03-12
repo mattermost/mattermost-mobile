@@ -4,11 +4,10 @@
 import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
+import SectionNotice from '@components/section_notice';
 import {goToSelectPlaybook} from '@playbooks/screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
-
-import SectionNotice from '@components/section_notice';
 
 import EmptyState from './empty_state';
 import PlaybookCard from './playbook_card';

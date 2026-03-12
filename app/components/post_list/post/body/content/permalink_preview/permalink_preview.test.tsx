@@ -11,8 +11,8 @@ import DatabaseManager from '@database/manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import PermalinkPreview from './permalink_preview';
 import PermalinkFiles from './permalink_files';
+import PermalinkPreview from './permalink_preview';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
