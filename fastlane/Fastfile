@@ -475,7 +475,7 @@ platform :ios do
         })
       end
     rescue SyntaxError, StandardError
-      UI.error("Failed to upload to S3 bucket")
+      UI.user_error!("Failed to upload to S3 bucket")
     end
   end
 
@@ -833,7 +833,7 @@ platform :android do
     begin
       upload_file_to_s3({:os_type => "android", :s3_client_oidc => s3_client_oidc})
     rescue SyntaxError, StandardError
-      UI.error("Failed to upload to S3 bucket")
+      UI.user_error!("Failed to upload to S3 bucket")
     end
   end
 
