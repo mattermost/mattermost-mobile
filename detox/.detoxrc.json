@@ -30,8 +30,8 @@
     "ios.simulator": {
       "type": "ios.simulator",
       "device": {
-        "type": "iPhone 17 Pro",
-        "os": "iOS 26.3"
+        "type": "__DEVICE_NAME__",
+        "os": "__DEVICE_OS_VERSION__"
       },
       "environment": {
         "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
@@ -40,7 +40,7 @@
     "android.emulator": {
       "type": "android.emulator",
       "device": {
-        "avdName": "detox_pixel_8_api_35"
+        "avdName": "detox_pixel_4_xl_api_34"
       },
       "environment": {
         "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
