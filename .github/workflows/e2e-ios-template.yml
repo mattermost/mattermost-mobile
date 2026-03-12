@@ -199,6 +199,21 @@ jobs:
       - name: Install Detox Dependencies
         run: cd detox && npm i
 
+      - name: Get Xcode Version
+        id: xcode-version
+        run: echo "version=$(xcodebuild -version | head -1 | sed 's/Xcode //')" >> $GITHUB_OUTPUT
+
+      - name: Cache Detox Framework
+        id: detox-framework-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Detox/ios
+          key: ${{ runner.os }}-${{ runner.arch }}-detox-framework-${{ hashFiles('detox/package-lock.json') }}-xcode-${{ steps.xcode-version.outputs.version }}
+
+      - name: Build Detox Framework Cache
+        if: steps.detox-framework-cache.outputs.cache-hit != 'true'
+        run: cd detox && npx detox build-framework-cache
+
       - name: Pre-boot iOS Simulator
         run: |
           set -e
