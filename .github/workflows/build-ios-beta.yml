@@ -51,7 +51,7 @@ jobs:
           TAG: "${{ github.ref_name }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-        run: bundle exec fastlane ios simulator --env ios.simulator skip_upload_to_s3_bucket:true
+        run: bundle exec fastlane ios simulator --env ios.simulator
         working-directory: ./fastlane
 
       - name: ci/upload-ios-simulator-s3-bucket
