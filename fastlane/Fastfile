@@ -1133,7 +1133,7 @@ def submit_to_testflight(ipa_path)
   version_number = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
   build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
   s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
-  public_link = "https://#{ENV['AWS_BUCKET_NAME']}/#{s3_folder}/#{filename}"
+  public_link = "https://#{ENV['AWS_BUCKET_DNS_NAME']}/#{s3_folder}/#{filename}"
 
 
   # Send a build message to Mattermost
@@ -1192,7 +1192,7 @@ def submit_to_google_play(file_path)
   version_number = android_get_version_name(gradle_file: './android/app/build.gradle')
   build_number = android_get_version_code(gradle_file: './android/app/build.gradle')
   s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
-  public_path = "https://#{ENV['AWS_BUCKET_NAME']}/#{s3_folder}"
+  public_path = "https://#{ENV['AWS_BUCKET_DNS_NAME']}/#{s3_folder}"
   links = (filenames.map { |f| "* #{public_path}/#{f}"}).join("\n")
 
   # Send a build message to Mattermost
