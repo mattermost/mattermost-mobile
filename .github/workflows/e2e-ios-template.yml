@@ -43,7 +43,7 @@ on:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 26.3"
+        default: "iOS 26.2"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
@@ -75,7 +75,7 @@ env:
   BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
   COMMIT_HASH: ${{ github.sha }}
   DEVICE_NAME: ${{ inputs.ios_device_name }}
-  DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name || 'iOS 26.3' }}
+  DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
   HEADLESS: "true"
   TYPE: ${{ inputs.run-type }}
