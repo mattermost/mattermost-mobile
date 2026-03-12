@@ -195,7 +195,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: android-build-files-${{ github.run_id }}
-          path: android/app/build
+          path: android/app/build/outputs/apk
 
       - name: Set up Android SDK
         run: |

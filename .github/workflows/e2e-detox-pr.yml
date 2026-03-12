@@ -86,22 +86,39 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Restore iOS simulator build cache
+        id: ios-build-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: Mattermost-simulator-arm64.app.zip
+          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+
       - name: Prepare iOS Build
+        if: steps.ios-build-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/prepare-ios-build
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: Set .env with RUNNING_E2E=true
+        if: steps.ios-build-cache.outputs.cache-hit != 'true'
         run: |
           echo "RUNNING_E2E=true" > .env
 
       - name: Build iOS Simulator
+        if: steps.ios-build-cache.outputs.cache-hit != 'true'
         env:
           TAG: "${{ github.event.pull_request.head.sha }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: bundle exec fastlane ios simulator --env ios.simulator skip_upload_to_s3_bucket:true
         working-directory: ./fastlane
+
+      - name: Save iOS simulator build cache
+        if: steps.ios-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: Mattermost-simulator-arm64.app.zip
+          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
 
       - name: Upload iOS Simulator Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -117,17 +134,27 @@ jobs:
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
-      - name: Prune Docker to free up space
-        run: docker system prune -af
-
-      - name: Remove npm Temporary Files
-        run: |
-          rm -rf ~/.npm/_cacache
-
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Restore Android APK build cache
+        id: android-build-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: android/app/build/outputs/apk/
+          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+
+      - name: Prune Docker to free up space
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        run: docker system prune -af
+
+      - name: Remove npm Temporary Files
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        run: |
+          rm -rf ~/.npm/_cacache
+
       - name: Prepare Android Build
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/prepare-android-build
         env:
           STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
@@ -136,9 +163,11 @@ jobs:
           MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
       - name: Install Dependencies
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
         run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
 
       - name: Cache Gradle dependencies
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -151,6 +180,7 @@ jobs:
             ${{ runner.os }}-gradle-v2-
 
       - name: Detox build
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
         run: |
           cd detox
           npm install
@@ -158,11 +188,18 @@ jobs:
           npm run e2e:android-inject-settings
           npm run e2e:android-build
 
+      - name: Save Android APK build cache
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: android/app/build/outputs/apk/
+          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+
       - name: Upload Android Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-build-files-${{ github.run_id }}
-          path: "android/app/build/**/*"
+          path: "android/app/build/outputs/apk/"
 
   build-ios-simulator:
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
@@ -173,22 +210,39 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Restore iOS simulator build cache
+        id: ios-build-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: Mattermost-simulator-arm64.app.zip
+          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+
       - name: Prepare iOS Build
+        if: steps.ios-build-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/prepare-ios-build
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: Set .env with RUNNING_E2E=true
+        if: steps.ios-build-cache.outputs.cache-hit != 'true'
         run: |
           echo "RUNNING_E2E=true" > .env
 
       - name: Build iOS Simulator
+        if: steps.ios-build-cache.outputs.cache-hit != 'true'
         env:
           TAG: "${{ github.event.pull_request.head.sha }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: bundle exec fastlane ios simulator --env ios.simulator skip_upload_to_s3_bucket:true
         working-directory: ./fastlane
+
+      - name: Save iOS simulator build cache
+        if: steps.ios-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: Mattermost-simulator-arm64.app.zip
+          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
 
       - name: Upload iOS Simulator Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -204,17 +258,27 @@ jobs:
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
-      - name: Prune Docker to free up space
-        run: docker system prune -af
-
-      - name: Remove npm Temporary Files
-        run: |
-          rm -rf ~/.npm/_cacache
-
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Restore Android APK build cache
+        id: android-build-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: android/app/build/outputs/apk/
+          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+
+      - name: Prune Docker to free up space
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        run: docker system prune -af
+
+      - name: Remove npm Temporary Files
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        run: |
+          rm -rf ~/.npm/_cacache
+
       - name: Prepare Android Build
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/prepare-android-build
         env:
           STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
@@ -223,9 +287,11 @@ jobs:
           MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
       - name: Install Dependencies
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
         run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
 
       - name: Cache Gradle dependencies
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -238,6 +304,7 @@ jobs:
             ${{ runner.os }}-gradle-v2-
 
       - name: Detox build
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
         run: |
           cd detox
           npm install
@@ -245,11 +312,18 @@ jobs:
           npm run e2e:android-inject-settings
           npm run e2e:android-build
 
+      - name: Save Android APK build cache
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: android/app/build/outputs/apk/
+          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+
       - name: Upload Android Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-build-files-${{ github.run_id }}
-          path: "android/app/build/**/*"
+          path: "android/app/build/outputs/apk/"
         
   run-ios-tests-on-pr:
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
