@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Clipboard from '@react-native-clipboard/clipboard';
-import {act, fireEvent} from '@testing-library/react-native';
+import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
@@ -53,7 +53,7 @@ describe('screens/report_a_problem/copy_metadata', () => {
         expect(getByText('App Platform: ios')).toBeTruthy();
     });
 
-    it('copies metadata to clipboard when copy button is pressed', async () => {
+    it('copies metadata to clipboard when copy button is pressed', () => {
         const {getByText} = renderWithIntl(
             <CopyMetadata
                 metadata={metadata}
@@ -62,9 +62,7 @@ describe('screens/report_a_problem/copy_metadata', () => {
         );
 
         const copyButton = getByText('Copy');
-        await act(async () => {
-            fireEvent.press(copyButton);
-        });
+        fireEvent.press(copyButton);
 
         expect(Clipboard.setString).toHaveBeenCalledWith(
             metadataToString(metadata),
@@ -75,7 +73,7 @@ describe('screens/report_a_problem/copy_metadata', () => {
         });
     });
 
-    it('handles empty metadata', async () => {
+    it('handles empty metadata', () => {
         const emptyMetadata = {
             currentUserId: '',
             currentTeamId: '',
@@ -99,9 +97,7 @@ describe('screens/report_a_problem/copy_metadata', () => {
         expect(getByText('App Platform: ')).toBeTruthy();
 
         const copyButton = getByText('Copy');
-        await act(async () => {
-            fireEvent.press(copyButton);
-        });
+        fireEvent.press(copyButton);
 
         expect(Clipboard.setString).toHaveBeenCalledWith(
             metadataToString(emptyMetadata),
