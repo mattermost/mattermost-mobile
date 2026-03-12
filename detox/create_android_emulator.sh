@@ -113,6 +113,7 @@ run_detox_tests() {
     echo "Running Detox tests... $@"
 
     cd detox
+    AVD_NAME="$AVD_NAME" npm run detox:config-gen
     npm run e2e:android-test -- "$@"
 }
 
