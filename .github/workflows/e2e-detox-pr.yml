@@ -69,7 +69,7 @@ jobs:
         env:
           TAG: "${{ github.event.pull_request.head.sha }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-        run: bundle exec fastlane ios simulator --env ios.simulator skip_upload_to_s3_bucket:true
+        run: bundle exec fastlane ios simulator --env ios.simulator
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
