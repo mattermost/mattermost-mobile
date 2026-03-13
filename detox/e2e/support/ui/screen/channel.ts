@@ -208,17 +208,14 @@ class ChannelScreen {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // On iOS, scroll from y=50% to clear any UITransitionView backdrop left in the
-        // view hierarchy after a previous modal was dismissed (same fix as thread.ts).
-        // On Android, wait for the UI to settle before long-pressing.
-        if (isIos()) {
-            const flatList = this.postList.getFlatList();
-            await flatList.scroll(50, 'down', NaN, 0.5);
-        }
+        // Scroll to dismiss keyboard and clear any UITransitionView backdrop
+        // (the same pattern used in thread.ts).
+        const flatList = this.postList.getFlatList();
+        await flatList.scroll(100, 'down', NaN, 0.5);
         await wait(timeouts.ONE_SEC);
 
         // # Open post options
-        await postListPostItem.longPress();
+        await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     };
