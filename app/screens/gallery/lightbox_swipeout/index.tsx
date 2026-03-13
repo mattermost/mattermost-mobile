@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {type ImageSource} from 'expo-image';
-import React, {forwardRef, useCallback, useImperativeHandle, useMemo} from 'react';
+import React, {forwardRef, useImperativeHandle, useMemo} from 'react';
 import {type ImageSize, type ImageStyle, type StyleProp} from 'react-native';
 import {
     cancelAnimation,
@@ -58,11 +58,11 @@ const LightboxSwipeout = forwardRef<LightboxSwipeoutRef, LightboxSwipeoutProps>(
     const lightboxImageOpacity = useSharedValue(1);
     const childrenOpacity = useSharedValue(0);
 
-    const shouldHandleEvent = useCallback(() => {
+    const shouldHandleEvent = () => {
         'worklet';
 
         return childTranslateY.value === 0;
-    }, [childTranslateY]);
+    };
 
     const closeLightbox = () => {
         'worklet';
@@ -94,7 +94,7 @@ const LightboxSwipeout = forwardRef<LightboxSwipeoutRef, LightboxSwipeoutProps>(
         closeLightbox,
     }));
 
-    const isVisibleImage = useCallback(() => {
+    const isVisibleImage = () => {
         'worklet';
 
         return (
@@ -103,7 +103,7 @@ const LightboxSwipeout = forwardRef<LightboxSwipeoutRef, LightboxSwipeoutProps>(
             x.value >= 0 &&
             y.value >= 0
         );
-    }, [targetDimensions, x, y]);
+    };
 
     const lightboxSharedValues: LightboxSharedValues = useMemo(() => ({
         headerAndFooterHidden,
@@ -122,24 +122,12 @@ const LightboxSwipeout = forwardRef<LightboxSwipeoutRef, LightboxSwipeoutProps>(
         onAnimationFinished,
         onSwipeActive,
         onSwipeFailure,
-    }), [
-        headerAndFooterHidden,
-        animationProgress,
-        childrenOpacity,
-        childTranslateY,
-        lightboxImageOpacity,
-        opacity,
-        scale,
-        translateX,
-        translateY,
-        target,
-        targetDimensions,
-        shouldHandleEvent,
-        isVisibleImage,
-        onAnimationFinished,
-        onSwipeActive,
-        onSwipeFailure,
-    ]);
+
+    // Shared values are stable refs that don't need to be in deps. shouldHandleEvent and
+    // isVisibleImage are worklet functions that must NOT be wrapped in useCallback to avoid
+    // native use-after-free crashes during Hermes GC.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }), [target, targetDimensions, onAnimationFinished, onSwipeActive, onSwipeFailure]);
 
     return (
         <LightboxProvider sharedValues={lightboxSharedValues}>
