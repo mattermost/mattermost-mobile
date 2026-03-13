@@ -26,12 +26,18 @@ type SettingBlockProps = {
     headerStyles?: StyleProp<TextStyle>;
     headerText?: SectionText;
     onLayout?: (event: LayoutChangeEvent) => void;
+    headerRight?: React.ReactNode;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             marginBottom: 30,
+        },
+        headerRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            flex: 1,
         },
         contentContainerStyle: {
             marginBottom: 0,
@@ -41,18 +47,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             ...typography('Heading', 300, 'SemiBold'),
             marginBottom: 8,
             marginTop: 12,
+            flex: 1,
         },
         footer: {
             marginTop: 10,
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
+        rightHeader: {
+            flex: 1,
+            alignItems: 'flex-end',
+        },
     };
 });
 
 const SettingBlock = ({
     children, containerStyles, disableFooter, disableHeader,
-    footerStyles, footerText, headerStyles, headerText, onLayout,
+    footerStyles, footerText, headerStyles, headerText, onLayout, headerRight,
 }: SettingBlockProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -63,16 +74,24 @@ const SettingBlock = ({
             onLayout={onLayout}
         >
             {(headerText && !disableHeader) &&
-            <FormattedText
-                defaultMessage={headerText.defaultMessage}
-                id={headerText.id}
-                values={headerText.values}
-                style={[styles.header, headerStyles]}
-            />
+                <View style={styles.headerRow}>
+                    <FormattedText
+                        defaultMessage={headerText.defaultMessage}
+                        id={headerText.id}
+                        values={headerText.values}
+                        style={[styles.header, headerStyles]}
+                    />
+                    {headerRight && (
+                        <View style={styles.rightHeader}>
+                            {headerRight}
+                        </View>
+                    )}
+                </View>
             }
             <View style={[styles.contentContainerStyle, containerStyles]}>
                 {children}
             </View>
+
             {(footerText && !disableFooter) &&
             <FormattedText
                 defaultMessage={footerText.defaultMessage}
