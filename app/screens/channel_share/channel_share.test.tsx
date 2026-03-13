@@ -94,6 +94,48 @@ describe('ChannelShare', () => {
         expect(getByTestId('channel_share.screen')).toBeTruthy();
     });
 
+    it('shows fetch error UI when fetchRemoteClusters returns error', async () => {
+        const errorMessage = 'Remotes fetch failed';
+        jest.mocked(fetchRemoteClusters).mockResolvedValue({error: new Error(errorMessage)});
+        jest.mocked(fetchChannelSharedRemotes).mockResolvedValue({remotes: []});
+
+        const {getByTestId, getByText, queryByTestId} = renderWithIntlAndTheme(
+            <ChannelShare
+                channelId='channel1'
+                componentId={componentId}
+                displayName='Test Channel'
+            />,
+        );
+
+        await waitFor(() => {
+            expect(getByTestId('channel_share.fetch_error')).toBeTruthy();
+        });
+        expect(getByText('Failed to load remotes or connections')).toBeTruthy();
+        expect(getByText(errorMessage)).toBeTruthy();
+        expect(queryByTestId('channel_share.scroll_view')).toBeNull();
+    });
+
+    it('shows fetch error UI when fetchChannelSharedRemotes returns error', async () => {
+        const errorMessage = 'Channel remotes fetch failed';
+        jest.mocked(fetchRemoteClusters).mockResolvedValue({remoteClusters: []});
+        jest.mocked(fetchChannelSharedRemotes).mockResolvedValue({error: new Error(errorMessage)});
+
+        const {getByTestId, getByText, queryByTestId} = renderWithIntlAndTheme(
+            <ChannelShare
+                channelId='channel1'
+                componentId={componentId}
+                displayName='Test Channel'
+            />,
+        );
+
+        await waitFor(() => {
+            expect(getByTestId('channel_share.fetch_error')).toBeTruthy();
+        });
+        expect(getByText('Failed to load remotes or connections')).toBeTruthy();
+        expect(getByText(errorMessage)).toBeTruthy();
+        expect(queryByTestId('channel_share.scroll_view')).toBeNull();
+    });
+
     it('sets navigation title (subtitle) to channel display name', async () => {
         renderWithIntlAndTheme(
             <ChannelShare

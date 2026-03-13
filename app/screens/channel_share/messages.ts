@@ -84,4 +84,8 @@ export const messages = defineMessages({
         id: 'channel_share.share_with_connected_workspaces_description',
         defaultMessage: 'Collaborate with trusted organizations in this channel. Connections must be defined by a system admin.',
     },
+    fetchErrorTitle: {
+        id: 'channel_share.fetch_error_title',
+        defaultMessage: 'Failed to load remotes or connections',
+    },
 });

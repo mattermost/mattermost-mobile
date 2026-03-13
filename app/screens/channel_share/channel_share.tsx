@@ -74,6 +74,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Body', 100, 'Regular'),
         color: changeOpacity(theme.centerChannelColor, 0.50),
     },
+    fetchError: {
+        ...typography('Body', 200, 'Regular'),
+        color: theme.errorTextColor,
+    },
+    fetchErrorTitle: {
+        ...typography('Heading', 400, 'SemiBold'),
+        color: theme.errorTextColor,
+    },
+    errorContainer: {
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        gap: 8,
+    },
 }));
 
 const ChannelShare = ({channelId, componentId, displayName}: Props) => {
@@ -88,6 +101,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
     const [remoteClusters, setRemoteClusters] = useState<RemoteClusterInfo[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [fetchError, setFetchError] = useState<string | undefined>();
 
     const canSave = workspaces.some((w) => w.status !== 'saved') || toRemove.size > 0;
 
@@ -118,26 +132,35 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
                 return;
             }
             setLoading(false);
-            if (!remotesRes.error && remotesRes.remoteClusters) {
+            setFetchError(undefined);
+
+            let errorMsg: string | undefined;
+            if (remotesRes.error) {
+                errorMsg = getFullErrorMessage(remotesRes.error);
+            } else if (remotesRes.remoteClusters) {
                 setRemoteClusters(remotesRes.remoteClusters);
-            } else {
-                setRemoteClusters([]);
             }
-            const channelRemotes = channelRemotesRes.error ? [] : (channelRemotesRes.remotes || []);
-            setWorkspaces(channelRemotes.map(idUpdate('saved')));
-            setEnabled(channelRemotes.length > 0);
-        }).catch(() => {
+
+            if (channelRemotesRes.error) {
+                if (errorMsg == null) {
+                    errorMsg = getFullErrorMessage(channelRemotesRes.error);
+                }
+            } else {
+                const channelRemotes = channelRemotesRes.remotes || [];
+                setWorkspaces(channelRemotes.map(idUpdate('saved')));
+                setEnabled(channelRemotes.length > 0);
+            }
+            setFetchError(errorMsg);
+        }).catch((err: unknown) => {
             if (!cancelled) {
                 setLoading(false);
-                setRemoteClusters([]);
-                setWorkspaces([]);
-                setEnabled(false);
+                setFetchError(getFullErrorMessage(err));
             }
         });
         return () => {
             cancelled = true;
         };
-    }, [channelId, serverUrl]);
+    }, [channelId, intl, serverUrl]);
 
     useEffect(() => {
         if (workspaces.length === 0) {
@@ -327,6 +350,91 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
         listTitle = intl.formatMessage(messages.noWorkspacesSharingThisChannel);
     }
 
+    let content;
+    if (fetchError) {
+        content = (
+            <View style={styles.errorContainer}>
+                <Text style={styles.fetchErrorTitle}>
+                    {intl.formatMessage(messages.fetchErrorTitle)}
+                </Text>
+                <Text
+                    style={styles.fetchError}
+                    testID='channel_share.fetch_error'
+                >
+                    {fetchError}
+                </Text>
+            </View>
+
+        );
+    } else {
+        content = (
+            <ScrollView
+                contentContainerStyle={styles.content}
+                testID='channel_share.scroll_view'
+                bounces={true}
+            >
+                {fetchError != null && (
+                    <Text
+                        style={styles.fetchError}
+                        testID='channel_share.fetch_error'
+                    >
+                        {fetchError}
+                    </Text>
+                )}
+                <OptionItem
+                    label={intl.formatMessage({
+                        id: 'channel_settings.share_with_connected_workspaces',
+                        defaultMessage: 'Share with connected workspaces',
+                    })}
+                    description={intl.formatMessage(messages.shareWithConnectedWorkspacesDescription)}
+                    type='toggle'
+                    selected={enabled && !noRemotes}
+                    action={onToggle}
+                    disabled={noRemotes}
+                    testID='channel_share.toggle'
+                />
+                {noRemotes && (
+                    <Text style={styles.noRemotesWarning}>
+                        <CompassIcon
+                            name='information-outline'
+                        />
+                        {' '}
+                        {intl.formatMessage({
+                            id: 'channel_share.no_remotes_warning',
+                            defaultMessage: 'No connected workspaces are available. Contact your system admin to add one.',
+                        })}
+                    </Text>
+                )}
+                {enabled && !noRemotes && (
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>
+                            {listTitle}
+                        </Text>
+                        <View>
+                            {displayWorkspaces.map((w, index) => (
+                                <WorkspaceItem
+                                    key={w.remote_id}
+                                    item={w}
+                                    onRemove={removeWorkspace}
+                                    isFirst={index === 0}
+                                />
+                            ))}
+                        </View>
+                        <Button
+                            text={intl.formatMessage(messages.addWorkspace)}
+                            iconName='plus'
+                            onPress={openAddWorkspaceSheet}
+                            theme={theme}
+                            emphasis='tertiary'
+                            size='lg'
+                            testID='channel_share.add_workspace.button'
+                        />
+                    </View>
+                )}
+            </ScrollView>
+        );
+    }
+
     return (
         <View
             style={styles.flex}
@@ -337,62 +445,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
                 style={styles.flex}
                 testID='channel_share.screen'
             >
-                <ScrollView
-                    contentContainerStyle={styles.content}
-                    testID='channel_share.scroll_view'
-                    bounces={true}
-                >
-                    <OptionItem
-                        label={intl.formatMessage({
-                            id: 'channel_settings.share_with_connected_workspaces',
-                            defaultMessage: 'Share with connected workspaces',
-                        })}
-                        description={intl.formatMessage(messages.shareWithConnectedWorkspacesDescription)}
-                        type='toggle'
-                        selected={enabled && !noRemotes}
-                        action={onToggle}
-                        disabled={noRemotes}
-                        testID='channel_share.toggle'
-                    />
-                    {noRemotes && (
-                        <Text style={styles.noRemotesWarning}>
-                            <CompassIcon
-                                name='information-outline'
-                            />
-                            {' '}
-                            {intl.formatMessage({
-                                id: 'channel_share.no_remotes_warning',
-                                defaultMessage: 'No connected workspaces are available. Contact your system admin to add one.',
-                            })}
-                        </Text>
-                    )}
-                    {enabled && !noRemotes && (
-                        <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>
-                                {listTitle}
-                            </Text>
-                            <View>
-                                {displayWorkspaces.map((w, index) => (
-                                    <WorkspaceItem
-                                        key={w.remote_id}
-                                        item={w}
-                                        onRemove={removeWorkspace}
-                                        isFirst={index === 0}
-                                    />
-                                ))}
-                            </View>
-                            <Button
-                                text={intl.formatMessage(messages.addWorkspace)}
-                                iconName='plus'
-                                onPress={openAddWorkspaceSheet}
-                                theme={theme}
-                                emphasis='tertiary'
-                                size='lg'
-                                testID='channel_share.add_workspace.button'
-                            />
-                        </View>
-                    )}
-                </ScrollView>
+                {content}
             </SafeAreaView>
         </View>
     );
