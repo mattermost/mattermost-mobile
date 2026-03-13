@@ -72,6 +72,7 @@ export const timeouts = {
     TWO_SEC: SECOND * 2,
     THREE_SEC: SECOND * 3,
     FOUR_SEC: SECOND * 4,
+    FIVE_SEC: SECOND * 5,
     TEN_SEC: SECOND * 10,
     HALF_MIN: MINUTE / 2,
     ONE_MIN: MINUTE,
@@ -118,6 +119,43 @@ export async function retryWithReload(
             }
         }
     }
+}
+
+/**
+ * Long-press an element with automatic retry, re-scrolling the list between attempts.
+ *
+ * After posting a message the keyboard dismiss animation temporarily blocks React Native's
+ * gesture responder system. A plain longPress can fire without effect during this window
+ * even after a fixed wait. This helper retries the gesture (with a fresh scroll to settle
+ * the UI) so tests are self-healing regardless of animation timing.
+ *
+ * @param target - The element to long-press
+ * @param scrollTarget - A scrollable list to scroll before each attempt (dismisses keyboard + settles UI)
+ * @param checkElement - An element that should exist once the long-press succeeds (e.g. PostOptionsScreen)
+ * @param maxAttempts - How many times to retry before throwing (default: 3)
+ */
+export async function longPressWithScrollRetry(
+    target: Detox.NativeElement,
+    scrollTarget: Detox.NativeElement,
+    checkElement: Detox.NativeElement,
+    maxAttempts = 3,
+): Promise<void> {
+    const {waitFor: detoxWaitFor} = require('detox');
+    /* eslint-disable no-await-in-loop */
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        await scrollTarget.scroll(100, 'down', NaN, 0.5);
+        await wait(timeouts.ONE_SEC);
+        await target.longPress(timeouts.FIVE_SEC);
+        try {
+            await detoxWaitFor(checkElement).toExist().withTimeout(timeouts.TEN_SEC);
+            return;
+        } catch {
+            if (attempt === maxAttempts) {
+                throw new Error(`Element did not appear after ${maxAttempts} longPress attempts`);
+            }
+        }
+    }
+    /* eslint-enable no-await-in-loop */
 }
 
 /**

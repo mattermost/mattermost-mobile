@@ -49,6 +49,16 @@ on:
         required: false
         type: boolean
         default: false
+      search_path:
+        description: "Path to search for test specs (use for smoke test subset)"
+        required: false
+        type: string
+        default: "detox/e2e/test"
+      parallelism:
+        description: "Number of parallel test shards"
+        required: false
+        type: number
+        default: 10
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -115,8 +125,8 @@ jobs:
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
-          parallelism: 10
-          search_path: detox/e2e/test
+          parallelism: ${{ inputs.parallelism }}
+          search_path: ${{ inputs.search_path }}
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
@@ -141,10 +151,22 @@ jobs:
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
+      - name: Cache Homebrew packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/Homebrew
+            /opt/homebrew/Cellar/applesimutils
+          key: ${{ runner.os }}-${{ runner.arch }}-brew-applesimutils-v1
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-brew-applesimutils-
+
       - name: Install Homebrew Dependencies
         run: |
           brew tap wix/brew
           brew install applesimutils
+          # Re-link after potential cache restore: cache restores Cellar files but not
+          # the /opt/homebrew/bin/ symlinks, so brew install is a no-op and skips linking.
+          brew link --overwrite applesimutils
 
       - name: Download iOS Simulator Build
         uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
@@ -170,8 +192,30 @@ jobs:
           upload_speed: "3300"
           latency: "500"
 
+      - name: Cache detox node_modules
+        uses: actions/cache@v4
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-detox-deps-
+
       - name: Install Detox Dependencies
         run: cd detox && npm i
+
+      - name: Get Xcode Version
+        id: xcode-version
+        run: echo "version=$(xcodebuild -version | head -1 | sed 's/Xcode //')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Detox Framework
+        id: detox-framework-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Detox/ios
+          key: ${{ runner.os }}-${{ runner.arch }}-detox-framework-${{ hashFiles('detox/package-lock.json') }}-xcode-${{ steps.xcode-version.outputs.version }}
+
+      - name: Build Detox Framework Cache
+        if: steps.detox-framework-cache.outputs.cache-hit != 'true'
+        run: cd detox && npx detox build-framework-cache
 
       - name: Pre-boot iOS Simulator
         run: |

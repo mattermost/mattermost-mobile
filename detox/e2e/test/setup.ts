@@ -5,9 +5,10 @@
 import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {Plugin, System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
+import {timeouts} from '@support/utils';
 
 // Number of retry attempts
-const MAX_RETRY_ATTEMPTS = 3;
+const MAX_RETRY_ATTEMPTS = 2;
 
 // Delay between retries (in milliseconds)
 const RETRY_DELAY = 5000;
@@ -40,31 +41,85 @@ async function verifyDetoxConnection(maxAttempts = 3, delayMs = 2000): Promise<v
 }
 
 /**
- * Wait for app to be ready (database initialized, bridge ready)
- * @param timeoutMs - Maximum time to wait in milliseconds
- * @returns {Promise<void>}
+ * Ensure the app is on the server screen before each test file runs.
+ *
+ * Each test file's beforeAll calls ServerScreen.connectToServer(), which requires
+ * server.screen to be visible. This function detects and recovers from three states:
+ *
+ * 1. server.screen  — clean state after successful logout; proceed immediately.
+ * 2. channel_list.screen — previous test's HomeScreen.logout() failed silently;
+ *    force a cleanup logout so the server is removed and server.screen appears.
+ * 3. server_list.screen — inactive servers remain from a prior test (e.g.
+ *    server_login.e2e.ts logs out Server 2 but keeps it in the list); tap
+ *    "Add a server" to open server.screen so the next beforeAll can connect.
+ *
+ * Also acts as the app-readiness check (polls until a known screen appears).
  */
-async function waitForAppReady(timeoutMs = 10000): Promise<void> {
+async function ensureOnServerScreen(maxWaitMs = 30000): Promise<void> {
     const startTime = Date.now();
 
-    while (Date.now() - startTime < timeoutMs) {
+    while (Date.now() - startTime < maxWaitMs) {
+        // 1. Server screen — clean state, proceed
         try {
-            // Check if app is responsive by looking for a basic UI element
-            // Try server screen first, then channel list screen
-            try {
-                await waitFor(element(by.id('server.screen'))).toBeVisible().withTimeout(2000);
-            } catch {
-                await waitFor(element(by.id('channel_list.screen'))).toBeVisible().withTimeout(2000);
-            }
-            console.info('✅ App is ready');
+            await waitFor(element(by.id('server.screen'))).toBeVisible().withTimeout(2000);
+            console.info('✅ App is on server screen');
             return;
-        } catch {
-            // App not ready yet, wait a bit
-            await new Promise((resolve) => setTimeout(resolve, 500));
-        }
+        } catch { /* not on server screen yet */ }
+
+        // 2. Channel list — previous test left app logged in; force logout
+        try {
+            await waitFor(element(by.id('channel_list.screen'))).toBeVisible().withTimeout(2000);
+            console.info('ℹ️ App still logged in from previous test — forcing cleanup logout');
+            await element(by.id('tab_bar.account.tab')).tap();
+            await waitFor(element(by.id('account.screen'))).toExist().withTimeout(timeouts.TEN_SEC);
+            await element(by.id('account.logout.option')).tap();
+            if (device.getPlatform() === 'android') {
+                await element(by.text('LOG OUT')).tap();
+            } else {
+                await element(by.label('Log out')).atIndex(1).tap();
+            }
+            await waitFor(element(by.id('account.screen'))).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+            continue;
+        } catch { /* not on channel list */ }
+
+        // 3. Server list — inactive servers remain (e.g. Server 2 from server_login.e2e.ts);
+        //    open the add-server screen so the next test's beforeAll can connect normally.
+        try {
+            await waitFor(element(by.id('server_list.screen'))).toBeVisible().withTimeout(2000);
+            console.info('ℹ️ App is on server list — opening add-server screen');
+            await element(by.text('Add a server')).tap();
+            await waitFor(element(by.id('server.screen'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            console.info('✅ Add-server screen is open');
+            return;
+        } catch { /* not on server list */ }
+
+        // App not yet in a known state — wait and retry
+        await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
-    throw new Error(`App failed to become ready within ${timeoutMs}ms`);
+    throw new Error(`App did not reach server screen within ${maxWaitMs}ms`);
+}
+
+/**
+ * Dismiss React Native RedBox error overlay if visible in debug builds.
+ * Native errors (e.g. RCTImageView event re-registration) are thrown before
+ * JS runs and cannot be suppressed via LogBox — dismiss them here instead.
+ */
+async function dismissRedBoxIfVisible(): Promise<void> {
+    if (device.getPlatform() !== 'ios') {
+        return;
+    }
+    try {
+        // Prefer "Reload" to reconnect to Metro rather than "Dismiss" which leaves app with no bundle
+        await waitFor(element(by.text('Reload'))).toBeVisible().withTimeout(2000);
+        await element(by.text('Reload')).tap();
+        console.info('ℹ️ Tapped Reload on native RedBox to reconnect to Metro');
+
+        // Give Metro time to serve the bundle
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+    } catch {
+        // No RedBox visible, continue normally
+    }
 }
 
 /**
@@ -97,9 +152,13 @@ export async function launchAppWithRetry(): Promise<void> {
                 });
                 isFirstLaunch = false;
             } else {
-                // For subsequent launches, reuse instance
+                // For subsequent launches, restart the process without reinstalling.
+                // newInstance: true kills and restarts the process (~5s) so in-memory
+                // state is cleared. The app reads WatermelonDB on startup; after a
+                // successful logout the DB has no servers, so it shows server.screen.
+                // ensureOnServerScreen() below handles any remaining edge cases.
                 await device.launchApp({
-                    newInstance: false,
+                    newInstance: true,
                     launchArgs: {
                         detoxPrintBusyIdleResources: 'YES',
                         detoxDebugVisibility: 'YES',
@@ -110,6 +169,10 @@ export async function launchAppWithRetry(): Promise<void> {
             }
 
             console.info(`✅ App launched successfully on attempt ${attempt}`);
+
+            // Dismiss any native RedBox error overlay that may appear in debug builds
+            // (e.g. 'RCTImageView re-registered bubbling event' warning on iOS)
+            await dismissRedBoxIfVisible();
             return;
 
         } catch (error) {
@@ -143,19 +206,29 @@ async function initializeClaudePromptHandler(): Promise<void> {
 }
 
 beforeAll(async () => {
-    // Reset flag to ensure each test file starts with a clean app launch
-    isFirstLaunch = true;
+    // Only do a full clean install (delete: true) for the very first test file per run.
+    // process.env persists across Jest test files in the same worker (maxWorkers: 1 in CI),
+    // so subsequent files use fast relaunch (~5s) instead of a full reinstall (~85s on iOS).
+    isFirstLaunch = !process.env.DETOX_APP_INSTALLED;
+    if (isFirstLaunch) {
+        process.env.DETOX_APP_INSTALLED = 'true';
+    }
     await launchAppWithRetry();
 
     // Verify Detox connection is healthy after app launch
     await verifyDetoxConnection();
 
-    // Wait for app to be fully ready (database initialized, bridge ready)
-    await waitForAppReady();
+    // Ensure the app is on the server screen before this test file's beforeAll runs.
+    // Handles: logged-in state from a previous test, server list with inactive servers,
+    // and general app readiness (polls until a known screen appears).
+    await ensureOnServerScreen();
     await initializeClaudePromptHandler();
 
     // Login as sysadmin and reset server configuration
     await System.apiCheckSystemHealth(siteOneUrl);
-    await User.apiAdminLogin(siteOneUrl);
+    const {error: loginError} = await User.apiAdminLogin(siteOneUrl);
+    if (loginError) {
+        throw new Error(`Admin login failed: ${JSON.stringify(loginError)}`);
+    }
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
 });

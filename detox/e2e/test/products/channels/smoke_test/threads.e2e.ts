@@ -68,7 +68,7 @@ describe('Smoke Test - Threads', () => {
         await ThreadScreen.postMessage(`${parentMessage} reply`);
 
         // * Verify thread is followed by user by default via thread navigation
-        await expect(ThreadScreen.followingButton).toBeVisible();
+        await waitFor(ThreadScreen.followingButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Unfollow thread via thread navigation
         await ThreadScreen.followingButton.tap();
