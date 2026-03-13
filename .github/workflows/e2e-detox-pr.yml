@@ -88,7 +88,7 @@ jobs:
 
       - name: Compute iOS build cache key
         id: ios-cache-key
-        run: echo "hash=${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}" >> $GITHUB_OUTPUT
+        run: echo "hash=${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}" >> "$GITHUB_OUTPUT"
 
       - name: Restore iOS simulator build cache
         id: ios-build-cache
@@ -166,7 +166,7 @@ jobs:
 
       - name: Compute Android build cache key
         id: android-cache-key
-        run: echo "hash=${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}" >> $GITHUB_OUTPUT
+        run: echo "hash=${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}" >> "$GITHUB_OUTPUT"
 
       - name: Restore Android APK build cache
         id: android-build-cache
@@ -224,9 +224,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: detox/node_modules
-          key: ${{ runner.os }}-detox-npm-${{ hashFiles('detox/package-lock.json') }}
+          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-detox-npm-
+            ${{ runner.os }}-detox-deps-
 
       - name: Detox build
         if: steps.android-build-cache.outputs.cache-hit != 'true'
@@ -270,7 +270,7 @@ jobs:
 
       - name: Compute iOS build cache key
         id: ios-cache-key
-        run: echo "hash=${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}" >> $GITHUB_OUTPUT
+        run: echo "hash=${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}" >> "$GITHUB_OUTPUT"
 
       - name: Restore iOS simulator build cache
         id: ios-build-cache
@@ -346,7 +346,7 @@ jobs:
 
       - name: Compute Android build cache key
         id: android-cache-key
-        run: echo "hash=${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}" >> $GITHUB_OUTPUT
+        run: echo "hash=${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}" >> "$GITHUB_OUTPUT"
 
       - name: Restore Android APK build cache
         id: android-build-cache
@@ -404,9 +404,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: detox/node_modules
-          key: ${{ runner.os }}-detox-npm-${{ hashFiles('detox/package-lock.json') }}
+          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-detox-npm-
+            ${{ runner.os }}-detox-deps-
 
       - name: Detox build
         if: steps.android-build-cache.outputs.cache-hit != 'true'

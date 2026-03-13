@@ -294,17 +294,21 @@ async function main() {
         console.log(`Target: ${selectedSimulator.name} (${selectedSimulator.os})`);
         console.log(`Using simulator: ${selectedSimulator.name} (${selectedSimulator.os})`);
     } else {
-        // Automatically select simulator using env-configurable device name and OS prefix
-        const defaultDeviceName = process.env.IOS_SIMULATOR_DEVICE || 'iPhone 17 Pro';
-        const defaultOsPrefix = process.env.IOS_SIMULATOR_OS_PREFIX || 'iOS 26.';
+        // Automatically select simulator using env-configurable device name and OS prefix.
+        // Priority: IOS_SIMULATOR_DEVICE > DEVICE_NAME > hardcoded default (and same for OS).
+        const defaultDeviceName = process.env.IOS_SIMULATOR_DEVICE || process.env.DEVICE_NAME || 'iPhone 17 Pro';
+        const defaultOsPrefix = process.env.IOS_SIMULATOR_OS_PREFIX || process.env.DEVICE_OS_VERSION || 'iOS 26.';
         selectedSimulator = simulators.find((sim) =>
             sim.name === defaultDeviceName &&
             sim.os.startsWith(defaultOsPrefix),
         );
 
         if (!selectedSimulator) {
-            console.error(`Error: No ${defaultDeviceName} running ${defaultOsPrefix}x found`);
-            console.error(`Please create a ${defaultDeviceName} simulator with ${defaultOsPrefix}x in Xcode first.`);
+            // Append "x" only when the prefix is a major-version wildcard (ends with "."),
+            // e.g. "iOS 26." → "iOS 26.x"; a full version like "iOS 26.2" is shown as-is.
+            const osDisplay = defaultOsPrefix.endsWith('.') ? `${defaultOsPrefix}x` : defaultOsPrefix;
+            console.error(`Error: No ${defaultDeviceName} running ${osDisplay} found`);
+            console.error(`Please create a ${defaultDeviceName} simulator with ${osDisplay} in Xcode first.`);
             console.error('\nAvailable simulators:');
             simulators.forEach((sim) => {
                 const stateIndicator = sim.state === 'Booted' ? '🟢' : '⚪';
