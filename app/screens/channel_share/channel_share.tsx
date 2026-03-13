@@ -179,6 +179,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
             // eslint-disable-next-line no-await-in-loop
             const result = await shareChannelWithRemote(serverUrl, channelId, w.remote_id);
             if (result.error) {
+                setWorkspaces((prev) => prev.map(idUpdate('pending', w.remote_id)));
                 setSaving(false);
                 Alert.alert(intl.formatMessage(messages.errorTitle), getFullErrorMessage(result.error));
                 return;
@@ -193,9 +194,13 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
                 Alert.alert(intl.formatMessage(messages.errorTitle), getFullErrorMessage(result.error));
                 return;
             }
+            setToRemove((prev) => {
+                const s = new Set(prev);
+                s.delete(remoteId);
+                return s;
+            });
+            setWorkspaces((prev) => prev.filter(notInSet(new Set([remoteId]))));
         }
-        setToRemove(new Set());
-        setWorkspaces((prev) => prev.filter(notInSet(removedIds)));
         setSaving(false);
     }, [channelId, intl, serverUrl, toRemove, workspaces]);
 
