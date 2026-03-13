@@ -452,6 +452,7 @@ describe('AttachmentOptions', () => {
                 expect(baseProps.onUploadFiles).toHaveBeenCalledWith([
                     expect.objectContaining({
                         clientId: 'generated-id',
+                        name: expect.stringMatching(/^app-logs-\d+\.zip$/),
                         mime_type: 'application/zip',
                         extension: 'zip',
                         size: 1234,

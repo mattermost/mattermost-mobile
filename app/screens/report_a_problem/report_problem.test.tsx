@@ -6,7 +6,7 @@ import React, {type ComponentProps} from 'react';
 import {View} from 'react-native';
 
 import {savePreference} from '@actions/remote/preference';
-import {Screens} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {logDebug} from '@utils/log';
 import {emailLogs, getDefaultReportAProblemLink, shareLogs} from '@utils/share_logs';
@@ -275,8 +275,8 @@ describe('screens/report_a_problem/report_problem', () => {
 
             expect(savePreference).toHaveBeenCalledWith(expect.any(String), [{
                 user_id: 'user1',
-                category: 'advanced_settings',
-                name: 'attach_app_logs',
+                category: Preferences.CATEGORIES.ADVANCED_SETTINGS,
+                name: Preferences.ATTACH_APP_LOGS,
                 value: 'true',
             }]);
         });
@@ -297,8 +297,8 @@ describe('screens/report_a_problem/report_problem', () => {
 
             expect(savePreference).toHaveBeenCalledWith(expect.any(String), [{
                 user_id: 'user1',
-                category: 'advanced_settings',
-                name: 'attach_app_logs',
+                category: Preferences.CATEGORIES.ADVANCED_SETTINGS,
+                name: Preferences.ATTACH_APP_LOGS,
                 value: 'true',
             }]);
 
