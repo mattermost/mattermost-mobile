@@ -27,7 +27,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Smoke Test - Messaging', () => {
@@ -188,6 +188,8 @@ describe('Smoke Test - Messaging', () => {
 
         // # Tap on post to open thread and open post options for message
         await postListPostItem.tap();
+        await ThreadScreen.toBeVisible();
+        await wait(timeouts.ONE_SEC);
         await ThreadScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.unsavePostOption.tap();
 

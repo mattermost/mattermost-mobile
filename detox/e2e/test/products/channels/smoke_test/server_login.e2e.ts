@@ -66,7 +66,10 @@ describe('Smoke Test - Server Login', () => {
         await ServerListScreen.toBeVisible();
 
         // # Add a second server and log in to the second server
-        await User.apiAdminLogin(siteTwoUrl);
+        const {error: adminLoginError} = await User.apiAdminLogin(siteTwoUrl);
+        if (adminLoginError) {
+            throw new Error(`Admin login to site 2 failed: ${JSON.stringify(adminLoginError)}`);
+        }
         const {user} = await Setup.apiInit(siteTwoUrl);
         await ServerListScreen.addServerButton.tap();
         await wait(timeouts.ONE_SEC);
