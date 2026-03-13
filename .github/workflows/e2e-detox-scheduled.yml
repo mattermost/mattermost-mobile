@@ -125,7 +125,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: android/app/build/outputs/apk/
-          key: android-apk-${{ runner.os }}-${{ steps.android-cache-key.outputs.hash }}
+          key: android-apk-${{ runner.os }}-x86_64-${{ steps.android-cache-key.outputs.hash }}
 
       - name: Prune Docker to free up space
         if: steps.android-build-cache.outputs.cache-hit != 'true'
@@ -196,7 +196,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: android/app/build/outputs/apk/
-          key: android-apk-${{ runner.os }}-${{ steps.android-cache-key.outputs.hash }}
+          key: android-apk-${{ runner.os }}-x86_64-${{ steps.android-cache-key.outputs.hash }}
 
       - name: Save Gradle build cache
         if: steps.android-build-cache.outputs.cache-hit != 'true'
