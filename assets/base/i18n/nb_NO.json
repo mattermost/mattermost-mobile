@@ -63,7 +63,7 @@
   "apps.error.lookup.error_preparing_request": "Feil under forberedelse av oppslagsforespørsel: {errorMessage}",
   "apps.error.malformed_binding": "Denne bindingen er ikke riktig utformet. Kontakt apputvikleren.",
   "apps.error.parser": "Parsefeil: {error}",
-  "apps.error.parser.empty_value": "Tomme verdier er ikke tillat.",
+  "apps.error.parser.empty_value": "Tomme verdier er ikke tillatt.",
   "apps.error.parser.execute_non_leaf": "Du må velge en underkommando.",
   "apps.error.parser.missing_binding": "Mangler kommandobindinger.",
   "apps.error.parser.missing_field_name": "Navn på felt mangler.",
