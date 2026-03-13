@@ -224,19 +224,17 @@ lane :link_sentry do |options|
   end
 end
 
-# Uploads built files to S3
-# It's currently uploading to two different buckets depending on the
-# enable_s3_new_bucket option.
-# Default, uploads to the legacy bucket using static credentials (AWS_BUCKET_NAME).
-# To upload to the new bucket AWS_NEW_BUCKET_NAME (using IAM/OIDC), pass :enable_s3_new_bucket => true in options.
-# Example: upload_file_to_s3({:os_type => "ios", :enable_s3_new_bucket => true})
+# Uploads built files to S3. Two modes via options[:s3_client_oidc]:
+# - s3_client_oidc: true  → IAM/OIDC (default creds), bucket from AWS_BUCKET_NAME (set by workflow to new bucket).
+# - s3_client_oidc: false or omitted → static credentials (AWS_ACCESS_KEY_ID/SECRET), bucket from AWS_BUCKET_NAME (e.g. build-pr).
+# Example: upload_file_to_s3({:os_type => "ios", :s3_client_oidc => true})
 desc 'Upload file to s3'
 lane :upload_file_to_s3 do |options|
   os_type = options[:os_type].downcase
   extensions = os_type == "android" ? ["*.apk", "*.aab"] : ["*.ipa"]
   build_folder_path = Dir[File.expand_path('..')].first
   files = []
-  enable_s3_new_bucket = options[:enable_s3_new_bucket] == true
+  s3_client_oidc = options[:s3_client_oidc] == true
 
   unless options[:file].nil? || options[:file].empty?
     files.push("#{build_folder_path}/#{options[:file]}")
@@ -266,8 +264,7 @@ lane :upload_file_to_s3 do |options|
 
     s3_region = ENV['AWS_REGION']
     s3_bucket_name = ENV['AWS_BUCKET_NAME']
-    s3_new_bucket_name = ENV['AWS_NEW_BUCKET_NAME']
-    bucket_name = enable_s3_new_bucket ? s3_new_bucket_name : s3_bucket_name
+    s3_bucket_dns_name = ENV['AWS_BUCKET_DNS_NAME']
 
     if is_build_pr
       # Get the current git commit SHA (short version)
@@ -276,17 +273,17 @@ lane :upload_file_to_s3 do |options|
     else
       s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
     end
-    if enable_s3_new_bucket
-      # Client for new bucket assumes role via GitHub Actions OIDC
+    if s3_client_oidc
+      # Client for S3 bucket assumes role via GitHub Actions OIDC
       s3_client = Aws::S3::Client.new(region: s3_region)
-      UI.message("Set S3 Client to upload to new S3 bucket")
+      UI.message("Set S3 Client to upload to S3 bucket using OIDC")
     else
       s3_client = Aws::S3::Client.new(
         region: s3_region,
         access_key_id: ENV['AWS_ACCESS_KEY_ID'],
         secret_access_key: ENV['AWS_SECRET_ACCESS_KEY']
       )
-      UI.message("Set S3 Client to upload to existing S3 bucket: #{s3_bucket_name}")
+      UI.message("Set S3 Client to upload to S3 bucket: #{s3_bucket_name} using static credentials")
     end
     transfer_manager = Aws::S3::TransferManager.new(client: s3_client)
     mutex = Mutex.new
@@ -307,9 +304,9 @@ lane :upload_file_to_s3 do |options|
           filename = File.basename(file)
           puts "[#{Thread.current["file_number"]}/#{total_files}] #{filename} uploading..."
           s3_key = "#{s3_folder}/#{filename}"
-          transfer_manager.upload_file(file, bucket: bucket_name, key: s3_key)
-          # Keep s3_bucket_name to support both buckets.
-          links.push("https://#{s3_bucket_name}/#{s3_key}")
+          transfer_manager.upload_file(file, bucket: s3_bucket_name, key: s3_key)
+          s3_bucket_dns_name = is_build_pr ? s3_bucket_name : s3_bucket_dns_name
+          links.push("https://#{s3_bucket_dns_name}/#{s3_key}")
         end
       }
     end
@@ -324,7 +321,7 @@ lane :upload_file_to_s3 do |options|
         plist_body = ERB.new(plist_template).result(binding)
 
         s3_client.put_object(
-          bucket: bucket_name,
+          bucket: s3_bucket_name,
           key: "#{s3_folder}/#{plist_file}",
           body: plist_body,
           content_type: 'application/xml'
@@ -333,15 +330,13 @@ lane :upload_file_to_s3 do |options|
         install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket_name}/#{s3_folder}/#{plist_file}"
       end
 
-      if enable_s3_new_bucket == false
-        qa_build_message({
-                              :os_type => os_type,
-                              :install_url => install_url
-                          })
-      end
+      qa_build_message({
+                            :os_type => os_type,
+                            :install_url => install_url
+                        })
     end
 
-    if options[:file]&.start_with?('Mattermost-simulator-') && options[:file]&.end_with?('.app.zip') && enable_s3_new_bucket == false
+    if options[:file]&.start_with?('Mattermost-simulator-') && options[:file]&.end_with?('.app.zip')
       pretext = '#### New iOS build for VM/Simulator'
       msg = "Download link: #{links.first}"
       send_message_to_mattermost({
@@ -416,7 +411,6 @@ platform :ios do
     replace_assets
     link_sentry({:os_type => "ios"})
     build_ios
-    upload_file_to_s3({:os_type => "ios"})
   end
 
   desc 'Build an unsigned ipa'
@@ -439,7 +433,6 @@ platform :ios do
   end
 
   lane :simulator do |options|
-    skip_upload_to_s3_bucket = options[:skip_upload_to_s3_bucket] == true
     UI.success('Building iOS app for simulator')
 
     # Detect the host architecture
@@ -461,34 +454,28 @@ platform :ios do
       rel_build_dir: "Release-iphonesimulator",
       output_file: output_file,
     )
-
-    unless skip_upload_to_s3_bucket
-      upload_file_to_s3({
-        :os_type => "ios",
-        :file => output_file
-      })
-    end
   end
 
   desc 'Upload artifacts to S3'
   lane :upload_artifacts_to_s3 do |options|
     output_file = options[:output_file]
-    UI.message("Uploading to new S3 bucket..." + (output_file ? " file: #{output_file}" : ""))
+    s3_client_oidc = options[:s3_client_oidc] == true
+    UI.message("Uploading to S3 bucket using #{s3_client_oidc ? 'IAM/OIDC' : 'static credentials'}..." + (output_file ? " file: #{output_file}" : ""))
     begin
       if output_file && !output_file.empty?
         upload_file_to_s3({
           :os_type => "ios",
           :file => output_file,
-          :enable_s3_new_bucket => true
+          :s3_client_oidc => s3_client_oidc
         })
       else
         upload_file_to_s3({
           :os_type => "ios",
-          :enable_s3_new_bucket => true
+          :s3_client_oidc => s3_client_oidc
         })
       end
     rescue SyntaxError, StandardError
-      UI.error("Failed to upload to new S3 bucket")
+      UI.user_error!("Failed to upload to S3 bucket")
     end
   end
 
@@ -816,7 +803,6 @@ platform :android do
     link_sentry({:os_type => "android"})
     build_android
     move_android_to_root
-    upload_file_to_s3({:os_type => "android"})
   end
 
   desc 'Build an unsigned apk'
@@ -841,12 +827,13 @@ platform :android do
   end
 
   desc 'Upload artifacts to S3'
-  lane :upload_artifacts_to_s3 do
-    UI.message("Uploading to new S3 bucket...")
+  lane :upload_artifacts_to_s3 do |options|
+    s3_client_oidc = options[:s3_client_oidc] == true
+    UI.message("Uploading to S3 bucket using #{s3_client_oidc ? 'IAM/OIDC' : 'static credentials'}")
     begin
-      upload_file_to_s3({:os_type => "android", :enable_s3_new_bucket => true})
+      upload_file_to_s3({:os_type => "android", :s3_client_oidc => s3_client_oidc})
     rescue SyntaxError, StandardError
-      UI.error("Failed to upload to new S3 bucket")
+      UI.user_error!("Failed to upload to S3 bucket")
     end
   end
 
@@ -1146,7 +1133,7 @@ def submit_to_testflight(ipa_path)
   version_number = get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
   build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
   s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
-  public_link = "https://#{ENV['AWS_BUCKET_NAME']}/#{s3_folder}/#{filename}"
+  public_link = "https://#{ENV['AWS_BUCKET_DNS_NAME']}/#{s3_folder}/#{filename}"
 
 
   # Send a build message to Mattermost
@@ -1205,7 +1192,7 @@ def submit_to_google_play(file_path)
   version_number = android_get_version_name(gradle_file: './android/app/build.gradle')
   build_number = android_get_version_code(gradle_file: './android/app/build.gradle')
   s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
-  public_path = "https://#{ENV['AWS_BUCKET_NAME']}/#{s3_folder}"
+  public_path = "https://#{ENV['AWS_BUCKET_DNS_NAME']}/#{s3_folder}"
   links = (filenames.map { |f| "* #{public_path}/#{f}"}).join("\n")
 
   # Send a build message to Mattermost
