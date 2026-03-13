@@ -22,6 +22,7 @@ class PostOptionsScreen {
         unpinPostOption: 'post_options.unpin_post.option',
         editPostOption: 'post_options.edit_post.option',
         deletePostOption: 'post_options.delete_post.option',
+        showTranslationOption: 'post_options.show_translation.option',
         pinnedPostListItemPrefix: 'pinned_messages.post_list.post',
     };
 
@@ -41,6 +42,7 @@ class PostOptionsScreen {
     unpinPostOption = element(by.id(this.testID.unpinPostOption));
     editPostOption = element(by.id(this.testID.editPostOption));
     deletePostOption = element(by.id(this.testID.deletePostOption));
+    showTranslationOption = element(by.id(this.testID.showTranslationOption));
 
     getReactionEmoji = (emojiName: string) => {
         return element(by.id(`${this.testID.reactionEmojiPrefix}${emojiName}`));
