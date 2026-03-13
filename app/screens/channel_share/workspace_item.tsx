@@ -37,6 +37,7 @@ type Props = {
     item: SharedChannelWorkspace;
     onRemove: (item: SharedChannelWorkspace) => void;
     isFirst: boolean;
+    removeDisabled?: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -64,7 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const WorkspaceItem = ({item, onRemove, isFirst}: Props) => {
+const WorkspaceItem = ({item, onRemove, isFirst, removeDisabled = false}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -124,6 +125,7 @@ const WorkspaceItem = ({item, onRemove, isFirst}: Props) => {
             <TouchableOpacity
                 style={styles.deleteButton}
                 onPress={handleRemove}
+                disabled={removeDisabled}
                 testID={`channel_share.remove.${item.remote_id}`}
             >
                 <CompassIcon

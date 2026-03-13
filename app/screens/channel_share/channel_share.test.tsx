@@ -305,4 +305,47 @@ describe('ChannelShare', () => {
         });
         expect(getByText('Remote 1')).toBeTruthy();
     });
+
+    it('disables toggle, add button, and remove controls while save is in progress', async () => {
+        const r1 = TestHelper.fakeRemoteClusterInfo({remote_id: 'r1', display_name: 'Remote 1'});
+        const r2 = TestHelper.fakeRemoteClusterInfo({remote_id: 'r2', display_name: 'Remote 2'});
+        jest.mocked(fetchRemoteClusters).mockResolvedValue({remoteClusters: [r1, r2]});
+        jest.mocked(fetchChannelSharedRemotes).mockResolvedValue({
+            remotes: [{...r1, last_ping_at: r1.last_ping_at}],
+        });
+        jest.mocked(shareChannelWithRemote).mockImplementation(() => new Promise(() => {}));
+
+        const {getByTestId} = renderWithIntlAndTheme(
+            <ChannelShare
+                channelId='channel1'
+                componentId={componentId}
+                displayName='Test Channel'
+            />,
+        );
+        await waitFor(() => {
+            expect(getByTestId('channel_share.add_workspace.button')).toBeTruthy();
+        });
+
+        act(() => {
+            fireEvent.press(getByTestId('channel_share.add_workspace.button'));
+        });
+        const {bottomSheet} = require('@screens/navigation');
+        const renderContent = jest.mocked(bottomSheet).mock.calls[0][0].renderContent;
+        const sheetContent = renderContent();
+        const {getByTestId: getByTestIdSheet} = renderWithIntlAndTheme(sheetContent);
+        act(() => {
+            fireEvent.press(getByTestIdSheet('channel_share.workspace_option.r2'));
+        });
+
+        const lastCall = getLastCallForButton(jest.mocked(useNavButtonPressed), 'save-channel-share');
+        const saveCallback = lastCall[2];
+        act(() => {
+            saveCallback();
+        });
+
+        await waitFor(() => {
+            expect(getByTestId('channel_share.toggle').props.disabled).toBe(true);
+            expect(getByTestId('channel_share.add_workspace.button').props.disabled).toBe(true);
+        });
+    });
 });

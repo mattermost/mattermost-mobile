@@ -48,6 +48,24 @@ describe('WorkspaceItem', () => {
         expect(onRemove).toHaveBeenCalledWith(item);
     });
 
+    it('does not call onRemove when remove button is pressed and removeDisabled is true', () => {
+        const item: SharedChannelWorkspace = {
+            ...TestHelper.fakeRemoteClusterInfo({remote_id: 'r1'}),
+            status: 'saved',
+        };
+        const onRemove = jest.fn();
+        const {getByTestId} = renderWithIntlAndTheme(
+            <WorkspaceItem
+                item={item}
+                onRemove={onRemove}
+                isFirst={false}
+                removeDisabled={true}
+            />,
+        );
+        fireEvent.press(getByTestId('channel_share.remove.r1'));
+        expect(onRemove).not.toHaveBeenCalled();
+    });
+
     it('shows Connection pending when connection is not confirmed', () => {
         const item: SharedChannelWorkspace = {
             ...TestHelper.fakeRemoteClusterInfo({site_url: 'pending_abc', last_ping_at: 0, display_name: 'Pending'}),

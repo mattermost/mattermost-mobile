@@ -249,6 +249,9 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
 
     const addWorkspace = useCallback(
         (remote: RemoteClusterInfo) => {
+            if (saving) {
+                return;
+            }
             if (toRemove.has(remote.remote_id)) {
                 setToRemove((prev) => {
                     const next = new Set(prev);
@@ -268,10 +271,14 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
             setEnabled(true);
             dismissBottomSheet();
         },
-        [toRemove, workspaces],
+        [saving, toRemove, workspaces],
     );
 
     const openAddWorkspaceSheet = useCallback(() => {
+        if (saving) {
+            return;
+        }
+
         // Exclude only workspaces that are actually sharing (in list and not marked for removal)
         const alreadyIds = new Set(
             workspaces.filter((w) => !toRemove.has(w.remote_id)).map((w) => w.remote_id),
@@ -289,10 +296,13 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
                 />
             ),
         });
-    }, [intl, isTablet, remoteClusters, theme, toRemove, workspaces, addWorkspace]);
+    }, [intl, isTablet, remoteClusters, theme, toRemove, workspaces, addWorkspace, saving]);
 
     const removeWorkspace = useCallback(
         (item: SharedChannelWorkspace) => {
+            if (saving) {
+                return;
+            }
             if (item.status === 'pending') {
                 function idFilter(w: SharedChannelWorkspace) {
                     return w.remote_id !== item.remote_id;
@@ -305,10 +315,13 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
             }
             setToRemove((prev) => new Set(prev).add(item.remote_id));
         },
-        [workspaces.length],
+        [saving, workspaces.length],
     );
 
     const onToggle = useCallback((value: boolean) => {
+        if (saving) {
+            return;
+        }
         setEnabled(value);
         function statusFilter(w: SharedChannelWorkspace) {
             return w.status !== 'pending';
@@ -320,7 +333,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
         } else {
             setToRemove(new Set(originalWorkspaces.map((w) => w.remote_id)));
         }
-    }, [workspaces]);
+    }, [saving, workspaces]);
 
     const displayWorkspaces = useMemo(
         () => workspaces.filter((w) => !toRemove.has(w.remote_id)),
@@ -380,7 +393,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
                     type='toggle'
                     selected={enabled && !noRemotes}
                     action={onToggle}
-                    disabled={noRemotes}
+                    disabled={noRemotes || saving}
                     testID='channel_share.toggle'
                 />
                 {noRemotes && (
@@ -407,6 +420,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
                                     item={w}
                                     onRemove={removeWorkspace}
                                     isFirst={index === 0}
+                                    removeDisabled={saving}
                                 />
                             ))}
                         </View>
@@ -417,6 +431,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
                             theme={theme}
                             emphasis='tertiary'
                             size='lg'
+                            disabled={saving}
                             testID='channel_share.add_workspace.button'
                         />
                     </View>
