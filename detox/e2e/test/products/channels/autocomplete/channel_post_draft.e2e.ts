@@ -100,6 +100,8 @@ describe('Autocomplete - Channel Post Draft', () => {
         await expect(Autocomplete.flatSlashSuggestionList).toExist();
     });
 
+    // MM-T3392_1-4 cover the same autocomplete behaviors as MM-T4882_1-4 but are tracked
+    // under a separate Zephyr/Jira test cycle for historical regression coverage.
     it('MM-T3392_1 - should render emoji suggestion component when typing : in post input', async () => {
         // * Verify emoji suggestion list is not displayed
         await expect(Autocomplete.flatEmojiSuggestionList).not.toExist();

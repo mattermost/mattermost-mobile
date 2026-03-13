@@ -201,7 +201,7 @@ jobs:
 
       - name: Get Xcode Version
         id: xcode-version
-        run: echo "version=$(xcodebuild -version | head -1 | sed 's/Xcode //')" >> $GITHUB_OUTPUT
+        run: echo "version=$(xcodebuild -version | head -1 | sed 's/Xcode //')" >> "$GITHUB_OUTPUT"
 
       - name: Cache Detox Framework
         id: detox-framework-cache

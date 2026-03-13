@@ -145,6 +145,8 @@ jobs:
             !ios/Build/Products/Release-iphonesimulator/Mattermost.app
           key: ios-intermediates-${{ runner.os }}-${{ runner.arch }}-${{ steps.ios-cache-key.outputs.hash }}
 
+      # Both smoke and full iOS build jobs upload under the same artifact name so the
+      # iOS template workflow can download it regardless of which build job ran.
       - name: Upload iOS Simulator Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:

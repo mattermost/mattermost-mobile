@@ -214,10 +214,8 @@ class ChannelScreen {
         if (isIos()) {
             const flatList = this.postList.getFlatList();
             await flatList.scroll(50, 'down', NaN, 0.5);
-            await wait(timeouts.ONE_SEC);
-        } else {
-            await wait(timeouts.ONE_SEC);
         }
+        await wait(timeouts.ONE_SEC);
 
         // # Open post options
         await postListPostItem.longPress();

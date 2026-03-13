@@ -7,7 +7,7 @@ set -o pipefail
 SDK_VERSION=${1:-35}           # First argument is SDK version
 AVD_BASE_NAME=${2:-"detox_pixel_8"}  # Second argument is AVD base name (no api suffix — added below)
 AVD_NAME="${AVD_BASE_NAME}_api_${SDK_VERSION}"
-TEST_FILES=${@:3}              # Capture all remaining arguments as Detox test files
+TEST_FILES=("${@:3}")          # Capture all remaining arguments as Detox test files
 
 setup_avd_home() {
     if [[ "$CI" == "true" ]]; then
@@ -28,7 +28,7 @@ create_avd() {
     local cpu_arch_family cpu_arch
     read cpu_arch_family cpu_arch < <(get_cpu_architecture)
 
-    avdmanager create avd -n "$AVD_NAME" -k "system-images;android-${SDK_VERSION};google_apis;${cpu_arch_family}" -p "$AVD_NAME" -d 'pixel_4_xl'
+    avdmanager create avd -n "$AVD_NAME" -k "system-images;android-${SDK_VERSION};google_apis;${cpu_arch_family}" -p "$AVD_NAME" -d 'pixel_8'
 
     cp -r android_emulator/ "$AVD_NAME/"
     sed -i -e "s|AvdId = change_avd_id|AvdId = ${AVD_NAME}|g" "$AVD_NAME/config.ini"
@@ -136,7 +136,7 @@ main() {
         setup_adb_reverse
     fi
 
-    run_detox_tests $TEST_FILES
+    run_detox_tests "${TEST_FILES[@]}"
 }
 
 main

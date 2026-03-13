@@ -294,15 +294,17 @@ async function main() {
         console.log(`Target: ${selectedSimulator.name} (${selectedSimulator.os})`);
         console.log(`Using simulator: ${selectedSimulator.name} (${selectedSimulator.os})`);
     } else {
-        // Automatically select iPhone 17 Pro on any iOS 26.x version
+        // Automatically select simulator using env-configurable device name and OS prefix
+        const defaultDeviceName = process.env.IOS_SIMULATOR_DEVICE || 'iPhone 17 Pro';
+        const defaultOsPrefix = process.env.IOS_SIMULATOR_OS_PREFIX || 'iOS 26.';
         selectedSimulator = simulators.find((sim) =>
-            sim.name === 'iPhone 17 Pro' &&
-            sim.os.startsWith('iOS 26.'),
+            sim.name === defaultDeviceName &&
+            sim.os.startsWith(defaultOsPrefix),
         );
 
         if (!selectedSimulator) {
-            console.error('Error: No iPhone 17 Pro running iOS 26.x found');
-            console.error('Please create an iPhone 17 Pro simulator with iOS 26.x in Xcode first.');
+            console.error(`Error: No ${defaultDeviceName} running ${defaultOsPrefix}x found`);
+            console.error(`Please create a ${defaultDeviceName} simulator with ${defaultOsPrefix}x in Xcode first.`);
             console.error('\nAvailable simulators:');
             simulators.forEach((sim) => {
                 const stateIndicator = sim.state === 'Booted' ? '🟢' : '⚪';

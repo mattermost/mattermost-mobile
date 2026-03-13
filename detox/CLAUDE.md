@@ -124,7 +124,7 @@ These run automatically on every PR push without any label.
 
 ## FOLDER STRUCTURE
 
-```
+```text
 detox/
 ├── .detoxrc.json                  # Detox device/app/config definitions
 ├── package.json                   # Separate npm package (own node_modules)

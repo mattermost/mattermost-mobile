@@ -15,10 +15,12 @@ runs:
         LINT_PID=$!
         npm run tsc &
         TSC_PID=$!
-        wait $LINT_PID
+        set +e
+        wait "$LINT_PID"
         LINT_EXIT=$?
-        wait $TSC_PID
+        wait "$TSC_PID"
         TSC_EXIT=$?
+        set -e
         if [ $LINT_EXIT -ne 0 ] || [ $TSC_EXIT -ne 0 ]; then
           exit 1
         fi

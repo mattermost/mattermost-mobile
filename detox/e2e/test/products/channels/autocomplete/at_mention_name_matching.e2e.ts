@@ -56,7 +56,11 @@ describe('Autocomplete - At-Mention - Name Matching', () => {
     });
 
     afterAll(async () => {
-        await ChannelScreen.back();
+        try {
+            await ChannelScreen.back();
+        } catch {
+            // Channel may already be closed on iOS 26 after test interruptions
+        }
         await HomeScreen.logout();
     });
 

@@ -113,8 +113,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: Compute Android build cache key
         id: android-cache-key
@@ -124,7 +122,7 @@ jobs:
         id: android-build-cache
         uses: actions/cache/restore@v4
         with:
-          path: android/app/build/outputs/apk/
+          path: android/app/build/outputs/apk
           key: android-apk-${{ runner.os }}-x86_64-${{ steps.android-cache-key.outputs.hash }}
 
       - name: Prune Docker to free up space
@@ -195,7 +193,7 @@ jobs:
         if: steps.android-build-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          path: android/app/build/outputs/apk/
+          path: android/app/build/outputs/apk
           key: android-apk-${{ runner.os }}-x86_64-${{ steps.android-cache-key.outputs.hash }}
 
       - name: Save Gradle build cache
