@@ -172,7 +172,7 @@ jobs:
         id: android-build-cache
         uses: actions/cache/restore@v4
         with:
-          path: android/app/build/outputs/apk/
+          path: android/app/build/outputs/apk
           key: android-apk-${{ runner.os }}-x86_64-${{ steps.android-cache-key.outputs.hash }}
 
       - name: Prune Docker to free up space
@@ -240,14 +240,14 @@ jobs:
           npm run e2e:android-build
 
       - name: Save Android APK build cache
-        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        if: steps.android-build-cache.outputs.cache-hit != 'true' && success()
         uses: actions/cache/save@v4
         with:
-          path: android/app/build/outputs/apk/
+          path: android/app/build/outputs/apk
           key: android-apk-${{ runner.os }}-x86_64-${{ steps.android-cache-key.outputs.hash }}
 
       - name: Save Gradle build cache
-        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        if: steps.android-build-cache.outputs.cache-hit != 'true' && success()
         uses: actions/cache/save@v4
         with:
           path: ~/.gradle/build-cache
@@ -257,7 +257,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-build-files-${{ github.run_id }}
-          path: "android/app/build/outputs/apk/"
+          path: android/app/build/outputs/apk
 
   build-ios-simulator:
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
@@ -352,7 +352,7 @@ jobs:
         id: android-build-cache
         uses: actions/cache/restore@v4
         with:
-          path: android/app/build/outputs/apk/
+          path: android/app/build/outputs/apk
           key: android-apk-${{ runner.os }}-x86_64-${{ steps.android-cache-key.outputs.hash }}
 
       - name: Prune Docker to free up space
@@ -420,14 +420,14 @@ jobs:
           npm run e2e:android-build
 
       - name: Save Android APK build cache
-        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        if: steps.android-build-cache.outputs.cache-hit != 'true' && success()
         uses: actions/cache/save@v4
         with:
-          path: android/app/build/outputs/apk/
+          path: android/app/build/outputs/apk
           key: android-apk-${{ runner.os }}-x86_64-${{ steps.android-cache-key.outputs.hash }}
 
       - name: Save Gradle build cache
-        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        if: steps.android-build-cache.outputs.cache-hit != 'true' && success()
         uses: actions/cache/save@v4
         with:
           path: ~/.gradle/build-cache
@@ -437,7 +437,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-build-files-${{ github.run_id }}
-          path: "android/app/build/outputs/apk/"
+          path: android/app/build/outputs/apk
 
   run-ios-tests-on-pr:
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
