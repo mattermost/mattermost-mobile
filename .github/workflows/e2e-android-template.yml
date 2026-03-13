@@ -226,7 +226,12 @@ jobs:
 
       - name: Install Android SDK components
         run: |
-          yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-35" "system-images;android-35;google_apis;x86_64"
+          for attempt in 1 2 3; do
+            echo "SDK install attempt $attempt..."
+            yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-35" "system-images;android-35;google_apis;x86_64" && break
+            echo "Attempt $attempt failed, retrying..."
+            sleep 10
+          done
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
         
