@@ -1,0 +1,214 @@
+# Nightly E2E tests under degraded network conditions (DDIL testing)
+# Runs a matrix of network profiles to validate app behavior under various conditions
+
+name: E2E Degradation Tests (Nightly)
+
+on:
+  schedule:
+    # Run at 2 AM UTC every day
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      profiles:
+        description: 'Network profiles to test (comma-separated: slow_3g,edge_2g,satellite)'
+        required: false
+        default: 'slow_3g,edge_2g'
+        type: string
+      platforms:
+        description: 'Platforms to test (ios,android,both)'
+        required: false
+        default: 'ios'
+        type: choice
+        options:
+          - ios
+          - android
+          - both
+
+env:
+  MOBILE_VERSION: ${{ github.ref }}
+
+jobs:
+  # Parse input profiles into matrix
+  setup-matrix:
+    runs-on: ubuntu-22.04
+    outputs:
+      profiles: ${{ steps.parse.outputs.profiles }}
+      run_ios: ${{ steps.parse.outputs.run_ios }}
+      run_android: ${{ steps.parse.outputs.run_android }}
+    steps:
+      - name: Parse profiles and platforms
+        id: parse
+        run: |
+          # Default profiles for scheduled runs
+          PROFILES="${{ github.event.inputs.profiles || 'slow_3g,edge_2g' }}"
+          
+          # Convert comma-separated to JSON array
+          PROFILES_JSON=$(echo "$PROFILES" | jq -R 'split(",") | map(gsub("^\\s+|\\s+$";""))' -c)
+          echo "profiles=$PROFILES_JSON" >> $GITHUB_OUTPUT
+          
+          # Determine platforms
+          PLATFORMS="${{ github.event.inputs.platforms || 'ios' }}"
+          if [ "$PLATFORMS" = "ios" ] || [ "$PLATFORMS" = "both" ]; then
+            echo "run_ios=true" >> $GITHUB_OUTPUT
+          else
+            echo "run_ios=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if [ "$PLATFORMS" = "android" ] || [ "$PLATFORMS" = "both" ]; then
+            echo "run_android=true" >> $GITHUB_OUTPUT
+          else
+            echo "run_android=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "Network profiles to test: $PROFILES_JSON"
+          echo "Platforms: $PLATFORMS"
+
+  # Build iOS simulator app once for all profiles
+  build-ios-simulator:
+    if: ${{ needs.setup-matrix.outputs.run_ios == 'true' }}
+    runs-on: macos-26
+    needs: setup-matrix
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Prepare iOS Build
+        uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: 'false'
+
+      - name: Set .env with RUNNING_E2E=true
+        run: echo "RUNNING_E2E=true" > .env
+
+      - name: Build iOS Simulator
+        env:
+          TAG: "${{ github.sha }}"
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: bundle exec fastlane ios simulator --env ios.simulator skip_upload_to_s3_bucket:true
+        working-directory: ./fastlane
+
+      - name: Upload iOS Simulator Build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-*.app.zip
+
+  # Build Android APK once for all profiles
+  build-android-apk:
+    if: ${{ needs.setup-matrix.outputs.run_android == 'true' }}
+    runs-on: ubuntu-latest-8-cores
+    needs: setup-matrix
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
+          STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
+          STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
+          MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
+
+      - name: Install Dependencies
+        run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
+
+      - name: Detox build
+        run: |
+          cd detox
+          npm install
+          npm install -g detox-cli
+          npm run e2e:android-inject-settings
+          npm run e2e:android-build
+
+      - name: Upload Android Build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: android-build-files-${{ github.run_id }}
+          path: "android/app/build/**/*"
+
+  # Run iOS tests for each network profile
+  ios-degradation-tests:
+    if: ${{ needs.setup-matrix.outputs.run_ios == 'true' }}
+    needs:
+      - setup-matrix
+      - build-ios-simulator
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: ${{ fromJSON(needs.setup-matrix.outputs.profiles) }}
+    name: iOS - ${{ matrix.profile }}
+    uses: ./.github/workflows/e2e-ios-template.yml
+    with:
+      run-type: "Nightly-Degradation"
+      MOBILE_VERSION: ${{ github.sha }}
+      network_profile: ${{ matrix.profile }}
+      record_tests_in_zephyr: 'false'
+      testcase_failure_fatal: false
+    secrets: inherit
+
+  # Run Android tests for each network profile
+  android-degradation-tests:
+    if: ${{ needs.setup-matrix.outputs.run_android == 'true' }}
+    needs:
+      - setup-matrix
+      - build-android-apk
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: ${{ fromJSON(needs.setup-matrix.outputs.profiles) }}
+    name: Android - ${{ matrix.profile }}
+    uses: ./.github/workflows/e2e-android-template.yml
+    with:
+      run-android-tests: true
+      run-type: "Nightly-Degradation"
+      MOBILE_VERSION: ${{ github.sha }}
+      network_profile: ${{ matrix.profile }}
+      record_tests_in_zephyr: 'false'
+      testcase_failure_fatal: false
+    secrets: inherit
+
+  # Aggregate results and send notification
+  summary:
+    runs-on: ubuntu-22.04
+    needs:
+      - setup-matrix
+      - ios-degradation-tests
+      - android-degradation-tests
+    if: always()
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "# DDIL/Degradation Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Network Profiles Tested" >> $GITHUB_STEP_SUMMARY
+          echo '${{ needs.setup-matrix.outputs.profiles }}' | jq -r '.[]' | while read -r profile; do
+            echo "- $profile" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "## iOS Results" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.setup-matrix.outputs.run_ios }}" == "true" ]; then
+            echo "Status: ${{ needs.ios-degradation-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Skipped" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "## Android Results" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.setup-matrix.outputs.run_android }}" == "true" ]; then
+            echo "Status: ${{ needs.android-degradation-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Skipped" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Send Notification on Failure
+        if: ${{ failure() }}
+        run: |
+          echo "Degradation tests had failures - notification would be sent here"
+          # Add webhook notification if needed
