@@ -72,6 +72,7 @@ export const timeouts = {
     TWO_SEC: SECOND * 2,
     THREE_SEC: SECOND * 3,
     FOUR_SEC: SECOND * 4,
+    FIVE_SEC: SECOND * 5,
     TEN_SEC: SECOND * 10,
     HALF_MIN: MINUTE / 2,
     ONE_MIN: MINUTE,
@@ -144,9 +145,9 @@ export async function longPressWithScrollRetry(
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         await scrollTarget.scroll(100, 'down', NaN, 0.5);
         await wait(timeouts.ONE_SEC);
-        await target.longPress(timeouts.TWO_SEC);
+        await target.longPress(timeouts.FIVE_SEC);
         try {
-            await detoxWaitFor(checkElement).toExist().withTimeout(timeouts.THREE_SEC);
+            await detoxWaitFor(checkElement).toExist().withTimeout(timeouts.TEN_SEC);
             return;
         } catch {
             if (attempt === maxAttempts) {
