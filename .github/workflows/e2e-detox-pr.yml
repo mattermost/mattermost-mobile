@@ -91,7 +91,19 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: Mattermost-simulator-arm64.app.zip
-          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+
+      - name: Restore Xcode build intermediates
+        id: xcode-intermediates-cache
+        if: steps.ios-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ios/Build/Products
+            !ios/Build/Products/Release-iphonesimulator/Mattermost.app
+          key: ios-intermediates-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          restore-keys: |
+            ios-intermediates-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Prepare iOS Build
         if: steps.ios-build-cache.outputs.cache-hit != 'true'
@@ -118,7 +130,16 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: Mattermost-simulator-arm64.app.zip
-          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+
+      - name: Save Xcode build intermediates
+        if: steps.ios-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ios/Build/Products
+            !ios/Build/Products/Release-iphonesimulator/Mattermost.app
+          key: ios-intermediates-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
 
       - name: Upload iOS Simulator Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -142,7 +163,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: android/app/build/outputs/apk/
-          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
 
       - name: Prune Docker to free up space
         if: steps.android-build-cache.outputs.cache-hit != 'true'
@@ -179,8 +200,28 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-v2-
 
+      - name: Restore Gradle build cache
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.gradle/build-cache
+          key: android-gradle-build-cache-${{ runner.os }}-${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          restore-keys: |
+            android-gradle-build-cache-${{ runner.os }}-
+
+      - name: Cache Detox node_modules
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-npm-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-detox-npm-
+
       - name: Detox build
         if: steps.android-build-cache.outputs.cache-hit != 'true'
+        env:
+          ORG_GRADLE_PROJECT_reactNativeArchitectures: arm64-v8a
         run: |
           cd detox
           npm install
@@ -193,7 +234,14 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: android/app/build/outputs/apk/
-          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+
+      - name: Save Gradle build cache
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.gradle/build-cache
+          key: android-gradle-build-cache-${{ runner.os }}-${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
 
       - name: Upload Android Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -215,7 +263,19 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: Mattermost-simulator-arm64.app.zip
-          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+
+      - name: Restore Xcode build intermediates
+        id: xcode-intermediates-cache
+        if: steps.ios-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ios/Build/Products
+            !ios/Build/Products/Release-iphonesimulator/Mattermost.app
+          key: ios-intermediates-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          restore-keys: |
+            ios-intermediates-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Prepare iOS Build
         if: steps.ios-build-cache.outputs.cache-hit != 'true'
@@ -242,7 +302,16 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: Mattermost-simulator-arm64.app.zip
-          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+
+      - name: Save Xcode build intermediates
+        if: steps.ios-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ios/Build/Products
+            !ios/Build/Products/Release-iphonesimulator/Mattermost.app
+          key: ios-intermediates-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
 
       - name: Upload iOS Simulator Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -266,7 +335,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: android/app/build/outputs/apk/
-          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
 
       - name: Prune Docker to free up space
         if: steps.android-build-cache.outputs.cache-hit != 'true'
@@ -303,8 +372,28 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-v2-
 
+      - name: Restore Gradle build cache
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.gradle/build-cache
+          key: android-gradle-build-cache-${{ runner.os }}-${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          restore-keys: |
+            android-gradle-build-cache-${{ runner.os }}-
+
+      - name: Cache Detox node_modules
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-npm-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-detox-npm-
+
       - name: Detox build
         if: steps.android-build-cache.outputs.cache-hit != 'true'
+        env:
+          ORG_GRADLE_PROJECT_reactNativeArchitectures: arm64-v8a
         run: |
           cd detox
           npm install
@@ -317,14 +406,21 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: android/app/build/outputs/apk/
-          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'app/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+
+      - name: Save Gradle build cache
+        if: steps.android-build-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.gradle/build-cache
+          key: android-gradle-build-cache-${{ runner.os }}-${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
 
       - name: Upload Android Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/outputs/apk/"
-        
+
   run-ios-tests-on-pr:
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
     name: iOS
