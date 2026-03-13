@@ -89,7 +89,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    const canSave = enabled ? (workspaces.some((w) => w.status !== 'saved') || toRemove.size > 0) : false;
+    const canSave = workspaces.some((w) => w.status !== 'saved') || toRemove.size > 0;
 
     const serverUrl = useServerUrl();
 
@@ -297,11 +297,17 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
 
     const onToggle = useCallback((value: boolean) => {
         setEnabled(value);
-        if (!value) {
-            setWorkspaces([]);
-            setToRemove(new Set());
+        function statusFilter(w: SharedChannelWorkspace) {
+            return w.status !== 'pending';
         }
-    }, []);
+        const originalWorkspaces = workspaces.filter(statusFilter);
+        setWorkspaces(originalWorkspaces);
+        if (value) {
+            setToRemove(new Set());
+        } else {
+            setToRemove(new Set(originalWorkspaces.map((w) => w.remote_id)));
+        }
+    }, [workspaces]);
 
     const displayWorkspaces = useMemo(
         () => workspaces.filter((w) => !toRemove.has(w.remote_id)),

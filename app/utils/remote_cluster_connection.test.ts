@@ -51,7 +51,7 @@ describe('remote_cluster_connection', () => {
         it('should return true when last_ping_at is within the last 5 minutes', () => {
             const now = 1000000000000;
             jest.setSystemTime(now);
-            const lastPingAt = now - (CONNECTED_PING_THRESHOLD_MS + 1000);
+            const lastPingAt = (now - CONNECTED_PING_THRESHOLD_MS) + 1000;
             expect(isRemoteClusterConnected({site_url: 'https://x.com', last_ping_at: lastPingAt})).toBe(true);
         });
 
