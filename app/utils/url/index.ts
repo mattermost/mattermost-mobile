@@ -1,6 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-// ci-cache-test: JS-only change — should hit binary cache, not trigger rebuild
 
 import GenericClient from '@mattermost/react-native-network-client';
 import {Linking} from 'react-native';
