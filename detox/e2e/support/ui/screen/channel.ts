@@ -17,7 +17,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isIos, longPressWithScrollRetry, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ChannelScreen {
@@ -208,15 +208,13 @@ class ChannelScreen {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // Scroll to dismiss keyboard and clear any UITransitionView backdrop
-        // (the same pattern used in thread.ts).
-        const flatList = this.postList.getFlatList();
-        await flatList.scroll(100, 'down', NaN, 0.5);
-        await wait(timeouts.ONE_SEC);
-
-        // # Open post options
-        await postListPostItem.longPress(timeouts.TWO_SEC);
-        await PostOptionsScreen.toBeVisible();
+        // Retry longPress with scroll: keyboard dismiss animation can leave the gesture
+        // responder temporarily unresponsive after posting a message.
+        await longPressWithScrollRetry(
+            postListPostItem,
+            this.postList.getFlatList(),
+            PostOptionsScreen.postOptionsScreen,
+        );
         await wait(timeouts.TWO_SEC);
     };
 

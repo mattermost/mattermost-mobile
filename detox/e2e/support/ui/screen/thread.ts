@@ -11,7 +11,7 @@ import {
     SendButton,
 } from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 class ThreadScreen {
@@ -104,14 +104,13 @@ class ThreadScreen {
         // Poll for the post to become visible without waiting for idle bridge
         await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
-        // Dismiss keyboard by tapping on the post list (needed after posting a message)
-        const flatList = this.postList.getFlatList();
-        await flatList.scroll(100, 'down', NaN, 0.5);
-        await wait(timeouts.ONE_SEC);
-
-        // # Open post options
-        await postListPostItem.longPress(timeouts.TWO_SEC);
-        await PostOptionsScreen.toBeVisible();
+        // Retry longPress with scroll: keyboard dismiss animation can leave the gesture
+        // responder temporarily unresponsive after posting a message.
+        await longPressWithScrollRetry(
+            postListPostItem,
+            this.postList.getFlatList(),
+            PostOptionsScreen.postOptionsScreen,
+        );
         await wait(timeouts.TWO_SEC);
     };
 
