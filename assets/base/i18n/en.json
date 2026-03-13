@@ -312,7 +312,7 @@
   "channel_share.cancel": "Cancel",
   "channel_share.connected_workspaces": "Connected workspaces",
   "channel_share.error_title": "Error",
-  "channel_share.load_error": "Failed to load. Please try again.",
+  "channel_share.fetch_error_title": "Failed to load remotes or connections",
   "channel_share.no_remotes_warning": "No connected workspaces are available. Contact your system admin to add one.",
   "channel_share.no_workspaces_sharing_this_channel": "No workspaces sharing this channel yet.",
   "channel_share.remove": "Remove",
