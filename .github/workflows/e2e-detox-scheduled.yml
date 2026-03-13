@@ -42,12 +42,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Compute iOS build cache key
+        id: ios-cache-key
+        run: echo "hash=${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}" >> $GITHUB_OUTPUT
+
       - name: Restore iOS simulator build cache
         id: ios-build-cache
         uses: actions/cache/restore@v4
         with:
           path: Mattermost-simulator-x86_64.app.zip
-          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ steps.ios-cache-key.outputs.hash }}
 
       - name: Restore Xcode build intermediates
         id: xcode-intermediates-cache
@@ -57,7 +61,7 @@ jobs:
           path: |
             ios/Build/Products
             !ios/Build/Products/Release-iphonesimulator/Mattermost.app
-          key: ios-intermediates-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: ios-intermediates-${{ runner.os }}-${{ runner.arch }}-${{ steps.ios-cache-key.outputs.hash }}
           restore-keys: |
             ios-intermediates-${{ runner.os }}-${{ runner.arch }}-
 
@@ -83,7 +87,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: Mattermost-simulator-x86_64.app.zip
-          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: ios-sim-${{ runner.os }}-${{ runner.arch }}-${{ steps.ios-cache-key.outputs.hash }}
 
       - name: Save Xcode build intermediates
         if: steps.ios-build-cache.outputs.cache-hit != 'true'
@@ -92,7 +96,7 @@ jobs:
           path: |
             ios/Build/Products
             !ios/Build/Products/Release-iphonesimulator/Mattermost.app
-          key: ios-intermediates-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: ios-intermediates-${{ runner.os }}-${{ runner.arch }}-${{ steps.ios-cache-key.outputs.hash }}
 
       - name: Upload iOS Simulator Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -112,12 +116,16 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      - name: Compute Android build cache key
+        id: android-cache-key
+        run: echo "hash=${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}" >> $GITHUB_OUTPUT
+
       - name: Restore Android APK build cache
         id: android-build-cache
         uses: actions/cache/restore@v4
         with:
           path: android/app/build/outputs/apk/
-          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: android-apk-${{ runner.os }}-${{ steps.android-cache-key.outputs.hash }}
 
       - name: Prune Docker to free up space
         if: steps.android-build-cache.outputs.cache-hit != 'true'
@@ -159,7 +167,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ~/.gradle/build-cache
-          key: android-gradle-build-cache-${{ runner.os }}-${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: android-gradle-build-cache-${{ runner.os }}-${{ steps.android-cache-key.outputs.hash }}
           restore-keys: |
             android-gradle-build-cache-${{ runner.os }}-
 
@@ -188,14 +196,14 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: android/app/build/outputs/apk/
-          key: android-apk-${{ runner.os }}-${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: android-apk-${{ runner.os }}-${{ steps.android-cache-key.outputs.hash }}
 
       - name: Save Gradle build cache
         if: steps.android-build-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: ~/.gradle/build-cache
-          key: android-gradle-build-cache-${{ runner.os }}-${{ hashFiles('android/**', 'libraries/**', 'package-lock.json', 'patches/**') }}
+          key: android-gradle-build-cache-${{ runner.os }}-${{ steps.android-cache-key.outputs.hash }}
 
       - name: Upload Android Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
