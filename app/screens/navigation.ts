@@ -26,7 +26,6 @@ import type {LaunchProps} from '@typings/launch';
 import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
 import type {ComponentProps} from 'react';
 import type {IntlShape} from 'react-intl';
-import type {Asset} from 'react-native-image-picker';
 
 const alpha = {
     from: 0,
@@ -921,9 +920,10 @@ export function openAttachmentOptions(
     intl: IntlShape,
     theme: Theme,
     props: {
-        onUploadFiles: (files: Asset[]) => void;
+        onUploadFiles: (files: ExtractedFileInfo[]) => void;
         maxFilesReached: boolean;
         canUploadFiles: boolean;
+        showAttachLogs?: boolean;
         testID?: string;
         fileCount?: number;
         maxFileCount?: number;

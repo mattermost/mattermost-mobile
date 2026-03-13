@@ -1,7 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import TurboLogger from '@mattermost/react-native-turbo-log';
+import RNUtils from '@mattermost/rnutils';
+import {getInfoAsync} from 'expo-file-system';
+import React, {useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, View} from 'react-native';
 import {type CameraOptions} from 'react-native-image-picker';
@@ -13,9 +16,11 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet} from '@screens/navigation';
-import {fileMaxWarning, uploadDisabledWarning} from '@utils/file';
+import {fileMaxWarning, pathWithPrefix, uploadDisabledWarning} from '@utils/file';
 import PickerUtil from '@utils/file/file_picker';
+import {generateId} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {logError} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -38,6 +43,7 @@ type Props = {
     fileCount?: number;
     maxFilesReached?: boolean;
     canUploadFiles?: boolean;
+    showAttachLogs?: boolean;
     testID?: string;
 }
 
@@ -49,12 +55,14 @@ const AttachmentOptions: React.FC<Props> = ({
     fileCount = 0,
     maxFilesReached = false,
     canUploadFiles = true,
+    showAttachLogs = false,
     testID,
 }) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
     const intl = useIntl();
     const styles = getStyleSheet(theme);
+    const attachingLogsRef = useRef(false);
 
     const picker = useMemo(() => new PickerUtil(intl, onUploadFiles), [intl, onUploadFiles]);
 
@@ -130,6 +138,54 @@ const AttachmentOptions: React.FC<Props> = ({
         picker.attachFileFromFiles(undefined, true);
     };
 
+    const onAttachLogs = async () => {
+        if (attachingLogsRef.current) {
+            return;
+        }
+        attachingLogsRef.current = true;
+        try {
+            await dismissBottomSheet(Screens.ATTACHMENT_OPTIONS);
+            if (!checkCanUpload() || checkMaxFiles()) {
+                return;
+            }
+            const logPaths = await TurboLogger.getLogPaths();
+            if (!logPaths.length) {
+                Alert.alert(
+                    intl.formatMessage({id: 'mobile.link.error.title', defaultMessage: 'Error'}),
+                    intl.formatMessage({id: 'screen.report_problem.logs.no_logs', defaultMessage: 'No log files available'}),
+                );
+                return;
+            }
+
+            const zipFilePath = await RNUtils.createZipFile(logPaths);
+            if (!zipFilePath) {
+                throw new Error('createZipFile returned empty path');
+            }
+            const zipUri = pathWithPrefix('file://', zipFilePath);
+            const fileInfoResult = await getInfoAsync(zipUri, {size: true});
+            if (!fileInfoResult.exists) {
+                throw new Error('Zip file does not exist after creation');
+            }
+            const fileInfo: ExtractedFileInfo = {
+                clientId: generateId(),
+                name: `app-logs-${Date.now()}.zip`,
+                mime_type: 'application/zip',
+                extension: 'zip',
+                size: fileInfoResult.size,
+                localPath: zipUri,
+            };
+            onUploadFiles([fileInfo]);
+        } catch (error) {
+            logError('[AttachmentOptions.onAttachLogs]', error);
+            Alert.alert(
+                intl.formatMessage({id: 'mobile.link.error.title', defaultMessage: 'Error'}),
+                intl.formatMessage({id: 'mobile.file_upload.attach_logs_failed', defaultMessage: 'Failed to attach app logs'}),
+            );
+        } finally {
+            attachingLogsRef.current = false;
+        }
+    };
+
     const renderContent = () => {
         return (
             <View>
@@ -164,14 +220,26 @@ const AttachmentOptions: React.FC<Props> = ({
                     testID='file_attachment.attach_file'
                     text={intl.formatMessage({id: 'mobile.file_upload.browse', defaultMessage: 'Attach a file'})}
                 />
+                {showAttachLogs && (
+                    <SlideUpPanelItem
+                        leftIcon='file-text-outline'
+                        onPress={onAttachLogs}
+                        testID='file_attachment.attach_logs'
+                        text={intl.formatMessage({
+                            id: 'mobile.file_upload.attach_logs',
+                            defaultMessage: 'Attach app logs',
+                        })}
+                    />
+                )}
             </View>
         );
     };
 
     const snapPoints = useMemo(() => {
-        const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(4, ITEM_HEIGHT);
+        const itemCount = showAttachLogs ? 5 : 4;
+        const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(itemCount, ITEM_HEIGHT);
         return [1, componentHeight];
-    }, []);
+    }, [showAttachLogs]);
 
     return (
         <BottomSheet
