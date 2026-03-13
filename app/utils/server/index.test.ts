@@ -135,6 +135,30 @@ describe('loginOptions', () => {
             numberSSOs: 5,
         });
     });
+
+    it('should only count enabled SSOs in enabledSSOs and numberSSOs', () => {
+        const config = {
+            EnableSaml: 'false',
+            EnableSignUpWithGitLab: 'true',
+            EnableSignUpWithGoogle: 'false',
+            EnableSignUpWithOffice365: 'false',
+            EnableSignUpWithOpenId: 'false',
+            EnableLdap: 'false',
+            EnableSignInWithEmail: 'false',
+            EnableSignInWithUsername: 'false',
+            Version: '7.6.0',
+        } as ClientConfig;
+        const license = {
+            IsLicensed: 'false',
+        } as ClientLicense;
+
+        (isMinimumServerVersion as jest.Mock).mockReturnValue(true);
+        const result = loginOptions(config, license);
+
+        expect(result.enabledSSOs).toEqual([Sso.GITLAB]);
+        expect(result.numberSSOs).toBe(1);
+        expect(result.hasLoginForm).toBe(false);
+    });
 });
 
 describe('loginToServer', () => {
@@ -166,14 +190,12 @@ describe('loginToServer', () => {
         expect(showModal).toHaveBeenCalledWith(Screens.LOGIN, '', expect.any(Object), expect.any(Object));
     });
 
-    /* Commented out for now as the test is failing potentially due to incorrect logic in the function
-
     it('should call showModal with SSO screen if redirectSSO is true', async () => {
         const configWithSingleSSO = {...config, EnableSignInWithEmail: 'false', EnableSignInWithUsername: 'false'};
         await loginToServer(theme, serverUrl, displayName, configWithSingleSSO, license);
 
         expect(showModal).toHaveBeenCalledWith(Screens.SSO, '', expect.any(Object), expect.any(Object));
-    });*/
+    });
 });
 
 describe('editServer', () => {

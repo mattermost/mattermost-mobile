@@ -81,7 +81,7 @@ export function loginOptions(config: ClientConfig, license: ClientLicense) {
         [Sso.OFFICE365]: {enabled: o365Enabled},
         [Sso.OPENID]: {enabled: openIdEnabled, text: config.OpenIdButtonText},
     };
-    const enabledSSOs = Object.keys(ssoOptions).filter((key) => ssoOptions[key]);
+    const enabledSSOs = Object.keys(ssoOptions).filter((key) => ssoOptions[key].enabled);
     const numberSSOs = enabledSSOs.length;
 
     return {
