@@ -18,12 +18,10 @@ import Loading from '@components/loading';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
-import {getChannelById} from '@queries/servers/channel';
 import {bottomSheet, buildNavigationButton, dismissBottomSheet, popTopScreen, setButtons} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
 import {mergeNavigationOptions} from '@utils/navigation';
@@ -212,39 +210,26 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
             const toRemoveList = workspaces.filter((w) => toRemove.has(w.remote_id));
             const workspaceNames = toRemoveList.map((w) => w.display_name || w.name);
             const count = toRemoveList.length;
-            const run = async () => {
-                let channelName = '';
-                if (serverUrl) {
-                    try {
-                        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-                        const channel = await getChannelById(database, channelId);
-                        channelName = channel?.displayName ?? '';
-                    } catch {
-                        channelName = '';
-                    }
-                }
-                const workspaceList = count === 1 ? workspaceNames[0]! : intl.formatList(workspaceNames);
-                const connectionPhrase = intl.formatMessage(messages.unshareConfirmConnectionPhrase, {count});
-                const title = intl.formatMessage(messages.unshareConfirmTitle, {connectionPhrase});
-                const message = intl.formatMessage(messages.unshareConfirmMessage, {
-                    channelName,
-                    workspaceList,
-                    count,
-                });
-                Alert.alert(
-                    title,
-                    message,
-                    [
-                        {text: intl.formatMessage(messages.cancel)},
-                        {text: intl.formatMessage(messages.save), onPress: performSave},
-                    ],
-                );
-            };
-            run();
+            const workspaceList = count === 1 ? workspaceNames[0]! : intl.formatList(workspaceNames);
+            const connectionPhrase = intl.formatMessage(messages.unshareConfirmConnectionPhrase, {count});
+            const title = intl.formatMessage(messages.unshareConfirmTitle, {connectionPhrase});
+            const message = intl.formatMessage(messages.unshareConfirmMessage, {
+                channelName: displayName,
+                workspaceList,
+                count,
+            });
+            Alert.alert(
+                title,
+                message,
+                [
+                    {text: intl.formatMessage(messages.cancel)},
+                    {text: intl.formatMessage(messages.save), onPress: performSave},
+                ],
+            );
             return;
         }
         performSave();
-    }, [canSave, channelId, intl, performSave, serverUrl, toRemove, workspaces]);
+    }, [canSave, displayName, intl, performSave, toRemove, workspaces]);
 
     useNavButtonPressed('save-channel-share', componentId, save, [save]);
     useAndroidHardwareBackHandler(componentId, onClose);
