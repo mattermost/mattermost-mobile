@@ -106,7 +106,7 @@ class ThreadScreen {
 
         // Dismiss keyboard by tapping on the post list (needed after posting a message)
         const flatList = this.postList.getFlatList();
-        await flatList.scroll(100, 'down');
+        await flatList.scroll(100, 'down', NaN, 0.5);
         await wait(timeouts.ONE_SEC);
 
         // # Open post options
