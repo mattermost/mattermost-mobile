@@ -156,9 +156,9 @@ jobs:
         with:
           path: |
             ~/Library/Caches/Homebrew
-            /usr/local/Cellar/applesimutils
-          key: ${{ runner.os }}-brew-applesimutils-v1
-          restore-keys: ${{ runner.os }}-brew-applesimutils-
+            /opt/homebrew/Cellar/applesimutils
+          key: ${{ runner.os }}-${{ runner.arch }}-brew-applesimutils-v1
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-brew-applesimutils-
 
       - name: Install Homebrew Dependencies
         run: |
