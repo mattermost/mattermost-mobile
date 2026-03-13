@@ -33,8 +33,8 @@ export interface ClientChannelsMix {
         onlyConfirmed?: boolean;
     }) => Promise<RemoteClusterInfo[]>;
     getChannelSharedRemotes: (channelId: string) => Promise<RemoteClusterInfo[]>;
-    shareChannelWithRemote: (channelId: string, remoteId: string) => Promise<{error?: never} | {error: unknown}>;
-    unshareChannelFromRemote: (channelId: string, remoteId: string) => Promise<{error?: never} | {error: unknown}>;
+    shareChannelWithRemote: (channelId: string, remoteId: string) => Promise<void>;
+    unshareChannelFromRemote: (channelId: string, remoteId: string) => Promise<void>;
     getMyChannels: (teamId: string, includeDeleted?: boolean, lastDeleteAt?: number, groupLabel?: RequestGroupLabel) => Promise<Channel[]>;
     getMyChannelMember: (channelId: string) => Promise<ChannelMembership>;
     getMyChannelMembers: (teamId: string, groupLabel?: RequestGroupLabel) => Promise<ChannelMembership[]>;
