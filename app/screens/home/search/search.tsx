@@ -375,7 +375,10 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
             processedSearchTermRef.current = searchTerm;
             clearInputs();
             setSearchValue(searchTerm);
-            handleSearch(searchTeamId, searchTerm);
+
+            requestAnimationFrame(() => {
+                handleSearch(searchTeamId, searchTerm);
+            });
         }
     }, [handleSearch, clearInputs, searchTeamId, searchTerm]);
 
