@@ -183,7 +183,7 @@ jobs:
       - name: Detox build
         if: steps.android-build-cache.outputs.cache-hit != 'true'
         env:
-          ORG_GRADLE_PROJECT_reactNativeArchitectures: arm64-v8a
+          ORG_GRADLE_PROJECT_reactNativeArchitectures: x86_64
         run: |
           cd detox
           npm install
