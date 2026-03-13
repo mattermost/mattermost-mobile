@@ -291,7 +291,7 @@ Located at `libraries/@mattermost/`:
 - Use `logDebug()` for debug-level information
 - Don't ignore potential errors silently - handle them or add intentional comments
 - Don't log sensitive information
-- **Add function/class prefix to logs**: e.g., `logError('[ClassName.methodName]', error)` to make debugging easier
+- **Add function/class prefix to logs**: e.g., `logError('error on functionName', getFullErrorMessage(error))` or `logError('error on ClassName.methodName', error)` to make debugging easier
 
 ### State Management
 - Always handle errors from database operations

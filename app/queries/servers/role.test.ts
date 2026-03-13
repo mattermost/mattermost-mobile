@@ -15,6 +15,7 @@ import {
     observeCanManageChannelMembers,
     observeCanManageChannelSettings,
     observeCanManageChannelAutotranslations,
+    observeCanManageSharedChannel,
 } from './role';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -643,6 +644,123 @@ describe('Role Queries', () => {
             result.subscribe({next: subscriptionNext});
 
             expect(subscriptionNext).toHaveBeenCalledWith(true);
+        });
+    });
+
+    describe('observeCanManageSharedChannel', () => {
+        it('should emit true when channel exists and user has MANAGE_SHARED_CHANNELS', async () => {
+            const mockUser = TestHelper.fakeUserModel({
+                id: 'user1',
+                roles: 'channel_admin',
+            });
+
+            await Promise.all([
+                operator.handleChannel({
+                    channels: [TestHelper.fakeChannel({
+                        id: 'channel1',
+                        type: General.OPEN_CHANNEL,
+                        delete_at: 0,
+                    })],
+                    prepareRecordsOnly: false,
+                }),
+                operator.handleRole({
+                    roles: [{
+                        id: 'channel_admin',
+                        name: 'channel_admin',
+                        permissions: [Permissions.MANAGE_SHARED_CHANNELS],
+                    }],
+                    prepareRecordsOnly: false,
+                }),
+            ]);
+
+            const subscriptionNext = jest.fn();
+            const result = observeCanManageSharedChannel(database, 'channel1', mockUser);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(true);
+        });
+
+        it('should emit false when channel is not found', async () => {
+            const mockUser = TestHelper.fakeUserModel({id: 'user1', roles: 'system_user'});
+
+            await operator.handleRole({
+                roles: [{
+                    id: 'system_user',
+                    name: 'system_user',
+                    permissions: [Permissions.MANAGE_SHARED_CHANNELS],
+                }],
+                prepareRecordsOnly: false,
+            });
+
+            const subscriptionNext = jest.fn();
+            const result = observeCanManageSharedChannel(database, 'nonexistent', mockUser);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit false when channel is deleted', async () => {
+            const mockUser = TestHelper.fakeUserModel({
+                id: 'user1',
+                roles: 'channel_admin',
+            });
+
+            await Promise.all([
+                operator.handleChannel({
+                    channels: [TestHelper.fakeChannel({
+                        id: 'channel1',
+                        type: General.OPEN_CHANNEL,
+                        delete_at: 123,
+                    })],
+                    prepareRecordsOnly: false,
+                }),
+                operator.handleRole({
+                    roles: [{
+                        id: 'channel_admin',
+                        name: 'channel_admin',
+                        permissions: [Permissions.MANAGE_SHARED_CHANNELS],
+                    }],
+                    prepareRecordsOnly: false,
+                }),
+            ]);
+
+            const subscriptionNext = jest.fn();
+            const result = observeCanManageSharedChannel(database, 'channel1', mockUser);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit false when channel is DM', async () => {
+            const mockUser = TestHelper.fakeUserModel({
+                id: 'user1',
+                roles: 'system_user',
+            });
+
+            await Promise.all([
+                operator.handleChannel({
+                    channels: [TestHelper.fakeChannel({
+                        id: 'channel1',
+                        type: General.DM_CHANNEL,
+                        delete_at: 0,
+                    })],
+                    prepareRecordsOnly: false,
+                }),
+                operator.handleRole({
+                    roles: [{
+                        id: 'system_user',
+                        name: 'system_user',
+                        permissions: [Permissions.MANAGE_SHARED_CHANNELS],
+                    }],
+                    prepareRecordsOnly: false,
+                }),
+            ]);
+
+            const subscriptionNext = jest.fn();
+            const result = observeCanManageSharedChannel(database, 'channel1', mockUser);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
         });
     });
 });

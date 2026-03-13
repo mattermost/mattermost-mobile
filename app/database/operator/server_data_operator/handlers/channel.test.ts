@@ -66,6 +66,50 @@ describe('*** Operator: Channel Handlers tests ***', () => {
         }, 'handleChannel');
     });
 
+    it('=> HandleChannel: should include existing channel in updates when only shared differs', async () => {
+        const channelId = 'ch1';
+        const baseChannel: Channel = {
+            create_at: 1600185541285,
+            creator_id: '',
+            delete_at: 0,
+            display_name: 'Channel',
+            extra_update_at: 0,
+            group_constrained: null,
+            header: '',
+            id: channelId,
+            last_post_at: 1617311494451,
+            name: 'channel-name',
+            purpose: '',
+            scheme_id: null,
+            shared: false,
+            team_id: 'team1',
+            total_msg_count: 0,
+            type: 'O',
+            update_at: 100,
+        };
+
+        await operator.handleChannel({
+            channels: [baseChannel],
+            prepareRecordsOnly: false,
+        });
+
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+        spyOnHandleRecords.mockClear();
+
+        const updatedChannel: Channel = {...baseChannel, shared: true};
+
+        await operator.handleChannel({
+            channels: [updatedChannel],
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        const call = spyOnHandleRecords.mock.calls[0][0];
+        expect(call.createOrUpdateRawValues).toHaveLength(1);
+        expect(call.createOrUpdateRawValues[0].id).toBe(channelId);
+        expect(call.createOrUpdateRawValues[0].shared).toBe(true);
+    });
+
     it('=> HandleMyChannelSettings: should write to the MY_CHANNEL_SETTINGS table', async () => {
         expect.assertions(2);
 
