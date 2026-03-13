@@ -141,3 +141,16 @@ export function observeCanManageChannelAutotranslations(database: Database, chan
         distinctUntilChanged(),
     );
 }
+
+export function observeCanManageSharedChannel(database: Database, channelId: string, user: UserModel) {
+    const channel = observeChannel(database, channelId);
+    return channel.pipe(
+        switchMap((c) => {
+            if (!c || c.deleteAt !== 0 || isDMorGM(c)) {
+                return of$(false);
+            }
+            return observePermissionForChannel(database, c, user, Permissions.MANAGE_SHARED_CHANNELS, false);
+        }),
+        distinctUntilChanged(),
+    );
+}

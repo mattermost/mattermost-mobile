@@ -163,4 +163,7 @@ export default {
     // Autotranslations
     MANAGE_PUBLIC_CHANNEL_AUTO_TRANSLATION: 'manage_public_channel_auto_translation',
     MANAGE_PRIVATE_CHANNEL_AUTO_TRANSLATION: 'manage_private_channel_auto_translation',
+
+    // Shared channels (connected workspaces)
+    MANAGE_SHARED_CHANNELS: 'manage_shared_channels',
 };

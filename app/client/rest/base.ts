@@ -107,6 +107,18 @@ export default class ClientBase extends ClientTracking {
         return `${this.urlVersion}/sharedchannels`;
     }
 
+    getRemoteClustersRoute() {
+        return `${this.urlVersion}/remotecluster`;
+    }
+
+    getChannelRemotesRoute(channelId: string) {
+        return `${this.getSharedChannelsRoute()}/${channelId}/remotes`;
+    }
+
+    getRemoteClusterChannelRoute(remoteId: string, channelId: string) {
+        return `${this.getRemoteClustersRoute()}/${remoteId}/channels/${channelId}`;
+    }
+
     getChannelMembersRoute(channelId: string) {
         return `${this.getChannelRoute(channelId)}/members`;
     }
