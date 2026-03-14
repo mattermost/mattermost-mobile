@@ -17,6 +17,7 @@ import {useTheme} from '@context/theme';
 import {safeParseJSON} from '@utils/helpers';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import CitationsList from '../citations_list';
 import ControlsBar from '../controls_bar';
@@ -40,8 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         messageText: {
             color: theme.centerChannelColor,
-            fontSize: 15,
-            lineHeight: 20,
+            ...typography('Body', 200),
         },
         precontentContainer: {
             flexDirection: 'row',
@@ -50,9 +50,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         precontentText: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 14,
             fontStyle: 'italic',
             marginRight: 8,
+            ...typography('Body', 100),
         },
     };
 });

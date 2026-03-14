@@ -14,6 +14,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import ToolCard from '../tool_card';
 
@@ -36,6 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             marginTop: 8,
             marginBottom: 12,
+            marginLeft: -15,
             gap: 8,
         },
         statusBar: {
@@ -48,8 +50,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 4,
         },
         statusText: {
-            fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75),
         },
     };
 });

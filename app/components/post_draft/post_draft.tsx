@@ -30,6 +30,7 @@ type Props = {
     isChannelScreen: boolean;
     canShowPostPriority?: boolean;
     location: AvailableScreens;
+    onPostCreated?: (postId: string) => void;
 }
 
 function PostDraft({
@@ -47,6 +48,7 @@ function PostDraft({
     isChannelScreen,
     canShowPostPriority,
     location,
+    onPostCreated,
 }: Props) {
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
@@ -100,6 +102,7 @@ function PostDraft({
             updateValue={setValue}
             value={value}
             setIsFocused={setIsFocused}
+            onPostCreated={onPostCreated}
             location={location}
         />
     );

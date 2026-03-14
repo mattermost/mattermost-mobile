@@ -30,6 +30,7 @@ type Props = {
     updateValue: React.Dispatch<React.SetStateAction<string>>;
     value: string;
     setIsFocused: (isFocused: boolean) => void;
+    onPostCreated?: (postId: string) => void;
     location?: AvailableScreens;
 }
 
@@ -51,6 +52,7 @@ export default function DraftHandler(props: Props) {
         updateValue,
         value,
         setIsFocused,
+        onPostCreated,
         location,
     } = props;
 
@@ -118,11 +120,7 @@ export default function DraftHandler(props: Props) {
                 uploadErrorHandlers.current[file.clientId!] = DraftEditPostUploadManager.registerErrorHandler(file.clientId!, newUploadError);
             }
         }
-
-    // We don't care about `newUploadError` changes as long as
-    // it is up to date when the effect runs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [files]);
+    }, [files, newUploadError]);
 
     return (
         <SendHandler
@@ -142,6 +140,7 @@ export default function DraftHandler(props: Props) {
             updatePostInputTop={updatePostInputTop}
             updateValue={updateValue}
             setIsFocused={setIsFocused}
+            onPostCreated={onPostCreated}
             location={location}
         />
     );

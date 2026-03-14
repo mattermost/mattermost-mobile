@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {ToolCall} from '@agents/types';
+import type {AIBotsResponse, AIThread, ToolCall} from '@agents/types';
 import type {Agent, AgentsResponse, AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, RewriteRequest, RewriteResponse} from '@agents/types/api';
 
 export type {Agent};
 
 export interface ClientAgentsMix {
     getAgentsRoute: () => string;
+    getAIBots: () => Promise<AIBotsResponse>;
+    getAIThreads: () => Promise<AIThread[]>;
     getAgents: () => Promise<Agent[]>;
     stopGeneration: (postId: string) => Promise<void>;
     regenerateResponse: (postId: string) => Promise<void>;
@@ -30,6 +32,20 @@ export interface ClientAgentsMix {
 const ClientAgents = (superclass: any) => class extends superclass {
     getAgentsRoute = () => {
         return '/plugins/mattermost-ai';
+    };
+
+    getAIBots = async () => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/ai_bots`,
+            {method: 'get'},
+        );
+    };
+
+    getAIThreads = async () => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/ai_threads`,
+            {method: 'get'},
+        );
     };
 
     getAgents = async (): Promise<Agent[]> => {

@@ -53,6 +53,7 @@ type Props = {
     channelDisplayName?: string;
     isFromDraftView?: boolean;
     draftReceiverUserName?: string;
+    onPostCreated?: (postId: string) => void;
     location?: AvailableScreens;
 }
 
@@ -95,6 +96,7 @@ export default function SendHandler({
     isFromDraftView,
     draftType,
     postId,
+    onPostCreated,
     postBoRConfig,
     location,
 }: Props) {
@@ -123,6 +125,7 @@ export default function SendHandler({
         channelType,
         postPriority,
         clearDraft,
+        onPostCreated,
         postBoRConfig,
     });
 

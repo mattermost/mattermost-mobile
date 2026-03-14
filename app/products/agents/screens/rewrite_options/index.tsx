@@ -20,6 +20,7 @@ import {dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type {Agent, RewriteAction} from '@agents/types';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -122,12 +123,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     customPromptInput: {
         flex: 1,
-        fontSize: 16,
-        lineHeight: 24,
         color: theme.centerChannelColor,
-        padding: 0,
-        margin: 0,
         includeFontPadding: false,
+        ...typography('Body', 200),
         textAlignVertical: 'center',
         verticalAlign: 'middle',
         justifyContent: 'center',
