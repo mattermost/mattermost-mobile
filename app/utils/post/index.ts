@@ -41,11 +41,25 @@ export function areConsecutivePosts(post: PostModel, previousPost: PostModel, us
         }
     }
 
+    if (consecutive) {
+        const sameAiGeneratedStatus = post.props?.ai_generated_by === previousPost.props?.ai_generated_by;
+        if (!sameAiGeneratedStatus) {
+            consecutive = false;
+        }
+    }
+
     return consecutive;
 }
 
 export function isFromWebhook(post: PostModel | Post): boolean {
     return post.props?.from_webhook === 'true';
+}
+
+export function hasAiGeneratedMetadata(post: PostModel | Post): boolean {
+    return typeof post.props?.ai_generated_by === 'string' &&
+        typeof post.props?.ai_generated_by_username === 'string' &&
+        post.props.ai_generated_by.length > 0 &&
+        post.props.ai_generated_by_username.length > 0;
 }
 
 export function isEdited(post: PostModel): boolean {

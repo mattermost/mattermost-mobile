@@ -4,9 +4,10 @@
 import React from 'react';
 import {defineMessage} from 'react-intl';
 
-import Tag, {BotTag, GuestTag} from '@components/tag';
+import Tag, {AiGeneratedTag, BotTag, GuestTag} from '@components/tag';
 
 type HeaderTagProps = {
+    isAiGenerated?: boolean;
     isAutomation?: boolean;
     isAutoResponder?: boolean;
     showGuestTag?: boolean;
@@ -15,7 +16,7 @@ type HeaderTagProps = {
 const autoResponderMessage = defineMessage({id: 'post_info.auto_responder', defaultMessage: 'Automatic Reply'});
 
 const HeaderTag = ({
-    isAutomation, isAutoResponder, showGuestTag,
+    isAiGenerated, isAutomation, isAutoResponder, showGuestTag,
 }: HeaderTagProps) => {
     if (isAutomation) {
         return (
@@ -32,6 +33,10 @@ const HeaderTag = ({
                 testID='post_header.auto_responder.tag'
                 uppercase={true}
             />
+        );
+    } else if (isAiGenerated) {
+        return (
+            <AiGeneratedTag testID='post_header.ai_generated.tag'/>
         );
     }
 
