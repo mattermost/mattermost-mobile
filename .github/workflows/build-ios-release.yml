@@ -12,6 +12,7 @@ env:
   NODE_VERSION: 22.14.0
   TERM: xterm
   INTUNE_ENABLED: 'true'
+  E2EE_ENABLED: 'false'
 
 jobs:
   test:
@@ -44,6 +45,9 @@ jobs:
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+          e2ee-enabled: ${{ env.E2EE_ENABLED }}
+        env:
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
       - name: ci/build-and-deploy-ios-release
         env:
@@ -108,6 +112,9 @@ jobs:
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+          e2ee-enabled: ${{ env.E2EE_ENABLED }}
+        env:
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
       - name: ci/build-ios-simulator
         env:
