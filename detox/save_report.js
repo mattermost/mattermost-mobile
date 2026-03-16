@@ -28,7 +28,7 @@
  *   For sending hooks to Mattermost channels
  *      - FULL_REPORT, WEBHOOK_URL and TEST_CYCLE_LINK_PREFIX
  *   Test type
- *      - TYPE=[type], e.g. "MASTER", "PR", "RELEASE", "GEKIDOU"
+ *      - TYPE=[type], e.g. "PR", "RELEASE", "NIGHTLY"
  */
 
 const fs = require('fs');
