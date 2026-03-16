@@ -10,7 +10,7 @@ import {
 } from '@actions/remote/channel';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {act, fireEvent, renderWithIntlAndTheme, waitFor} from '@test/intl-test-helper';
-import {getLastCallForButton} from '@test/mock_helpers';
+import {getLastCall, getLastCallForButton} from '@test/mock_helpers';
 import TestHelper from '@test/test_helper';
 import {mergeNavigationOptions} from '@utils/navigation';
 
@@ -28,10 +28,11 @@ jest.mock('@actions/remote/channel', () => ({
     shareChannelWithRemote: jest.fn(),
     unshareChannelFromRemote: jest.fn(),
 }));
+const mockSetButtons = jest.fn();
 jest.mock('@screens/navigation', () => ({
     mergeNavigationOptions: jest.fn(),
     popTopScreen: jest.fn(),
-    setButtons: jest.fn(),
+    setButtons: (...args: unknown[]) => mockSetButtons(...args),
     bottomSheet: jest.fn(),
     dismissBottomSheet: jest.fn(),
     buildNavigationButton: jest.fn(() => ({enabled: true, showAsAction: 'always', color: '#000'})),
@@ -326,10 +327,10 @@ describe('ChannelShare', () => {
             expect(getByTestId('channel_share.add_workspace.button')).toBeTruthy();
         });
 
+        const {bottomSheet} = require('@screens/navigation');
         act(() => {
             fireEvent.press(getByTestId('channel_share.add_workspace.button'));
         });
-        const {bottomSheet} = require('@screens/navigation');
         const renderContent = jest.mocked(bottomSheet).mock.calls[0][0].renderContent;
         const sheetContent = renderContent();
         const {getByTestId: getByTestIdSheet} = renderWithIntlAndTheme(sheetContent);
@@ -343,9 +344,17 @@ describe('ChannelShare', () => {
             saveCallback();
         });
 
+        jest.mocked(bottomSheet).mockClear();
+
         await waitFor(() => {
-            expect(getByTestId('channel_share.toggle').props.disabled).toBe(true);
-            expect(getByTestId('channel_share.add_workspace.button').props.disabled).toBe(true);
+            const lastSetButtonsCall = getLastCall(mockSetButtons);
+            const rightButton = lastSetButtonsCall[1].rightButtons[0];
+            expect(rightButton.enabled).toBe(false);
         });
+
+        act(() => {
+            fireEvent.press(getByTestId('channel_share.add_workspace.button'));
+        });
+        expect(bottomSheet).toHaveBeenCalledTimes(0);
     });
 });
