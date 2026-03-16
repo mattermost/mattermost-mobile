@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, ScrollView, Text, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -98,8 +98,12 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
     const [toRemove, setToRemove] = useState<Set<string>>(new Set());
     const [remoteClusters, setRemoteClusters] = useState<RemoteClusterInfo[]>([]);
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
     const [fetchError, setFetchError] = useState<string | undefined>();
+
+    // We keep the state for rendering related actions while
+    // using the reference as guardrail for concurrent actions.
+    const [saving, setSaving] = useState(false);
+    const savingRef = useRef(false);
 
     const canSave = workspaces.some((w) => w.status !== 'saved') || toRemove.size > 0;
 
@@ -169,37 +173,43 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
     const onClose = useCallback(() => popTopScreen(componentId), [componentId]);
 
     const performSave = useCallback(async () => {
+        if (savingRef.current) {
+            return;
+        }
+        savingRef.current = true;
         setSaving(true);
-        const removedIds = new Set(toRemove);
-        const pending = workspaces.filter((w) => w.status === 'pending');
-        for (const w of pending) {
-            setWorkspaces((prev) => prev.map(idUpdate('saving', w.remote_id)));
-            // eslint-disable-next-line no-await-in-loop
-            const result = await shareChannelWithRemote(serverUrl, channelId, w.remote_id);
-            if (result.error) {
-                setWorkspaces((prev) => prev.map(idUpdate('pending', w.remote_id)));
-                setSaving(false);
-                Alert.alert(intl.formatMessage(messages.errorTitle), getFullErrorMessage(result.error));
-                return;
+        try {
+            const removedIds = new Set(toRemove);
+            const pending = workspaces.filter((w) => w.status === 'pending');
+            for (const w of pending) {
+                setWorkspaces((prev) => prev.map(idUpdate('saving', w.remote_id)));
+                // eslint-disable-next-line no-await-in-loop
+                const result = await shareChannelWithRemote(serverUrl, channelId, w.remote_id);
+                if (result.error) {
+                    setWorkspaces((prev) => prev.map(idUpdate('pending', w.remote_id)));
+                    Alert.alert(intl.formatMessage(messages.errorTitle), getFullErrorMessage(result.error));
+                    return;
+                }
+                setWorkspaces((prev) => prev.map(idUpdate('saved', w.remote_id)));
             }
-            setWorkspaces((prev) => prev.map(idUpdate('saved', w.remote_id)));
-        }
-        for (const remoteId of removedIds) {
-            // eslint-disable-next-line no-await-in-loop
-            const result = await unshareChannelFromRemote(serverUrl, channelId, remoteId);
-            if (result.error) {
-                setSaving(false);
-                Alert.alert(intl.formatMessage(messages.errorTitle), getFullErrorMessage(result.error));
-                return;
+            for (const remoteId of removedIds) {
+                // eslint-disable-next-line no-await-in-loop
+                const result = await unshareChannelFromRemote(serverUrl, channelId, remoteId);
+                if (result.error) {
+                    Alert.alert(intl.formatMessage(messages.errorTitle), getFullErrorMessage(result.error));
+                    return;
+                }
+                setToRemove((prev) => {
+                    const s = new Set(prev);
+                    s.delete(remoteId);
+                    return s;
+                });
+                setWorkspaces((prev) => prev.filter(notInSet(new Set([remoteId]))));
             }
-            setToRemove((prev) => {
-                const s = new Set(prev);
-                s.delete(remoteId);
-                return s;
-            });
-            setWorkspaces((prev) => prev.filter(notInSet(new Set([remoteId]))));
+        } finally {
+            savingRef.current = false;
+            setSaving(false);
         }
-        setSaving(false);
     }, [channelId, intl, serverUrl, toRemove, workspaces]);
 
     const save = useCallback(() => {
@@ -249,7 +259,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
 
     const addWorkspace = useCallback(
         (remote: RemoteClusterInfo) => {
-            if (saving) {
+            if (savingRef.current) {
                 return;
             }
             if (toRemove.has(remote.remote_id)) {
@@ -271,11 +281,11 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
             setEnabled(true);
             dismissBottomSheet();
         },
-        [saving, toRemove, workspaces],
+        [toRemove, workspaces],
     );
 
     const openAddWorkspaceSheet = useCallback(() => {
-        if (saving) {
+        if (savingRef.current) {
             return;
         }
 
@@ -296,11 +306,11 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
                 />
             ),
         });
-    }, [intl, isTablet, remoteClusters, theme, toRemove, workspaces, addWorkspace, saving]);
+    }, [intl, isTablet, remoteClusters, theme, toRemove, workspaces, addWorkspace]);
 
     const removeWorkspace = useCallback(
         (item: SharedChannelWorkspace) => {
-            if (saving) {
+            if (savingRef.current) {
                 return;
             }
             if (item.status === 'pending') {
@@ -315,11 +325,11 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
             }
             setToRemove((prev) => new Set(prev).add(item.remote_id));
         },
-        [saving, workspaces.length],
+        [workspaces.length],
     );
 
     const onToggle = useCallback((value: boolean) => {
-        if (saving) {
+        if (savingRef.current) {
             return;
         }
         setEnabled(value);
@@ -333,7 +343,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
         } else {
             setToRemove(new Set(originalWorkspaces.map((w) => w.remote_id)));
         }
-    }, [saving, workspaces]);
+    }, [workspaces]);
 
     const displayWorkspaces = useMemo(
         () => workspaces.filter((w) => !toRemove.has(w.remote_id)),
@@ -385,10 +395,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
                     </Text>
                 )}
                 <OptionItem
-                    label={intl.formatMessage({
-                        id: 'channel_settings.share_with_connected_workspaces',
-                        defaultMessage: 'Share with connected workspaces',
-                    })}
+                    label={intl.formatMessage(messages.shareWithConnectedWorkspaces)}
                     description={intl.formatMessage(messages.shareWithConnectedWorkspacesDescription)}
                     type='toggle'
                     selected={enabled && !noRemotes}
@@ -402,10 +409,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
                             name='information-outline'
                         />
                         {' '}
-                        {intl.formatMessage({
-                            id: 'channel_share.no_remotes_warning',
-                            defaultMessage: 'No connected workspaces are available. Contact your system admin to add one.',
-                        })}
+                        {intl.formatMessage(messages.noRemotesWarning)}
                     </Text>
                 )}
                 {enabled && !noRemotes && (

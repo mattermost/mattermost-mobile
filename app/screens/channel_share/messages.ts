@@ -80,9 +80,17 @@ export const messages = defineMessages({
         id: 'channel_share.error_title',
         defaultMessage: 'Error',
     },
+    shareWithConnectedWorkspaces: {
+        id: 'channel_settings.share_with_connected_workspaces',
+        defaultMessage: 'Share with connected workspaces',
+    },
     shareWithConnectedWorkspacesDescription: {
         id: 'channel_share.share_with_connected_workspaces_description',
         defaultMessage: 'Collaborate with trusted organizations in this channel. Connections must be defined by a system admin.',
+    },
+    noRemotesWarning: {
+        id: 'channel_share.no_remotes_warning',
+        defaultMessage: 'No connected workspaces are available. Contact your system admin to add one.',
     },
     fetchErrorTitle: {
         id: 'channel_share.fetch_error_title',
