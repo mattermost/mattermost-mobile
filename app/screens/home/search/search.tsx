@@ -371,15 +371,19 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     }, [unlock, onSnapWithTimeout]);
 
     useEffect(() => {
-        if (searchTerm && searchTerm !== processedSearchTermRef.current) {
-            processedSearchTermRef.current = searchTerm;
-            clearInputs();
-            setSearchValue(searchTerm);
-
-            requestAnimationFrame(() => {
-                handleSearch(searchTeamId, searchTerm);
-            });
+        if (!searchTerm || searchTerm === processedSearchTermRef.current) {
+            return undefined;
         }
+
+        processedSearchTermRef.current = searchTerm;
+        clearInputs();
+        setSearchValue(searchTerm);
+
+        const raf = requestAnimationFrame(() => {
+            handleSearch(searchTeamId, searchTerm);
+        });
+
+        return () => cancelAnimationFrame(raf);
     }, [handleSearch, clearInputs, searchTeamId, searchTerm]);
 
     useDidUpdate(() => {
