@@ -182,6 +182,7 @@ export const apiPatchMe = (baseUrl: string, userData: string): any => {
 /**
  * Patch a user.
  * See https://api.mattermost.com/#operation/PatchUser
+ * Note: UserPatch does not include roles; use apiUpdateUserRoles to change roles.
  * @param {string} baseUrl - the base server URL
  * @param {string} userId - the user ID
  * @param {Object} userData - data to partially update a user
@@ -195,6 +196,29 @@ export const apiPatchUser = async (baseUrl: string, userId: string, userData: an
         );
 
         return {user: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Update a user's roles.
+ * See https://api.mattermost.com/#operation/UpdateUserRoles
+ * Roles must be a space-separated string (e.g. 'system_user system_admin').
+ * Caller must have PermissionManageRoles (e.g. system admin).
+ * @param {string} baseUrl - the base server URL
+ * @param {string} userId - the user ID
+ * @param {string} roles - space-separated role names
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiUpdateUserRoles = async (baseUrl: string, userId: string, roles: string): Promise<any> => {
+    try {
+        const response = await client.put(
+            `${baseUrl}/api/v4/users/${userId}/roles`,
+            {roles},
+        );
+
+        return {status: response.status};
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -248,6 +272,7 @@ export const User = {
     apiPatchMe,
     apiPatchUser,
     apiUpdateUserActiveStatus,
+    apiUpdateUserRoles,
     generateRandomUser,
 };
 

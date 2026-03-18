@@ -404,7 +404,10 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
                     testID='channel_share.toggle'
                 />
                 {noRemotes && (
-                    <Text style={styles.noRemotesWarning}>
+                    <Text
+                        style={styles.noRemotesWarning}
+                        testID='channel_share.no_remotes_warning'
+                    >
                         <CompassIcon
                             name='information-outline'
                         />

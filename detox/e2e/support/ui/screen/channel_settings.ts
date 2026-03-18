@@ -13,18 +13,22 @@ class ChannelSettingsScreen {
         closeButton: 'screen.back.button',
         scrollView: 'channel_settings.scroll_view',
         channelInfoOption: 'channel_settings.channel_info.option',
+        configurationOption: 'channel_settings.configuration.option',
         convertPrivateOption: 'channel_settings.convert_private.option',
         archiveChannelOption: 'channel_settings.archive_channel.option',
         unarchiveChannelOption: 'channel_settings.unarchive_channel.option',
+        shareWithConnectedWorkspacesOption: 'channel_settings.share_with_connected_workspaces.option',
     };
 
     channelSettingsScreen = element(by.id(this.testID.channelSettingsScreen));
     closeButton = element(by.id(this.testID.closeButton));
     scrollView = element(by.id(this.testID.scrollView));
     channelInfoOption = element(by.id(this.testID.channelInfoOption));
+    configurationOption = element(by.id(this.testID.configurationOption));
     convertPrivateOption = element(by.id(this.testID.convertPrivateOption));
     archiveChannelOption = element(by.id(this.testID.archiveChannelOption));
     unarchiveChannelOption = element(by.id(this.testID.unarchiveChannelOption));
+    shareWithConnectedWorkspacesOption = element(by.id(this.testID.shareWithConnectedWorkspacesOption));
 
     toBeVisible = async () => {
         await waitFor(this.channelSettingsScreen).toExist().withTimeout(timeouts.TEN_SEC);
@@ -35,6 +39,11 @@ class ChannelSettingsScreen {
     close = async () => {
         await this.closeButton.tap();
         await expect(this.channelSettingsScreen).not.toBeVisible();
+    };
+
+    openConfiguration = async () => {
+        await waitFor(this.configurationOption).toBeVisible().whileElement(by.id(this.testID.scrollView)).scroll(50, 'down');
+        await this.configurationOption.tap({x: 1, y: 1});
     };
 
     archiveChannel = async (alertArchiveChannelTitle: Detox.NativeElement, {confirm = true} = {}) => {
