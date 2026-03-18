@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
+import {act} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 import {View, Text} from 'react-native';
 
@@ -170,5 +171,39 @@ describe('screens/report_a_problem/index', () => {
         expect(getByTestId('isLicensed')).toHaveTextContent('false');
         expect(getByTestId('attachLogsEnabled')).toHaveTextContent('false');
         expect(getByTestId('currentUserId')).toHaveTextContent('user2');
+    });
+
+    it('should react to attachLogsEnabled preference value changes', async () => {
+        await operator.handlePreferences({
+            preferences: [{
+                user_id: 'user1',
+                category: 'advanced_settings',
+                name: 'attach_app_logs',
+                value: 'true',
+            }],
+            prepareRecordsOnly: false,
+        });
+
+        const Component = enhanced;
+        const {getByTestId} = renderWithEverything(<Component componentId={'ReportProblem'}/>, {database});
+
+        // * Initially true
+        expect(getByTestId('attachLogsEnabled')).toHaveTextContent('true');
+
+        // # Update the existing preference value from 'true' to 'false'
+        await act(async () => {
+            await operator.handlePreferences({
+                preferences: [{
+                    user_id: 'user1',
+                    category: 'advanced_settings',
+                    name: 'attach_app_logs',
+                    value: 'false',
+                }],
+                prepareRecordsOnly: false,
+            });
+        });
+
+        // * Should react to the value change
+        expect(getByTestId('attachLogsEnabled')).toHaveTextContent('false');
     });
 });

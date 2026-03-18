@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q} from '@nozbe/watermelondb';
+import {of as of$, type Observable} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -117,4 +119,13 @@ export const queryEmojiPreferences = (database: Database, name: string) => {
 
 export const queryAdvanceSettingsPreferences = (database: Database, name?: string, value?: string) => {
     return queryPreferencesByCategoryAndName(database, ADVANCED_SETTINGS, name, value);
+};
+
+export const observePreferenceAsBool = (database: Database, category: string, name: string, defaultValue = false): Observable<boolean> => {
+    return queryPreferencesByCategoryAndName(database, category, name).
+        observe().
+        pipe(
+            switchMap((prefs) => (prefs.length ? prefs[0].observe() : of$(undefined))),
+            map((pref) => (pref ? pref.value === 'true' : defaultValue)),
+        );
 };
