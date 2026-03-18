@@ -25,5 +25,5 @@ jobs:
           SERVER_VERSIONS: ${{ inputs.server_versions }}
         run: |
           echo "CMT Provisioner triggered"
-          echo "Server versions: ${SERVER_VERSIONS}"
+          echo "Server versions: \"${SERVER_VERSIONS}\""
           echo "Matterwick will provision cloud instances and dispatch compatibility-matrix-testing.yml"
