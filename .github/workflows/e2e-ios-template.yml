@@ -8,11 +8,11 @@ on:
         required: false
         type: string
       MM_TEST_SERVER_URL_2:
-        description: "The second test server URL (SITE_2); falls back to permanent server if not provided"
+        description: "The second test server URL (SITE_2); optional, no automatic fallback"
         required: false
         type: string
       MM_TEST_SERVER_URL_3:
-        description: "The third test server URL (SITE_3); falls back to permanent server if not provided"
+        description: "The third test server URL (SITE_3); optional, no automatic fallback"
         required: false
         type: string
       MM_TEST_USER_NAME:

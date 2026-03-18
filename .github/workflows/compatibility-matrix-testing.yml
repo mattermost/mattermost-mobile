@@ -141,6 +141,6 @@ jobs:
         run: |
           curl -s -X POST "${MATTERWICK_URL}/cleanup_e2e" \
             -H "Content-Type: application/json" \
-            -d "{\"repo\": \"mattermost-mobile\", \"run_id\": ${CMT_RUN_ID}}" \
+            -d "{\"repo\": \"mattermost-mobile\", \"run_id\": \"${CMT_RUN_ID}\"}" \
             --fail-with-body || echo "Cleanup request failed (non-fatal)"
 

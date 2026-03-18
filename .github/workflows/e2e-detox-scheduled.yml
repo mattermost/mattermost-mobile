@@ -6,6 +6,11 @@ name: Detox E2E Tests (Scheduled)
 
 on:
   workflow_dispatch:
+    inputs:
+      MOBILE_VERSION:
+        description: "The mobile ref to test (branch, tag, or SHA); defaults to the workflow's ref if left empty"
+        required: false
+        type: string
 
 env:
   INTUNE_ENABLED: 'true'
