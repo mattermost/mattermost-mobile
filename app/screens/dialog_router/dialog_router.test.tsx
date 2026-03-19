@@ -25,8 +25,13 @@ jest.mock('@screens/interactive_dialog', () => {
     return jest.fn(({testID}) => mockReact.createElement('View', {testID: testID || 'interactive-dialog'}));
 });
 
+jest.mock('@actions/remote/integrations', () => ({
+    submitInteractiveDialog: jest.fn(),
+}));
+
 jest.mock('@utils/interactive_dialog_adapter');
 
+const mockSubmitInteractiveDialog = require('@actions/remote/integrations').submitInteractiveDialog;
 const mockUseServerUrl = require('@context/server').useServerUrl;
 const mockAppsFormComponent = require('@screens/apps_form/apps_form_component');
 const mockInteractiveDialog = require('@screens/interactive_dialog');
@@ -102,6 +107,19 @@ describe('DialogRouter', () => {
         mockUseServerUrl.mockReturnValue(mockServerUrl);
         mockInteractiveDialogAdapter.convertToAppForm.mockReturnValue(mockAppForm);
         mockInteractiveDialogAdapter.createSubmitHandler.mockReturnValue(jest.fn());
+        mockInteractiveDialogAdapter.convertValuesToSubmission.mockReturnValue({
+            url: 'test-url',
+            callback_id: 'test-callback',
+            state: 'test-state',
+            submission: {},
+            user_id: '',
+            channel_id: '',
+            team_id: '',
+            cancelled: false,
+        });
+        mockSubmitInteractiveDialog.mockResolvedValue({
+            data: {type: 'ok'},
+        });
     });
 
     describe('when feature flag is disabled', () => {
@@ -249,7 +267,10 @@ describe('DialogRouter', () => {
             );
 
             const performLookupCall = mockAppsFormComponent.mock.calls[0][0].performLookupCall;
-            const result = await performLookupCall();
+            const mockField = {name: 'test_field'} as AppField;
+            const mockValues = {} as AppFormValues;
+            const mockUserInput = 'test' as AppFormValue;
+            const result = await performLookupCall(mockField, mockValues, mockUserInput);
 
             expect(result).toEqual({
                 data: {
@@ -271,7 +292,9 @@ describe('DialogRouter', () => {
             );
 
             const refreshOnSelect = mockAppsFormComponent.mock.calls[0][0].refreshOnSelect;
-            const result = await refreshOnSelect();
+            const mockField = {name: 'test_field'} as AppField;
+            const mockValues = {} as AppFormValues;
+            const result = await refreshOnSelect(mockField, mockValues);
 
             expect(result).toEqual({
                 data: {

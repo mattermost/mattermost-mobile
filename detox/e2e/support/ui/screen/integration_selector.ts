@@ -8,8 +8,8 @@ class IntegrationSelectorScreen {
     testID = {
         integrationSelectorScreen: 'integration_selector.screen',
         selectorItemPrefix: 'integration_selector.selector_item.',
-        searchInput: 'integration_selector.search_input',
-        doneButton: 'integration_selector.done.button',
+        searchInput: 'selector.search_bar.search.input',
+        doneButton: 'integration_selector.multiselect.submit.button',
         cancelButton: 'integration_selector.cancel.button',
     };
 

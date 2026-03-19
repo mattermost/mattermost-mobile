@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {DeviceEventEmitter, Keyboard, type EmitterSubscription} from 'react-native';
+import {DeviceEventEmitter, type EmitterSubscription} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {Events, Preferences, Screens} from '@constants';
@@ -15,6 +15,11 @@ import type {IntlShape} from 'react-intl';
 jest.mock('@utils/helpers', () => ({
     ...jest.requireActual('@utils/helpers'),
     isTablet: jest.fn(),
+}));
+
+const mockDismissKeyboard = jest.fn();
+jest.mock('@utils/keyboard', () => ({
+    dismissKeyboard: (...args: unknown[]) => mockDismissKeyboard(...args),
 }));
 
 jest.mock('@components/compass_icon', () => {
@@ -96,7 +101,7 @@ describe('openUserProfileModal', () => {
 
     it('should dismiss the keyboard', () => {
         openUserProfileModal(intl, theme, props);
-        expect(Keyboard.dismiss).toHaveBeenCalled();
+        expect(mockDismissKeyboard).toHaveBeenCalled();
     });
 
     it('should dismiss the bottom sheet if screenToDismiss is provided', async () => {

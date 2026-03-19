@@ -227,6 +227,64 @@ describe('checkDialogElementForError', () => {
         expect(checkDialogElementForError(elemURL, 'http://example.com')).toBeNull();
         expect(checkDialogElementForError(elemRadio, 'option1')).toBeNull();
     });
+
+    describe('multiselect SELECT validation', () => {
+        const multiselectElement: DialogElement = {
+            name: 'multiselect_field',
+            type: 'select',
+            multiselect: true,
+            optional: false,
+            options: [
+                {text: 'Option A', value: 'optA'},
+                {text: 'Option B', value: 'optB'},
+                {text: 'Option C', value: 'optC'},
+            ],
+            display_name: 'Multi Select Field',
+            placeholder: '',
+            help_text: '',
+            default: '',
+            min_length: 0,
+            max_length: 0,
+            data_source: '',
+        };
+
+        test('should validate multiselect values correctly', () => {
+            // Valid multiselect array should pass
+            expect(checkDialogElementForError(multiselectElement, ['optA', 'optC'])).toBeNull();
+        });
+
+        test('should require at least one selection for required multiselect', () => {
+            // Empty array for required field should fail
+            expect(checkDialogElementForError(multiselectElement, [])).toEqual({
+                id: 'interactive_dialog.error.required',
+                defaultMessage: 'This field is required.',
+            });
+        });
+
+        test('should reject invalid options in multiselect array', () => {
+            // Invalid option in array should fail
+            expect(checkDialogElementForError(multiselectElement, ['optA', 'invalidOption'])).toEqual({
+                id: 'interactive_dialog.error.invalid_option',
+                defaultMessage: 'Must be a valid option',
+            });
+        });
+
+        test('should allow empty arrays for optional multiselect', () => {
+            // Optional multiselect can be empty
+            const optionalElement = {...multiselectElement, optional: true};
+            expect(checkDialogElementForError(optionalElement, [])).toBeNull();
+        });
+
+        test('should handle single valid option in multiselect', () => {
+            // Single valid option should pass
+            expect(checkDialogElementForError(multiselectElement, ['optB'])).toBeNull();
+        });
+
+        test('should handle all options selected', () => {
+            // All options selected should pass
+            expect(checkDialogElementForError(multiselectElement, ['optA', 'optB', 'optC'])).toBeNull();
+        });
+    });
 });
 
 describe('checkIfErrorsMatchElements', () => {
