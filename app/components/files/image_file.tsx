@@ -109,8 +109,11 @@ const ImageFile = ({
             const prefix = file.localPath.startsWith('file://') ? '' : 'file://';
             props.defaultSource = {uri: prefix + file.localPath};
         } else if (file.id && !isRejected) {
-            // GIFs must use the original file URL to preserve animation;
-            // the server preview is a static JPEG.
+            // Don't set thumbnailUri - show neutral placeholder instead of blurred preview
+            // This prevents the visual blink when a file is rejected by a plugin
+            // (the blurred preview would show briefly before being replaced by file card)
+            //
+            // GIFs use the original file URL because the server preview is a static JPEG.
             if (isGif || !file.has_preview_image) {
                 props.imageUri = buildFileUrl(serverUrl, file.id, file.update_at);
             } else {
