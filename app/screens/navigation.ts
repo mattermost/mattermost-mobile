@@ -5,7 +5,7 @@
 
 import RNUtils from '@mattermost/rnutils';
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, Platform, Alert, type EmitterSubscription, Keyboard, StatusBar} from 'react-native';
+import {Appearance, DeviceEventEmitter, Platform, Alert, type EmitterSubscription, StatusBar} from 'react-native';
 import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
@@ -16,6 +16,7 @@ import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
+import {dismissKeyboard} from '@utils/keyboard';
 import {logError} from '@utils/log';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
@@ -993,6 +994,6 @@ export async function openUserProfileModal(
     const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
     const closeButtonId = 'close-user-profile';
 
-    Keyboard.dismiss();
+    dismissKeyboard();
     openAsBottomSheet({screen, title, theme, closeButtonId, props: {...props}});
 }
