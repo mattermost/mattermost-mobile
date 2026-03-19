@@ -24,6 +24,7 @@ import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
+import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {dismissModal} from '@screens/navigation';
@@ -156,6 +157,15 @@ function Permalink({
     useEffect(() => {
         (async () => {
             if (channelId) {
+                const database = secureGetFromRecord(DatabaseManager.serverDatabases, serverUrl)?.database;
+                if (database) {
+                    const myChannel = await getMyChannel(database, channelId);
+                    if (!myChannel) {
+                        setChannelId(undefined);
+                        return;
+                    }
+                }
+
                 let data;
                 const loadThreadPosts = isCRTEnabled && rootId;
                 if (loadThreadPosts) {
@@ -202,10 +212,28 @@ function Permalink({
 
             const {post} = await fetchPostById(serverUrl, postId, true);
             if (!post) {
-                if (joinedTeam) {
-                    removeCurrentUserFromTeam(serverUrl, joinedTeam.id);
+                // The server returns 403 for posts in channels the user hasn't joined,
+                // even for public channels. Fall back to getPostInfo (GET /posts/{id}/info)
+                // which returns channel metadata without requiring membership — aligned
+                // with the web client's focusPost flow in permalink_view/actions.ts.
+                try {
+                    const client = NetworkManager.getClient(serverUrl);
+                    const postInfo = await client.getPostInfo(postId);
+                    setError({
+                        privateChannel: postInfo.channel_type === 'P',
+                        joinedTeam: Boolean(joinedTeam),
+                        channelId: postInfo.channel_id,
+                        channelName: postInfo.channel_display_name,
+                        teamId: postInfo.team_id || currentTeamId,
+                        teamName: joinedTeam?.display_name,
+                        privateTeam: joinedTeam && !joinedTeam.allow_open_invite,
+                    });
+                } catch {
+                    if (joinedTeam) {
+                        removeCurrentUserFromTeam(serverUrl, joinedTeam.id);
+                    }
+                    setError({notExist: true});
                 }
-                setError({notExist: true});
                 setLoading(false);
                 return;
             }
