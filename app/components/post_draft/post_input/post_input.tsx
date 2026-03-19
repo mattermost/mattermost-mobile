@@ -192,7 +192,15 @@ export default function PostInput({
 
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
     const maxHeight = isTablet ? 150 : 88;
-    const useNativeOwnedIosInput = Platform.OS === 'ios';
+    const useNativeOwnedIosInput = Platform.select({ios: true, default: false});
+    const platformInputValueProps = Platform.select({
+        ios: {
+            defaultValue: nativeOwnedInitialValue.current,
+        },
+        default: {
+            value,
+        },
+    });
     const pasteInputStyle = useMemo(() => {
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
@@ -510,7 +518,8 @@ export default function PostInput({
         const listener = DeviceEventEmitter.addListener(Events.SEND_TO_POST_DRAFT, ({text, location}: {text: string; location: string}) => {
             const sourceScreen = channelId && rootId ? Screens.THREAD : Screens.CHANNEL;
             if (location === sourceScreen) {
-                const draft = value ? `${value} ${text} ` : `${text} `;
+                const currentValue = lastNativeValue.current;
+                const draft = currentValue ? `${currentValue} ${text} ` : `${text} `;
                 updateValue(draft);
                 updateCursorPosition(draft.length);
                 if (!useNativeOwnedIosInput) {
@@ -526,7 +535,7 @@ export default function PostInput({
 
     // - updateValue, updateCursorPosition, propagateValue are stable setState/hook functions
     // - inputRef is a ref (stable reference, doesn't need to be in deps)
-    // - serverUrl, value, lastNativeValue are either stable or we want their latest values when event fires
+    // - serverUrl and lastNativeValue are either stable or we want their latest values when event fires
     // - We need to recreate the listener when channelId/rootId changes to check the correct source screen
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [updateValue, channelId, rootId, useNativeOwnedIosInput]);
@@ -562,8 +571,8 @@ export default function PostInput({
     return (
         <Animated.View style={pulsingAnimatedStyle}>
             <PasteableTextInput
+                {...platformInputValueProps}
                 allowFontScaling={true}
-                defaultValue={useNativeOwnedIosInput ? nativeOwnedInitialValue.current : undefined}
                 disableCopyPaste={disableCopyAndPaste}
                 disableFullscreenUI={true}
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
@@ -584,7 +593,6 @@ export default function PostInput({
                 testID={testID}
                 underlineColorAndroid='transparent'
                 textContentType='none'
-                value={useNativeOwnedIosInput ? undefined : value}
                 autoCapitalize='sentences'
                 editable={!isProcessing}
                 nativeID={testID}
