@@ -312,7 +312,10 @@ describe('Share with connected workspaces', () => {
             excludePlugins: true,
         });
         const firstRemote = remotesRes.remotes?.[0];
-        await Channel.apiShareChannelWithRemote(siteOneUrl, testChannel.id, firstRemote!.remote_id);
+        if (!firstRemote) {
+            throw new Error('TC-MOB-07: Expected at least one remote cluster after setup');
+        }
+        await Channel.apiShareChannelWithRemote(siteOneUrl, testChannel.id, firstRemote.remote_id);
 
         await grantUserSystemAdminRole(testUser.id);
         await device.reloadReactNative();
