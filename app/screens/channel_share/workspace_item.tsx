@@ -124,6 +124,10 @@ const WorkspaceItem = ({item, onRemove, isFirst, removeDisabled = false}: Props)
                 style={styles.deleteButton}
                 onPress={handleRemove}
                 disabled={removeDisabled}
+                accessibilityRole='button'
+                accessibilityLabel={intl.formatMessage(messages.removeWorkspaceLabel, {
+                    workspaceName: item.display_name || item.name || item.remote_id,
+                })}
                 testID={`channel_share.remove.${item.remote_id}`}
             >
                 <CompassIcon

@@ -316,6 +316,7 @@
   "channel_share.no_remotes_warning": "No connected workspaces are available. Contact your system admin to add one.",
   "channel_share.no_workspaces_sharing_this_channel": "No workspaces sharing this channel yet.",
   "channel_share.remove": "Remove",
+  "channel_share.remove_workspace_label": "Remove {workspaceName}",
   "channel_share.save": "Save",
   "channel_share.share_with_connected_workspaces_description": "Collaborate with trusted organizations in this channel. Connections must be defined by a system admin.",
   "channel_share.status.connection_pending": "Connection pending",

@@ -64,6 +64,10 @@ export const messages = defineMessages({
         id: 'channel_share.remove',
         defaultMessage: 'Remove',
     },
+    removeWorkspaceLabel: {
+        id: 'channel_share.remove_workspace_label',
+        defaultMessage: 'Remove {workspaceName}',
+    },
     cancel: {
         id: 'channel_share.cancel',
         defaultMessage: 'Cancel',

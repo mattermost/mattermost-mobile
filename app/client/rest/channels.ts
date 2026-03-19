@@ -27,7 +27,7 @@ export interface ClientChannelsMix {
     getChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
     getArchivedChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
     getSharedChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
-    getRemoteClusters: (options: {
+    getRemoteClusters: (options?: {
         excludePlugins?: boolean;
         notInChannel?: string;
         onlyConfirmed?: boolean;
