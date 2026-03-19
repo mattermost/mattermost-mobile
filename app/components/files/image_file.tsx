@@ -109,19 +109,18 @@ const ImageFile = ({
             const prefix = file.localPath.startsWith('file://') ? '' : 'file://';
             props.defaultSource = {uri: prefix + file.localPath};
         } else if (file.id && !isRejected) {
-            // Don't set thumbnailUri - show neutral placeholder instead of blurred preview
-            // This prevents the visual blink when a file is rejected by a plugin
-            // (the blurred preview would show briefly before being replaced by file card)
-            if (file.has_preview_image) {
-                props.imageUri = buildFilePreviewUrl(serverUrl, file.id);
-            } else {
+            // GIFs must use the original file URL to preserve animation;
+            // the server preview is a static JPEG.
+            if (isGif || !file.has_preview_image) {
                 props.imageUri = buildFileUrl(serverUrl, file.id, file.update_at);
+            } else {
+                props.imageUri = buildFilePreviewUrl(serverUrl, file.id);
             }
             props.inViewPort = inViewPort;
         }
 
         return props;
-    }, [file, inViewPort, serverUrl]);
+    }, [file, inViewPort, isGif, serverUrl]);
 
     let imageDimensions = getImageDimensions();
     if (isSingleImage && (!imageDimensions || (imageDimensions?.height === 0 && imageDimensions?.width === 0))) {
