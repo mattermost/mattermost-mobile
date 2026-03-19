@@ -470,9 +470,11 @@ export default function PostInput({
                 return newValue;
             });
             updateCursorPosition((pos) => pos + 1);
-            propagateValue(newValue!);
+            if (!useNativeOwnedIosInput) {
+                propagateValue(newValue!);
+            }
         }
-    }, [rootId, isTablet, updateValue, updateCursorPosition, cursorPosition, propagateValue]);
+    }, [rootId, isTablet, updateValue, updateCursorPosition, cursorPosition, propagateValue, useNativeOwnedIosInput]);
 
     const onAppStateChange = useCallback((appState: AppStateStatus) => {
         if (appState !== 'active' && previousAppState.current === 'active') {
@@ -511,7 +513,9 @@ export default function PostInput({
                 const draft = value ? `${value} ${text} ` : `${text} `;
                 updateValue(draft);
                 updateCursorPosition(draft.length);
-                propagateValue(draft);
+                if (!useNativeOwnedIosInput) {
+                    propagateValue(draft);
+                }
                 inputRef.current?.focus();
             }
         });
@@ -525,7 +529,7 @@ export default function PostInput({
     // - serverUrl, value, lastNativeValue are either stable or we want their latest values when event fires
     // - We need to recreate the listener when channelId/rootId changes to check the correct source screen
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [updateValue, channelId, rootId]);
+    }, [updateValue, channelId, rootId, useNativeOwnedIosInput]);
 
     useEffect(() => {
         if (value !== lastNativeValue.current) {
