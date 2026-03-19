@@ -162,7 +162,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
         return () => {
             cancelled = true;
         };
-    }, [channelId, intl, serverUrl]);
+    }, [channelId, serverUrl]);
 
     useEffect(() => {
         if (workspaces.length === 0) {
@@ -220,7 +220,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
             const toRemoveList = workspaces.filter((w) => toRemove.has(w.remote_id));
             const workspaceNames = toRemoveList.map((w) => w.display_name || w.name);
             const count = toRemoveList.length;
-            const workspaceList = count === 1 ? workspaceNames[0]! : intl.formatList(workspaceNames);
+            const workspaceList = intl.formatList(workspaceNames);
             const connectionPhrase = intl.formatMessage(messages.unshareConfirmConnectionPhrase, {count});
             const title = intl.formatMessage(messages.unshareConfirmTitle, {connectionPhrase});
             const message = intl.formatMessage(messages.unshareConfirmMessage, {
@@ -386,14 +386,6 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
                 testID='channel_share.scroll_view'
                 bounces={true}
             >
-                {fetchError !== undefined && (
-                    <Text
-                        style={styles.fetchError}
-                        testID='channel_share.fetch_error'
-                    >
-                        {fetchError}
-                    </Text>
-                )}
                 <OptionItem
                     label={intl.formatMessage(messages.shareWithConnectedWorkspaces)}
                     description={intl.formatMessage(messages.shareWithConnectedWorkspacesDescription)}
