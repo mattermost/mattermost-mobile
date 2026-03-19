@@ -4,7 +4,7 @@
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {ScrollView, Text, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
@@ -13,6 +13,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import {messages} from './messages';
+import WorkspaceOptionRow, {OPTION_ROW_HEIGHT} from './workspace_option_row';
 
 // Height constants aligned with getStyleSheet (header + option row) for snap point calculation
 const BOTTOM_FIX = 32; // Magic number: Without this, the bottom of the sheet is cut off
@@ -21,15 +22,12 @@ const TITLE_LINE_HEIGHT = 30; // typography Heading 600
 const HEADER_GAP = 8;
 const SUBTITLE_LINE_HEIGHT = 16; // typography Body 75
 const HEADER_MARGIN_BOTTOM = 12;
-const OPTION_PADDING_VERTICAL = 14;
-const OPTION_LINE_HEIGHT = 24; // typography Body 200
 
 const HEADER_HEIGHT = HEADER_MARGIN_TOP + TITLE_LINE_HEIGHT + HEADER_GAP + SUBTITLE_LINE_HEIGHT + HEADER_MARGIN_BOTTOM;
-const OPTION_ROW_HEIGHT = (OPTION_PADDING_VERTICAL * 2) + OPTION_LINE_HEIGHT;
 
 const MAX_OPTIONS_BEFORE_SCROLL = 4.5; // 4 options and a half, to show that it is scrollable
 
-const EMPTY_MESSAGE_LINE_HEIGHT = OPTION_LINE_HEIGHT;
+const EMPTY_MESSAGE_LINE_HEIGHT = 24; // typography Body 200
 const EMPTY_MESSAGE_HEIGHT = 2 * EMPTY_MESSAGE_LINE_HEIGHT;
 
 /**
@@ -64,15 +62,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     subtitleText: {
         ...typography('Body', 75, 'Regular'),
         color: changeOpacity(theme.centerChannelColor, 0.75),
-    },
-    option: {
-        paddingVertical: OPTION_PADDING_VERTICAL,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    optionText: {
-        ...typography('Body', 200, 'Regular'),
-        color: theme.centerChannelColor,
     },
     emptyMessage: {
         ...typography('Body', 200, 'Regular'),
@@ -116,19 +105,11 @@ const AddWorkspaceSheetContent = ({available, onSelect}: Props) => {
                     {...panResponder.panHandlers}
                 >
                     {available.map((r) => (
-                        <TouchableOpacity
+                        <WorkspaceOptionRow
                             key={r.remote_id}
-                            style={styles.option}
-                            onPress={() => onSelect(r)}
-                            testID={`channel_share.workspace_option.${r.remote_id}`}
-                        >
-                            <Text
-                                style={styles.optionText}
-                                numberOfLines={1}
-                            >
-                                {r.display_name || r.name}
-                            </Text>
-                        </TouchableOpacity>
+                            remote={r}
+                            onSelect={onSelect}
+                        />
                     ))}
                 </Scroll>
             )}

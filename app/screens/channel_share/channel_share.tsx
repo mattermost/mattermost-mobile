@@ -386,7 +386,7 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
                 testID='channel_share.scroll_view'
                 bounces={true}
             >
-                {fetchError != null && (
+                {fetchError !== undefined && (
                     <Text
                         style={styles.fetchError}
                         testID='channel_share.fetch_error'

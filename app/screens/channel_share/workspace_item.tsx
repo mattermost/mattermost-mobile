@@ -24,8 +24,6 @@ function getStatusLabelKey(status: ConnectionStatus): keyof typeof messages {
             return 'pendingSave';
         case 'connection_pending':
             return 'connectionPending';
-        case 'connected':
-            return 'online';
         case 'offline':
             return 'offline';
         default:
