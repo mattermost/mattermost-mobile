@@ -174,6 +174,7 @@ export default function PostInput({
 
     const lastNativeValue = useRef('');
     const previousAppState = useRef(AppState.currentState);
+    const nativeOwnedInitialValue = useRef(value);
 
     const [longMessageAlertShown, setLongMessageAlertShown] = useState(false);
 
@@ -191,6 +192,7 @@ export default function PostInput({
 
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
     const maxHeight = isTablet ? 150 : 88;
+    const useNativeOwnedIosInput = Platform.OS === 'ios';
     const pasteInputStyle = useMemo(() => {
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
@@ -527,14 +529,25 @@ export default function PostInput({
 
     useEffect(() => {
         if (value !== lastNativeValue.current) {
-            propagateValue(value);
+            if (useNativeOwnedIosInput) {
+                inputRef.current?.setNativeProps({
+                    selection: {
+                        start: cursorPosition,
+                        end: cursorPosition,
+                    },
+                    text: value,
+                });
+            } else {
+                propagateValue(value);
+            }
+
             lastNativeValue.current = value;
         }
 
     // - propagateValue is from useInputPropagation hook (stable reference, doesn't need to be in deps)
     // - lastNativeValue is a ref (stable reference, doesn't need to be in deps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [value]);
+    }, [value, cursorPosition, inputRef, useNativeOwnedIosInput]);
 
     const events = useMemo(() => ({
         onEnterPressed: handleHardwareEnterPress,
@@ -546,6 +559,7 @@ export default function PostInput({
         <Animated.View style={pulsingAnimatedStyle}>
             <PasteableTextInput
                 allowFontScaling={true}
+                defaultValue={useNativeOwnedIosInput ? nativeOwnedInitialValue.current : undefined}
                 disableCopyPaste={disableCopyAndPaste}
                 disableFullscreenUI={true}
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
@@ -566,7 +580,7 @@ export default function PostInput({
                 testID={testID}
                 underlineColorAndroid='transparent'
                 textContentType='none'
-                value={value}
+                value={useNativeOwnedIosInput ? undefined : value}
                 autoCapitalize='sentences'
                 editable={!isProcessing}
                 nativeID={testID}
