@@ -56,7 +56,10 @@ describe('ImageFile', () => {
         });
 
         const {getByTestId} = renderWithIntlAndTheme(
-            <ImageFile file={gifFile} inViewPort={true}/>,
+            <ImageFile
+                file={gifFile}
+                inViewPort={true}
+            />,
         );
 
         expect(buildFileUrl).toHaveBeenCalledWith('https://server', 'gif1', undefined);
@@ -75,7 +78,10 @@ describe('ImageFile', () => {
         });
 
         const {getByTestId} = renderWithIntlAndTheme(
-            <ImageFile file={pngFile} inViewPort={true}/>,
+            <ImageFile
+                file={pngFile}
+                inViewPort={true}
+            />,
         );
 
         expect(buildFilePreviewUrl).toHaveBeenCalledWith('https://server', 'png1');
@@ -94,7 +100,10 @@ describe('ImageFile', () => {
         });
 
         renderWithIntlAndTheme(
-            <ImageFile file={file} inViewPort={true}/>,
+            <ImageFile
+                file={file}
+                inViewPort={true}
+            />,
         );
 
         expect(buildFileUrl).toHaveBeenCalledWith('https://server', 'file1', undefined);
