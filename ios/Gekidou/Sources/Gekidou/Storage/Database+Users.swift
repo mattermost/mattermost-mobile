@@ -67,7 +67,11 @@ extension Database {
             let idCol = Expression<String>("id")
             let query = userTable.where(idCol == userId)
 
-            let results: [User] = try Array(db.prepareRowIterator(query)).map {try $0.decode()}
+            let iterator = try db.prepareRowIterator(query)
+            var results = [User]()
+            while let row = try iterator.failableNext() {
+                results.append(try row.decode())
+            }
             updateAt = results.first?.lastPictureUpdate
 
         } catch {

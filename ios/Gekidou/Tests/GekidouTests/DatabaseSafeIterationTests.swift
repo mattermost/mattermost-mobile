@@ -95,10 +95,11 @@ final class DatabaseSafeIterationTests: XCTestCase {
         try? FileManager.default.removeItem(atPath: dbPath)
     }
 
-    /// Verify that Array(RowIterator) pattern works for bulk loading.
-    func testArrayFromRowIterator() throws {
+    /// Verify that failableNext loop works for bulk loading
+    /// (replaces the unsafe Array(iterator) pattern).
+    func testFailableNextLoopForBulkLoading() throws {
         let tempDir = NSTemporaryDirectory()
-        let dbPath = (tempDir as NSString).appendingPathComponent("test_array_iter_\(UUID().uuidString).db")
+        let dbPath = (tempDir as NSString).appendingPathComponent("test_bulk_iter_\(UUID().uuidString).db")
 
         let conn = try Connection(dbPath)
         try conn.execute("CREATE TABLE items (id TEXT PRIMARY KEY, value TEXT)")
@@ -109,91 +110,108 @@ final class DatabaseSafeIterationTests: XCTestCase {
         let valueCol = SQLite.Expression<String>("value")
 
         let iterator = try conn.prepareRowIterator(table)
-        let rows = try Array(iterator)
-        let values = try rows.map { try $0.get(valueCol) }
+        var values = [String]()
+        while let row = try iterator.failableNext() {
+            values.append(try row.get(valueCol))
+        }
 
         XCTAssertEqual(Set(values), Set(["one", "two"]),
-            "Array(RowIterator) should collect all rows safely")
+            "failableNext loop should collect all rows safely")
 
         try? FileManager.default.removeItem(atPath: dbPath)
     }
 
     // MARK: - Error handling (no crash)
 
-    /// Verify that failableNext throws a catchable error on a closed database
-    /// instead of crashing via try!.
-    func testFailableNextThrowsInsteadOfCrashing() throws {
+    /// Verify that failableNext handles errors gracefully when the database
+    /// is locked by another connection using DELETE journal mode.
+    /// In DELETE mode (unlike WAL), readers block on writers holding locks.
+    func testFailableNextHandlesLockedDatabase() throws {
         let tempDir = NSTemporaryDirectory()
-        let dbPath = (tempDir as NSString).appendingPathComponent("test_error_\(UUID().uuidString).db")
+        let dbPath = (tempDir as NSString).appendingPathComponent("test_locked_\(UUID().uuidString).db")
 
-        let conn = try Connection(dbPath)
-        try conn.execute("CREATE TABLE test (id INTEGER PRIMARY KEY)")
-        try conn.execute("INSERT INTO test VALUES (1)")
+        // Create database with DELETE journal mode (no WAL)
+        // so readers actually block on write locks
+        let writer = try Connection(dbPath)
+        try writer.execute("PRAGMA journal_mode=DELETE")
+        try writer.execute("CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT)")
+        try writer.execute("INSERT INTO test VALUES (1, 'hello')")
+
+        // Reader with zero busyTimeout — should fail immediately on lock
+        let reader = try Connection(dbPath, readonly: true)
+        reader.busyTimeout = 0
+
+        // Writer holds an exclusive lock
+        try writer.execute("BEGIN EXCLUSIVE TRANSACTION")
 
         let table = Table("test")
-        let iterator = try conn.prepareRowIterator(table)
 
-        // Forcibly close the underlying SQLite handle to simulate an error state.
-        // This is intentionally destructive — we're testing that the error is
-        // catchable rather than causing a fatal crash.
-        sqlite3_close_v2(conn.handle)
-
-        // With the safe pattern, this should throw (or return nil), NOT crash
-        // Note: behavior after force-closing is undefined, but the key point is
-        // we're NOT calling the try! path that would abort the process.
+        // Reader should either throw (SQLITE_BUSY) or return empty results
+        // The key point: it must NOT crash via try!
         do {
-            let _ = try iterator.failableNext()
-            // If we get here without crashing, the test passes —
-            // the error was handled gracefully
+            let iterator = try reader.prepareRowIterator(table)
+            var rows = [Row]()
+            while let row = try iterator.failableNext() {
+                rows.append(row)
+            }
+            // If we get here, SQLite allowed the read (unlikely with EXCLUSIVE + DELETE mode)
+            // Either way, no crash = success
         } catch {
-            // Expected: we get a catchable error instead of a crash
-            // This is the correct behavior
+            // Expected: we get a catchable error (SQLITE_BUSY) instead of a crash
+            // This is the correct behavior — the error is recoverable
+            XCTAssertTrue(
+                String(describing: error).contains("locked") ||
+                String(describing: error).contains("busy"),
+                "Error should be about database being locked/busy, got: \(error)")
         }
 
-        // If we reach here, the process didn't crash — that's the whole point
+        // Release the lock
+        try writer.execute("ROLLBACK")
+
         try? FileManager.default.removeItem(atPath: dbPath)
     }
 
     // MARK: - Concurrent access simulation
 
     /// Simulate concurrent database access (main app + extension pattern)
-    /// and verify that busyTimeout prevents SQLITE_BUSY errors.
+    /// using DELETE journal mode to exercise the busyTimeout retry path.
     func testBusyTimeoutHandlesConcurrentAccess() throws {
         let tempDir = NSTemporaryDirectory()
         let dbPath = (tempDir as NSString).appendingPathComponent("test_concurrent_\(UUID().uuidString).db")
 
-        // Writer connection: holds a write lock
+        // Use DELETE journal mode so readers block on writers
         let writer = try Connection(dbPath)
+        try writer.execute("PRAGMA journal_mode=DELETE")
         writer.busyTimeout = 5.0
         try writer.execute("CREATE TABLE data (id INTEGER PRIMARY KEY, value TEXT)")
-        try writer.execute("PRAGMA journal_mode=WAL")
+        try writer.execute("INSERT INTO data VALUES (1, 'hello')")
 
-        // Reader connection: should be able to read even during writes (WAL mode)
+        // Reader with busyTimeout — should retry when locked
         let reader = try Connection(dbPath, readonly: true)
         reader.busyTimeout = 5.0
 
-        // Insert some data
-        try writer.execute("INSERT INTO data VALUES (1, 'hello')")
-
-        // Begin a write transaction on the writer
-        try writer.execute("BEGIN IMMEDIATE TRANSACTION")
-        try writer.execute("INSERT INTO data VALUES (2, 'world')")
-
-        // Reader should still be able to read (WAL allows concurrent reads)
         let table = Table("data")
         let valueCol = SQLite.Expression<String>("value")
+
+        // Hold an exclusive lock briefly, then release from another thread
+        try writer.execute("BEGIN EXCLUSIVE TRANSACTION")
+        try writer.execute("INSERT INTO data VALUES (2, 'world')")
+
+        // Release the lock after a short delay so the reader's busyTimeout can retry
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
+            try? writer.execute("COMMIT")
+        }
+
+        // Reader should eventually succeed thanks to busyTimeout retry
         let iterator = try reader.prepareRowIterator(table)
         var values = [String]()
         while let row = try iterator.failableNext() {
             values.append(try row.get(valueCol))
         }
 
-        // In WAL mode, the reader sees the state before the uncommitted transaction
-        XCTAssertTrue(values.contains("hello"),
-            "Reader should see committed data even during concurrent write transaction")
-
-        // Commit the writer transaction
-        try writer.execute("COMMIT")
+        // Reader should see data (either pre-commit or post-commit state)
+        XCTAssertFalse(values.isEmpty,
+            "Reader with busyTimeout should eventually read data after lock is released")
 
         try? FileManager.default.removeItem(atPath: dbPath)
     }

@@ -176,8 +176,9 @@ public class Database: NSObject {
         let query = serversTable.filter(lastActiveAt > 0 && identifier != "").order(lastActiveAt.desc)
         do {
             let iterator = try db.prepareRowIterator(query)
-            let servers: [T] = try Array(iterator).map { row in
-                return try row.decode()
+            var servers = [T]()
+            while let row = try iterator.failableNext() {
+                servers.append(try row.decode())
             }
 
             return servers
@@ -194,8 +195,9 @@ public class Database: NSObject {
         let query = serversTable.filter(lastActiveAt > 0 && identifier != "").order(lastActiveAt.desc)
         do {
             let iterator = try db.prepareRowIterator(query)
-            let servers: [String] = try Array(iterator).map { row in
-                return try row.get(url)
+            var servers = [String]()
+            while let row = try iterator.failableNext() {
+                servers.append(try row.get(url))
             }
 
             return servers
