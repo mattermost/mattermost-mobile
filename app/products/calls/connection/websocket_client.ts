@@ -148,7 +148,12 @@ export class WebSocketClient extends EventEmitter {
             }
         });
 
-        this.wsClient.open();
+        Promise.resolve(this.wsClient.open()).catch((err) => {
+            logError('calls: ws open failed', err);
+            if (!this.closed) {
+                this.reconnect();
+            }
+        });
     }
 
     initialize() {
@@ -169,16 +174,21 @@ export class WebSocketClient extends EventEmitter {
                 }
                 const encoded = encode(msg);
                 const base64 = Buffer.from(encoded).toString('base64');
-                this.wsClient.sendBinary(base64);
+                Promise.resolve(this.wsClient.sendBinary(base64)).catch((err) => {
+                    logError('calls: ws sendBinary failed', err);
+                });
             } else {
-                this.wsClient.send(JSON.stringify(msg));
+                Promise.resolve(this.wsClient.send(JSON.stringify(msg))).catch((err) => {
+                    logError('calls: ws send failed', err);
+                });
             }
         }
     }
 
     close() {
         this.closed = true;
-        this.wsClient?.invalidate();
+        // Errors during teardown are intentionally ignored
+        this.wsClient?.invalidate().catch(() => { /* ignore */ });
         this.wsClient = null;
         this.seqNo = 1;
         this.serverSeqNo = 0;
