@@ -1,6 +1,7 @@
 package com.mattermost.helpers.push_notification
 
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.ReadableType
 import com.mattermost.helpers.Network
 import com.mattermost.helpers.PushNotificationDataRunnable
 import com.mattermost.helpers.ResolvePromise
@@ -15,8 +16,15 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetch(serverUrl: Str
             override fun resolve(value: Any?) {
                 val response = value as ReadableMap?
                 if (response != null && !response.getBoolean("ok")) {
-                    val error = response.getMap("data")
-                    cont.resumeWith(Result.failure((IOException("Unexpected code ${error?.getInt("status_code")} ${error?.getString("message")}"))))
+                    // Server may return "data" as a Map (normal error response) or a String
+                    // (e.g. HTML error pages, proxy errors). Guard against type mismatch.
+                    val errorMessage = if (response.getType("data") == ReadableType.Map) {
+                        val error = response.getMap("data")
+                        "Unexpected code ${error?.getInt("status_code")} ${error?.getString("message")}"
+                    } else {
+                        "Unexpected response: ${response.getString("data")}"
+                    }
+                    cont.resumeWith(Result.failure(IOException(errorMessage)))
                 } else {
                     cont.resumeWith(Result.success(response))
                 }
