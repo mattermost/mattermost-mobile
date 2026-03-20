@@ -42,16 +42,11 @@ jobs:
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
       - name: ci/run-tests
-        # main and PR will run test:coverage via test-coverage action
+        # main and PRs run test:coverage via the test-coverage action below;
+        # release branches just need a plain test pass.
         if: startsWith(github.ref_name, 'release-')
         shell: bash
-        run: |
-          echo "::group::run-tests"
-          for i in 1 2 3; do
-            echo "=== Test run $i of 3 ==="
-            npm run test:ci && echo "Run $i: PASSED" || echo "Run $i: FAILED (exit $?)"
-          done
-          echo "::endgroup::"
+        run: npm run test:ci
       - name: ci/test-coverage
         if: github.event_name == 'pull_request' || github.ref_name == 'main'
         uses: ./.github/actions/test-coverage
