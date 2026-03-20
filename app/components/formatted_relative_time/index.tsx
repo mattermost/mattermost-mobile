@@ -24,6 +24,11 @@ const FormattedRelativeTime = ({timezone, value, updateIntervalInSeconds, ...pro
     };
 
     const [formattedTime, setFormattedTime] = useState(getFormattedRelativeTime);
+
+    useEffect(() => {
+        setFormattedTime(getFormattedRelativeTime());
+    }, [value, timezone]); // eslint-disable-line react-hooks/exhaustive-deps -- update display when value or timezone changes
+
     useEffect(() => {
         if (updateIntervalInSeconds) {
             const interval = setInterval(

@@ -1,4 +1,4 @@
-# Server Database - Schema Version 18
+# Server Database - Schema Version 19
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -422,3 +422,27 @@ status string
 timezone string
 update_at number
 username string
+
+
+AiBot
+-
+id PK string
+display_name string
+username string
+last_icon_update number
+dm_channel_id string INDEX
+channel_access_level number
+channel_ids string
+user_access_level number
+user_ids string
+team_ids string
+
+
+AiThread
+-
+id PK string
+message string
+title string
+channel_id string INDEX FK >- Channel.id
+reply_count number
+update_at number INDEX

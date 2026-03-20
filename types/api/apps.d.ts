@@ -130,6 +130,7 @@ type AppForm = {
     footer?: string;
     icon?: string;
     submit_buttons?: string;
+    submit_label?: string;
     cancel_button?: boolean;
     submit_on_cancel?: boolean;
     fields?: AppField[];

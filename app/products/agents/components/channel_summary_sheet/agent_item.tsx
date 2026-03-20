@@ -3,7 +3,7 @@
 
 import {type Agent} from '@agents/client/rest';
 import React, {useCallback, useMemo} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {ExpoImageAnimated} from '@components/expo_image';
@@ -68,9 +68,9 @@ const AgentItem = React.memo(({agent, profileImageUrl, currentAgentUsername, onS
     const cacheId = agent.id ? `user-${agent.id}` : undefined;
 
     return (
-        <TouchableOpacity
+        <Pressable
             onPress={handlePress}
-            style={styles.agentRow}
+            style={({pressed}) => [styles.agentRow, pressed && {opacity: 0.72}]}
             testID={`agents.selector.agent.${agent.username}`}
         >
             <View style={styles.agentInfo}>
@@ -100,7 +100,7 @@ const AgentItem = React.memo(({agent, profileImageUrl, currentAgentUsername, onS
                     color={theme.linkColor}
                 />
             )}
-        </TouchableOpacity>
+        </Pressable>
     );
 });
 AgentItem.displayName = 'AgentItem';

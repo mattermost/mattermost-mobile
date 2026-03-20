@@ -1,8 +1,28 @@
 name: Detox E2E Tests (Scheduled)
+# NOTE: The cron trigger has been removed. Scheduled E2E runs are now owned by
+# Matterwick via e2e-nightly-trigger.yml, which provisions dedicated cloud servers
+# instead of the hardcoded permanent servers used here. This file can be triggered
+# manually for ad-hoc runs against the permanent servers if needed.
 
 on:
-  schedule:
-    - cron: "0 0 * * 4,5" # Wednesday and Thursday midnight
+  workflow_dispatch:
+    inputs:
+      MOBILE_VERSION:
+        description: "The mobile ref to test (branch, tag, or SHA); defaults to the workflow's ref if left empty"
+        required: false
+        type: string
+      MM_TEST_SERVER_URL:
+        description: "The test server URL (SITE_1)"
+        required: false
+        type: string
+      MM_TEST_SERVER_URL_2:
+        description: "The second test server URL (SITE_2); optional, no automatic fallback"
+        required: false
+        type: string
+      MM_TEST_SERVER_URL_3:
+        description: "The third test server URL (SITE_3); optional, no automatic fallback"
+        required: false
+        type: string
 
 env:
   INTUNE_ENABLED: 'true'
@@ -41,6 +61,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION || github.ref }}
 
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
@@ -80,7 +102,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ inputs.MOBILE_VERSION || github.ref }}
 
       - name: Prepare Android Build
         uses: ./.github/actions/prepare-android-build
@@ -121,7 +143,10 @@ jobs:
     with:
       run-type: "MAIN"
       record_tests_in_zephyr: 'true'
-      MOBILE_VERSION: ${{ github.ref }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION || github.ref }}
+      MM_TEST_SERVER_URL: ${{ inputs.MM_TEST_SERVER_URL }}
+      MM_TEST_SERVER_URL_2: ${{ inputs.MM_TEST_SERVER_URL_2 }}
+      MM_TEST_SERVER_URL_3: ${{ inputs.MM_TEST_SERVER_URL_3 }}
     secrets: inherit
 
   run-android-tests-on-main-scheduled:
@@ -133,7 +158,10 @@ jobs:
       run-android-tests: true
       run-type: "MAIN"
       record_tests_in_zephyr: 'true'
-      MOBILE_VERSION: ${{ github.ref }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION || github.ref }}
+      MM_TEST_SERVER_URL: ${{ inputs.MM_TEST_SERVER_URL }}
+      MM_TEST_SERVER_URL_2: ${{ inputs.MM_TEST_SERVER_URL_2 }}
+      MM_TEST_SERVER_URL_3: ${{ inputs.MM_TEST_SERVER_URL_3 }}
     secrets: inherit
 
   update-final-status-ios:

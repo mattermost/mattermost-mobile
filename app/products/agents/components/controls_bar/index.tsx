@@ -3,13 +3,14 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, TouchableOpacity, View} from 'react-native';
+import {Alert, Pressable, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -29,10 +30,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
         },
         buttonText: {
-            fontSize: 12,
-            fontWeight: 600,
-            lineHeight: 16,
             color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75, 'SemiBold'),
         },
     };
 });
@@ -92,10 +91,9 @@ const ControlsBar = ({
     return (
         <View style={styles.container}>
             {showStopButton && (
-                <TouchableOpacity
+                <Pressable
                     onPress={handleStop}
-                    style={styles.button}
-                    activeOpacity={0.7}
+                    style={({pressed}) => [styles.button, pressed && {opacity: 0.72}]}
                     testID='agents.controls_bar.stop_button'
                 >
                     <CompassIcon
@@ -108,13 +106,12 @@ const ControlsBar = ({
                         defaultMessage='Stop Generating'
                         style={styles.buttonText}
                     />
-                </TouchableOpacity>
+                </Pressable>
             )}
             {showRegenerateButton && (
-                <TouchableOpacity
+                <Pressable
                     onPress={handleRegenerate}
-                    style={styles.button}
-                    activeOpacity={0.7}
+                    style={({pressed}) => [styles.button, pressed && {opacity: 0.72}]}
                     testID='agents.controls_bar.regenerate_button'
                 >
                     <CompassIcon
@@ -127,7 +124,7 @@ const ControlsBar = ({
                         defaultMessage='Regenerate'
                         style={styles.buttonText}
                     />
-                </TouchableOpacity>
+                </Pressable>
             )}
         </View>
     );

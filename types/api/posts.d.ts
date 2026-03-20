@@ -51,7 +51,7 @@ type PostPriority = {
 
 type PermalinkEmbedData = {
     post_id: string;
-    post: Post;
+    post?: Post;
     team_name: string;
     channel_display_name: string;
     channel_type: string;

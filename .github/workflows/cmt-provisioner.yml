@@ -1,0 +1,29 @@
+name: CMT Provisioner
+
+# This is a stub workflow. Its only purpose is to fire a workflow_run webhook
+# to Matterwick, which provisions cloud servers for each server version and
+# then dispatches compatibility-matrix-testing.yml with the CMT_MATRIX input.
+#
+# Usage: Go to Actions → CMT Provisioner → Run workflow
+#   server_versions: comma-separated Mattermost server versions
+#   Example: "v11.1.0, v11.2.0, v12.0.0"
+
+on:
+  workflow_dispatch:
+    inputs:
+      server_versions:
+        description: "Comma-separated Mattermost server versions (e.g. v11.1.0, v11.2.0)"
+        required: true
+        type: string
+
+jobs:
+  notify:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Log CMT request
+        env:
+          SERVER_VERSIONS: ${{ inputs.server_versions }}
+        run: |
+          echo "CMT Provisioner triggered"
+          echo "Server versions: \"${SERVER_VERSIONS}\""
+          echo "Matterwick will provision cloud instances and dispatch compatibility-matrix-testing.yml"

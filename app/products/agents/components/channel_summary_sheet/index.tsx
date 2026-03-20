@@ -7,7 +7,7 @@ import {type Agent} from '@agents/client/rest';
 import {AGENT_ANALYSIS_SUMMARY} from '@agents/constants';
 import React, {useCallback, useEffect, useState} from 'react';
 import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
-import {Alert, ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, Pressable, ScrollView, Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
@@ -300,9 +300,9 @@ const ChannelSummarySheet = ({channelId}: Props) => {
         <ScrollView>
             {/* Header Section - Agent selector + Prompt input */}
             <View style={styles.headerSection}>
-                <TouchableOpacity
+                <Pressable
                     onPress={handleAgentSelectorOpen}
-                    style={styles.agentRow}
+                    style={({pressed}) => [styles.agentRow, pressed && {opacity: 0.72}]}
                     testID='agents.channel_summary.agent_selector'
                     disabled={submitting || loadingAgents}
                 >
@@ -325,7 +325,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
                             </>
                         )}
                     </View>
-                </TouchableOpacity>
+                </Pressable>
 
                 <View style={styles.promptWrapper}>
                     <FloatingTextInput
@@ -338,11 +338,12 @@ const ChannelSummarySheet = ({channelId}: Props) => {
                         onSubmitEditing={handleCustomPromptSubmitDebounced}
                         returnKeyType='send'
                         endAdornment={
-                            <TouchableOpacity
+                            <Pressable
                                 onPress={handleCustomPromptSubmitDebounced}
-                                style={[
+                                style={({pressed}) => [
                                     styles.sendButton,
                                     (!customPrompt.trim() || submitting) && styles.sendButtonDisabled,
+                                    pressed && {opacity: 0.72},
                                 ]}
                                 disabled={!customPrompt.trim() || submitting}
                                 testID='agents.channel_summary.prompt_submit'
@@ -352,7 +353,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
                                     size={20}
                                     color={theme.buttonColor}
                                 />
-                            </TouchableOpacity>
+                            </Pressable>
                         }
                     />
                 </View>
