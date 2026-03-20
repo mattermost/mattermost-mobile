@@ -399,6 +399,19 @@ index 551f72b..f275c18 100644
          super.onTouchEvent(event)
          return true
      }
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildControllersRegistry.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildControllersRegistry.java
+index 7f1a2e0..c8b3d91 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildControllersRegistry.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildControllersRegistry.java
+@@ -14,7 +14,7 @@ public class ChildControllersRegistry {
+     public void onViewDisappear(ChildController<?> child) {
+         if (isTopChild(child)) {
+             children.pop();
+-            if (!children.isEmpty()) children.peek().onViewBroughtToFront();
++            if (!children.isEmpty() && !children.peek().isDestroyed()) children.peek().onViewBroughtToFront();
+         } else {
+             children.remove(child);
+         }
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m b/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
 index fc482a6..9406bbf 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
