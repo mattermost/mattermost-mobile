@@ -25,9 +25,6 @@ describe('ClientBase route methods', () => {
         test('getChannelRemotesRoute returns channel remotes path', () => {
             const channelId = 'channel-id-1';
             expect(client.getChannelRemotesRoute(channelId)).toBe(
-                `${client.getSharedChannelsRoute()}/${channelId}/remotes`,
-            );
-            expect(client.getChannelRemotesRoute(channelId)).toBe(
                 `${client.urlVersion}/sharedchannels/${channelId}/remotes`,
             );
         });
@@ -35,9 +32,6 @@ describe('ClientBase route methods', () => {
         test('getRemoteClusterChannelRoute returns remote cluster channel path', () => {
             const remoteId = 'remote-id-1';
             const channelId = 'channel-id-1';
-            expect(client.getRemoteClusterChannelRoute(remoteId, channelId)).toBe(
-                `${client.getRemoteClustersRoute()}/${remoteId}/channels/${channelId}`,
-            );
             expect(client.getRemoteClusterChannelRoute(remoteId, channelId)).toBe(
                 `${client.urlVersion}/remotecluster/${remoteId}/channels/${channelId}`,
             );

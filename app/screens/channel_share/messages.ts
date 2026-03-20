@@ -98,6 +98,6 @@ export const messages = defineMessages({
     },
     fetchErrorTitle: {
         id: 'channel_share.fetch_error_title',
-        defaultMessage: 'Failed to load remotes or connections',
+        defaultMessage: 'Failed to load connected workspaces or connections',
     },
 });

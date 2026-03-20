@@ -110,8 +110,8 @@ describe('Share with connected workspaces', () => {
         await HomeScreen.logout();
     });
 
-    const navigateToConfiguration = async () => {
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+    const navigateToConfiguration = async (channelName: string = testChannel.name) => {
+        await ChannelScreen.open(channelsCategory, channelName);
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
         await ChannelInfoScreen.openChannelSettings();
@@ -145,6 +145,23 @@ describe('Share with connected workspaces', () => {
         const roles = (user.roles || 'system_user').trim();
         const newRoles = roles.replace('system_admin', '').trim();
         await User.apiUpdateUserRoles(siteOneUrl, userId, newRoles);
+    };
+
+    /** Admin session must be active on `client` (e.g. after setSharedChannelsFeature or apiAdminLogin). */
+    const createOpenChannelForUserOnTestTeam = async (prefix: string) => {
+        const created = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: testTeam.id,
+            type: 'O',
+            prefix,
+        });
+        if (created.error) {
+            throw new Error(`createOpenChannelForUserOnTestTeam: ${JSON.stringify(created.error)}`);
+        }
+        const added = await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, created.channel.id);
+        if (added.error) {
+            throw new Error(`createOpenChannelForUserOnTestTeam: ${JSON.stringify(added.error)}`);
+        }
+        return created.channel;
     };
 
     it('TC-MOB-01: Section visible when all conditions are met', async () => {
@@ -248,6 +265,7 @@ describe('Share with connected workspaces', () => {
                 EnableRemoteClusterService: true,
             },
         });
+        const shareTestChannel = await createOpenChannelForUserOnTestTeam('share-ws-mob06');
         const mobE2eRemote = {
             name: 'e2e_mob_connected_workspace',
             display_name: 'E2E MOB Connected Workspace',
@@ -258,7 +276,7 @@ describe('Share with connected workspaces', () => {
         await device.reloadReactNative();
         await wait(timeouts.THREE_SEC);
 
-        await navigateToConfiguration();
+        await navigateToConfiguration(shareTestChannel.name);
         await ChannelConfigurationScreen.toBeVisible();
         await expect(ChannelConfigurationScreen.shareWithConnectedWorkspacesOption).toBeVisible();
         await ChannelConfigurationScreen.openShareWithConnectedWorkspaces();
@@ -307,6 +325,7 @@ describe('Share with connected workspaces', () => {
             password: 'e2e-mob-connected-workspace-pwd',
         };
         await System.apiEnsureSingleRemoteCluster(siteOneUrl, testTeam.id, mobE2eRemote);
+        const shareTestChannel = await createOpenChannelForUserOnTestTeam('share-ws-mob07');
         const remotesRes = await System.apiGetRemoteClusters(siteOneUrl, {
             onlyConfirmed: true,
             excludePlugins: true,
@@ -315,13 +334,13 @@ describe('Share with connected workspaces', () => {
         if (!firstRemote) {
             throw new Error('TC-MOB-07: Expected at least one remote cluster after setup');
         }
-        await Channel.apiShareChannelWithRemote(siteOneUrl, testChannel.id, firstRemote.remote_id);
+        await Channel.apiShareChannelWithRemote(siteOneUrl, shareTestChannel.id, firstRemote.remote_id);
 
         await grantUserSystemAdminRole(testUser.id);
         await device.reloadReactNative();
         await wait(timeouts.THREE_SEC);
 
-        await navigateToConfiguration();
+        await navigateToConfiguration(shareTestChannel.name);
         await ChannelConfigurationScreen.openShareWithConnectedWorkspaces();
         await waitFor(channelShareScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 

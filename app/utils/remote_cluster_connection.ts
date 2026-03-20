@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {toMilliseconds} from './datetime';
+import {toMilliseconds} from '@utils/datetime';
 
 const SITE_URL_PENDING_PREFIX = 'pending_';
 const CONNECTED_PING_THRESHOLD_MS = toMilliseconds({minutes: 5});

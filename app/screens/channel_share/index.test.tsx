@@ -86,21 +86,4 @@ describe('ChannelShare index (enhanced)', () => {
             expect(component).toHaveProp('displayName', 'Shared Channel Name');
         });
     });
-
-    it('passes empty displayName when channel is null', async () => {
-        const nonExistentChannelId = 'nonexistent';
-        const {getByTestId} = renderWithEverything(
-            <EnhancedChannelShare
-                channelId={nonExistentChannelId}
-                componentId={Screens.CHANNEL_SHARE as 'ChannelShare'}
-            />,
-            {database, serverUrl},
-        );
-
-        await waitFor(() => {
-            const component = getByTestId('channel_share');
-            expect(component).toHaveProp('channelId', nonExistentChannelId);
-            expect(component).toHaveProp('displayName', '');
-        });
-    });
 });

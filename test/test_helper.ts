@@ -316,7 +316,7 @@ class TestHelperSingleton {
     };
 
     fakeRemoteClusterInfo = (overwrite: Partial<RemoteClusterInfo> = {}): RemoteClusterInfo => {
-        const id = this.generateId();
+        const id = overwrite.remote_id ?? this.generateId();
         return {
             remote_id: id,
             name: `remote-${id}`,

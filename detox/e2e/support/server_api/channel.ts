@@ -250,6 +250,10 @@ export const apiViewChannel = async (baseUrl: string, userId: string, channelId:
 /**
  * Share channel with a remote (connected workspace).
  * POST /api/v4/remotecluster/{remoteId}/channels/{channelId}/invite
+ * @param {string} baseUrl - the base server URL
+ * @param {string} channelId - The channel ID to share with the remote
+ * @param {string} remoteId - The remote cluster ID (connected workspace)
+ * @return {Object} returns {} on success or {error, status} on error
  */
 export const apiShareChannelWithRemote = async (
     baseUrl: string,
