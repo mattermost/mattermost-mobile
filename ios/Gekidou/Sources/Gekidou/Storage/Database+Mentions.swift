@@ -22,7 +22,7 @@ extension Database {
         INNER JOIN Channel c INDEXED BY sqlite_autoindex_Channel_1 ON c.id=my.id \
         WHERE c.delete_at = 0 AND mys.notify_props NOT LIKE '%"mark_unread":"mention"%'
         """
-        let mentions = try? db.prepare(stmtString).scalar() as? Double
+        let mentions = try? db.scalar(stmtString) as? Double
         return Int(mentions ?? 0)
     }
 
@@ -35,7 +35,7 @@ extension Database {
         INNER JOIN MyChannelSettings mys ON mys.id=c.id \
         WHERE c.delete_at = 0 AND mys.notify_props NOT LIKE '%"mark_unread":"mention"%'
         """
-        let mentions = try? db.prepare(stmtString).scalar() as? Double
+        let mentions = try? db.scalar(stmtString) as? Double
         return Int(mentions ?? 0)
     }
     
