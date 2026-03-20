@@ -16,13 +16,20 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetch(serverUrl: Str
             override fun resolve(value: Any?) {
                 val response = value as ReadableMap?
                 if (response != null && !response.getBoolean("ok")) {
-                    // Server may return "data" as a Map (normal error response) or a String
-                    // (e.g. HTML error pages, proxy errors). Guard against type mismatch.
-                    val errorMessage = if (response.getType("data") == ReadableType.Map) {
-                        val error = response.getMap("data")
-                        "Unexpected code ${error?.getInt("status_code")} ${error?.getString("message")}"
-                    } else {
-                        "Unexpected response: ${response.getString("data")}"
+                    // Server may return "data" as a Map (normal error response), String
+                    // (e.g. HTML error pages, proxy errors), or other types. Handle each
+                    // ReadableType explicitly to avoid UnexpectedNativeTypeException.
+                    val dataType = if (response.hasKey("data")) response.getType("data") else ReadableType.Null
+                    val errorMessage = when (dataType) {
+                        ReadableType.Map -> {
+                            val error = response.getMap("data")
+                            "Unexpected code ${error?.getInt("status_code")} ${error?.getString("message")}"
+                        }
+                        ReadableType.String -> "Unexpected response: ${response.getString("data")}"
+                        ReadableType.Number -> "Unexpected response: ${response.getDouble("data")}"
+                        ReadableType.Boolean -> "Unexpected response: ${response.getBoolean("data")}"
+                        ReadableType.Array -> "Unexpected response: ${response.getArray("data")}"
+                        ReadableType.Null -> "Unexpected response: null"
                     }
                     cont.resumeWith(Result.failure(IOException(errorMessage)))
                 } else {

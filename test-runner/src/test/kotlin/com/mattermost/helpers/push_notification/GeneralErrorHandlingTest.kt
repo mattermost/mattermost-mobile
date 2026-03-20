@@ -10,7 +10,8 @@ import org.mockito.Mockito.*
  * Tests for the error-handling logic in General.kt's fetch() function.
  *
  * The fix guards against calling getMap("data") when the "data" field is not
- * actually a Map (e.g., when a proxy returns an HTML error page as a String).
+ * actually a Map (e.g., when a proxy returns an HTML error page as a String),
+ * and handles every ReadableType explicitly to avoid UnexpectedNativeTypeException.
  *
  * Sentry issue: MATTERMOST-MOBILE-ANDROID-AWY6
  * https://mattermost-mr.sentry.io/issues/6911684498/
@@ -18,15 +19,22 @@ import org.mockito.Mockito.*
 class GeneralErrorHandlingTest {
 
     /**
-     * Simulates the error-handling branch from fetch().
-     * This mirrors the exact logic in General.kt lines 19-25.
+     * Mirrors the exact when-expression from General.kt's error handling.
+     * Each ReadableType branch uses the type-safe getter to avoid
+     * UnexpectedNativeTypeException from the React Native bridge.
      */
     private fun extractErrorMessage(response: ReadableMap): String {
-        return if (response.getType("data") == ReadableType.Map) {
-            val error = response.getMap("data")
-            "Unexpected code ${error?.getInt("status_code")} ${error?.getString("message")}"
-        } else {
-            "Unexpected response: ${response.getString("data")}"
+        val dataType = if (response.hasKey("data")) response.getType("data") else ReadableType.Null
+        return when (dataType) {
+            ReadableType.Map -> {
+                val error = response.getMap("data")
+                "Unexpected code ${error?.getInt("status_code")} ${error?.getString("message")}"
+            }
+            ReadableType.String -> "Unexpected response: ${response.getString("data")}"
+            ReadableType.Number -> "Unexpected response: ${response.getDouble("data")}"
+            ReadableType.Boolean -> "Unexpected response: ${response.getBoolean("data")}"
+            ReadableType.Array -> "Unexpected response: ${response.getArray("data")}"
+            ReadableType.Null -> "Unexpected response: null"
         }
     }
 
@@ -37,6 +45,7 @@ class GeneralErrorHandlingTest {
             `when`(getString("message")).thenReturn("Unauthorized")
         }
         val response = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("data")).thenReturn(true)
             `when`(getType("data")).thenReturn(ReadableType.Map)
             `when`(getMap("data")).thenReturn(errorData)
         }
@@ -46,8 +55,9 @@ class GeneralErrorHandlingTest {
     }
 
     @Test
-    fun `when data is String type - falls back to getString`() {
+    fun `when data is String type - uses getString`() {
         val response = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("data")).thenReturn(true)
             `when`(getType("data")).thenReturn(ReadableType.String)
             `when`(getString("data")).thenReturn("<html>502 Bad Gateway</html>")
         }
@@ -57,10 +67,36 @@ class GeneralErrorHandlingTest {
     }
 
     @Test
-    fun `when data is Null type - falls back to getString returning null`() {
+    fun `when data is Number type - uses getDouble`() {
         val response = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("data")).thenReturn(true)
+            `when`(getType("data")).thenReturn(ReadableType.Number)
+            `when`(getDouble("data")).thenReturn(42.0)
+        }
+
+        val msg = extractErrorMessage(response)
+        assertEquals("Unexpected response: 42.0", msg)
+        verify(response, never()).getMap("data")
+        verify(response, never()).getString(anyString())
+    }
+
+    @Test
+    fun `when data is Boolean type - uses getBoolean`() {
+        val response = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("data")).thenReturn(true)
+            `when`(getType("data")).thenReturn(ReadableType.Boolean)
+            `when`(getBoolean("data")).thenReturn(false)
+        }
+
+        val msg = extractErrorMessage(response)
+        assertEquals("Unexpected response: false", msg)
+    }
+
+    @Test
+    fun `when data is Null type - returns null string`() {
+        val response = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("data")).thenReturn(true)
             `when`(getType("data")).thenReturn(ReadableType.Null)
-            `when`(getString("data")).thenReturn(null)
         }
 
         val msg = extractErrorMessage(response)
@@ -68,20 +104,19 @@ class GeneralErrorHandlingTest {
     }
 
     @Test
-    fun `when data is Number type - does not call getMap`() {
+    fun `when data key is missing - treats as Null`() {
         val response = mock(ReadableMap::class.java).apply {
-            `when`(getType("data")).thenReturn(ReadableType.Number)
-            `when`(getString("data")).thenReturn("42")
+            `when`(hasKey("data")).thenReturn(false)
         }
 
         val msg = extractErrorMessage(response)
-        assertEquals("Unexpected response: 42", msg)
-        verify(response, never()).getMap("data")
+        assertEquals("Unexpected response: null", msg)
     }
 
     @Test
     fun `when data is Map with null error - handles gracefully`() {
         val response = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("data")).thenReturn(true)
             `when`(getType("data")).thenReturn(ReadableType.Map)
             `when`(getMap("data")).thenReturn(null)
         }
