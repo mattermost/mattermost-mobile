@@ -67,7 +67,7 @@ extension Database {
             let idCol = Expression<String>("id")
             let query = userTable.where(idCol == userId)
 
-            let results: [User] = try db.prepare(query).map {try $0.decode()}
+            let results: [User] = try Array(db.prepareRowIterator(query)).map {try $0.decode()}
             updateAt = results.first?.lastPictureUpdate
 
         } catch {
@@ -80,16 +80,17 @@ extension Database {
 
     public func queryUsers(byIds userIds: Set<String>, forServerUrl serverUrl: String) -> Set<String> {
         var result: Set<String> = Set()
-        if let db = try? getDatabaseForServer(serverUrl) {
-            
+        do {
+            let db = try getDatabaseForServer(serverUrl)
             let idCol = Expression<String>("id")
-            if let users = try? db.prepare(
+            let iterator = try db.prepareRowIterator(
                 userTable.select(idCol).filter(userIds.contains(idCol))
-            ) {
-                for user in users {
-                    result.insert(user[idCol])
-                }
+            )
+            while let user = try iterator.failableNext() {
+                result.insert(try user.get(idCol))
             }
+        } catch {
+            GekidouLogger.shared.log(.error, "Gekidou Database: Failed to query users by IDs for server %{public}@ - %{public}@", serverUrl, String(describing: error))
         }
         
         return result
@@ -97,15 +98,17 @@ extension Database {
     
     public func queryUsers(byUsernames usernames: Set<String>, forServerUrl serverUrl: String) -> Set<String> {
         var result: Set<String> = Set()
-        if let db = try? getDatabaseForServer(serverUrl) {
+        do {
+            let db = try getDatabaseForServer(serverUrl)
             let usernameCol = Expression<String>("username")
-            if let users = try? db.prepare(
+            let iterator = try db.prepareRowIterator(
                 userTable.select(usernameCol).filter(usernames.contains(usernameCol))
-            ) {
-                for user in users {
-                    result.insert(user[usernameCol])
-                }
+            )
+            while let user = try iterator.failableNext() {
+                result.insert(try user.get(usernameCol))
             }
+        } catch {
+            GekidouLogger.shared.log(.error, "Gekidou Database: Failed to query users by usernames for server %{public}@ - %{public}@", serverUrl, String(describing: error))
         }
         
         return result
