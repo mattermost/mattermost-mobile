@@ -4,8 +4,8 @@
 // @ts-nocheck
 import {Buffer} from 'buffer';
 
-import {encode} from '@msgpack/msgpack';
 import {getOrCreateWebSocketClient, WebSocketReadyState} from '@mattermost/react-native-network-client';
+import {encode} from '@msgpack/msgpack';
 
 import DatabaseManager from '@database/manager';
 import {advanceTimers, enableFakeTimers, disableFakeTimers} from '@test/timer_helpers';
@@ -40,10 +40,18 @@ describe('WebSocketClient', () => {
         messageCallback = null;
 
         return {
-            onOpen: jest.fn((cb) => { openCallback = cb; }),
-            onClose: jest.fn((cb) => { closeCallback = cb; }),
-            onError: jest.fn((cb) => { errorCallback = cb; }),
-            onMessage: jest.fn((cb) => { messageCallback = cb; }),
+            onOpen: jest.fn((cb) => {
+                openCallback = cb;
+            }),
+            onClose: jest.fn((cb) => {
+                closeCallback = cb;
+            }),
+            onError: jest.fn((cb) => {
+                errorCallback = cb;
+            }),
+            onMessage: jest.fn((cb) => {
+                messageCallback = cb;
+            }),
             open: jest.fn(),
             send: jest.fn(),
             sendBinary: jest.fn(),

@@ -163,9 +163,13 @@ export class WebSocketClient extends EventEmitter {
         };
         if (this.wsClient && this.wsClient.readyState === WebSocketReadyState.OPEN) {
             if (binary) {
+                if (!this.wsClient.sendBinary) {
+                    logError('calls: sendBinary not supported by native client');
+                    return;
+                }
                 const encoded = encode(msg);
                 const base64 = Buffer.from(encoded).toString('base64');
-                this.wsClient.sendBinary?.(base64);
+                this.wsClient.sendBinary(base64);
             } else {
                 this.wsClient.send(JSON.stringify(msg));
             }
@@ -197,7 +201,7 @@ export class WebSocketClient extends EventEmitter {
         setTimeout(() => {
             if (!this.closed) {
                 logDebug(`calls: attempting ws reconnection to ${this.serverUrl + this.wsPath}`);
-                this.init(true);
+                this.init(true).catch((err) => logError('calls: ws reconnection init failed', err));
             }
         }, this.reconnectRetryTime);
 
