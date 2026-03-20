@@ -44,7 +44,7 @@ jobs:
       - name: ci/run-tests
         # main and PRs run test:coverage via the test-coverage action below;
         # release branches just need a plain test pass.
-        if: startsWith(github.ref_name, 'release-')
+        if: startsWith(github.ref_name, 'release')
         shell: bash
         run: npm run test:ci
       - name: ci/test-coverage
