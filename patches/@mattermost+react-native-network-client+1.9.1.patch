@@ -1,0 +1,190 @@
+diff --git a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/WebSocketClientModuleImpl.kt b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/WebSocketClientModuleImpl.kt
+index 07ce7c7..daa1d1d 100644
+--- a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/WebSocketClientModuleImpl.kt
++++ b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/WebSocketClientModuleImpl.kt
+@@ -138,6 +138,23 @@ class WebSocketClientModuleImpl(reactApplicationContext: ReactApplicationContext
+         }
+     }
+ 
++    fun sendBinaryDataFor(wsUrl: String, data: String, promise: Promise) {
++        val wsUri: URI
++        try {
++            wsUri = URI(wsUrl)
++        } catch (error: IllegalArgumentException) {
++            return promise.reject(error)
++        }
++
++        try {
++            val bytes = android.util.Base64.decode(data, android.util.Base64.DEFAULT)
++            clients[wsUri]!!.webSocket!!.send(okio.ByteString.of(*bytes))
++            promise.resolve(null)
++        } catch (error: Exception) {
++            promise.reject(error)
++        }
++    }
++
+     /**
+      * Creates an HttpUrl from a URI by replacing the scheme with `http` or `https`
+      *
+diff --git a/node_modules/@mattermost/react-native-network-client/android/src/newarch/java/com/WebSocketClientModule.kt b/node_modules/@mattermost/react-native-network-client/android/src/newarch/java/com/WebSocketClientModule.kt
+index bf09eeb..f34292b 100644
+--- a/node_modules/@mattermost/react-native-network-client/android/src/newarch/java/com/WebSocketClientModule.kt
++++ b/node_modules/@mattermost/react-native-network-client/android/src/newarch/java/com/WebSocketClientModule.kt
+@@ -71,4 +71,12 @@ internal class WebSocketClientModule(reactContext: ReactApplicationContext) : Na
+         implementation.invalidateClientFor(url, promise)
+     }
+ 
++    override fun sendBinaryDataFor(url: String?, data: String?, promise: Promise?) {
++        if (url.isNullOrEmpty() || data.isNullOrEmpty() || promise == null) {
++            promise?.reject(Exception("missing parameter to send binary data"))
++            return
++        }
++        implementation.sendBinaryDataFor(url, data, promise)
++    }
++
+ }
+diff --git a/node_modules/@mattermost/react-native-network-client/android/src/oldarch/java/com/WebSocketClientModule.kt b/node_modules/@mattermost/react-native-network-client/android/src/oldarch/java/com/WebSocketClientModule.kt
+index 8adf818..7eca963 100644
+--- a/node_modules/@mattermost/react-native-network-client/android/src/oldarch/java/com/WebSocketClientModule.kt
++++ b/node_modules/@mattermost/react-native-network-client/android/src/oldarch/java/com/WebSocketClientModule.kt
+@@ -46,6 +46,11 @@ internal class WebSocketClientModule(reactContext: ReactApplicationContext) : Re
+         implementation.sendDataFor(wsUrl, data, promise)
+     }
+ 
++    @ReactMethod
++    fun sendBinaryDataFor(wsUrl: String, data: String, promise: Promise) {
++        implementation.sendBinaryDataFor(wsUrl, data, promise)
++    }
++
+     @ReactMethod
+     fun addListener(eventName: String) {
+         // Keep: Required for RN built in Event Emitter Calls
+diff --git a/node_modules/@mattermost/react-native-network-client/ios/WebSocket/WebSocketClientImpl.mm b/node_modules/@mattermost/react-native-network-client/ios/WebSocket/WebSocketClientImpl.mm
+index 3dd52f7..3c376af 100644
+--- a/node_modules/@mattermost/react-native-network-client/ios/WebSocket/WebSocketClientImpl.mm
++++ b/node_modules/@mattermost/react-native-network-client/ios/WebSocket/WebSocketClientImpl.mm
+@@ -67,6 +67,10 @@ -(void)stopObserving {
+     [wrapper sendDataForUrlString:url data:data resolve:resolve reject:reject];
+ }
+ 
++RCT_EXPORT_METHOD(sendBinaryDataFor:(NSString *)url withData:(NSString *)data withResolver:(RCTPromiseResolveBlock)resolve withRejecter:(RCTPromiseRejectBlock)reject) {
++    [wrapper sendBinaryDataForUrlString:url data:data resolve:resolve reject:reject];
++}
++
+ RCT_EXPORT_METHOD(invalidateClientFor:(NSString *)url withResolver:(RCTPromiseResolveBlock)resolve withRejecter:(RCTPromiseRejectBlock)reject) {
+     [wrapper invalidateClientForUrlString:url resolve:resolve reject:reject];
+ }
+@@ -168,4 +172,8 @@ - (void)sendDataFor:(NSString *)url data:(NSString *)data resolve:(RCTPromiseRes
+     [wrapper sendDataForUrlString:url data:data resolve:resolve reject:reject];
+ }
+ 
++- (void)sendBinaryDataFor:(NSString *)url data:(NSString *)data resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
++    [wrapper sendBinaryDataForUrlString:url data:data resolve:resolve reject:reject];
++}
++
+ @end
+diff --git a/node_modules/@mattermost/react-native-network-client/ios/WebSocket/WebSocketWrapper.swift b/node_modules/@mattermost/react-native-network-client/ios/WebSocket/WebSocketWrapper.swift
+index 8fb9ac1..f004cd3 100644
+--- a/node_modules/@mattermost/react-native-network-client/ios/WebSocket/WebSocketWrapper.swift
++++ b/node_modules/@mattermost/react-native-network-client/ios/WebSocket/WebSocketWrapper.swift
+@@ -107,6 +107,28 @@ var READY_STATE = [
+         resolve(webSocket.write(string: data))
+     }
+ 
++    @objc public func sendBinaryDataFor(urlString: String, data: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
++        guard let url = URL(string: urlString) else {
++            rejectMalformed(url: urlString, withRejecter: reject)
++            return
++        }
++
++        guard let webSocket = WebSocketManager.default.getWebSocket(for: url) else {
++            rejectInvalidWebSocket(for: url, withRejecter: reject)
++            return
++        }
++
++        guard let binaryData = Data(base64Encoded: data) else {
++            let err = NSError(domain: NSCocoaErrorDomain, code: NSCoderValueNotFoundError,
++                              userInfo: [NSLocalizedDescriptionKey: "Invalid base64 data"])
++            reject("\(err.code)", "Invalid base64 data", err)
++            return
++        }
++
++        webSocket.write(data: binaryData)
++        resolve(nil)
++    }
++
+     @objc public func invalidateClientFor(urlString: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
+         guard let url = URL(string: urlString) else {
+             rejectMalformed(url: urlString, withRejecter: reject)
+diff --git a/node_modules/@mattermost/react-native-network-client/lib/typescript/WebSocketClient/NativeWebSocketClient.d.ts b/node_modules/@mattermost/react-native-network-client/lib/typescript/WebSocketClient/NativeWebSocketClient.d.ts
+index 1c27c00..6b57985 100644
+--- a/node_modules/@mattermost/react-native-network-client/lib/typescript/WebSocketClient/NativeWebSocketClient.d.ts
++++ b/node_modules/@mattermost/react-native-network-client/lib/typescript/WebSocketClient/NativeWebSocketClient.d.ts
+@@ -32,6 +32,7 @@ export interface Spec extends TurboModule {
+     connectFor: (url: string) => Promise<void>;
+     disconnectFor(url: string): Promise<void>;
+     sendDataFor(url: string, data: string): Promise<void>;
++    sendBinaryDataFor(url: string, data: string): Promise<void>;
+     invalidateClientFor(url: string): Promise<void>;
+ }
+ declare const _default: Spec;
+diff --git a/node_modules/@mattermost/react-native-network-client/lib/typescript/WebSocketClient/index.d.ts b/node_modules/@mattermost/react-native-network-client/lib/typescript/WebSocketClient/index.d.ts
+index 1cfd45e..90e0725 100644
+--- a/node_modules/@mattermost/react-native-network-client/lib/typescript/WebSocketClient/index.d.ts
++++ b/node_modules/@mattermost/react-native-network-client/lib/typescript/WebSocketClient/index.d.ts
+@@ -17,6 +17,7 @@ declare class WebSocketClient implements WebSocketClientInterface {
+     open: () => Promise<void>;
+     close: () => Promise<void>;
+     send: (data: string) => Promise<void>;
++    sendBinary: (data: string) => Promise<void>;
+     onOpen: (callback: WebSocketEventHandler) => void;
+     onClose: (callback: WebSocketEventHandler) => void;
+     onError: (callback: WebSocketEventHandler) => void;
+diff --git a/node_modules/@mattermost/react-native-network-client/lib/typescript/types/WebSocketClient.d.ts b/node_modules/@mattermost/react-native-network-client/lib/typescript/types/WebSocketClient.d.ts
+index 5d39783..1df3cfa 100644
+--- a/node_modules/@mattermost/react-native-network-client/lib/typescript/types/WebSocketClient.d.ts
++++ b/node_modules/@mattermost/react-native-network-client/lib/typescript/types/WebSocketClient.d.ts
+@@ -25,6 +25,7 @@ export interface WebSocketClientInterface {
+     onWebSocketMessageSubscription?: EmitterSubscription;
+     onWebSocketClientErrorSubscription?: EmitterSubscription;
+     send(data: string): void;
++    sendBinary?(data: string): void;
+     open(): void;
+     close(): void;
+     onOpen(callback: WebSocketEventHandler): void;
+diff --git a/node_modules/@mattermost/react-native-network-client/src/WebSocketClient/NativeWebSocketClient.ts b/node_modules/@mattermost/react-native-network-client/src/WebSocketClient/NativeWebSocketClient.ts
+index e8f60de..0755f46 100644
+--- a/node_modules/@mattermost/react-native-network-client/src/WebSocketClient/NativeWebSocketClient.ts
++++ b/node_modules/@mattermost/react-native-network-client/src/WebSocketClient/NativeWebSocketClient.ts
+@@ -48,6 +48,7 @@ export interface Spec extends TurboModule {
+     connectFor: (url: string) => Promise<void>;
+     disconnectFor(url: string): Promise<void>;
+     sendDataFor(url: string, data: string): Promise<void>;
++    sendBinaryDataFor(url: string, data: string): Promise<void>;
+     invalidateClientFor(url: string): Promise<void>;
+ }
+ 
+diff --git a/node_modules/@mattermost/react-native-network-client/src/WebSocketClient/index.tsx b/node_modules/@mattermost/react-native-network-client/src/WebSocketClient/index.tsx
+index c4389f2..948d271 100644
+--- a/node_modules/@mattermost/react-native-network-client/src/WebSocketClient/index.tsx
++++ b/node_modules/@mattermost/react-native-network-client/src/WebSocketClient/index.tsx
+@@ -54,6 +54,7 @@ class WebSocketClient implements WebSocketClientInterface {
+         return NativeWebSocketClient.disconnectFor(this.url);
+     };
+     send = (data: string) => NativeWebSocketClient.sendDataFor(this.url, data);
++    sendBinary = (data: string) => NativeWebSocketClient.sendBinaryDataFor(this.url, data);
+ 
+     onOpen = (callback: WebSocketEventHandler) => {
+         if (this.onWebSocketOpenSubscription) {
+diff --git a/node_modules/@mattermost/react-native-network-client/src/types/WebSocketClient.ts b/node_modules/@mattermost/react-native-network-client/src/types/WebSocketClient.ts
+index 2c7e78c..5a0065d 100644
+--- a/node_modules/@mattermost/react-native-network-client/src/types/WebSocketClient.ts
++++ b/node_modules/@mattermost/react-native-network-client/src/types/WebSocketClient.ts
+@@ -41,6 +41,7 @@ export interface WebSocketClientInterface {
+     onWebSocketClientErrorSubscription?: EmitterSubscription;
+ 
+     send(data: string): void;
++    sendBinary?(data: string): void;
+     open(): void;
+     close(): void;
+     onOpen(callback: WebSocketEventHandler): void;
