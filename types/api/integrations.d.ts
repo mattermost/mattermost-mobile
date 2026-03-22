@@ -72,7 +72,10 @@ type DialogElement = {
     min_length: number;
     max_length: number;
     data_source: string;
+    data_source_url?: string;
     options: DialogOption[];
+    multiselect?: boolean;
+    refresh?: boolean;
 };
 
 type InteractiveDialogConfig = {
@@ -88,6 +91,7 @@ type InteractiveDialogConfig = {
         submit_label: string;
         notify_on_cancel: boolean;
         state: string;
+        source_url?: string;
     };
 };
 

@@ -1,16 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback, useRef} from 'react';
+import React, {useCallback} from 'react';
 import {
-    Platform, RefreshControl, View,
+    FlatList, Keyboard, Platform, RefreshControl, View,
 } from 'react-native';
-import {KeyboardAwareFlatList} from 'react-native-keyboard-aware-scroll-view';
 
-import {useAvoidKeyboard} from '@hooks/device';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 const INITIAL_BATCH_TO_RENDER = 15;
+
+const keyboardDismissProp = Platform.select({
+    android: {
+        onScrollBeginDrag: Keyboard.dismiss,
+    },
+    ios: {
+        keyboardDismissMode: 'on-drag' as const,
+    },
+});
 
 type DataType = DialogOption[] | Channel[];
 type ListItemProps = {
@@ -108,8 +115,6 @@ function CustomList({
     canRefresh = true, testID, refreshing = false, onRefresh,
 }: Props) {
     const style = getStyleFromTheme(theme);
-    const keyboardAwareFlatListRef = useRef<KeyboardAwareFlatList>(null);
-    useAvoidKeyboard(keyboardAwareFlatListRef);
 
     // Renders
     const renderEmptyList = useCallback(() => {
@@ -160,10 +165,10 @@ function CustomList({
     }
 
     return (
-        <KeyboardAwareFlatList
-            ref={keyboardAwareFlatListRef}
+        <FlatList
             data={data}
             keyboardShouldPersistTaps='always'
+            {...keyboardDismissProp}
             keyExtractor={keyExtractor}
             initialNumToRender={INITIAL_BATCH_TO_RENDER}
             ItemSeparatorComponent={renderSeparator}

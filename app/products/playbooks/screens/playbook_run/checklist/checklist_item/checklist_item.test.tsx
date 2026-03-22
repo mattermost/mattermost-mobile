@@ -108,7 +108,7 @@ describe('ChecklistItem', () => {
             resolve = r;
         }));
 
-        act(() => {
+        await act(async () => {
             checkbox.props.onPress();
         });
 
@@ -117,7 +117,7 @@ describe('ChecklistItem', () => {
             expect(queryByTestId('checkbox-component')).toBeNull();
         });
 
-        act(() => {
+        await act(async () => {
             resolve({data: true});
         });
 

@@ -95,9 +95,12 @@ describe('dialog_utils', () => {
         it('should return undefined for types without data sources', () => {
             expect(getDataSourceForAppFieldType('text')).toBeUndefined();
             expect(getDataSourceForAppFieldType('static_select')).toBeUndefined();
-            expect(getDataSourceForAppFieldType('dynamic_select')).toBeUndefined();
             expect(getDataSourceForAppFieldType('radio')).toBeUndefined();
             expect(getDataSourceForAppFieldType('bool')).toBeUndefined();
+        });
+
+        it('should return correct data source for dynamic_select', () => {
+            expect(getDataSourceForAppFieldType('dynamic_select')).toBe('dynamic');
         });
     });
 

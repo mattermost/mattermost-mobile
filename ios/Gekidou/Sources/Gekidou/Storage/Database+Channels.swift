@@ -32,8 +32,7 @@ extension Database {
             INNER JOIN MyChannel my ON c.id=my.id AND c.delete_at = 0 \
             INNER JOIN Team t ON c.team_id=t.id
             """
-            let stmt = try db.prepare(stmtString)
-            let count = (try stmt.scalar() as? Int64) ?? 0
+            let count = try db.scalar(stmtString) as? Int64 ?? 0
             return count > 0
         } catch {
             return false
