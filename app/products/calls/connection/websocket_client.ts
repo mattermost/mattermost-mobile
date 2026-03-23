@@ -154,15 +154,8 @@ export class WebSocketClient extends EventEmitter {
             }
         });
 
-        // Use async IIFE to catch both synchronous throws and async rejections.
         // Do not call reconnect() here — onClose will handle it if the connection drops.
-        (async () => {
-            try {
-                await Promise.resolve(this.wsClient!.open());
-            } catch (err) {
-                logError('calls: ws open failed', err);
-            }
-        })();
+        this.wsClient.open();
     }
 
     initialize() {
@@ -183,13 +176,9 @@ export class WebSocketClient extends EventEmitter {
                 }
                 const encoded = encode(msg);
                 const base64 = Buffer.from(encoded).toString('base64');
-                Promise.resolve(this.wsClient.sendBinary(base64)).catch((err) => {
-                    logError('calls: ws sendBinary failed', err);
-                });
+                this.wsClient.sendBinary!(base64);
             } else {
-                Promise.resolve(this.wsClient.send(JSON.stringify(msg))).catch((err) => {
-                    logError('calls: ws send failed', err);
-                });
+                this.wsClient.send(JSON.stringify(msg));
             }
         }
     }

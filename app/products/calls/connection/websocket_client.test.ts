@@ -142,7 +142,7 @@ describe('WebSocketClient', () => {
         await ws.init(false);
 
         ws.emit = jest.fn();
-        jest.spyOn(ws, 'reconnect');
+        jest.spyOn(ws, 'reconnect').mockImplementation(() => {});
 
         // closed — should not reconnect
         ws.closed = true;
