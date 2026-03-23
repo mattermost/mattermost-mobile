@@ -71,6 +71,12 @@ export class WebSocketClient extends EventEmitter {
             this.wsClient.onOpen(() => {
                 this.lastDisconnect = 0;
                 this.reconnectRetryTime = wsMinReconnectRetryTimeMs;
+
+                // Emit 'open' here (before hello) so that connection.ts can send the
+                // 'reconnect' message to the server with the previous session's connID
+                // as prevConnID. At this point this.connID still holds the previous
+                // session ID (it was passed in the URL and has not yet been updated by
+                // the incoming hello message).
                 this.emit('open', this.originalConnID, this.connID, true);
             });
         }
@@ -148,12 +154,15 @@ export class WebSocketClient extends EventEmitter {
             }
         });
 
-        Promise.resolve(this.wsClient.open()).catch((err) => {
-            logError('calls: ws open failed', err);
-            if (!this.closed) {
-                this.reconnect();
+        // Use async IIFE to catch both synchronous throws and async rejections.
+        // Do not call reconnect() here — onClose will handle it if the connection drops.
+        (async () => {
+            try {
+                await Promise.resolve(this.wsClient!.open());
+            } catch (err) {
+                logError('calls: ws open failed', err);
             }
-        });
+        })();
     }
 
     initialize() {

@@ -93,19 +93,37 @@ describe('WebSocketClient', () => {
         expect(mockWsClient.open).toHaveBeenCalled();
     });
 
-    it('should register onOpen handler on reconnect', async () => {
+    it('should register onOpen handler on reconnect, reset timers, and emit open with previous connID', async () => {
         const ws = new WebSocketClient(mockServerUrl, mockWsPath, mockToken);
+        ws.connID = 'prev_conn_id';
+        ws.originalConnID = 'original_conn_id';
         await ws.init(true);
 
         expect(mockWsClient.onOpen).toHaveBeenCalled();
 
-        ws.originalConnID = 'originalConnID';
-        ws.connID = 'connID';
         ws.emit = jest.fn();
 
         openCallback();
-        expect(ws.emit).toHaveBeenCalledWith('open', 'originalConnID', 'connID', true);
+
+        // 'open' is emitted before hello so prevConnID is still the previous session ID,
+        // which connection.ts forwards to the server to resume the old session.
+        expect(ws.emit).toHaveBeenCalledWith('open', 'original_conn_id', 'prev_conn_id', true);
         expect(ws.lastDisconnect).toBe(0);
+    });
+
+    it('should update connID on hello during reconnect without re-emitting open', async () => {
+        const ws = new WebSocketClient(mockServerUrl, mockWsPath, mockToken);
+        ws.connID = 'old_conn_id';
+        ws.originalConnID = 'original_conn_id';
+        await ws.init(true);
+
+        ws.emit = jest.fn();
+
+        const helloMsg = {event: 'hello', data: {connection_id: 'new_conn_id'}};
+        messageCallback({message: JSON.stringify(helloMsg)});
+
+        expect(ws.connID).toBe('new_conn_id');
+        expect(ws.emit).not.toHaveBeenCalled(); // open already emitted from onOpen
     });
 
     it('should emit error on onerror', async () => {
