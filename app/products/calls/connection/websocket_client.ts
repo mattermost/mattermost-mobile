@@ -187,6 +187,7 @@ export class WebSocketClient extends EventEmitter {
 
     close() {
         this.closed = true;
+
         // Errors during teardown are intentionally ignored
         this.wsClient?.invalidate().catch(() => { /* ignore */ });
         this.wsClient = null;
