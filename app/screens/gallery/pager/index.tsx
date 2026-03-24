@@ -75,9 +75,6 @@ const Pager = ({
     const updateIndex = useCallback((nextIndex: number) => {
         onIndexChangeRef.current?.(nextIndex);
         setActiveIndex(nextIndex);
-
-    // onIndexChangeRef is a stable ref; setActiveIndex is stable from useState
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onIndexChangeCb = useCallback((nextIndex: number) => {
