@@ -93,6 +93,19 @@ class GeneralErrorHandlingTest {
     }
 
     @Test
+    fun `when data is Array type - uses getArray`() {
+        val response = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("data")).thenReturn(true)
+            `when`(getType("data")).thenReturn(ReadableType.Array)
+            `when`(getArray("data")).thenReturn(listOf("item1", "item2"))
+        }
+
+        val msg = extractErrorMessage(response)
+        assertEquals("Unexpected response: [item1, item2]", msg)
+        verify(response, never()).getMap("data")
+    }
+
+    @Test
     fun `when data is Null type - returns null string`() {
         val response = mock(ReadableMap::class.java).apply {
             `when`(hasKey("data")).thenReturn(true)
