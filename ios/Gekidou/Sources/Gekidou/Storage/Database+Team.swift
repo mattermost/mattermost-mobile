@@ -56,21 +56,19 @@ extension Database {
     }
     
     public func queryAllMyTeamIds(_ serverUrl: String) -> [String]? {
-        if let db = try? getDatabaseForServer(serverUrl) {
+        do {
+            let db = try getDatabaseForServer(serverUrl)
             let idCol = Expression<String>("id")
-            if let myTeams = try? db.prepare(myTeamTable.select(idCol)) {
-                return myTeams.compactMap { row in
-                    do {
-                        return try row.get(idCol)
-                    } catch {
-                        GekidouLogger.shared.log(.error, "Gekidou Database: Failed to get team ID from row for server %{public}@ - %{public}@", serverUrl, String(describing: error))
-                        return nil
-                    }
-                }
+            let iterator = try db.prepareRowIterator(myTeamTable.select(idCol))
+            var teamIds = [String]()
+            while let row = try iterator.failableNext() {
+                teamIds.append(try row.get(idCol))
             }
+            return teamIds.isEmpty ? nil : teamIds
+        } catch {
+            GekidouLogger.shared.log(.error, "Gekidou Database: Failed to get team IDs for server %{public}@ - %{public}@", serverUrl, String(describing: error))
+            return nil
         }
-
-        return nil
     }
     
     public func insertTeam(_ db: Connection, _ team: Team) throws {
