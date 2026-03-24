@@ -37,7 +37,7 @@ const Pager = ({
     const getPageTranslate = (i: number, w?: number) => {
         'worklet';
 
-        const t = i * (w || sharedWidth.value);
+        const t = i * (w ?? sharedWidth.value);
         const g = gutterWidthToUse * i;
         return -(t + g);
     };
@@ -72,16 +72,19 @@ const Pager = ({
     const onIndexChangeRef = useRef(onIndexChange);
     onIndexChangeRef.current = onIndexChange;
 
-    const updateIndex = (nextIndex: number) => {
+    const updateIndex = useCallback((nextIndex: number) => {
         onIndexChangeRef.current?.(nextIndex);
         setActiveIndex(nextIndex);
-    };
+
+    // onIndexChangeRef is a stable ref; setActiveIndex is stable from useState
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const onIndexChangeCb = useCallback((nextIndex: number) => {
         'worklet';
 
         runOnJS(updateIndex)(nextIndex);
-    }, []);
+    }, [updateIndex]);
 
     const sharedValues: PagerSharedValues = useMemo(() => ({
         sharedWidth,
