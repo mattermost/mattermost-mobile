@@ -5,7 +5,7 @@ import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import PermalinkError from './permalink_error';
+import PermalinkError from '@screens/permalink/permalink_error';
 
 describe('PermalinkError', () => {
     const baseProps = {
@@ -21,7 +21,10 @@ describe('PermalinkError', () => {
         it('should display "Message Not Found" title', () => {
             const error: PermalinkErrorType = {notExist: true};
             const {getByText} = renderWithIntlAndTheme(
-                <PermalinkError {...baseProps} error={error}/>,
+                <PermalinkError
+                    {...baseProps}
+                    error={error}
+                />,
             );
 
             expect(getByText('Message Not Found')).toBeTruthy();
@@ -30,7 +33,10 @@ describe('PermalinkError', () => {
         it('should display the correct body text', () => {
             const error: PermalinkErrorType = {notExist: true};
             const {getByText} = renderWithIntlAndTheme(
-                <PermalinkError {...baseProps} error={error}/>,
+                <PermalinkError
+                    {...baseProps}
+                    error={error}
+                />,
             );
 
             expect(getByText('Permalink belongs to a deleted message or to a channel to which you do not have access.')).toBeTruthy();
@@ -41,7 +47,10 @@ describe('PermalinkError', () => {
         it('should display "Message Not Found" title', () => {
             const error: PermalinkErrorType = {unreachable: true};
             const {getByText} = renderWithIntlAndTheme(
-                <PermalinkError {...baseProps} error={error}/>,
+                <PermalinkError
+                    {...baseProps}
+                    error={error}
+                />,
             );
 
             expect(getByText('Message Not Found')).toBeTruthy();
@@ -50,7 +59,10 @@ describe('PermalinkError', () => {
         it('should display the correct body text', () => {
             const error: PermalinkErrorType = {unreachable: true};
             const {getByText} = renderWithIntlAndTheme(
-                <PermalinkError {...baseProps} error={error}/>,
+                <PermalinkError
+                    {...baseProps}
+                    error={error}
+                />,
             );
 
             expect(getByText('Permalink belongs to a deleted message or to a channel to which you do not have access.')).toBeTruthy();
@@ -61,7 +73,10 @@ describe('PermalinkError', () => {
         it('should display "Join channel" title', () => {
             const error: PermalinkErrorType = {channelName: 'test-channel', channelId: 'ch1'};
             const {getByText} = renderWithIntlAndTheme(
-                <PermalinkError {...baseProps} error={error}/>,
+                <PermalinkError
+                    {...baseProps}
+                    error={error}
+                />,
             );
 
             expect(getByText('Join channel')).toBeTruthy();
@@ -72,7 +87,10 @@ describe('PermalinkError', () => {
         it('should display "Join private channel" title', () => {
             const error: PermalinkErrorType = {privateChannel: true, channelName: 'private-channel', channelId: 'ch1'};
             const {getByText} = renderWithIntlAndTheme(
-                <PermalinkError {...baseProps} error={error}/>,
+                <PermalinkError
+                    {...baseProps}
+                    error={error}
+                />,
             );
 
             expect(getByText('Join private channel')).toBeTruthy();
