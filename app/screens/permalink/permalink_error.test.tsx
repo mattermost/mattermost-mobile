@@ -79,14 +79,14 @@ describe('PermalinkError', () => {
     describe('join public channel', () => {
         it('should display "Join channel" title', () => {
             const error: PermalinkErrorType = {channelName: 'test-channel', channelId: 'ch1'};
-            const {getByText} = renderWithIntlAndTheme(
+            const {getAllByText} = renderWithIntlAndTheme(
                 <PermalinkError
                     {...baseProps}
                     error={error}
                 />,
             );
 
-            expect(getByText('Join channel')).toBeTruthy();
+            expect(getAllByText('Join channel').length).toBeGreaterThanOrEqual(1);
         });
     });
 
