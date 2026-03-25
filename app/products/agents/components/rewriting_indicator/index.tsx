@@ -3,10 +3,10 @@
 
 import {useRewrite} from '@agents/hooks';
 import React, {useEffect} from 'react';
-import {useIntl} from 'react-intl';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import Animated, {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
+import FormattedText from '@components/formatted_text';
 import StatusIndicator from '@components/post_draft/status_indicator';
 import {useTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
@@ -40,7 +40,6 @@ const getStyleSheet = (theme: Theme) => StyleSheet.create({
 function RewritingIndicator() {
     const {isProcessing} = useRewrite();
     const theme = useTheme();
-    const intl = useIntl();
     const styles = getStyleSheet(theme);
     const rotation = useSharedValue(0);
 
@@ -65,12 +64,11 @@ function RewritingIndicator() {
         <StatusIndicator visible={isProcessing}>
             <View style={styles.container}>
                 <Animated.View style={[styles.spinner, spinnerAnimatedStyle]}/>
-                <Text style={styles.text}>
-                    {intl.formatMessage({
-                        id: 'ai_rewrite.rewriting',
-                        defaultMessage: 'Rewriting...',
-                    })}
-                </Text>
+                <FormattedText
+                    id='ai_rewrite.rewriting'
+                    defaultMessage='Rewriting...'
+                    style={styles.text}
+                />
             </View>
         </StatusIndicator>
     );

@@ -4,7 +4,7 @@
 import DateTimePicker, {type DateTimePickerEvent} from '@react-native-community/datetimepicker';
 import React, {useCallback, useMemo, useState} from 'react';
 import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
-import {Platform, TouchableOpacity, View} from 'react-native';
+import {Platform, Pressable, View} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import Button from '@components/button';
@@ -104,9 +104,9 @@ const DateInputField = ({label, date, placeholder, onPress, testID, styles, isAc
             defaultMessage={label.defaultMessage}
             style={styles.label}
         />
-        <TouchableOpacity
+        <Pressable
             onPress={onPress}
-            style={[styles.dateBox, isActive && styles.dateBoxActive]}
+            style={({pressed}) => [styles.dateBox, isActive && styles.dateBoxActive, pressed && {opacity: 0.72}]}
             testID={testID}
         >
             {date ? (
@@ -122,7 +122,7 @@ const DateInputField = ({label, date, placeholder, onPress, testID, styles, isAc
                     style={styles.datePlaceholder}
                 />
             )}
-        </TouchableOpacity>
+        </Pressable>
     </>
 );
 
@@ -209,9 +209,9 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
         <View style={styles.container}>
             {/* Header with back button */}
             <View style={styles.header}>
-                <TouchableOpacity
+                <Pressable
                     onPress={onCancel}
-                    style={styles.backButton}
+                    style={({pressed}) => [styles.backButton, pressed && {opacity: 0.72}]}
                     hitSlop={BACK_BUTTON_HIT_SLOP}
                     testID='agents.channel_summary.date_picker.back'
                 >
@@ -220,7 +220,7 @@ const DateRangePicker = ({onSubmit, onCancel}: Props) => {
                         size={24}
                         color={theme.centerChannelColor}
                     />
-                </TouchableOpacity>
+                </Pressable>
                 <FormattedText
                     id='agents.channel_summary.date_picker.title'
                     defaultMessage='Select date range'

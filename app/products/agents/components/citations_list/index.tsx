@@ -3,13 +3,14 @@
 
 import {TOUCH_TARGET_SIZE} from '@agents/constants';
 import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, Text, TouchableOpacity, View} from 'react-native';
+import {type LayoutChangeEvent, Pressable, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getUrlDomain, tryOpenURL} from '@utils/url';
 
 import type {Annotation} from '@agents/types';
@@ -35,10 +36,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
         },
         headerText: {
-            fontSize: 14,
-            fontWeight: 600,
             color: changeOpacity(theme.centerChannelColor, 0.72),
             marginLeft: 8,
+            ...typography('Body', 100, 'SemiBold'),
         },
         citationsList: {
             overflow: 'hidden',
@@ -71,14 +71,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginRight: 8,
         },
         citationTitle: {
-            fontSize: 14,
-            fontWeight: 600,
             color: theme.centerChannelColor,
             marginBottom: 2,
+            ...typography('Body', 100, 'SemiBold'),
         },
         citationUrl: {
-            fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75),
         },
     };
 });
@@ -128,9 +127,9 @@ const CitationsList = ({annotations}: CitationsListProps) => {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity
+            <Pressable
                 onPress={handleToggle}
-                style={styles.header}
+                style={({pressed}) => [styles.header, pressed && {opacity: 0.72}]}
                 testID='citations.list.toggle'
             >
                 <View style={styles.headerLeft}>
@@ -151,7 +150,7 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                     size={20}
                     color={changeOpacity(theme.centerChannelColor, 0.64)}
                 />
-            </TouchableOpacity>
+            </Pressable>
 
             <Animated.View style={[styles.citationsList, collapsibleStyle]}>
                 <View
@@ -159,10 +158,10 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                     style={styles.citationsContentWrapper}
                 >
                     {annotations.map((annotation) => (
-                        <TouchableOpacity
+                        <Pressable
                             key={`citation-${annotation.index}-${annotation.url}`}
                             onPress={() => handleCitationPress(annotation.url)}
-                            style={styles.citationItem}
+                            style={({pressed}) => [styles.citationItem, pressed && {opacity: 0.72}]}
                             testID={`citations.list.item.${annotation.index}`}
                         >
                             <View style={styles.citationIcon}>
@@ -191,7 +190,7 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                                 size={16}
                                 color={changeOpacity(theme.centerChannelColor, 0.56)}
                             />
-                        </TouchableOpacity>
+                        </Pressable>
                     ))}
                 </View>
             </Animated.View>

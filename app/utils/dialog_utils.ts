@@ -16,6 +16,7 @@ export function isAppSelectOption(value: any): value is AppSelectOption {
 export const DialogDataSources = {
     USERS: 'users',
     CHANNELS: 'channels',
+    DYNAMIC: 'dynamic',
 } as const;
 
 /**
@@ -72,6 +73,9 @@ export function mapDialogTypeToAppFieldType(dialogType: InteractiveDialogElement
             if (dataSource === DialogDataSources.CHANNELS) {
                 return 'channel';
             }
+            if (dataSource === DialogDataSources.DYNAMIC) {
+                return 'dynamic_select';
+            }
             return 'static_select';
         case DialogElementTypes.RADIO:
             return 'radio';
@@ -112,6 +116,8 @@ export function getDataSourceForAppFieldType(appFieldType: AppFieldType): string
             return DialogDataSources.USERS;
         case 'channel':
             return DialogDataSources.CHANNELS;
+        case 'dynamic_select':
+            return DialogDataSources.DYNAMIC;
         default:
             return undefined;
     }

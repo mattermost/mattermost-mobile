@@ -7,6 +7,7 @@ import PLAYBOOKS_SCREENS from '@playbooks/constants/screens';
 
 export const ABOUT = 'About';
 export const ACCOUNT = 'Account';
+export const AGENTS = 'Agents';
 export const APPS_FORM = 'AppForm';
 export const ATTACHMENT_OPTIONS = 'AttachmentOptions';
 export const BOTTOM_SHEET = 'BottomSheet';
@@ -99,6 +100,7 @@ export const SHOW_TRANSLATION = 'ShowTranslation';
 export default {
     ABOUT,
     ACCOUNT,
+    AGENTS,
     APPS_FORM,
     ATTACHMENT_OPTIONS,
     BOTTOM_SHEET,

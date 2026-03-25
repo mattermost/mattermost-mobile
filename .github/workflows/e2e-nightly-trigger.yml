@@ -1,0 +1,22 @@
+name: E2E Nightly Trigger
+
+# This is a lightweight trigger workflow.
+# Matterwick receives the workflow_run:requested event, provisions 3 Mattermost cloud
+# instances, and dispatches e2e-detox-pr.yml with the instance URLs.
+# When e2e-detox-pr.yml completes, Matterwick destroys the provisioned instances.
+on:
+  schedule:
+    - cron: "0 0 * * *" # Every day at midnight UTC
+
+jobs:
+  signal:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Signal Matterwick to provision E2E servers
+        env:
+          HEAD_SHA: ${{ github.sha }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          echo "Nightly E2E trigger: Matterwick will provision servers via the workflow_run event."
+          echo "Head SHA: $HEAD_SHA"
+          echo "Branch: $REF_NAME"

@@ -3,7 +3,7 @@
 
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -16,6 +16,12 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import {safeParseJSON} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+const HIT_SLOP_VERTICAL = 4;
+
+// Indent to align content under the tool name (past the chevron icon column)
+const CONTENT_INDENT = 13;
+const BUTTON_HIT_SLOP = {top: HIT_SLOP_VERTICAL, bottom: HIT_SLOP_VERTICAL, left: 0, right: 0};
 
 interface ToolCardProps {
     tool: ToolCall;
@@ -34,7 +40,6 @@ interface ToolCardProps {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            marginBottom: 4,
         },
         header: {
             flexDirection: 'row',
@@ -55,7 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 100),
         },
         argumentsContainer: {
-            marginLeft: 24,
+            marginLeft: CONTENT_INDENT,
         },
         markdownText: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
@@ -67,21 +72,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             gap: 8,
             paddingTop: 8,
             paddingBottom: 8,
-            paddingLeft: 24,
+            paddingLeft: CONTENT_INDENT,
         },
         responseLabelText: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
             ...typography('Body', 100),
         },
         resultContainer: {
-            marginLeft: 24,
+            marginLeft: CONTENT_INDENT,
         },
         statusContainer: {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
             marginTop: 16,
-            paddingLeft: 24,
+            paddingLeft: CONTENT_INDENT,
         },
         statusText: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
@@ -105,6 +110,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 8,
             paddingHorizontal: 16,
             justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: 32,
         },
         buttonDisabled: {
             opacity: 0.5,
@@ -306,10 +313,9 @@ const ToolCard = ({
             style={styles.container}
             testID={testIdPrefix}
         >
-            <TouchableOpacity
+            <Pressable
                 onPress={canExpand ? handleToggle : undefined}
-                style={styles.header}
-                activeOpacity={canExpand ? 0.7 : 1}
+                style={({pressed}) => [styles.header, canExpand && pressed && {opacity: 0.72}]}
                 testID={`${testIdPrefix}.header`}
             >
                 {canExpand ? (
@@ -329,7 +335,7 @@ const ToolCard = ({
                 >
                     {displayName}
                 </Text>
-            </TouchableOpacity>
+            </Pressable>
 
             {!isCollapsed && (
                 <Animated.View style={contentAnimatedStyle}>
@@ -447,11 +453,11 @@ const ToolCard = ({
 
             {isPending && !hasLocalDecision && !isProcessing && onApprove && onReject && (
                 <View style={styles.buttonContainer}>
-                    <TouchableOpacity
+                    <Pressable
                         onPress={handleApprove}
                         disabled={isProcessing}
-                        style={[styles.button, isProcessing && styles.buttonDisabled]}
-                        activeOpacity={0.7}
+                        style={({pressed}) => [styles.button, isProcessing && styles.buttonDisabled, pressed && {opacity: 0.72}]}
+                        hitSlop={BUTTON_HIT_SLOP}
                         testID={`${testIdPrefix}.approve`}
                     >
                         <FormattedText
@@ -459,12 +465,12 @@ const ToolCard = ({
                             defaultMessage='Accept'
                             style={styles.buttonText}
                         />
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </Pressable>
+                    <Pressable
                         onPress={handleReject}
                         disabled={isProcessing}
-                        style={[styles.button, isProcessing && styles.buttonDisabled]}
-                        activeOpacity={0.7}
+                        style={({pressed}) => [styles.button, isProcessing && styles.buttonDisabled, pressed && {opacity: 0.72}]}
+                        hitSlop={BUTTON_HIT_SLOP}
                         testID={`${testIdPrefix}.reject`}
                     >
                         <FormattedText
@@ -472,17 +478,16 @@ const ToolCard = ({
                             defaultMessage='Reject'
                             style={styles.buttonText}
                         />
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
             )}
 
             {isResultPhase && (isSuccess || isError) && !hasLocalDecision && !isProcessing && onApprove && onReject && (
                 <View style={styles.resultButtonContainer}>
-                    <TouchableOpacity
+                    <Pressable
                         onPress={handleApprove}
                         disabled={isProcessing}
-                        style={[styles.shareButton, isProcessing && styles.buttonDisabled]}
-                        activeOpacity={0.7}
+                        style={({pressed}) => [styles.shareButton, isProcessing && styles.buttonDisabled, pressed && {opacity: 0.72}]}
                         testID={`${testIdPrefix}.share`}
                     >
                         <CompassIcon
@@ -495,12 +500,11 @@ const ToolCard = ({
                             defaultMessage='Share'
                             style={styles.shareButtonText}
                         />
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </Pressable>
+                    <Pressable
                         onPress={handleReject}
                         disabled={isProcessing}
-                        style={[styles.keepPrivateButton, isProcessing && styles.buttonDisabled]}
-                        activeOpacity={0.7}
+                        style={({pressed}) => [styles.keepPrivateButton, isProcessing && styles.buttonDisabled, pressed && {opacity: 0.72}]}
                         testID={`${testIdPrefix}.keep_private`}
                     >
                         <CompassIcon
@@ -513,7 +517,7 @@ const ToolCard = ({
                             defaultMessage='Keep private'
                             style={styles.keepPrivateButtonText}
                         />
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
             )}
         </View>

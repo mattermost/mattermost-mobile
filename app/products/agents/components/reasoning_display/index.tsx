@@ -3,13 +3,14 @@
 
 import {TOUCH_TARGET_SIZE} from '@agents/constants';
 import React, {useCallback, useState} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import LoadingSpinner from './loading_spinner';
 
@@ -18,6 +19,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         minimalContainer: {
             marginBottom: 4,
             minHeight: TOUCH_TARGET_SIZE,
+            marginLeft: -14,
         },
         minimalContent: {
             flexDirection: 'row',
@@ -26,12 +28,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 12,
         },
         minimalText: {
-            fontSize: 14,
-            lineHeight: 20,
             color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 100),
         },
         expandedContainer: {
             marginBottom: 16,
+            marginLeft: -15,
         },
         expandedHeader: {
             flexDirection: 'row',
@@ -42,9 +44,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 12,
         },
         expandedHeaderText: {
-            fontSize: 14,
-            lineHeight: 20,
             color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 100),
         },
         reasoningContentContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.02),
@@ -58,9 +59,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         reasoningText: {
             padding: 16,
-            fontSize: 14,
-            lineHeight: 22,
             color: changeOpacity(theme.centerChannelColor, 0.8),
+            ...typography('Body', 100),
         },
     };
 });
@@ -98,10 +98,9 @@ const ReasoningDisplay = ({reasoningSummary, isReasoningLoading}: ReasoningDispl
 
     return (
         <View style={isExpanded ? styles.expandedContainer : styles.minimalContainer}>
-            <TouchableOpacity
+            <Pressable
                 onPress={handleToggle}
-                style={isExpanded ? styles.expandedHeader : styles.minimalContent}
-                activeOpacity={0.7}
+                style={({pressed}) => [isExpanded ? styles.expandedHeader : styles.minimalContent, pressed && {opacity: 0.72}]}
             >
                 <Animated.View style={chevronAnimatedStyle}>
                     <CompassIcon
@@ -118,7 +117,7 @@ const ReasoningDisplay = ({reasoningSummary, isReasoningLoading}: ReasoningDispl
                     defaultMessage='Thinking'
                     style={isExpanded ? styles.expandedHeaderText : styles.minimalText}
                 />
-            </TouchableOpacity>
+            </Pressable>
             {isExpanded && reasoningSummary ? (
                 <Animated.View style={[styles.reasoningContentContainer, contentAnimatedStyle]}>
                     <View style={styles.reasoningContent}>

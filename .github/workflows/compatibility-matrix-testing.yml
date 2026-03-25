@@ -10,6 +10,11 @@ on:
       MOBILE_VERSION:
         description: "The mattermost mobile version to test"
         required: true
+      cmt_run_id:
+        description: "CMT provisioner run ID used for instance cleanup"
+        required: false
+        default: "0"
+        type: string
 
 jobs:
   ## This is picked up after the finish for cleanup
@@ -98,7 +103,7 @@ jobs:
 
   detox-e2e:
     name: mobile-cmt-${{ matrix.server.version }}
-    uses: ./.github/workflows/e2e-detox-template.yml
+    uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
     strategy:
@@ -106,13 +111,13 @@ jobs:
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
     secrets: inherit
     with:
-      run-ios-tests: true
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
 
   update-final-status:
     runs-on: ubuntu-22.04
+    if: always()
     needs:
       - calculate-commit-hash
       - detox-e2e
@@ -127,3 +132,15 @@ jobs:
           description: Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version
           status: ${{ needs.detox-e2e.outputs.STATUS }}
           target_url: ${{ needs.detox-e2e.outputs.TARGET_URL }}
+
+      - name: cmt/cleanup-instances
+        if: ${{ inputs.cmt_run_id != '0' && inputs.cmt_run_id != '' }}
+        env:
+          MATTERWICK_URL: ${{ vars.MATTERWICK_URL }}
+          CMT_RUN_ID: ${{ inputs.cmt_run_id }}
+        run: |
+          curl -s -X POST "${MATTERWICK_URL}/cleanup_e2e" \
+            -H "Content-Type: application/json" \
+            -d "{\"repo\": \"mattermost-mobile\", \"run_id\": \"${CMT_RUN_ID}\"}" \
+            --fail-with-body || echo "Cleanup request failed (non-fatal)"
+

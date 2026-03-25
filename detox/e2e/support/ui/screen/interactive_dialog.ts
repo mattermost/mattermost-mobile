@@ -246,8 +246,62 @@ class InteractiveDialogScreen {
         await wait(timeouts.ONE_SEC);
     };
 
-    toBeVisible = async () => {
-        await waitFor(this.interactiveDialogScreen).toExist().withTimeout(timeouts.TEN_SEC);
+    // Helper to select an option from a select field (opens IntegrationSelector, selects option)
+    selectOption = async (elementName: string, optionValue: string) => {
+        // Tap the select element to open IntegrationSelector
+        const selectButton = element(by.id(`AppFormElement.${elementName}.select.button`));
+        await expect(selectButton).toExist();
+        await selectButton.tap();
+        await wait(2000);
+
+        // Wait for IntegrationSelector to appear and select the option
+        const optionElement = element(by.text(optionValue));
+        await expect(optionElement).toExist();
+        await optionElement.tap();
+        await wait(1000);
+
+        // Confirm selection if there's a Done button
+        try {
+            const doneButton = element(by.text('Done'));
+            await expect(doneButton).toExist();
+            await doneButton.tap();
+            await wait(1000);
+        } catch (error) {
+            // No Done button needed, selection was immediate
+        }
+    };
+
+    // Helper to select a radio option
+    selectRadioOption = async (elementName: string, optionValue: string) => {
+        const radioOption = element(by.id(`AppFormElement.${elementName}.radio.${optionValue}.button`));
+        await expect(radioOption).toExist();
+        await radioOption.tap();
+        await wait(500);
+    };
+
+    // Helper to fill text element with specific input pattern for apps form
+    fillTextElementWithAppForm = async (elementName: string, value: string) => {
+        const textInput = element(by.id(`AppFormElement.${elementName}.text.input`));
+        await expect(textInput).toExist();
+        await textInput.typeText(value);
+        await wait(1000);
+
+        // Dismiss keyboard by tapping outside
+        try {
+            const dialogTitle = element(by.id('screen.title.text'));
+            await dialogTitle.tap();
+        } catch (error) {
+            // Could not dismiss keyboard, continue
+        }
+        await wait(500);
+    };
+
+    toBeVisible = async (shouldBeVisible: boolean = true) => {
+        if (shouldBeVisible) {
+            await waitFor(this.interactiveDialogScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitFor(this.interactiveDialogScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        }
     };
 }
 

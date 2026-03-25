@@ -3,7 +3,7 @@
 
 import {type Agent} from '@agents/client/rest';
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, type ListRenderItemInfo, TouchableOpacity, View} from 'react-native';
+import {FlatList, type ListRenderItemInfo, Pressable, View} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrl} from '@actions/remote/user';
@@ -106,9 +106,9 @@ const AgentSelectorPanel = ({
 
     const renderHeader = useCallback(() => (
         <View style={styles.headerRow}>
-            <TouchableOpacity
+            <Pressable
                 onPress={onBack}
-                style={styles.backButton}
+                style={({pressed}) => [styles.backButton, pressed && {opacity: 0.72}]}
                 testID='agents.selector.back'
             >
                 <CompassIcon
@@ -116,7 +116,7 @@ const AgentSelectorPanel = ({
                     size={24}
                     color={theme.centerChannelColor}
                 />
-            </TouchableOpacity>
+            </Pressable>
             <FormattedText
                 id='agents.selector.title'
                 defaultMessage='Select Agent'

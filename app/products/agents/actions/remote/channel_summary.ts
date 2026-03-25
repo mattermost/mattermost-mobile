@@ -6,7 +6,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel} from '@queries/servers/channel';
 import {getFullErrorMessage} from '@utils/errors';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 import type {ChannelAnalysisOptions, ChannelAnalysisResponse} from '@agents/types/api';
 
@@ -28,6 +28,7 @@ export async function requestChannelSummary(
             // Use empty string for teamId - fetchMyChannel will use channel.team_id if available
             const channelResult = await fetchMyChannel(serverUrl, '', channelId);
             if (channelResult.error) {
+                logDebug('[requestChannelSummary] Failed to fetch channel', getFullErrorMessage(channelResult.error));
                 return {error: getFullErrorMessage(channelResult.error)};
             }
         }
@@ -36,6 +37,7 @@ export async function requestChannelSummary(
         const result = await client.doChannelAnalysis(channelId, analysisType, botUsername, options);
 
         if (!result?.postid || !result?.channelid) {
+            logDebug('[requestChannelSummary] Invalid response - missing postid or channelid');
             return {error: 'Invalid response from server'};
         }
 

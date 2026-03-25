@@ -1,11 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, ScrollView} from 'react-native';
 
+import {savePreference} from '@actions/remote/preference';
 import Button from '@components/button';
 import MenuDivider from '@components/menu_divider';
+import SettingOption from '@components/settings/option';
+import {Preferences} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
@@ -29,6 +33,8 @@ type Props = {
     reportAProblemLink?: string;
     siteName?: string;
     allowDownloadLogs: boolean;
+    attachLogsEnabled: boolean;
+    currentUserId: string;
     reportAProblemType?: string;
     isLicensed: boolean;
     metadata: ReportAProblemMetadata;
@@ -72,6 +78,8 @@ const ReportProblem = ({
     reportAProblemLink,
     siteName,
     allowDownloadLogs,
+    attachLogsEnabled,
+    currentUserId,
     reportAProblemType,
     isLicensed,
     metadata,
@@ -79,6 +87,25 @@ const ReportProblem = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
+    const serverUrl = useServerUrl();
+    const [attachLogsToggle, setAttachLogsToggle] = useState(attachLogsEnabled);
+
+    useEffect(() => {
+        setAttachLogsToggle(attachLogsEnabled);
+    }, [attachLogsEnabled]);
+
+    const handleToggleAttachLogs = useCallback(async (value: boolean) => {
+        setAttachLogsToggle(value);
+        const {error} = await savePreference(serverUrl, [{
+            user_id: currentUserId,
+            category: Preferences.CATEGORIES.ADVANCED_SETTINGS,
+            name: Preferences.ATTACH_APP_LOGS,
+            value: String(value),
+        }]);
+        if (error) {
+            setAttachLogsToggle(!value);
+        }
+    }, [serverUrl, currentUserId]);
 
     const handleReport = useCallback(async () => {
         switch (reportAProblemType) {
@@ -144,6 +171,21 @@ const ReportProblem = ({
                     />
                     {allowDownloadLogs && (
                         <>
+                            <MenuDivider/>
+                            <SettingOption
+                                label={intl.formatMessage({
+                                    id: 'screen.report_problem.enable_log_attachments',
+                                    defaultMessage: 'Enable app log attachments',
+                                })}
+                                description={intl.formatMessage({
+                                    id: 'screen.report_problem.enable_log_attachments.description',
+                                    defaultMessage: 'Show an option to attach app logs in the file attachment menu',
+                                })}
+                                selected={attachLogsToggle}
+                                type='toggle'
+                                action={handleToggleAttachLogs}
+                                testID='report_problem.enable_log_attachments'
+                            />
                             <MenuDivider/>
                             <AppLogs/>
                         </>
