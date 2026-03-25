@@ -3,9 +3,8 @@
 
 import React from 'react';
 
-import {renderWithIntlAndTheme} from '@test/intl-test-helper';
-
 import PermalinkError from '@screens/permalink/permalink_error';
+import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 describe('PermalinkError', () => {
     const baseProps = {
