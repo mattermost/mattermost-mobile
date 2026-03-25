@@ -158,7 +158,7 @@ describe('ShareWithConnectedWorkspaces', () => {
         expect(goToScreen).toHaveBeenCalledWith(
             Screens.CHANNEL_SHARE,
             'Share with connected workspaces',
-            {channelId: 'channel1'},
+            {channelId: 'channel1', onSharedRemotesChanged: expect.any(Function)},
             {topBar: {subtitle: {color: 'rgba(255,255,255,0.72)', text: 'Channel 1'}}},
         );
     });

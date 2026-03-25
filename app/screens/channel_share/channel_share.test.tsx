@@ -114,7 +114,7 @@ describe('ChannelShare', () => {
         await waitFor(() => {
             expect(getByTestId('channel_share.fetch_error')).toBeTruthy();
         });
-        expect(getByText('Failed to load workspaces or connections')).toBeTruthy();
+        expect(getByText('Failed to load connected workspaces or connections')).toBeTruthy();
         expect(getByText(errorMessage)).toBeTruthy();
         expect(queryByTestId('channel_share.scroll_view')).toBeNull();
     });
@@ -136,7 +136,7 @@ describe('ChannelShare', () => {
         await waitFor(() => {
             expect(getByTestId('channel_share.fetch_error')).toBeTruthy();
         });
-        expect(getByText('Failed to load workspaces or connections')).toBeTruthy();
+        expect(getByText('Failed to load connected workspaces or connections')).toBeTruthy();
         expect(getByText(errorMessage)).toBeTruthy();
         expect(queryByTestId('channel_share.scroll_view')).toBeNull();
     });
