@@ -15,7 +15,7 @@ import {typography} from '@utils/typography';
 
 import SummaryReport, {SummaryReportType} from './summary_report';
 
-import type {SearchResult, Result} from './invite';
+import type {SearchResult, Result} from './types';
 
 const MAX_WIDTH_CONTENT = 480;
 

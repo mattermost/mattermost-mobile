@@ -3,6 +3,8 @@
 
 export const ID_PATH_PATTERN = '[a-z0-9]{26}';
 
+export const TOKEN_PATH_PATTERN = '[a-z0-9]{64}';
+
 // This should cover:
 // - Team name (lowercase english characters, numbers or -)
 // - Two ids separated by __ (userID__userID)

@@ -2,13 +2,22 @@
 // See LICENSE.txt for license information.
 import React, {useCallback} from 'react';
 import {
-    Platform, FlatList, RefreshControl, View,
+    FlatList, Keyboard, Platform, RefreshControl, View,
 } from 'react-native';
 
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 const INITIAL_BATCH_TO_RENDER = 15;
+
+const keyboardDismissProp = Platform.select({
+    android: {
+        onScrollBeginDrag: Keyboard.dismiss,
+    },
+    ios: {
+        keyboardDismissMode: 'on-drag' as const,
+    },
+});
 
 type DataType = DialogOption[] | Channel[];
 type ListItemProps = {
@@ -51,9 +60,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                     marginBottom: 20,
                 },
             }),
-        },
-        container: {
-            flexGrow: 1,
         },
         separator: {
             height: 1,
@@ -160,9 +166,9 @@ function CustomList({
 
     return (
         <FlatList
-            contentContainerStyle={style.container}
             data={data}
             keyboardShouldPersistTaps='always'
+            {...keyboardDismissProp}
             keyExtractor={keyExtractor}
             initialNumToRender={INITIAL_BATCH_TO_RENDER}
             ItemSeparatorComponent={renderSeparator}

@@ -4,6 +4,7 @@
 import {ActionType, Post} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {getPostById} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
 import {COMBINED_USER_ACTIVITY} from '@utils/post_list';
 
@@ -18,6 +19,7 @@ import {
     removePostAcknowledgement,
     deletePosts,
     getUsersCountFromMentions,
+    updatePostTranslation,
 } from './post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -350,5 +352,51 @@ describe('getUsersCountFromMentions', () => {
 
         const num = await getUsersCountFromMentions(serverUrl, [user.username]);
         expect(num).toBe(1);
+    });
+});
+
+describe('updatePostTranslation', () => {
+    const post = TestHelper.fakePost({id: 'postid4', channel_id: channelId});
+
+    it('post not found', async () => {
+        const translation: PostTranslation = {object: {message: 'Hola'}, state: 'ready', source_lang: 'en'};
+        const result = await updatePostTranslation(serverUrl, 'nonexistent', 'es', translation);
+        expect(result.error).toBe('Post not found');
+    });
+
+    it('updates post metadata with translation', async () => {
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post.id],
+            posts: [post],
+            prepareRecordsOnly: false,
+        });
+
+        const translation: PostTranslation = {object: {message: 'Hola'}, state: 'ready', source_lang: 'en'};
+        const result = await updatePostTranslation(serverUrl, post.id, 'es', translation);
+        expect(result.error).toBeUndefined();
+
+        const updatedPost = await getPostById(operator.database, post.id);
+        expect(updatedPost).toBeDefined();
+        expect(updatedPost?.metadata?.translations?.es).toEqual(translation);
+    });
+
+    it('handle database write error', async () => {
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post.id],
+            posts: [post],
+            prepareRecordsOnly: false,
+        });
+
+        const originalWrite = operator.database.write;
+        operator.database.write = jest.fn().mockRejectedValue(new Error('Write failed'));
+
+        const translation: PostTranslation = {object: {message: 'Hola'}, state: 'ready', source_lang: 'en'};
+        const result = await updatePostTranslation(serverUrl, post.id, 'es', translation);
+
+        operator.database.write = originalWrite;
+
+        expect(result.error).toBeTruthy();
     });
 });

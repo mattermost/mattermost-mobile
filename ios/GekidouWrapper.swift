@@ -65,7 +65,7 @@ import TurboLogIOSNative
 
   @objc func getToken(for url: String) -> String? {
     if let credentials = try? Keychain.default.getCredentials(for: url) {
-      return credentials?.token
+      return credentials.token
     }
 
     return nil

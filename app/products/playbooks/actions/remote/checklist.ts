@@ -10,7 +10,10 @@ import {
     setAssignee as localSetAssignee,
     setDueDate as localSetDueDate,
     renameChecklist as localRenameChecklist,
+    deleteChecklistItem as localDeleteChecklistItem,
+    updateChecklistItemTitleAndDescription as localUpdateChecklistItemTitleAndDescription,
 } from '@playbooks/actions/local/checklist';
+import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
@@ -172,8 +175,8 @@ export const renameChecklist = async (
         await client.renameChecklist(playbookRunId, checklistNumber, newTitle);
 
         // Update local database
-        await localRenameChecklist(serverUrl, checklistId, newTitle);
-        return {data: true};
+        const result = await localRenameChecklist(serverUrl, checklistId, newTitle);
+        return result.error ? result : {data: true};
     } catch (error) {
         logDebug('error on renameChecklist', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
@@ -185,14 +188,65 @@ export const addChecklistItem = async (
     serverUrl: string,
     playbookRunId: string,
     checklistNumber: number,
-    title: string,
+    item: ChecklistItemInput,
 ) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        await client.addChecklistItem(playbookRunId, checklistNumber, title);
-        return {data: true};
+        await client.addChecklistItem(playbookRunId, checklistNumber, item);
+
+        // Fetch and sync the entire run to get the created item with server-generated ID
+        const run = await client.fetchPlaybookRun(playbookRunId);
+        const result = await handlePlaybookRuns(serverUrl, [run], false, true);
+        return result.error ? result : {data: true};
     } catch (error) {
         logDebug('error on addChecklistItem', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const deleteChecklistItem = async (
+    serverUrl: string,
+    playbookRunId: string,
+    itemId: string,
+    checklistNumber: number,
+    itemNumber: number,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.deleteChecklistItem(playbookRunId, checklistNumber, itemNumber);
+
+        // Only delete from local database if server operation succeeded
+        const localResult = await localDeleteChecklistItem(serverUrl, itemId);
+        if (localResult.error) {
+            logDebug('error on deleteChecklistItem local deletion', localResult.error);
+            return {error: localResult.error};
+        }
+
+        return {data: true};
+    } catch (error) {
+        logDebug('error on deleteChecklistItem', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const updateChecklistItemTitleAndDescription = async (
+    serverUrl: string,
+    playbookRunId: string,
+    itemId: string,
+    checklistNumber: number,
+    itemNumber: number,
+    item: ChecklistItemInput,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.updateChecklistItem(playbookRunId, checklistNumber, itemNumber, item);
+
+        await localUpdateChecklistItemTitleAndDescription(serverUrl, itemId, item.title, item.description);
+        return {data: true};
+    } catch (error) {
+        logDebug('error on updateChecklistItemTitleAndDescription', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

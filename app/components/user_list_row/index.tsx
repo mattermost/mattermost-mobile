@@ -26,7 +26,6 @@ type Props = {
     highlight?: boolean;
     id: string;
     includeMargin?: boolean;
-    isMyUser: boolean;
     isChannelAdmin: boolean;
     manageMode: boolean;
     onLongPress: (user: UserProfile | UserModel) => void;
@@ -82,7 +81,6 @@ const messages = defineMessages({
 function UserListRow({
     id,
     includeMargin,
-    isMyUser,
     highlight,
     isChannelAdmin,
     onPress,
@@ -129,7 +127,7 @@ function UserListRow({
     }, [onPress]);
 
     const manageModeIcon = useMemo(() => {
-        if (!showManageMode || isMyUser) {
+        if (!showManageMode) {
             return null;
         }
 
@@ -149,7 +147,7 @@ function UserListRow({
                 />
             </View>
         );
-    }, [isChannelAdmin, isMyUser, showManageMode, style.manageText, style.selectorManage, theme.centerChannelColor]);
+    }, [isChannelAdmin, showManageMode, style.manageText, style.selectorManage, theme.centerChannelColor]);
 
     const onLayout = useCallback(() => {
         if (highlight && !tutorialWatched) {

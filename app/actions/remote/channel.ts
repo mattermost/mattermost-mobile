@@ -5,7 +5,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {addChannelToDefaultCategory, handleConvertedGMCategories, storeCategories} from '@actions/local/category';
-import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeAllMyChannels, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
+import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeAllMyChannels, storeMyChannelsForTeam, switchToChannel, deletePostsForChannel} from '@actions/local/channel';
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {loadCallForChannel} from '@calls/actions/calls';
@@ -272,18 +272,21 @@ export async function patchChannel(serverUrl: string, channelId: string, channel
         }
 
         const channel = await getChannelById(database, channelData.id);
-        if (channel && (channel.displayName !== channelData.display_name || channel.type !== channelData.type)) {
+        if (channel && (channel.displayName !== channelData.display_name || channel.type !== channelData.type || channel.autotranslation !== channelData.autotranslation)) {
             channel.prepareUpdate((v) => {
                 // DM and GM display names cannot be patched and are formatted client-side; do not overwrite
                 if (channelData.type !== General.DM_CHANNEL && channelData.type !== General.GM_CHANNEL) {
                     v.displayName = channelData.display_name;
                 }
                 v.type = channelData.type;
+                if (channelData.autotranslation !== undefined) {
+                    v.autotranslation = channelData.autotranslation;
+                }
             });
             models.push(channel);
         }
         if (models?.length) {
-            await operator.batchRecords(models.flat(), 'patchChannel');
+            await operator.batchRecords(models, 'patchChannel');
         }
         return {channel: channelData};
     } catch (error) {
@@ -1243,6 +1246,76 @@ export const updateChannelNotifyProps = async (serverUrl: string, channelId: str
     }
 };
 
+export const setChannelAutotranslation = async (serverUrl: string, channelId: string, enabled: boolean) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const channelData = await client.setChannelAutotranslation(channelId, enabled);
+        const models = [];
+
+        const channel = await getChannelById(database, channelData.id);
+        const autotranslationDisabled = channel && channel.autotranslation && !channelData.autotranslation;
+
+        if (channel && channel.autotranslation !== channelData.autotranslation) {
+            channel.prepareUpdate((v) => {
+                v.autotranslation = channelData.autotranslation ?? false;
+            });
+            models.push(channel);
+        }
+
+        if (models?.length) {
+            await operator.batchRecords(models, 'setChannelAutotranslation');
+        }
+
+        // Delete posts when autotranslation setting changes
+        if (autotranslationDisabled) {
+            await deletePostsForChannel(serverUrl, channelData.id);
+        }
+
+        return {channel: channelData};
+    } catch (error) {
+        logDebug('error on setChannelAutotranslation', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const setMyChannelAutotranslation = async (serverUrl: string, channelId: string, enabled: boolean) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        await client.setMyChannelAutotranslation(channelId, enabled);
+        const models = [];
+
+        const myChannel = await getMyChannel(database, channelId);
+        const autotranslationChanged = myChannel && myChannel.autotranslationDisabled !== !enabled;
+
+        if (myChannel && autotranslationChanged) {
+            myChannel.prepareUpdate((v) => {
+                v.autotranslationDisabled = !enabled;
+            });
+            models.push(myChannel);
+        }
+
+        if (models?.length) {
+            await operator.batchRecords(models, 'setMyChannelAutotranslation');
+        }
+
+        // Delete posts when autotranslation setting changes
+        if (autotranslationChanged) {
+            await deletePostsForChannel(serverUrl, channelId);
+        }
+
+        return {data: true};
+    } catch (error) {
+        logDebug('error on setMyChannelAutotranslation', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
 export const toggleMuteChannel = async (serverUrl: string, channelId: string, showSnackBar = false) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -1394,6 +1467,42 @@ export const fetchGroupMessageMembersCommonTeams = async (serverUrl: string, cha
         return {error};
     }
 };
+
+export async function switchToChannelByName(serverUrl: string, channelName: string, teamName?: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        let teamId = '';
+        if (teamName) {
+            const team = await getTeamByName(database, teamName);
+            teamId = team?.id || '';
+        }
+        if (!teamId) {
+            teamId = await getCurrentTeamId(database) || '';
+        }
+
+        let channelId = '';
+        const channel = await getChannelByName(database, teamId, channelName);
+        if (channel) {
+            channelId = channel.id;
+        } else {
+            const fetchResult = await fetchChannelByName(serverUrl, teamId, channelName, true);
+            if (fetchResult.channel) {
+                channelId = fetchResult.channel.id;
+            }
+        }
+
+        if (channelId) {
+            await switchToChannelById(serverUrl, channelId, teamId);
+        }
+
+        return {};
+    } catch (error) {
+        logDebug('error on switchToChannelByName', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+}
 
 export const convertGroupMessageToPrivateChannel = async (serverUrl: string, channelId: string, targetTeamId: string, displayName: string) => {
     try {

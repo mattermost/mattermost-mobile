@@ -6,11 +6,10 @@ import React, {useCallback} from 'react';
 import {Platform} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming, type SharedValue} from 'react-native-reanimated';
 
+import EmojiCategoryBar from '@components/emoji_category_bar';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
 import {selectEmojiCategoryBarSection} from '@hooks/emoji_category_bar';
-
-import EmojiCategoryBar from '../emoji_category_bar';
 
 function waitForSheetExtended(animatedSheetState: SharedValue<number>, callback: () => void, depth = 250) {
     if (animatedSheetState.value === SHEET_STATE.EXTENDED) {
@@ -36,7 +35,7 @@ const PickerFooter = (props: BottomSheetFooterProps) => {
         waitForSheetExtended(animatedSheetState, () => {
             selectEmojiCategoryBarSection(index);
         });
-    }, []);
+    }, [animatedSheetState, expand]);
 
     const animatedStyle = useAnimatedStyle(() => {
         const paddingBottom = withTiming(

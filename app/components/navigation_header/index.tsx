@@ -30,6 +30,7 @@ type Props = SearchProps & {
     subtitle?: string;
     subtitleCompanion?: React.ReactElement;
     title?: string;
+    titleCompanion?: React.ReactElement;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -54,6 +55,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
     subtitle,
     subtitleCompanion,
     title = '',
+    titleCompanion,
     hideHeader,
     ...searchProps
 }: Props, ref) => {
@@ -101,6 +103,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
                 subtitleCompanion={subtitleCompanion}
                 theme={theme}
                 title={title}
+                titleCompanion={titleCompanion}
             />
             {isLargeTitle &&
                 <NavigationHeaderLargeTitle

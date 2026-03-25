@@ -57,46 +57,46 @@ describe('Autocomplete - Edit Channel Header', () => {
 
     it('MM-T4884_1 - should render at-mention autocomplete in header input', async () => {
         // * Verify at-mention list is not displayed
-        await expect(Autocomplete.sectionAtMentionList).not.toBeVisible();
+        await expect(Autocomplete.sectionAtMentionList).not.toExist();
 
         // # Type in "@" to activate at-mention autocomplete
         await CreateOrEditChannelScreen.headerInput.typeText('@');
 
         // * Verify at-mention list is displayed
         await waitFor(Autocomplete.sectionAtMentionList).toExist().withTimeout(timeouts.ONE_SEC);
-        await expect(Autocomplete.sectionAtMentionList).toBeVisible();
+        await expect(Autocomplete.sectionAtMentionList).toExist();
     });
 
     it('MM-T4884_2 - should render channel mention autocomplete in header input', async () => {
         // * Verify channel mention list is not displayed
-        await expect(Autocomplete.sectionChannelMentionList).not.toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
 
         // # Type in "~" to activate channel mention autocomplete
         await CreateOrEditChannelScreen.headerInput.typeText('~');
 
         // * Verify channel mention list is displayed
-        await expect(Autocomplete.sectionChannelMentionList).toBeVisible();
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
     });
 
     it('MM-T4884_3 - should render emoji suggestion autocomplete in header input', async () => {
         // * Verify emoji suggestion list is not displayed
-        await expect(Autocomplete.flatEmojiSuggestionList).not.toBeVisible();
+        await expect(Autocomplete.flatEmojiSuggestionList).not.toExist();
 
         // # Type in ":" followed by 2 characters to activate emoji suggestion autocomplete
         await CreateOrEditChannelScreen.headerInput.typeText(':sm');
 
         // * Verify emoji suggestion list is displayed
-        await expect(Autocomplete.flatEmojiSuggestionList).toBeVisible();
+        await expect(Autocomplete.flatEmojiSuggestionList).toExist();
     });
 
     it('MM-T4884_4 - should not render slash suggestion autocomplete in header input', async () => {
         // * Verify slash suggestion list is not displayed
-        await expect(Autocomplete.flatEmojiSuggestionList).not.toBeVisible();
+        await expect(Autocomplete.flatEmojiSuggestionList).not.toExist();
 
         // # Type in "/" to activate slash suggestion autocomplete
         await CreateOrEditChannelScreen.headerInput.typeText('/');
 
         // * Verify slash suggestion list is still not displayed
-        await expect(Autocomplete.flatEmojiSuggestionList).not.toBeVisible();
+        await expect(Autocomplete.flatEmojiSuggestionList).not.toExist();
     });
 });

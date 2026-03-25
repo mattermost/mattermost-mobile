@@ -159,7 +159,7 @@ export const CallsCustomMessage = ({
         setJoiningChannelId(post.channelId);
         await leaveAndJoinWithAlert(intl, serverUrl, post.channelId);
         setJoiningChannelId(null);
-    }, [limitRestrictedInfo, intl, serverUrl, post.channelId]);
+    }, [isLimitRestricted, post.channelId, intl, serverUrl, limitRestrictedInfo]);
 
     const leaveCallHandler = useCallback(() => {
         leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, post.channelId);

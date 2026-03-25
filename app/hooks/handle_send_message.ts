@@ -53,6 +53,8 @@ type Props = {
     channelIsArchived?: boolean;
     channelIsReadOnly?: boolean;
     deactivatedChannel?: boolean;
+    onPostCreated?: (postId: string) => void;
+    postBoRConfig?: PostBoRConfig;
 }
 
 export const useHandleSendMessage = ({
@@ -75,6 +77,8 @@ export const useHandleSendMessage = ({
     channelIsReadOnly,
     deactivatedChannel,
     clearDraft,
+    onPostCreated,
+    postBoRConfig,
 }: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -125,6 +129,10 @@ export const useHandleSendMessage = ({
             };
         }
 
+        if (postBoRConfig?.enabled) {
+            post.type = 'burn_on_read';
+        }
+
         let response: CreateResponse;
         if (schedulingInfo) {
             response = await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority, postFiles));
@@ -152,20 +160,32 @@ export const useHandleSendMessage = ({
                 return;
             }
 
-            createPost(serverUrl, post, postFiles);
+            createPost(serverUrl, post, postFiles).then(({post: createdPost}) => {
+                if (createdPost?.id && onPostCreated) {
+                    // Use post ID or root ID for thread navigation
+                    const threadRootId = createdPost.root_id || createdPost.id;
+                    onPostCreated(threadRootId);
+                }
+            });
             clearDraft();
 
             // Early return to avoid calling DeviceEventEmitter.emit
             return;
         } else {
             // Response error is handled at the post level so don't have to wait to clear draft
-            createPost(serverUrl, post, postFiles);
+            createPost(serverUrl, post, postFiles).then(({post: createdPost}) => {
+                if (createdPost?.id && onPostCreated) {
+                    // Use post ID or root ID for thread navigation
+                    const threadRootId = createdPost.root_id || createdPost.id;
+                    onPostCreated(threadRootId);
+                }
+            });
             clearDraft();
         }
 
         setSendingMessage(false);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
-    }, [files, currentUserId, channelId, rootId, value, postPriority, isFromDraftView, serverUrl, intl, canPost, channelIsArchived, channelIsReadOnly, deactivatedChannel, clearDraft]);
+    }, [files, currentUserId, channelId, rootId, value, postPriority, postBoRConfig?.enabled, isFromDraftView, serverUrl, intl, canPost, channelIsArchived, channelIsReadOnly, deactivatedChannel, clearDraft, onPostCreated]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);
@@ -181,7 +201,7 @@ export const useHandleSendMessage = ({
     }, [intl, channelTimezoneCount, doSubmitMessage]);
 
     const sendCommand = useCallback(async () => {
-        if (value.trim().startsWith('/call')) {
+        if (value && value.trim().startsWith('/call')) {
             const {handled, error} = await handleCallsSlashCommand(value.trim(), serverUrl, channelId, channelType ?? '', rootId, currentUserId, intl);
             if (handled) {
                 setSendingMessage(false);
@@ -221,15 +241,15 @@ export const useHandleSendMessage = ({
 
         clearDraft();
 
-        if (data?.goto_location && !value.startsWith('/leave')) {
+        if (data?.goto_location && value && !value.startsWith('/leave')) {
             handleGotoLocation(serverUrl, intl, data.goto_location);
         }
     }, [value, userIsOutOfOffice, serverUrl, intl, channelId, rootId, clearDraft, channelType, currentUserId]);
 
     const sendMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
-        const toAllOrChannel = DraftUtils.textContainsAtAllAtChannel(value);
-        const toHere = DraftUtils.textContainsAtHere(value);
+        const toAllOrChannel = value ? DraftUtils.textContainsAtAllAtChannel(value) : false;
+        const toHere = value ? DraftUtils.textContainsAtHere(value) : false;
 
         if (value.indexOf('/') === 0 && !schedulingInfo) {
             // Don't execute slash command when scheduling message

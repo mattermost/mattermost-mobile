@@ -58,15 +58,15 @@ const Reaction = ({count, emojiName, highlight, onPress, onLongPress, theme}: Re
     const containerStyle = useMemo(() => {
         const minWidth = MIN_WIDTH + (digits * DIGIT_WIDTH);
         return [styles.reaction, (highlight && styles.highlight), {minWidth}];
-    }, [styles.reaction, highlight, digits]);
+    }, [digits, styles, highlight]);
 
     const handleLongPress = useCallback(() => {
         onLongPress(emojiName);
-    }, []);
+    }, [emojiName, onLongPress]);
 
     const handlePress = useCallback(() => {
         onPress(emojiName, highlight);
-    }, [highlight]);
+    }, [emojiName, highlight, onPress]);
 
     const fontStyle = useMemo(() => [styles.count, (highlight && styles.countHighlight)], [styles, highlight]);
 

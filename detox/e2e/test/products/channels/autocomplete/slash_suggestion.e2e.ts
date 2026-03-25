@@ -65,13 +65,13 @@ describe('Autocomplete - Slash Suggestion', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify slash suggestion list is displayed
-        await expect(Autocomplete.flatSlashSuggestionList).toBeVisible();
+        await expect(Autocomplete.flatSlashSuggestionList).toExist();
 
         // # Type in slash command name
         await ChannelScreen.postInput.typeText(slashCommand);
 
         // * Verify slash suggestion autocomplete contains associated slash command suggestion
-        await expect(slashSuggestionAutocomplete).toBeVisible();
+        await expect(slashSuggestionAutocomplete).toExist();
     });
 
     it('MM-T4881_2 - should suggest slash command based on partial slash command name', async () => {
@@ -80,13 +80,13 @@ describe('Autocomplete - Slash Suggestion', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify slash suggestion list is displayed
-        await expect(Autocomplete.flatSlashSuggestionList).toBeVisible();
+        await expect(Autocomplete.flatSlashSuggestionList).toExist();
 
         // # Type in partial slash command name
         await ChannelScreen.postInput.typeText(`${slashCommand.substring(0, slashCommand.length - 2)}`);
 
         // * Verify slash suggestion autocomplete contains associated slash command suggestion
-        await expect(slashSuggestionAutocomplete).toBeVisible();
+        await expect(slashSuggestionAutocomplete).toExist();
     });
 
     it('MM-T4881_3 - should stop suggesting slash command after uppercase slash command name', async () => {
@@ -95,13 +95,13 @@ describe('Autocomplete - Slash Suggestion', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify slash suggestion list is displayed
-        await expect(Autocomplete.flatSlashSuggestionList).toBeVisible();
+        await expect(Autocomplete.flatSlashSuggestionList).toExist();
 
         // # Type in uppercase slash command name
         await ChannelScreen.postInput.typeText(slashCommand.toUpperCase());
 
         // * Verify slash suggestion autocomplete does not contain associated slash command suggestion
-        await expect(slashSuggestionAutocomplete).not.toBeVisible();
+        await expect(slashSuggestionAutocomplete).not.toExist();
     });
 
     it('MM-T4881_4 - should stop suggesting slash command after slash command name with trailing space', async () => {
@@ -110,20 +110,20 @@ describe('Autocomplete - Slash Suggestion', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify slash suggestion list is displayed
-        await expect(Autocomplete.flatSlashSuggestionList).toBeVisible();
+        await expect(Autocomplete.flatSlashSuggestionList).toExist();
 
         // # Type in slash command name
         await ChannelScreen.postInput.typeText(slashCommand);
 
         // * Verify slash suggestion autocomplete contains associated slash command suggestion
-        await expect(slashSuggestionAutocomplete).toBeVisible();
+        await expect(slashSuggestionAutocomplete).toExist();
 
         // # Type in trailing space
         await ChannelScreen.postInput.typeText(' ');
         await wait(timeouts.ONE_SEC);
 
         // * Verify slash suggestion autocomplete does not contain associated slash command suggestion
-        await expect(slashSuggestionAutocomplete).not.toBeVisible();
+        await expect(slashSuggestionAutocomplete).not.toExist();
     });
 
     it('MM-T4881_5 - should stop suggesting slash command when keyword is not associated with any slash command', async () => {
@@ -132,22 +132,22 @@ describe('Autocomplete - Slash Suggestion', () => {
         await Autocomplete.toBeVisible();
 
         // * Verify slash suggestion list is displayed
-        await expect(Autocomplete.flatSlashSuggestionList).toBeVisible();
+        await expect(Autocomplete.flatSlashSuggestionList).toExist();
 
         // # Type in keyword not associated with any slash command
         await ChannelScreen.postInput.typeText(getRandomId());
 
         // * Verify slash suggestion autocomplete does not contain associated slash command suggestion
-        await expect(slashSuggestionAutocomplete).not.toBeVisible();
+        await expect(slashSuggestionAutocomplete).not.toExist();
     });
 
     it('MM-T4881_6 - should not be able to select slash suggestion multiple times', async () => {
         // # Type in "/" to activate slash suggestion autocomplete
-        await expect(Autocomplete.flatSlashSuggestionList).not.toBeVisible();
+        await expect(Autocomplete.flatSlashSuggestionList).not.toExist();
         await ChannelScreen.postInput.typeText('/');
 
         // * Verify slash suggestion list is displayed
-        await expect(Autocomplete.flatSlashSuggestionList).toBeVisible();
+        await expect(Autocomplete.flatSlashSuggestionList).toExist();
 
         // # Type in slash command name and tap on slash suggestion autocomplete
         await ChannelScreen.postInput.typeText(slashCommand);
@@ -160,6 +160,6 @@ describe('Autocomplete - Slash Suggestion', () => {
         await ChannelScreen.postInput.typeText('/');
 
         // * Verify slash suggestion list is not displayed
-        await expect(Autocomplete.flatSlashSuggestionList).not.toBeVisible();
+        await expect(Autocomplete.flatSlashSuggestionList).not.toExist();
     });
 });

@@ -42,6 +42,9 @@ declare class MyChannelModel extends Model {
     /** last_playbook_runs_fetch_at : The timestamp of the last successful fetch of playbook runs for this channel, used as the "since" parameter for incremental updates */
     lastPlaybookRunsFetchAt: number;
 
+    /** autotranslation : Whether the channel has automatic translation enabled for this user */
+    autotranslationDisabled: boolean;
+
     /** channel : The relation pointing to the CHANNEL table */
     channel: Relation<ChannelModel>;
 

@@ -1,86 +1,90 @@
-# Run Detox E2E tests on pull requests for the Mattermost mobile app
-# Triggered by Argo automation in delivery-platform when labels Run/E2E-iOS or Run/E2E-Android are added
-# Argo provisions 3 test servers and triggers this workflow via workflow_dispatch with server URLs
-name: Detox E2E Tests PR
+# E2E tests are triggered exclusively by Matterwick via workflow_dispatch.
+# Matterwick provisions dedicated cloud servers and passes their URLs here.
+# No static/permanent server fallback is used — if Matterwick doesn't dispatch
+# this workflow, no E2E tests run.
+name: E2E
 
 on:
   workflow_dispatch:
     inputs:
-      SITE_1_URL:
-        description: "First test server URL"
-        required: true
-        type: string
-      SITE_2_URL:
-        description: "Second test server URL"
-        required: true
-        type: string
-      SITE_3_URL:
-        description: "Third test server URL"
-        required: true
-        type: string
       MOBILE_VERSION:
-        description: "The mobile SHA or branch to test"
+        description: "The mobile app commit SHA to test"
         required: true
         type: string
       PLATFORM:
-        description: "Platform to test: ios or android"
-        required: true
+        description: "Mobile platform to test: ios, android, or both"
+        required: false
+        default: "both"
         type: choice
         options:
           - ios
           - android
-      DELIVERY_PLATFORM_RUN_ID:
-        description: "The delivery-platform workflow run ID that provisioned servers"
+          - both
+      SITE_1_URL:
+        description: "URL of the first Mattermost test server (provisioned by Matterwick)"
         required: true
+        type: string
+      SITE_2_URL:
+        description: "URL of the second Mattermost test server (provisioned by Matterwick)"
+        required: false
+        type: string
+      SITE_3_URL:
+        description: "URL of the third Mattermost test server (provisioned by Matterwick)"
+        required: false
+        type: string
+      pr_number:
+        description: "PR number to remove E2E label from after tests complete"
+        required: false
+        type: string
+      run_type:
+        description: "Run type for test reporting (PR/RELEASE/NIGHTLY). Defaults to PR."
+        required: false
+        default: "PR"
         type: string
 
 concurrency:
-  group: "${{ github.workflow }}-${{ inputs.MOBILE_VERSION }}-${{ inputs.PLATFORM }}"
+  # Key on pr_number (or run_id for non-PR runs like nightly/push) so
+  # simultaneous dispatches for different PRs don't cancel each other.
+  group: "${{ github.workflow }}-${{ inputs.pr_number || github.run_id }}"
   cancel-in-progress: true
 
+env:
+  INTUNE_ENABLED: 'true'
+
 jobs:
-  update-initial-status:
+  update-initial-status-ios:
+    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-
-      - name: Get commit SHA
-        id: get-sha
-        run: |
-          MOBILE_SHA=$(git rev-parse HEAD)
-          echo "MOBILE_SHA=${MOBILE_SHA}" >> ${GITHUB_OUTPUT}
-          echo "Resolved MOBILE_VERSION=${{ inputs.MOBILE_VERSION }} to SHA=${MOBILE_SHA}"
-
-      - name: Update commit status (iOS)
-        if: inputs.PLATFORM == 'ios'
-        uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: mattermost/actions/delivery/update-commit-status@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ steps.get-sha.outputs.MOBILE_SHA }}
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/detox-ios-tests
           description: Building iOS app and provisioning test servers...
           status: pending
 
-      - name: Update commit status (Android)
-        if: inputs.PLATFORM == 'android'
-        uses: mattermost/actions/delivery/update-commit-status@main
+  update-initial-status-android:
+    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ steps.get-sha.outputs.MOBILE_SHA }}
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/detox-android-tests
           description: Building Android app and provisioning test servers...
           status: pending
 
   build-ios-simulator:
-    if: inputs.PLATFORM == 'ios'
-    runs-on: macos-14
+    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    runs-on: macos-26
+    needs:
+      - update-initial-status-ios
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -89,34 +93,36 @@ jobs:
 
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+
+      - name: Set .env with RUNNING_E2E=true
+        run: echo "RUNNING_E2E=true" > .env
 
       - name: Build iOS Simulator
         env:
-          TAG: "${{ inputs.MOBILE_VERSION }}"
-          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
-          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
-          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-        run: bundle exec fastlane ios simulator --env ios.simulator
+          TAG: ${{ inputs.MOBILE_VERSION }}
+          GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+        run: bundle exec fastlane ios simulator --env ios.simulator skip_upload_to_s3_bucket:true
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-build-simulator-${{ github.run_id }}
-          path: Mattermost-simulator-x86_64.app.zip
+          path: Mattermost-simulator-*.app.zip
 
   build-android-apk:
-    if: inputs.PLATFORM == 'android'
+    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
     runs-on: ubuntu-latest-8-cores
+    needs:
+      - update-initial-status-android
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
       - name: Prune Docker to free up space
         run: docker system prune -af
-
-      - name: Remove npm Temporary Files
-        run: |
-          rm -rf ~/.npm/_cacache
 
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -126,18 +132,15 @@ jobs:
       - name: Prepare Android Build
         uses: ./.github/actions/prepare-android-build
         env:
-          STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
-          STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
-          STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
-          MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
-
-      - name: Install Dependencies
-        run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
       - name: Detox build
         run: |
           cd detox
-          npm install
+          npm ci --prefer-offline --no-audit --no-fund
           npm install -g detox-cli
           npm run e2e:android-build
 
@@ -147,50 +150,96 @@ jobs:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/**/*"
 
-  run-ios-tests-on-pr:
-    if: inputs.PLATFORM == 'ios'
-    name: iOS Mobile Tests on PR
-    uses: ./.github/workflows/e2e-ios-template.yml
+  run-ios-tests:
+    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    name: iOS
     needs:
       - build-ios-simulator
+    uses: ./.github/workflows/e2e-ios-template.yml
     with:
-      SITE_1_URL: ${{ inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      run-type: ${{ inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      run-type: "PR"
+      MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
+      MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
+      MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
     secrets: inherit
 
-  run-android-tests-on-pr:
-    if: inputs.PLATFORM == 'android'
-    name: Android Mobile Tests on PR
-    uses: ./.github/workflows/e2e-android-template.yml
+  run-android-tests:
+    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    name: Android
     needs:
       - build-android-apk
+    uses: ./.github/workflows/e2e-android-template.yml
     with:
       run-android-tests: true
-      SITE_1_URL: ${{ inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      run-type: ${{ inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      run-type: "PR"
+      MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
+      MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
+      MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
     secrets: inherit
 
   upload-cleanup-reference:
     runs-on: ubuntu-22.04
+    if: always() && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
+    needs:
+      - run-ios-tests
     steps:
-      - name: Create cleanup reference file
-        run: |
-          cat > instance-details.json <<EOF
-          {
-            "delivery_platform_run_id": "${{ inputs.DELIVERY_PLATFORM_RUN_ID }}",
-            "delivery_platform_repository": "mattermost/delivery-platform"
-          }
-          EOF
-
-      - name: Upload cleanup reference
-        uses: actions/upload-artifact@v4
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          name: instance-details.json
-          path: instance-details.json
-          retention-days: 1
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
+          context: e2e/detox-ios-tests
+          description: Completed with ${{ needs.run-ios-tests.outputs.FAILURES }} failures
+          status: ${{ needs.run-ios-tests.outputs.STATUS }}
+          target_url: ${{ needs.run-ios-tests.outputs.TARGET_URL }}
+
+  update-final-status-android:
+    runs-on: ubuntu-22.04
+    if: always() && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+    needs:
+      - run-android-tests
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
+          context: e2e/detox-android-tests
+          description: Completed with ${{ needs.run-android-tests.outputs.FAILURES }} failures
+          status: ${{ needs.run-android-tests.outputs.STATUS }}
+          target_url: ${{ needs.run-android-tests.outputs.TARGET_URL }}
+
+  e2e-remove-matterwick-label:
+    name: Remove Matterwick E2E label from PR
+    runs-on: ubuntu-22.04
+    needs:
+      - run-ios-tests
+      - run-android-tests
+    if: always() && inputs.pr_number != ''
+    steps:
+      - name: e2e/remove-label-from-pr
+        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        continue-on-error: true # Label might have been removed manually
+        with:
+          script: |
+            const prNumber = parseInt(process.env.PR_NUMBER);
+            if (!prNumber) return;
+            const labels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
+            for (const label of labels) {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: prNumber,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label,
+                });
+              } catch (_) {
+                // Label may not exist on this PR, ignore
+              }
+            }
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}

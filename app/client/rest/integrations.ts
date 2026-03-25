@@ -14,6 +14,7 @@ export interface ClientIntegrationsMix {
     executeCommand: (command: string, commandArgs?: CommandArgs) => Promise<CommandResponse>;
     addCommand: (command: Command) => Promise<Command>;
     submitInteractiveDialog: (data: DialogSubmission) => Promise<any>;
+    lookupInteractiveDialog: (data: DialogSubmission) => Promise<any>;
 }
 
 const ClientIntegrations = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -55,6 +56,13 @@ const ClientIntegrations = <TBase extends Constructor<ClientBase>>(superclass: T
     submitInteractiveDialog = async (data: DialogSubmission) => {
         return this.doFetch(
             `${this.urlVersion}/actions/dialogs/submit`,
+            {method: 'post', body: data},
+        );
+    };
+
+    lookupInteractiveDialog = async (data: DialogSubmission) => {
+        return this.doFetch(
+            `${this.urlVersion}/actions/dialogs/lookup`,
             {method: 'post', body: data},
         );
     };

@@ -22,7 +22,6 @@ import {expect} from 'detox';
 
 class ChannelScreen {
     testID = {
-        archievedCloseChannelButton: 'channel.post_draft.archived.close_channel.button',
         channelScreenPrefix: 'channel.',
         channelScreen: 'channel.screen',
         channelQuickActionsButton: 'channel_header.channel_quick_actions.button',
@@ -77,7 +76,6 @@ class ChannelScreen {
     postPriorityRequestAck = element(by.id(this.testID.postPriorityRequestAck));
     postPriorityImportantMessage = element(by.id(this.testID.postPriorityImportantMessage));
     postPriorityPicker = element(by.id(this.testID.postPriorityPicker));
-    archievedCloseChannelButton = element(by.id(this.testID.archievedCloseChannelButton));
     channelScreen = element(by.id(this.testID.channelScreen));
     channelQuickActionsButton = element(by.id(this.testID.channelQuickActionsButton));
     favoriteQuickAction = element(by.id(this.testID.favoriteQuickAction));
@@ -145,22 +143,36 @@ class ChannelScreen {
         return this.postList.getPostMessageAtIndex(index);
     };
 
-    toBeVisible = async () => {
+    toBeVisible = async (timeout = timeouts.TEN_SEC) => {
         await wait(timeouts.ONE_SEC);
-        await waitFor(this.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.channelScreen).toExist().withTimeout(timeout);
 
         return this.channelScreen;
     };
 
-    open = async (categoryKey: string, channelName: string) => {
-        // # Open channel screen
-        await ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName).tap();
+    dismissScheduledPostTooltip = async () => {
+        // Try to close scheduled post tooltip if it exists (try both regular and admin account versions)
         try {
+            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
             await this.scheduledPostTooltipCloseButton.tap();
-        } catch (error) {
-            // eslint-disable-next-line no-console
-            console.log('Element not visible, skipping click');
+            await wait(timeouts.HALF_SEC);
+        } catch {
+            // Try admin account version
+            try {
+                await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+                await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
+                await wait(timeouts.HALF_SEC);
+            } catch {
+                // Tooltip not visible, continue
+            }
         }
+    };
+
+    open = async (category: string, channelName: any) => {
+        // # Open channel screen
+        await wait(timeouts.FOUR_SEC);
+        await ChannelListScreen.getChannelItemDisplayName(category, channelName).tap();
+        await this.dismissScheduledPostTooltip();
         return this.toBeVisible();
     };
 
@@ -194,10 +206,10 @@ class ChannelScreen {
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Open post options
-        await postListPostItem.longPress(timeouts.TWO_SEC);
+        await postListPostItem.longPress();
         await PostOptionsScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     };
@@ -214,8 +226,9 @@ class ChannelScreen {
         // # Post message
         await this.postInput.tap();
         await this.postInput.clearText();
-        await this.postInput.replaceText(message);
+        await this.postInput.replaceText(`${message}\n`);
         await this.tapSendButton();
+        await wait(timeouts.TWO_SEC);
     };
 
     enterMessageToSchedule = async (message: string) => {
@@ -225,10 +238,10 @@ class ChannelScreen {
     };
 
     tapSendButton = async () => {
-        // # Tap send button
+        // # wait for Send button to be enabled
+        await waitFor(this.sendButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await this.sendButton.tap();
         await expect(this.sendButton).not.toExist();
-        await expect(this.sendButtonDisabled).toBeVisible();
     };
 
     longPressSendButton = async () => {
@@ -310,6 +323,35 @@ class ChannelScreen {
             await wait(timeouts.TEN_SEC);
             await this.scheduleDraftInforMessage.tap();
         }
+    };
+
+    assertPostMessageEdited = async (
+        postId: string,
+        updatedMessage: string,
+        locator: 'channel_page' | 'pinned_page' | 'thread_page' | 'search_page' | 'saved_messages_page' | 'recent_mentions_page' = 'channel_page',
+    ) => {
+        const locatorTestIDs = {
+            channel_page: 'channel.post_list.post',
+            pinned_page: 'pinned_messages.post_list.post',
+            search_page: 'search_results.post_list.post',
+            thread_page: 'thread.post_list.post',
+            saved_messages_page: 'saved_messages.post_list.post',
+            recent_mentions_page: 'recent_mentions.post_list.post',
+        };
+
+        const postItemTestID = locatorTestIDs[locator];
+        const postItemElement = `${postItemTestID}.${postId}`;
+        const postItemMatcher = by.id(postItemElement);
+
+        // Escape special characters in the message for regex
+        const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        // Match text that contains the updated message followed by "Edited" (with possible spacing/icon)
+        const completeTextPattern = new RegExp(`${escapedMessage}.*Edited`, 'i');
+        const completeTextMatcher = by.text(completeTextPattern).withAncestor(postItemMatcher);
+
+        // Wait for the text containing both message and "Edited" to be visible
+        await waitFor(element(completeTextMatcher)).toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 

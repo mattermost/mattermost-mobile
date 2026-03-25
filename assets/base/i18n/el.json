@@ -46,8 +46,6 @@
   "apps.suggestion.no_static": "Δεν υπάρχουν επιλογές αντιστοίχισης.",
   "apps.suggestion.no_suggestion": "Δεν υπάρχουν προτάσεις αντιστοίχισης.",
   "archivedChannelMessage": "Βλέπετε ένα ** αρχειοθετημένο κανάλι **. Δεν είναι δυνατή η δημοσίευση νέων μηνυμάτων.",
-  "camera_type.photo.option": "Λήψη φωτογραφίας",
-  "camera_type.video.option": "Εγγραφή βίντεο",
   "center_panel.archived.closeChannel": "Κλείσιμο καναλιού",
   "channel_header.directchannel.you": "{displayname} (εσείς) ",
   "channel_info.header": "Κεφαλίδα:",

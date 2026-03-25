@@ -74,7 +74,7 @@ const ChannelListItem = ({
 
     const handleOnPress = useCallback(() => {
         onPress(channel.id);
-    }, [channel.id]);
+    }, [channel.id, onPress]);
 
     const textStyles = useMemo(() => [
         textStyle.regular,

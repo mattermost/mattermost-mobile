@@ -67,7 +67,7 @@ const EditPostInput = ({
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
     const focus = useCallback(() => {
         inputRef.current?.focus();
-    }, []);
+    }, [inputRef]);
 
     const updateValue = useCallback((valueOrUpdater: string | ((prevValue: string) => string)) => {
         if (typeof valueOrUpdater === 'function') {
@@ -144,6 +144,7 @@ const EditPostInput = ({
                         canShowPostPriority={false}
                         postPriority={INITIAL_PRIORITY}
                         canShowSlashCommands={false}
+                        canShowEmojiPicker={false}
                         focus={focus}
                     />
                 </>

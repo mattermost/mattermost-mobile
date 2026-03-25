@@ -157,6 +157,10 @@ const ChannelListScreen = (props: ChannelProps) => {
         if (!props.hasCurrentUser || !props.currentUserId) {
             refetchCurrentUser(serverUrl, props.currentUserId);
         }
+
+    // - serverUrl is stable from useServerUrl hook
+    // - We only need to re-run when the current user state changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.currentUserId, props.hasCurrentUser]);
 
     // Init the rate app. Only run the effect on the first render if ToS is not open
@@ -168,12 +172,12 @@ const ChannelListScreen = (props: ChannelProps) => {
         if (!NavigationStore.isToSOpen()) {
             tryRunAppReview(props.launchType, props.coldStart);
         }
-    }, []);
+    }, [props.launchType, props.coldStart]);
 
     useEffect(() => {
         PerformanceMetricsManager.finishLoad('HOME', serverUrl);
         PerformanceMetricsManager.measureTimeToInteraction();
-    }, []);
+    }, [serverUrl]);
 
     return (
         <>

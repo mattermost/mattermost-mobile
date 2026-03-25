@@ -131,7 +131,7 @@ export default function BrowseChannels(props: Props) {
         }
 
         setButtons(componentId, buttons);
-    }, [closeButton, canCreateChannels, intl.locale, theme, componentId]);
+    }, [closeButton, canCreateChannels, componentId, theme, intl]);
 
     const onSelectChannel = useCallback(async (channel: Channel) => {
         setHeaderButtons(false);
@@ -157,7 +157,7 @@ export default function BrowseChannels(props: Props) {
             switchToChannelById(serverUrl, channel.id, currentTeamId);
             close();
         }
-    }, [setHeaderButtons, intl.locale]);
+    }, [setHeaderButtons, serverUrl, currentTeamId, intl]);
 
     const onSearch = useCallback(() => {
         searchChannels(term);
@@ -167,7 +167,7 @@ export default function BrowseChannels(props: Props) {
         const screen = Screens.CREATE_OR_EDIT_CHANNEL;
         const title = intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'});
         goToScreen(screen, title);
-    }, [intl.locale]);
+    }, [intl]);
 
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
     useNavButtonPressed(CREATE_BUTTON_ID, componentId, handleCreate, [handleCreate]);
@@ -176,7 +176,7 @@ export default function BrowseChannels(props: Props) {
     useEffect(() => {
         // Update header buttons in case anything related to the header changes
         setHeaderButtons(!adding);
-    }, [theme, canCreateChannels, adding]);
+    }, [adding, setHeaderButtons]);
 
     let content;
     if (adding) {

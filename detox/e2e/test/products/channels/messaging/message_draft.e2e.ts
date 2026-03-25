@@ -29,8 +29,8 @@ import {expect} from 'detox';
 
 describe('Messaging - Message Draft', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     const offTopicChannelName = 'off-topic';
+    const channelsCategory = 'channels';
     let testChannel: any;
 
     beforeAll(async () => {

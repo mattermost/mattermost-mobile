@@ -56,7 +56,7 @@ const SkinSelector = ({onSelectSkin, selected, skins}: Props) => {
         const code = Object.keys(skinCodes).find((key) => skinCodes[key] === skin) || 'default';
         await savePreferredSkinTone(serverUrl, code);
         onSelectSkin();
-    }, [serverUrl]);
+    }, [onSelectSkin, serverUrl]);
 
     return (
         <>

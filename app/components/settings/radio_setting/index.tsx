@@ -63,11 +63,12 @@ function RadioSetting({
                     text={text}
                     value={entryValue}
                     key={entryValue}
+                    testID={`${testID}.radio.${entryValue}.button`}
                 />,
             );
         }
         return elements;
-    }, [value, onChange, options]);
+    }, [value, onChange, options, testID]);
 
     return (
         <View>

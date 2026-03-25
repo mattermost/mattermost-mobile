@@ -29,6 +29,12 @@ jest.mock('@screens/navigation', () => ({
 
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn().mockReturnValue('https://server.com'),
+    withServerUrl: (Component: React.ComponentType<any>) => (props: any) => (
+        <Component
+            {...props}
+            serverUrl={'https://server.com'}
+        />
+    ),
 }));
 
 jest.mock('@components/draft_scheduled_post_header', () => () => null);
@@ -216,5 +222,58 @@ describe('DraftAndScheduledPost', () => {
 
         expect(mockOpenAsBottonSheet).toHaveBeenCalled();
         expect(mockOpenAsBottonSheet.mock.calls[0][0].props?.draftType).toBe(DRAFT_TYPE_SCHEDULED);
+    });
+
+    it('renders BoR indicator for BoR scheduled post', () => {
+        const props = {
+            ...baseProps,
+            draftType: DRAFT_TYPE_SCHEDULED,
+            post: TestHelper.fakeScheduledPostModel({
+                id: 'post_id_1',
+                rootId: '',
+                updateAt: 1234567890,
+                metadata: {},
+                files: [] as FileInfo[],
+                scheduledAt: 1234567890,
+                errorCode: '',
+                type: 'burn_on_read',
+            }),
+            borUserTimeLimit: 100000,
+        };
+        renderWithIntlAndTheme(<DraftAndScheduledPost {...props}/>);
+        expect(screen.getByTestId('post_id_1_bor_label')).toBeVisible();
+    });
+
+    it('renders BoR indicator with post priority if set', () => {
+        const props = {
+            ...baseProps,
+            draftType: DRAFT_TYPE_SCHEDULED,
+            isPostPriorityEnabled: true,
+            post: TestHelper.fakeScheduledPostModel({
+                id: 'post_id_1',
+                rootId: '',
+                updateAt: 1234567890,
+                metadata: {
+                    priority: {
+                        priority: 'urgent',
+                        requested_ack: true,
+                        persistent_notifications: true,
+                    },
+                },
+                files: [] as FileInfo[],
+                scheduledAt: 1234567890,
+                errorCode: '',
+                type: 'burn_on_read',
+            }),
+            borUserTimeLimit: 100000,
+        };
+        renderWithIntlAndTheme(<DraftAndScheduledPost {...props}/>);
+
+        expect(screen.getByTestId('post_id_1_bor_label')).toBeVisible();
+
+        expect(screen.getByTestId('draft_post.priority')).toBeVisible();
+        expect(screen.getByTestId('urgent_post_priority_label')).toBeVisible();
+        expect(screen.getByTestId('drafts.requested_ack.icon')).toBeVisible();
+        expect(screen.getByTestId('drafts.persistent_notifications.icon')).toBeVisible();
     });
 });

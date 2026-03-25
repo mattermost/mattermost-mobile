@@ -16,6 +16,7 @@ import {getTranscriptionUri, hasCaptions} from '@calls/utils';
 import {Events} from '@constants';
 import {ANDROID_VIDEO_INSET, GALLERY_FOOTER_HEIGHT, VIDEO_INSET} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
+import SecurityManager from '@managers/security_manager';
 import {transformerTimingConfig} from '@screens/gallery/animation_config/timing';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 import {useLightboxSharedValues} from '@screens/gallery/lightbox_swipeout/context';
@@ -146,10 +147,7 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
             videoRef.current?.seek(0.0);
         }
         setPaused(false);
-
-    // No need for shared values
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [duration]);
+    }, [currentTime, duration]);
 
     const onPause = useCallback(() => {
         setPaused(true);
@@ -162,18 +160,12 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
     const onRewind = useCallback(() => {
         const newTime = Math.max(0, currentTime.value - seekSeconds);
         videoRef.current?.seek(newTime);
-
-    // No need for shared values
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [seekSeconds]);
+    }, [currentTime, seekSeconds]);
 
     const onForward = useCallback(() => {
         const newTime = Math.min(duration, currentTime.value + seekSeconds);
         videoRef.current?.seek(newTime);
-
-    // No need for shared values
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [duration, seekSeconds]);
+    }, [currentTime, duration, seekSeconds]);
 
     const onRateChange = useCallback((rate: number) => {
         setPlaybackRate(rate);
@@ -298,7 +290,8 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
             }
             {hasError &&
             <VideoError
-                canDownloadFiles={canDownloadFiles}
+                cacheKey={item.cacheKey}
+                canDownloadFiles={canDownloadFiles && SecurityManager.canSaveToLocation(serverUrl, 'CameraRoll')}
                 enableSecureFilePreview={enableSecureFilePreview}
                 filename={item.name}
                 isDownloading={downloading}

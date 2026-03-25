@@ -1,0 +1,69 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import React, {memo, useCallback} from 'react';
+import {Keyboard, Text, TouchableOpacity, View} from 'react-native';
+
+import Emoji from '@components/emoji';
+import {useTheme} from '@context/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+
+type TouchableEmojiProps = {
+    name: string;
+    onEmojiPress: (emojiName: string) => void;
+    hideName?: boolean;
+    shouldDismissKeyboard?: boolean;
+}
+
+const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            height: 40,
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 8,
+            overflow: 'hidden',
+        },
+        emojiContainer: {
+            marginRight: 5,
+        },
+        emoji: {
+            color: '#000',
+        },
+        emojiText: {
+            fontSize: 13,
+            color: theme.centerChannelColor,
+        },
+    };
+});
+
+const EmojiTouchable = ({name, onEmojiPress, hideName = false, shouldDismissKeyboard = true}: TouchableEmojiProps) => {
+    const theme = useTheme();
+    const style = getStyleSheetFromTheme(theme);
+
+    const onPress = useCallback(() => {
+        if (shouldDismissKeyboard && Keyboard.isVisible()) {
+            Keyboard.dismiss();
+        }
+        onEmojiPress(name);
+    }, [name, onEmojiPress, shouldDismissKeyboard]);
+
+    return (
+        <TouchableOpacity
+            onPress={onPress}
+            style={style.container}
+        >
+            <View style={style.emojiContainer}>
+                <Emoji
+                    emojiName={name}
+                    textStyle={style.emoji}
+                    size={30}
+                />
+            </View>
+            {!hideName && <Text style={style.emojiText}>{`:${name}:`}</Text>}
+        </TouchableOpacity>
+    );
+};
+
+export default memo(EmojiTouchable);
+

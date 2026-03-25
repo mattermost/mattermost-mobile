@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeChannel} from '@queries/servers/channel';
+import {observeChannel, observeIsChannelAutotranslated} from '@queries/servers/channel';
 import {observePost} from '@queries/servers/post';
 import {observeUser} from '@queries/servers/user';
 
@@ -24,6 +24,9 @@ const enhanced = withObservables([], ({database, thread}: WithDatabaseArgs & {th
         ),
         author: post.pipe(
             switchMap((u) => (u?.userId ? observeUser(database, u.userId) : of$(undefined))),
+        ),
+        isChannelAutotranslated: post.pipe(
+            switchMap((p) => (p?.channelId ? observeIsChannelAutotranslated(database, p.channelId) : of$(undefined))),
         ),
     };
 });

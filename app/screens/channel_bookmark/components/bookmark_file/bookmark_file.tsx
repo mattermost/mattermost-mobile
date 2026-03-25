@@ -16,6 +16,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import {fileSizeWarning, getExtensionFromMime, getFormattedFileSize} from '@utils/file';
 import PickerUtil from '@utils/file/file_picker';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -130,7 +131,7 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
     const [uploading, setUploading] = useState(false);
     const [failed, setFailed] = useState(false);
     const styles = getStyleSheet(theme);
-    const subContainerStyle = useMemo(() => [styles.viewContainer, {paddingHorizontal: isTablet ? 42 : 0}], [isTablet]);
+    const subContainerStyle = useMemo(() => [styles.viewContainer, {paddingHorizontal: isTablet ? 42 : 0}], [isTablet, styles]);
     const cancelUpload = useRef<() => void | undefined>();
 
     const onProgress = useCallback((p: number, bytes: number) => {
@@ -143,7 +144,18 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
 
         setProgress(p);
         setFile(f);
-    }, []);
+    }, [file]);
+
+    const setUploadError = useCallback(() => {
+        setProgress(0);
+        setUploading(false);
+        setFailed(true);
+
+        setError(intl.formatMessage({
+            id: 'channel_bookmark.add.file_upload_error',
+            defaultMessage: 'Error uploading file. Please try again.',
+        }));
+    }, [intl]);
 
     const onComplete = useCallback((response: ClientResponse) => {
         cancelUpload.current = undefined;
@@ -165,23 +177,12 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
         setProgress(1);
         setFailed(false);
         setError('');
-    }, []);
+    }, [setBookmark, setUploadError]);
 
     const onError = useCallback(() => {
         cancelUpload.current = undefined;
         setUploadError();
-    }, []);
-
-    const setUploadError = useCallback(() => {
-        setProgress(0);
-        setUploading(false);
-        setFailed(true);
-
-        setError(intl.formatMessage({
-            id: 'channel_bookmark.add.file_upload_error',
-            defaultMessage: 'Error uploading file. Please try again.',
-        }));
-    }, [file, intl]);
+    }, [setUploadError]);
 
     const startUpload = useCallback((fileInfo: FileInfo | ExtractedFileInfo) => {
         setUploading(true);
@@ -206,7 +207,7 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
             setUploadError();
             cancelUpload.current?.();
         }
-    }, [channelId, onProgress, onComplete, onError, serverUrl]);
+    }, [serverUrl, channelId, onProgress, onComplete, onError, setUploadError]);
 
     const browseFile = useCallback(async () => {
         const picker = new PickerUtil(intl, (files) => {
@@ -223,12 +224,12 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
         if (res.error) {
             close();
         }
-    }, [close, startUpload]);
+    }, [close, intl, startUpload]);
 
     const removeAndUpload = useCallback(() => {
         cancelUpload.current?.();
         browseFile();
-    }, [file, browseFile]);
+    }, [browseFile]);
 
     const retry = useCallback(() => {
         cancelUpload.current?.();
@@ -237,7 +238,7 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
         }
     }, [file, startUpload]);
 
-    useEffect(() => {
+    useDidMount(() => {
         if (!initialFile) {
             browseFile();
         }
@@ -245,7 +246,7 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
         return () => {
             cancelUpload.current?.();
         };
-    }, []);
+    });
 
     useEffect(() => {
         if (uploading) {
@@ -260,6 +261,10 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
         if (!file?.id && file?.name) {
             setBookmark(file);
         }
+
+    // We don't care about `setBookmark` changes as long as
+    // it is up to date when the effect runs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [file, intl, maxFileSize, uploading]);
 
     let info;

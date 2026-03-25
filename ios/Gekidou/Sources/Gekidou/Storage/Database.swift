@@ -19,6 +19,14 @@ enum DatabaseError: Error {
     case InsertError(_ statement: String)
 }
 
+/// Default busy timeout (in seconds) for SQLite connections.
+/// When the main app and NotificationService extension access the shared
+/// database concurrently, SQLite may return SQLITE_BUSY ("database is locked").
+/// Setting a busy timeout tells SQLite to retry internally for up to this many
+/// seconds before returning an error, preventing transient lock contention from
+/// becoming a fatal crash (via SQLite.swift's `try!` in FailableIterator.next).
+private let defaultBusyTimeout: Double = 5.0
+
 extension DatabaseError: LocalizedError {
     var errorDescription: String? {
         switch self {
@@ -91,6 +99,15 @@ public class Database: NSObject {
         super.init()
     }
     
+    /// Creates a new SQLite Connection with WAL journal mode and a busy timeout,
+    /// so concurrent readers/writers (main app + notification extension) don't
+    /// immediately fail with SQLITE_BUSY.
+    internal func openConnection(_ path: String, readonly: Bool = false) throws -> Connection {
+        let db = try Connection(path, readonly: readonly)
+        db.busyTimeout = defaultBusyTimeout
+        return db
+    }
+
     @objc public func getOnlyServerUrlObjc() -> String {
         do {
             return try getOnlyServerUrl()
@@ -106,14 +123,15 @@ public class Database: NSObject {
     
     public func getOnlyServerUrl() throws -> String {
         do {
-            let db = try Connection(DEFAULT_DB_PATH)
+            let db = try openConnection(DEFAULT_DB_PATH)
             let url = Expression<String>("url")
             let identifier = Expression<String>("identifier")
             let lastActiveAt = Expression<Int64>("last_active_at")
             let query = serversTable.select(url).filter(lastActiveAt > 0 && identifier != "")
 
             var serverUrl: String?
-            for result in try db.prepare(query) {
+            let iterator = try db.prepareRowIterator(query)
+            while let result = try iterator.failableNext() {
                 if (serverUrl != nil) {
                     throw DatabaseError.MultipleServers
                 }
@@ -134,7 +152,7 @@ public class Database: NSObject {
 
     public func getServerUrlForServer(_ id: String) throws -> String {
         do {
-            let db = try Connection(DEFAULT_DB_PATH)
+            let db = try openConnection(DEFAULT_DB_PATH)
             let url = Expression<String>("url")
             let identifier = Expression<String>("identifier")
             let query = serversTable.select(url).filter(identifier == id)
@@ -152,14 +170,15 @@ public class Database: NSObject {
     }
     
     public func getAllActiveDatabases<T: Codable>() -> [T] {
-        guard let db = try? Connection(DEFAULT_DB_PATH) else {return []}
+        guard let db = try? openConnection(DEFAULT_DB_PATH) else {return []}
         let lastActiveAt = Expression<Int64>("last_active_at")
         let identifier = Expression<String>("identifier")
         let query = serversTable.filter(lastActiveAt > 0 && identifier != "").order(lastActiveAt.desc)
         do {
-            let rows = try db.prepare(query)
-            let servers: [T] = try rows.map { row in
-                return try row.decode()
+            let iterator = try db.prepareRowIterator(query)
+            var servers = [T]()
+            while let row = try iterator.failableNext() {
+                servers.append(try row.decode())
             }
 
             return servers
@@ -169,15 +188,16 @@ public class Database: NSObject {
     }
     
     public func getAllActiveServerUrls() -> [String] {
-        guard let db = try? Connection(DEFAULT_DB_PATH) else {return []}
+        guard let db = try? openConnection(DEFAULT_DB_PATH) else {return []}
         let lastActiveAt = Expression<Int64>("last_active_at")
         let identifier = Expression<String>("identifier")
         let url = Expression<String>("url")
         let query = serversTable.filter(lastActiveAt > 0 && identifier != "").order(lastActiveAt.desc)
         do {
-            let rows = try db.prepare(query)
-            let servers: [String] = try rows.map { row in
-                return try row.get(url)
+            let iterator = try db.prepareRowIterator(query)
+            var servers = [String]()
+            while let row = try iterator.failableNext() {
+                servers.append(try row.get(url))
             }
 
             return servers
@@ -187,7 +207,7 @@ public class Database: NSObject {
     }
     
     public func getCurrentServerDatabase<T: Codable>() -> T? {
-        guard let db = try? Connection(DEFAULT_DB_PATH) else {return nil}
+        guard let db = try? openConnection(DEFAULT_DB_PATH) else {return nil}
         do {
             let lastActiveAt = Expression<Int64>("last_active_at")
             let identifier = Expression<String>("identifier")
@@ -205,14 +225,14 @@ public class Database: NSObject {
     }
     
     internal func getDatabaseForServer(_ serverUrl: String) throws -> Connection {
-        let db = try Connection(DEFAULT_DB_PATH)
+        let db = try openConnection(DEFAULT_DB_PATH)
         let url = Expression<String>("url")
         let dbPath = Expression<String>("db_path")
         let query = serversTable.select(dbPath).where(url == serverUrl)
         
         if let result = try db.pluck(query) {
             let path = try result.get(dbPath)
-            return try Connection(path)
+            return try openConnection(path)
         }
         
         throw DatabaseError.NoResults(query.expression.description)

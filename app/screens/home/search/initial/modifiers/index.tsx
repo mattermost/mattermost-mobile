@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type Dispatch, type RefObject, type SetStateAction, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {type Dispatch, type RefObject, type SetStateAction, useCallback, useMemo, useRef, useState} from 'react';
 import {type IntlShape, useIntl} from 'react-intl';
 import {View} from 'react-native';
 import Animated, {type SharedValue, useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
@@ -9,6 +9,7 @@ import Animated, {type SharedValue, useSharedValue, useAnimatedStyle, withTiming
 import FormattedText from '@components/formatted_text';
 import {ALL_TEAMS_ID} from '@constants/team';
 import {useTheme} from '@context/theme';
+import useDidMount from '@hooks/did_mount';
 import TeamPicker from '@screens/home/search/team_picker';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -114,14 +115,14 @@ const Modifiers = ({scrollEnabled, searchValue, setSearchValue, searchRef, setTe
         }, 350);
     }, [data.length, height, scrollEnabled, showMore]);
 
-    useEffect(() => {
+    useDidMount(() => {
         return () => {
             if (timeoutRef.current) {
                 scrollEnabled.value = true;
                 clearTimeout(timeoutRef.current);
             }
         };
-    }, []);
+    });
 
     const renderModifier = (item: ModifierItem) => {
         return (

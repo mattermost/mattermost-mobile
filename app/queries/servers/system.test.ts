@@ -7,7 +7,7 @@ import {License} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
-import {observeIsMinimumLicenseTier, observeReportAProblemMetadata} from './system';
+import {observeIsMinimumLicenseTier, observeReportAProblemMetadata, getLastBoRPostCleanupRun} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
@@ -81,6 +81,66 @@ describe('observeReportAProblemMetadata', () => {
             });
             done();
         });
+    });
+});
+
+describe('getLastBoRPostCleanupRun', () => {
+    const serverUrl = 'baseHandler.test.com';
+    let database: Database;
+    let operator: ServerDataOperator;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = serverDatabaseAndOperator.database;
+        operator = serverDatabaseAndOperator.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should return 0 when no BoR post cleanup run record exists', async () => {
+        const result = await getLastBoRPostCleanupRun(database);
+        expect(result).toBe(0);
+    });
+
+    it('should return the stored timestamp when BoR post cleanup run record exists', async () => {
+        const timestamp = 1640995200000; // Example timestamp
+
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN, value: timestamp},
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await getLastBoRPostCleanupRun(database);
+        expect(result).toBe(timestamp);
+    });
+
+    it('should return 0 when stored value is falsy', async () => {
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN, value: 0},
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await getLastBoRPostCleanupRun(database);
+        expect(result).toBe(0);
+    });
+
+    it('should return 0 when stored value is null or undefined', async () => {
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN, value: null},
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await getLastBoRPostCleanupRun(database);
+        expect(result).toBe(0);
     });
 });
 
@@ -183,11 +243,11 @@ describe('observeIsMinimumLicenseTier', () => {
         }).then(() => {
             operator.handleSystem({
                 systems: [
-                    {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: 'Professional'}},
+                    {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: 'professional'}},
                 ],
                 prepareRecordsOnly: false,
             }).then(() => {
-                observeIsMinimumLicenseTier(database, 'Professional').subscribe((isMinimumTier) => {
+                observeIsMinimumLicenseTier(database, 'professional').subscribe((isMinimumTier) => {
                     expect(isMinimumTier).toBe(false);
                     done();
                 });

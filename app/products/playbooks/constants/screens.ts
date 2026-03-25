@@ -8,11 +8,13 @@ export const PLAYBOOK_EDIT_COMMAND = 'PlaybookEditCommand';
 export const PLAYBOOK_POST_UPDATE = 'PlaybookPostUpdate';
 export const PLAYBOOK_RENAME_CHECKLIST = 'PlaybookRenameChecklist';
 export const PLAYBOOK_ADD_CHECKLIST_ITEM = 'PlaybookAddChecklistItem';
+export const PLAYBOOK_EDIT_CHECKLIST_ITEM = 'PlaybookEditChecklistItem';
 export const PLAYBOOK_RENAME_RUN = 'PlaybookRenameRun';
 export const PLAYBOOK_SELECT_USER = 'PlaybookSelectUser';
 export const PLAYBOOKS_SELECT_DATE = 'PlaybooksSelectDate';
 export const PLAYBOOKS_SELECT_PLAYBOOK = 'PlaybooksSelectPlaybook';
 export const PLAYBOOKS_START_A_RUN = 'PlaybooksStartARun';
+export const PLAYBOOKS_CREATE_QUICK_CHECKLIST = 'PlaybooksCreateQuickChecklist';
 
 export default {
     PLAYBOOKS_RUNS,
@@ -22,9 +24,11 @@ export default {
     PLAYBOOK_POST_UPDATE,
     PLAYBOOK_RENAME_CHECKLIST,
     PLAYBOOK_ADD_CHECKLIST_ITEM,
+    PLAYBOOK_EDIT_CHECKLIST_ITEM,
     PLAYBOOK_RENAME_RUN,
     PLAYBOOK_SELECT_USER,
     PLAYBOOKS_SELECT_DATE,
     PLAYBOOKS_SELECT_PLAYBOOK,
     PLAYBOOKS_START_A_RUN,
+    PLAYBOOKS_CREATE_QUICK_CHECKLIST,
 } as const;

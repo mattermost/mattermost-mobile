@@ -5,7 +5,7 @@ import Model from '@nozbe/watermelondb/Model';
 import {applicationName} from 'expo-application';
 import {
     cacheDirectory, deleteAsync, documentDirectory, getInfoAsync,
-    type FileInfo as ExpoFileInfo, makeDirectoryAsync,
+    type FileInfo as ExpoFileInfo,
 } from 'expo-file-system';
 import mimeDB from 'mime-db';
 import {Alert, Linking, Platform} from 'react-native';
@@ -195,7 +195,6 @@ async function deleteFilesInDir(directory: string) {
         const cacheDirInfo = await getInfoAsync(directory);
         if (cacheDirInfo.exists) {
             await deleteAsync(directory, {idempotent: true});
-            await makeDirectoryAsync(directory, {intermediates: true});
         }
     }
 }
@@ -428,11 +427,11 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
                 }
             }
 
-            return `${cacheDirectory}${server}/${filename}-${fileIdPath}.${extension}`;
+            return `${cacheDirectory}${server}/Files/${filename}-${fileIdPath}.${extension}`;
         } else if (file?.id && hasValidExtension) {
-            return `${cacheDirectory}${server}/${fileIdPath}.${file.extension}`;
+            return `${cacheDirectory}${server}/Files/${fileIdPath}.${file.extension}`;
         } else if (file?.id) {
-            return `${cacheDirectory}${server}/${fileIdPath}`;
+            return `${cacheDirectory}${server}/Files/${fileIdPath}`;
         }
     }
 

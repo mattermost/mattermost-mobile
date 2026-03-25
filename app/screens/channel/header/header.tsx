@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useAgentsConfig} from '@agents/store/agents_config';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, Text, View} from 'react-native';
@@ -19,17 +20,14 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {createPlaybookRun, fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
-import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
+import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
+import {goToCreateQuickChecklist, goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import ChannelBanner from '@screens/channel/header/channel_banner';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTypeDMorGM} from '@utils/channel';
-import {getFullErrorMessage} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {logDebug} from '@utils/log';
-import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -63,6 +61,7 @@ type ChannelProps = {
     playbooksActiveRuns: number;
     isPlaybooksEnabled: boolean;
     activeRunId?: string;
+    isChannelAutotranslated: boolean;
 
     // searchTerm: string;
 };
@@ -116,6 +115,7 @@ const ChannelHeader = ({
     hasPlaybookRuns,
     isPlaybooksEnabled,
     activeRunId,
+    isChannelAutotranslated,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -125,6 +125,7 @@ const ChannelHeader = ({
     const serverUrl = useServerUrl();
 
     const callsConfig = getCallsConfig(serverUrl);
+    const {pluginEnabled: agentsEnabled} = useAgentsConfig(serverUrl);
 
     // NOTE: callsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
     //   which ultimately comes from channel/index.tsx, and observeIsCallsEnabledInChannel
@@ -194,6 +195,9 @@ const ChannelHeader = ({
         if (hasPlaybookRuns && !isDMorGM) {
             items += 1;
         }
+        if (agentsEnabled) {
+            items += 1; // Ask Agents action (shown in all channel types)
+        }
         let height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + MARGIN + (items * ITEM_HEIGHT);
         if (Platform.OS === 'android') {
             height += BOTTOM_SHEET_ANDROID_OFFSET;
@@ -217,35 +221,19 @@ const ChannelHeader = ({
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });
-    }, [isTablet, callsAvailable, isDMorGM, hasPlaybookRuns, theme, onTitlePress, channelId]);
-
-    const handleCreateQuickRun = useCallback(async () => {
-        const runName = `${displayName} Checklist`;
-        const res = await createPlaybookRun(
-            serverUrl,
-            '', // empty playbook_id
-            currentUserId,
-            teamId,
-            runName,
-            '', // empty description
-            channelId,
-        );
-
-        if (res.error || !res.data) {
-            logDebug('error on createPlaybookRun', getFullErrorMessage(res.error));
-            showPlaybookErrorSnackbar();
-            return;
-        }
-
-        // Fetch updated runs and navigate to the new run
-        await fetchPlaybookRunsForChannel(serverUrl, channelId);
-        await goToPlaybookRun(intl, res.data.id);
-    }, [serverUrl, currentUserId, teamId, displayName, channelId, intl]);
+    }, [isTablet, callsAvailable, isDMorGM, hasPlaybookRuns, agentsEnabled, theme, onTitlePress, channelId]);
 
     const openPlaybooksRuns = useCallback(() => {
         // If no active runs, create a new one instead
         if (playbooksActiveRuns === 0) {
-            handleCreateQuickRun();
+            goToCreateQuickChecklist(
+                intl,
+                channelId,
+                displayName,
+                currentUserId,
+                teamId,
+                serverUrl,
+            );
             return;
         }
 
@@ -254,7 +242,7 @@ const ChannelHeader = ({
             return;
         }
         goToPlaybookRuns(intl, channelId, displayName);
-    }, [playbooksActiveRuns, handleCreateQuickRun, activeRunId, channelId, displayName, intl]);
+    }, [playbooksActiveRuns, activeRunId, channelId, displayName, intl, currentUserId, teamId, serverUrl]);
 
     const rightButtons = useMemo(() => {
         const buttons: HeaderRightButton[] = [];
@@ -334,6 +322,19 @@ const ChannelHeader = ({
         return undefined;
     }, [memberCount, customStatus, isCustomStatusExpired, theme.sidebarHeaderTextColor, styles.customStatusContainer, styles.customStatusEmoji, styles.customStatusText, styles.subtitle, isCustomStatusEnabled]);
 
+    const titleCompanion = useMemo(() => {
+        if (isChannelAutotranslated) {
+            return (
+                <CompassIcon
+                    name='translate'
+                    size={16}
+                    color={changeOpacity(theme.sidebarHeaderTextColor, 0.72)}
+                />
+            );
+        }
+        return undefined;
+    }, [isChannelAutotranslated, theme.sidebarHeaderTextColor]);
+
     useEffect(() => {
         const asyncEffect = async () => {
             if (isPlaybooksEnabled && !EphemeralStore.getChannelPlaybooksSynced(serverUrl, channelId)) {
@@ -357,6 +358,7 @@ const ChannelHeader = ({
                 subtitle={subtitle}
                 subtitleCompanion={subtitleCompanion}
                 title={title}
+                titleCompanion={titleCompanion}
             />
             <View style={contextStyle}>
                 <RoundedHeaderContext/>

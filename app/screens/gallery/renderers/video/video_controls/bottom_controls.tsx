@@ -9,6 +9,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
 import {translateYConfig} from '@hooks/gallery';
 import {useLightboxSharedValues} from '@screens/gallery/lightbox_swipeout/context';
+import {formatTime} from '@utils/datetime';
 import {typography} from '@utils/typography';
 
 import {useStateFromSharedValue} from '../hooks';
@@ -47,18 +48,6 @@ const styles = StyleSheet.create({
         ...typography('Body', 75),
     },
 });
-
-const formatTime = (seconds: number) => {
-    const h = Math.max(Math.floor(seconds / 3600), 0);
-    const m = Math.max(Math.floor((seconds % 3600) / 60), 0);
-    const s = Math.max(Math.floor(seconds % 60), 0);
-
-    const hh = h > 0 ? `${h}:` : '';
-    const mm = h > 0 ? `${m.toString().padStart(2, '0')}` : `${m}`;
-    const ss = s.toString().padStart(2, '0');
-
-    return `${hh}${mm}:${ss}`;
-};
 
 const BottomControls: React.FC<BottomControlsProps> = ({
     currentTime,

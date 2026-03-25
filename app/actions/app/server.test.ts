@@ -2,17 +2,18 @@
 // See LICENSE.txt for license information.
 
 import {createIntl} from 'react-intl';
+import {DeviceEventEmitter} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {Preferences, Screens} from '@constants';
+import {Events, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
+import {getPreauthSecret} from '@init/credentials';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {getServer, getServerByIdentifier, queryAllActiveServers} from '@queries/app/servers';
-import {getSecurityConfig} from '@queries/servers/system';
+import {getServer, getServerByIdentifier} from '@queries/app/servers';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 import {canReceiveNotifications} from '@utils/push_proxy';
@@ -20,17 +21,14 @@ import {alertServerAlreadyConnected, alertServerError, loginToServer} from '@uti
 
 import * as Actions from './server';
 
-import type {ServerDatabase} from '@typings/database/database';
 import type ServersModel from '@typings/database/models/app/servers';
 
 jest.mock('@queries/app/servers');
 jest.mock('@queries/servers/system');
-jest.mock('@database/manager', () => ({
-    getServerDatabaseAndOperator: jest.fn(),
-    setActiveServerDatabase: jest.fn(),
-    getActiveServerUrl: jest.fn(),
-}));
+jest.mock('@database/manager');
 jest.mock('@managers/security_manager');
+jest.mock('@init/credentials');
+
 jest.mock('@managers/websocket_manager');
 jest.mock('@utils/log');
 jest.mock('@utils/push_proxy');
@@ -43,58 +41,29 @@ const translations = getTranslations(DEFAULT_LOCALE);
 const intl = createIntl({locale: DEFAULT_LOCALE, messages: translations});
 const theme = Preferences.THEMES.denim;
 
-describe('initializeSecurityManager', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
-    it('should return when no servers are found', async () => {
-        const mockQuery = TestHelper.mockQuery<ServersModel>([]);
-        jest.mocked(queryAllActiveServers).mockReturnValueOnce(mockQuery);
-        await Actions.initializeSecurityManager();
-        expect(SecurityManager.init).not.toHaveBeenCalled();
-    });
-
-    it('should initialize SecurityManager with querying configurations', async () => {
-        const servers = [{url: 'server1'}, {url: 'server2'}] as ServersModel[];
-        const mockQuery = TestHelper.mockQuery<ServersModel>(servers);
-        jest.mocked(queryAllActiveServers).mockReturnValueOnce(mockQuery);
-        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementation((serverUrl) => ({database: `db_${serverUrl}`} as unknown as ServerDatabase));
-        const config = {
-            SiteName: 'Site',
-            MobileEnableBiometrics: 'true',
-            MobilePreventScreenCapture: 'true',
-            MobileJailbreakProtection: 'true',
-        } as unknown as ClientConfig;
-        jest.mocked(getSecurityConfig).mockImplementation((db) => Promise.resolve({
-            ...config,
-            key: `config_${db}`,
-        }));
-
-        await Actions.initializeSecurityManager();
-
-        expect(SecurityManager.init).toHaveBeenCalledWith({
-            server1: {...config, key: 'config_db_server1'},
-            server2: {...config, key: 'config_db_server2'},
-        }, undefined);
-    });
-
-    it('should log error when querying configuration fails', async () => {
-        const servers = [{url: 'server1'}] as ServersModel[];
-        const mockQuery = TestHelper.mockQuery<ServersModel>(servers);
-        jest.mocked(queryAllActiveServers).mockReturnValueOnce(mockQuery);
-        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementation(() => {
-            throw new Error('test error');
-        });
-
-        await Actions.initializeSecurityManager();
-
-        expect(logError).toHaveBeenCalledWith('initializeSecurityManager', expect.any(Error));
-    });
-});
-
 // Tests for switchToServer
 describe('switchToServer', () => {
+    const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+    beforeAll(() => {
+        // Register the SecurityManager listener manually since the mocked SecurityManager doesn't run its constructor
+        DeviceEventEmitter.addListener(Events.ACTIVE_SERVER_CHANGED, jest.mocked(SecurityManager).setActiveServer);
+    });
+
+    beforeEach(async () => {
+        // Initialize the database for each test
+        await DatabaseManager.init(['serverUrl']);
+    });
+
+    afterEach(async () => {
+        // Clean up
+        await DatabaseManager.destroyServerDatabase('serverUrl');
+        emitSpy.mockClear();
+        jest.mocked(SecurityManager).setActiveServer.mockClear();
+        jest.mocked(SecurityManager).isDeviceJailbroken.mockClear();
+        jest.mocked(SecurityManager).authenticateWithBiometricsIfNeeded.mockClear();
+    });
+
     it('should log error when server is not found', async () => {
         jest.mocked(getServer).mockResolvedValueOnce(undefined);
         await Actions.switchToServer('serverUrl', theme, intl, jest.fn());
@@ -103,15 +72,26 @@ describe('switchToServer', () => {
 
     it('should switch to server when lastActiveAt is set', async () => {
         const server = {url: 'serverUrl', lastActiveAt: 123} as ServersModel;
+        const setActiveSpy = jest.spyOn(DatabaseManager, 'setActiveServerDatabase');
         jest.mocked(getServer).mockResolvedValueOnce(server);
-        jest.mocked(SecurityManager.isDeviceJailbroken).mockResolvedValueOnce(false);
-        jest.mocked(SecurityManager.authenticateWithBiometricsIfNeeded).mockResolvedValueOnce(true);
+        jest.mocked(SecurityManager).isDeviceJailbroken.mockResolvedValueOnce(false);
+        jest.mocked(SecurityManager).authenticateWithBiometricsIfNeeded.mockResolvedValueOnce(true);
 
         await Actions.switchToServer('serverUrl', theme, intl, jest.fn());
 
+        // Wait for the async database operation to complete (setActiveServerDatabase is called without await)
+        await TestHelper.wait(10);
+        const options = {
+            skipJailbreakCheck: true,
+            skipBiometricCheck: true,
+            skipMAMEnrollmentCheck: false,
+            forceSwitch: false,
+        };
+
         expect(Navigation.updateProps).toHaveBeenCalledWith(Screens.HOME, {extra: undefined});
-        expect(DatabaseManager.setActiveServerDatabase).toHaveBeenCalledWith('serverUrl');
-        expect(SecurityManager.setActiveServer).toHaveBeenCalledWith('serverUrl');
+        expect(setActiveSpy).toHaveBeenCalledWith('serverUrl', options);
+        expect(emitSpy).toHaveBeenCalledWith(Events.ACTIVE_SERVER_CHANGED, {serverUrl: 'serverUrl', options});
+        expect(SecurityManager.setActiveServer).toHaveBeenCalledWith({serverUrl: 'serverUrl', options});
         expect(WebsocketManager.initializeClient).toHaveBeenCalledWith('serverUrl', 'Server Switch');
     });
 
@@ -203,5 +183,55 @@ describe('switchToServerAndLogin', () => {
 
         expect(SecurityManager.isDeviceJailbroken).toHaveBeenCalledWith('serverUrl');
         expect(callback).toHaveBeenCalled();
+    });
+
+    it('should retrieve and use pre-auth secret when reconnecting after logout', async () => {
+        const server = {url: 'serverUrl', displayName: 'Server'} as ServersModel;
+        const config = {DiagnosticId: 'diagId'} as ClientConfig;
+        const license = {} as ClientLicense;
+        const preauthSecret = 'test-secret-123';
+
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(getPreauthSecret).mockResolvedValueOnce(preauthSecret);
+        jest.mocked(doPing).mockResolvedValueOnce({});
+        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
+        jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
+
+        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+
+        expect(getPreauthSecret).toHaveBeenCalledWith('serverUrl');
+        expect(doPing).toHaveBeenCalledWith('serverUrl', true, 5000, preauthSecret);
+    });
+
+    it('should work correctly when no pre-auth secret is stored', async () => {
+        const server = {url: 'serverUrl', displayName: 'Server'} as ServersModel;
+        const config = {DiagnosticId: 'diagId'} as ClientConfig;
+        const license = {} as ClientLicense;
+
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(getPreauthSecret).mockResolvedValueOnce(undefined);
+        jest.mocked(doPing).mockResolvedValueOnce({});
+        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
+        jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
+
+        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+
+        expect(getPreauthSecret).toHaveBeenCalledWith('serverUrl');
+        expect(doPing).toHaveBeenCalledWith('serverUrl', true, 5000, undefined);
+    });
+
+    it('should pass pre-auth secret to doPing even when ping fails', async () => {
+        const server = {url: 'serverUrl'} as ServersModel;
+        const preauthSecret = 'test-secret-456';
+
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(getPreauthSecret).mockResolvedValueOnce(preauthSecret);
+        jest.mocked(doPing).mockResolvedValueOnce({error: 'ping error'});
+
+        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+
+        expect(getPreauthSecret).toHaveBeenCalledWith('serverUrl');
+        expect(doPing).toHaveBeenCalledWith('serverUrl', true, 5000, preauthSecret);
+        expect(alertServerError).toHaveBeenCalledWith(intl, 'ping error');
     });
 });

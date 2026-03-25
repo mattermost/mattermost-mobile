@@ -9,6 +9,7 @@ import DatabaseManager from '@database/manager';
 import PostModel from '@database/models/server/post';
 import NetworkManager from '@managers/network_manager';
 import TestHelper from '@test/test_helper';
+import {getFullErrorMessage} from '@utils/errors';
 
 import {
     createPost,
@@ -19,6 +20,7 @@ import {
     editPost,
     acknowledgePost,
     unacknowledgePost,
+    revealBoRPost,
     fetchPostsForChannel,
     fetchPostsForUnreadChannels,
     fetchPosts,
@@ -31,6 +33,7 @@ import {
     fetchPostById,
     fetchSavedPosts,
     fetchPinnedPosts,
+    burnPostNow,
 } from './post';
 import * as PostAuxilaryFunctions from './post.auxiliary';
 
@@ -93,6 +96,7 @@ const mockClient = {
     pinPost: jest.fn(),
     unpinPost: jest.fn(),
     deletePost: jest.fn(),
+    burnPostNow: jest.fn(),
     getChannel: jest.fn((_channelId: string) => ({id: _channelId, name: 'channel1', creatorId: user1.id, total_msg_count: 100})),
     getChannelMember: jest.fn((_channelId: string, userId: string) => ({id: userId + '-' + _channelId, user_id: userId, channel_id: _channelId, roles: '', msg_count: 100, mention_count: 0})),
     getMyChannelMember: jest.fn((_channelId: string) => ({id: user1.id + '-' + _channelId, user_id: user1.id, channel_id: _channelId, roles: '', msg_count: 100, mention_count: 0})),
@@ -100,6 +104,17 @@ const mockClient = {
     patchPost: jest.fn((message: string, postId: string) => ({...post1, id: postId, message})),
     acknowledgePost: jest.fn(() => ({acknowledged_at: acknowledgedTime})),
     unacknowledgePost: jest.fn(),
+    revealBoRPost: jest.fn((_postId: string) => ({
+        ...post1,
+        id: _postId,
+        message: 'Revealed message content',
+        metadata: {
+            files: [{id: 'file1', name: 'revealed-file.pdf'}],
+        },
+        props: {
+            revealed: true,
+        },
+    })),
     getPosts: genericGetPostsMock,
     getPostsBefore: genericGetPostsMock,
     getPostsSince: jest.fn((_channelId: string, since: number) => ({posts: {[post1.id]: {...post1, channel_id: _channelId, create_at: since + 1}, [post2.id]: {...post2, channel_id: _channelId, create_at: since + 2}}, order: [post1.id, post2.id]})),
@@ -368,6 +383,51 @@ describe('create, update & delete posts', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.post).toBeDefined();
+    });
+
+    it('burnPostNow - handle error', async () => {
+        mockClient.burnPostNow.mockImplementationOnce(jest.fn(throwFunc));
+        const result = await burnPostNow('foo', {} as PostModel);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('burnPostNow - base case', async () => {
+        mockClient.burnPostNow.mockReset();
+        const borPost = TestHelper.fakePost({channel_id: channelId, id: 'bor_postid1', user_id: user1.id, type: 'burn_on_read'});
+
+        const postModels = await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [borPost.id],
+            posts: [borPost],
+            prepareRecordsOnly: false,
+        });
+
+        // verify post exists in database before burn
+        const {database} = operator;
+        const existingPost = await database.get('Post').find(borPost.id);
+        expect(existingPost).toBeDefined();
+
+        const result = await burnPostNow(serverUrl, postModels[0] as PostModel);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.post).toBeDefined();
+
+        // Verify that the post is deleted from the database
+        try {
+            await database.get('Post').find(borPost.id);
+            expect(true).toBe(false); // Should not reach here
+        } catch (error) {
+            expect(error).toBeDefined();
+            expect(getFullErrorMessage(error)).toBe('Record Post#bor_postid1 not found');
+        }
+    });
+
+    it('burnPostNow - returns error for non-BoR posts', async () => {
+        const result = await burnPostNow('foo', {} as PostModel);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+        expect(result.error).toBe('Post is not a Burn-on-Read post');
     });
 
     it('deletePost - system post', async () => {
@@ -1110,5 +1170,56 @@ describe('get posts', () => {
         expect(result.error).toBeUndefined();
         expect(result.posts).toBeTruthy();
         expect(result.posts?.length).toBe(2);
+    });
+});
+
+describe('revealBoRPost', () => {
+    it('revealBoRPost - handle database not found', async () => {
+        const result = await revealBoRPost('foo', '');
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('revealBoRPost - handle client error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await revealBoRPost(serverUrl, post1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('revealBoRPost - handle error', async () => {
+        mockClient.revealBoRPost.mockImplementationOnce(jest.fn(throwFunc));
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [{...post1, props: {failed: false}}],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await revealBoRPost(serverUrl, post1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('revealBoRPost - base case', async () => {
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await revealBoRPost(serverUrl, post1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.post).toBeDefined();
+    });
+
+    it('revealBoRPost - post not found', async () => {
+        const result = await revealBoRPost(serverUrl, 'nonexistent-post-id');
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.post).toBeUndefined();
     });
 });

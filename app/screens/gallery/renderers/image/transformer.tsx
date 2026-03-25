@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image, type ImageSource} from 'expo-image';
+import {type ImageSource} from 'expo-image';
 import React, {useCallback} from 'react';
 import {StyleSheet} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {useAnimatedReaction, useAnimatedStyle} from 'react-native-reanimated';
 import {SvgUri} from 'react-native-svg';
+
+import ExpoImage from '@components/expo_image';
 
 import {useTransformerSharedValues} from './context';
 import useTransformerDoubleTap from './gestures/useTransformerDoubleTap';
@@ -33,6 +35,8 @@ const styles = StyleSheet.create({
 });
 
 interface ImageTransformerProps extends Omit<GalleryPagerItem, 'index' | 'item' | 'isPagerInProgress'> {
+    autoplay?: boolean;
+    cacheKey: string;
     enabled?: boolean;
     isSvg: boolean;
     source: ImageSource | string;
@@ -41,7 +45,7 @@ interface ImageTransformerProps extends Omit<GalleryPagerItem, 'index' | 'item' 
 
 const ImageTransformer = (
     {
-        enabled = true, height, isPageActive,
+        autoplay, cacheKey, enabled = true, height, isPageActive,
         onPageStateChange, source, isSvg,
         targetDimensions, width, pagerPanGesture, pagerTapGesture, lightboxPanGesture,
     }: ImageTransformerProps) => {
@@ -57,11 +61,11 @@ const ImageTransformer = (
 
     const setInteractionsEnabled = useCallback((value: boolean) => {
         interactionsEnabled.value = value;
-    }, []);
+    }, [interactionsEnabled]);
 
     const onLoadImageSuccess = useCallback(() => {
         setInteractionsEnabled(true);
-    }, []);
+    }, [setInteractionsEnabled]);
 
     useAnimatedReaction(
         () => {
@@ -136,10 +140,12 @@ const ImageTransformer = (
         );
     } else {
         element = (
-            <Image
+            <ExpoImage
+                id={cacheKey}
                 onLoad={onLoadImageSuccess}
                 source={imageSource}
                 style={{width, height}}
+                autoplay={autoplay}
             />
         );
     }

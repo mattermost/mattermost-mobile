@@ -80,11 +80,21 @@ class AccountScreen {
     };
 
     open = async () => {
-        // # Open account screen
-        await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await HomeScreen.accountTab.tap();
-
-        return this.toBeVisible();
+        try {
+            await waitFor(HomeScreen.accountTab).toExist().withTimeout(timeouts.TEN_SEC);
+            await HomeScreen.accountTab.tap();
+            return this.toBeVisible();
+        } catch (error) {
+            // If account tab is not found, the app might already be on account screen or in unexpected state
+            // Try to verify if we're already on account screen
+            try {
+                await waitFor(this.accountScreen).toExist().withTimeout(timeouts.TWO_SEC);
+                return this.accountScreen;
+            } catch {
+                // Re-throw original error if we're not on account screen either
+                throw error;
+            }
+        }
     };
 
     logout = async (serverDisplayName: string | null = null) => {

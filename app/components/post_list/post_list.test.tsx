@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {act} from '@testing-library/react-native';
-import React, {type ComponentProps} from 'react';
-import {DeviceEventEmitter, Platform} from 'react-native';
+import React, {createRef, type ComponentProps} from 'react';
+import {DeviceEventEmitter, type FlatList, Platform} from 'react-native';
 
 import * as localPostFunctions from '@actions/local/post';
 import * as postFunctions from '@actions/remote/post';
@@ -75,11 +75,12 @@ describe('components/post_list/PostList', () => {
         customEmojiNames: [],
         lastViewedAt: 0,
         location: Screens.CHANNEL,
-        nativeID: 'post-list',
         posts: mockPosts,
         savedPostIds: new Set(),
         testID: 'post_list',
         shouldShowJoinLeaveMessages: false,
+        isChannelAutotranslated: false,
+        listRef: createRef<FlatList<string | PostModel>>(),
     };
 
     it('renders correctly with basic props', () => {
@@ -370,7 +371,7 @@ describe('components/post_list/PostList', () => {
 
         // which causes the content offset to shift
         act(() => {
-            flatList.props.onScroll({
+            flatList.props.onMomentumScrollEnd({
                 nativeEvent: {
                     contentOffset: {y: 200},
                     ...unrelatedNativeEventsAttributes,
@@ -383,7 +384,7 @@ describe('components/post_list/PostList', () => {
 
         // if user post an image, scroll to bottom being called to push offset to 0, which causes the "New Messages" message to disappear
         act(() => {
-            flatList.props.onScroll({
+            flatList.props.onMomentumScrollEnd({
                 nativeEvent: {
                     contentOffset: {y: 0},
                     ...unrelatedNativeEventsAttributes,

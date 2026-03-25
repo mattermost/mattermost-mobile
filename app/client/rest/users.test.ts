@@ -175,6 +175,37 @@ describe('ClientUsers', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, defaultExpectedOptions, false);
     });
 
+    test('loginByIntune', async () => {
+        const accessToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...';
+        const deviceId = 'deviceId';
+        const expectedUrl = '/oauth/intune';
+        const expectedOptions = {
+            method: 'post',
+            body: {
+                device_id: deviceId,
+                access_token: accessToken,
+            },
+            headers: {'Cache-Control': 'no-store'},
+        };
+
+        await client.loginByIntune(accessToken, deviceId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions, false);
+
+        // Test with default deviceId
+        const defaultExpectedOptions = {
+            method: 'post',
+            body: {
+                device_id: '',
+                access_token: accessToken,
+            },
+            headers: {'Cache-Control': 'no-store'},
+        };
+
+        await client.loginByIntune(accessToken);
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, defaultExpectedOptions, false);
+    });
+
     test('logout', async () => {
         const expectedUrl = `${client.getUsersRoute()}/logout`;
         const expectedOptions = {method: 'post'};

@@ -25,7 +25,7 @@ const LoadTeamsError = () => {
         if (error) {
             setLoading(false);
         }
-    }, []);
+    }, [serverUrl]);
 
     return (
         <LoadingError

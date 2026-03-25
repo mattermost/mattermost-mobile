@@ -7,13 +7,14 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup} from '@support/server_api';
+import {Post, Setup, User} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
 import {
     AccountScreen,
+    ChannelScreen,
     CustomStatusScreen,
     EditProfileScreen,
     HomeScreen,
@@ -21,16 +22,19 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Account - Account Menu', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testUser: any;
+    let testChannel: any;
 
     beforeAll(async () => {
-        const {user} = await Setup.apiInit(siteOneUrl);
+        const {channel, user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
+        testChannel = channel;
 
         // # Log in to server and go to account screen
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -45,6 +49,7 @@ describe('Account - Account Menu', () => {
 
     afterAll(async () => {
         // # Log out
+        await ChannelScreen.back();
         await HomeScreen.logout();
     });
 
@@ -69,7 +74,8 @@ describe('Account - Account Menu', () => {
 
         // * Verify on account screen and verify user presence icon and label are for offline user status
         await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('offline')).toBeVisible();
+        await wait(timeouts.TWO_SEC);
+        await waitFor(AccountScreen.getUserPresenceIndicator('offline')).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(AccountScreen.getUserPresenceLabel('offline')).toHaveText('Offline');
 
         // # Tap on user presence option and tap on do not disturb user status option
@@ -79,7 +85,8 @@ describe('Account - Account Menu', () => {
 
         // * Verify on account screen and verify user presence icon and label are for do no disturb user status
         await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('dnd')).toBeVisible();
+        await wait(timeouts.TWO_SEC);
+        await waitFor(AccountScreen.getUserPresenceIndicator('dnd')).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(AccountScreen.getUserPresenceLabel('dnd')).toHaveText('Do Not Disturb');
 
         // # Tap on user presence option and tap on away user status option
@@ -89,7 +96,8 @@ describe('Account - Account Menu', () => {
 
         // * Verify on account screen and verify user presence icon and label are for away user status
         await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('away')).toBeVisible();
+        await wait(timeouts.TWO_SEC);
+        await waitFor(AccountScreen.getUserPresenceIndicator('away')).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(AccountScreen.getUserPresenceLabel('away')).toHaveText('Away');
 
         // # Tap on user presence option and tap on online user status option
@@ -99,7 +107,8 @@ describe('Account - Account Menu', () => {
 
         // * Verify on account screen and verify user presence icon and label are for online user status
         await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('online')).toBeVisible();
+        await wait(timeouts.TWO_SEC);
+        await waitFor(AccountScreen.getUserPresenceIndicator('online')).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(AccountScreen.getUserPresenceLabel('online')).toHaveText('Online');
     });
 
@@ -134,5 +143,78 @@ describe('Account - Account Menu', () => {
 
         // # Go back to account screen
         await SettingsScreen.close();
+    });
+
+    it('MM-T3472 - should be able to add Nickname', async () => {
+        const nickname = 'nickname';
+        const existingNickname = testUser.nickname;
+
+        await AccountScreen.yourProfileOption.tap();
+        await EditProfileScreen.toBeVisible();
+
+        await EditProfileScreen.nicknameInput.replaceText(nickname);
+        await EditProfileScreen.saveButton.tap();
+        await AccountScreen.toBeVisible();
+
+        // Verify nickname is shown in the profile screen
+        await AccountScreen.yourProfileOption.tap();
+        await EditProfileScreen.toBeVisible();
+        await waitFor(EditProfileScreen.nicknameInput).toHaveText(nickname).withTimeout(timeouts.TEN_SEC);
+
+        // Verify nickname is different than previous nickname
+        const {user} = await User.apiGetUserById(siteOneUrl, testUser.id);
+        if (existingNickname === user.nickname) {
+            throw new Error('Nickname was not updated');
+        }
+
+        // # Go back to account screen
+        await EditProfileScreen.close();
+
+    });
+
+    it('MM-T3472 - should show error when Username is updated with invalid characters', async () => {
+        await AccountScreen.yourProfileOption.tap();
+        await EditProfileScreen.toBeVisible();
+
+        await EditProfileScreen.usernameInput.typeText('+new');
+        await EditProfileScreen.saveButton.tap();
+
+        await waitFor(AccountScreen.accountScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await EditProfileScreen.toBeVisible();
+        await expect(EditProfileScreen.usernameInputError).toHaveText('Username must begin with a letter, and contain between 3 to 22 lowercase characters made up of numbers, letters, and the symbols \".\", \"-\", and \"_\".');
+        await EditProfileScreen.close();
+    });
+
+    it('MM-T2056 - Username changes when viewed by other user', async () => {
+        const message = `Test message ${getRandomId()}`;
+        const newUsername = `newusername${getRandomId()}`;
+        await HomeScreen.channelListTab.tap();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+
+        // Wait for keyboard to dismiss and message to be posted
+        await wait(timeouts.TWO_SEC);
+
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem, postListPostItemHeaderDisplayName} = ChannelScreen.getPostListPostItem(post.id, message);
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await expect(postListPostItemHeaderDisplayName).toHaveText(testUser.username);
+
+        // Also check profile screen
+        await ChannelScreen.back();
+        await AccountScreen.open();
+
+        await AccountScreen.yourProfileOption.tap();
+        await EditProfileScreen.toBeVisible();
+
+        await EditProfileScreen.usernameInput.replaceText(newUsername);
+        await EditProfileScreen.saveButton.tap();
+        await AccountScreen.toBeVisible();
+
+        await HomeScreen.channelListTab.tap();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+
+        const {postListPostItemHeaderDisplayName: updatedUsername} = ChannelScreen.getPostListPostItem(post.id, message);
+        await expect(updatedUsername).toHaveText(newUsername);
     });
 });

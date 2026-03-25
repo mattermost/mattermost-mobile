@@ -138,7 +138,11 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
 
     const onSnap = useCallback((offset: number, animated = true) => {
         scrollRef.current?.scrollToOffset({offset, animated});
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- scrollRef is a ref object, so its reference should not change between renders
+
+    // scrollRef is a ref object, so its reference should not change between renders
+    // Also, adding it to the dependency creates a use before define error, circular
+    // with the useCollapsibleHeader hook call later.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onSnapWithTimeout = useCallback((offset: number, animated = true) => {
@@ -367,12 +371,19 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     }, [unlock, onSnapWithTimeout]);
 
     useEffect(() => {
-        if (searchTerm && searchTerm !== processedSearchTermRef.current) {
-            processedSearchTermRef.current = searchTerm;
-            clearInputs();
-            setSearchValue(searchTerm);
-            handleSearch(searchTeamId, searchTerm);
+        if (!searchTerm || searchTerm === processedSearchTermRef.current) {
+            return undefined;
         }
+
+        processedSearchTermRef.current = searchTerm;
+        clearInputs();
+        setSearchValue(searchTerm);
+
+        const raf = requestAnimationFrame(() => {
+            handleSearch(searchTeamId, searchTerm);
+        });
+
+        return () => cancelAnimationFrame(raf);
     }, [handleSearch, clearInputs, searchTeamId, searchTerm]);
 
     useDidUpdate(() => {
@@ -387,6 +398,11 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     }, [isFocused]);
 
     useDidUpdate(() => {
+        if (searchTerm && searchTerm !== lastSearchedValue) {
+            // searchTerm changed (case for hashtag tap) — useEffect handles it; skip to avoid double search
+            return;
+        }
+
         if (isFocused && lastSearchedValue && showResults) {
             // requestAnimationFrame for smooth UI updates
             requestAnimationFrame(() => {

@@ -146,7 +146,7 @@ const ReviewApp = ({
         close(async () => {
             await dismissOverlay(componentId);
         });
-    }, [close, intl, componentId]);
+    }, [close, componentId]);
 
     const onPressClose = useCallback(() => {
         close(async () => {
@@ -166,7 +166,7 @@ const ReviewApp = ({
         if (finished) {
             runOnJS(doAfterAnimation)();
         }
-    }), []);
+    }), [doAfterAnimation]);
 
     return (
         <View

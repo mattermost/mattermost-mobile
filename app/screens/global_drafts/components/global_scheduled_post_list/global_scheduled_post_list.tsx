@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {View, type LayoutChangeEvent, InteractionManager, type ListRenderItemInfo, Text, FlatList} from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
@@ -12,6 +12,7 @@ import {DRAFT_SCHEDULED_POST_LAYOUT_PADDING, DRAFT_TYPE_SCHEDULED} from '@consta
 import {staticStyles} from '@constants/tooltip';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useDidMount from '@hooks/did_mount';
 import DraftTooltip from '@screens/global_drafts/draft_scheduled_post_tooltip';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -81,17 +82,14 @@ const GlobalScheduledPostList: React.FC<Props> = ({
         setLayoutWidth(e.nativeEvent.layout.width - DRAFT_SCHEDULED_POST_LAYOUT_PADDING);
     }, []);
 
-    useEffect(() => {
+    useDidMount(() => {
         if (tutorialWatched) {
             return;
         }
         InteractionManager.runAfterInteractions(() => {
             setTooltipVisible(true);
         });
-
-        // This effect is intended to run only on the first mount, so dependencies are omitted intentionally.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     const firstScheduledPostId = allScheduledPosts[0]?.id || '';
 

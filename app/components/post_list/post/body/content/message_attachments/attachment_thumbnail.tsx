@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'expo-image';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
+
+import ExpoImage from '@components/expo_image';
+import {urlSafeBase64Encode} from '@utils/security';
 
 type Props = {
     uri: string;
@@ -24,7 +26,8 @@ const style = StyleSheet.create({
 const AttachmentThumbnail = ({uri}: Props) => {
     return (
         <View style={style.container}>
-            <Image
+            <ExpoImage
+                id={`attachment-thumbnail-${urlSafeBase64Encode(uri)}`}
                 source={{uri}}
                 contentFit='contain'
                 style={style.image}

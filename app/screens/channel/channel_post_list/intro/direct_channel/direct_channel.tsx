@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {defineMessages} from 'react-intl';
 import {Text, View, type TextStyle} from 'react-native';
 
@@ -10,6 +10,7 @@ import FormattedText from '@components/formatted_text';
 import {BotTag} from '@components/tag';
 import {General, NotificationLevel} from '@constants';
 import {useServerUrl} from '@context/server';
+import useDidMount from '@hooks/did_mount';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserIdFromChannelName} from '@utils/user';
@@ -124,12 +125,12 @@ const DirectChannel = ({
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
-    useEffect(() => {
+    useDidMount(() => {
         const channelMembers = members?.filter((m) => m.userId !== currentUserId);
         if (!channelMembers?.length) {
             fetchProfilesInChannel(serverUrl, channel.id, currentUserId, undefined, false);
         }
-    }, []);
+    });
 
     const message = useMemo(() => {
         if (channel.type === General.DM_CHANNEL) {

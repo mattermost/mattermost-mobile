@@ -8,6 +8,7 @@ import Animated from 'react-native-reanimated';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {useGalleryItem} from '@hooks/gallery';
+import EphemeralStore from '@store/ephemeral_store';
 import {isAudio, isDocument, isImage, isVideo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -92,6 +93,9 @@ const File = ({
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
+    // Check if file is rejected by plugin - render as card instead of image/video
+    const isRejected = file.id && EphemeralStore.isFileRejected(file.id);
+
     const handlePreviewPress = useCallback(() => {
         if (document.current) {
             document.current.handlePreviewPress();
@@ -146,7 +150,10 @@ const File = ({
     );
 
     let fileComponent;
-    if (isVideo(file)) {
+    if (isRejected) {
+        // Rejected files render as generic card regardless of file type
+        fileComponent = renderCardWithImage(touchableWithPreview);
+    } else if (isVideo(file)) {
         const renderVideoFile = (
             <TouchableWithoutFeedback
                 disabled={isPressDisabled}

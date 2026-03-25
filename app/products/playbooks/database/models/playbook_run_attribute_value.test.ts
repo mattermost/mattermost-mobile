@@ -6,8 +6,8 @@ import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import TestHelper from '@test/test_helper';
 
 import PlaybookRunModel from './playbook_run';
-import PlaybookRunAttributeModel from './playbook_run_attribute';
-import PlaybookRunAttributeValueModel from './playbook_run_attribute_value';
+import PlaybookRunPropertyFieldModel from './playbook_run_attribute';
+import PlaybookRunPropertyValueModel from './playbook_run_attribute_value';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -40,7 +40,7 @@ const applyRunData = (run: PlaybookRunModel, mockData: PlaybookRun) => {
     run.updateAt = mockData.update_at;
 };
 
-const applyAttributeData = (attribute: PlaybookRunAttributeModel, mockData: PlaybookRunAttribute) => {
+const applyAttributeData = (attribute: PlaybookRunPropertyFieldModel, mockData: PlaybookRunPropertyField) => {
     attribute._raw.id = mockData.id;
     attribute.groupId = mockData.group_id;
     attribute.name = mockData.name;
@@ -50,19 +50,24 @@ const applyAttributeData = (attribute: PlaybookRunAttributeModel, mockData: Play
     attribute.createAt = mockData.create_at;
     attribute.updateAt = mockData.update_at;
     attribute.deleteAt = mockData.delete_at;
-    attribute.attrs = mockData.attrs;
+
+    // API can send attrs as string or object, DB expects string
+    if (mockData.attrs) {
+        attribute.attrs = typeof mockData.attrs === 'string' ? mockData.attrs : JSON.stringify(mockData.attrs);
+    }
 };
 
-const applyAttributeValueData = (attributeValue: PlaybookRunAttributeValueModel, mockData: PlaybookRunAttributeValue) => {
+const applyAttributeValueData = (attributeValue: PlaybookRunPropertyValueModel, mockData: PlaybookRunPropertyValue) => {
     attributeValue._raw.id = mockData.id;
-    attributeValue.attributeId = mockData.attribute_id;
-    attributeValue.runId = mockData.run_id;
+    attributeValue.attributeId = mockData.field_id;
+    attributeValue.runId = mockData.target_id;
     attributeValue.value = mockData.value;
+    attributeValue.updateAt = mockData.update_at;
 };
 
-describe('PlaybookRunAttributeValueModel', () => {
+describe('PlaybookRunPropertyValueModel', () => {
     let operator: ServerDataOperator;
-    let playbook_run_attribute_value: PlaybookRunAttributeValueModel;
+    let playbook_run_attribute_value: PlaybookRunPropertyValueModel;
 
     beforeEach(async () => {
         await DatabaseManager.init([SERVER_URL]);
@@ -75,8 +80,8 @@ describe('PlaybookRunAttributeValueModel', () => {
 
         await database.write(async () => {
             await database.get<PlaybookRunModel>(PLAYBOOK_RUN).create((run) => applyRunData(run, mockRun));
-            await database.get<PlaybookRunAttributeModel>(PLAYBOOK_RUN_ATTRIBUTE).create((attr) => applyAttributeData(attr, mockAttribute));
-            playbook_run_attribute_value = await database.get<PlaybookRunAttributeValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((attrVal) => applyAttributeValueData(attrVal, mockAttributeValue));
+            await database.get<PlaybookRunPropertyFieldModel>(PLAYBOOK_RUN_ATTRIBUTE).create((attr) => applyAttributeData(attr, mockAttribute));
+            playbook_run_attribute_value = await database.get<PlaybookRunPropertyValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((attrVal) => applyAttributeValueData(attrVal, mockAttributeValue));
         });
     });
 
@@ -90,19 +95,20 @@ describe('PlaybookRunAttributeValueModel', () => {
         expect(playbook_run_attribute_value.attributeId).toBe('test-attribute_0');
         expect(playbook_run_attribute_value.runId).toBe('playbook_run_0');
         expect(playbook_run_attribute_value.value).toBe('Value 1');
+        expect(playbook_run_attribute_value.updateAt).toBeGreaterThan(0);
     });
 
     it('=> should have the correct table name', () => {
-        expect(PlaybookRunAttributeValueModel.table).toBe(PLAYBOOK_RUN_ATTRIBUTE_VALUE);
+        expect(PlaybookRunPropertyValueModel.table).toBe(PLAYBOOK_RUN_ATTRIBUTE_VALUE);
     });
 
     it('=> should have correct associations defined', () => {
-        expect(PlaybookRunAttributeValueModel.associations).toBeDefined();
-        expect(PlaybookRunAttributeValueModel.associations[PLAYBOOK_RUN_ATTRIBUTE]).toEqual({
+        expect(PlaybookRunPropertyValueModel.associations).toBeDefined();
+        expect(PlaybookRunPropertyValueModel.associations[PLAYBOOK_RUN_ATTRIBUTE]).toEqual({
             type: 'belongs_to',
             key: 'attribute_id',
         });
-        expect(PlaybookRunAttributeValueModel.associations[PLAYBOOK_RUN]).toEqual({
+        expect(PlaybookRunPropertyValueModel.associations[PLAYBOOK_RUN]).toEqual({
             type: 'belongs_to',
             key: 'run_id',
         });
@@ -132,7 +138,7 @@ describe('PlaybookRunAttributeValueModel', () => {
         const {database} = operator;
 
         await database.write(async () => {
-            await playbook_run_attribute_value.update((attributeValue: PlaybookRunAttributeValueModel) => {
+            await playbook_run_attribute_value.update((attributeValue: PlaybookRunPropertyValueModel) => {
                 attributeValue.value = 'Updated Test Value';
             });
         });
@@ -140,13 +146,26 @@ describe('PlaybookRunAttributeValueModel', () => {
         expect(playbook_run_attribute_value.value).toBe('Updated Test Value');
     });
 
+    it('=> should allow updating updateAt timestamp', async () => {
+        const {database} = operator;
+        const newTimestamp = Date.now() + 10000;
+
+        await database.write(async () => {
+            await playbook_run_attribute_value.update((attributeValue: PlaybookRunPropertyValueModel) => {
+                attributeValue.updateAt = newTimestamp;
+            });
+        });
+
+        expect(playbook_run_attribute_value.updateAt).toBe(newTimestamp);
+    });
+
     it('=> should handle empty value', async () => {
-        let attributeValueWithEmptyValue: PlaybookRunAttributeValueModel;
+        let attributeValueWithEmptyValue: PlaybookRunPropertyValueModel;
         const {database} = operator;
 
         await database.write(async () => {
             const mockData = TestHelper.createPlaybookRunAttributeValue('test-attribute_0', 'playbook_run_0', 1);
-            attributeValueWithEmptyValue = await database.get<PlaybookRunAttributeValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((attributeValue: PlaybookRunAttributeValueModel) => {
+            attributeValueWithEmptyValue = await database.get<PlaybookRunPropertyValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((attributeValue: PlaybookRunPropertyValueModel) => {
                 applyAttributeValueData(attributeValue, mockData);
                 attributeValue.value = '';
             });
@@ -159,12 +178,12 @@ describe('PlaybookRunAttributeValueModel', () => {
     it('=> should handle long text values', async () => {
         const longValue = 'This is a very long text value that might be used to store detailed information about the playbook run attribute. It could contain multiple sentences and various types of content.';
 
-        let attributeValueWithLongText: PlaybookRunAttributeValueModel;
+        let attributeValueWithLongText: PlaybookRunPropertyValueModel;
         const {database} = operator;
 
         await database.write(async () => {
             const mockData = TestHelper.createPlaybookRunAttributeValue('test-attribute_0', 'playbook_run_0', 2);
-            attributeValueWithLongText = await database.get<PlaybookRunAttributeValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((attributeValue: PlaybookRunAttributeValueModel) => {
+            attributeValueWithLongText = await database.get<PlaybookRunPropertyValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((attributeValue: PlaybookRunPropertyValueModel) => {
                 applyAttributeValueData(attributeValue, mockData);
                 attributeValue.value = longValue;
             });

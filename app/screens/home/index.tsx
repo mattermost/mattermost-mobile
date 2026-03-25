@@ -7,14 +7,15 @@ import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
+import {useKeyboardState} from 'react-native-keyboard-controller';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
-import {initializeSecurityManager} from '@actions/app/server';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import ServerVersion from '@components/server_version';
 import {Events, Launch, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import SecurityManager from '@managers/security_manager';
 import {getAllServers} from '@queries/app/servers';
 import {findChannels, popToRoot} from '@screens/navigation';
@@ -67,10 +68,17 @@ export function HomeScreen(props: HomeProps) {
     const theme = useTheme();
     const intl = useIntl();
     const appState = useAppState();
+    const keyboardState = useKeyboardState();
+    const [isEmojiSearchFocused, setIsEmojiSearchFocused] = React.useState(false);
 
     useEffect(() => {
-        initializeSecurityManager();
+        SecurityManager.start();
     }, []);
+
+    useEffect(() => {
+        // Hide tab bar when keyboard opens, show when it closes
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, !keyboardState.isVisible);
+    }, [keyboardState.isVisible]);
 
     const handleFindChannels = useCallback(() => {
         if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS)) {
@@ -127,7 +135,7 @@ export function HomeScreen(props: HomeProps) {
         }
     }, [appState]);
 
-    useEffect(() => {
+    useDidMount(() => {
         if (props.launchType === Launch.DeepLink) {
             if (props.launchError) {
                 alertInvalidDeepLink(intl);
@@ -143,7 +151,29 @@ export function HomeScreen(props: HomeProps) {
                 });
             }
         }
+    });
+
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.EMOJI_PICKER_SEARCH_FOCUSED, (focused: boolean) => {
+            setIsEmojiSearchFocused(focused);
+        });
+
+        return () => listener.remove();
     }, []);
+
+    const TabBarComponent = (tabProps: BottomTabBarProps) => {
+        if (isEmojiSearchFocused) {
+            return null;
+        }
+
+        return (
+            <TabBar
+                {...tabProps}
+                theme={theme}
+            />
+        );
+    };
+    TabBarComponent.displayName = 'TabBarComponent';
 
     return (
         <View
@@ -168,11 +198,7 @@ export function HomeScreen(props: HomeProps) {
                 <Tab.Navigator
                     screenOptions={{headerShown: false, freezeOnBlur: false, lazy: true}}
                     backBehavior='none'
-                    tabBar={(tabProps: BottomTabBarProps) => (
-                        <TabBar
-                            {...tabProps}
-                            theme={theme}
-                        />)}
+                    tabBar={TabBarComponent}
                 >
                     <Tab.Screen
                         name={Screens.HOME}

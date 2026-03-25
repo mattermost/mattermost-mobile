@@ -15,7 +15,7 @@ const AddServerButton = (props: BottomSheetFooterProps) => {
 
     const onAddServer = useCallback(async () => {
         addNewServer(theme);
-    }, []);
+    }, [theme]);
 
     return (
         <BottomSheetFooter {...props}>

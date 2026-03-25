@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {InteractionManager, Platform, StyleSheet} from 'react-native';
 import Animated, {
     type EntryAnimationsValues, type ExitAnimationsValues, FadeIn, FadeOut,
@@ -12,6 +12,7 @@ import Tooltip from 'react-native-walkthrough-tooltip';
 import {storeSkinEmojiSelectorTutorial} from '@actions/app/global';
 import TouchableEmoji from '@components/touchable_emoji';
 import {useIsTablet} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import {skinCodes} from '@utils/emoji';
 
 import CloseButton from './close_button';
@@ -123,13 +124,13 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
         };
     }, []);
 
-    useEffect(() => {
+    useDidMount(() => {
         InteractionManager.runAfterInteractions(() => {
             if (!tutorialWatched) {
                 setTooltipVisible(true);
             }
         });
-    }, []);
+    });
 
     return (
         <>
@@ -145,7 +146,7 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
             >
                 <Animated.View
                     style={widthAnimatedStyle}
-                    exiting={Platform.OS === 'android' ? undefined : FadeOut /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */}
+                    exiting={Platform.select({ios: FadeOut})} /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */
                     entering={FadeIn}
                 >
                     <Animated.View style={[styles.container, opacityStyle]}>
@@ -162,7 +163,7 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
             <Animated.View
                 style={styles.expanded}
                 entering={entering}
-                exiting={exiting}
+                exiting={Platform.select({ios: exiting})} /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */
             >
                 {!isTablet && <CloseButton collapse={collapse}/>}
                 <SkinSelector

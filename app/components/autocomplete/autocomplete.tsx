@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Portal} from '@gorhom/portal';
 import React, {useMemo, useState} from 'react';
 import {Platform, type StyleProp, useWindowDimensions, type ViewStyle} from 'react-native';
 import Animated, {type SharedValue, useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
@@ -65,6 +66,7 @@ type Props = {
     autocompleteProviders?: AutocompleteProviders;
     useAllAvailableSpace?: boolean;
     horizontalPadding?: number;
+    usePortal?: boolean;
 }
 
 type AutocompleteProviders = {
@@ -101,6 +103,7 @@ const Autocomplete = ({
     autocompleteProviders = defaultAutocompleteProviders,
     useAllAvailableSpace = false,
     horizontalPadding = 8,
+    usePortal = false,
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -146,7 +149,7 @@ const Autocomplete = ({
         return s;
     }, [style.base, style.borders, style.shadow, horizontalPadding, containerAnimatedStyle, hasElements, containerStyle]);
 
-    return (
+    const component = (
         <Animated.View
             testID='autocomplete'
             style={containerStyles}
@@ -224,6 +227,16 @@ const Autocomplete = ({
             </>)}
         </Animated.View>
     );
+
+    if (usePortal && Platform.OS === 'android') {
+        return (
+            <Portal>
+                {component}
+            </Portal>
+        );
+    }
+
+    return component;
 };
 
 export default Autocomplete;

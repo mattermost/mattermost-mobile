@@ -17,6 +17,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useDidMount from '@hooks/did_mount';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {openAsBottomSheet, popTopScreen, setButtons} from '@screens/navigation';
@@ -108,6 +109,8 @@ export default function ManageChannelMembers({
     const [term, setTerm] = useState('');
     const [searchedTerm, setSearchedTerm] = useState('');
 
+    const hasTerm = Boolean(term);
+
     const clearSearch = useCallback(() => {
         setTerm('');
         setSearchResults(EMPTY);
@@ -123,10 +126,6 @@ export default function ManageChannelMembers({
     useAndroidHardwareBackHandler(componentId, close);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
-        if (profile.id === currentUserId && isManageMode) {
-            return;
-        }
-
         if (profile.id !== currentUserId) {
             await fetchUsersByIds(serverUrl, [profile.id]);
         }
@@ -191,7 +190,7 @@ export default function ManageChannelMembers({
                 text: formatMessage(manage ? messages.button_done : messages.button_manage),
             }],
         });
-    }, [theme.sidebarHeaderTextColor]);
+    }, [componentId, formatMessage, theme.sidebarHeaderTextColor]);
 
     const toggleManageEnabled = useCallback(() => {
         updateNavigationButtons(!isManageMode);
@@ -240,11 +239,11 @@ export default function ManageChannelMembers({
     }, [searchResults, profiles, searchedTerm, sortedProfiles]);
 
     useEffect(() => {
-        if (!term) {
+        if (!hasTerm) {
             setSearchResults(EMPTY);
             setSearchedTerm('');
         }
-    }, [Boolean(term)]);
+    }, [hasTerm]);
 
     useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
 
@@ -276,19 +275,22 @@ export default function ManageChannelMembers({
         }
     }, [loading, searchedTerm, getFetchChannelMembers]);
 
-    useEffect(() => {
+    useDidMount(() => {
         mounted.current = true;
         getFetchChannelMembers();
 
         return () => {
             mounted.current = false;
         };
-    }, []);
+    });
 
     useEffect(() => {
         if (canManageAndRemoveMembers) {
             updateNavigationButtons(false);
         }
+
+        // We only want to update the navigation buttons when the permission changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canManageAndRemoveMembers]);
 
     useEffect(() => {
@@ -334,7 +336,6 @@ export default function ManageChannelMembers({
                 />
             </View>
             <UserList
-                currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
                 manageMode={true} // default true to change row select icon to a dropdown

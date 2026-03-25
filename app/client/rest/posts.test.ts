@@ -67,6 +67,16 @@ describe('ClientPosts', () => {
         );
     });
 
+    test('burnPostNow', async () => {
+        const postId = 'post_id';
+        await client.burnPostNow(postId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(
+            client.getPostRoute(postId) + '/burn',
+            {method: 'delete'},
+        );
+    });
+
     test('getPostThread', async () => {
         const postId = 'post_id';
         const options = {fetchThreads: true, collapsedThreads: false, collapsedThreadsExtended: false, direction: 'up'} as FetchPaginatedThreadOptions;
@@ -306,6 +316,15 @@ describe('ClientPosts', () => {
         expect(client.doFetch).toHaveBeenCalledWith(
             `${client.urlVersion}/notifications/test`,
             {method: 'post'},
+        );
+    });
+
+    test('revealBoRPost', async () => {
+        await client.revealBoRPost('post_id');
+
+        expect(client.doFetch).toHaveBeenCalledWith(
+            `${client.getPostRoute('post_id')}/reveal`,
+            {method: 'get'},
         );
     });
 });

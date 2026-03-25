@@ -1,8 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
+import {handleAgentsReconnect} from '@agents/actions/websocket/reconnect';
+
 import {markChannelAsViewed} from '@actions/local/channel';
-import {dataRetentionCleanup} from '@actions/local/systems';
+import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {
     entry,
@@ -90,10 +93,13 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
     const config = await getConfig(database);
 
     handlePlaybookReconnect(serverUrl);
+    handleAgentsReconnect(serverUrl);
 
     if (isSupportedServerCalls(config?.Version)) {
         loadConfigAndCalls(serverUrl, currentUserId, groupLabel);
     }
+
+    checkIsAgentsPluginEnabled(serverUrl);
 
     await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
 
@@ -103,6 +109,8 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
     openAllUnreadChannels(serverUrl, groupLabel);
 
     dataRetentionCleanup(serverUrl);
+
+    expiredBoRPostCleanup(serverUrl);
 
     AppsManager.refreshAppBindings(serverUrl, groupLabel);
     return undefined;

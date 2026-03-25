@@ -3,13 +3,14 @@
 
 import moment from 'moment';
 import mtz from 'moment-timezone';
-import React, {useEffect, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
+import useDidMount from '@hooks/did_mount';
 import {getLocaleFromLanguage} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -34,7 +35,7 @@ type Props = {
     isChannelAdmin: boolean;
     canManageAndRemoveMembers?: boolean;
     isCustomStatusEnabled: boolean;
-    isDirectMessage: boolean;
+    isDirectMessageWithUser: boolean;
     isDefaultChannel: boolean;
     isMilitaryTime: boolean;
     isSystemAdmin: boolean;
@@ -66,6 +67,22 @@ const messages = defineMessages({
 });
 const channelContextScreens: AvailableScreens[] = [Screens.CHANNEL, Screens.THREAD];
 
+type ShouldShowUserProfileOptionsProps = {
+    channelContext: boolean;
+    isDirectMessageWithUser: boolean;
+    manageMode: boolean;
+    override: boolean;
+};
+
+export function shouldShowUserProfileOptions({
+    channelContext,
+    isDirectMessageWithUser,
+    manageMode,
+    override,
+}: ShouldShowUserProfileOptionsProps) {
+    return (!isDirectMessageWithUser || !channelContext) && !override && !manageMode;
+}
+
 const UserProfile = ({
     canChangeMemberRoles,
     canManageAndRemoveMembers,
@@ -77,7 +94,7 @@ const UserProfile = ({
     isChannelAdmin,
     isCustomStatusEnabled,
     isDefaultChannel,
-    isDirectMessage,
+    isDirectMessageWithUser,
     isMilitaryTime,
     isSystemAdmin,
     isTeamAdmin,
@@ -113,7 +130,12 @@ const UserProfile = ({
     }
 
     const showCustomStatus = isCustomStatusEnabled && Boolean(customStatus) && !user.isBot && !isCustomStatusExpired(user);
-    const showUserProfileOptions = (!isDirectMessage || !channelContext) && !override && !manageMode;
+    const showUserProfileOptions = shouldShowUserProfileOptions({
+        channelContext,
+        isDirectMessageWithUser,
+        manageMode,
+        override,
+    });
     const showNickname = Boolean(user.nickname) && !override && !user.isBot && !manageMode;
     const showPosition = Boolean(user.position) && !override && !user.isBot && !manageMode;
     const showLocalTime = Boolean(localTime) && !override && !user.isBot && !manageMode;
@@ -171,11 +193,11 @@ const UserProfile = ({
         canManageAndRemoveMembers,
     ]);
 
-    useEffect(() => {
+    useDidMount(() => {
         if (currentUserId !== user.id) {
             fetchTeamAndChannelMembership(serverUrl, user.id, teamId, channelId);
         }
-    }, []);
+    });
 
     const renderContent = () => {
         return (

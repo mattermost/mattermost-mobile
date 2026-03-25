@@ -15,7 +15,7 @@ import type {MessageDescriptor} from 'react-intl';
 type TagProps = {
     message: MessageDescriptor | string;
     icon?: string;
-    type?: 'general' | 'info' | 'danger' | 'success' | 'warning' | 'infoDim';
+    type?: 'general' | 'info' | 'danger' | 'dangerDim' | 'success' | 'warning' | 'infoDim';
     size?: 'xs' | 's' | 'm';
     uppercase?: boolean;
     testID?: string;
@@ -47,6 +47,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         dangerText: {
             color: theme.buttonColor,
+        },
+        dangerDimContainer: {
+            backgroundColor: changeOpacity(theme.dndIndicator, 0.12),
+        },
+        dangerDimText: {
+            color: theme.dndIndicator,
         },
         successContainer: {
             backgroundColor: theme.onlineIndicator,

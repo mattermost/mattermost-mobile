@@ -6,7 +6,9 @@ import React, {useCallback} from 'react';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
+import {useFocusAfterEmojiDismiss} from '@hooks/useFocusAfterEmojiDismiss';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -38,19 +40,54 @@ export default function InputQuickAction({
     focus,
 }: Props) {
     const theme = useTheme();
+    const {inputRef, cursorPositionRef, updateCursorPosition} = useKeyboardAnimationContext();
+
+    // Use hook to handle focus after emoji picker dismissal
+    const {focus: focusWithEmojiDismiss} = useFocusAfterEmojiDismiss(inputRef, focus);
+
     const onPress = useCallback(() => {
-        updateValue((v) => {
-            if (inputType === 'at') {
-                // If there's existing text and it doesn't end with a space, add a space before @
-                if (v.length > 0 && !v.endsWith(' ')) {
-                    return `${v} @`;
+        if (cursorPositionRef && updateCursorPosition) {
+            const currentCursorPosition = cursorPositionRef.current;
+
+            updateValue((v) => {
+                if (inputType === 'at') {
+                    let insertedText = '@';
+                    const charBeforeCursor = currentCursorPosition > 0 ? v[currentCursorPosition - 1] : '';
+
+                    if (currentCursorPosition === v.length && currentCursorPosition > 0 && charBeforeCursor !== ' ') {
+                        insertedText = ' @';
+                    }
+
+                    const newValue = v.slice(0, currentCursorPosition) + insertedText + v.slice(currentCursorPosition);
+                    const newCursorPosition = currentCursorPosition + insertedText.length;
+
+                    cursorPositionRef.current = newCursorPosition;
+                    updateCursorPosition(newCursorPosition);
+
+                    return newValue;
                 }
-                return `${v}@`;
-            }
-            return '/';
-        });
-        focus();
-    }, [inputType, updateValue, focus]);
+
+                const newValue = v.slice(0, currentCursorPosition) + '/' + v.slice(currentCursorPosition);
+                const newCursorPosition = currentCursorPosition + 1;
+
+                cursorPositionRef.current = newCursorPosition;
+                updateCursorPosition(newCursorPosition);
+
+                return newValue;
+            });
+        } else {
+            updateValue((v) => {
+                if (inputType === 'at') {
+                    if (v.length > 0 && !v.endsWith(' ')) {
+                        return `${v} @`;
+                    }
+                    return `${v}@`;
+                }
+                return '/';
+            });
+        }
+        focusWithEmojiDismiss();
+    }, [inputType, updateValue, focusWithEmojiDismiss, cursorPositionRef, updateCursorPosition]);
 
     const actionTestID = disabled ?
         `${testID}.disabled` :

@@ -6,6 +6,7 @@ import {buildQueryString} from '@utils/helpers';
 import {PER_PAGE_DEFAULT} from './constants';
 
 import type ClientBase from './base';
+import type {FirstArgument} from '@typings/utils/utils';
 
 export interface ClientTeamsMix {
     createTeam: (team: Team) => Promise<Team>;
@@ -24,6 +25,7 @@ export interface ClientTeamsMix {
     addToTeam: (teamId: string, userId: string) => Promise<TeamMembership>;
     addUsersToTeamGracefully: (teamId: string, userIds: string[]) => Promise<TeamMemberWithError[]>;
     sendEmailInvitesToTeamGracefully: (teamId: string, emails: string[]) => Promise<TeamInviteWithError[]>;
+    sendGuestEmailInvitesToTeamGracefully: (teamId: string, emails: string[], channels: string[], message?: string, magicLink?: boolean) => Promise<TeamInviteWithError[]>;
     joinTeam: (inviteId: string) => Promise<TeamMembership>;
     removeFromTeam: (teamId: string, userId: string) => Promise<any>;
     getTeamStats: (teamId: string) => Promise<any>;
@@ -147,6 +149,19 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
+    sendGuestEmailInvitesToTeamGracefully = (teamId: string, emails: string[], channels: string[], message = '', guestMagicLink = false) => {
+        const params: FirstArgument<typeof buildQueryString> = {
+            graceful: true,
+        };
+        if (guestMagicLink) {
+            params.guest_magic_link = true;
+        }
+        return this.doFetch(
+            `${this.getTeamRoute(teamId)}/invite-guests/email${buildQueryString(params)}`,
+            {method: 'post', body: {message, emails, channels}},
+        );
+    };
+
     joinTeam = async (inviteId: string) => {
         const query = buildQueryString({invite_id: inviteId});
         return this.doFetch(
@@ -170,7 +185,7 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     getTeamIconUrl = (teamId: string, lastTeamIconUpdate: number) => {
-        const params: any = {};
+        const params: FirstArgument<typeof buildQueryString> = {};
         if (lastTeamIconUpdate) {
             params._ = lastTeamIconUpdate;
         }

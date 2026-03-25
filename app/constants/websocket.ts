@@ -61,6 +61,7 @@ const WebsocketEvents = {
     DELETE_TEAM: 'delete_team',
     RESTORE_TEAM: 'restore_team',
     APPS_FRAMEWORK_REFRESH_BINDINGS: 'custom_com.mattermost.apps_refresh_bindings',
+    POST_TRANSLATION_UPDATED: 'post_translation_updated',
 
     CALLS_CHANNEL_ENABLED: `custom_${Calls.PluginId}_channel_enable_voice`,
     CALLS_CHANNEL_DISABLED: `custom_${Calls.PluginId}_channel_disable_voice`,
@@ -105,6 +106,19 @@ const WebsocketEvents = {
     CUSTOM_PROFILE_ATTRIBUTES_FIELD_UPDATED: 'custom_profile_attributes_field_updated',
     CUSTOM_PROFILE_ATTRIBUTES_FIELD_CREATED: 'custom_profile_attributes_field_created',
     CUSTOM_PROFILE_ATTRIBUTES_FIELD_DELETED: 'custom_profile_attributes_field_deleted',
+
+    // Agents
+    AGENTS_POST_UPDATE: 'custom_mattermost-ai_postupdate',
+    AGENTS_TOOL_CALL_STATUS: 'custom_mattermost-ai_tool_call_status_updated',
+
+    // Burn on Read
+    BOR_POST_REVEALED: 'post_revealed',
+    BOR_POST_BURNED: 'post_burned',
+    BURN_ON_READ_ALL_REVEALED: 'burn_on_read_all_revealed',
+
+    // File access control
+    FILE_DOWNLOAD_REJECTED: 'file_download_rejected',
+    SHOW_TOAST: 'show_toast',
 };
 
 export default WebsocketEvents;

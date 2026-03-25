@@ -15,7 +15,7 @@ import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
-const {MY_CHANNEL} = MM_TABLES.SERVER;
+const {MY_CHANNEL, CHANNEL} = MM_TABLES.SERVER;
 
 export const queryPlaybookRunsPerChannel = (database: Database, channelId: string, finished?: boolean) => {
     const conditions = [Q.where('channel_id', channelId)];
@@ -89,9 +89,22 @@ export const observeParticipantsIdsFromPlaybookModel = (runModel: PlaybookRunMod
     );
 };
 
-export const queryPlaybookRunsByParticipant = (database: Database, participantId: string) => {
+export const queryPlaybookRunsByParticipantAndTeam = (database: Database, participantId: string, teamId: string) => {
     return database.get<PlaybookRunModel>(PLAYBOOK_RUN).query(
+        Q.experimentalJoinTables([CHANNEL]),
+        Q.on(CHANNEL, 'team_id', Q.eq(teamId)),
         Q.where('participant_ids', Q.like(`%"${participantId}"%`)),
         Q.sortBy('create_at', 'desc'),
+    );
+};
+
+export const observeHasRunningPlaybookRunsInTeam = (database: Database, teamId: string) => {
+    return database.get<PlaybookRunModel>(PLAYBOOK_RUN).query(
+        Q.and(
+            Q.where('team_id', teamId),
+            Q.where('end_at', Q.eq(0)),
+        ),
+    ).observeCount().pipe(
+        switchMap((count) => of$(count > 0)),
     );
 };

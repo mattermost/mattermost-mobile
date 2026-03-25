@@ -77,7 +77,7 @@ class CreateDirectMessageScreen {
         await ChannelListScreen.headerPlusButton.tap();
         await wait(timeouts.ONE_SEC);
         await ChannelListScreen.openDirectMessageItem.tap();
-        await wait(timeouts.TEN_SEC);
+        await wait(timeouts.FOUR_SEC);
         return this.toBeVisible();
     };
 
@@ -89,14 +89,12 @@ class CreateDirectMessageScreen {
     closeTutorial = async () => {
         try {
             if (isIos()) {
-                await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.HALF_MIN);
+                await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
                 await this.tutorialSwipeLeft.tap();
-                await expect(this.tutorialHighlight).not.toExist();
             } else {
-                await wait(timeouts.ONE_SEC);
                 await device.pressBack();
-                await wait(timeouts.ONE_SEC);
             }
+            await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
         } catch {
             // eslint-disable-next-line no-console
             console.log('Tutorial element not visible, skipping action:');

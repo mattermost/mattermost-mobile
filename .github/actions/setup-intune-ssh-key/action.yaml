@@ -1,0 +1,27 @@
+# Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+# See LICENSE.txt for license information.
+
+name: Setup Intune SSH Key
+description: Configure SSH private key for accessing Intune submodule repository
+
+inputs:
+  ssh-private-key:
+    description: 'SSH private key for Intune submodule repository access'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure Intune submodule SSH key
+      shell: bash
+      run: |
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+
+        # Configure Intune submodule SSH key (separate from main repo key)
+        INTUNE_KEY_PATH="${HOME}/.ssh/intune_submodule_ed25519"
+        echo -e '${{ inputs.ssh-private-key }}' > ${INTUNE_KEY_PATH}
+        chmod 0600 ${INTUNE_KEY_PATH}
+        ssh-keygen -y -f ${INTUNE_KEY_PATH} > ${INTUNE_KEY_PATH}.pub
+
+        echo "✅ Intune submodule SSH key configured"

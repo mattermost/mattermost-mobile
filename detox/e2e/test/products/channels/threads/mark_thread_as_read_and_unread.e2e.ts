@@ -65,7 +65,6 @@ describe('Threads - Mark Thread as Read and Unread', () => {
             rootId: parentPost.id,
         });
         await ChannelScreen.back();
-        await device.reloadReactNative();
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.headerUnreadThreadsButton.tap();
 
@@ -105,7 +104,6 @@ describe('Threads - Mark Thread as Read and Unread', () => {
             rootId: parentPost.id,
         });
         await ChannelScreen.back();
-        await device.reloadReactNative();
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.headerUnreadThreadsButton.tap();
 
@@ -156,7 +154,6 @@ describe('Threads - Mark Thread as Read and Unread', () => {
             rootId: parentPost.id,
         });
         await ChannelScreen.back();
-        await device.reloadReactNative();
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.headerUnreadThreadsButton.tap();
 
@@ -175,6 +172,7 @@ describe('Threads - Mark Thread as Read and Unread', () => {
         await Alert.markReadButton.tap();
 
         // * Verify thread is not displayed anymore and unread threads section is empty
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
         await expect(GlobalThreadsScreen.emptyThreadsList).toBeVisible();
 

@@ -22,10 +22,10 @@ import {useGalleryItem} from '@hooks/gallery';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {lookupMimeType} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
-import {generateId} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
 import {getMarkdownImageSize, removeImageProxyForKey} from '@utils/markdown';
+import {urlSafeBase64Encode} from '@utils/security';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {normalizeProtocol, safeDecodeURIComponent, tryOpenURL} from '@utils/url';
@@ -88,15 +88,16 @@ const MarkdownImage = ({
     const isTablet = useIsTablet();
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
+    const sourceKey = removeImageProxyForKey(source);
 
     // Pattern suggested in https://react.dev/reference/react/useRef#avoiding-recreating-the-ref-contents
     const genericFileRef = useRef<string | null>(null);
     if (genericFileRef.current === null) {
-        genericFileRef.current = generateId('uid');
+        genericFileRef.current = `uid-${urlSafeBase64Encode(sourceKey)}`;
     }
     const genericFileId = genericFileRef.current;
 
-    const metadata = secureGetFromRecord(imagesMetadata, removeImageProxyForKey(source)) || Object.values(imagesMetadata || {})[0];
+    const metadata = secureGetFromRecord(imagesMetadata, sourceKey) || Object.values(imagesMetadata || {})[0];
     const [failed, setFailed] = useState(() => isGifTooLarge(metadata));
     const serverUrl = useServerUrl();
     const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
@@ -129,7 +130,7 @@ const MarkdownImage = ({
 
     const handlePreviewImage = useCallback(() => {
         const item: GalleryItemType = {
-            ...fileToGalleryItem(fileInfo),
+            ...fileToGalleryItem(fileInfo, undefined, undefined, 0, fileInfo.id),
             mime_type: lookupMimeType(fileInfo.name),
             type: 'image',
         };

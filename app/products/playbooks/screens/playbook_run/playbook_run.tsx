@@ -3,11 +3,12 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {View, Text, ScrollView, Alert} from 'react-native';
+import {View, Text, ScrollView, Alert, TouchableOpacity} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
 import UserChip from '@components/chips/user_chip';
+import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
 import Tag from '@components/tag';
 import UserAvatarsStack from '@components/user_avatars_stack';
@@ -22,9 +23,10 @@ import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {goToSelectUser} from '../navigation';
+import {goToEditPlaybookRun, goToSelectUser} from '../navigation';
 
 import ChecklistList from './checklist_list';
+import {PropertyFieldsList} from './components';
 import ErrorState from './error_state';
 import OutOfDateHeader from './out_of_date_header';
 import StatusUpdateIndicator from './status_update_indicator';
@@ -71,9 +73,13 @@ const messages = defineMessages({
         id: 'playbooks.playbook_run.finish_run_dialog_title',
         defaultMessage: 'Finish',
     },
-    finishRunDialogDescription: {
-        id: 'playbooks.playbook_run.finish_run_dialog_description',
-        defaultMessage: 'There are {pendingCount} {pendingCount, plural, =1 {task} other {tasks}} pending.\n\nAre you sure you want to finish the checklist for all participants?',
+    finishRunDialogPendingTasks: {
+        id: 'playbooks.playbook_run.finish_run_dialog_pending_tasks',
+        defaultMessage: 'There are {pendingCount} {pendingCount, plural, =1 {task} other {tasks}} pending.',
+    },
+    finishRunDialogConfirmation: {
+        id: 'playbooks.playbook_run.finish_run_dialog_confirmation',
+        defaultMessage: 'Are you sure you want to finish the checklist for all participants?',
     },
     finishRunDialogCancel: {
         id: 'playbooks.playbook_run.finish_run_dialog_cancel',
@@ -167,6 +173,7 @@ type Props = {
     pendingCount: number;
     currentUserId: string;
     teammateNameDisplay: string;
+    canEditSummary: boolean;
 }
 
 export default function PlaybookRun({
@@ -179,6 +186,7 @@ export default function PlaybookRun({
     componentId,
     currentUserId,
     teammateNameDisplay,
+    canEditSummary,
 }: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -198,7 +206,16 @@ export default function PlaybookRun({
     const isFinished = isRunFinished(playbookRun);
     const readOnly = isFinished || !isParticipant;
 
-    const playbookRunType = useMemo(() => playbookRun?.type || 'playbook', [playbookRun]);
+    const playbookRunType = useMemo(() => {
+        if (!playbookRun) {
+            return PLAYBOOK_RUN_TYPES.PlaybookType;
+        }
+        if (playbookRun.type) {
+            return playbookRun.type;
+        }
+        const playbookId = 'playbookId' in playbookRun ? playbookRun.playbookId : (playbookRun.playbook_id || '');
+        return playbookId ? PLAYBOOK_RUN_TYPES.PlaybookType : PLAYBOOK_RUN_TYPES.ChannelChecklistType;
+    }, [playbookRun]);
 
     const containerStyle = useMemo(() => {
         return [
@@ -245,34 +262,27 @@ export default function PlaybookRun({
         );
     }, [handleSelectOwner, intl, owner, participants, playbookRun?.name, theme]);
 
-    // this will be back once there is a rename function on the server side
-    // const handleRename = useCallback(async (newName: string) => {
-    //     if (!playbookRun) {
-    //         return;
-    //     }
+    const handleEditPress = useCallback(() => {
+        if (!playbookRun) {
+            return;
+        }
 
-    //     const res = await renamePlaybookRun(serverUrl, playbookRun.id, newName);
-    //     if (res.error) {
-    //         showPlaybookErrorSnackbar();
-    //     }
-    // }, [playbookRun, serverUrl]);
-
-    // const handleEditPress = useCallback(() => {
-    //     if (!playbookRun) {
-    //         return;
-    //     }
-
-    //     goToRenamePlaybookRun(intl, theme, playbookRun.name, handleRename);
-    // }, [intl, theme, playbookRun, handleRename]);
+        goToEditPlaybookRun(intl, theme, playbookRun.name, playbookRun.summary, playbookRun.id, {canEditSummary});
+    }, [intl, theme, playbookRun, canEditSummary]);
 
     const handleFinishRun = useCallback(() => {
         if (!playbookRun) {
             return;
         }
 
+        let message = intl.formatMessage(messages.finishRunDialogConfirmation);
+        if (pendingCount > 0) {
+            message = `${intl.formatMessage(messages.finishRunDialogPendingTasks, {pendingCount})}\n\n${message}`;
+        }
+
         Alert.alert(
             intl.formatMessage(messages.finishRunDialogTitle),
-            intl.formatMessage(messages.finishRunDialogDescription, {pendingCount}),
+            message,
             [
                 {
                     text: intl.formatMessage(messages.finishRunDialogCancel),
@@ -315,13 +325,17 @@ export default function PlaybookRun({
                         <View style={styles.titleAndDescription}>
                             <View style={styles.titleRow}>
                                 <Text style={styles.title}>{playbookRun.name}</Text>
-                                {/* This will be back once there is a rename function on the server side
-                                <TouchableOpacity onPress={handleEditPress}>
-                                    <CompassIcon
-                                        name='pencil-outline'
-                                        style={styles.editIcon}
-                                    />
-                                </TouchableOpacity> */}
+                                {!readOnly && (
+                                    <TouchableOpacity
+                                        onPress={handleEditPress}
+                                        testID='playbook-run.edit-icon'
+                                    >
+                                        <CompassIcon
+                                            name='pencil-outline'
+                                            style={styles.editIcon}
+                                        />
+                                    </TouchableOpacity>
+                                )}
                             </View>
                             {isFinished && (
                                 <Tag
@@ -382,6 +396,11 @@ export default function PlaybookRun({
                             />
                         )}
                     </View>
+                    <PropertyFieldsList
+                        serverUrl={serverUrl}
+                        runId={playbookRun.id}
+                        isReadOnly={readOnly}
+                    />
                     <View style={styles.tasksContainer}>
                         <View style={styles.tasksHeaderContainer}>
                             <Text style={styles.tasksHeader}>

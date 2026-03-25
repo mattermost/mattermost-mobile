@@ -3,7 +3,7 @@
 
 import BottomSheetM, {BottomSheetBackdrop, BottomSheetScrollView, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
-import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, ScrollView, type StyleProp, View, type ViewStyle} from 'react-native';
+import {DeviceEventEmitter, type Handle, InteractionManager, ScrollView, type StyleProp, View, type ViewStyle} from 'react-native';
 import {ReduceMotion, useReducedMotion, type WithSpringConfig} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -16,6 +16,7 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {dismissModal} from '@screens/navigation';
 import {hapticFeedback} from '@utils/general';
+import {dismissKeyboard} from '@utils/keyboard';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Indicator from './indicator';
@@ -38,6 +39,8 @@ type Props = {
     enableDynamicSizing?: boolean;
     testID?: string;
     scrollable?: boolean;
+    keyboardBehavior?: 'extend' | 'fillParent' | 'interactive';
+    keyboardBlurBehavior?: 'none' | 'restore';
 }
 
 const PADDING_TOP_MOBILE = 20;
@@ -101,6 +104,8 @@ const BottomSheet = ({
     testID,
     enableDynamicSizing = false,
     scrollable = false,
+    keyboardBehavior = 'extend',
+    keyboardBlurBehavior = 'restore',
 }: Props) => {
     const reducedMotion = useReducedMotion();
     const sheetRef = useRef<BottomSheetM>(null);
@@ -175,7 +180,7 @@ const BottomSheet = ({
 
     useEffect(() => {
         hapticFeedback();
-        Keyboard.dismiss();
+        dismissKeyboard();
 
         return () => {
             if (timeoutRef.current) {
@@ -266,8 +271,8 @@ const BottomSheet = ({
             style={styles.bottomSheet}
             backgroundStyle={bottomSheetBackgroundStyle}
             footerComponent={footerComponent}
-            keyboardBehavior='extend'
-            keyboardBlurBehavior='restore'
+            keyboardBehavior={keyboardBehavior}
+            keyboardBlurBehavior={keyboardBlurBehavior}
             onClose={close}
             bottomInset={insets.bottom}
             enableDynamicSizing={enableDynamicSizing}

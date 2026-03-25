@@ -3,15 +3,17 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet} from 'react-native';
+import {StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {openAsBottomSheet} from '@screens/navigation';
+import {dismissKeyboard} from '@utils/keyboard';
 import {changeOpacity} from '@utils/theme';
 
 type Props = {
@@ -20,7 +22,7 @@ type Props = {
     updatePostPriority: (postPriority: PostPriority) => void;
 }
 
-const style = StyleSheet.create({
+export const style = StyleSheet.create({
     icon: {
         alignItems: 'center',
         justifyContent: 'center',
@@ -38,9 +40,11 @@ export default function PostPriorityAction({
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
+    const {closeInputAccessoryView} = useKeyboardAnimationContext();
 
-    const onPress = useCallback(() => {
-        Keyboard.dismiss();
+    const onPress = useCallback(async () => {
+        closeInputAccessoryView();
+        await dismissKeyboard();
 
         const title = isTablet ? intl.formatMessage({id: 'post_priority.picker.title', defaultMessage: 'Message priority'}) : '';
 
@@ -55,7 +59,7 @@ export default function PostPriorityAction({
                 closeButtonId: POST_PRIORITY_PICKER_BUTTON,
             },
         });
-    }, [isTablet, intl, theme, postPriority, updatePostPriority]);
+    }, [closeInputAccessoryView, isTablet, intl, theme, postPriority, updatePostPriority]);
 
     const iconName = 'alert-circle-outline';
     const iconColor = changeOpacity(theme.centerChannelColor, 0.64);

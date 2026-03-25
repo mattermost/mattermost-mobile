@@ -1,35 +1,19 @@
 name: Detox E2E Tests Release
+# NOTE: The push trigger has been removed. Release branch E2E runs are now
+# owned by Matterwick, which provisions dedicated cloud servers on push and
+# dispatches e2e-detox-pr.yml. This file can be triggered manually for
+# ad-hoc runs against the permanent servers if needed.
 
 on:
   workflow_dispatch:
     inputs:
-      SITE_1_URL:
-        description: "First test server URL"
-        required: true
-        type: string
-      SITE_2_URL:
-        description: "Second test server URL"
-        required: true
-        type: string
-      SITE_3_URL:
-        description: "Third test server URL"
-        required: true
-        type: string
       MOBILE_VERSION:
-        description: "The mobile version to test (branch or SHA)"
-        required: true
+        description: "The mobile ref to test (branch, tag, or SHA); defaults to the workflow's ref if left empty"
+        required: false
         type: string
-      PLATFORM:
-        description: "Platform to test: ios or android"
-        required: true
-        type: choice
-        options:
-          - ios
-          - android
-      DELIVERY_PLATFORM_RUN_ID:
-        description: "The delivery-platform workflow run ID that provisioned servers"
-        required: true
-        type: string
+
+env:
+  INTUNE_ENABLED: 'true'
 
 jobs:
   update-initial-status-ios:
@@ -91,8 +75,7 @@ jobs:
           status: pending
 
   build-ios-simulator:
-    if: inputs.PLATFORM == 'ios'
-    runs-on: macos-14
+    runs-on: macos-15
     needs:
       - update-initial-status-ios
     steps:
@@ -103,6 +86,9 @@ jobs:
 
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: Build iOS Simulator
         env:
@@ -177,9 +163,9 @@ jobs:
     needs:
       - build-ios-simulator
     with:
-      SITE_1_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_1_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
-      SITE_2_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_2_URL || 'https://mobile-e2e-site-2.test.mattermost.cloud' }}
-      SITE_3_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_3_URL || 'https://mobile-e2e-site-3.test.mattermost.cloud' }}
+      SITE_1_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_3_URL }}
       run-type: "RELEASE"
       record_tests_in_zephyr: 'true'
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
@@ -192,9 +178,9 @@ jobs:
     needs:
       - build-android-apk
     with:
-      SITE_1_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_1_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
-      SITE_2_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_2_URL || 'https://mobile-e2e-site-2.test.mattermost.cloud' }}
-      SITE_3_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_3_URL || 'https://mobile-e2e-site-3.test.mattermost.cloud' }}
+      SITE_1_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_3_URL }}
       run-android-tests: true
       run-type: "RELEASE"
       record_tests_in_zephyr: 'true'

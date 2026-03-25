@@ -3,11 +3,10 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {DeviceEventEmitter} from 'react-native';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
+import StatusIndicator from '@components/post_draft/status_indicator';
 import {Events} from '@constants';
-import {TYPING_HEIGHT} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -31,22 +30,14 @@ function Typing({
     channelId,
     rootId,
 }: Props) {
-    const typingHeight = useSharedValue(0);
     const typing = useRef<Array<{id: string; now: number; username: string}>>([]);
     const timeoutToDisappear = useRef<NodeJS.Timeout>();
     const mounted = useRef(false);
-    const [refresh, setRefresh] = useState(0);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [refresh, setRefresh] = useState(0); // Used to trigger re-renders when typing state changes
 
     const theme = useTheme();
     const style = getStyleSheet(theme);
-
-    // This moves the list of post up. This may be rethought by UX in https://mattermost.atlassian.net/browse/MM-39681
-    const typingAnimatedStyle = useAnimatedStyle(() => {
-        return {
-            height: withTiming(typingHeight.value),
-            marginBottom: 4,
-        };
-    });
 
     const onUserStartTyping = useCallback((msg: any) => {
         if (channelId !== msg.channelId) {
@@ -120,17 +111,12 @@ function Typing({
     }, [onUserStopTyping]);
 
     useEffect(() => {
-        typingHeight.value = typing.current.length ? TYPING_HEIGHT : 0;
-    }, [refresh, typingHeight]);
-
-    useEffect(() => {
         typing.current = [];
-        typingHeight.value = 0;
         if (timeoutToDisappear.current) {
             clearTimeout(timeoutToDisappear.current);
             timeoutToDisappear.current = undefined;
         }
-    }, [channelId, rootId, typingHeight]);
+    }, [channelId, rootId]);
 
     const renderTyping = () => {
         const nextTyping = typing.current.map(({username}) => username);
@@ -175,12 +161,13 @@ function Typing({
         }
     };
 
+    const isVisible = typing.current.length > 0;
+
     return (
-        <Animated.View style={typingAnimatedStyle}>
+        <StatusIndicator visible={isVisible}>
             {renderTyping()}
-        </Animated.View>
+        </StatusIndicator>
     );
 }
 
 export default React.memo(Typing);
-

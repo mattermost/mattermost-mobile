@@ -13,6 +13,7 @@ export interface ClientPostsMix {
     getPost: (postId: string, groupLabel?: RequestGroupLabel) => Promise<Post>;
     patchPost: (postPatch: Partial<Post> & {id: string}) => Promise<Post>;
     deletePost: (postId: string) => Promise<any>;
+    burnPostNow: (postId: string) => Promise<any>;
     getPostThread: (postId: string, options: FetchPaginatedThreadOptions, groupLabel?: RequestGroupLabel) => Promise<PostResponse>;
     getPosts: (channelId: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean, groupLabel?: RequestGroupLabel) => Promise<PostResponse>;
     getPostsSince: (channelId: string, since: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean, groupLabel?: RequestGroupLabel) => Promise<PostResponse>;
@@ -34,6 +35,7 @@ export interface ClientPostsMix {
     acknowledgePost: (postId: string, userId: string) => Promise<PostAcknowledgement>;
     unacknowledgePost: (postId: string, userId: string) => Promise<any>;
     sendTestNotification: () => Promise<{status: 'OK'}>;
+    revealBoRPost: (postId: string) => Promise<Post>;
 }
 
 const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -68,6 +70,13 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     deletePost = async (postId: string) => {
         return this.doFetch(
             `${this.getPostRoute(postId)}`,
+            {method: 'delete'},
+        );
+    };
+
+    burnPostNow = async (postId: string) => {
+        return this.doFetch(
+            `${this.getPostRoute(postId)}/burn`,
             {method: 'delete'},
         );
     };
@@ -226,6 +235,13 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return this.doFetch(
             `${this.urlVersion}/notifications/test`,
             {method: 'post'},
+        );
+    };
+
+    revealBoRPost = async (postId: string) => {
+        return this.doFetch(
+            `${this.getPostRoute(postId)}/reveal`,
+            {method: 'get'},
         );
     };
 };

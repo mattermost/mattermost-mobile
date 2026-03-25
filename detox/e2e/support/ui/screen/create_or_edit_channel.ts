@@ -5,8 +5,9 @@ import {
     ChannelInfoScreen,
     ChannelScreen,
     ChannelListScreen,
+    ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 class CreateOrEditChannelScreen {
@@ -51,17 +52,16 @@ class CreateOrEditChannelScreen {
     openCreateChannel = async () => {
         // # Open create channel screen
         await ChannelListScreen.headerPlusButton.tap();
-        await wait(timeouts.ONE_SEC);
         await ChannelListScreen.createNewChannelItem.tap();
 
         return this.toBeVisible();
     };
 
     openEditChannel = async () => {
-        // # Open edit channel screen
-        await ChannelInfoScreen.scrollView.tap({x: 1, y: 1});
-        await ChannelInfoScreen.scrollView.scrollTo('bottom');
-        await ChannelInfoScreen.editChannelOption.tap();
+        // # Open edit channel screen (Channel Info > Channel Settings > Channel info)
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.channelInfoOption.tap({x: 1, y: 1});
 
         return this.toBeVisible();
     };

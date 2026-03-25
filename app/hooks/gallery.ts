@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useCallback, useEffect} from 'react';
+import {useCallback} from 'react';
 import {
     Easing, runOnJS, useAnimatedRef, useAnimatedStyle,
     useSharedValue,
@@ -9,6 +9,8 @@ import {
 } from 'react-native-reanimated';
 
 import {useGallery} from '@context/gallery';
+
+import useDidMount from './did_mount';
 
 export function diff(context: any, name: string, value: any) {
     'worklet';
@@ -37,7 +39,7 @@ export const translateYConfig: WithTimingConfig = {
     easing: Easing.bezier(0.33, 0.01, 0, 1),
 };
 
-export function useGalleryControls() {
+export function useGalleryControls(bottomInset = 0) {
     const headerAndFooterHidden = useSharedValue(false);
 
     const headerStyles = useAnimatedStyle(() => ({
@@ -61,10 +63,10 @@ export function useGalleryControls() {
             },
         ],
         position: 'absolute',
-        bottom: 0,
+        bottom: bottomInset,
         width: '100%',
         zIndex: 1,
-    }));
+    }), [bottomInset]);
 
     const hideHeaderAndFooter = useCallback((hidden?: boolean) => {
         'worklet';
@@ -80,7 +82,7 @@ export function useGalleryControls() {
         }
 
         headerAndFooterHidden.value = hidden;
-    }, []);
+    }, [headerAndFooterHidden]);
 
     return {
         headerAndFooterHidden,
@@ -105,9 +107,9 @@ export function useGalleryItem(
         };
     }, []);
 
-    useEffect(() => {
+    useDidMount(() => {
         gallery.registerItem(index, ref);
-    }, []);
+    });
 
     const onGestureEvent = () => {
         'worklet';

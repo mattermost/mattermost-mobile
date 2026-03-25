@@ -219,9 +219,15 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
         const tableStyle = this.getTableStyle(isFullView);
 
         let rows = React.Children.toArray(this.props.children) as React.ReactElement[];
+
+        if (!rows.length) {
+            return null;
+        }
+
         if (isPreview) {
             const {maxPreviewColumns} = this.state;
             const prevRowLength = rows.length;
+
             const prevColLength = React.Children.toArray(rows[0].props.children).length;
 
             rows = rows.slice(0, maxPreviewColumns).map((row) => {

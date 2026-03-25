@@ -33,7 +33,7 @@ const UsersList = ({channelId, location, users, userAcknowledgements, timezone}:
             userAcknowledgement={userAcknowledgements[item.id]}
             timezone={timezone}
         />
-    ), [channelId, location, timezone]);
+    ), [channelId, location, timezone, userAcknowledgements]);
 
     if (isTablet) {
         return (

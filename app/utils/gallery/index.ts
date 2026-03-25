@@ -2,15 +2,20 @@
 // See LICENSE.txt for license information.
 
 import RNUtils from '@mattermost/rnutils';
+import {Image} from 'expo-image';
 import React, {type RefObject} from 'react';
-import {DeviceEventEmitter, Image, Keyboard, Platform, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
 import {Navigation, type Options, type OptionsLayout} from 'react-native-navigation';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
 import {Events, Screens} from '@constants';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {allOrientations, showOverlay} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {isImage, isVideo} from '@utils/file';
 import {generateId} from '@utils/general';
+import {urlSafeBase64Encode} from '@utils/security';
+import {showSnackBar} from '@utils/snack_bar';
 
 import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
 
@@ -29,7 +34,7 @@ export const clampVelocity = (velocity: number, minVelocity: number, maxVelocity
     return Math.max(Math.min(velocity, -minVelocity), -maxVelocity);
 };
 
-export const fileToGalleryItem = (file: FileInfo, authorId?: string, postProps?: Record<string, unknown>, lastPictureUpdate = 0): GalleryItemType => {
+export const fileToGalleryItem = (file: FileInfo, authorId?: string, postProps?: Record<string, unknown>, lastPictureUpdate = 0, cacheKey: string = file.id || ''): GalleryItemType => {
     let type: GalleryItemType['type'] = 'file';
     if (isVideo(file)) {
         type = 'video';
@@ -52,6 +57,7 @@ export const fileToGalleryItem = (file: FileInfo, authorId?: string, postProps?:
         uri: file.localPath || file.uri || '',
         width: file.width,
         postProps: postProps || file.postProps,
+        cacheKey,
     };
 };
 
@@ -143,6 +149,19 @@ export function measureViewInWindow(ref: RefObject<View>): Promise<{x: number; y
 }
 
 export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: number, items: GalleryItemType[], hideActions = false) {
+    // Check if the file at initialIndex is rejected by plugin
+    const initialItem = items[initialIndex];
+    if (initialItem?.id && EphemeralStore.isFileRejected(initialItem.id)) {
+        // Show error snackbar with the plugin's rejection reason
+        const rejectionReason = EphemeralStore.getRejectionReason(initialItem.id);
+        showSnackBar({
+            barType: SNACK_BAR_TYPE.FILE_DOWNLOAD_REJECTED,
+            customMessage: rejectionReason || undefined,
+            type: 'error',
+        });
+        return;
+    }
+
     Keyboard.dismiss();
     const props = {
         galleryIdentifier,
@@ -190,8 +209,7 @@ export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: numb
 
 export const typedMemo: <T>(c: T) => T = React.memo;
 
-export const getImageSize = (uri: string) => {
-    return new Promise<{width: number; height: number}>((resolve, reject) => {
-        Image.getSize(uri, (width, height) => resolve({width, height}), reject);
-    });
+export const getImageSize = async (serverUrl: string, uri: string, cacheKey: string) => {
+    const image = await Image.loadAsync({uri, cacheKey, cachePath: urlSafeBase64Encode(serverUrl)});
+    return {width: image.width, height: image.height};
 };

@@ -8,6 +8,7 @@ import {act} from '@testing-library/react-native';
 import {fetchMyChannelsForTeam, fetchMissingDirectChannelsInfo, type MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
+import {fetchRoles} from '@actions/remote/role';
 import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {fetchTeamsThreads, updateCanJoinTeams, type MyTeamsRequest} from '@actions/remote/team';
 import {autoUpdateTimezone, updateAllUsersSince, type MyUserRequest} from '@actions/remote/user';
@@ -18,6 +19,7 @@ import {processEntryModels, processEntryModelsForDeletion} from '@queries/server
 import {deferredAppEntryActions, restDeferredAppEntryActions, testExports} from './deferred';
 
 jest.mock('@actions/remote/channel');
+jest.mock('@actions/remote/role');
 jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/team');
 jest.mock('@actions/remote/user');
@@ -153,6 +155,7 @@ describe('actions/remote/entry/deferred', () => {
             expect(fetchPostsForUnreadChannels).toHaveBeenCalled();
             expect(fetchGroupsForMember).toHaveBeenCalledWith(serverUrl, currentUserId, false, undefined);
             expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, initialTeamId, true, undefined);
+            expect(fetchRoles).toHaveBeenCalledWith(serverUrl, defaultTeamData.memberships, defaultChData.memberships, defaultMeData.user, false, true, undefined);
         });
 
         it('should handle missing data gracefully', async () => {
@@ -335,7 +338,7 @@ describe('actions/remote/entry/deferred', () => {
                 );
             });
 
-            expect(processEntryModels).toHaveBeenCalledWith(
+            expect(processEntryModels).toHaveBeenCalledWith(serverUrl,
                 expect.objectContaining({
                     teamData: expect.objectContaining({
                         teams: expect.arrayContaining([
@@ -345,7 +348,7 @@ describe('actions/remote/entry/deferred', () => {
                 }),
             );
 
-            expect(processEntryModels).toHaveBeenCalledWith(
+            expect(processEntryModels).toHaveBeenCalledWith(serverUrl,
                 expect.objectContaining({
                     teamData: expect.objectContaining({
                         teams: expect.arrayContaining([

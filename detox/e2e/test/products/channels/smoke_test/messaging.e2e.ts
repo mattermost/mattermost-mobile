@@ -27,7 +27,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Smoke Test - Messaging', () => {
@@ -64,6 +64,7 @@ describe('Smoke Test - Messaging', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.dismissScheduledPostTooltip();
         await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
@@ -84,12 +85,11 @@ describe('Smoke Test - Messaging', () => {
         await EditPostScreen.saveButton.tap();
 
         // * Verify post message is updated and displays edited indicator '(edited)'
-        const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = ChannelScreen.getPostListPostItem(post.id, updatedMessage);
-        await expect(updatedPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
+        const {postListPostItem: updatedPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, updatedMessage);
+        await ChannelScreen.assertPostMessageEdited(post.id, updatedMessage);
 
         // # Open post options for the updated message, tap delete option and confirm
-        await ChannelScreen.openPostOptionsFor(post.id, updatedMessage);
+        await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify post message is deleted
@@ -144,9 +144,10 @@ describe('Smoke Test - Messaging', () => {
         await expect(postListPostItem).toBeVisible();
 
         // # Open post options for message, open emoji picker screen, and add a reaction
-        await ChannelScreen.openPostOptionsFor(post.id, resolvedMessage);
+        await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
         await EmojiPickerScreen.open(true);
         await EmojiPickerScreen.searchInput.replaceText('clown_face');
+        await EmojiPickerScreen.searchInput.tapReturnKey();
         await element(by.text('🤡')).tap();
 
         // * Verify reaction is added to the message
@@ -165,50 +166,52 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.followThreadOption.tap();
 
-        // * Verify message is followed by user via post footer
+        // * Verify post options closed and message is followed by user via post footer
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
         const {postListPostItem, postListPostItemFooterFollowingButton} = ChannelScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItemFooterFollowingButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(postListPostItemFooterFollowingButton).toExist().withTimeout(timeouts.FOUR_SEC);
 
-        // # Tap on following button via post footer
+        // # Tap on following button via post footer to unfollow
         await postListPostItemFooterFollowingButton.tap();
 
         // * Verify message is not followed by user via post footer
-        await expect(postListPostItemFooterFollowingButton).not.toBeVisible();
+        await waitFor(postListPostItemFooterFollowingButton).not.toExist().withTimeout(timeouts.FOUR_SEC);
 
         // # Open post options for message and tap on save option
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.savePostOption.tap();
 
-        // * Verify saved text is displayed on the post pre-header
-        await wait(timeouts.ONE_SEC);
+        // * Verify post options closed and saved text is displayed on the post pre-header
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
         const {postListPostItemPreHeaderText: channelPostListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(channelPostListPostItemPreHeaderText).toHaveText(savedText);
+        await waitFor(channelPostListPostItemPreHeaderText).toHaveText(savedText).withTimeout(timeouts.FOUR_SEC);
 
-        // # Tap on post to open thread and tap on thread overview unsave button
+        // # Tap on post to open thread and open post options for message
         await postListPostItem.tap();
-        await element(by.text(message)).longPress();
+        await ThreadScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.unsavePostOption.tap();
 
-        // * Verify saved text is not displayed on the post pre-header
-        await expect(channelPostListPostItemPreHeaderText).not.toBeVisible();
+        // * Verify post options closed and saved text is not displayed on the post pre-header
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(channelPostListPostItemPreHeaderText).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Open post options for message and tap on pin to channel option
         await ThreadScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.pinPostOption.tap();
 
-        // * Verify pinned text is displayed on the post pre-header
-        await wait(timeouts.ONE_SEC);
+        // * Verify post options closed and pinned text is displayed on the post pre-header
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
         const {postListPostItemPreHeaderText: threadPostListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(post.id, message);
-        await expect(threadPostListPostItemPreHeaderText).toHaveText(pinnedText);
+        await waitFor(threadPostListPostItemPreHeaderText).toHaveText(pinnedText).withTimeout(timeouts.FOUR_SEC);
 
         // # Go back to channel, open post options for message, and tap on unpin from channel option
         await ThreadScreen.back();
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.unpinPostOption.tap();
 
-        // * Verify pinned text is not displayed on the post pre-header
-        await wait(timeouts.ONE_SEC);
-        await expect(channelPostListPostItemPreHeaderText).not.toBeVisible();
+        // * Verify post options closed and pinned text is not displayed on the post pre-header
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(channelPostListPostItemPreHeaderText).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();

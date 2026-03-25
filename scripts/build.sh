@@ -4,17 +4,32 @@ function execute() {
     cd fastlane && NODE_ENV=production bundle exec fastlane $1 $2
 }
 
+function cleanupAndroid16kbPagesizePatch() {
+  # Only cleanup if we ran setup (SKIP_SETUP not set)
+  if [[ -z "$SKIP_SETUP" ]]; then
+    echo "Reverting 16KB page size patch changes..."
+    # Get the git root directory to ensure we're in the right place
+    local git_root=$(git rev-parse --show-toplevel)
+    cd "$git_root" || return
+    git checkout -- package.json package-lock.json app.json app/components/expo_image/index.tsx android/buildscript-gradle.lockfile patches/
+    git clean -fd patches/
+    echo "✓ Patch changes reverted"
+  fi
+}
+
 function apk() {
   case $1 in
     unsigned)
       echo "Building Android unsigned app"
       setup android
       execute android unsigned
+      cleanupAndroid16kbPagesizePatch
     ;;
     *)
       echo "Building Android app"
       setup android
       execute android build
+      cleanupAndroid16kbPagesizePatch
   esac
 }
 
@@ -55,7 +70,16 @@ function setup() {
     if [[ -z "$SKIP_SETUP" ]]; then
         npm run clean || exit 1
         npm install --ignore-scripts || exit 1
-        npx patch-package || exit 1
+        
+        # Apply 16KB page size patch for Android builds (includes npx patch-package)
+        if [[ "$1" == "android"* ]]; then
+          echo "Applying 16KB page size compatibility patch for Android"
+          npm run apply-16kb-pagesize-patch || exit 1
+        else
+          # For non-Android builds, just apply regular patches
+          npx patch-package || exit 1
+        fi
+        
         node node_modules/\@sentry/cli/scripts/install.js || exit 1
 
         if [[ "$1" == "ios"* ]]; then

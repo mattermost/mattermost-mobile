@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
@@ -9,6 +8,7 @@ import {savePreference} from '@actions/remote/preference';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import {getPreferenceAsBool} from '@helpers/api/preference';
+import useDidMount from '@hooks/did_mount';
 import EphemeralStore from '@store/ephemeral_store';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
@@ -17,7 +17,7 @@ const useGMasDMNotice = (userId: string, channelType: ChannelType, dismissedGMas
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
-    useEffect(() => {
+    useDidMount(() => {
         if (!hasGMasDMFeature) {
             return;
         }
@@ -59,7 +59,7 @@ const useGMasDMNotice = (userId: string, channelType: ChannelType, dismissedGMas
                 },
             ],
         );
-    }, []);
+    });
 };
 
 export default useGMasDMNotice;

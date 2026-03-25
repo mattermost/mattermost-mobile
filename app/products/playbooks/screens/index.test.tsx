@@ -7,10 +7,12 @@ import {withServerDatabase} from '@database/components';
 import Screens from '@playbooks/constants/screens';
 import {render} from '@test/intl-test-helper';
 
+import CreateQuickChecklist from './create_quick_checklist';
 import EditCommand from './edit_command';
 import ParticipantPlaybooks from './participant_playbooks';
 import PlaybookRun from './playbook_run';
 import AddChecklistItemBottomSheet from './playbook_run/checklist/add_checklist_item_bottom_sheet';
+import EditChecklistItemBottomSheet from './playbook_run/checklist/edit_checklist_item_bottom_sheet';
 import RenameChecklistBottomSheet from './playbook_run/checklist/rename_checklist_bottom_sheet';
 import RenamePlaybookRunBottomSheet from './playbook_run/rename_playbook_run_bottom_sheet';
 import PlaybookRuns from './playbooks_runs';
@@ -65,6 +67,12 @@ jest.mock('@playbooks/screens/start_a_run', () => ({
 }));
 jest.mocked(StartARun).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOKS_START_A_RUN}</Text>);
 
+jest.mock('@playbooks/screens/create_quick_checklist', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(CreateQuickChecklist).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOKS_CREATE_QUICK_CHECKLIST}</Text>);
+
 jest.mock('@playbooks/screens/select_playbook', () => ({
     __esModule: true,
     default: jest.fn(),
@@ -93,6 +101,12 @@ jest.mock('@playbooks/screens/playbook_run/checklist/add_checklist_item_bottom_s
     default: jest.fn(),
 }));
 jest.mocked(AddChecklistItemBottomSheet).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOK_ADD_CHECKLIST_ITEM}</Text>);
+
+jest.mock('@playbooks/screens/playbook_run/checklist/edit_checklist_item_bottom_sheet', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(EditChecklistItemBottomSheet).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM}</Text>);
 
 jest.mock('@playbooks/screens/playbook_run/rename_playbook_run_bottom_sheet', () => ({
     __esModule: true,

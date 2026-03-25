@@ -530,3 +530,53 @@ export const loadEarlierThreads = async (serverUrl: string, teamId: string, last
         return {error};
     }
 };
+
+const handlePostDeletedForChannelIfNeededBatch: Record<string, {
+    timeout: NodeJS.Timeout | undefined;
+    teamIds: Set<string>;
+}> = {};
+
+const handlePostDeletedForChannelIfNeededBatchTimeout = 500;
+
+export const batchTeamThreadSync = async (serverUrl: string, teamId: string) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const isCRTEnabled = await getIsCRTEnabled(database);
+        if (!isCRTEnabled) {
+            return;
+        }
+
+        let existingBatch = handlePostDeletedForChannelIfNeededBatch[serverUrl];
+        if (!existingBatch) {
+            existingBatch = {
+                timeout: undefined,
+                teamIds: new Set(),
+            };
+            handlePostDeletedForChannelIfNeededBatch[serverUrl] = existingBatch;
+        }
+
+        clearTimeout(existingBatch.timeout);
+
+        existingBatch.teamIds.add(teamId);
+
+        existingBatch.timeout = setTimeout(async () => {
+            const batch = handlePostDeletedForChannelIfNeededBatch[serverUrl];
+            if (!batch) {
+                return;
+            }
+            delete handlePostDeletedForChannelIfNeededBatch[serverUrl];
+
+            const includeDirect = batch.teamIds.has('');
+            const teamIds = Array.from(batch.teamIds).filter((t) => t !== '');
+            const promises = teamIds.map((t, idx) => syncTeamThreads(serverUrl, t, {excludeDirect: !includeDirect || idx !== 0, refresh: true, fetchOnly: false}));
+            const results = await Promise.all(promises);
+            for (const r of results) {
+                if (r.error) {
+                    logError('batchTeamThreadSync: Error', r.error);
+                }
+            }
+        }, handlePostDeletedForChannelIfNeededBatchTimeout);
+    } catch (error) {
+        logError('handlePostDeletedForChannelIfNeeded: Error', error);
+    }
+};

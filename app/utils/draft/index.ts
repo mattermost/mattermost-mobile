@@ -193,7 +193,7 @@ export const handleDraftUpdate = async ({
 }) => {
     await updateDraftMessage(serverUrl, channelId, rootId, value);
     const imageMetadata: Dictionary<PostImage | undefined> = {};
-    await parseMarkdownImages(value, imageMetadata);
+    await parseMarkdownImages(serverUrl, value, imageMetadata);
 
     if (Object.keys(imageMetadata).length !== 0) {
         updateDraftMarkdownImageMetadata({serverUrl, channelId, rootId, imageMetadata});

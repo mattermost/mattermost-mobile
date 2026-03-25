@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {View, useWindowDimensions} from 'react-native';
 import Animated, {Extrapolate, interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
 
+import useDidMount from '@hooks/did_mount';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -80,7 +81,7 @@ const SlideItem = ({theme, item, scrollX, index, lastSlideIndex}: Props) => {
 
     const initialElementsOpacity = useSharedValue(reducedMotion ? 1 : 0);
 
-    useEffect(() => {
+    useDidMount(() => {
         if (index === FIRST_SLIDE) {
             initialImagePosition.value = withTiming(0, {duration: 600});
             initialTitlePosition.value = withTiming(0, {duration: 800});
@@ -89,7 +90,7 @@ const SlideItem = ({theme, item, scrollX, index, lastSlideIndex}: Props) => {
             initialElementsOpacity.value = withTiming(1, {duration: 1000});
             setFirstLoad(false);
         }
-    }, []);
+    });
 
     const translateFirstImageOnLoad = useAnimatedStyle(() => {
         return {

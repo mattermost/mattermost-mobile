@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {type StyleProp, StyleSheet, type ViewStyle, DeviceEventEmitter} from 'react-native';
+import {type StyleProp, StyleSheet, type ViewStyle, DeviceEventEmitter, type FlatList, type GestureResponderEvent} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {markChannelAsRead, unsetActiveChannelOnServer} from '@actions/remote/channel';
@@ -12,6 +12,7 @@ import PostList from '@components/post_list';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useAppState, useIsTablet} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import useDidUpdate from '@hooks/did_update';
 import {useDebounce} from '@hooks/utils';
 import EphemeralStore from '@store/ephemeral_store';
@@ -26,9 +27,11 @@ type Props = {
     contentContainerStyle?: StyleProp<AnimatedStyle<ViewStyle>>;
     isCRTEnabled: boolean;
     lastViewedAt: number;
-    nativeID: string;
     posts: PostModel[];
     shouldShowJoinLeaveMessages: boolean;
+    listRef: React.RefObject<FlatList<string | PostModel>>;
+    onTouchMove?: (event: GestureResponderEvent) => void;
+    onTouchEnd?: () => void;
 }
 
 const edges: Edge[] = [];
@@ -39,7 +42,8 @@ const styles = StyleSheet.create({
 
 const ChannelPostList = ({
     channelId, contentContainerStyle, isCRTEnabled,
-    lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
+    lastViewedAt, posts, shouldShowJoinLeaveMessages,
+    listRef, onTouchMove, onTouchEnd,
 }: Props) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
@@ -103,14 +107,11 @@ const ChannelPostList = ({
         }
     }, [appState === 'active']);
 
-    useEffect(() => {
+    useDidMount(() => {
         return () => {
             unsetActiveChannelOnServer(serverUrl);
         };
-
-        // We only want to run this on unmount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     const intro = (<Intro channelId={channelId}/>);
 
@@ -122,12 +123,14 @@ const ChannelPostList = ({
             footer={intro}
             lastViewedAt={lastViewedAt}
             location={Screens.CHANNEL}
-            nativeID={nativeID}
             onEndReached={onEndReached}
             posts={posts}
             shouldShowJoinLeaveMessages={shouldShowJoinLeaveMessages}
             showMoreMessages={true}
             testID='channel.post_list'
+            listRef={listRef}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
         />
     );
 

@@ -9,7 +9,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 class SavedMessagesScreen {
@@ -43,7 +43,7 @@ class SavedMessagesScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.savedMessagesScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.savedMessagesScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.savedMessagesScreen;
     };
@@ -57,10 +57,17 @@ class SavedMessagesScreen {
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-        await expect(postListPostItem).toBeVisible();
+
+        // Poll for the post to become visible without waiting for idle bridge
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
+
+        // Dismiss keyboard by tapping on the post list (needed after posting a message)
+        const flatList = this.postList.getFlatList();
+        await flatList.scroll(100, 'down');
+        await wait(timeouts.ONE_SEC);
 
         // # Open post options
-        await postListPostItem.longPress();
+        await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     };

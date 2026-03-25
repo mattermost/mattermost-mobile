@@ -228,10 +228,10 @@ describe('Image utils', () => {
 
     describe('getLocalFilePathFromFile', () => {
         it('should return correct local file path from file', () => {
-            expect(getLocalFilePathFromFile('http://server.com', {id: 'someid', name: 'image.png', extension: 'png'} as unknown as FileInfo)).toBe(`file://test-cache-directory/${urlSafeBase64Encode('http://server.com')}/image-someid.png`);
-            expect(getLocalFilePathFromFile('http://server.com', {id: 'someid', name: 'image.png'} as unknown as FileInfo)).toBe(`file://test-cache-directory/${urlSafeBase64Encode('http://server.com')}/image-someid.png`);
-            expect(getLocalFilePathFromFile('http://server.com', {id: 'someid', extension: 'png'} as unknown as FileInfo)).toBe(`file://test-cache-directory/${urlSafeBase64Encode('http://server.com')}/someid.png`);
-            expect(getLocalFilePathFromFile('http://server.com', {id: 'someid'} as unknown as FileInfo)).toBe(`file://test-cache-directory/${urlSafeBase64Encode('http://server.com')}/someid`);
+            expect(getLocalFilePathFromFile('http://server.com', {id: 'someid', name: 'image.png', extension: 'png'} as unknown as FileInfo)).toBe(`file://test-cache-directory/${urlSafeBase64Encode('http://server.com')}/Files/image-someid.png`);
+            expect(getLocalFilePathFromFile('http://server.com', {id: 'someid', name: 'image.png'} as unknown as FileInfo)).toBe(`file://test-cache-directory/${urlSafeBase64Encode('http://server.com')}/Files/image-someid.png`);
+            expect(getLocalFilePathFromFile('http://server.com', {id: 'someid', extension: 'png'} as unknown as FileInfo)).toBe(`file://test-cache-directory/${urlSafeBase64Encode('http://server.com')}/Files/someid.png`);
+            expect(getLocalFilePathFromFile('http://server.com', {id: 'someid'} as unknown as FileInfo)).toBe(`file://test-cache-directory/${urlSafeBase64Encode('http://server.com')}/Files/someid`);
             expect(() => getLocalFilePathFromFile('http://server.com', {extension: 'png'} as unknown as FileInfo)).toThrow('File path could not be set');
         });
     });

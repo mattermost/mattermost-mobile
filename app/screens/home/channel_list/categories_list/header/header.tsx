@@ -121,6 +121,9 @@ const ChannelListHeader = ({
     const serverUrl = useServerUrl();
     useEffect(() => {
         marginLeft.value = iconPad ? 50 : 0;
+
+    // We only want to update the shared value when `iconPad` changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [iconPad]);
 
     const onPress = usePreventDoubleTap(useCallback(() => {

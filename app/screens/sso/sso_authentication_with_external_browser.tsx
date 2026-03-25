@@ -13,7 +13,7 @@ import {isBetaApp} from '@utils/general';
 import {createSamlChallenge} from '@utils/saml_challenge';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {tryOpenURL} from '@utils/url';
+import {sanitizeUrl, tryOpenURL} from '@utils/url';
 
 import AuthError from './components/auth_error';
 import AuthRedirect from './components/auth_redirect';
@@ -24,6 +24,7 @@ interface SSOWithRedirectURLProps {
     doSSOCodeExchange: (loginCode: string, samlChallenge: {codeVerifier: string; state: string}) => void;
     loginError: string;
     loginUrl: string;
+    serverUrl: string;
     setLoginError: (value: string) => void;
     theme: Theme;
 }
@@ -59,7 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
+const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl, serverUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
     const [error, setError] = useState<string>('');
     const [loginSuccess, setLoginSuccess] = useState(false);
     const style = getStyleSheet(theme);
@@ -71,6 +72,17 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, doSSOCodeExchange, lo
 
     const redirectUrl = customUrlScheme + 'callback';
     const samlChallenge = useMemo(() => createSamlChallenge(), []);
+
+    // Verify that the srv parameter from the callback matches the expected server
+    const verifyServerOrigin = useCallback((srvParam: string | undefined): boolean => {
+        if (!srvParam) {
+            // Old servers don't send srv parameter - allow for backwards compatibility
+            return true;
+        }
+        const normalizedExpected = sanitizeUrl(serverUrl);
+        const normalizedActual = sanitizeUrl(srvParam);
+        return normalizedExpected === normalizedActual;
+    }, [serverUrl]);
     const init = useCallback((resetErrors = true) => {
         setLoginSuccess(false);
         if (resetErrors !== false) {
@@ -114,6 +126,19 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, doSSOCodeExchange, lo
         const onURLChange = ({url}: { url: string }) => {
             if (url && url.startsWith(redirectUrl)) {
                 const parsedUrl = urlParse(url, true);
+                const srvParam = parsedUrl.query?.srv as string | undefined;
+
+                // Verify server origin before accepting credentials
+                if (!verifyServerOrigin(srvParam)) {
+                    setError(
+                        intl.formatMessage({
+                            id: 'mobile.oauth.server_mismatch',
+                            defaultMessage: 'Login failed: Unable to complete authentication with this server. Please try again.',
+                        }),
+                    );
+                    return;
+                }
+
                 const loginCode = parsedUrl.query?.login_code as string | undefined;
                 if (loginCode) {
                     setLoginSuccess(true);
@@ -148,7 +173,7 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, doSSOCodeExchange, lo
             listener.remove();
             clearTimeout(timeout);
         };
-    }, [doSSOCodeExchange, doSSOLogin, init, intl, samlChallenge, redirectUrl]);
+    }, [doSSOCodeExchange, doSSOLogin, init, intl, samlChallenge, redirectUrl, verifyServerOrigin]);
 
     let content;
     if (loginSuccess) {

@@ -1,5 +1,59 @@
+diff --git a/node_modules/expo-video-thumbnails/android/src/main/java/expo/modules/videothumbnails/VideoThumbnailOptions.kt b/node_modules/expo-video-thumbnails/android/src/main/java/expo/modules/videothumbnails/VideoThumbnailOptions.kt
+index 4c9b7c1..f98bee8 100644
+--- a/node_modules/expo-video-thumbnails/android/src/main/java/expo/modules/videothumbnails/VideoThumbnailOptions.kt
++++ b/node_modules/expo-video-thumbnails/android/src/main/java/expo/modules/videothumbnails/VideoThumbnailOptions.kt
+@@ -11,7 +11,10 @@ data class VideoThumbnailOptions(
+   val time: Int = 0,
+ 
+   @Field
+-  val headers: Map<String, String> = emptyMap()
++  val headers: Map<String, String> = emptyMap(),
++
++  @Field
++  val cachePath: String? = null
+ ) : Record
+ 
+ data class VideoThumbnailResult(
+diff --git a/node_modules/expo-video-thumbnails/android/src/main/java/expo/modules/videothumbnails/VideoThumbnailsModule.kt b/node_modules/expo-video-thumbnails/android/src/main/java/expo/modules/videothumbnails/VideoThumbnailsModule.kt
+index b5e6e5e..aae71b3 100644
+--- a/node_modules/expo-video-thumbnails/android/src/main/java/expo/modules/videothumbnails/VideoThumbnailsModule.kt
++++ b/node_modules/expo-video-thumbnails/android/src/main/java/expo/modules/videothumbnails/VideoThumbnailsModule.kt
+@@ -43,7 +43,14 @@ class VideoThumbnailsModule : Module() {
+           val thumbnail = GetThumbnail(sourceFilename, options, context).execute()
+             ?: throw GenerateThumbnailException()
+ 
+-          val path = FileUtilities.generateOutputPath(context.cacheDir, "VideoThumbnails", "jpg")
++          val path = if (!options.cachePath.isNullOrEmpty()) {
++            // Use custom cache path: {cacheDir}/{cachePath}/VideoThumbnails/
++            val customDir = File(context.cacheDir, options.cachePath)
++            FileUtilities.generateOutputPath(customDir, "VideoThumbnails", "jpg")
++          } else {
++            // Use default cache path: {cacheDir}/VideoThumbnails/
++            FileUtilities.generateOutputPath(context.cacheDir, "VideoThumbnails", "jpg")
++          }
+           FileOutputStream(path).use { outputStream ->
+             thumbnail.compress(Bitmap.CompressFormat.JPEG, (options.quality * 100).toInt(), outputStream)
+           }
+diff --git a/node_modules/expo-video-thumbnails/build/VideoThumbnailsTypes.types.d.ts b/node_modules/expo-video-thumbnails/build/VideoThumbnailsTypes.types.d.ts
+index 207cbb8..d9f1791 100644
+--- a/node_modules/expo-video-thumbnails/build/VideoThumbnailsTypes.types.d.ts
++++ b/node_modules/expo-video-thumbnails/build/VideoThumbnailsTypes.types.d.ts
+@@ -26,5 +26,12 @@ export type VideoThumbnailsOptions = {
+      * In case `sourceFilename` is a remote URI, `headers` object is passed in a network request.
+      */
+     headers?: Record<string, string>;
++    /**
++     * Custom cache subdirectory path for storing the thumbnail.
++     * Will be used as: {cacheDirectory}/{cachePath}/VideoThumbnails/
++     * If not provided, uses default cache location: {cacheDirectory}/VideoThumbnails/
++     * @example "server-abc123" or "external"
++     */
++    cachePath?: string;
+ };
+ //# sourceMappingURL=VideoThumbnailsTypes.types.d.ts.map
+\ No newline at end of file
 diff --git a/node_modules/expo-video-thumbnails/ios/VideoThumbnailsModule.swift b/node_modules/expo-video-thumbnails/ios/VideoThumbnailsModule.swift
-index 069e3e4..c32ba6c 100644
+index 069e3e4..11f6577 100644
 --- a/node_modules/expo-video-thumbnails/ios/VideoThumbnailsModule.swift
 +++ b/node_modules/expo-video-thumbnails/ios/VideoThumbnailsModule.swift
 @@ -7,7 +7,7 @@ public class VideoThumbnailsModule: Module {
@@ -11,3 +65,56 @@ index 069e3e4..c32ba6c 100644
    }
  
    internal func getVideoThumbnail(sourceFilename: URL, options: VideoThumbnailsOptions) throws -> [String: Any] {
+@@ -33,7 +33,7 @@ public class VideoThumbnailsModule: Module {
+ 
+     let imgRef = try generator.copyCGImage(at: time, actualTime: nil)
+     let thumbnail = UIImage(cgImage: imgRef)
+-    let savedImageUrl = try saveImage(image: thumbnail, quality: options.quality)
++    let savedImageUrl = try saveImage(image: thumbnail, quality: options.quality, cachePath: options.cachePath)
+ 
+     return [
+       "uri": savedImageUrl.absoluteString,
+@@ -45,8 +45,15 @@ public class VideoThumbnailsModule: Module {
+   /**
+   Saves the image as a file.
+   */
+-  internal func saveImage(image: UIImage, quality: Double) throws -> URL {
+-    let directory = appContext?.config.cacheDirectory?.appendingPathComponent("VideoThumbnails")
++  internal func saveImage(image: UIImage, quality: Double, cachePath: String?) throws -> URL {
++    let directory: URL?
++    if let cachePath = cachePath, !cachePath.isEmpty {
++      // Use custom cache path: {cacheDirectory}/{cachePath}/VideoThumbnails/
++      directory = appContext?.config.cacheDirectory?.appendingPathComponent(cachePath).appendingPathComponent("VideoThumbnails")
++    } else {
++      // Use default cache path: {cacheDirectory}/VideoThumbnails/
++      directory = appContext?.config.cacheDirectory?.appendingPathComponent("VideoThumbnails")
++    }
+     let fileName = UUID().uuidString.appending(".jpg")
+     let fileUrl = directory?.appendingPathComponent(fileName)
+ 
+diff --git a/node_modules/expo-video-thumbnails/ios/VideoThumbnailsOptions.swift b/node_modules/expo-video-thumbnails/ios/VideoThumbnailsOptions.swift
+index 8310a8c..2f99e1f 100644
+--- a/node_modules/expo-video-thumbnails/ios/VideoThumbnailsOptions.swift
++++ b/node_modules/expo-video-thumbnails/ios/VideoThumbnailsOptions.swift
+@@ -4,4 +4,5 @@ internal struct VideoThumbnailsOptions: Record {
+   @Field var quality: Double = 1.0
+   @Field var time: Int64 = 0
+   @Field var headers: [String: String] = [String: String]()
++  @Field var cachePath: String?
+ }
+diff --git a/node_modules/expo-video-thumbnails/src/VideoThumbnailsTypes.types.ts b/node_modules/expo-video-thumbnails/src/VideoThumbnailsTypes.types.ts
+index 1576080..92fb73b 100644
+--- a/node_modules/expo-video-thumbnails/src/VideoThumbnailsTypes.types.ts
++++ b/node_modules/expo-video-thumbnails/src/VideoThumbnailsTypes.types.ts
+@@ -29,4 +29,11 @@ export type VideoThumbnailsOptions = {
+    * In case `sourceFilename` is a remote URI, `headers` object is passed in a network request.
+    */
+   headers?: Record<string, string>;
++  /**
++   * Custom cache subdirectory path for storing the thumbnail.
++   * Will be used as: {cacheDirectory}/{cachePath}/VideoThumbnails/
++   * If not provided, uses default cache location: {cacheDirectory}/VideoThumbnails/
++   * @example "server-abc123" or "external"
++   */
++  cachePath?: string;
+ };

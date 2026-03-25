@@ -11,6 +11,10 @@ import ChannelQuickAction from './index';
 
 import type {Database} from '@nozbe/watermelondb';
 
+jest.mock('@agents/store/agents_config', () => ({
+    useAgentsConfig: jest.fn(() => ({pluginEnabled: true})),
+}));
+
 jest.mock('@playbooks/components/channel_actions/playbook_runs_option', () => ({
     __esModule: true,
     default: jest.fn(),
@@ -61,5 +65,20 @@ describe('ChannelQuickAction', () => {
         props.hasPlaybookRuns = true;
         const {queryByTestId} = renderWithEverything(<ChannelQuickAction {...props}/>, {database});
         expect(queryByTestId('playbook-runs-option')).toBeNull();
+    });
+
+    it('shows Ask Agents option in all channel types', () => {
+        const props = getBaseProps();
+        const {getByTestId} = renderWithEverything(<ChannelQuickAction {...props}/>, {database});
+
+        expect(getByTestId('channel.quick_actions.ask_agents')).toBeTruthy();
+    });
+
+    it('shows Ask Agents option in DM/GM channels', () => {
+        const props = getBaseProps();
+        props.isDMorGM = true;
+        const {getByTestId} = renderWithEverything(<ChannelQuickAction {...props}/>, {database});
+
+        expect(getByTestId('channel.quick_actions.ask_agents')).toBeTruthy();
     });
 });

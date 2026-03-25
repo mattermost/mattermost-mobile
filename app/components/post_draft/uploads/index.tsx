@@ -121,7 +121,7 @@ function Uploads({
     }, [containerHeight, hasFiles]);
 
     const openGallery = useCallback((file: FileInfo) => {
-        const items = filesForGallery.current.map((f) => fileToGalleryItem(f, currentUserId));
+        const items = filesForGallery.current.map((f) => fileToGalleryItem(f, currentUserId, undefined, 0, f.id || f.clientId));
         const index = filesForGallery.current.findIndex((f) => f.clientId === file.clientId);
         openGalleryAtIndex(galleryIdentifier, index, items, true);
     }, [currentUserId, galleryIdentifier]);

@@ -83,6 +83,7 @@ const ChannelBookmarkOptions = ({
                 type,
                 lastPictureUpdate: 0,
                 uri: '',
+                cacheKey: fileInfo.id!,
             };
 
             return item;

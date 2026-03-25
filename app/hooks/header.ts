@@ -153,12 +153,12 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
                 // No scroll for section lists?
             }
         }
-    }, [largeHeight, defaultHeight]);
+    }, [headerOffset, animatedRef, scrollValue, insets.top, scrollEnabled, defaultHeight, autoScroll]);
 
     const unlock = useCallback(() => {
         scrollEnabled.value = true;
         setLockValue(0);
-    }, []);
+    }, [scrollEnabled]);
 
     return {
         defaultHeight,

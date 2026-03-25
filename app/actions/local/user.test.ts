@@ -11,6 +11,7 @@ import {
     updateRecentCustomStatuses,
     updateLocalUser,
     storeProfile,
+    getCurrentUserLocale,
 } from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -124,6 +125,42 @@ describe('storeProfile', () => {
     it('base case - no user', async () => {
         const {user: userModel} = await storeProfile(serverUrl, user);
         expect(userModel).toBeDefined();
+    });
+});
+
+describe('getCurrentUserLocale', () => {
+    it('should return user locale when user exists', async () => {
+        const userWithLocale = TestHelper.fakeUser({
+            id: 'userid',
+            locale: 'es',
+        });
+        await operator.handleUsers({users: [userWithLocale], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: userWithLocale.id}], prepareRecordsOnly: false});
+
+        const locale = await getCurrentUserLocale(serverUrl);
+        expect(locale).toBe('es');
+    });
+
+    it('should return DEFAULT_LOCALE when user has no locale', async () => {
+        const userWithoutLocale = TestHelper.fakeUser({
+            id: 'userid',
+            locale: '',
+        });
+        await operator.handleUsers({users: [userWithoutLocale], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: userWithoutLocale.id}], prepareRecordsOnly: false});
+
+        const locale = await getCurrentUserLocale(serverUrl);
+        expect(locale).toBe('en');
+    });
+
+    it('should return DEFAULT_LOCALE when no user exists', async () => {
+        const locale = await getCurrentUserLocale(serverUrl);
+        expect(locale).toBe('en');
+    });
+
+    it('should return DEFAULT_LOCALE when database not found', async () => {
+        const locale = await getCurrentUserLocale('foo');
+        expect(locale).toBe('en');
     });
 });
 

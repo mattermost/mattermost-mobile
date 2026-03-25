@@ -391,12 +391,10 @@ describe('Search - Search Messages', () => {
         await EditPostScreen.saveButton.tap();
 
         // * Verify post message is updated and displays edited indicator '(edited)'
-        const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = SearchMessagesScreen.getPostListPostItem(searchedPost.id, updatedMessage);
-        await expect(updatedPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
+        await ChannelScreen.assertPostMessageEdited(searchedPost.id, updatedMessage, 'search_page');
 
         // # Open post options for searched message and tap on reply option
-        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, updatedMessage);
+        await PostOptionsScreen.openPostOptionsForSearchedPosts(searchedPost.id);
         await PostOptionsScreen.replyPostOption.tap();
 
         // * Verify on thread screen
@@ -413,14 +411,15 @@ describe('Search - Search Messages', () => {
 
         // # Go back to search results screen
         await ThreadScreen.back();
+        await SearchMessagesScreen.toBeVisible();
 
         // * Verify reply count and following button
-        const {postListPostItemFooterReplyCount, postListPostItemFooterFollowingButton} = SearchMessagesScreen.getPostListPostItem(searchedPost.id, updatedMessage);
-        await expect(postListPostItemFooterReplyCount).toHaveText('1 reply');
-        await expect(postListPostItemFooterFollowingButton).toBeVisible();
+        await wait(timeouts.FOUR_SEC);
+        await waitFor(element(by.text('1 reply'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(element(by.text('Following'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
 
         // # Open post options for updated searched message and delete post
-        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, updatedMessage);
+        await element(by.id(`search_results.post_list.post.${searchedPost.id}`)).longPress();
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify updated searched message is deleted

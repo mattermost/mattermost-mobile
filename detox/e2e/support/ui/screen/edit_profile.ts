@@ -19,6 +19,7 @@ class EditProfileScreen {
         lastNameInputDisabled: 'edit_profile_form.lastName.input.disabled',
         usernameInput: 'edit_profile_form.username.input',
         usernameInputDisabled: 'edit_profile_form.username.input.disabled',
+        usernameInputError: 'edit_profile_form.username.input.error',
         emailInput: 'edit_profile_form.email.input',
         emailInputDisabled: 'edit_profile_form.email.input.disabled',
         emailInputDescription: 'edit_profile_form.email.input.description',
@@ -38,6 +39,7 @@ class EditProfileScreen {
     lastNameInputDisabled = element(by.id(this.testID.lastNameInputDisabled));
     usernameInput = element(by.id(this.testID.usernameInput));
     usernameInputDisabled = element(by.id(this.testID.usernameInputDisabled));
+    usernameInputError = element(by.id(this.testID.usernameInputError));
     emailInput = element(by.id(this.testID.emailInput));
     emailInputDisabled = element(by.id(this.testID.emailInputDisabled));
     emailInputDescription = element(by.id(this.testID.emailInputDescription));

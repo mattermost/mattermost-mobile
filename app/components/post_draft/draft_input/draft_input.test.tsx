@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {act} from '@testing-library/react-hooks';
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
-import {Screens} from '@constants';
+import {License, Screens} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostPriorityType} from '@constants/post';
 import NetworkManager from '@managers/network_manager';
 import {openAsBottomSheet} from '@screens/navigation';
@@ -22,6 +24,12 @@ const SERVER_URL = 'https://appv1.mattermost.com';
 // this is needed to when using the useServerUrl hook
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn(() => SERVER_URL),
+    withServerUrl: (Component: React.ComponentType<any>) => (props: any) => (
+        <Component
+            {...props}
+            serverUrl={SERVER_URL}
+        />
+    ),
 }));
 
 jest.mock('@screens/navigation', () => ({
@@ -40,6 +48,7 @@ describe('DraftInput', () => {
         currentUserId: 'currentUserId',
         postPriority: {priority: ''} as PostPriority,
         updatePostPriority: jest.fn(),
+        updatePostBoRStatus: jest.fn(),
         persistentNotificationInterval: 0,
         persistentNotificationMaxRecipients: 0,
         updateCursorPosition: jest.fn(),
@@ -55,6 +64,7 @@ describe('DraftInput', () => {
         updatePostInputTop: jest.fn(),
         setIsFocused: jest.fn(),
         scheduledPostsEnabled: true,
+        location: Screens.CHANNEL,
     };
 
     beforeEach(() => {
@@ -208,6 +218,119 @@ describe('DraftInput', () => {
 
             fireEvent.press(sendButton);
             expect(baseProps.sendMessage).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('BoR (Burn on Read) Functionality', () => {
+
+        it('renders with BoR config disabled by default', () => {
+            const {getByTestId, queryByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
+
+            // Component should render successfully with BoR config
+            const container = getByTestId('draft_input');
+            expect(container).toBeVisible();
+
+            expect(queryByTestId('bor_label')).not.toBeVisible();
+        });
+
+        it('passes BoR config to QuickActions component', () => {
+            const borConfig = {
+                enabled: true,
+                borDurationSeconds: 300,
+                borMaximumTimeToLiveSeconds: 3600,
+            } as PostBoRConfig;
+
+            const props = {
+                ...baseProps,
+                postBoRConfig: borConfig,
+            };
+
+            const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+            expect(getByTestId('bor_label')).toBeVisible();
+            expect(getByTestId('bor_label')).toHaveTextContent('BURN ON READ (5m)');
+        });
+
+        it('calls updatePostBoRStatus when BoR is toggled', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'EnableBurnOnRead', value: 'true'},
+                    {id: 'BuildEnterpriseReady', value: 'true'},
+                    {id: 'BurnOnReadDurationSeconds', value: '300'},
+                    {id: 'BurnOnReadMaximumTimeToLiveSeconds', value: '3600'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
+                prepareRecordsOnly: false,
+            });
+
+            const updatePostBoRStatusMock = jest.fn();
+            const props = {
+                ...baseProps,
+                updatePostBoRStatus: updatePostBoRStatusMock,
+            };
+
+            const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+            const borQuickAction = getByTestId('draft_input.quick_actions.bor_action');
+            expect(borQuickAction).toBeVisible();
+
+            await act(async () => {
+                fireEvent.press(borQuickAction);
+            });
+
+            expect(updatePostBoRStatusMock).toHaveBeenCalledWith({
+                enabled: true,
+                borDurationSeconds: 300,
+                borMaximumTimeToLiveSeconds: 3600,
+            });
+        });
+
+        it('renders Header component with BoR config', () => {
+            const borConfig = {
+                enabled: true,
+                borDurationSeconds: 300,
+                borMaximumTimeToLiveSeconds: 3600,
+            } as PostBoRConfig;
+
+            const props = {
+                ...baseProps,
+                postBoRConfig: borConfig,
+            };
+
+            const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+
+            // The Header component should receive the BoR config
+            const container = getByTestId('draft_input');
+            expect(container).toBeVisible();
+        });
+
+        it('maintains BoR config state during message sending', async () => {
+            const borConfig = {
+                enabled: true,
+                borDurationSeconds: 300,
+                borMaximumTimeToLiveSeconds: 3600,
+            } as PostBoRConfig;
+
+            const props = {
+                ...baseProps,
+                postBoRConfig: borConfig,
+                value: 'test message',
+            };
+
+            const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+
+            // Send message
+            fireEvent.press(getByTestId('draft_input.send_action.send.button'));
+
+            // Verify sendMessage was called
+            expect(baseProps.sendMessage).toHaveBeenCalled();
+
+            // BoR config should remain unchanged
+            expect(props.postBoRConfig?.enabled).toBe(true);
+            expect(props.postBoRConfig?.borDurationSeconds).toBe(300);
         });
     });
 });

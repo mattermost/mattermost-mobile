@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
-import React, {useEffect} from 'react';
+import React from 'react';
 import {defineMessages} from 'react-intl';
 import {Keyboard, StyleSheet, type TextStyle, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
+import useDidMount from '@hooks/did_mount';
 
 const style = StyleSheet.create({
     info: {
@@ -41,7 +42,7 @@ const AppVersion = ({isWrapped = true, textStyle = {}}: AppVersionProps) => {
         };
     });
 
-    useEffect(() => {
+    useDidMount(() => {
         const willHide = Keyboard.addListener('keyboardDidHide', () => {
             opacity.value = 1;
         });
@@ -53,7 +54,7 @@ const AppVersion = ({isWrapped = true, textStyle = {}}: AppVersionProps) => {
             willHide.remove();
             willShow.remove();
         };
-    }, []);
+    });
 
     const appVersion = (
         <FormattedText

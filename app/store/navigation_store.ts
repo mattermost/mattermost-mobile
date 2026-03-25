@@ -83,6 +83,13 @@ class NavigationStoreSingleton {
         if (index > -1) {
             this.modalsInStack.splice(index, 1);
         }
+
+        // Restore the previous screen as visible when modal is dismissed
+        // This ensures that the underlying screen (e.g., Channel/Thread) becomes enabled again
+        const visibleScreen = this.screensInStack[0];
+        if (visibleScreen) {
+            this.subject.next(visibleScreen);
+        }
     };
 
     setToSOpen = (open: boolean) => {

@@ -65,8 +65,6 @@
   "apps.suggestion.no_static": "कोई मिलान विकल्प नहीं।",
   "apps.suggestion.no_suggestion": "कोई मिलान सुझाव नहीं।",
   "archivedChannelMessage": "आप एक ** संग्रहीत चैनल ** देख रहे हैं। नए संदेश पोस्ट नहीं किए जा सकते।",
-  "camera_type.photo.option": "फोटो कैप्चर करें",
-  "camera_type.video.option": "वीडियो रिकॉर्ड करो",
   "center_panel.archived.closeChannel": "चैनल बंद करें",
   "channel_header.directchannel.you": "{displayname} (आप) ",
   "channel_info.header": "हैडर:",

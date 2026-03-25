@@ -91,7 +91,7 @@ const EditProfilePicture = ({user, onUpdateProfilePicture}: ChangeProfilePicture
             };
         }
         return undefined;
-    }, [pictureUrl]);
+    }, [pictureUrl, serverUrl]);
 
     return (
         <View

@@ -20,11 +20,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     const currentUser = observeCurrentUser(database);
 
-    const enableOpenServer = observeConfigBooleanValue(database, 'EnableOpenServer');
-
     const canJoinChannels = combineLatest([currentUser, team]).pipe(
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.JOIN_PUBLIC_CHANNELS, true)),
-        distinctUntilChanged(),
     );
 
     const canCreatePublicChannels = combineLatest([currentUser, team]).pipe(
@@ -44,13 +41,27 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.ADD_USER_TO_TEAM, false)),
     );
 
+    const guestAccountsEnabled = observeConfigBooleanValue(database, 'EnableGuestAccounts');
+
+    const canInviteGuests = combineLatest([guestAccountsEnabled, currentUser, team]).pipe(
+        switchMap(([enabled, u, t]) => {
+            if (!enabled) {
+                return of$(false);
+            }
+            return observePermissionForTeam(database, t, u, Permissions.INVITE_GUEST, false);
+        }),
+        distinctUntilChanged(),
+    );
+
+    const canInvitePeople = combineLatest([canAddUserToTeam, canInviteGuests]).pipe(
+        switchMap(([add, invite]) => of$(add || invite)),
+        distinctUntilChanged(),
+    );
+
     return {
         canCreateChannels,
         canJoinChannels,
-        canInvitePeople: combineLatest([enableOpenServer, canAddUserToTeam]).pipe(
-            switchMap(([openServer, addUser]) => of$(openServer && addUser)),
-            distinctUntilChanged(),
-        ),
+        canInvitePeople,
         displayName: team.pipe(
             switchMap((t) => of$(t?.displayName)),
             distinctUntilChanged(),

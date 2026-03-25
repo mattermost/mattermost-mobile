@@ -26,6 +26,10 @@ const Servers = ({theme}: Props) => {
         navigator.setOptions({
             title: intl.formatMessage({id: 'share_extension.servers_screen.title', defaultMessage: 'Select server'}),
         });
+
+    // We only care about changes in the locale
+    // navigator should not change in the lifetime of this component.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [intl.locale]);
 
     return (

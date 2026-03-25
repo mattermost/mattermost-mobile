@@ -67,14 +67,14 @@ const Info = ({contentMode, file, hasError, theme}: Props) => {
         styles.container,
         contentMode === 'small' && styles.small,
         hasError && styles.error,
-    ], [contentMode, hasError]);
+    ], [contentMode, hasError, styles]);
 
-    const textContainerStyle = useMemo(() => (contentMode === 'small' && styles.smallWrapper), [contentMode]);
+    const textContainerStyle = useMemo(() => (contentMode === 'small' && styles.smallWrapper), [contentMode, styles]);
 
     const nameStyle = useMemo(() => [
         styles.name,
         contentMode === 'small' && styles.smallName,
-    ], [contentMode]);
+    ], [contentMode, styles]);
 
     const size = useMemo(() => {
         return `${file.extension} ${getFormattedFileSize(file.size)}`;

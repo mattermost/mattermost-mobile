@@ -18,10 +18,11 @@ class RNUtilsPackage : TurboReactPackage() {
     override fun getReactModuleInfoProvider() = ReactModuleInfoProvider {
         mapOf(
                 RNUtilsModuleImpl.NAME to ReactModuleInfo(
-                        RNUtilsModuleImpl.NAME,
-                        RNUtilsModuleImpl.NAME,
-                    _canOverrideExistingModule = false,
-                    _needsEagerInit = false,
+                    name = RNUtilsModuleImpl.NAME,
+                    className = RNUtilsModuleImpl.NAME,
+                    canOverrideExistingModule = false,
+                    needsEagerInit = false,
+                    hasConstants = false,
                     isCxxModule = false,
                     isTurboModule = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
                 )

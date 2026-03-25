@@ -11,9 +11,9 @@ import type PlaybookRunAttributeModelInterface from '@playbooks/types/database/m
 const {PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 
 /**
- * The model represents a playbook run attribute definition in the Mattermost app.
+ * The model represents a playbook run property field definition in the Mattermost app.
  */
-export default class PlaybookRunAttributeModel extends Model implements PlaybookRunAttributeModelInterface {
+export default class PlaybookRunPropertyFieldModel extends Model implements PlaybookRunAttributeModelInterface {
     /** table (name) : PlaybookRunAttribute */
     static table = PLAYBOOK_RUN_ATTRIBUTE;
 

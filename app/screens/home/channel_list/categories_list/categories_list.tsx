@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AgentsButton from '@agents/components/agents_button';
 import React, {useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, useWindowDimensions} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -8,7 +9,7 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import DraftsButton from '@components/drafts_buttton';
 import ThreadsButton from '@components/threads_button';
 import {Events, Screens} from '@constants';
-import {CHANNEL, DRAFT, THREAD} from '@constants/screens';
+import {AGENTS, CHANNEL, DRAFT, THREAD} from '@constants/screens';
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -38,14 +39,15 @@ type ChannelListProps = {
     scheduledPostHasError: boolean;
     lastChannelId?: string;
     scheduledPostsEnabled?: boolean;
-    playbooksEnabled?: boolean;
+    agentsEnabled?: boolean;
+    showPlaybooksButton?: boolean;
 };
 
 const getTabletWidth = (moreThanOneTeam: boolean) => {
     return TABLET_SIDEBAR_WIDTH - (moreThanOneTeam ? TEAM_SIDEBAR_WIDTH : 0);
 };
 
-type ScreenType = typeof DRAFT | typeof THREAD | typeof CHANNEL;
+type ScreenType = typeof AGENTS | typeof DRAFT | typeof THREAD | typeof CHANNEL;
 
 const CategoriesList = ({
     hasChannels,
@@ -57,7 +59,8 @@ const CategoriesList = ({
     scheduledPostHasError,
     lastChannelId,
     scheduledPostsEnabled,
-    playbooksEnabled,
+    agentsEnabled,
+    showPlaybooksButton,
 }: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -77,7 +80,7 @@ const CategoriesList = ({
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.ACTIVE_SCREEN, (screen: string) => {
-            if (screen === DRAFT || screen === THREAD) {
+            if (screen === AGENTS || screen === DRAFT || screen === THREAD) {
                 setActiveScreen(screen);
             } else {
                 setActiveScreen(CHANNEL);
@@ -127,15 +130,27 @@ const CategoriesList = ({
         return null;
     }, [activeScreen, draftsCount, isTablet, scheduledPostCount, scheduledPostHasError, scheduledPostsEnabled]);
 
+    const agentsButtonComponent = useMemo(() => {
+        if (!agentsEnabled) {
+            return null;
+        }
+
+        return (
+            <AgentsButton
+                shouldHighlightActive={activeScreen === AGENTS}
+            />
+        );
+    }, [agentsEnabled, activeScreen]);
+
     const playbooksButtonComponent = useMemo(() => {
-        if (!playbooksEnabled) {
+        if (!showPlaybooksButton) {
             return null;
         }
 
         return (
             <PlaybooksButton/>
         );
-    }, [playbooksEnabled]);
+    }, [showPlaybooksButton]);
 
     const content = useMemo(() => {
         if (!hasChannels) {
@@ -147,11 +162,12 @@ const CategoriesList = ({
                 <SubHeader/>
                 {threadButtonComponent}
                 {draftsButtonComponent}
+                {agentsButtonComponent}
                 {playbooksButtonComponent}
-                <Categories/>
+                <Categories isTablet={isTablet}/>
             </>
         );
-    }, [draftsButtonComponent, hasChannels, playbooksButtonComponent, threadButtonComponent]);
+    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isTablet, playbooksButtonComponent, threadButtonComponent]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>

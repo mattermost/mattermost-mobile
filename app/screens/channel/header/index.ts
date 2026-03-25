@@ -9,10 +9,10 @@ import {combineLatestWith, distinctUntilChanged, switchMap} from 'rxjs/operators
 import {General} from '@constants';
 import {queryPlaybookRunsPerChannel} from '@playbooks/database/queries/run';
 import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
-import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
+import {observeChannel, observeChannelInfo, observeIsChannelAutotranslated} from '@queries/servers/channel';
 import {observeCanAddBookmarks, queryBookmarks} from '@queries/servers/channel_bookmark';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
-import {observeUser} from '@queries/servers/user';
+import {observeIsUserLanguageSupportedByAutotranslation, observeUser} from '@queries/servers/user';
 import {
     getUserCustomStatus,
     getUserIdFromChannelName,
@@ -63,6 +63,14 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
 
     const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
     const isPlaybooksEnabled = observeIsPlaybooksEnabled(database);
+    const isChannelAutotranslatedBase = observeIsChannelAutotranslated(database, channelId);
+    const isUserLanguageSupported = observeIsUserLanguageSupportedByAutotranslation(database);
+
+    const isChannelAutotranslated = isChannelAutotranslatedBase.pipe(
+        combineLatestWith(isUserLanguageSupported),
+        switchMap(([isAutotranslated, isLanguageSupported]) => of$(isAutotranslated && isLanguageSupported)),
+        distinctUntilChanged(),
+    );
 
     // const searchTerm = channel.pipe(
     //     combineLatestWith(dmUser),
@@ -116,6 +124,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         displayName,
         hasBookmarks,
         isBookmarksEnabled,
+        isChannelAutotranslated,
         isCustomStatusEnabled,
         isCustomStatusExpired,
         isOwnDirectMessage,

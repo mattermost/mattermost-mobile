@@ -10,6 +10,8 @@ import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import {TextItemType} from './types';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         item: {
@@ -44,14 +46,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         itemIcon: {
             color: changeOpacity(theme.centerChannelColor, 0.56),
         },
+        flex: {
+            flex: 1,
+        },
     };
 });
-
-export enum TextItemType {
-    SEARCH_INVITE = 'search_invite',
-    SEARCH_NO_RESULTS = 'search_no_results',
-    SUMMARY = 'summary',
-}
 
 type TextItemProps = {
     text?: string;
@@ -73,7 +72,7 @@ export default function TextItem({
 
     return (
         <View
-            style={[styles.item, search ? styles.search : {}]}
+            style={[styles.item, search ? styles.search : undefined]}
             testID={`${testID}.${text}`}
         >
             {email && (
@@ -98,7 +97,7 @@ export default function TextItem({
                 </Text>
             )}
             <Text
-                style={[search ? styles.itemTerm : styles.itemText, {flex: 1}]}
+                style={[search ? styles.itemTerm : styles.itemText, styles.flex]}
                 numberOfLines={1}
                 testID={`${testID}.text.${text}`}
             >

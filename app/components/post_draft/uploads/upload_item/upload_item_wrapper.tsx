@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {View} from 'react-native';
 
 import {updateDraftFile} from '@actions/local/draft';
@@ -9,6 +9,7 @@ import UploadItemShared from '@components/upload_item_shared';
 import {fileInfoToUploadItemFile} from '@components/upload_item_shared/adapters';
 import {useEditPost} from '@context/edit_post';
 import {useServerUrl} from '@context/server';
+import useDidMount from '@hooks/did_mount';
 import useDidUpdate from '@hooks/did_update';
 import {useGalleryItem} from '@hooks/gallery';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
@@ -40,7 +41,7 @@ export default function UploadItemWrapper({
         openGallery(file);
     }, [openGallery, file]);
 
-    useEffect(() => {
+    useDidMount(() => {
         if (file.clientId) {
             removeCallback.current = DraftEditPostUploadManager.registerProgressHandler(file.clientId, setProgress);
         }
@@ -48,7 +49,7 @@ export default function UploadItemWrapper({
             removeCallback.current?.();
             removeCallback.current = undefined;
         };
-    }, []);
+    });
 
     useDidUpdate(() => {
         if (loading && file.clientId) {

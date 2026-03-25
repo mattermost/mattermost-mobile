@@ -279,7 +279,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
             const lastPostAt = isCRT ? (chan.last_root_post_at || chan.last_post_at) : chan.last_post_at;
             if ((chan && e.lastPostAt < lastPostAt) ||
                 e.isUnread !== my.is_unread || e.lastViewedAt < my.last_viewed_at ||
-                e.roles !== my.roles
+                e.roles !== my.roles || e.autotranslationDisabled !== my.autotranslation_disabled
             ) {
                 res.push(my);
             }
