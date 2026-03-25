@@ -40,6 +40,7 @@ export default function AttachmentQuickAction({
     onUploadFiles,
     maxFilesReached,
     maxFileCount,
+    showAttachLogs,
     testID = '',
 }: QuickActionAttachmentProps) {
     const intl = useIntl();
@@ -56,11 +57,12 @@ export default function AttachmentQuickAction({
             onUploadFiles,
             maxFilesReached,
             canUploadFiles: !disabled,
+            showAttachLogs,
             testID,
             fileCount,
             maxFileCount,
         });
-    }, [closeInputAccessoryView, intl, theme, onUploadFiles, maxFilesReached, disabled, testID, fileCount, maxFileCount]);
+    }, [closeInputAccessoryView, intl, theme, onUploadFiles, maxFilesReached, disabled, showAttachLogs, testID, fileCount, maxFileCount]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
 
