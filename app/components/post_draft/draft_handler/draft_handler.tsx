@@ -124,7 +124,7 @@ export default function DraftHandler(props: Props) {
                 uploadErrorHandlers.current[file.clientId!] = DraftEditPostUploadManager.registerErrorHandler(file.clientId!, handleUploadError);
             }
         }
-    }, [files, newUploadError]);
+    }, [files, newUploadError, handleUploadError]);
 
     return (
         <SendHandler
