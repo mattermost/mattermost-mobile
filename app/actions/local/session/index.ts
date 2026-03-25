@@ -138,9 +138,9 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     // Remove push notifications (synchronous, no error handling needed)
     PushNotifications.removeServerNotifications(serverUrl);
 
-    // Invalidate clients (synchronous, no error handling needed)
+    // Invalidate clients (websocket waits for close event before destroying)
     NetworkManager.invalidateClient(serverUrl);
-    WebsocketManager.invalidateClient(serverUrl);
+    await WebsocketManager.invalidateClient(serverUrl);
 
     // Remove push disabled acknowledgment (non-critical)
     if (removeServer) {

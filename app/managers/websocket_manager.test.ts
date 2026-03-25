@@ -68,6 +68,7 @@ describe('WebsocketManager', () => {
             isConnected: jest.fn().mockReturnValue(true),
             close: jest.fn(),
             invalidate: jest.fn(),
+            waitForClose: jest.fn().mockResolvedValue(undefined),
         };
         (WebSocketClient as jest.Mock).mockImplementation(() => mockWebSocketClient);
 
@@ -111,11 +112,11 @@ describe('WebsocketManager', () => {
             jest.clearAllMocks();
         });
 
-        it('should create and invalidate clients correctly', () => {
-            const client = manager.createClient(mockServerUrl, mockToken);
+        it('should create and invalidate clients correctly', async () => {
+            const client = await manager.createClient(mockServerUrl, mockToken);
             expect(client).toBeDefined();
 
-            manager.invalidateClient(mockServerUrl);
+            await manager.invalidateClient(mockServerUrl);
             expect(manager.getClient(mockServerUrl)).toBeUndefined();
         });
 

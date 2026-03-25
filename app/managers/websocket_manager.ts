@@ -47,16 +47,16 @@ class WebsocketManagerSingleton {
         const netInfo = await NetInfo.fetch();
         this.netConnected = Boolean(netInfo.isConnected);
         this.netType = netInfo.type;
-        serverCredentials.forEach(
-            ({serverUrl, token, preauthSecret}) => {
+        await Promise.all(serverCredentials.map(
+            async ({serverUrl, token, preauthSecret}) => {
                 try {
                     DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-                    this.createClient(serverUrl, token, preauthSecret);
+                    await this.createClient(serverUrl, token, preauthSecret);
                 } catch (error) {
                     logError('WebsocketManager init error', error);
                 }
             },
-        );
+        ));
 
         this.appStateSubscription?.remove();
         this.netStateSubscription?.();
@@ -65,9 +65,13 @@ class WebsocketManagerSingleton {
         this.netStateSubscription = NetInfo.addEventListener(this.onNetStateChange);
     };
 
-    public invalidateClient = (serverUrl: string) => {
-        this.clients[serverUrl]?.close(true);
-        this.clients[serverUrl]?.invalidate();
+    public invalidateClient = async (serverUrl: string) => {
+        const client = this.clients[serverUrl];
+        if (client) {
+            client.close(true);
+            await client.waitForClose();
+            client.invalidate();
+        }
         clearTimeout(this.connectionTimerIDs[serverUrl]);
         delete this.clients[serverUrl];
         delete this.firstConnectionSynced[serverUrl];
@@ -80,9 +84,9 @@ class WebsocketManagerSingleton {
         this.getConnectedSubject(serverUrl).next('not_connected');
     };
 
-    public createClient = (serverUrl: string, bearerToken: string, preauthSecret?: string) => {
+    public createClient = async (serverUrl: string, bearerToken: string, preauthSecret?: string) => {
         if (this.clients[serverUrl]) {
-            this.invalidateClient(serverUrl);
+            await this.invalidateClient(serverUrl);
         }
 
         const client = new WebSocketClient(serverUrl, bearerToken, preauthSecret);
@@ -104,7 +108,6 @@ class WebsocketManagerSingleton {
         for (const url of Object.keys(this.clients)) {
             const client = this.clients[url];
             client.close(true);
-            client.invalidate();
             this.getConnectedSubject(url).next('not_connected');
         }
     };
