@@ -6,6 +6,14 @@ import React from 'react';
 import PermalinkError from '@screens/permalink/permalink_error';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
+jest.mock('@components/markdown', () => {
+    const {Text} = require('react-native');
+    const MockMarkdown = ({value}: {value: string}) => (
+        <Text testID='mock-markdown'>{value}</Text>
+    );
+    return MockMarkdown;
+});
+
 describe('PermalinkError', () => {
     const baseProps = {
         handleClose: jest.fn(),
