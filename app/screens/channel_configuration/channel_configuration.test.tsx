@@ -7,10 +7,9 @@ import {View} from 'react-native';
 import {Screens} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import ChannelAutotranslation from '../channel_autotranslation';
-import ShareWithConnectedWorkspaces from '../share_with_connected_workspaces';
-
+import ChannelAutotranslation from './channel_autotranslation';
 import ChannelConfiguration from './channel_configuration';
+import ShareWithConnectedWorkspaces from './share_with_connected_workspaces';
 
 jest.mock('@screens/navigation', () => ({
     mergeNavigationOptions: jest.fn(),
@@ -33,14 +32,14 @@ jest.mock('@hooks/android_back_handler', () => ({
 jest.mock('@managers/security_manager', () => ({
     getShieldScreenId: jest.fn(() => 'shield-screen-id'),
 }));
-jest.mock('../channel_autotranslation', () => ({
+jest.mock('./channel_autotranslation', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
 jest.mocked(ChannelAutotranslation).mockImplementation(
     (props) => React.createElement(View, {testID: 'channel_configuration.autotranslation', ...props}),
 );
-jest.mock('../share_with_connected_workspaces', () => ({
+jest.mock('./share_with_connected_workspaces', () => ({
     __esModule: true,
     default: jest.fn(),
 }));

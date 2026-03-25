@@ -45,6 +45,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'space-between',
         borderBottomWidth: 1,
         borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+        paddingVertical: 12,
+        gap: 8,
     },
     name: {
         ...typography('Body', 200, 'Regular'),
@@ -54,7 +56,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Body', 100, 'Regular'),
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
-    deleteButton: {padding: 8},
     nameContainer: {flexShrink: 1},
     statusCell: {
         flexDirection: 'row',
@@ -121,7 +122,6 @@ const WorkspaceItem = ({item, onRemove, isFirst, removeDisabled = false}: Props)
             </View>
             <Text style={statusStyle}>{icon}{icon ? ' ' : ''}{statusLabel}</Text>
             <TouchableOpacity
-                style={styles.deleteButton}
                 onPress={handleRemove}
                 disabled={removeDisabled}
                 accessibilityRole='button'

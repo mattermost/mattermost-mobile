@@ -389,7 +389,7 @@ index 551f72b..f275c18 100644
 +        }
          return super.onInterceptTouchEvent(event)
      }
-
+ 
 -    override fun onTouchEvent(event: MotionEvent): Boolean {
 -        mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher())
 +    override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -437,6 +437,96 @@ index b44f24f..a7d2ec9 100644
          [hitTestResult isKindOfClass:[RCTModalHostView class]] ||
          [hitTestResult isKindOfClass:NSClassFromString(@"RCTRootComponentView")]) {
          return nil;
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNTitleViewHelper.m b/node_modules/react-native-navigation/lib/ios/RNNTitleViewHelper.m
+index db0ed23..b548589 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNTitleViewHelper.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNTitleViewHelper.m
+@@ -36,6 +36,20 @@
+ 
+ @implementation RNNTitleViewHelper
+ 
++- (CGFloat)maxTitleViewWidthForNavigationBarBounds:(CGRect)navigationBarBounds {
++    CGFloat w = CGRectGetWidth(navigationBarBounds);
++    if (w > 0) {
++        return w;
++    }
++    return CGRectGetWidth(UIScreen.mainScreen.bounds);
++}
++
++- (void)configureSingleLineTruncatingLabel:(UILabel *)label {
++    label.numberOfLines = 1;
++    label.lineBreakMode = NSLineBreakByTruncatingTail;
++    label.adjustsFontSizeToFitWidth = NO;
++}
++
+ - (instancetype)initWithTitleViewOptions:(RNNTitleOptions *)titleOptions
+                          subTitleOptions:(RNNSubtitleOptions *)subtitleOptions
+                             parentTestID:(Text *)parentTestID
+@@ -94,15 +108,21 @@
+ - (void)centerTitleView:(CGRect)navigationBarBounds
+              titleLabel:(UILabel *)titleLabel
+           subtitleLabel:(UILabel *)subtitleLabel {
++    CGFloat maxWidth = [self maxTitleViewWidthForNavigationBarBounds:navigationBarBounds];
++
++    CGFloat titleW = titleLabel ? CGRectGetWidth(titleLabel.bounds) : 0;
++    CGFloat subtitleW = subtitleLabel ? CGRectGetWidth(subtitleLabel.bounds) : 0;
++    CGFloat contentWidth = MAX(titleW, subtitleW);
++    CGFloat titleViewWidth = MIN(MAX(contentWidth, 0), maxWidth);
++
+     CGRect titleViewFrame = navigationBarBounds;
+-    titleViewFrame.size.width = MAX(titleLabel.frame.size.width, subtitleLabel.frame.size.width);
+-    ;
++    titleViewFrame.size.width = titleViewWidth;
+     self.titleView.frame = titleViewFrame;
+ 
+     for (UIView *view in self.titleView.subviews) {
+         CGRect viewFrame = view.frame;
+-        viewFrame.size.width = self.titleView.frame.size.width;
+-        viewFrame.origin.x = (self.titleView.frame.size.width - viewFrame.size.width) / 2;
++        viewFrame.size.width = titleViewWidth;
++        viewFrame.origin.x = (CGRectGetWidth(self.titleView.bounds) - viewFrame.size.width) / 2;
+         view.frame = viewFrame;
+     }
+ }
+@@ -126,11 +146,15 @@
+     [subtitleLabel setAttributedText:[[NSAttributedString alloc] initWithString:self.subtitle
+                                                                      attributes:fontAttributes]];
+ 
+-    CGSize labelSize = [subtitleLabel.text sizeWithAttributes:fontAttributes];
+-    CGRect labelframe = subtitleLabel.frame;
+-    labelframe.size = labelSize;
+-    subtitleLabel.frame = labelframe;
+-    [subtitleLabel sizeToFit];
++    [self configureSingleLineTruncatingLabel:subtitleLabel];
++
++    CGFloat maxWidth = [self maxTitleViewWidthForNavigationBarBounds:self.titleView.bounds];
++    CGSize fitSize =
++        [subtitleLabel sizeThatFits:CGSizeMake(maxWidth, CGFLOAT_MAX)];
++    CGFloat labelWidth = MIN(fitSize.width, maxWidth);
++    subtitleLabel.frame =
++        CGRectMake(0, CGRectGetMinY(subtitleFrame), labelWidth, fitSize.height);
++
+     subtitleLabel.textAlignment = NSTextAlignmentCenter;
+     if (_subtitleOptions.color.hasValue) {
+         UIColor *color = _subtitleOptions.color.get;
+@@ -166,11 +190,12 @@
+     [titleLabel setAttributedText:[[NSAttributedString alloc] initWithString:self.title
+                                                                   attributes:fontAttributes]];
+ 
+-    CGSize labelSize = [titleLabel.text sizeWithAttributes:fontAttributes];
+-    CGRect labelframe = titleLabel.frame;
+-    labelframe.size = labelSize;
+-    titleLabel.frame = labelframe;
+-    [titleLabel sizeToFit];
++    [self configureSingleLineTruncatingLabel:titleLabel];
++
++    CGFloat maxWidth = [self maxTitleViewWidthForNavigationBarBounds:self.titleView.bounds];
++    CGSize fitSize = [titleLabel sizeThatFits:CGSizeMake(maxWidth, CGFLOAT_MAX)];
++    CGFloat labelWidth = MIN(fitSize.width, maxWidth);
++    titleLabel.frame = CGRectMake(0, CGRectGetMinY(titleFrame), labelWidth, fitSize.height);
+ 
+     if (!self.subtitle) {
+         titleLabel.center = self.titleView.center;
 diff --git a/node_modules/react-native-navigation/lib/src/interfaces/Options.ts b/node_modules/react-native-navigation/lib/src/interfaces/Options.ts
 index f0923ed..b0ea7fc 100644
 --- a/node_modules/react-native-navigation/lib/src/interfaces/Options.ts

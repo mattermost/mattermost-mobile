@@ -9,8 +9,10 @@ import {fetchChannelSharedRemotes} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {goToScreen} from '@screens/navigation';
+import {changeOpacity} from '@utils/theme';
 
 const messages = defineMessages({
     loading: {
@@ -26,17 +28,22 @@ const messages = defineMessages({
 type Props = {
     channelId: string;
     isChannelShared: boolean;
-
-    /** Increment when returning from Channel Share so we refetch the count (no WebSocket for shared remotes). */
-    refreshTrigger?: number;
+    channelDisplayName: string;
 }
 
-const ShareWithConnectedWorkspaces = ({channelId, isChannelShared, refreshTrigger = 0}: Props) => {
+const ShareWithConnectedWorkspaces = ({channelId, isChannelShared, channelDisplayName}: Props) => {
     const {formatMessage} = useIntl();
     const serverUrl = useServerUrl();
     const [sharedCount, setSharedCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState(false);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    const theme = useTheme();
+
+    const onSharedRemotesChanged = useCallback(() => {
+        setRefreshTrigger((n) => n + 1);
+    }, []);
 
     useEffect(() => {
         let cancelled = false;
@@ -66,8 +73,14 @@ const ShareWithConnectedWorkspaces = ({channelId, isChannelShared, refreshTrigge
             id: 'channel_settings.share_with_connected_workspaces',
             defaultMessage: 'Share with connected workspaces',
         });
-        goToScreen(Screens.CHANNEL_SHARE, title, {channelId});
-    }, [channelId, formatMessage]));
+        goToScreen(Screens.CHANNEL_SHARE, title, {
+            channelId,
+            onSharedRemotesChanged,
+        }, {topBar: {subtitle: {
+            text: channelDisplayName,
+            color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
+        }}});
+    }, [channelDisplayName, channelId, formatMessage, onSharedRemotesChanged, theme.sidebarHeaderTextColor]));
 
     let description: string | undefined;
     if (loading) {

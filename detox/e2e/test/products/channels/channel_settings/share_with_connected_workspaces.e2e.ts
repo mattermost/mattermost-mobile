@@ -99,12 +99,15 @@ describe('Share with connected workspaces', () => {
     });
 
     afterAll(async () => {
+        await User.apiAdminLogin(siteOneUrl);
+        await System.apiDeleteAllRemoteClusters(siteOneUrl);
         await System.apiPatchConfig(siteOneUrl, {
             AutoTranslationSettings: {
                 Enable: false,
             },
             ConnectedWorkspacesSettings: {
                 EnableSharedChannels: false,
+                EnableRemoteClusterService: false,
             },
         });
         await HomeScreen.logout();
@@ -282,15 +285,10 @@ describe('Share with connected workspaces', () => {
         await ChannelConfigurationScreen.openShareWithConnectedWorkspaces();
         await waitFor(channelShareScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        const toggleOffVisible = await isElementVisible(channelShareToggleOff);
-
-        // Due to other potential configurations, the toggle may or may not be visible.
-        // We leave this condition here to be more robust in the future.
-        if (toggleOffVisible) {
-            await channelShareToggleOff.tap();
-            await wait(timeouts.ONE_SEC);
-            await expect(channelShareToggleOn).toBeVisible();
-        }
+        await expect(channelShareToggleOff).toBeVisible();
+        await channelShareToggleOff.tap();
+        await wait(timeouts.ONE_SEC);
+        await expect(channelShareToggleOn).toBeVisible();
 
         const addWorkspaceButton = element(by.id('channel_share.add_workspace.button'));
         await waitFor(addWorkspaceButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -330,11 +328,25 @@ describe('Share with connected workspaces', () => {
             onlyConfirmed: true,
             excludePlugins: true,
         });
+        if (remotesRes.error || remotesRes.status != null) {
+            throw new Error(
+                `TC-MOB-07: apiGetRemoteClusters failed siteUrl=${siteOneUrl} status=${String(remotesRes.status)} error=${JSON.stringify(remotesRes.error)}`,
+            );
+        }
         const firstRemote = remotesRes.remotes?.[0];
         if (!firstRemote) {
             throw new Error('TC-MOB-07: Expected at least one remote cluster after setup');
         }
-        await Channel.apiShareChannelWithRemote(siteOneUrl, shareTestChannel.id, firstRemote.remote_id);
+        const shareRes = await Channel.apiShareChannelWithRemote(
+            siteOneUrl,
+            shareTestChannel.id,
+            firstRemote.remote_id,
+        );
+        if (shareRes.error || shareRes.status != null) {
+            throw new Error(
+                `TC-MOB-07: apiShareChannelWithRemote failed siteUrl=${siteOneUrl} channelId=${shareTestChannel.id} remoteId=${firstRemote.remote_id} status=${String(shareRes.status)} error=${JSON.stringify(shareRes.error)}`,
+            );
+        }
 
         await grantUserSystemAdminRole(testUser.id);
         await device.reloadReactNative();

@@ -23,7 +23,10 @@ describe('ChannelConfigurationOption', () => {
 
     it('renders option with Configuration label and testID', () => {
         const {getByTestId, getByText} = renderWithIntlAndTheme(
-            <ChannelConfigurationOption channelId='channel1'/>,
+            <ChannelConfigurationOption
+                channelId='channel1'
+                channelDisplayName='Channel 1'
+            />,
         );
         expect(getByTestId('channel_settings.configuration.option')).toBeTruthy();
         expect(getByText('Configuration')).toBeTruthy();
@@ -31,13 +34,17 @@ describe('ChannelConfigurationOption', () => {
 
     it('calls goToScreen with CHANNEL_CONFIGURATION when pressed', () => {
         const {getByTestId} = renderWithIntlAndTheme(
-            <ChannelConfigurationOption channelId='channel-id-123'/>,
+            <ChannelConfigurationOption
+                channelId='channel-id-123'
+                channelDisplayName='Channel 1'
+            />,
         );
         fireEvent.press(getByTestId('channel_settings.configuration.option'));
         expect(goToScreen).toHaveBeenCalledWith(
             Screens.CHANNEL_CONFIGURATION,
             'Configuration',
             {channelId: 'channel-id-123'},
+            {topBar: {subtitle: {color: 'rgba(255,255,255,0.72)', text: 'Channel 1'}}},
         );
     });
 });

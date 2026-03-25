@@ -87,7 +87,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/channel_notification_preferences').default);
             break;
         case Screens.CHANNEL_CONFIGURATION:
-            screen = withServerDatabase(require('@screens/channel_settings/channel_configuration').default);
+            screen = withServerDatabase(require('@screens/channel_configuration').default);
             break;
         case Screens.CHANNEL_SETTINGS:
             screen = withServerDatabase(require('@screens/channel_settings').default);

@@ -37,6 +37,7 @@ describe('ShareWithConnectedWorkspaces', () => {
             <ShareWithConnectedWorkspaces
                 channelId='channel1'
                 isChannelShared={false}
+                channelDisplayName='Channel 1'
             />,
         );
         expect(getByText('Loading…')).toBeTruthy();
@@ -49,6 +50,7 @@ describe('ShareWithConnectedWorkspaces', () => {
             <ShareWithConnectedWorkspaces
                 channelId='channel1'
                 isChannelShared={false}
+                channelDisplayName='Channel 1'
             />,
         );
         await waitFor(() => {
@@ -66,6 +68,7 @@ describe('ShareWithConnectedWorkspaces', () => {
             <ShareWithConnectedWorkspaces
                 channelId='channel1'
                 isChannelShared={true}
+                channelDisplayName='Channel 1'
             />,
         );
         await waitFor(() => {
@@ -81,6 +84,7 @@ describe('ShareWithConnectedWorkspaces', () => {
             <ShareWithConnectedWorkspaces
                 channelId='channel1'
                 isChannelShared={true}
+                channelDisplayName='Channel 1'
             />,
         );
         await waitFor(() => {
@@ -98,6 +102,7 @@ describe('ShareWithConnectedWorkspaces', () => {
             <ShareWithConnectedWorkspaces
                 channelId='channel1'
                 isChannelShared={false}
+                channelDisplayName='Channel 1'
             />,
         );
         await waitFor(() => {
@@ -112,6 +117,7 @@ describe('ShareWithConnectedWorkspaces', () => {
             <ShareWithConnectedWorkspaces
                 channelId='channel1'
                 isChannelShared={true}
+                channelDisplayName='Channel 1'
             />,
         );
         await waitFor(() => {
@@ -126,6 +132,7 @@ describe('ShareWithConnectedWorkspaces', () => {
             <ShareWithConnectedWorkspaces
                 channelId='channel1'
                 isChannelShared={true}
+                channelDisplayName='Channel 1'
             />,
         );
         await waitFor(() => {
@@ -140,6 +147,7 @@ describe('ShareWithConnectedWorkspaces', () => {
             <ShareWithConnectedWorkspaces
                 channelId='channel1'
                 isChannelShared={false}
+                channelDisplayName='Channel 1'
             />,
         );
         await waitFor(() => {
@@ -151,6 +159,7 @@ describe('ShareWithConnectedWorkspaces', () => {
             Screens.CHANNEL_SHARE,
             'Share with connected workspaces',
             {channelId: 'channel1'},
+            {topBar: {subtitle: {color: 'rgba(255,255,255,0.72)', text: 'Channel 1'}}},
         );
     });
 });

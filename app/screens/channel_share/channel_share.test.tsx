@@ -71,6 +71,7 @@ describe('ChannelShare', () => {
                 channelId='channel1'
                 componentId={componentId}
                 displayName='Test Channel'
+                onSharedRemotesChanged={jest.fn()}
             />,
         );
         await waitFor(() => {
@@ -85,6 +86,7 @@ describe('ChannelShare', () => {
                 channelId='ch1'
                 componentId={componentId}
                 displayName='My Channel'
+                onSharedRemotesChanged={jest.fn()}
             />,
         );
         expect(fetchRemoteClusters).toHaveBeenCalledWith(serverUrl);
@@ -105,13 +107,14 @@ describe('ChannelShare', () => {
                 channelId='channel1'
                 componentId={componentId}
                 displayName='Test Channel'
+                onSharedRemotesChanged={jest.fn()}
             />,
         );
 
         await waitFor(() => {
             expect(getByTestId('channel_share.fetch_error')).toBeTruthy();
         });
-        expect(getByText('Failed to load remotes or connections')).toBeTruthy();
+        expect(getByText('Failed to load workspaces or connections')).toBeTruthy();
         expect(getByText(errorMessage)).toBeTruthy();
         expect(queryByTestId('channel_share.scroll_view')).toBeNull();
     });
@@ -126,13 +129,14 @@ describe('ChannelShare', () => {
                 channelId='channel1'
                 componentId={componentId}
                 displayName='Test Channel'
+                onSharedRemotesChanged={jest.fn()}
             />,
         );
 
         await waitFor(() => {
             expect(getByTestId('channel_share.fetch_error')).toBeTruthy();
         });
-        expect(getByText('Failed to load remotes or connections')).toBeTruthy();
+        expect(getByText('Failed to load workspaces or connections')).toBeTruthy();
         expect(getByText(errorMessage)).toBeTruthy();
         expect(queryByTestId('channel_share.scroll_view')).toBeNull();
     });
@@ -143,6 +147,7 @@ describe('ChannelShare', () => {
                 channelId='channel1'
                 componentId={componentId}
                 displayName='Expected Title Here'
+                onSharedRemotesChanged={jest.fn()}
             />,
         );
         await waitFor(() => {
@@ -167,6 +172,7 @@ describe('ChannelShare', () => {
                 channelId='channel1'
                 componentId={componentId}
                 displayName='Test Channel'
+                onSharedRemotesChanged={jest.fn()}
             />,
         );
         await waitFor(() => {
@@ -189,6 +195,7 @@ describe('ChannelShare', () => {
                 channelId='channel1'
                 componentId={componentId}
                 displayName='Test Channel'
+                onSharedRemotesChanged={jest.fn()}
             />,
         );
         await waitFor(() => {
@@ -233,13 +240,14 @@ describe('ChannelShare', () => {
                 channelId='channel1'
                 componentId={componentId}
                 displayName='Test Channel'
+                onSharedRemotesChanged={jest.fn()}
             />,
         );
         await waitFor(() => {
             expect(getByTestId('channel_share.screen')).toBeTruthy();
         });
         expect(getByTestId('channel_share.toggle')).toBeTruthy();
-        expect(getByText('Workspaces sharing this channel')).toBeTruthy();
+        expect(getByText('Workspaces this channel is shared with')).toBeTruthy();
         expect(getByText('Remote 1')).toBeTruthy();
         expect(getByText('Remote 2')).toBeTruthy();
         expect(getByTestId('channel_share.remove.r1')).toBeTruthy();
@@ -247,7 +255,7 @@ describe('ChannelShare', () => {
         expect(getByTestId('channel_share.add_workspace.button')).toBeTruthy();
     });
 
-    it('shows list title "No workspaces sharing this channel yet." when toggle is on and no workspaces added', async () => {
+    it('shows list title "This channel is not shared with any connected workspaces yet." when toggle is on and no workspaces added', async () => {
         const remote = TestHelper.fakeRemoteClusterInfo({remote_id: 'r1', display_name: 'Remote 1'});
         jest.mocked(fetchRemoteClusters).mockResolvedValue({remoteClusters: [remote]});
         jest.mocked(fetchChannelSharedRemotes).mockResolvedValue({remotes: []});
@@ -256,6 +264,7 @@ describe('ChannelShare', () => {
                 channelId='channel1'
                 componentId={componentId}
                 displayName='Test Channel'
+                onSharedRemotesChanged={jest.fn()}
             />,
         );
         await waitFor(() => {
@@ -265,7 +274,7 @@ describe('ChannelShare', () => {
         act(() => {
             fireEvent(toggleSwitch, 'valueChange', true);
         });
-        expect(getByText('No workspaces sharing this channel yet.')).toBeTruthy();
+        expect(getByText('This channel is not shared with any connected workspaces yet.')).toBeTruthy();
         expect(getByTestId('channel_share.add_workspace.button')).toBeTruthy();
     });
 
@@ -281,6 +290,7 @@ describe('ChannelShare', () => {
                 channelId='channel1'
                 componentId={componentId}
                 displayName='Test Channel'
+                onSharedRemotesChanged={jest.fn()}
             />,
         );
         await waitFor(() => {
@@ -321,6 +331,7 @@ describe('ChannelShare', () => {
                 channelId='channel1'
                 componentId={componentId}
                 displayName='Test Channel'
+                onSharedRemotesChanged={jest.fn()}
             />,
         );
         await waitFor(() => {

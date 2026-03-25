@@ -42,11 +42,11 @@ export const messages = defineMessages({
     },
     workspacesSharingThisChannel: {
         id: 'channel_share.workspaces_sharing_this_channel',
-        defaultMessage: 'Workspaces sharing this channel',
+        defaultMessage: 'Workspaces this channel is shared with',
     },
     noWorkspacesSharingThisChannel: {
         id: 'channel_share.no_workspaces_sharing_this_channel',
-        defaultMessage: 'No workspaces sharing this channel yet.',
+        defaultMessage: 'This channel is not shared with any connected workspaces yet.',
     },
     unshareConfirmTitle: {
         id: 'channel_share.unshare_confirm_title',

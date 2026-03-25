@@ -48,6 +48,7 @@ describe('ChannelShare index (enhanced)', () => {
             <EnhancedChannelShare
                 channelId={channelId}
                 componentId={Screens.CHANNEL_SHARE as 'ChannelShare'}
+                onSharedRemotesChanged={jest.fn()}
             />,
             {database, serverUrl},
         );
@@ -77,6 +78,7 @@ describe('ChannelShare index (enhanced)', () => {
             <EnhancedChannelShare
                 channelId={channelId}
                 componentId={Screens.CHANNEL_SHARE as 'ChannelShare'}
+                onSharedRemotesChanged={jest.fn()}
             />,
             {database, serverUrl},
         );

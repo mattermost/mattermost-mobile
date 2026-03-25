@@ -51,6 +51,7 @@ type Props = {
     channelId: string;
     componentId: AvailableScreens;
     displayName: string;
+    onSharedRemotesChanged: () => void;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -87,7 +88,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelShare = ({channelId, componentId, displayName}: Props) => {
+const ChannelShare = ({channelId, componentId, displayName, onSharedRemotesChanged}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -209,8 +210,9 @@ const ChannelShare = ({channelId, componentId, displayName}: Props) => {
         } finally {
             savingRef.current = false;
             setSaving(false);
+            onSharedRemotesChanged();
         }
-    }, [channelId, intl, serverUrl, toRemove, workspaces]);
+    }, [channelId, intl, serverUrl, toRemove, workspaces, onSharedRemotesChanged]);
 
     const save = useCallback(() => {
         if (!canSave) {

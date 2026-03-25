@@ -125,7 +125,10 @@ const ChannelSettings = ({
                         <ConvertToChannelLabel channelId={channelId}/>
                     }
                     {(canManageAutotranslations || canManageSharedChannel) &&
-                        <ChannelConfigurationOption channelId={channelId}/>
+                        <ChannelConfigurationOption
+                            channelId={channelId}
+                            channelDisplayName={displayName}
+                        />
                     }
                     {(canArchive || canUnarchive) &&
                         <>

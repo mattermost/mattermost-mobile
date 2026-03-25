@@ -1,21 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useDidMount from '@hooks/did_mount';
 import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity} from '@utils/theme';
 
-import ChannelAutotranslation from '../channel_autotranslation';
-import ShareWithConnectedWorkspaces from '../share_with_connected_workspaces';
+import ChannelAutotranslation from './channel_autotranslation';
+import ShareWithConnectedWorkspaces from './share_with_connected_workspaces';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -49,19 +47,6 @@ const ChannelConfiguration = ({
     isChannelShared,
 }: Props) => {
     const theme = useTheme();
-    const [sharedRemotesRefresh, setSharedRemotesRefresh] = useState(0);
-
-    useDidMount(() => {
-        const listener = Navigation.events().registerComponentListener(
-            {
-                componentDidAppear: () => {
-                    setSharedRemotesRefresh((n) => n + 1);
-                },
-            },
-            componentId,
-        );
-        return () => listener.remove();
-    });
 
     const onPressed = useCallback(() => {
         return popTopScreen(componentId);
@@ -103,7 +88,7 @@ const ChannelConfiguration = ({
                         <ShareWithConnectedWorkspaces
                             channelId={channelId}
                             isChannelShared={isChannelShared}
-                            refreshTrigger={sharedRemotesRefresh}
+                            channelDisplayName={displayName}
                         />
                     }
                 </ScrollView>

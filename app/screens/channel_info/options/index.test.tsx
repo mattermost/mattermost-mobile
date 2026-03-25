@@ -38,6 +38,7 @@ describe('ChannelInfoOptions', () => {
             isPlaybooksEnabled: true,
             hasChannelSettingsActions: false,
             isAutotranslationEnabledForThisChannel: true,
+            channelDisplayName: 'Channel 1',
         };
     }
     beforeEach(async () => {
