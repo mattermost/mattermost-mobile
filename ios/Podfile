@@ -93,6 +93,8 @@ post_install do |installer|
     # fmt 11.0.2 detection logic unconditionally sets FMT_USE_CONSTEVAL=1 on
     # Xcode 26 / Clang 18+, where consteval is stricter and fmt's usage breaks.
     # Patch base.h to force FMT_USE_CONSTEVAL=0 after the detection block.
+    # Note: an upstream fix for this is in the works, see ticket:
+    # https://github.com/expo/expo/issues/44229
     fmt_base_h = File.join(installer.sandbox.root, 'fmt/include/fmt/base.h')
     if File.exist?(fmt_base_h)
       content = File.read(fmt_base_h)
