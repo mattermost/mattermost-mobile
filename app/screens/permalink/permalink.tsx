@@ -28,6 +28,7 @@ import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {dismissModal} from '@screens/navigation';
+import {logDebug} from '@utils/log';
 import {closePermalink} from '@utils/permalink';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
@@ -228,7 +229,8 @@ function Permalink({
                         teamName: joinedTeam?.display_name,
                         privateTeam: joinedTeam && !joinedTeam.allow_open_invite,
                     });
-                } catch {
+                } catch (e) {
+                    logDebug('[Permalink] getPostInfo fallback failed', e);
                     if (joinedTeam) {
                         removeCurrentUserFromTeam(serverUrl, joinedTeam.id);
                     }
