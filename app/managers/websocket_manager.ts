@@ -75,6 +75,7 @@ class WebsocketManagerSingleton {
         delete this.connectionTimerIDs[serverUrl];
         delete this.clients[serverUrl];
         delete this.firstConnectionSynced[serverUrl];
+        this.stopPeriodicStatusUpdates(serverUrl);
 
         if (client) {
             client.close(true);

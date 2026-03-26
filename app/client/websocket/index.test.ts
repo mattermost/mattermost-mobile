@@ -420,11 +420,16 @@ describe('WebSocketClient', () => {
             await expect(client.waitForClose()).resolves.toBeUndefined();
         });
 
-        it('should resolve immediately when conn is already CLOSED', async () => {
+        it('should wait for onClose even when readyState is already CLOSED', async () => {
             await client.initialize();
             mockConn.readyState = WebSocketReadyState.CLOSED;
 
-            await expect(client.waitForClose()).resolves.toBeUndefined();
+            const waitPromise = client.waitForClose();
+
+            // readyState is CLOSED but onClose hasn't fired yet — should not resolve immediately
+            mockConn.onClose.mock.calls[0][0]({});
+
+            await expect(waitPromise).resolves.toBeUndefined();
         });
 
         it('should resolve when onClose fires', async () => {

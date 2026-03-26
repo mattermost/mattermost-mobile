@@ -394,7 +394,7 @@ export default class WebSocketClient {
     }
 
     public waitForClose(): Promise<void> {
-        if (!this.conn || this.conn.readyState === WebSocketReadyState.CLOSED) {
+        if (!this.conn) {
             return Promise.resolve();
         }
 
