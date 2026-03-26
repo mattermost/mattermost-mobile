@@ -89,6 +89,12 @@ export default class WebSocketClient {
             getConfigValue(database, 'Version'),
             getConfigValue(database, 'EnableReliableWebSockets'),
         ]);
+
+        // Bail if teardown started while we were awaiting config values
+        if (this.stop) {
+            return;
+        }
+
         const connectionUrl = (websocketUrl || this.serverUrl) + '/api/v4/websocket';
 
         if (this.connectingCallback) {
@@ -147,6 +153,12 @@ export default class WebSocketClient {
             }
 
             const {client} = await getOrCreateWebSocketClient(this.url, {headers, timeoutInterval: WEBSOCKET_TIMEOUT});
+
+            // Bail if teardown started while we were awaiting the native client
+            if (this.stop) {
+                client.invalidate();
+                return;
+            }
 
             // Check again if the client is the same, to avoid race conditions
             if (this.conn === client) {
