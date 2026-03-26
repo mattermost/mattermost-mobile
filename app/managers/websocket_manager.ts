@@ -199,6 +199,12 @@ class WebsocketManagerSingleton {
     };
 
     private onWebsocketClose = async (serverUrl: string, connectFailCount: number) => {
+        // Guard against stale callbacks from an old client that was already
+        // invalidated — its late onClose must not clobber a replacement client.
+        if (!this.clients[serverUrl]) {
+            return;
+        }
+
         this.getConnectedSubject(serverUrl).next('not_connected');
         if (connectFailCount <= 1) { // First fail
             await setCurrentUserStatus(serverUrl, General.OFFLINE);
