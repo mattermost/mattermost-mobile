@@ -154,7 +154,6 @@ export class WebSocketClient extends EventEmitter {
             }
         });
 
-        // Do not call reconnect() here — onClose will handle it if the connection drops.
         this.wsClient.open();
     }
 
