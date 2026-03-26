@@ -67,14 +67,20 @@ class WebsocketManagerSingleton {
 
     public invalidateClient = async (serverUrl: string) => {
         const client = this.clients[serverUrl];
+
+        // Evict from registry and clear reconnect timer before awaiting teardown,
+        // so no concurrent code path (e.g. openAll/initializeClient) can reach
+        // this client or use stale manager state during the wait.
+        clearTimeout(this.connectionTimerIDs[serverUrl]);
+        delete this.connectionTimerIDs[serverUrl];
+        delete this.clients[serverUrl];
+        delete this.firstConnectionSynced[serverUrl];
+
         if (client) {
             client.close(true);
             await client.waitForClose();
             client.invalidate();
         }
-        clearTimeout(this.connectionTimerIDs[serverUrl]);
-        delete this.clients[serverUrl];
-        delete this.firstConnectionSynced[serverUrl];
 
         // We don't remove the connected subject so any potential client invalidation
         // and subsequent creation of the client can still be observed by the component.

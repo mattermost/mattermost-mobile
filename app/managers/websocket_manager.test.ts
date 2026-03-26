@@ -126,6 +126,46 @@ describe('WebsocketManager', () => {
         });
     });
 
+    describe('closeAll', () => {
+        beforeEach(async () => {
+            await manager.init(mockCredentials);
+            jest.clearAllMocks();
+        });
+
+        it('should close clients without calling invalidate', () => {
+            manager.closeAll();
+
+            expect(mockWebSocketClient.close).toHaveBeenCalledWith(true);
+            expect(mockWebSocketClient.invalidate).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('invalidateClient', () => {
+        beforeEach(async () => {
+            await manager.init(mockCredentials);
+            jest.clearAllMocks();
+        });
+
+        it('should call close, waitForClose, then invalidate in order', async () => {
+            const callOrder: string[] = [];
+            mockWebSocketClient.close.mockImplementation(() => callOrder.push('close'));
+            mockWebSocketClient.waitForClose.mockImplementation(() => {
+                callOrder.push('waitForClose');
+                return Promise.resolve();
+            });
+            mockWebSocketClient.invalidate.mockImplementation(() => callOrder.push('invalidate'));
+
+            await manager.invalidateClient(mockServerUrl);
+
+            expect(callOrder).toEqual(['close', 'waitForClose', 'invalidate']);
+        });
+
+        it('should handle missing client gracefully', async () => {
+            await manager.invalidateClient('https://nonexistent.com');
+            expect(mockWebSocketClient.close).not.toHaveBeenCalled();
+        });
+    });
+
     describe('connection handling', () => {
         beforeEach(async () => {
             await manager.init(mockCredentials);
