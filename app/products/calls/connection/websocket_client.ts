@@ -106,11 +106,14 @@ export class WebSocketClient extends EventEmitter {
                     logError('calls: ws msg parse error', err);
                     return;
                 }
-            } else {
+            } else if (typeof raw === 'object' && raw !== null) {
                 msg = raw as Record<string, any>;
+            } else {
+                logError('calls: ws msg unexpected type', typeof raw);
+                return;
             }
 
-            if (msg) {
+            if (typeof msg.seq === 'number') {
                 this.serverSeqNo = msg.seq + 1;
             }
 
