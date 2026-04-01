@@ -137,6 +137,21 @@ describe('Gallery utils', () => {
             expect(result.id).toBe(item.id);
             expect(result.name).toBe(item.name);
         });
+
+        it('should preserve mime_type so GIF detection works on gallery items', () => {
+            const gifItem = {
+                id: 'gif1',
+                name: 'animation.gif',
+                width: 400,
+                height: 300,
+                extension: 'gif',
+                mime_type: 'image/gif',
+                postId: 'post1',
+                authorId: 'user1',
+            } as GalleryItemType;
+            const result = galleryItemToFileInfo(gifItem);
+            expect(result.mime_type).toBe('image/gif');
+        });
     });
 
     describe('getShouldRender', () => {

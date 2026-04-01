@@ -508,6 +508,23 @@ export function uploadDisabledWarning(intl: IntlShape) {
     });
 }
 
+export function getUploadErrorMessage(intl: IntlShape, errorMessage: string, errorName?: string) {
+    // iOS: Alamofire wraps all network errors with this prefix
+    const isIosNetworkError = errorMessage.startsWith('URLSessionTask failed with error:');
+
+    // Android: Network exceptions from java.net package
+    const isAndroidNetworkError = errorName?.startsWith('java.net.') ?? false;
+
+    if (isIosNetworkError || isAndroidNetworkError) {
+        return intl.formatMessage({
+            id: 'mobile.file_upload.network_unavailable',
+            defaultMessage: "File couldn't be uploaded. Check your connection and try again.",
+        });
+    }
+
+    return errorMessage;
+}
+
 export const fileExists = async (path: string) => {
     try {
         const file = await getInfoAsync(path);
