@@ -87,6 +87,27 @@ post_install do |installer|
         bc.build_settings['STRIP_SWIFT_SYMBOLS']  = 'NO'
         bc.build_settings['ENABLE_BITCODE']       = 'NO'
       end
+
+    end
+
+    # fmt 11.0.2 detection logic unconditionally sets FMT_USE_CONSTEVAL=1 on
+    # Xcode 26 / Clang 18+, where consteval is stricter and fmt's usage breaks.
+    # Patch base.h to force FMT_USE_CONSTEVAL=0 after the detection block.
+    # Note: an upstream fix for this is in the works, see ticket:
+    # https://github.com/expo/expo/issues/44229
+    fmt_base_h = File.join(installer.sandbox.root, 'fmt/include/fmt/base.h')
+    if File.exist?(fmt_base_h)
+      content = File.read(fmt_base_h)
+      patch_marker = '// [PATCHED] disable consteval for Xcode 26 compatibility'
+      unless content.include?(patch_marker)
+        patched = content.sub(
+          "#endif\n#if FMT_USE_CONSTEVAL",
+          "#endif\n#{patch_marker}\n#undef FMT_USE_CONSTEVAL\n#define FMT_USE_CONSTEVAL 0\n#if FMT_USE_CONSTEVAL"
+        )
+        File.chmod(0644, fmt_base_h)
+        File.write(fmt_base_h, patched)
+        Pod::UI.puts 'Patched fmt/include/fmt/base.h to disable consteval for Xcode 26.'
+      end
     end
 
     # ensure stdlib is embedded for Gekidou to work correctly in extensions

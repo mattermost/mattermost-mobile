@@ -1456,7 +1456,7 @@ PODS:
     - Yoga
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-network-client (1.9.1):
+  - react-native-network-client (1.9.2):
     - Alamofire (~> 5.10.2)
     - DoubleConversion
     - glog
@@ -2678,7 +2678,7 @@ SPEC CHECKSUMS:
   react-native-image-picker: 1279ed5533ab248197e8a05f928f3d826fe5a31e
   react-native-keyboard-controller: 0aff65ca209dae10cd0ac7c9c2404baabb625d42
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
-  react-native-network-client: 209fc0c5b0bd7e367825fb9ca9bfa610ab5ec797
+  react-native-network-client: 58074d41410fbbdf84d9e4808e5d0e8852112fb4
   react-native-notifications: 3bafa1237ae8a47569a84801f17d80242fe9f6a5
   react-native-paste-input: c8fdbe9366a5d93a503848ba19fc335ae532c63b
   react-native-performance: 125a96c145e29918b55b45ce25cbba54f1e24dcd
@@ -2746,6 +2746,6 @@ SPEC CHECKSUMS:
   WatermelonDB: 4c846c8cb94eef3cba90fa034d15310163226703
   Yoga: 2b02f3f767761bb4ffd25b1bb56fd264be57bd6b
 
-PODFILE CHECKSUM: f3442fc727bf29ef7e4eda969e4e598128801d4a
+PODFILE CHECKSUM: c91489514ecbd67a0fcd5317589e9cd96db89d21
 
 COCOAPODS: 1.16.1
