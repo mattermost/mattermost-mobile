@@ -42,10 +42,7 @@ target 'Mattermost' do
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/..",
-    # Explicitly disable Fabric/New Architecture
-    :fabric_enabled => false,
-    :new_arch_enabled => false
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
   pod 'React-jsi', :path => '../node_modules/react-native/ReactCommon/jsi', :modular_headers => true
