@@ -59,6 +59,19 @@ jobs:
         run: bundle exec fastlane ios build --env ios.pr
         working-directory: ./fastlane
 
+      - name: ci/upload-ios-pr-s3-bucket
+        env:
+          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref }}"
+          # Uses static credentials; s3_client_oidc not set so Fastlane uses legacy path.
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
+        run: |
+          echo "::group::Upload to S3 bucket"
+          bundle exec fastlane ios upload_artifacts_to_s3 --env ios.pr
+          echo "::endgroup::"
+        working-directory: ./fastlane
+
       - name: ci/upload-ios-pr-build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -91,6 +104,19 @@ jobs:
           AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
         run: bundle exec fastlane android build --env android.pr
+        working-directory: ./fastlane
+
+      - name: ci/upload-android-pr-s3-bucket
+        env:
+          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref }}"
+          # Uses static credentials; s3_client_oidc not set so Fastlane uses legacy path.
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
+        run: |
+          echo "::group::Upload to S3 bucket"
+          bundle exec fastlane android upload_artifacts_to_s3 --env android.pr
+          echo "::endgroup::"
         working-directory: ./fastlane
 
       - name: ci/upload-android-pr-build

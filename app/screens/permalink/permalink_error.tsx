@@ -63,8 +63,8 @@ function PermalinkError({
     const intl = useIntl();
 
     if (error.notExist || error.unreachable) {
-        const title = intl.formatMessage({id: 'permalink.error.access.title', defaultMessage: 'Message not viewable'});
-        const text = intl.formatMessage({id: 'permalink.error.access.text', defaultMessage: 'The message you are trying to view is in a channel you don’t have access to or has been deleted.'});
+        const title = intl.formatMessage({id: 'permalink.error.access.title', defaultMessage: 'Message Not Found'});
+        const text = intl.formatMessage({id: 'permalink.error.access.text', defaultMessage: 'Permalink belongs to a deleted message or to a channel to which you do not have access.'});
         return (
             <>
                 <View style={style.errorContainer}>

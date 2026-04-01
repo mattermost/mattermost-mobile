@@ -27,8 +27,8 @@ jest.mocked(ReportProblem).mockImplementation((props) => {
                 if (key === 'metadata') {
                     return Object.keys(props[key]).map((metadataKey) => (
                         <Text
-                            key={metadataKey}
-                            testID={metadataKey}
+                            key={`metadata.${metadataKey}`}
+                            testID={`metadata.${metadataKey}`}
                         >{`${props.metadata[metadataKey as keyof ReportAProblemMetadata]}`}</Text>
                     ));
                 }
@@ -63,17 +63,19 @@ describe('screens/report_a_problem/index', () => {
         const Component = enhanced;
         const {getByTestId} = renderWithEverything(<Component componentId={'ReportProblem'}/>, {database});
 
-        expect(getByTestId('currentUserId')).toHaveTextContent('');
-        expect(getByTestId('currentTeamId')).toHaveTextContent('');
-        expect(getByTestId('serverVersion')).toHaveTextContent('Unknown (Build Unknown)');
-        expect(getByTestId('appVersion')).toHaveTextContent('0.0.0 (Build 0)');
-        expect(getByTestId('appPlatform')).toHaveTextContent('ios');
+        expect(getByTestId('metadata.currentUserId')).toHaveTextContent('');
+        expect(getByTestId('metadata.currentTeamId')).toHaveTextContent('');
+        expect(getByTestId('metadata.serverVersion')).toHaveTextContent('Unknown (Build Unknown)');
+        expect(getByTestId('metadata.appVersion')).toHaveTextContent('0.0.0 (Build 0)');
+        expect(getByTestId('metadata.appPlatform')).toHaveTextContent('ios');
         expect(getByTestId('reportAProblemType')).toHaveTextContent('undefined');
         expect(getByTestId('reportAProblemMail')).toHaveTextContent('undefined');
         expect(getByTestId('reportAProblemLink')).toHaveTextContent('undefined');
         expect(getByTestId('siteName')).toHaveTextContent('undefined');
         expect(getByTestId('allowDownloadLogs')).toHaveTextContent('true');
         expect(getByTestId('isLicensed')).toHaveTextContent('false');
+        expect(getByTestId('attachLogsEnabled')).toHaveTextContent('false');
+        expect(getByTestId('currentUserId')).toHaveTextContent('');
     });
 
     it('should enhance ReportProblem with correct observables', async () => {
@@ -100,20 +102,32 @@ describe('screens/report_a_problem/index', () => {
             prepareRecordsOnly: false,
         });
 
+        await operator.handlePreferences({
+            preferences: [{
+                user_id: 'user1',
+                category: 'advanced_settings',
+                name: 'attach_app_logs',
+                value: 'true',
+            }],
+            prepareRecordsOnly: false,
+        });
+
         const Component = enhanced;
         const {getByTestId} = renderWithEverything(<Component componentId={'ReportProblem'}/>, {database});
 
-        expect(getByTestId('currentUserId')).toHaveTextContent('user1');
-        expect(getByTestId('currentTeamId')).toHaveTextContent('team1');
-        expect(getByTestId('serverVersion')).toHaveTextContent('7.8.0 (Build 123)');
-        expect(getByTestId('appVersion')).toHaveTextContent('0.0.0 (Build 0)');
-        expect(getByTestId('appPlatform')).toHaveTextContent('ios');
+        expect(getByTestId('metadata.currentUserId')).toHaveTextContent('user1');
+        expect(getByTestId('metadata.currentTeamId')).toHaveTextContent('team1');
+        expect(getByTestId('metadata.serverVersion')).toHaveTextContent('7.8.0 (Build 123)');
+        expect(getByTestId('metadata.appVersion')).toHaveTextContent('0.0.0 (Build 0)');
+        expect(getByTestId('metadata.appPlatform')).toHaveTextContent('ios');
         expect(getByTestId('reportAProblemType')).toHaveTextContent('email');
         expect(getByTestId('reportAProblemMail')).toHaveTextContent('test@example.com');
         expect(getByTestId('reportAProblemLink')).toHaveTextContent('https://example.com');
         expect(getByTestId('siteName')).toHaveTextContent('Test Site');
         expect(getByTestId('allowDownloadLogs')).toHaveTextContent('true');
         expect(getByTestId('isLicensed')).toHaveTextContent('false');
+        expect(getByTestId('attachLogsEnabled')).toHaveTextContent('true');
+        expect(getByTestId('currentUserId')).toHaveTextContent('user1');
     });
 
     it('different data should show different values', async () => {
@@ -143,16 +157,18 @@ describe('screens/report_a_problem/index', () => {
         const Component = enhanced;
         const {getByTestId} = renderWithEverything(<Component componentId={'ReportProblem'}/>, {database});
 
-        expect(getByTestId('currentUserId')).toHaveTextContent('user2');
-        expect(getByTestId('currentTeamId')).toHaveTextContent('team2');
-        expect(getByTestId('serverVersion')).toHaveTextContent('7.8.1 (Build 124)');
-        expect(getByTestId('appVersion')).toHaveTextContent('0.0.0 (Build 0)');
-        expect(getByTestId('appPlatform')).toHaveTextContent('ios');
+        expect(getByTestId('metadata.currentUserId')).toHaveTextContent('user2');
+        expect(getByTestId('metadata.currentTeamId')).toHaveTextContent('team2');
+        expect(getByTestId('metadata.serverVersion')).toHaveTextContent('7.8.1 (Build 124)');
+        expect(getByTestId('metadata.appVersion')).toHaveTextContent('0.0.0 (Build 0)');
+        expect(getByTestId('metadata.appPlatform')).toHaveTextContent('ios');
         expect(getByTestId('reportAProblemType')).toHaveTextContent('link');
         expect(getByTestId('reportAProblemMail')).toHaveTextContent('test2@example.com');
         expect(getByTestId('reportAProblemLink')).toHaveTextContent('https://example2.com');
         expect(getByTestId('siteName')).toHaveTextContent('Test Site2');
         expect(getByTestId('allowDownloadLogs')).toHaveTextContent('false');
         expect(getByTestId('isLicensed')).toHaveTextContent('false');
+        expect(getByTestId('attachLogsEnabled')).toHaveTextContent('false');
+        expect(getByTestId('currentUserId')).toHaveTextContent('user2');
     });
 });

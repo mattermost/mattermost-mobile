@@ -25,6 +25,7 @@ import {
     getFileType,
     getFormattedFileSize,
     getLocalFilePathFromFile,
+    getUploadErrorMessage,
     hasWriteStoragePermission,
     isDocument,
     isGif,
@@ -269,6 +270,24 @@ describe('Image utils', () => {
         it('should return correct upload disabled warning', () => {
             const msg = uploadDisabledWarning(intl);
             expect(msg).toBe('File uploads from mobile are disabled.');
+        });
+    });
+
+    describe('getUploadErrorMessage', () => {
+        it('should map iOS network errors to user-friendly message', () => {
+            const msg = getUploadErrorMessage(intl, 'URLSessionTask failed with error: The Internet connection appears to be offline.');
+            expect(msg).toBe("File couldn't be uploaded. Check your connection and try again.");
+        });
+
+        it('should map Android network errors to user-friendly message', () => {
+            const msg = getUploadErrorMessage(intl, 'Network error', 'java.net.UnknownHostException');
+            expect(msg).toBe("File couldn't be uploaded. Check your connection and try again.");
+        });
+
+        it('should return original message for non-network errors', () => {
+            const originalMessage = 'Some other error occurred';
+            const msg = getUploadErrorMessage(intl, originalMessage);
+            expect(msg).toBe(originalMessage);
         });
     });
 

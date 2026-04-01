@@ -1,13 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import TurboLogger from '@mattermost/react-native-turbo-log';
+import RNUtils from '@mattermost/rnutils';
 import {fireEvent, waitFor} from '@testing-library/react-native';
+import {getInfoAsync} from 'expo-file-system';
 import {Alert} from 'react-native';
 
 import {Screens} from '@constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import PickerUtil from '@utils/file/file_picker';
+import {logError} from '@utils/log';
 
 import AttachmentOptions from './attachment_options';
 
@@ -20,6 +24,16 @@ jest.mock('@utils/file/file_picker');
 jest.mock('@utils/file', () => ({
     fileMaxWarning: jest.fn((...args) => `Maximum ${args[1]} files allowed`),
     uploadDisabledWarning: jest.fn(() => 'File uploads are disabled'),
+    pathWithPrefix: jest.fn((prefix, path) => `${prefix}${path}`),
+}));
+
+jest.mock('@utils/general', () => ({
+    ...jest.requireActual('@utils/general'),
+    generateId: jest.fn(() => 'generated-id'),
+}));
+
+jest.mock('@utils/log', () => ({
+    logError: jest.fn(),
 }));
 
 jest.mock('@hooks/device', () => ({
@@ -400,6 +414,136 @@ describe('AttachmentOptions', () => {
                 expect(mockAttachFileFromPhotoGallery).toHaveBeenCalled();
                 expect(Alert.alert).not.toHaveBeenCalled();
             });
+        });
+    });
+
+    describe('attach logs', () => {
+        it('should render attach logs option when showAttachLogs is true', () => {
+            const props = {...baseProps, showAttachLogs: true};
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            expect(getByTestId('file_attachment.attach_logs')).toBeTruthy();
+        });
+
+        it('should not render attach logs option when showAttachLogs is false', () => {
+            const props = {...baseProps, showAttachLogs: false};
+            const {queryByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            expect(queryByTestId('file_attachment.attach_logs')).toBeNull();
+        });
+
+        it('should call onUploadFiles with zip file info on successful attach', async () => {
+            jest.mocked(TurboLogger.getLogPaths).mockResolvedValue(['/path/to/log1.txt', '/path/to/log2.txt']);
+            jest.mocked(RNUtils.createZipFile).mockResolvedValue('/path/to/logs.zip');
+            jest.mocked(getInfoAsync).mockResolvedValue({exists: true, size: 1234, uri: 'file:///path/to/logs.zip', isDirectory: false, modificationTime: 0, md5: ''});
+
+            const props = {...baseProps, showAttachLogs: true};
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            fireEvent.press(getByTestId('file_attachment.attach_logs'));
+
+            await waitFor(() => {
+                expect(baseProps.onUploadFiles).toHaveBeenCalledWith([
+                    expect.objectContaining({
+                        clientId: 'generated-id',
+                        name: expect.stringMatching(/^app-logs-\d+\.zip$/),
+                        mime_type: 'application/zip',
+                        extension: 'zip',
+                        size: 1234,
+                        localPath: 'file:///path/to/logs.zip',
+                    }),
+                ]);
+            });
+        });
+
+        it('should show alert when no log files available', async () => {
+            jest.mocked(TurboLogger.getLogPaths).mockResolvedValue([]);
+
+            const props = {...baseProps, showAttachLogs: true};
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            fireEvent.press(getByTestId('file_attachment.attach_logs'));
+
+            await waitFor(() => {
+                expect(Alert.alert).toHaveBeenCalledWith(
+                    'Error',
+                    'No log files available',
+                );
+                expect(baseProps.onUploadFiles).not.toHaveBeenCalled();
+            });
+        });
+
+        it('should show alert when createZipFile fails', async () => {
+            jest.mocked(TurboLogger.getLogPaths).mockResolvedValue(['/path/to/log1.txt']);
+            jest.mocked(RNUtils.createZipFile).mockRejectedValue(new Error('zip failed'));
+
+            const props = {...baseProps, showAttachLogs: true};
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            fireEvent.press(getByTestId('file_attachment.attach_logs'));
+
+            await waitFor(() => {
+                expect(logError).toHaveBeenCalledWith('[AttachmentOptions.onAttachLogs]', expect.any(Error));
+                expect(Alert.alert).toHaveBeenCalledWith(
+                    'Error',
+                    'Failed to attach app logs',
+                );
+                expect(baseProps.onUploadFiles).not.toHaveBeenCalled();
+            });
+        });
+
+        it('should show alert when createZipFile returns empty path', async () => {
+            jest.mocked(TurboLogger.getLogPaths).mockResolvedValue(['/path/to/log1.txt']);
+            jest.mocked(RNUtils.createZipFile).mockResolvedValue('');
+
+            const props = {...baseProps, showAttachLogs: true};
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            fireEvent.press(getByTestId('file_attachment.attach_logs'));
+
+            await waitFor(() => {
+                expect(logError).toHaveBeenCalledWith('[AttachmentOptions.onAttachLogs]', expect.any(Error));
+                expect(Alert.alert).toHaveBeenCalledWith(
+                    'Error',
+                    'Failed to attach app logs',
+                );
+                expect(baseProps.onUploadFiles).not.toHaveBeenCalled();
+            });
+        });
+
+        it('should prevent double-tap with ref guard', async () => {
+            jest.mocked(TurboLogger.getLogPaths).mockResolvedValue([]);
+
+            const props = {...baseProps, showAttachLogs: true};
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            const logsButton = getByTestId('file_attachment.attach_logs');
+
+            // Press twice rapidly - the ref guard should block the second call
+            fireEvent.press(logsButton);
+            fireEvent.press(logsButton);
+
+            await waitFor(() => {
+                expect(Alert.alert).toHaveBeenCalledTimes(1);
+            });
+
+            // dismissBottomSheet is called once for the first press,
+            // the second press is blocked by the ref guard
+            expect(mockDismissBottomSheet).toHaveBeenCalledTimes(1);
         });
     });
 
