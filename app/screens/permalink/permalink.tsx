@@ -10,7 +10,7 @@ import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area
 
 import {getPosts} from '@actions/local/post';
 import {fetchChannelById, joinChannel, switchToChannelById} from '@actions/remote/channel';
-import {fetchPostById, fetchPostsAround, fetchPostThread} from '@actions/remote/post';
+import {fetchPostById, fetchPostInfo, fetchPostsAround, fetchPostThread} from '@actions/remote/post';
 import {addCurrentUserToTeam, fetchTeamByName, removeCurrentUserFromTeam} from '@actions/remote/team';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
@@ -24,7 +24,6 @@ import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {dismissModal} from '@screens/navigation';
@@ -217,9 +216,8 @@ function Permalink({
                 // even for public channels. Fall back to getPostInfo (GET /posts/{id}/info)
                 // which returns channel metadata without requiring membership — aligned
                 // with the web client's focusPost flow in permalink_view/actions.ts.
-                try {
-                    const client = NetworkManager.getClient(serverUrl);
-                    const postInfo = await client.getPostInfo(postId);
+                const {postInfo, error: postInfoError} = await fetchPostInfo(serverUrl, postId);
+                if (postInfo) {
                     setError({
                         privateChannel: postInfo.channel_type === 'P',
                         joinedTeam: Boolean(joinedTeam),
@@ -229,8 +227,8 @@ function Permalink({
                         teamName: joinedTeam?.display_name,
                         privateTeam: joinedTeam && !joinedTeam.allow_open_invite,
                     });
-                } catch (e) {
-                    logDebug('[Permalink] getPostInfo fallback failed', e);
+                } else {
+                    logDebug('[Permalink] getPostInfo fallback failed', postInfoError);
                     if (joinedTeam) {
                         removeCurrentUserFromTeam(serverUrl, joinedTeam.id);
                     }
