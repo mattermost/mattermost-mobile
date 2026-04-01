@@ -27,7 +27,6 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import SecurityManager from '@managers/security_manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {dismissModal} from '@screens/navigation';
-import {logDebug} from '@utils/log';
 import {closePermalink} from '@utils/permalink';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
@@ -194,9 +193,27 @@ function Permalink({
                 return;
             }
 
-            // If a team is provided, try to join the team, but do not fail here, to take into account:
-            // - Wrong team name
-            // - DMs/GMs
+            // Try getPostInfo first (GET /posts/{id}/info, available since server v7.1).
+            // Returns channel/team metadata without requiring membership, so we can
+            // show the join UI without speculatively joining the team first.
+            const {postInfo} = await fetchPostInfo(serverUrl, postId);
+            if (postInfo && !postInfo.has_joined_channel) {
+                setError({
+                    privateChannel: postInfo.channel_type === 'P',
+                    needsTeamJoin: !postInfo.has_joined_team && postInfo.team_id !== '',
+                    channelId: postInfo.channel_id,
+                    channelName: postInfo.channel_display_name,
+                    teamId: postInfo.team_id || currentTeamId,
+                    teamName: postInfo.team_display_name,
+                    privateTeam: postInfo.team_type === 'I',
+                });
+                setLoading(false);
+                return;
+            }
+
+            // Fallback for old servers (getPostInfo unavailable) or when the user
+            // already has channel access (has_joined_channel === true).
+            // This path speculatively joins the team before fetching the post.
             let joinedTeam: Team | undefined;
             if (teamName && !isTeamMember) {
                 const fetchData = await fetchTeamByName(serverUrl, teamName, true);
@@ -212,28 +229,10 @@ function Permalink({
 
             const {post} = await fetchPostById(serverUrl, postId, true);
             if (!post) {
-                // The server returns 403 for posts in channels the user hasn't joined,
-                // even for public channels. Fall back to getPostInfo (GET /posts/{id}/info)
-                // which returns channel metadata without requiring membership — aligned
-                // with the web client's focusPost flow in permalink_view/actions.ts.
-                const {postInfo, error: postInfoError} = await fetchPostInfo(serverUrl, postId);
-                if (postInfo) {
-                    setError({
-                        privateChannel: postInfo.channel_type === 'P',
-                        joinedTeam: Boolean(joinedTeam),
-                        channelId: postInfo.channel_id,
-                        channelName: postInfo.channel_display_name,
-                        teamId: postInfo.team_id || currentTeamId,
-                        teamName: joinedTeam?.display_name,
-                        privateTeam: joinedTeam && !joinedTeam.allow_open_invite,
-                    });
-                } else {
-                    logDebug('[Permalink] getPostInfo fallback failed', postInfoError);
-                    if (joinedTeam) {
-                        removeCurrentUserFromTeam(serverUrl, joinedTeam.id);
-                    }
-                    setError({notExist: true});
+                if (joinedTeam) {
+                    removeCurrentUserFromTeam(serverUrl, joinedTeam.id);
                 }
+                setError({notExist: true});
                 setLoading(false);
                 return;
             }
@@ -319,8 +318,20 @@ function Permalink({
         setLoading(true);
         setError(undefined);
         if (error?.teamId && error.channelId) {
+            if (error.needsTeamJoin) {
+                const {error: teamError} = await addCurrentUserToTeam(serverUrl, error.teamId);
+                if (teamError) {
+                    Alert.alert('Error joining the team', 'There was an error trying to join the team');
+                    setLoading(false);
+                    setError(error);
+                    return;
+                }
+            }
             const {error: joinError} = await joinChannel(serverUrl, error.teamId, error.channelId);
             if (joinError) {
+                if (error.needsTeamJoin) {
+                    removeCurrentUserFromTeam(serverUrl, error.teamId);
+                }
                 Alert.alert('Error joining the channel', 'There was an error trying to join the channel');
                 setLoading(false);
                 setError(error);
