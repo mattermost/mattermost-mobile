@@ -124,7 +124,7 @@ const mockClient = {
     getPostThread: jest.fn((_postId: string) => ({posts: {[_postId]: {...post1, id: _postId}, [reply1.id]: {...reply1, root_id: _postId}}, order: [_postId, reply1.id]})),
     getPostsAfter: genericGetPostsMock,
     getPost: jest.fn((_postId: string) => ({...post2, id: _postId})),
-    getPostInfo: jest.fn((_postId: string) => ({
+    getPostInfo: jest.fn(() => ({
         channel_id: channelId,
         channel_type: 'O' as ChannelType,
         channel_display_name: 'Town Square',
