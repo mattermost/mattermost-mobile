@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {BackHandler, DeviceEventEmitter, StyleSheet, ToastAndroid, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
@@ -20,6 +20,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {resetToTeams, openToS} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
 import {tryRunAppReview} from '@utils/reviews';
@@ -79,6 +80,7 @@ const ChannelListScreen = (props: ChannelProps) => {
     const navigation = useNavigation();
     const insets = useSafeAreaInsets();
     const serverUrl = useServerUrl();
+    const [canJoinOtherTeams, setCanJoinOtherTeams] = useState(false);
     const params = route.params as {direction: string};
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
 
@@ -148,6 +150,11 @@ const ChannelListScreen = (props: ChannelProps) => {
     }, [serverUrl]);
 
     useEffect(() => {
+        const subscription = EphemeralStore.observeCanJoinOtherTeams(serverUrl).subscribe(setCanJoinOtherTeams);
+        return () => subscription.unsubscribe();
+    }, [serverUrl]);
+
+    useEffect(() => {
         if (props.showToS && !NavigationStore.isToSOpen()) {
             openToS();
         }
@@ -201,7 +208,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                             hasMoreThanOneTeam={props.hasMoreThanOneTeam}
                         />
                         <CategoriesList
-                            iconPad={canAddOtherServers && !props.hasMoreThanOneTeam}
+                            iconPad={canAddOtherServers && !props.hasMoreThanOneTeam && !canJoinOtherTeams}
                             isCRTEnabled={props.isCRTEnabled}
                             moreThanOneTeam={props.hasMoreThanOneTeam}
                             hasChannels={props.hasChannels}
