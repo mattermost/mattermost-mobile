@@ -7,6 +7,7 @@ import {Text} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {getSkuDisplayName} from '@utils/subscription';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -16,6 +17,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             ...typography('Heading', 800, 'SemiBold'),
             color: theme.centerChannelColor,
             paddingHorizontal: 36,
+            textAlign: 'center' as const,
         },
         spacerTop: {
             marginTop: 8,
@@ -27,7 +29,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const messages = defineMessages({
-
+    mattermost: {
+        id: 'about.mattermost',
+        defaultMessage: 'Mattermost',
+    },
     teamEditiont0: {
         id: 'about.teamEditiont0',
         defaultMessage: 'Team Edition',
@@ -36,45 +41,61 @@ const messages = defineMessages({
         id: 'about.teamEditiont1',
         defaultMessage: 'Enterprise Edition',
     },
-    enterpriseEditione1: {
-        id: 'about.enterpriseEditione1',
-        defaultMessage: 'Enterprise Edition',
-    },
 });
 
 type TitleProps = {
     config: ClientConfig;
     license?: ClientLicense;
-}
+};
 const Title = ({config, license}: TitleProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    let message = messages.teamEditiont0;
+    const isEnterpriseReady = config.BuildEnterpriseReady === 'true';
+    const isLicensed = license?.IsLicensed === 'true';
 
-    if (config.BuildEnterpriseReady === 'true') {
-        message = messages.teamEditiont1;
-
-        if (license?.IsLicensed === 'true') {
-            message = messages.enterpriseEditione1;
+    const editionLine = (() => {
+        if (!isEnterpriseReady) {
+            return (
+                <FormattedText
+                    {...messages.teamEditiont0}
+                    style={[style.title, style.spacerBottom]}
+                    testID='about.title'
+                />
+            );
         }
-    }
+        if (!isLicensed) {
+            return (
+                <FormattedText
+                    {...messages.teamEditiont1}
+                    style={[style.title, style.spacerBottom]}
+                    testID='about.title'
+                />
+            );
+        }
+        const skuName = getSkuDisplayName(
+            license?.SkuShortName ?? '',
+            license?.IsGovSku === 'true',
+        );
+        return (
+            <Text
+                style={[style.title, style.spacerBottom]}
+                testID='about.title'
+            >
+                {skuName}
+            </Text>
+        );
+    })();
 
     return (
         <>
-            <Text
-                style={[style.title, style.spacerTop]}
-                testID='about.site_name'
-            >
-                {`${config.SiteName} `}
-            </Text>
             <FormattedText
-                {...message}
-                style={[style.title, style.spacerBottom]}
-                testID='about.title'
+                {...messages.mattermost}
+                style={[style.title, style.spacerTop]}
+                testID='about.product_name'
             />
+            {editionLine}
         </>
-
     );
 };
 

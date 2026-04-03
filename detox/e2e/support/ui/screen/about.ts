@@ -11,7 +11,7 @@ class AboutScreen {
         backButton: 'screen.back.button',
         scrollView: 'about.scroll_view',
         logo: 'about.logo',
-        siteName: 'about.site_name',
+        productName: 'about.product_name',
         title: 'about.title',
         subtitle: 'about.subtitle',
         appVersionTitle: 'about.app_version.title',
@@ -45,7 +45,7 @@ class AboutScreen {
     backButton = element(by.id(this.testID.backButton));
     scrollView = element(by.id(this.testID.scrollView));
     logo = element(by.id(this.testID.logo));
-    siteName = element(by.id(this.testID.siteName));
+    productName = element(by.id(this.testID.productName));
     title = element(by.id(this.testID.title));
     subtitle = element(by.id(this.testID.subtitle));
     appVersionTitle = element(by.id(this.testID.appVersionTitle));

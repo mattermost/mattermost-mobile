@@ -3,11 +3,12 @@
 
 import React from 'react';
 import {defineMessages} from 'react-intl';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
 
 import Config from '@assets/config.json';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {getSkuDisplayName} from '@utils/subscription';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -31,6 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 type LearnMoreProps = {
     config: ClientConfig;
+    license?: ClientLicense;
     onPress: () => void;
 };
 
@@ -43,34 +45,67 @@ const messages = defineMessages({
         id: 'about.enterpriseEditionLearn',
         defaultMessage: 'Learn more about Enterprise Edition at ',
     },
+    planNameLearn: {
+        id: 'about.planNameLearn',
+        defaultMessage: 'Learn more about Mattermost {planName} at ',
+    },
 });
 
-const LearnMore = ({config, onPress}: LearnMoreProps) => {
+const LearnMore = ({config, license, onPress}: LearnMoreProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-
-    let message = messages.teamEditionLearn;
     const url = Config.WebsiteURL;
 
-    if (config.BuildEnterpriseReady === 'true') {
-        message = messages.enterpriseEditionLearn;
-    }
+    const isEnterpriseReady = config.BuildEnterpriseReady === 'true';
+    const isLicensed = license?.IsLicensed === 'true';
 
-    return (
-        <View style={style.learnContainer}>
+    const learnText = (() => {
+        if (!isEnterpriseReady) {
+            return (
+                <FormattedText
+                    {...messages.teamEditionLearn}
+                    style={style.learn}
+                    testID='about.learn_more.text'
+                />
+            );
+        }
+        if (isLicensed) {
+            const planName = getSkuDisplayName(
+                license?.SkuShortName ?? '',
+                license?.IsGovSku === 'true',
+            );
+            return (
+                <FormattedText
+                    {...messages.planNameLearn}
+                    style={style.learn}
+                    testID='about.learn_more.text'
+                    values={{planName}}
+                />
+            );
+        }
+        return (
             <FormattedText
-                {...message}
+                {...messages.enterpriseEditionLearn}
                 style={style.learn}
                 testID='about.learn_more.text'
             />
-            <TouchableOpacity onPress={onPress}>
+        );
+    })();
+
+    return (
+        <View style={style.learnContainer}>
+            {learnText}
+            <Pressable
+                onPress={onPress}
+                style={({pressed}) => [pressed && {opacity: 0.72}]}
+            >
                 <Text
                     style={style.learnLink}
                     testID='about.learn_more.url'
                 >
                     {url}
                 </Text>
-            </TouchableOpacity>
+            </Pressable>
         </View>
     );
 };

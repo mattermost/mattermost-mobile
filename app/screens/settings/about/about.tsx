@@ -320,6 +320,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                 )}
                 <LearnMore
                     config={config}
+                    license={license}
                     onPress={handleAboutTeam}
                 />
                 {!MATTERMOST_BUNDLE_IDS.includes(applicationId || '') &&
