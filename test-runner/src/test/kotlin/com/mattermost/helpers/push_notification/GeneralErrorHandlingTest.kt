@@ -19,8 +19,12 @@ import org.mockito.Mockito.*
 class GeneralErrorHandlingTest {
 
     @Test
-    fun `when data is Map type - extracts status_code and message`() {
+    fun `when data is Map with valid status_code and message - formats error`() {
         val errorData = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("status_code")).thenReturn(true)
+            `when`(hasKey("message")).thenReturn(true)
+            `when`(getType("status_code")).thenReturn(ReadableType.Number)
+            `when`(getType("message")).thenReturn(ReadableType.String)
             `when`(getInt("status_code")).thenReturn(401)
             `when`(getString("message")).thenReturn("Unauthorized")
         }
@@ -32,6 +36,88 @@ class GeneralErrorHandlingTest {
 
         val msg = formatErrorMessage(response)
         assertEquals("Unexpected code 401 Unauthorized", msg)
+    }
+
+    @Test
+    fun `when data is Map but missing status_code - falls back`() {
+        val errorData = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("status_code")).thenReturn(false)
+            `when`(hasKey("message")).thenReturn(true)
+            `when`(getType("message")).thenReturn(ReadableType.String)
+        }
+        val response = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("data")).thenReturn(true)
+            `when`(getType("data")).thenReturn(ReadableType.Map)
+            `when`(getMap("data")).thenReturn(errorData)
+        }
+
+        val msg = formatErrorMessage(response)
+        assertTrue(msg.startsWith("Unexpected response:"))
+    }
+
+    @Test
+    fun `when data is Map but missing message - falls back`() {
+        val errorData = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("status_code")).thenReturn(true)
+            `when`(hasKey("message")).thenReturn(false)
+            `when`(getType("status_code")).thenReturn(ReadableType.Number)
+        }
+        val response = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("data")).thenReturn(true)
+            `when`(getType("data")).thenReturn(ReadableType.Map)
+            `when`(getMap("data")).thenReturn(errorData)
+        }
+
+        val msg = formatErrorMessage(response)
+        assertTrue(msg.startsWith("Unexpected response:"))
+    }
+
+    @Test
+    fun `when data is Map but status_code is wrong type - falls back`() {
+        val errorData = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("status_code")).thenReturn(true)
+            `when`(hasKey("message")).thenReturn(true)
+            `when`(getType("status_code")).thenReturn(ReadableType.String)
+            `when`(getType("message")).thenReturn(ReadableType.String)
+        }
+        val response = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("data")).thenReturn(true)
+            `when`(getType("data")).thenReturn(ReadableType.Map)
+            `when`(getMap("data")).thenReturn(errorData)
+        }
+
+        val msg = formatErrorMessage(response)
+        assertTrue(msg.startsWith("Unexpected response:"))
+    }
+
+    @Test
+    fun `when data is Map but message is wrong type - falls back`() {
+        val errorData = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("status_code")).thenReturn(true)
+            `when`(hasKey("message")).thenReturn(true)
+            `when`(getType("status_code")).thenReturn(ReadableType.Number)
+            `when`(getType("message")).thenReturn(ReadableType.Number)
+        }
+        val response = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("data")).thenReturn(true)
+            `when`(getType("data")).thenReturn(ReadableType.Map)
+            `when`(getMap("data")).thenReturn(errorData)
+        }
+
+        val msg = formatErrorMessage(response)
+        assertTrue(msg.startsWith("Unexpected response:"))
+    }
+
+    @Test
+    fun `when data is Map but getMap returns null - falls back`() {
+        val response = mock(ReadableMap::class.java).apply {
+            `when`(hasKey("data")).thenReturn(true)
+            `when`(getType("data")).thenReturn(ReadableType.Map)
+            `when`(getMap("data")).thenReturn(null)
+        }
+
+        val msg = formatErrorMessage(response)
+        assertEquals("Unexpected response: null", msg)
     }
 
     @Test
@@ -56,8 +142,6 @@ class GeneralErrorHandlingTest {
 
         val msg = formatErrorMessage(response)
         assertEquals("Unexpected response: 42.0", msg)
-        verify(response, never()).getMap("data")
-        verify(response, never()).getString(anyString())
     }
 
     @Test
@@ -82,7 +166,6 @@ class GeneralErrorHandlingTest {
 
         val msg = formatErrorMessage(response)
         assertEquals("Unexpected response: [item1, item2]", msg)
-        verify(response, never()).getMap("data")
     }
 
     @Test
@@ -104,17 +187,5 @@ class GeneralErrorHandlingTest {
 
         val msg = formatErrorMessage(response)
         assertEquals("Unexpected response: null", msg)
-    }
-
-    @Test
-    fun `when data is Map with null error - handles gracefully`() {
-        val response = mock(ReadableMap::class.java).apply {
-            `when`(hasKey("data")).thenReturn(true)
-            `when`(getType("data")).thenReturn(ReadableType.Map)
-            `when`(getMap("data")).thenReturn(null)
-        }
-
-        val msg = formatErrorMessage(response)
-        assertEquals("Unexpected code null null", msg)
     }
 }

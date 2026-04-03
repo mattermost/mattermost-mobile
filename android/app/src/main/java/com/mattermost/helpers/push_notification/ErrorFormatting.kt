@@ -14,7 +14,16 @@ fun formatErrorMessage(response: ReadableMap): String {
     return when (dataType) {
         ReadableType.Map -> {
             val error = response.getMap("data")
-            "Unexpected code ${error?.getInt("status_code")} ${error?.getString("message")}"
+            if (error != null &&
+                error.hasKey("status_code") &&
+                error.hasKey("message") &&
+                error.getType("status_code") == ReadableType.Number &&
+                error.getType("message") == ReadableType.String
+            ) {
+                "Unexpected code ${error.getInt("status_code")} ${error.getString("message")}"
+            } else {
+                "Unexpected response: $error"
+            }
         }
         ReadableType.String -> "Unexpected response: ${response.getString("data")}"
         ReadableType.Number -> "Unexpected response: ${response.getDouble("data")}"

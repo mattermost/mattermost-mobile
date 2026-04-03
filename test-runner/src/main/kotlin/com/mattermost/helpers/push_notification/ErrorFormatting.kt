@@ -1,1 +1,1 @@
-/tmp/mm-mobile-9618/android/app/src/main/java/com/mattermost/helpers/push_notification/ErrorFormatting.kt
+../../../../../../../../android/app/src/main/java/com/mattermost/helpers/push_notification/ErrorFormatting.kt
