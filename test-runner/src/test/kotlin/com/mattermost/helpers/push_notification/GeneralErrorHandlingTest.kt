@@ -7,7 +7,7 @@ import org.junit.Test
 import org.mockito.Mockito.*
 
 /**
- * Tests for the error-handling logic in General.kt's fetch() function.
+ * Tests for the error-handling logic extracted into [formatErrorMessage].
  *
  * The fix guards against calling getMap("data") when the "data" field is not
  * actually a Map (e.g., when a proxy returns an HTML error page as a String),
@@ -17,26 +17,6 @@ import org.mockito.Mockito.*
  * https://mattermost-mr.sentry.io/issues/6911684498/
  */
 class GeneralErrorHandlingTest {
-
-    /**
-     * Mirrors the exact when-expression from General.kt's error handling.
-     * Each ReadableType branch uses the type-safe getter to avoid
-     * UnexpectedNativeTypeException from the React Native bridge.
-     */
-    private fun extractErrorMessage(response: ReadableMap): String {
-        val dataType = if (response.hasKey("data")) response.getType("data") else ReadableType.Null
-        return when (dataType) {
-            ReadableType.Map -> {
-                val error = response.getMap("data")
-                "Unexpected code ${error?.getInt("status_code")} ${error?.getString("message")}"
-            }
-            ReadableType.String -> "Unexpected response: ${response.getString("data")}"
-            ReadableType.Number -> "Unexpected response: ${response.getDouble("data")}"
-            ReadableType.Boolean -> "Unexpected response: ${response.getBoolean("data")}"
-            ReadableType.Array -> "Unexpected response: ${response.getArray("data")}"
-            ReadableType.Null -> "Unexpected response: null"
-        }
-    }
 
     @Test
     fun `when data is Map type - extracts status_code and message`() {
@@ -50,7 +30,7 @@ class GeneralErrorHandlingTest {
             `when`(getMap("data")).thenReturn(errorData)
         }
 
-        val msg = extractErrorMessage(response)
+        val msg = formatErrorMessage(response)
         assertEquals("Unexpected code 401 Unauthorized", msg)
     }
 
@@ -62,7 +42,7 @@ class GeneralErrorHandlingTest {
             `when`(getString("data")).thenReturn("<html>502 Bad Gateway</html>")
         }
 
-        val msg = extractErrorMessage(response)
+        val msg = formatErrorMessage(response)
         assertEquals("Unexpected response: <html>502 Bad Gateway</html>", msg)
     }
 
@@ -74,7 +54,7 @@ class GeneralErrorHandlingTest {
             `when`(getDouble("data")).thenReturn(42.0)
         }
 
-        val msg = extractErrorMessage(response)
+        val msg = formatErrorMessage(response)
         assertEquals("Unexpected response: 42.0", msg)
         verify(response, never()).getMap("data")
         verify(response, never()).getString(anyString())
@@ -88,7 +68,7 @@ class GeneralErrorHandlingTest {
             `when`(getBoolean("data")).thenReturn(false)
         }
 
-        val msg = extractErrorMessage(response)
+        val msg = formatErrorMessage(response)
         assertEquals("Unexpected response: false", msg)
     }
 
@@ -100,7 +80,7 @@ class GeneralErrorHandlingTest {
             `when`(getArray("data")).thenReturn(listOf("item1", "item2"))
         }
 
-        val msg = extractErrorMessage(response)
+        val msg = formatErrorMessage(response)
         assertEquals("Unexpected response: [item1, item2]", msg)
         verify(response, never()).getMap("data")
     }
@@ -112,7 +92,7 @@ class GeneralErrorHandlingTest {
             `when`(getType("data")).thenReturn(ReadableType.Null)
         }
 
-        val msg = extractErrorMessage(response)
+        val msg = formatErrorMessage(response)
         assertEquals("Unexpected response: null", msg)
     }
 
@@ -122,7 +102,7 @@ class GeneralErrorHandlingTest {
             `when`(hasKey("data")).thenReturn(false)
         }
 
-        val msg = extractErrorMessage(response)
+        val msg = formatErrorMessage(response)
         assertEquals("Unexpected response: null", msg)
     }
 
@@ -134,7 +114,7 @@ class GeneralErrorHandlingTest {
             `when`(getMap("data")).thenReturn(null)
         }
 
-        val msg = extractErrorMessage(response)
+        val msg = formatErrorMessage(response)
         assertEquals("Unexpected code null null", msg)
     }
 }
