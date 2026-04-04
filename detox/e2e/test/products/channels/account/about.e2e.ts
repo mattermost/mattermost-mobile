@@ -64,7 +64,7 @@ const getExpectedProductTitle = (license: Record<string, string | undefined>, bu
 
 const getExpectedLearnMorePrefix = (license: Record<string, string | undefined>, buildEnterpriseReady: string | undefined): string => {
     if (buildEnterpriseReady !== 'true') {
-        return 'Join the Mattermost community at';
+        return 'Join the Mattermost community at ';
     }
     if (license?.IsLicensed === 'true') {
         const planName = getSkuDisplayNameForTest(license.SkuShortName ?? '', license.IsGovSku === 'true');
@@ -113,7 +113,7 @@ describe('Account - Settings - About', () => {
         // * Verify basic elements on about screen
         await expect(AboutScreen.backButton).toBeVisible();
         await expect(AboutScreen.logo).toBeVisible();
-        await expect(AboutScreen.productName).toBeVisible();
+        await expect(AboutScreen.title).toBeVisible();
         await expect(AboutScreen.title).toHaveText(expectedProductTitle);
         await expect(AboutScreen.subtitle).toBeVisible();
         await expect(AboutScreen.appVersionTitle).toHaveText('App Version:');

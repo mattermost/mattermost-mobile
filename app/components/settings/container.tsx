@@ -30,9 +30,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type SettingContainerProps = {
-   children: React.ReactNode;
-   testID?: string;
-}
+    children: React.ReactNode;
+    testID?: string;
+};
+
 const SettingContainer = ({children, testID}: SettingContainerProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
