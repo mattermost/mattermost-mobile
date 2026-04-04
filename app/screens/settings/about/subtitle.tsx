@@ -15,7 +15,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.72),
             ...typography('Heading', 400, 'Regular'),
             textAlign: 'center',
-            paddingHorizontal: 36,
+            paddingHorizontal: 24,
         },
     };
 });

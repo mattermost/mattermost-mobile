@@ -18,6 +18,7 @@ import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {popTopScreen} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
@@ -35,12 +36,19 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
 
+const TABLET_EXTRA_PADDING = 20;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         logoContainer: {
             alignItems: 'center',
-            paddingHorizontal: 20,
             marginTop: 20,
+        },
+
+        // Extra inset on tablet around all About content (with SettingContainer’s 20 → 40 horizontal total)
+        tabletContentWrapper: {
+            paddingHorizontal: TABLET_EXTRA_PADDING,
+            paddingBottom: TABLET_EXTRA_PADDING,
         },
         lineStyles: {
             width: '100%',
@@ -58,7 +66,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         infoContainer: {
             flexDirection: 'column',
-            paddingHorizontal: 20,
         },
         info: {
             color: theme.centerChannelColor,
@@ -85,7 +92,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         footerText: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 50),
-            marginVertical: 10,
+            marginBottom: 10,
         },
         copyrightText: {
             marginBottom: 0,
@@ -103,10 +110,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             position: 'relative',
         },
         thinLine: {
-            height: 0.2,
+            height: 0.5,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             alignSelf: 'stretch',
-            marginVertical: 20,
+            marginVertical: 32,
         },
     };
 });
@@ -120,6 +127,7 @@ const About = ({componentId, config, license}: AboutProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
     const [loadMetric, setLoadMetric] = useState<number | null>(null);
 
@@ -205,125 +213,126 @@ const About = ({componentId, config, license}: AboutProps) => {
 
     return (
         <SettingContainer testID='about'>
-            <View style={styles.logoContainer}>
-                <CompassIcon
-                    color={theme.centerChannelColor}
-                    name='mattermost'
-                    size={88}
-                    testID='about.logo'
-                />
-                <Title
-                    config={config}
-                    license={license}
-                />
-                <Subtitle config={config}/>
-                <View
-                    style={styles.thinLine}
-                />
-            </View>
+            <View style={isTablet ? styles.tabletContentWrapper : undefined}>
+                <View style={styles.logoContainer}>
+                    <CompassIcon
+                        color={theme.centerChannelColor}
+                        name='mattermost'
+                        size={80}
+                        testID='about.logo'
+                    />
+                    <Title
+                        config={config}
+                        license={license}
+                    />
+                    <Subtitle config={config}/>
+                    <View
+                        style={styles.thinLine}
+                    />
+                </View>
 
-            <View style={styles.infoContainer}>
-                <View style={styles.group}>
-                    <Text
-                        style={styles.leftHeading}
-                        testID='about.app_version.title'
-                    >
-                        {intl.formatMessage({id: 'settings.about.app.version.title', defaultMessage: 'App Version:'})}
-                    </Text>
-                    <Text
-                        style={styles.rightHeading}
-                        testID='about.app_version.value'
-                    >
-                        {intl.formatMessage({id: 'settings.about.app.version.value', defaultMessage: '{version} (Build {number})'},
-                            {version: nativeApplicationVersion, number: nativeBuildVersion})}
-                    </Text>
-                </View>
-                <View style={styles.group}>
-                    <Text
-                        style={styles.leftHeading}
-                        testID='about.server_version.title'
-                    >
-                        {intl.formatMessage({id: 'settings.about.server.version.title', defaultMessage: 'Server Version:'})}
-                    </Text>
-                    <Text
-                        style={styles.rightHeading}
-                        testID='about.server_version.value'
-                    >
-                        {serverVersion}
-                    </Text>
-                </View>
-                {loadMetric !== null && (
+                <View style={styles.infoContainer}>
                     <View style={styles.group}>
                         <Text
                             style={styles.leftHeading}
-                            testID='about.license_load_metric.title'
+                            testID='about.app_version.title'
                         >
-                            {intl.formatMessage({id: 'settings.about.license.load_metric.title', defaultMessage: 'Load Metric:'})}
+                            {intl.formatMessage({id: 'settings.about.app.version.title', defaultMessage: 'App Version:'})}
                         </Text>
                         <Text
                             style={styles.rightHeading}
-                            testID='about.license_load_metric.value'
+                            testID='about.app_version.value'
                         >
-                            {loadMetric}
+                            {intl.formatMessage({id: 'settings.about.app.version.value', defaultMessage: '{version} (Build {number})'},
+                                {version: nativeApplicationVersion, number: nativeBuildVersion})}
                         </Text>
                     </View>
-                )}
-                <View style={styles.group}>
-                    <Text
-                        style={styles.leftHeading}
-                        testID='about.database.title'
-                    >
-                        {intl.formatMessage({id: 'settings.about.database.title', defaultMessage: 'Database:'})}
-                    </Text>
-                    <Text
-                        style={styles.rightHeading}
-                        testID='about.database.value'
-                    >
-                        {config.SQLDriverName}
-                    </Text>
-                </View>
-                <View style={styles.group}>
-                    <Text
-                        style={styles.leftHeading}
-                        testID='about.database_schema_version.title'
-                    >
-                        {intl.formatMessage({id: 'settings.about.database.schema.title', defaultMessage: 'Database Schema Version:'})}
-                    </Text>
-                    <Text
-                        style={styles.rightHeading}
-                        testID='about.database_schema_version.value'
-                    >
-                        {config.SchemaVersion}
-                    </Text>
-                </View>
-                <View style={styles.copyInfoButtonContainer}>
-                    <Button
-                        theme={theme}
-                        onPress={copyToClipboard}
-                        text={intl.formatMessage({id: 'settings.about.button.copyInfo', defaultMessage: 'Copy info'})}
-                        testID={'about.copy_info'}
-                        iconName='content-copy'
-                        emphasis='tertiary'
-                        size='m'
-                    />
-                </View>
-                {license?.IsLicensed === 'true' && (
-                    <View style={styles.licenseContainer}>
-                        <FormattedText
-                            defaultMessage='Licensed to: {company}'
-                            id={'settings.about.licensed'}
-                            style={styles.info}
-                            testID='about.licensee'
-                            values={{company: license.Company}}
+                    <View style={styles.group}>
+                        <Text
+                            style={styles.leftHeading}
+                            testID='about.server_version.title'
+                        >
+                            {intl.formatMessage({id: 'settings.about.server.version.title', defaultMessage: 'Server Version:'})}
+                        </Text>
+                        <Text
+                            style={styles.rightHeading}
+                            testID='about.server_version.value'
+                        >
+                            {serverVersion}
+                        </Text>
+                    </View>
+                    {loadMetric !== null && (
+                        <View style={styles.group}>
+                            <Text
+                                style={styles.leftHeading}
+                                testID='about.license_load_metric.title'
+                            >
+                                {intl.formatMessage({id: 'settings.about.license.load_metric.title', defaultMessage: 'Load Metric:'})}
+                            </Text>
+                            <Text
+                                style={styles.rightHeading}
+                                testID='about.license_load_metric.value'
+                            >
+                                {loadMetric}
+                            </Text>
+                        </View>
+                    )}
+                    <View style={styles.group}>
+                        <Text
+                            style={styles.leftHeading}
+                            testID='about.database.title'
+                        >
+                            {intl.formatMessage({id: 'settings.about.database.title', defaultMessage: 'Database:'})}
+                        </Text>
+                        <Text
+                            style={styles.rightHeading}
+                            testID='about.database.value'
+                        >
+                            {config.SQLDriverName}
+                        </Text>
+                    </View>
+                    <View style={styles.group}>
+                        <Text
+                            style={styles.leftHeading}
+                            testID='about.database_schema_version.title'
+                        >
+                            {intl.formatMessage({id: 'settings.about.database.schema.title', defaultMessage: 'Database Schema Version:'})}
+                        </Text>
+                        <Text
+                            style={styles.rightHeading}
+                            testID='about.database_schema_version.value'
+                        >
+                            {config.SchemaVersion}
+                        </Text>
+                    </View>
+                    <View style={styles.copyInfoButtonContainer}>
+                        <Button
+                            theme={theme}
+                            onPress={copyToClipboard}
+                            text={intl.formatMessage({id: 'settings.about.button.copyInfo', defaultMessage: 'Copy info'})}
+                            testID={'about.copy_info'}
+                            iconName='content-copy'
+                            emphasis='tertiary'
+                            size='m'
                         />
                     </View>
-                )}
-                <LearnMore
-                    config={config}
-                    license={license}
-                    onPress={handleAboutTeam}
-                />
-                {!MATTERMOST_BUNDLE_IDS.includes(applicationId || '') &&
+                    {license?.IsLicensed === 'true' && (
+                        <View style={styles.licenseContainer}>
+                            <FormattedText
+                                defaultMessage='Licensed to: {company}'
+                                id={'settings.about.licensed'}
+                                style={styles.info}
+                                testID='about.licensee'
+                                values={{company: license.Company}}
+                            />
+                        </View>
+                    )}
+                    <LearnMore
+                        config={config}
+                        license={license}
+                        onPress={handleAboutTeam}
+                    />
+                    {!MATTERMOST_BUNDLE_IDS.includes(applicationId || '') &&
                     <FormattedText
                         defaultMessage='{site} is powered by Mattermost'
                         id={'settings.about.powered_by'}
@@ -331,93 +340,94 @@ const About = ({componentId, config, license}: AboutProps) => {
                         testID='about.powered_by'
                         values={{site: config.SiteName}}
                     />
-                }
-                <View
-                    style={styles.thinLine}
-                />
-                <FormattedText
-                    defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
-                    id={'settings.about.copyright'}
-                    style={[styles.footerText, styles.copyrightText]}
-                    testID='about.copyright'
-                    values={{currentYear: new Date().getFullYear()}}
-                />
-                <View style={styles.tosPrivacyContainer}>
-                    <TosPrivacyContainer
-                        config={config}
-                        onPressPrivacyPolicy={handlePrivacyPolicy}
-                        onPressTOS={handleTermsOfService}
+                    }
+                    <View
+                        style={styles.thinLine}
                     />
-                </View>
-                <View style={styles.noticeContainer}>
                     <FormattedText
-                        id={'settings.notice_text'}
-                        defaultMessage='Mattermost is made possible by the open source software used in our {platform} and {mobile}.'
-                        style={styles.footerText}
-                        values={{
-                            platform: (
-                                <FormattedText
-                                    defaultMessage='server'
-                                    id={'settings.notice_platform_link'}
-                                    onPress={handlePlatformNotice}
-                                    style={styles.noticeLink}
-                                />
-                            ),
-                            mobile: (
-                                <FormattedText
-                                    defaultMessage='mobile apps'
-                                    id={'settings.notice_mobile_link'}
-                                    onPress={handleMobileNotice}
-                                    style={[styles.noticeLink, {marginLeft: 5}]}
-                                />
-                            ),
-                        }}
-                        testID='about.notice_text'
+                        defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
+                        id={'settings.about.copyright'}
+                        style={[styles.footerText, styles.copyrightText]}
+                        testID='about.copyright'
+                        values={{currentYear: new Date().getFullYear()}}
                     />
-                </View>
-                <View style={styles.hashContainer}>
-                    <View>
+                    <View style={styles.tosPrivacyContainer}>
+                        <TosPrivacyContainer
+                            config={config}
+                            onPressPrivacyPolicy={handlePrivacyPolicy}
+                            onPressTOS={handleTermsOfService}
+                        />
+                    </View>
+                    <View style={styles.noticeContainer}>
                         <FormattedText
-                            defaultMessage='Build Hash:'
-                            id={'about.hash'}
+                            id={'settings.notice_text'}
+                            defaultMessage='Mattermost is made possible by the open source software used in our {platform} and {mobile}.'
+                            style={styles.footerText}
+                            values={{
+                                platform: (
+                                    <FormattedText
+                                        defaultMessage='server'
+                                        id={'settings.notice_platform_link'}
+                                        onPress={handlePlatformNotice}
+                                        style={styles.noticeLink}
+                                    />
+                                ),
+                                mobile: (
+                                    <FormattedText
+                                        defaultMessage='mobile apps'
+                                        id={'settings.notice_mobile_link'}
+                                        onPress={handleMobileNotice}
+                                        style={[styles.noticeLink, {marginLeft: 5}]}
+                                    />
+                                ),
+                            }}
+                            testID='about.notice_text'
+                        />
+                    </View>
+                    <View style={styles.hashContainer}>
+                        <View>
+                            <FormattedText
+                                defaultMessage='Build Hash:'
+                                id={'about.hash'}
+                                style={styles.footerTitleText}
+                                testID='about.build_hash.title'
+                            />
+                            <Text
+                                style={styles.footerText}
+                                testID='about.build_hash.value'
+                            >
+                                {config.BuildHash}
+                            </Text>
+                        </View>
+                        <View>
+                            <FormattedText
+                                defaultMessage='EE Build Hash:'
+                                id={'about.hashee'}
+                                style={styles.footerTitleText}
+                                testID='about.build_hash_enterprise.title'
+                            />
+                            <Text
+                                style={styles.footerText}
+                                testID='about.build_hash_enterprise.value'
+                            >
+                                {config.BuildHashEnterprise}
+                            </Text>
+                        </View>
+                    </View>
+                    <View style={{marginBottom: 20}}>
+                        <FormattedText
+                            defaultMessage='Build Date:'
+                            id={'about.date'}
                             style={styles.footerTitleText}
-                            testID='about.build_hash.title'
+                            testID='about.build_date.title'
                         />
                         <Text
                             style={styles.footerText}
-                            testID='about.build_hash.value'
+                            testID='about.build_date.value'
                         >
-                            {config.BuildHash}
+                            {config.BuildDate}
                         </Text>
                     </View>
-                    <View>
-                        <FormattedText
-                            defaultMessage='EE Build Hash:'
-                            id={'about.hashee'}
-                            style={styles.footerTitleText}
-                            testID='about.build_hash_enterprise.title'
-                        />
-                        <Text
-                            style={styles.footerText}
-                            testID='about.build_hash_enterprise.value'
-                        >
-                            {config.BuildHashEnterprise}
-                        </Text>
-                    </View>
-                </View>
-                <View style={{marginBottom: 20}}>
-                    <FormattedText
-                        defaultMessage='Build Date:'
-                        id={'about.date'}
-                        style={styles.footerTitleText}
-                        testID='about.build_date.title'
-                    />
-                    <Text
-                        style={styles.footerText}
-                        testID='about.build_date.value'
-                    >
-                        {config.BuildDate}
-                    </Text>
                 </View>
             </View>
         </SettingContainer>

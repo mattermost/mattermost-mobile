@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {defineMessages} from 'react-intl';
-import {Pressable, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import Config from '@assets/config.json';
 import FormattedText from '@components/formatted_text';
@@ -17,7 +17,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         learnContainer: {
             flex: 1,
             flexDirection: 'column',
-            marginVertical: 20,
+            marginTop: 20,
         },
         learn: {
             color: theme.centerChannelColor,
@@ -39,7 +39,7 @@ type LearnMoreProps = {
 const messages = defineMessages({
     teamEditionLearn: {
         id: 'about.teamEditionLearn',
-        defaultMessage: 'Join the Mattermost community at',
+        defaultMessage: 'Join the Mattermost community at ',
     },
     enterpriseEditionLearn: {
         id: 'about.enterpriseEditionLearn',
@@ -59,12 +59,11 @@ const LearnMore = ({config, license, onPress}: LearnMoreProps) => {
     const isEnterpriseReady = config.BuildEnterpriseReady === 'true';
     const isLicensed = license?.IsLicensed === 'true';
 
-    const learnText = (() => {
+    const learnIntro = (() => {
         if (!isEnterpriseReady) {
             return (
                 <FormattedText
                     {...messages.teamEditionLearn}
-                    style={style.learn}
                     testID='about.learn_more.text'
                 />
             );
@@ -77,7 +76,6 @@ const LearnMore = ({config, license, onPress}: LearnMoreProps) => {
             return (
                 <FormattedText
                     {...messages.planNameLearn}
-                    style={style.learn}
                     testID='about.learn_more.text'
                     values={{planName}}
                 />
@@ -86,7 +84,6 @@ const LearnMore = ({config, license, onPress}: LearnMoreProps) => {
         return (
             <FormattedText
                 {...messages.enterpriseEditionLearn}
-                style={style.learn}
                 testID='about.learn_more.text'
             />
         );
@@ -94,18 +91,17 @@ const LearnMore = ({config, license, onPress}: LearnMoreProps) => {
 
     return (
         <View style={style.learnContainer}>
-            {learnText}
-            <Pressable
-                onPress={onPress}
-                style={({pressed}) => [pressed && {opacity: 0.72}]}
-            >
+            <Text style={style.learn}>
+                {learnIntro}
                 <Text
+                    accessibilityRole='link'
                     style={style.learnLink}
+                    onPress={onPress}
                     testID='about.learn_more.url'
                 >
                     {url}
                 </Text>
-            </Pressable>
+            </Text>
         </View>
     );
 };

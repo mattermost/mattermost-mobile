@@ -52,6 +52,16 @@ const getSkuDisplayNameForTest = (skuShortName: string, isGovSku: boolean): stri
     return skuName;
 };
 
+const getExpectedProductTitle = (license: Record<string, string | undefined>, buildEnterpriseReady: string | undefined): string => {
+    if (buildEnterpriseReady !== 'true') {
+        return 'Mattermost Team Edition';
+    }
+    if (license?.IsLicensed === 'true') {
+        return `Mattermost ${getSkuDisplayNameForTest(license.SkuShortName ?? '', license.IsGovSku === 'true')}`;
+    }
+    return 'Mattermost Enterprise Edition';
+};
+
 const getExpectedLearnMorePrefix = (license: Record<string, string | undefined>, buildEnterpriseReady: string | undefined): string => {
     if (buildEnterpriseReady !== 'true') {
         return 'Join the Mattermost community at';
@@ -67,6 +77,7 @@ describe('Account - Settings - About', () => {
     const serverOneDisplayName = 'Server 1';
     let isLicensed: boolean;
     let expectedLearnMorePrefix: string;
+    let expectedProductTitle: string;
     let testUser: any;
 
     beforeAll(async () => {
@@ -74,6 +85,7 @@ describe('Account - Settings - About', () => {
         const {config} = await System.apiGetClientConfigOld(siteOneUrl);
         isLicensed = license.IsLicensed === 'true';
         expectedLearnMorePrefix = getExpectedLearnMorePrefix(license, config?.BuildEnterpriseReady);
+        expectedProductTitle = getExpectedProductTitle(license, config?.BuildEnterpriseReady);
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
@@ -102,8 +114,7 @@ describe('Account - Settings - About', () => {
         await expect(AboutScreen.backButton).toBeVisible();
         await expect(AboutScreen.logo).toBeVisible();
         await expect(AboutScreen.productName).toBeVisible();
-        await expect(AboutScreen.productName).toHaveText('Mattermost');
-        await expect(AboutScreen.title).toBeVisible();
+        await expect(AboutScreen.title).toHaveText(expectedProductTitle);
         await expect(AboutScreen.subtitle).toBeVisible();
         await expect(AboutScreen.appVersionTitle).toHaveText('App Version:');
         await expect(AboutScreen.appVersionValue).toBeVisible();

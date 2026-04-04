@@ -11,7 +11,7 @@ class AboutScreen {
         backButton: 'screen.back.button',
         scrollView: 'about.scroll_view',
         logo: 'about.logo',
-        productName: 'about.product_name',
+        productName: 'about.title',
         title: 'about.title',
         subtitle: 'about.subtitle',
         appVersionTitle: 'about.app_version.title',
