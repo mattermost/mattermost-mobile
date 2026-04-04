@@ -19,6 +19,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
         },
+
         // Padding on scroll content, not the ScrollView frame, so the scroll indicator stays at the safe-area edge.
         contentContainerStyle: {
             marginTop: 8,
