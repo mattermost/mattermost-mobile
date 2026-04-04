@@ -743,7 +743,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
 
             await SecurityManager.onComplianceFailed(event);
 
-            expect(Emm.applyBlurEffect).toHaveBeenCalledWith(0.5);
+            expect(Emm.applyBlurEffect).toHaveBeenCalledWith(20);
             expect(onWipeSpy).toHaveBeenCalledWith({oid: 'object-id', serverUrls: [serverUrl]});
             expect(complianceAlertSpy).toHaveBeenCalledWith(
                 'App Protection Required',
