@@ -15,6 +15,11 @@ describe('isMSALUserCancellation', () => {
         expect(isMSALUserCancellation(error)).toBe(true);
     });
 
+    it('should return true when code is the string "-50005"', () => {
+        const error = {domain: 'MSALErrorDomain', code: '-50005'};
+        expect(isMSALUserCancellation(error)).toBe(true);
+    });
+
     it('should return true when numeric code is encoded in the message string', () => {
         // RN bridge serializes NSError.code as a string reject-code; numeric code is in message
         const error = {domain: 'MSALErrorDomain', code: 'intune_login_failed', message: 'Error in MSALErrorDomain (code: -50005)'};
@@ -76,6 +81,11 @@ describe('getIntuneErrorMessage', () => {
                 userInfo: {errorMessage: 'Device is not compliant per Intune policy.', reason: 'not_compliant'},
             };
             expect(getIntuneErrorMessage(error, intl)).toBe('Device is not compliant per Intune policy.');
+        });
+
+        it('should return the compliance message when code is the string "1004"', () => {
+            const error = {domain: 'Intune', code: '1004', userInfo: {reason: 'network_failure'}};
+            expect(getIntuneErrorMessage(error, intl)).toBe('Could not reach the Intune service. Check your network and try again.');
         });
 
         it('should return not_compliant i18n message when reason is not_compliant and no SDK message', () => {
