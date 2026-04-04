@@ -61,6 +61,11 @@ function extractNativeCode(error: NSError): number | null {
     if (typeof error.code === 'number') {
         return error.code;
     }
+
+    if (/^-?\d+$/.test(error.code)) {
+        return parseInt(error.code, 10);
+    }
+
     const match = error.message?.match(/\(code: (-?\d+)\)/);
     return match ? parseInt(match[1], 10) : null;
 }

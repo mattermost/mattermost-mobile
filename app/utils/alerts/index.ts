@@ -515,8 +515,12 @@ export const showMAMComplianceFailedAlert = (
             case 'service_failure':
                 message = translations[messages.compliance_service_failure.id];
                 break;
-            default:
+            case 'user_cancelled':
                 message = translations[messages.compliance_user_cancelled.id];
+                break;
+            default:
+                message = translations[messages.compliance_service_failure.id];
+                break;
         }
     }
 

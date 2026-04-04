@@ -441,12 +441,14 @@ class SecurityManagerSingleton {
 
         logDebug('SecurityManager: Compliance failed', {reason, serverCount: serverUrls.length});
 
-        Emm.applyBlurEffect(0.5);
+        Emm.enableBlurScreen(true);
+        Emm.applyBlurEffect(20);
         this.onWipeRequested({oid, serverUrls});
 
         const locale = serverUrls.length > 0 ? await getCurrentUserLocale(serverUrls[0]) : undefined;
         showMAMComplianceFailedAlert(errorTitle, errorMessage, reason, locale, () => {
             Emm.removeBlurEffect();
+            Emm.enableBlurScreen(false);
         });
     };
 

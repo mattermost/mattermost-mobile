@@ -61,7 +61,7 @@ describe('getIntuneErrorMessage', () => {
             expect(getIntuneErrorMessage(error, intl)).toBe('Login was canceled. Please try again');
         });
 
-        it('should return login canceled message when -50005 appears in plain message string', () => {
+        it('should return authFailed when -50005 appears in a plain message string', () => {
             // Plain Error (no domain) with MSAL cancellation encoded in message
             const error = {message: 'Error in MSALErrorDomain (code: -50005)'};
             expect(getIntuneErrorMessage(error, intl)).toBe('Authentication failed. Please try again');
@@ -93,7 +93,7 @@ describe('getIntuneErrorMessage', () => {
             expect(getIntuneErrorMessage(error, intl)).toBe('Intune service error. Please try again later.');
         });
 
-        it('should return user_cancelled i18n message for unknown reason', () => {
+        it('should return user_cancelled i18n message when reason is user_cancelled', () => {
             const error = {domain: 'Intune', code: 1004, userInfo: {reason: 'user_cancelled'}};
             expect(getIntuneErrorMessage(error, intl)).toBe('Login was canceled. Please try again.');
         });
