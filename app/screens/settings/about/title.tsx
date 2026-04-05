@@ -13,7 +13,7 @@ import {typography} from '@utils/typography';
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         title: {
-            ...typography('Heading', 600, 'SemiBold'),
+            ...typography('Heading', 700, 'SemiBold'),
             color: theme.centerChannelColor,
             textAlign: 'center',
             marginTop: 8,
