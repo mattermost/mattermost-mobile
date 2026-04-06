@@ -56,7 +56,7 @@ const getStyleSheet = (bannerTextColor: string) => ({
 
 type Props = {
     bannerInfo?: ChannelBannerInfo;
-    isTopItem?: Boolean;
+    isTopItem?: boolean;
     skipHeaderOffset?: boolean;
 }
 
