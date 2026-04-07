@@ -19,7 +19,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const preference: PreferenceType = JSON.parse(msg.data.preference);
-        logDebug('[WS] PREFERENCE_CHANGED', preference.category, preference.name, preference.value);
+        logDebug('[WS] PREFERENCE_CHANGED', preference.category, preference.name);
         handleSavePostAdded(serverUrl, [preference]);
 
         const hasDiffNameFormatPref = await differsFromLocalNameFormat(database, [preference]);
@@ -50,7 +50,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const preferences: PreferenceType[] = JSON.parse(msg.data.preferences);
-        logDebug('[WS] PREFERENCES_CHANGED', preferences.map((p) => `${p.category}/${p.name}=${p.value}`).join(', '));
+        logDebug('[WS] PREFERENCES_CHANGED', preferences.map((p) => `${p.category}/${p.name}`).join(', '));
         handleSavePostAdded(serverUrl, preferences);
 
         const hasDiffNameFormatPref = await differsFromLocalNameFormat(database, preferences);

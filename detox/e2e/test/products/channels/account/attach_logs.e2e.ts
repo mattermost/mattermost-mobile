@@ -73,7 +73,7 @@ describe('Account - Attach App Logs', () => {
         await expect(ReportProblemScreen.enableLogAttachmentsToggleOff).toExist();
 
         // # Close Report a Problem and Settings screens
-        await ReportProblemScreen.close();
+        await ReportProblemScreen.back();
         await SettingsScreen.close();
     });
 
@@ -85,7 +85,7 @@ describe('Account - Attach App Logs', () => {
         await ReportProblemScreen.enableAttachLogs();
 
         // # Close Report a Problem and Settings screens
-        await ReportProblemScreen.close();
+        await ReportProblemScreen.back();
         await SettingsScreen.close();
 
         // # Open a channel
@@ -117,7 +117,7 @@ describe('Account - Attach App Logs', () => {
         await ReportProblemScreen.disableAttachLogs();
 
         // # Close Report a Problem and Settings screens
-        await ReportProblemScreen.close();
+        await ReportProblemScreen.back();
         await SettingsScreen.close();
 
         // # Open the channel
@@ -163,7 +163,7 @@ describe('Account - Attach App Logs', () => {
         await expect(ReportProblemScreen.enableLogAttachmentsToggleOn).not.toExist();
 
         // # Close Report a Problem and Settings screens
-        await ReportProblemScreen.close();
+        await ReportProblemScreen.back();
         await SettingsScreen.close();
 
         // # Re-enable AllowDownloadLogs for other tests

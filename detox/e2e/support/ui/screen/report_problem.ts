@@ -6,16 +6,16 @@ import {timeouts} from '@support/utils';
 
 class ReportProblemScreen {
     testID = {
-        reportProblemScreen: 'ReportProblem',
+        reportProblemScreen: 'report_problem.screen',
+        backButton: 'screen.back.button',
         enableLogAttachmentsToggleOff: 'report_problem.enable_log_attachments.toggled.false.button',
         enableLogAttachmentsToggleOn: 'report_problem.enable_log_attachments.toggled.true.button',
-        closeButton: 'close-report-problem',
     };
 
     reportProblemScreen = element(by.id(this.testID.reportProblemScreen));
+    backButton = element(by.id(this.testID.backButton));
     enableLogAttachmentsToggleOff = element(by.id(this.testID.enableLogAttachmentsToggleOff));
     enableLogAttachmentsToggleOn = element(by.id(this.testID.enableLogAttachmentsToggleOn));
-    closeButton = element(by.id(this.testID.closeButton));
 
     toBeVisible = async () => {
         await waitFor(this.reportProblemScreen).toExist().withTimeout(timeouts.TEN_SEC);
@@ -29,8 +29,8 @@ class ReportProblemScreen {
         return this.toBeVisible();
     };
 
-    close = async () => {
-        await this.closeButton.tap();
+    back = async () => {
+        await this.backButton.tap();
         await waitFor(this.reportProblemScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
