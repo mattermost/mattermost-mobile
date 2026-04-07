@@ -23,7 +23,7 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToCreateQuickChecklist, goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
-import ChannelBanner from '@screens/channel/header/channel_banner';
+import ChannelBanner from '@components/channel_banner';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTypeDMorGM} from '@utils/channel';

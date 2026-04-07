@@ -9,7 +9,7 @@ import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_d
 import PostDraft from '@components/post_draft';
 import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {Screens} from '@constants';
-import ChannelBanner from '@screens/channel/header/channel_banner';
+import ChannelBanner from '@components/channel_banner';
 
 import ThreadPostList from './thread_post_list';
 
