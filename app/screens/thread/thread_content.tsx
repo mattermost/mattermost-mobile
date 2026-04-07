@@ -5,11 +5,11 @@ import {PortalProvider} from '@gorhom/portal';
 import React from 'react';
 import {StyleSheet} from 'react-native';
 
+import ChannelBanner from '@components/channel_banner';
 import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_draft_container';
 import PostDraft from '@components/post_draft';
 import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {Screens} from '@constants';
-import ChannelBanner from '@components/channel_banner';
 
 import ThreadPostList from './thread_post_list';
 
