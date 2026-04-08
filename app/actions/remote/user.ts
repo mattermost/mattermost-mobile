@@ -363,7 +363,9 @@ export async function fetchStatusByIds(serverUrl: string, userIds: string[], fet
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const statuses = await client.getStatusesByIds(userIds);
+        const chunks = chunk(userIds, General.MAX_IDS_PER_STATUS_REQUEST);
+        const responses = await Promise.all(chunks.map((ids) => client.getStatusesByIds(ids)));
+        const statuses = responses.flat();
 
         if (!fetchOnly) {
             const users = await queryUsersById(database, userIds).fetch();
@@ -653,7 +655,9 @@ export async function updateAllUsersSince(serverUrl: string, since: number, fetc
 
         const currentUserId = await getCurrentUserId(database);
         const userIds = (await queryAllUsers(database).fetchIds()).filter((id) => id !== currentUserId);
-        userUpdates = await client.getProfilesByIds(userIds, {since}, groupLabel);
+        const chunks = chunk(userIds, General.MAX_IDS_PER_PROFILES_REQUEST);
+        const responses = await Promise.all(chunks.map((ids) => client.getProfilesByIds(ids, {since}, groupLabel)));
+        userUpdates = responses.flat();
         if (userUpdates.length && !fetchOnly) {
             const modelsToBatch: Model[] = [];
             const userModels = await operator.handleUsers({users: userUpdates, prepareRecordsOnly: true});
