@@ -364,8 +364,8 @@ export async function fetchStatusByIds(serverUrl: string, userIds: string[], fet
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const chunks = chunk(userIds, General.MAX_IDS_PER_STATUS_REQUEST);
-        const responses = await Promise.all(chunks.map((batchIds) => client.getStatusesByIds(batchIds)));
-        const statuses = responses.flat();
+        const results = await Promise.allSettled(chunks.map((batchIds) => client.getStatusesByIds(batchIds)));
+        const statuses = results.flatMap((r) => (r.status === 'fulfilled' ? r.value : []));
 
         if (!fetchOnly) {
             const users = await queryUsersById(database, userIds).fetch();
@@ -656,8 +656,8 @@ export async function updateAllUsersSince(serverUrl: string, since: number, fetc
         const currentUserId = await getCurrentUserId(database);
         const userIds = (await queryAllUsers(database).fetchIds()).filter((id) => id !== currentUserId);
         const chunks = chunk(userIds, General.MAX_IDS_PER_PROFILES_REQUEST);
-        const responses = await Promise.all(chunks.map((batchIds) => client.getProfilesByIds(batchIds, {since}, groupLabel)));
-        userUpdates = responses.flat();
+        const results = await Promise.allSettled(chunks.map((batchIds) => client.getProfilesByIds(batchIds, {since}, groupLabel)));
+        userUpdates = results.flatMap((r) => (r.status === 'fulfilled' ? r.value : []));
         if (userUpdates.length && !fetchOnly) {
             const modelsToBatch: Model[] = [];
             const userModels = await operator.handleUsers({users: userUpdates, prepareRecordsOnly: true});
