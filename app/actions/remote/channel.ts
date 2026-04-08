@@ -852,24 +852,6 @@ export async function joinIfNeededAndSwitchToChannel(
     }
 }
 
-export async function goToNPSChannel(serverUrl: string) {
-    try {
-        const client = NetworkManager.getClient(serverUrl);
-        const user = await client.getUserByUsername(General.NPS_PLUGIN_BOT_USERNAME);
-        const {data, error} = await createDirectChannel(serverUrl, user.id);
-        if (error || !data) {
-            throw error || new Error('channel not found');
-        }
-        await switchToChannelById(serverUrl, data.id, data.team_id);
-    } catch (error) {
-        logDebug('error on goToNPSChannel', getFullErrorMessage(error));
-        forceLogoutIfNecessary(serverUrl, error);
-        return {error};
-    }
-
-    return {};
-}
-
 export async function createDirectChannel(serverUrl: string, userId: string, displayName = '') {
     try {
         EphemeralStore.creatingDMorGMTeammates = [userId];
