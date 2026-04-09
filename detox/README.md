@@ -15,7 +15,7 @@ navigate to the `detox` folder and run `npm install`
 ## Configure your server details
 in `detox/e2e/support/test_config.ts` will provide some default values for your server, if they differ you can:
 - use environment variables
-```
+```sh
   export SITE_1_URL="http://your-server:8065"
   export ADMIN_USERNAME="your-username"
   export ADMIN_PASSWORD="your-password"
@@ -23,7 +23,7 @@ in `detox/e2e/support/test_config.ts` will provide some default values for your 
 ```
 
 - create a .env file in the `detox` folder providing the values:
-```
+```sh
   # detox/.env
   SITE_1_URL=http://localhost:8065
   ADMIN_USERNAME=your-username
@@ -81,7 +81,7 @@ npm run e2e:ios-build
 
 This will build the Simulator .zip file at the root folder.
 
-Create a folder named `mobile-artifacts` at the project root. Move the zip file under `mobile-artifacts.` and unzip it there.
+Create a folder named `mobile-artifacts` at the project root. Move the zip file under `mobile-artifacts` and unzip it there.
 
 ```sh
 # From project root
@@ -90,14 +90,14 @@ mkdir mobile-artifacts
 
 ### Configure your local
 Update `detox/.detoxrc.json` to specify which device you want to run it. Change:
-```
+```json
  "device": {
      "type": "__DEVICE_NAME__",
      "os": "__DEVICE_OS_VERSION__"
  },
 ```
 to something like:
-```
+```json
  "device": {
      "type": "iPhone 17 Pro",
      "os": "iOS 26.4"
