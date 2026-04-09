@@ -62,11 +62,11 @@ export default function TeamSidebar({iconPad, canJoinOtherTeams, hasMoreThanOneT
     }, [iconPad]);
 
     useEffect(() => {
-        width.value = (hasMoreThanOneTeam || canJoinOtherTeams) ? TEAM_SIDEBAR_WIDTH : 0;
+        width.value = shouldShowSidebar ? TEAM_SIDEBAR_WIDTH : 0;
 
     // width is a stable reanimated shared value ref
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [hasMoreThanOneTeam, canJoinOtherTeams]);
+    }, [shouldShowSidebar]);
 
     return (
         <Animated.View style={[styles.container, transform]}>

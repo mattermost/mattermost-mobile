@@ -26,6 +26,7 @@ jest.mock('@react-native-camera-roll/camera-roll', () => ({
 
 function getBaseProps(): ComponentProps<typeof ChannelListScreen> {
     return {
+        canJoinOtherTeams: false,
         hasChannels: true,
         hasCurrentUser: true,
         hasMoreThanOneTeam: true,
