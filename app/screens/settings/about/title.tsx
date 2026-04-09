@@ -49,7 +49,7 @@ const Title = ({config, license}: TitleProps) => {
     const isEnterpriseReady = config.BuildEnterpriseReady === 'true';
     const isLicensed = license?.IsLicensed === 'true';
 
-    let edition: string;
+    let edition = intl.formatMessage(messages.teamEditiont0);
     if (isEnterpriseReady) {
         if (isLicensed) {
             edition = getSkuDisplayName(
@@ -59,9 +59,7 @@ const Title = ({config, license}: TitleProps) => {
         } else {
             edition = intl.formatMessage(messages.teamEditiont1);
         }
-    } else {
-        edition = intl.formatMessage(messages.teamEditiont0);
-    }
+    } 
 
     const product = intl.formatMessage(messages.mattermost);
 
