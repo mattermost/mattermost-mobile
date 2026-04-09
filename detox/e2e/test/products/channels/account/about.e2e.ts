@@ -82,10 +82,14 @@ describe('Account - Settings - About', () => {
 
     beforeAll(async () => {
         const {license} = await System.apiGetClientLicense(siteOneUrl);
-        const {config} = await System.apiGetClientConfigOld(siteOneUrl);
+        const configResponse = await System.apiGetClientConfigOld(siteOneUrl);
+        if (!configResponse.config || 'error' in configResponse) {
+            throw new Error('Failed to fetch client config: test cannot proceed without valid config');
+        }
+        const {config} = configResponse;
         isLicensed = license.IsLicensed === 'true';
-        expectedLearnMorePrefix = getExpectedLearnMorePrefix(license, config?.BuildEnterpriseReady);
-        expectedProductTitle = getExpectedProductTitle(license, config?.BuildEnterpriseReady);
+        expectedLearnMorePrefix = getExpectedLearnMorePrefix(license, config.BuildEnterpriseReady);
+        expectedProductTitle = getExpectedProductTitle(license, config.BuildEnterpriseReady);
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 

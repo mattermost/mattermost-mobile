@@ -2,9 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {
-    Command,
     Setup,
-    Webhook,
 } from '@support/server_api';
 import {
     serverOneUrl,
