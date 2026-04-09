@@ -12,7 +12,7 @@ import {logout} from '@actions/remote/session';
 import {Sso} from '@constants';
 import DatabaseManager from '@database/manager';
 import IntuneManager from '@managers/intune_manager';
-import {type IntunePolicy} from '@managers/intune_manager/types';
+import {type IntuneComplianceFailedEvent, type IntunePolicy} from '@managers/intune_manager/types';
 import {getConfig, getConfigValue} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import TestHelper from '@test/test_helper';
@@ -291,10 +291,11 @@ describe('SecurityManager - Intune MAM Integration', () => {
             SecurityManager.intuneAuthSubscription = mockSubscription;
             SecurityManager.intuneBlockedSubscription = mockSubscription;
             SecurityManager.intuneIdentitySwitchSubscription = mockSubscription;
+            SecurityManager.intuneComplianceFailedSubscription = mockSubscription;
 
             SecurityManager.cleanup();
 
-            expect(mockSubscription.remove).toHaveBeenCalledTimes(6);
+            expect(mockSubscription.remove).toHaveBeenCalledTimes(7);
         });
 
         test('should handle missing subscriptions gracefully', () => {
@@ -712,6 +713,99 @@ describe('SecurityManager - Intune MAM Integration', () => {
 
             expect(SecurityManager.canSaveToLocation(serverUrl1, 'OneDriveForBusiness')).toBe(true);
             expect(SecurityManager.canSaveToLocation(serverUrl1, 'SharePoint')).toBe(true);
+        });
+    });
+
+    describe('onComplianceFailed', () => {
+        const serverUrl = 'https://test.server.com';
+
+        beforeEach(async () => {
+            await SecurityManager.init();
+            await SecurityManager.addServer(serverUrl, {SiteName: 'Test Server'} as SecurityClientConfig);
+            jest.mocked(getCurrentUserLocale).mockResolvedValue('en');
+        });
+
+        afterEach(() => {
+            SecurityManager.cleanup();
+        });
+
+        test('should apply blur, trigger wipe, and show compliance alert with SDK-provided strings', async () => {
+            const complianceAlertSpy = jest.spyOn(alerts, 'showMAMComplianceFailedAlert').mockImplementation(jest.fn());
+            const onWipeSpy = jest.spyOn(SecurityManager, 'onWipeRequested').mockResolvedValue(undefined);
+
+            const event: IntuneComplianceFailedEvent = {
+                oid: 'object-id',
+                serverUrls: [serverUrl],
+                reason: 'not_compliant',
+                errorTitle: 'App Protection Required',
+                errorMessage: 'Your device is not compliant.',
+            };
+
+            await SecurityManager.onComplianceFailed(event);
+
+            expect(Emm.applyBlurEffect).toHaveBeenCalledWith(20);
+            expect(onWipeSpy).toHaveBeenCalledWith({oid: 'object-id', serverUrls: [serverUrl]});
+            expect(complianceAlertSpy).toHaveBeenCalledWith(
+                'App Protection Required',
+                'Your device is not compliant.',
+                'not_compliant',
+                'en',
+                expect.any(Function),
+            );
+
+            complianceAlertSpy.mockRestore();
+            onWipeSpy.mockRestore();
+        });
+
+        test('should remove blur effect when alert callback is invoked', async () => {
+            let alertCallback: (() => void) | undefined;
+            const complianceAlertSpy = jest.spyOn(alerts, 'showMAMComplianceFailedAlert').mockImplementation(
+                (_title, _msg, _reason, _locale, callback) => {
+                    alertCallback = callback;
+                },
+            );
+            jest.spyOn(SecurityManager, 'onWipeRequested').mockResolvedValue(undefined);
+
+            const event: IntuneComplianceFailedEvent = {
+                oid: 'object-id',
+                serverUrls: [serverUrl],
+                reason: 'network_failure',
+                errorTitle: '',
+                errorMessage: '',
+            };
+
+            await SecurityManager.onComplianceFailed(event);
+            alertCallback?.();
+
+            expect(Emm.removeBlurEffect).toHaveBeenCalled();
+
+            complianceAlertSpy.mockRestore();
+        });
+
+        test('should pass empty locale when serverUrls is empty', async () => {
+            const complianceAlertSpy = jest.spyOn(alerts, 'showMAMComplianceFailedAlert').mockImplementation(jest.fn());
+            jest.spyOn(SecurityManager, 'onWipeRequested').mockResolvedValue(undefined);
+
+            const event: IntuneComplianceFailedEvent = {
+                oid: 'object-id',
+                serverUrls: [],
+                reason: 'service_failure',
+                errorTitle: '',
+                errorMessage: '',
+            };
+
+            await SecurityManager.onComplianceFailed(event);
+
+            expect(getCurrentUserLocale).not.toHaveBeenCalled();
+            expect(complianceAlertSpy).toHaveBeenCalledWith(
+                '',
+                '',
+                'service_failure',
+                undefined,
+                expect.any(Function),
+            );
+
+            complianceAlertSpy.mockRestore();
         });
     });
 });

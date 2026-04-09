@@ -15,6 +15,8 @@ import {logDebug, logError, logWarning} from '@utils/log';
 import type {
     IntuneAuthRequiredEvent,
     IntuneConditionalLaunchBlockedEvent,
+    IntuneComplianceCompletedEvent,
+    IntuneComplianceFailedEvent,
     IntuneEnrollmentChangedEvent,
     IntuneIdentitySwitchRequiredEvent,
     IntunePolicyChangedEvent,
@@ -309,6 +311,22 @@ export class IntuneManagerSingleton {
         }
 
         return Intune.onIntuneIdentitySwitchRequired(handler);
+    }
+
+    subscribeToComplianceCompleted(handler: (event: IntuneComplianceCompletedEvent) => void): EventSubscription | undefined {
+        if (!Intune) {
+            return undefined;
+        }
+
+        return Intune.onIntuneComplianceCompleted(handler);
+    }
+
+    subscribeToComplianceFailed(handler: (event: IntuneComplianceFailedEvent) => void): EventSubscription | undefined {
+        if (!Intune) {
+            return undefined;
+        }
+
+        return Intune.onIntuneComplianceFailed(handler);
     }
 
     /**

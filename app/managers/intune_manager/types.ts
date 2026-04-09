@@ -120,6 +120,18 @@ export type IntuneWipeRequestedEvent = Readonly<{
     serverUrls: string[];
 }>;
 
+export type IntuneComplianceCompletedEvent = Readonly<{
+    oid: string;
+}>;
+
+export type IntuneComplianceFailedEvent = Readonly<{
+    oid: string;
+    serverUrls: string[];
+    reason: string;
+    errorTitle: string;
+    errorMessage: string;
+}>;
+
 export type PendingWipe = Readonly<{
     oid: string;
     serverUrls: string[];
@@ -145,4 +157,6 @@ export type IntuneSpec = {
     onIntuneAuthRequired: (listener: (event: IntuneAuthRequiredEvent) => void) => EventSubscription;
     onIntuneConditionalLaunchBlocked: (listener: (event: IntuneConditionalLaunchBlockedEvent) => void) => EventSubscription;
     onIntuneIdentitySwitchRequired: (listener: (event: IntuneIdentitySwitchRequiredEvent) => void) => EventSubscription;
+    onIntuneComplianceCompleted: (listener: (event: IntuneComplianceCompletedEvent) => void) => EventSubscription;
+    onIntuneComplianceFailed: (listener: (event: IntuneComplianceFailedEvent) => void) => EventSubscription;
 }
