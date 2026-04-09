@@ -59,7 +59,7 @@ const Title = ({config, license}: TitleProps) => {
         } else {
             edition = intl.formatMessage(messages.teamEditiont1);
         }
-    } 
+    }
 
     const product = intl.formatMessage(messages.mattermost);
 
