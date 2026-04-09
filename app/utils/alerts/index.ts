@@ -149,6 +149,26 @@ export const messages = defineMessages({
         id: 'security_manager.cancel',
         defaultMessage: 'Cancel',
     },
+    compliance_not_compliant: {
+        id: 'mobile.intune.compliance.not_compliant',
+        defaultMessage: "Your device doesn't meet the required app protection policy.",
+    },
+    compliance_network_failure: {
+        id: 'mobile.intune.compliance.network_failure',
+        defaultMessage: 'Could not reach the Intune service. Check your network and try again.',
+    },
+    compliance_service_failure: {
+        id: 'mobile.intune.compliance.service_failure',
+        defaultMessage: 'Intune service error. Please try again later.',
+    },
+    compliance_user_cancelled: {
+        id: 'mobile.intune.compliance.user_cancelled',
+        defaultMessage: 'Login was canceled. Please try again.',
+    },
+    compliance_alert_title: {
+        id: 'mobile.intune.compliance.alert_title',
+        defaultMessage: 'App Protection Required',
+    },
 });
 
 /**
@@ -464,6 +484,50 @@ export const showMAMDeclinedAlert = async (
         translations[messages.mam_declined_title.id],
         message,
         buttons,
+        {cancelable: false},
+    );
+};
+
+/**
+ * Shows an alert when MAM compliance remediation fails (post-enrollment SDK-triggered check).
+ * Uses SDK-provided localized title/message when available, falls back to our own strings.
+ */
+export const showMAMComplianceFailedAlert = (
+    sdkTitle: string,
+    sdkMessage: string,
+    reason: string,
+    locale?: string,
+    callback?: () => void,
+) => {
+    const translations = getTranslations(locale || DEFAULT_LOCALE);
+
+    const title = sdkTitle || translations[messages.compliance_alert_title.id];
+
+    let message = sdkMessage;
+    if (!message) {
+        switch (reason) {
+            case 'not_compliant':
+                message = translations[messages.compliance_not_compliant.id];
+                break;
+            case 'network_failure':
+                message = translations[messages.compliance_network_failure.id];
+                break;
+            case 'service_failure':
+                message = translations[messages.compliance_service_failure.id];
+                break;
+            case 'user_cancelled':
+                message = translations[messages.compliance_user_cancelled.id];
+                break;
+            default:
+                message = translations[messages.compliance_service_failure.id];
+                break;
+        }
+    }
+
+    Alert.alert(
+        title,
+        message,
+        [{text: translations[messages.okay.id], onPress: callback}],
         {cancelable: false},
     );
 };
