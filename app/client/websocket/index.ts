@@ -17,6 +17,7 @@ const WEBSOCKET_TIMEOUT = toMilliseconds({seconds: 30});
 const MIN_WEBSOCKET_RETRY_TIME = toMilliseconds({seconds: 3});
 const MAX_WEBSOCKET_RETRY_TIME = toMilliseconds({minutes: 5});
 const PING_INTERVAL = toMilliseconds({seconds: 30});
+const WAIT_FOR_CLOSE_TIMEOUT = 500;
 const DEFAULT_OPTIONS = {
     forceConnection: true,
 };
@@ -35,6 +36,7 @@ export default class WebSocketClient {
 
     private pingInterval: NodeJS.Timeout | undefined;
     private waitingForPong: boolean = false;
+    private pendingCloseResolver?: () => void;
 
     // The first time we connect to a server (on init or login)
     // we do the sync out of the websocket lifecycle.
@@ -87,6 +89,12 @@ export default class WebSocketClient {
             getConfigValue(database, 'Version'),
             getConfigValue(database, 'EnableReliableWebSockets'),
         ]);
+
+        // Bail if teardown started while we were awaiting config values
+        if (this.stop) {
+            return;
+        }
+
         const connectionUrl = (websocketUrl || this.serverUrl) + '/api/v4/websocket';
 
         if (this.connectingCallback) {
@@ -145,6 +153,12 @@ export default class WebSocketClient {
             }
 
             const {client} = await getOrCreateWebSocketClient(this.url, {headers, timeoutInterval: WEBSOCKET_TIMEOUT});
+
+            // Bail if teardown started while we were awaiting the native client
+            if (this.stop) {
+                client.invalidate();
+                return;
+            }
 
             // Check again if the client is the same, to avoid race conditions
             if (this.conn === client) {
@@ -224,6 +238,11 @@ export default class WebSocketClient {
 
             this.conn = undefined;
             this.responseSequence = 1;
+
+            if (this.pendingCloseResolver) {
+                this.pendingCloseResolver();
+                this.pendingCloseResolver = undefined;
+            }
 
             // We skip the sync on first connect, since we are syncing along
             // the init logic. If the connection closes at any point after that,
@@ -384,6 +403,24 @@ export default class WebSocketClient {
         clearTimeout(this.connectionTimeout);
         clearInterval(this.pingInterval);
         this.conn?.close();
+    }
+
+    public waitForClose(): Promise<void> {
+        if (!this.conn) {
+            return Promise.resolve();
+        }
+
+        return new Promise<void>((resolve) => {
+            const timer = setTimeout(() => {
+                this.pendingCloseResolver = undefined;
+                resolve();
+            }, WAIT_FOR_CLOSE_TIMEOUT);
+
+            this.pendingCloseResolver = () => {
+                clearTimeout(timer);
+                resolve();
+            };
+        });
     }
 
     public invalidate() {

@@ -5,6 +5,7 @@ type PermalinkErrorType = {
     unreachable?: boolean;
     notExist?: boolean;
     joinedTeam?: boolean;
+    needsTeamJoin?: boolean;
     privateChannel?: boolean;
     privateTeam?: boolean;
     teamName?: string;

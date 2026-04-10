@@ -47,16 +47,16 @@ class WebsocketManagerSingleton {
         const netInfo = await NetInfo.fetch();
         this.netConnected = Boolean(netInfo.isConnected);
         this.netType = netInfo.type;
-        serverCredentials.forEach(
-            ({serverUrl, token, preauthSecret}) => {
+        await Promise.all(serverCredentials.map(
+            async ({serverUrl, token, preauthSecret}) => {
                 try {
                     DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-                    this.createClient(serverUrl, token, preauthSecret);
+                    await this.createClient(serverUrl, token, preauthSecret);
                 } catch (error) {
                     logError('WebsocketManager init error', error);
                 }
             },
-        );
+        ));
 
         this.appStateSubscription?.remove();
         this.netStateSubscription?.();
@@ -65,12 +65,23 @@ class WebsocketManagerSingleton {
         this.netStateSubscription = NetInfo.addEventListener(this.onNetStateChange);
     };
 
-    public invalidateClient = (serverUrl: string) => {
-        this.clients[serverUrl]?.close(true);
-        this.clients[serverUrl]?.invalidate();
+    public invalidateClient = async (serverUrl: string) => {
+        const client = this.clients[serverUrl];
+
+        // Evict from registry and clear reconnect timer before awaiting teardown,
+        // so no concurrent code path (e.g. openAll/initializeClient) can reach
+        // this client or use stale manager state during the wait.
         clearTimeout(this.connectionTimerIDs[serverUrl]);
+        delete this.connectionTimerIDs[serverUrl];
         delete this.clients[serverUrl];
         delete this.firstConnectionSynced[serverUrl];
+        this.stopPeriodicStatusUpdates(serverUrl);
+
+        if (client) {
+            client.close(true);
+            await client.waitForClose();
+            client.invalidate();
+        }
 
         // We don't remove the connected subject so any potential client invalidation
         // and subsequent creation of the client can still be observed by the component.
@@ -80,20 +91,25 @@ class WebsocketManagerSingleton {
         this.getConnectedSubject(serverUrl).next('not_connected');
     };
 
-    public createClient = (serverUrl: string, bearerToken: string, preauthSecret?: string) => {
+    public createClient = async (serverUrl: string, bearerToken: string, preauthSecret?: string) => {
         if (this.clients[serverUrl]) {
-            this.invalidateClient(serverUrl);
+            await this.invalidateClient(serverUrl);
         }
 
         const client = new WebSocketClient(serverUrl, bearerToken, preauthSecret);
 
-        client.setFirstConnectCallback(() => this.onFirstConnect(serverUrl));
-        client.setEventCallback((evt: WebSocketMessage) => handleWebSocketEvent(serverUrl, evt));
+        // Guard: callbacks capture the client instance so stale callbacks from
+        // an old client that was replaced (but whose late onClose still fires)
+        // can be detected and dropped by comparing against this.clients[serverUrl].
+        const isCurrentClient = () => this.clients[serverUrl] === client;
+
+        client.setFirstConnectCallback(() => isCurrentClient() && this.onFirstConnect(serverUrl));
+        client.setEventCallback((evt: WebSocketMessage) => isCurrentClient() && handleWebSocketEvent(serverUrl, evt));
 
         //client.setMissedEventsCallback(() => {}) Nothing to do on missedEvents callback
-        client.setReconnectCallback(() => this.onReconnect(serverUrl));
-        client.setReliableReconnectCallback(() => this.onReliableReconnect(serverUrl));
-        client.setCloseCallback((connectFailCount: number) => this.onWebsocketClose(serverUrl, connectFailCount));
+        client.setReconnectCallback(() => isCurrentClient() && this.onReconnect(serverUrl));
+        client.setReliableReconnectCallback(() => isCurrentClient() && this.onReliableReconnect(serverUrl));
+        client.setCloseCallback((connectFailCount: number) => isCurrentClient() && this.onWebsocketClose(serverUrl, connectFailCount));
 
         this.clients[serverUrl] = client;
 
@@ -104,7 +120,6 @@ class WebsocketManagerSingleton {
         for (const url of Object.keys(this.clients)) {
             const client = this.clients[url];
             client.close(true);
-            client.invalidate();
             this.getConnectedSubject(url).next('not_connected');
         }
     };
@@ -149,10 +164,13 @@ class WebsocketManagerSingleton {
     };
 
     public initializeClient = async (serverUrl: string, groupLabel: BaseRequestGroupLabel = 'WebSocket Reconnect') => {
-        const client: WebSocketClient = this.clients[serverUrl];
+        const client = this.clients[serverUrl];
         clearTimeout(this.connectionTimerIDs[serverUrl]);
         delete this.connectionTimerIDs[serverUrl];
-        if (!client?.isConnected()) {
+        if (!client) {
+            return;
+        }
+        if (!client.isConnected()) {
             const hasSynced = this.firstConnectionSynced[serverUrl];
             client.initialize({}, !hasSynced);
             if (!hasSynced) {

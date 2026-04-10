@@ -7,9 +7,10 @@ import {switchMap} from 'rxjs/operators';
 
 import {observeChannel} from '@queries/servers/channel';
 import {observePost} from '@queries/servers/post';
-import {observeCurrentTeamId} from '@queries/servers/system';
+import {observeConfigValue, observeCurrentTeamId} from '@queries/servers/system';
 import {queryMyTeamsByIds, queryTeamByName} from '@queries/servers/team';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
+import {isMinimumServerVersion} from '@utils/helpers';
 
 import Permalink from './permalink';
 
@@ -42,7 +43,11 @@ const enhance = withObservables([], ({database, postId, teamName}: OwnProps) => 
             switchMap((ms) => of$(Boolean(ms?.[0]))),
         ),
         currentTeamId: observeCurrentTeamId(database),
+        database: of$(database),
         isCRTEnabled: observeIsCRTEnabled(database),
+        hasPostInfoEndpoint: observeConfigValue(database, 'Version').pipe(
+            switchMap((v) => of$(isMinimumServerVersion(v || '', 7, 0))),
+        ),
     };
 });
 

@@ -8,11 +8,9 @@ import {TouchableWithoutFeedback, View, Text, Alert, TouchableOpacity} from 'rea
 import Animated, {runOnJS, SlideInDown, SlideOutDown} from 'react-native-reanimated';
 
 import {storeDontAskForReview, storeLastAskForReview} from '@actions/app/global';
-import {isNPSEnabled} from '@actions/remote/nps';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import ReviewAppIllustration from '@components/illustrations/review_app';
-import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
@@ -106,7 +104,6 @@ const ReviewApp = ({
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const serverUrl = useServerUrl();
 
     const [show, setShow] = useState(true);
 
@@ -135,11 +132,9 @@ const ReviewApp = ({
     const onPressNeedsWork = useCallback(async () => {
         close(async () => {
             await dismissOverlay(componentId);
-            if (await isNPSEnabled(serverUrl)) {
-                showShareFeedbackOverlay();
-            }
+            showShareFeedbackOverlay();
         });
-    }, [close, componentId, serverUrl]);
+    }, [close, componentId]);
 
     const onPressDontAsk = useCallback(() => {
         storeDontAskForReview();

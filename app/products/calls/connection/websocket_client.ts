@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Buffer} from 'buffer';
 import {EventEmitter} from 'events';
 
+import {getOrCreateWebSocketClient, WebSocketReadyState, type WebSocketClientInterface} from '@mattermost/react-native-network-client';
 import {encode} from '@msgpack/msgpack';
 
 import Calls from '@constants/calls';
@@ -15,11 +17,15 @@ export const wsReconnectionTimeout = 30000; // 30 seconds
 const wsReconnectTimeIncrement = 500; // 0.5 seconds
 export const wsReconnectionTimeoutErr = new Error('max disconnected time reached');
 
+function toWsUrl(url: string): string {
+    return url.replace(/^http(s)?:\/\//, (_, s) => `ws${s ?? ''}://`);
+}
+
 export class WebSocketClient extends EventEmitter {
     private readonly serverUrl: string;
     private readonly wsPath: string;
     private authToken: string;
-    private ws: WebSocket | null = null;
+    private wsClient: WebSocketClientInterface | null = null;
     private seqNo = 1;
     private serverSeqNo = 0;
     private connID = '';
@@ -42,47 +48,76 @@ export class WebSocketClient extends EventEmitter {
             return;
         }
 
-        const websocketURL = await getConfigValue(database, 'WebsocketURL');
-        const connectionUrl = (websocketURL || this.serverUrl) + this.wsPath;
-
-        this.ws = new WebSocket(`${connectionUrl}?connection_id=${this.connID}&sequence_number=${this.serverSeqNo}`, [], {headers: {authorization: `Bearer ${this.authToken}`}});
-
-        if (isReconnect) {
-            this.ws.onopen = () => {
-                this.lastDisconnect = 0;
-                this.reconnectRetryTime = wsMinReconnectRetryTimeMs;
-                this.emit('open', this.originalConnID, this.connID, true);
-            };
+        // Tear down any existing connection
+        if (this.wsClient) {
+            try {
+                await this.wsClient.invalidate();
+            } catch {
+                // ignore invalidation errors during reconnect
+            }
+            this.wsClient = null;
         }
 
-        this.ws.onerror = (err) => {
-            this.emit('error', err);
-        };
+        const websocketURL = await getConfigValue(database, 'WebsocketURL');
+        const baseUrl = toWsUrl(websocketURL || this.serverUrl);
+        const wsUrl = `${baseUrl}${this.wsPath}?connection_id=${this.connID}&sequence_number=${this.serverSeqNo}`;
 
-        this.ws.onclose = (event: WebSocketCloseEvent) => {
+        const {client} = await getOrCreateWebSocketClient(wsUrl, {
+            headers: {authorization: `Bearer ${this.authToken}`},
+        });
+        this.wsClient = client;
+
+        if (isReconnect) {
+            this.wsClient.onOpen(() => {
+                this.lastDisconnect = 0;
+                this.reconnectRetryTime = wsMinReconnectRetryTimeMs;
+
+                // Emit 'open' here (before hello) so that connection.ts can send the
+                // 'reconnect' message to the server with the previous session's connID
+                // as prevConnID. At this point this.connID still holds the previous
+                // session ID (it was passed in the URL and has not yet been updated by
+                // the incoming hello message).
+                this.emit('open', this.originalConnID, this.connID, true);
+            });
+        }
+
+        this.wsClient.onError((event) => {
+            this.emit('error', event);
+        });
+
+        this.wsClient.onClose((event) => {
             this.emit('close', event);
             if (!this.closed) {
                 this.reconnect();
             }
-        };
+        });
 
-        this.ws.onmessage = ({data}) => {
-            if (!data) {
-                return;
-            }
-            let msg;
-            try {
-                msg = JSON.parse(data);
-            } catch (err) {
-                logError('calls: ws msg parse error', err);
+        this.wsClient.onMessage(({message: raw}) => {
+            if (!raw) {
                 return;
             }
 
-            if (msg) {
+            // iOS native pre-parses JSON via SwiftyJSON; Android passes raw string.
+            let msg: Record<string, any>;
+            if (typeof raw === 'string') {
+                try {
+                    msg = JSON.parse(raw);
+                } catch (err) {
+                    logError('calls: ws msg parse error', err);
+                    return;
+                }
+            } else if (typeof raw === 'object' && raw !== null) {
+                msg = raw as Record<string, any>;
+            } else {
+                logError('calls: ws msg unexpected type', typeof raw);
+                return;
+            }
+
+            if (typeof msg.seq === 'number') {
                 this.serverSeqNo = msg.seq + 1;
             }
 
-            if (!msg || !msg.event || !msg.data) {
+            if (!msg?.event || !msg?.data) {
                 return;
             }
 
@@ -120,7 +155,9 @@ export class WebSocketClient extends EventEmitter {
             if (msg.event === this.eventPrefix + '_signal') {
                 this.emit('message', msg.data);
             }
-        };
+        });
+
+        this.wsClient.open();
     }
 
     initialize() {
@@ -133,19 +170,27 @@ export class WebSocketClient extends EventEmitter {
             seq: this.seqNo++,
             data,
         };
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        if (this.wsClient && this.wsClient.readyState === WebSocketReadyState.OPEN) {
             if (binary) {
-                this.ws.send(encode(msg));
+                if (!this.wsClient.sendBinary) {
+                    logError('calls: sendBinary not supported by native client');
+                    return;
+                }
+                const encoded = encode(msg);
+                const base64 = Buffer.from(encoded).toString('base64');
+                this.wsClient.sendBinary!(base64);
             } else {
-                this.ws.send(JSON.stringify(msg));
+                this.wsClient.send(JSON.stringify(msg));
             }
         }
     }
 
     close() {
         this.closed = true;
-        this.ws?.close();
-        this.ws = null;
+
+        // Errors during teardown are intentionally ignored
+        this.wsClient?.invalidate().catch(() => { /* ignore */ });
+        this.wsClient = null;
         this.seqNo = 1;
         this.serverSeqNo = 0;
         this.connID = '';
@@ -167,7 +212,7 @@ export class WebSocketClient extends EventEmitter {
         setTimeout(() => {
             if (!this.closed) {
                 logDebug(`calls: attempting ws reconnection to ${this.serverUrl + this.wsPath}`);
-                this.init(true);
+                this.init(true).catch((err) => logError('calls: ws reconnection init failed', err));
             }
         }, this.reconnectRetryTime);
 
@@ -175,10 +220,10 @@ export class WebSocketClient extends EventEmitter {
     }
 
     state() {
-        if (this.closed || !this.ws) {
-            return WebSocket.CLOSED;
+        if (this.closed || !this.wsClient) {
+            return WebSocketReadyState.CLOSED;
         }
-        return this.ws.readyState;
+        return this.wsClient.readyState;
     }
 
     get sessionID() {

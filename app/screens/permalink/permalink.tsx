@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Alert, Platform, Text, TouchableOpacity, View} from 'react-native';
 import {KeyboardProvider} from 'react-native-keyboard-controller';
 import Animated from 'react-native-reanimated';
@@ -10,7 +10,7 @@ import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area
 
 import {getPosts} from '@actions/local/post';
 import {fetchChannelById, joinChannel, switchToChannelById} from '@actions/remote/channel';
-import {fetchPostById, fetchPostsAround, fetchPostThread} from '@actions/remote/post';
+import {fetchPostById, fetchPostInfo, fetchPostsAround, fetchPostThread} from '@actions/remote/post';
 import {addCurrentUserToTeam, fetchTeamByName, removeCurrentUserFromTeam} from '@actions/remote/team';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
@@ -20,7 +20,6 @@ import PostList from '@components/post_list';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
@@ -29,23 +28,32 @@ import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {dismissModal} from '@screens/navigation';
 import {closePermalink} from '@utils/permalink';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
 
 import PermalinkError from './permalink_error';
 
+import type {Database} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
     channel?: ChannelModel;
+    database: Database;
     rootId?: string;
     teamName?: string;
     isTeamMember?: boolean;
     currentTeamId: string;
     isCRTEnabled: boolean;
+    hasPostInfoEndpoint: boolean;
     postId: PostModel['id'];
 }
+
+const messages = defineMessages({
+    joinTeamErrorTitle: {id: 'permalink.error.join_team.title', defaultMessage: 'Error joining the team'},
+    joinTeamErrorMessage: {id: 'permalink.error.join_team.message', defaultMessage: 'There was an error trying to join the team'},
+    joinChannelErrorTitle: {id: 'permalink.error.join_channel.title', defaultMessage: 'Error joining the channel'},
+    joinChannelErrorMessage: {id: 'permalink.error.join_channel.message', defaultMessage: 'There was an error trying to join the channel'},
+});
 
 const edges: Edge[] = ['left', 'right', 'top'];
 
@@ -129,8 +137,10 @@ const idExtractor = (item: Post) => {
 
 function Permalink({
     channel,
+    database,
     rootId,
     isCRTEnabled,
+    hasPostInfoEndpoint,
     postId,
     teamName,
     isTeamMember,
@@ -156,6 +166,12 @@ function Permalink({
     useEffect(() => {
         (async () => {
             if (channelId) {
+                const myChannel = await getMyChannel(database, channelId);
+                if (!myChannel) {
+                    setChannelId(undefined);
+                    return;
+                }
+
                 let data;
                 const loadThreadPosts = isCRTEnabled && rootId;
                 if (loadThreadPosts) {
@@ -177,16 +193,29 @@ function Permalink({
                 return;
             }
 
-            const database = secureGetFromRecord(DatabaseManager.serverDatabases, serverUrl)?.database;
-            if (!database) {
-                setError({unreachable: true});
-                setLoading(false);
-                return;
+            // Try getPostInfo first (GET /posts/{id}/info, available since server v7.0).
+            // Returns channel/team metadata without requiring membership, so we can
+            // show the join UI without speculatively joining the team first.
+            if (hasPostInfoEndpoint) {
+                const {postInfo} = await fetchPostInfo(serverUrl, postId);
+                if (postInfo && !postInfo.has_joined_channel) {
+                    setError({
+                        privateChannel: postInfo.channel_type === 'P',
+                        needsTeamJoin: !postInfo.has_joined_team && postInfo.team_id !== '',
+                        channelId: postInfo.channel_id,
+                        channelName: postInfo.channel_display_name,
+                        teamId: postInfo.team_id || currentTeamId,
+                        teamName: postInfo.team_display_name,
+                        privateTeam: postInfo.team_type === 'I',
+                    });
+                    setLoading(false);
+                    return;
+                }
             }
 
-            // If a team is provided, try to join the team, but do not fail here, to take into account:
-            // - Wrong team name
-            // - DMs/GMs
+            // Fallback for old servers (getPostInfo unavailable) or when the user
+            // already has channel access (has_joined_channel === true).
+            // This path speculatively joins the team before fetching the post.
             let joinedTeam: Team | undefined;
             if (teamName && !isTeamMember) {
                 const fetchData = await fetchTeamByName(serverUrl, teamName, true);
@@ -291,16 +320,34 @@ function Permalink({
         setLoading(true);
         setError(undefined);
         if (error?.teamId && error.channelId) {
+            if (error.needsTeamJoin) {
+                const {error: teamError} = await addCurrentUserToTeam(serverUrl, error.teamId);
+                if (teamError) {
+                    Alert.alert(
+                        intl.formatMessage(messages.joinTeamErrorTitle),
+                        intl.formatMessage(messages.joinTeamErrorMessage),
+                    );
+                    setLoading(false);
+                    setError(error);
+                    return;
+                }
+            }
             const {error: joinError} = await joinChannel(serverUrl, error.teamId, error.channelId);
             if (joinError) {
-                Alert.alert('Error joining the channel', 'There was an error trying to join the channel');
+                if (error.needsTeamJoin) {
+                    removeCurrentUserFromTeam(serverUrl, error.teamId);
+                }
+                Alert.alert(
+                    intl.formatMessage(messages.joinChannelErrorTitle),
+                    intl.formatMessage(messages.joinChannelErrorMessage),
+                );
                 setLoading(false);
                 setError(error);
                 return;
             }
             setChannelId(error.channelId);
         }
-    }, [error, serverUrl]));
+    }, [error, intl, serverUrl]));
 
     let content;
     if (loading) {

@@ -786,6 +786,18 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
     }
 }
 
+export async function fetchPostInfo(serverUrl: string, postId: string): Promise<{postInfo?: PostInfo; error?: unknown}> {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const postInfo = await client.getPostInfo(postId);
+        return {postInfo};
+    } catch (error) {
+        logDebug('error on fetchPostInfo', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+}
+
 export async function fetchPostById(serverUrl: string, postId: string, fetchOnly = false, groupLabel?: RequestGroupLabel) {
     try {
         const client = NetworkManager.getClient(serverUrl);

@@ -31,6 +31,7 @@ import {
     fetchPostsAround,
     fetchMissingChannelsFromPosts,
     fetchPostById,
+    fetchPostInfo,
     fetchSavedPosts,
     fetchPinnedPosts,
     burnPostNow,
@@ -123,6 +124,16 @@ const mockClient = {
     getPostThread: jest.fn((_postId: string) => ({posts: {[_postId]: {...post1, id: _postId}, [reply1.id]: {...reply1, root_id: _postId}}, order: [_postId, reply1.id]})),
     getPostsAfter: genericGetPostsMock,
     getPost: jest.fn((_postId: string) => ({...post2, id: _postId})),
+    getPostInfo: jest.fn(() => ({
+        channel_id: channelId,
+        channel_type: 'O' as ChannelType,
+        channel_display_name: 'Town Square',
+        has_joined_channel: false,
+        team_id: teamId,
+        team_type: 'O',
+        team_display_name: 'Test Team',
+        has_joined_team: true,
+    })),
     getSavedPosts: genericGetPostsMock,
     getPinnedPosts: genericGetPostsMock,
 };
@@ -1138,6 +1149,24 @@ describe('get posts', () => {
         expect(result.error).toBeUndefined();
         expect(result.post).toBeDefined();
         expect(result.post?.id).toBe(post2.id);
+    });
+
+    it('fetchPostInfo - should return post info on success', async () => {
+        const result = await fetchPostInfo(serverUrl, post1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.postInfo).toBeDefined();
+        expect(result.postInfo?.channel_id).toBe(channelId);
+        expect(result.postInfo?.team_id).toBe(teamId);
+        expect(result.postInfo?.has_joined_channel).toBe(false);
+    });
+
+    it('fetchPostInfo - should return error when client throws', async () => {
+        mockClient.getPostInfo.mockImplementationOnce(throwFunc);
+        const result = await fetchPostInfo(serverUrl, post1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+        expect(result.postInfo).toBeUndefined();
     });
 
     it('fetchSavedPosts - handle database not found', async () => {

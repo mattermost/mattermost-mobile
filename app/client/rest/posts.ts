@@ -36,6 +36,7 @@ export interface ClientPostsMix {
     unacknowledgePost: (postId: string, userId: string) => Promise<any>;
     sendTestNotification: () => Promise<{status: 'OK'}>;
     revealBoRPost: (postId: string) => Promise<Post>;
+    getPostInfo: (postId: string) => Promise<PostInfo>;
 }
 
 const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -241,6 +242,13 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     revealBoRPost = async (postId: string) => {
         return this.doFetch(
             `${this.getPostRoute(postId)}/reveal`,
+            {method: 'get'},
+        );
+    };
+
+    getPostInfo = async (postId: string) => {
+        return this.doFetch(
+            `${this.getPostRoute(postId)}/info`,
             {method: 'get'},
         );
     };
