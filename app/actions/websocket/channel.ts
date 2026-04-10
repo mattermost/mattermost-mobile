@@ -399,6 +399,10 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
             const channelBeforeRemove = await getChannelById(database, channelId);
             const managedTeamId = channelBeforeRemove?.teamId;
 
+            if (managedTeamId && channelBeforeRemove && !isDMorGM(channelBeforeRemove)) {
+                await removeChannelFromManagedCategoryIfNeeded(serverUrl, managedTeamId, channelId);
+            }
+
             const currentChannelId = await getCurrentChannelId(database);
             if (currentChannelId && currentChannelId === channelId) {
                 await handleKickFromChannel(serverUrl, currentChannelId);
@@ -408,10 +412,6 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
 
             if (getCurrentCall()?.channelId === channelId) {
                 leaveCall(userRemovedFromChannelErr);
-            }
-
-            if (managedTeamId && channelBeforeRemove && !isDMorGM(channelBeforeRemove)) {
-                await removeChannelFromManagedCategoryIfNeeded(serverUrl, managedTeamId, channelId);
             }
         } else {
             const {models: deleteMemberModels} = await deleteChannelMembership(operator, userId, channelId, true);

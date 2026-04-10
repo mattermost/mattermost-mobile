@@ -323,16 +323,16 @@ export async function leaveChannel(serverUrl: string, channelId: string) {
             }
         }
 
+        if (teamIdForManagedCategories && channelBeforeLeave && !isDMorGM(channelBeforeLeave)) {
+            await removeChannelFromManagedCategoryIfNeeded(serverUrl, teamIdForManagedCategories, channelId);
+        }
+
         const {models: removeUserModels} = await removeCurrentUserFromChannel(serverUrl, channelId, true);
         if (removeUserModels) {
             models.push(...removeUserModels);
         }
 
         await operator.batchRecords(models, 'leaveChannel');
-
-        if (teamIdForManagedCategories && channelBeforeLeave && !isDMorGM(channelBeforeLeave)) {
-            await removeChannelFromManagedCategoryIfNeeded(serverUrl, teamIdForManagedCategories, channelId);
-        }
 
         if (isTabletDevice) {
             switchToLastChannel(serverUrl);
