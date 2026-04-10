@@ -3,27 +3,42 @@
 
 import {storeCategories} from '@actions/local/category';
 import {General} from '@constants';
-import {CHANNELS_CATEGORY, DMS_CATEGORY, FAVORITES_CATEGORY} from '@constants/categories';
+import {CHANNELS_CATEGORY, DMS_CATEGORY, FAVORITES_CATEGORY, MANAGED_CHANNEL_CATEGORIES_GROUP, MANAGED_LOCAL_CATEGORY_PREFIX} from '@constants/categories';
 import DatabaseManager from '@database/manager';
+import {makeManagedCategoryId, mergeManagedMappingsIntoSidebarCategories} from '@helpers/sidebar/managed_categories_merge';
 import NetworkManager from '@managers/network_manager';
-import {getChannelCategory, queryCategoriesByTeamIds} from '@queries/servers/categories';
+import {getCategoryById, getChannelCategory, queryCategoriesByTeamIds, queryCategoryChannelsByChannelId} from '@queries/servers/categories';
 import {getChannelById} from '@queries/servers/channel';
-import {getCurrentTeamId} from '@queries/servers/system';
+import {getConfigValue, getCurrentTeamId} from '@queries/servers/system';
+import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {showFavoriteChannelSnackbar} from '@utils/snack_bar';
 
 import {forceLogoutIfNecessary} from './session';
 
+import type {Model} from '@nozbe/watermelondb';
+import type ChannelModel from '@typings/database/models/servers/channel';
+
 export type CategoriesRequest = {
      categories?: CategoryWithChannels[];
      error?: unknown;
  }
 
-export const fetchCategories = async (serverUrl: string, teamId: string, prune = false, fetchOnly = false): Promise<CategoriesRequest> => {
+export const fetchCategories = async (serverUrl: string, teamId: string, prune = false, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<CategoriesRequest> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {categories} = await client.getCategories('me', teamId);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const managedCategoriesEnabled = await getConfigValue(database, 'EnableManagedChannelCategories');
+
+        const {categories: nonManagedCategories} = await client.getCategories('me', teamId, groupLabel);
+        let categories = nonManagedCategories;
+        if (managedCategoriesEnabled === 'true') {
+            const mappings = await client.getManagedCategories(teamId, groupLabel);
+            if (mappings) {
+                categories = await mergeManagedMappingsIntoSidebarCategories(database, teamId, nonManagedCategories, mappings);
+            }
+        }
 
         if (!fetchOnly) {
             storeCategories(serverUrl, categories, prune);
@@ -36,6 +51,96 @@ export const fetchCategories = async (serverUrl: string, teamId: string, prune =
         return {error};
     }
 };
+
+export async function addChannelToManagedCategoryIfNeeded(serverUrl: string, channel: Channel | ChannelModel) {
+    const teamId = 'teamId' in channel ? channel.teamId : channel.team_id;
+    if (!teamId || isDMorGM(channel)) {
+        return;
+    }
+    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    const managedEnabled = await getConfigValue(database, 'EnableManagedChannelCategories');
+    if (managedEnabled !== 'true') {
+        return;
+    }
+    const channelId = channel.id;
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const values = await client.getPropertyValues<string>(
+            MANAGED_CHANNEL_CATEGORIES_GROUP,
+            'channel',
+            channelId,
+        );
+        const categoryValue = values[0];
+        if (!categoryValue?.value || String(categoryValue.value).length === 0) {
+            return;
+        }
+
+        const categoryName = String(categoryValue.value);
+        const managedCategoryId = makeManagedCategoryId(teamId, categoryName);
+        const existingCategory = await getCategoryById(database, managedCategoryId);
+
+        let channelIds: string[];
+        let sortOrder: number;
+        if (existingCategory) {
+            const cwc = await existingCategory.toCategoryWithChannels();
+            channelIds = cwc.channel_ids.includes(channelId) ? cwc.channel_ids : [...cwc.channel_ids, channelId];
+            sortOrder = existingCategory.sortOrder;
+        } else {
+            channelIds = [channelId];
+            const allCategories = await queryCategoriesByTeamIds(database, [teamId]).fetch();
+            const managedCount = allCategories.filter((c) => c.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)).length;
+            sortOrder = (-1000 + managedCount) * 10;
+        }
+
+        const managedCwc: CategoryWithChannels = {
+            id: managedCategoryId,
+            team_id: teamId,
+            display_name: categoryName,
+            sort_order: sortOrder,
+            sorting: 'alpha',
+            type: 'custom',
+            muted: false,
+            collapsed: existingCategory?.collapsed ?? false,
+            channel_ids: channelIds,
+        };
+
+        await storeCategories(serverUrl, [managedCwc]);
+    } catch (error) {
+        logDebug('[addChannelToManagedCategoryIfNeeded]', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+    }
+}
+
+export async function removeChannelFromManagedCategoryIfNeeded(serverUrl: string, teamId: string, channelId: string) {
+    const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    const managedEnabled = await getConfigValue(database, 'EnableManagedChannelCategories');
+    if (managedEnabled !== 'true') {
+        return;
+    }
+
+    const category = await getChannelCategory(database, teamId, channelId);
+    if (!category || !category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
+        return;
+    }
+
+    const models: Model[] = [];
+
+    const categoryChannels = await queryCategoryChannelsByChannelId(database, channelId).fetch();
+    for (const cc of categoryChannels) {
+        if (cc.categoryId === category.id) {
+            models.push(cc.prepareDestroyPermanently());
+        }
+    }
+
+    const cwc = await category.toCategoryWithChannels();
+    if (cwc.channel_ids.filter((id) => id !== channelId).length === 0) {
+        models.push(category.prepareDestroyPermanently());
+    }
+
+    if (models.length) {
+        await operator.batchRecords(models, 'removeChannelFromManagedCategory');
+    }
+}
 
 export const toggleFavoriteChannel = async (serverUrl: string, channelId: string, showSnackBar = false) => {
     try {

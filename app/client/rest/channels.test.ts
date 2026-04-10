@@ -222,6 +222,16 @@ describe('ClientChannels', () => {
         expect(client.doFetch).toHaveBeenCalledWith(`${client.getTeamRoute(teamId)}/channels?page=0&per_page=${PER_PAGE_DEFAULT}`, expectedOptions);
     });
 
+    test('getManagedCategories', async () => {
+        const teamId = 'team1';
+        const expectedUrl = `${client.getTeamRoute(teamId)}/channels/managed_categories`;
+        const expectedOptions = {method: 'get'};
+
+        await client.getManagedCategories(teamId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
     test('getArchivedChannels', async () => {
         const teamId = 'team1';
         const page = 1;

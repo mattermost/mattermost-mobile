@@ -21,6 +21,7 @@ import * as channel from './channel';
 import * as files from './files';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
+import {handleManagedChannelCategoriesPropertyValuesUpdated} from './managed_categories';
 import * as posts from './posts';
 import {handlePostTranslationUpdatedEvent} from './posts';
 import * as preferences from './preferences';
@@ -311,6 +312,10 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         case WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_FIELD_DELETED:
             handleCustomProfileAttributesFieldDeletedEvent(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.PROPERTY_VALUES_UPDATED:
+            handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl, msg);
             break;
 
         // Agents

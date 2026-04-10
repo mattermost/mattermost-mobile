@@ -32,6 +32,7 @@ import {logDebug, logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
+import {addChannelToManagedCategoryIfNeeded, fetchCategories, removeChannelFromManagedCategoryIfNeeded} from './category';
 import {fetchChannelBookmarks} from './channel_bookmark';
 import {fetchGroupsForChannelIfConstrained} from './groups';
 import {fetchPostsForChannel} from './post';
@@ -310,6 +311,9 @@ export async function leaveChannel(serverUrl: string, channelId: string) {
             return {error: 'current user not found'};
         }
 
+        const channelBeforeLeave = await getChannelById(database, channelId);
+        const teamIdForManagedCategories = channelBeforeLeave?.teamId;
+
         await client.removeFromChannel(user.id, channelId);
 
         if (user.isGuest) {
@@ -325,6 +329,10 @@ export async function leaveChannel(serverUrl: string, channelId: string) {
         }
 
         await operator.batchRecords(models, 'leaveChannel');
+
+        if (teamIdForManagedCategories && channelBeforeLeave && !isDMorGM(channelBeforeLeave)) {
+            await removeChannelFromManagedCategoryIfNeeded(serverUrl, teamIdForManagedCategories, channelId);
+        }
 
         if (isTabletDevice) {
             switchToLastChannel(serverUrl);
@@ -441,7 +449,6 @@ export async function fetchAllMyChannelsForAllTeams(serverUrl: string, since: nu
             fetchAllMemberships(),
         ];
         const [channels, memberships] = await Promise.all(promises);
-        const categoriesPromises = [];
 
         const teamIdsSet = channels.reduce<Set<string>>((set, c) => {
             if (c.team_id) {
@@ -450,15 +457,9 @@ export async function fetchAllMyChannelsForAllTeams(serverUrl: string, since: nu
             return set;
         }, new Set());
 
-        for (const teamId of teamIdsSet) {
-            categoriesPromises.push(client.getCategories('me', teamId, groupLabel));
-        }
-
-        const categories: CategoryWithChannels[] = [];
-        const results = await Promise.all(categoriesPromises);
-        for (const result of results) {
-            categories.push(...result.categories);
-        }
+        const teamIds = Array.from(teamIdsSet);
+        const categoriesResults = await Promise.all(teamIds.map((tid) => fetchCategories(serverUrl, tid, false, true, groupLabel)));
+        const categories: CategoryWithChannels[] = categoriesResults.flatMap((r) => r.categories ?? []);
 
         if (!fetchOnly) {
             const {models: chModels} = await storeAllMyChannels(serverUrl, channels, memberships, isCRTEnabled, true);
@@ -492,10 +493,10 @@ export async function fetchMyChannelsForTeam(
         }
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const [allChannels, channelMemberships, categoriesWithOrder] = await Promise.all([
+        const [allChannels, channelMemberships, categoriesResult] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since, groupLabel),
             client.getMyChannelMembers(teamId, groupLabel),
-            client.getCategories('me', teamId, groupLabel),
+            fetchCategories(serverUrl, teamId, false, true, groupLabel),
         ]);
 
         let channels = allChannels;
@@ -505,7 +506,7 @@ export async function fetchMyChannelsForTeam(
         }
 
         const channelIds = new Set<string>(channels.map((c) => c.id));
-        const {categories} = categoriesWithOrder;
+        const categories = categoriesResult.categories ?? [];
         memberships = memberships.reduce((result: ChannelMembership[], m: ChannelMembership) => {
             if (channelIds.has(m.channel_id)) {
                 result.push(m);
@@ -707,6 +708,7 @@ export async function joinChannel(serverUrl: string, teamId: string, channelId?:
                     }
                 }
             }
+            await addChannelToManagedCategoryIfNeeded(serverUrl, channel);
         }
     } catch (error) {
         logDebug('error on joinChannel', getFullErrorMessage(error));

@@ -7,6 +7,7 @@ import {
     storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket, deletePostsForChannel,
 } from '@actions/local/channel';
 import {storePostsForChannel} from '@actions/local/post';
+import {addChannelToManagedCategoryIfNeeded, removeChannelFromManagedCategoryIfNeeded} from '@actions/remote/category';
 import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, handleKickFromChannel} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
@@ -21,6 +22,7 @@ import {getConfig, getCurrentChannelId, getCurrentTeamId, setCurrentTeamId} from
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
+import {isDMorGM} from '@utils/channel';
 import {logDebug} from '@utils/log';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -295,6 +297,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentUser = await getCurrentUser(database);
         const models: Model[] = [];
+        let joinedChannel: Channel | undefined;
 
         if (userId === currentUser?.id) {
             if (EphemeralStore.isAddingToTeam(teamId) || EphemeralStore.isJoiningChannel(channelId)) {
@@ -303,6 +306,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 
             const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
             if (channels && memberships) {
+                joinedChannel = channels[0];
                 const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
                 if (prepare.length) {
                     const prepareModels = await Promise.all(prepare);
@@ -352,6 +356,10 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
             await operator.batchRecords(models, 'handleUserAddedToChannelEvent');
         }
 
+        if (joinedChannel) {
+            await addChannelToManagedCategoryIfNeeded(serverUrl, joinedChannel);
+        }
+
         await fetchChannelStats(serverUrl, channelId, false);
     } catch {
         // Do nothing
@@ -388,6 +396,9 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         }
 
         if (user.id === userId) {
+            const channelBeforeRemove = await getChannelById(database, channelId);
+            const managedTeamId = channelBeforeRemove?.teamId;
+
             const currentChannelId = await getCurrentChannelId(database);
             if (currentChannelId && currentChannelId === channelId) {
                 await handleKickFromChannel(serverUrl, currentChannelId);
@@ -397,6 +408,10 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
 
             if (getCurrentCall()?.channelId === channelId) {
                 leaveCall(userRemovedFromChannelErr);
+            }
+
+            if (managedTeamId && channelBeforeRemove && !isDMorGM(channelBeforeRemove)) {
+                await removeChannelFromManagedCategoryIfNeeded(serverUrl, managedTeamId, channelId);
             }
         } else {
             const {models: deleteMemberModels} = await deleteChannelMembership(operator, userId, channelId, true);

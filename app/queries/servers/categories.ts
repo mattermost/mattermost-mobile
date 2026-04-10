@@ -3,9 +3,9 @@
 
 import {Database, Model, Q, Query} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {FAVORITES_CATEGORY} from '@constants/categories';
+import {FAVORITES_CATEGORY, MANAGED_LOCAL_CATEGORY_PREFIX} from '@constants/categories';
 import {MM_TABLES} from '@constants/database';
 import {makeCategoryChannelId} from '@utils/categories';
 import {pluckUnique} from '@utils/helpers';
@@ -157,6 +157,13 @@ export const getIsChannelFavorited = async (database: Database, teamId: string, 
 export const observeIsChannelFavorited = (database: Database, teamId: string, channelId: string) => {
     return queryChannelCategory(database, teamId, channelId).observe().pipe(
         switchMap((result) => (result.length ? of$(result[0].type === FAVORITES_CATEGORY) : of$(false))),
+        distinctUntilChanged(),
+    );
+};
+
+export const observeIsChannelInManagedCategory = (database: Database, teamId: string, channelId: string) => {
+    return queryChannelCategory(database, teamId, channelId).observe().pipe(
+        map((result) => (result.length ? result[0].id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX) : false)),
         distinctUntilChanged(),
     );
 };
