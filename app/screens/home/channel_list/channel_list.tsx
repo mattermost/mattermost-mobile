@@ -19,7 +19,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
-import {resetToTeams, openToS} from '@screens/navigation';
+import {resetToTeams, openToS, showWatermarkOverlay, dismissWatermarkOverlay} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
 import {tryRunAppReview} from '@utils/reviews';
@@ -37,6 +37,7 @@ type ChannelProps = {
     hasTeams: boolean;
     hasMoreThanOneTeam: boolean;
     isLicensed: boolean;
+    isWatermarkEnabled: boolean;
     showToS: boolean;
     launchType: LaunchType;
     coldStart?: boolean;
@@ -173,6 +174,14 @@ const ChannelListScreen = (props: ChannelProps) => {
             tryRunAppReview(props.launchType, props.coldStart);
         }
     }, [props.launchType, props.coldStart]);
+
+    useEffect(() => {
+        if (props.isWatermarkEnabled) {
+            showWatermarkOverlay();
+        } else {
+            dismissWatermarkOverlay();
+        }
+    }, [props.isWatermarkEnabled]);
 
     useEffect(() => {
         PerformanceMetricsManager.finishLoad('HOME', serverUrl);
