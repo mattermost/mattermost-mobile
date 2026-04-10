@@ -112,33 +112,38 @@ export async function addChannelToManagedCategoryIfNeeded(serverUrl: string, cha
 }
 
 export async function removeChannelFromManagedCategoryIfNeeded(serverUrl: string, teamId: string, channelId: string) {
-    const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-    const managedEnabled = await getConfigValue(database, 'EnableManagedChannelCategories');
-    if (managedEnabled !== 'true') {
-        return;
-    }
-
-    const category = await getChannelCategory(database, teamId, channelId);
-    if (!category || !category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
-        return;
-    }
-
-    const models: Model[] = [];
-
-    const categoryChannels = await queryCategoryChannelsByChannelId(database, channelId).fetch();
-    for (const cc of categoryChannels) {
-        if (cc.categoryId === category.id) {
-            models.push(cc.prepareDestroyPermanently());
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const managedEnabled = await getConfigValue(database, 'EnableManagedChannelCategories');
+        if (managedEnabled !== 'true') {
+            return;
         }
-    }
 
-    const cwc = await category.toCategoryWithChannels();
-    if (cwc.channel_ids.filter((id) => id !== channelId).length === 0) {
-        models.push(category.prepareDestroyPermanently());
-    }
+        const category = await getChannelCategory(database, teamId, channelId);
+        if (!category || !category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
+            return;
+        }
 
-    if (models.length) {
-        await operator.batchRecords(models, 'removeChannelFromManagedCategory');
+        const models: Model[] = [];
+
+        const categoryChannels = await queryCategoryChannelsByChannelId(database, channelId).fetch();
+        for (const cc of categoryChannels) {
+            if (cc.categoryId === category.id) {
+                models.push(cc.prepareDestroyPermanently());
+            }
+        }
+
+        const cwc = await category.toCategoryWithChannels();
+        if (cwc.channel_ids.filter((id) => id !== channelId).length === 0) {
+            models.push(category.prepareDestroyPermanently());
+        }
+
+        if (models.length) {
+            await operator.batchRecords(models, 'removeChannelFromManagedCategory');
+        }
+    } catch (error) {
+        logDebug('[removeChannelFromManagedCategoryIfNeeded]', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
     }
 }
 
