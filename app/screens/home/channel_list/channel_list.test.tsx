@@ -56,3 +56,32 @@ describe('performance metrics', () => {
         });
     });
 });
+
+describe('team sidebar visibility', () => {
+    let database: Database;
+    const serverUrl = 'http://www.someserverurl.com';
+    beforeAll(async () => {
+        const server = await TestHelper.setupServerDatabase(serverUrl);
+        database = server.database;
+    });
+
+    it('should render when canJoinOtherTeams is true and user has only one team', async () => {
+        const props = getBaseProps();
+        props.canJoinOtherTeams = true;
+        props.hasMoreThanOneTeam = false;
+        const {getByTestId} = renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(getByTestId('channel_list.screen')).toBeTruthy();
+        });
+    });
+
+    it('should render when canJoinOtherTeams is false and user has only one team', async () => {
+        const props = getBaseProps();
+        props.canJoinOtherTeams = false;
+        props.hasMoreThanOneTeam = false;
+        const {getByTestId} = renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(getByTestId('channel_list.screen')).toBeTruthy();
+        });
+    });
+});
