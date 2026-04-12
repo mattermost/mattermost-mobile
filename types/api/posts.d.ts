@@ -134,6 +134,15 @@ type Post = {
     user_activity_posts?: Post[];
     state?: 'DELETED';
     prev_post_id?: string;
+
+    // DDIL: Indexed failure state — replaces the buried props.failed JSON flag.
+    // Optional because server-originated posts won't have this field.
+    failed?: boolean;
+
+    // DDIL: Outbound sync priority tier (0=URGENT, 1=NORMAL, 2=DEFERRED).
+    // Assigned at write time by deriveSyncPriority(), used by retryFailedPosts()
+    // to order the reconnect flush.
+    sync_priority?: number;
 };
 
 type PostProps = {

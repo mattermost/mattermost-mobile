@@ -12,6 +12,9 @@ import {fetchChannelStats} from '@actions/remote/channel';
 import {ActionType, General, Post, ServerErrors} from '@constants';
 import DatabaseManager from '@database/manager';
 import {filterPostsInOrderedArray} from '@helpers/api/post';
+
+// DDIL: Import sync priority derivation for outbound message ordering
+// import {deriveSyncPriority} from '@utils/sync_priority';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
@@ -140,6 +143,18 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
 
     const isCRTEnabled = await getIsCRTEnabled(database);
 
+    // DDIL: Assign sync priority at write time so the reconnect flush
+    // can order failed posts by urgency. This reads existing signals
+    // (PostPriorityType, channel type, @mentions) — see deriveSyncPriority().
+    //
+    // To wire in:
+    //   const channel = await getChannelById(database, newPost.channel_id);
+    //   const priority = deriveSyncPriority(newPost, channel?.type ?? General.OPEN_CHANNEL);
+    //
+    // Then include `sync_priority: priority` in both the initial write (line ~139)
+    // and the error post below. Keeping it commented until the team reviews
+    // the priority tiers.
+
     let created;
     try {
         created = await client.createPost({...newPost, create_at: 0});
@@ -150,8 +165,10 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
             id: pendingPostId,
             props: {
                 ...newPost.props,
-                failed: true,
+                failed: true,    // DDIL: Keep props.failed for backward compat with UI reads
             },
+            // DDIL: When `failed` column is live, also set:
+            // failed: true,
             update_at: Date.now(),
         };
 
@@ -277,6 +294,8 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
                     ...p.props,
                     failed: true,
                 };
+                // DDIL: When `failed` column is live, also set:
+                // p.failed = true;
             });
             await operator.batchRecords([post], 'retryFailedPost - error update');
         }
@@ -1199,3 +1218,106 @@ export async function unacknowledgePost(serverUrl: string, postId: string) {
         EphemeralStore.unsetUnacknowledgingPost(postId);
     }
 }
+
+// =============================================================================
+// DDIL: Auto-retry failed posts on reconnect, ordered by sync priority
+// =============================================================================
+//
+// This is the missing outbound leg of doReconnect().
+//
+// Current state: When connectivity restores, doReconnect() fetches inbound data
+// (config, channels, posts) but does nothing about locally-queued failed posts.
+// They sit with props.failed=true until the user manually taps "Retry" on each.
+//
+// Proposed: After inbound sync completes, query for failed posts ordered by
+// sync_priority (URGENT first), and flush them — with bandwidth awareness via
+// the existing NetworkPerformanceManager.
+//
+// OPEN QUESTIONS (commented inline — these need team input):
+//
+// 1. NetworkPerformanceManager resets to 'normal' on app foreground (see
+//    cleanupOnAppStateChange in network_performance_manager.ts). So
+//    getCurrentPerformanceState() at flush start will almost always return
+//    'normal' — even on a marginal satellite link. The bandwidth gate in
+//    retryFailedPosts() effectively never triggers.
+//
+//    Option A — Subscribe to observable during flush:
+//      Instead of polling once, subscribe to observePerformanceState() and
+//      react if state degrades mid-flush. If state flips to 'slow' after
+//      sending 3 of 10 posts, pause and only continue with URGENT tier.
+//      Pro: Most accurate, uses real-time data.
+//      Con: More complex control flow, flush becomes stateful.
+//
+//    Option B — Warm-up window before flushing:
+//      After reconnect, wait for NetworkPerformanceManager to accumulate its
+//      minimum 4 requests (from the inbound sync that just ran) before
+//      flushing non-urgent posts. URGENT posts flush immediately regardless.
+//      Pro: Simple, piggybacks on inbound sync traffic for measurement.
+//      Con: Adds latency to NORMAL/DEFERRED posts (probably a few seconds).
+//
+//    Option C — User-controlled DDIL mode toggle:
+//      A toggle in settings that forces priority-only flushing regardless of
+//      what the manager reports. The operator in the field knows their link
+//      quality better than any heuristic.
+//      Pro: Zero false positives/negatives, user has full control.
+//      Con: Requires the user to know about and remember to toggle it.
+//
+// 2. Starvation: If URGENT posts keep arriving, NORMAL posts wait forever.
+//    Simple fix: promote NORMAL→URGENT after N deferrals or X minutes.
+//    Not implemented until we know if this is a real-world concern.
+//
+// 3. The 150ms inter-send delay is a placeholder. On a satellite link this
+//    might need to be higher. On LTE it's probably unnecessary. Could be
+//    adaptive based on NetworkPerformanceManager latency stats.
+
+// import {Q} from '@nozbe/watermelondb';
+// import NetworkPerformanceManager from '@managers/network_performance_manager';
+// import {SyncPriority} from '@utils/sync_priority';
+// import {logInfo} from '@utils/log';
+//
+// const RETRY_INTER_SEND_DELAY_MS = 150;
+//
+// export async function retryFailedPosts(serverUrl: string): Promise<void> {
+//     const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+//
+//     // Use the manager that already exists — no new detection infra needed
+//     const networkState = NetworkPerformanceManager
+//         .getCurrentPerformanceState(serverUrl);
+//     const isBandwidthConstrained = networkState === 'slow';
+//
+//     // Efficient query — only possible because `failed` is now an indexed column
+//     // instead of buried in a JSON blob.
+//     const failedPosts = await database
+//         .get<PostModel>(MM_TABLES.SERVER.POST)
+//         .query(
+//             Q.where('failed', true),
+//             Q.sortBy('sync_priority', Q.asc),  // 0 (URGENT) before 1 before 2
+//             Q.sortBy('create_at', Q.asc),       // oldest first within each tier
+//         )
+//         .fetch();
+//
+//     if (!failedPosts.length) {
+//         return;
+//     }
+//
+//     logInfo(`[DDIL] Retrying ${failedPosts.length} failed posts, network: ${networkState}`);
+//
+//     for (const post of failedPosts) {
+//         // Under constrained bandwidth: only send URGENT (tier 0).
+//         // NORMAL and DEFERRED wait for the next reconnect window or
+//         // until the network recovers to 'normal'.
+//         if (isBandwidthConstrained && post.syncPriority > SyncPriority.URGENT) {
+//             logDebug(`[DDIL] Deferring post ${post.id} (priority ${post.syncPriority})`);
+//             continue;
+//         }
+//
+//         // Reuse the existing retry path — it handles thread creation,
+//         // lastPostAt updates, and all the edge cases.
+//         await retryFailedPost(serverUrl, post);
+//
+//         // Small pause between sends on a recovering connection.
+//         // Prevents overwhelming a marginal link with a burst.
+//         await new Promise((resolve) => setTimeout(resolve, RETRY_INTER_SEND_DELAY_MS));
+//     }
+// }
+

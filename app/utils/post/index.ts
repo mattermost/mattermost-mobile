@@ -57,6 +57,12 @@ export function isPostEphemeral(post: PostModel): boolean {
 }
 
 export function isPostFailed(post: PostModel): boolean {
+    // DDIL: Once the `failed` column migration is fully wired in, this can
+    // simplify to:
+    //   return post.failed || ((post.pendingPostId === post.id) && (Date.now() > post.updateAt + POST_TIME_TO_FAIL));
+    //
+    // The props.failed check stays for backward compat with posts written
+    // before the migration (they'll have failed=null, props.failed=true).
     return Boolean(post.props?.failed) || ((post.pendingPostId === post.id) && (Date.now() > post.updateAt + POST_TIME_TO_FAIL));
 }
 

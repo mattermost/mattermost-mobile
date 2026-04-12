@@ -88,6 +88,16 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
     await fetchPostDataIfNeeded(serverUrl, groupLabel);
 
+    // DDIL: After inbound sync, flush outbound failed posts in priority order.
+    // This is the missing outbound leg — currently failed posts sit until
+    // the user manually taps Retry on each one.
+    //
+    // Placement rationale: After fetchPostDataIfNeeded (so the user sees
+    // the latest inbound state) but before deferredAppEntryActions (so
+    // outbound messages don't compete with deferred background fetches).
+    //
+    // await retryFailedPosts(serverUrl);
+
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
     const license = await getLicense(database);
     const config = await getConfig(database);

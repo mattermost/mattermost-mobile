@@ -73,6 +73,12 @@ declare class PostModel extends Model {
     /** props : Additional attributes for this props */
     props: Record<string, unknown> | null;
 
+    /** failed : Whether this post failed to send (DDIL — indexed for efficient querying) */
+    failed: boolean;
+
+    /** syncPriority : Outbound sync tier (0=URGENT, 1=NORMAL, 2=DEFERRED) */
+    syncPriority: number;
+
     /** drafts  : Every draft associated with this Post */
     drafts: Query<DraftModel>;
 

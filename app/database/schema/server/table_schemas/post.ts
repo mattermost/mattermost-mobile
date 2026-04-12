@@ -26,6 +26,18 @@ export default tableSchema({
         {name: 'type', type: 'string', isIndexed: true},
         {name: 'update_at', type: 'number'},
         {name: 'user_id', type: 'string', isIndexed: true},
+
+        // DDIL: Move failure state out of the `props` JSON blob so we can
+        // query for failed posts without deserializing every row.
+        // Currently `props.failed = true` is invisible to WatermelonDB indexes.
+        {name: 'failed', type: 'boolean', isOptional: true, isIndexed: true},
+
+        // DDIL: Sync priority tier assigned at write time.
+        // 0 = URGENT (DMs, @mentions, user-flagged urgent)
+        // 1 = NORMAL (standard channel messages)
+        // 2 = DEFERRED (file-heavy posts, read receipts)
+        // Enables ORDER BY sync_priority ASC, create_at ASC on reconnect flush.
+        {name: 'sync_priority', type: 'number', isOptional: true},
     ],
 });
 

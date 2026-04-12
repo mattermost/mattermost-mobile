@@ -28,6 +28,30 @@ const {AI_BOT, AI_THREAD} = AGENTS_TABLES;
 
 export default schemaMigrations({migrations: [
     {
+        // DDIL: Add indexed `failed` column and `sync_priority` to Post table.
+        // This is an additive migration — no existing data affected, low rollback risk.
+        // Existing posts will have failed=null and sync_priority=null (both isOptional).
+        //
+        // WHY: `props.failed` lives inside a JSON blob today, meaning you can't query
+        // for failed posts without loading every post and deserializing props in JS.
+        // After a long blackout with many queued messages, that's a real bottleneck.
+        // Moving `failed` to a real indexed column enables:
+        //   Q.where('failed', true)  — fast, indexed lookup
+        //
+        // `sync_priority` enables priority-ordered retry on reconnect:
+        //   Q.sortBy('sync_priority', Q.asc), Q.sortBy('create_at', Q.asc)
+        toVersion: 20,
+        steps: [
+            addColumns({
+                table: POST,
+                columns: [
+                    {name: 'failed', type: 'boolean', isOptional: true},
+                    {name: 'sync_priority', type: 'number', isOptional: true},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 19,
         steps: [
             createTable({

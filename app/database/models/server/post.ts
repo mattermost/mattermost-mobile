@@ -101,6 +101,15 @@ export default class PostModel extends Model implements PostModelInterface {
     /** props : Additional attributes for this props */
     @json('props', safeParseJSON) props!: any;
 
+    // DDIL: Indexed failure state — replaces the buried `props.failed` JSON flag.
+    // Enables efficient querying: Q.where('failed', true)
+    @field('failed') failed!: boolean;
+
+    // DDIL: Priority tier for outbound sync ordering on reconnect.
+    // See SyncPriority enum in app/utils/sync_priority.ts
+    // 0 = URGENT, 1 = NORMAL, 2 = DEFERRED
+    @field('sync_priority') syncPriority!: number;
+
     // A draft can be associated with this post for as long as this post is a parent post
     @lazy drafts = this.collections.get<DraftModel>(DRAFT).query(Q.on(POST, 'id', this.id));
 
