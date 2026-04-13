@@ -56,13 +56,13 @@ export async function addChannelToManagedCategoryIfNeeded(serverUrl: string, cha
     if (!teamId || isDMorGM(channel)) {
         return;
     }
-    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-    const managedEnabled = await getConfigValue(database, 'EnableManagedChannelCategories');
-    if (managedEnabled !== 'true') {
-        return;
-    }
-    const channelId = channel.id;
     try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const managedEnabled = await getConfigValue(database, 'EnableManagedChannelCategories');
+        if (managedEnabled !== 'true') {
+            return;
+        }
+        const channelId = channel.id;
         const client = NetworkManager.getClient(serverUrl);
         const values = await client.getPropertyValues<string>(
             MANAGED_CHANNEL_CATEGORIES_GROUP,
@@ -87,8 +87,13 @@ export async function addChannelToManagedCategoryIfNeeded(serverUrl: string, cha
         } else {
             channelIds = [channelId];
             const allCategories = await queryCategoriesByTeamIds(database, [teamId]).fetch();
-            const managedCount = allCategories.filter((c) => c.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)).length;
-            sortOrder = (-1000 + managedCount) * 10;
+            const managedNames = allCategories.
+                filter((c) => c.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)).
+                map((c) => c.displayName);
+            managedNames.push(categoryName);
+            managedNames.sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+            const index = managedNames.indexOf(categoryName);
+            sortOrder = (-1000 + index) * 10;
         }
 
         const managedCwc: CategoryWithChannels = {
