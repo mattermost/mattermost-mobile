@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import {renderWithEverything, act} from '@test/intl-test-helper';
+import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import WatermarkScreenExport from './index';
@@ -27,15 +27,10 @@ describe('WatermarkScreen', () => {
             {database, serverUrl},
         );
 
-        // The watermark renders its text multiple times (grid pattern).
-        // Verify at least one instance of the domain is present.
-        await act(async () => {
-            // Allow observables to emit
-        });
-
         // Domain extracted from serverUrl should be in the watermark text
-        const items = getAllByText(/www\.someserver\.com/);
-        expect(items.length).toBeGreaterThan(0);
+        await waitFor(() => {
+            expect(getAllByText(/www\.someserver\.com/).length).toBeGreaterThan(0);
+        });
     });
 
     it('should render watermark text containing username, domain, date and time', async () => {
@@ -45,14 +40,11 @@ describe('WatermarkScreen', () => {
             {database, serverUrl},
         );
 
-        await act(async () => {
-            // Allow observables to emit
+        // The full watermark text includes username, server URL, and a formatted date/time.
+        // e.g. "someuser  http://www.someserver.com  4/13/2026  12:34 PM"
+        await waitFor(() => {
+            expect(getAllByText(new RegExp(`${username}.*www\\.someserver\\.com.*\\d+.*\\d+`)).length).toBeGreaterThan(0);
         });
-
-        // The full watermark text includes username, domain, and a formatted date/time.
-        // e.g. "someuser  www.someserver.com  4/13/2026  12:34 PM"
-        const items = getAllByText(new RegExp(`${username}.*www\\.someserver\\.com.*\\d+.*\\d+`));
-        expect(items.length).toBeGreaterThan(0);
     });
 
     it('should render multiple copies of the watermark text for the grid pattern', async () => {
@@ -61,12 +53,9 @@ describe('WatermarkScreen', () => {
             {database, serverUrl},
         );
 
-        await act(async () => {
-            // Allow observables to emit
-        });
-
         // The watermark renders a grid of repeated text — expect more than one copy
-        const items = getAllByText(/www\.someserver\.com/);
-        expect(items.length).toBeGreaterThan(1);
+        await waitFor(() => {
+            expect(getAllByText(/www\.someserver\.com/).length).toBeGreaterThan(1);
+        });
     });
 });
