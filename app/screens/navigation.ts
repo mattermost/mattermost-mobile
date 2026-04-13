@@ -6,7 +6,7 @@
 import RNUtils from '@mattermost/rnutils';
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, Platform, Alert, type EmitterSubscription, StatusBar} from 'react-native';
-import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
+import {type ComponentDidDisappearEvent, type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
@@ -70,12 +70,19 @@ function showBottomTabsIfNeeded(screen: AvailableScreens) {
     }
 }
 
+function onWatermarkDidDisappear({componentId}: ComponentDidDisappearEvent) {
+    if (componentId === Screens.WATERMARK) {
+        watermarkCurrentlyShown = false;
+    }
+}
+
 export function registerNavigationListeners() {
     subscriptions?.forEach((v) => v.remove());
     subscriptions = [
         Navigation.events().registerScreenPoppedListener(onPoppedListener),
         Navigation.events().registerCommandListener(onCommandListener),
         Navigation.events().registerComponentWillAppearListener(onScreenWillAppear),
+        Navigation.events().registerComponentDidDisappearListener(onWatermarkDidDisappear),
 
         /**
          * For the time being and until we add the emoji picker in the keyboard area
@@ -84,7 +91,6 @@ export function registerNavigationListeners() {
          * to a different channel or thread.
          */
         // Navigation.events().registerComponentDidAppearListener(onScreenDidAppear),
-        // Navigation.events().registerComponentDidDisappearListener(onScreenDidDisappear),
     ];
 }
 
@@ -881,7 +887,7 @@ export async function dismissAllOverlays() {
     // is never touched and never flashes during navigation.
     const ids = [...shownNonWatermarkOverlayIds];
     shownNonWatermarkOverlayIds.clear();
-    await Promise.all(ids.map((id) => Navigation.dismissOverlay(id).catch(() => { /* already gone */ })));
+    await Promise.allSettled(ids.map((id) => Navigation.dismissOverlay(id)));
 }
 
 type BottomSheetArgs = {

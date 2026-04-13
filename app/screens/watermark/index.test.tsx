@@ -23,7 +23,7 @@ describe('WatermarkScreen', () => {
 
     it('should render watermark text containing username and domain', async () => {
         const {getAllByText} = renderWithEverything(
-            <WatermarkScreenExport componentId='Watermark'/>,
+            <WatermarkScreenExport/>,
             {database, serverUrl},
         );
 
@@ -38,9 +38,26 @@ describe('WatermarkScreen', () => {
         expect(items.length).toBeGreaterThan(0);
     });
 
+    it('should render watermark text containing username, domain, date and time', async () => {
+        const username = TestHelper.basicUser!.username;
+        const {getAllByText} = renderWithEverything(
+            <WatermarkScreenExport/>,
+            {database, serverUrl},
+        );
+
+        await act(async () => {
+            // Allow observables to emit
+        });
+
+        // The full watermark text includes username, domain, and a formatted date/time.
+        // e.g. "someuser  www.someserver.com  4/13/2026  12:34 PM"
+        const items = getAllByText(new RegExp(`${username}.*www\\.someserver\\.com.*\\d+.*\\d+`));
+        expect(items.length).toBeGreaterThan(0);
+    });
+
     it('should render multiple copies of the watermark text for the grid pattern', async () => {
         const {getAllByText} = renderWithEverything(
-            <WatermarkScreenExport componentId='Watermark'/>,
+            <WatermarkScreenExport/>,
             {database, serverUrl},
         );
 

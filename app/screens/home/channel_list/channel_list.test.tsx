@@ -96,9 +96,14 @@ describe('watermark overlay', () => {
     });
 
     it('should dismiss the watermark overlay when isWatermarkEnabled changes to false', async () => {
-        const {dismissWatermarkOverlay} = require('@screens/navigation');
-        const props = {...getBaseProps(), isWatermarkEnabled: false};
-        renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
+        const {showWatermarkOverlay, dismissWatermarkOverlay} = require('@screens/navigation');
+        const props = {...getBaseProps(), isWatermarkEnabled: true};
+        const {rerender} = renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(showWatermarkOverlay).toHaveBeenCalledTimes(1);
+        });
+
+        rerender(<ChannelListScreen {...{...props, isWatermarkEnabled: false}}/>);
         await waitFor(() => {
             expect(dismissWatermarkOverlay).toHaveBeenCalledTimes(1);
         });
