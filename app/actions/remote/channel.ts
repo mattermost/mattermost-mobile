@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 import {DeviceEventEmitter} from 'react-native';
 
-import {addChannelToDefaultCategory, handleConvertedGMCategories, storeCategories} from '@actions/local/category';
+import {addChannelToDefaultCategory, handleConvertedGMCategories, removeChannelFromManagedCategoryIfNeeded, storeCategories} from '@actions/local/category';
 import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeAllMyChannels, storeMyChannelsForTeam, switchToChannel, deletePostsForChannel} from '@actions/local/channel';
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import {switchToGlobalThreads} from '@actions/local/thread';
@@ -32,7 +32,7 @@ import {logDebug, logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
-import {addChannelToManagedCategoryIfNeeded, fetchCategories, removeChannelFromManagedCategoryIfNeeded} from './category';
+import {addChannelToManagedCategoryIfNeeded, fetchCategories} from './category';
 import {fetchChannelBookmarks} from './channel_bookmark';
 import {fetchGroupsForChannelIfConstrained} from './groups';
 import {fetchPostsForChannel} from './post';

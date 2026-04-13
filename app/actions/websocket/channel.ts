@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {addChannelToDefaultCategory, handleConvertedGMCategories} from '@actions/local/category';
+import {addChannelToDefaultCategory, handleConvertedGMCategories, removeChannelFromManagedCategoryIfNeeded} from '@actions/local/category';
 import {
     markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
     storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket, deletePostsForChannel,
 } from '@actions/local/channel';
 import {storePostsForChannel} from '@actions/local/post';
-import {addChannelToManagedCategoryIfNeeded, removeChannelFromManagedCategoryIfNeeded} from '@actions/remote/category';
+import {addChannelToManagedCategoryIfNeeded} from '@actions/remote/category';
 import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, handleKickFromChannel} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';

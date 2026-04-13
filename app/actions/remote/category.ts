@@ -7,7 +7,7 @@ import {CHANNELS_CATEGORY, DMS_CATEGORY, FAVORITES_CATEGORY, MANAGED_CHANNEL_CAT
 import DatabaseManager from '@database/manager';
 import {makeManagedCategoryId, mergeManagedMappingsIntoSidebarCategories} from '@helpers/sidebar/managed_categories_merge';
 import NetworkManager from '@managers/network_manager';
-import {getCategoryById, getChannelCategory, queryCategoriesByTeamIds, queryCategoryChannelsByChannelId} from '@queries/servers/categories';
+import {getCategoryById, getChannelCategory, queryCategoriesByTeamIds} from '@queries/servers/categories';
 import {getChannelById} from '@queries/servers/channel';
 import {getConfigValue, getCurrentTeamId} from '@queries/servers/system';
 import {isDMorGM} from '@utils/channel';
@@ -17,7 +17,6 @@ import {showFavoriteChannelSnackbar} from '@utils/snack_bar';
 
 import {forceLogoutIfNecessary} from './session';
 
-import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 export type CategoriesRequest = {
@@ -107,42 +106,6 @@ export async function addChannelToManagedCategoryIfNeeded(serverUrl: string, cha
         await storeCategories(serverUrl, [managedCwc]);
     } catch (error) {
         logDebug('[addChannelToManagedCategoryIfNeeded]', getFullErrorMessage(error));
-        forceLogoutIfNecessary(serverUrl, error);
-    }
-}
-
-export async function removeChannelFromManagedCategoryIfNeeded(serverUrl: string, teamId: string, channelId: string) {
-    try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const managedEnabled = await getConfigValue(database, 'EnableManagedChannelCategories');
-        if (managedEnabled !== 'true') {
-            return;
-        }
-
-        const category = await getChannelCategory(database, teamId, channelId);
-        if (!category || !category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
-            return;
-        }
-
-        const models: Model[] = [];
-
-        const categoryChannels = await queryCategoryChannelsByChannelId(database, channelId).fetch();
-        for (const cc of categoryChannels) {
-            if (cc.categoryId === category.id) {
-                models.push(cc.prepareDestroyPermanently());
-            }
-        }
-
-        const cwc = await category.toCategoryWithChannels();
-        if (cwc.channel_ids.filter((id) => id !== channelId).length === 0) {
-            models.push(category.prepareDestroyPermanently());
-        }
-
-        if (models.length) {
-            await operator.batchRecords(models, 'removeChannelFromManagedCategory');
-        }
-    } catch (error) {
-        logDebug('[removeChannelFromManagedCategoryIfNeeded]', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
     }
 }

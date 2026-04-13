@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {addChannelToManagedCategoryIfNeeded, removeChannelFromManagedCategoryIfNeeded} from '@actions/remote/category';
+import {removeChannelFromManagedCategoryIfNeeded} from '@actions/local/category';
+import {addChannelToManagedCategoryIfNeeded} from '@actions/remote/category';
 import {MANAGED_CHANNEL_CATEGORIES_GROUP} from '@constants/categories';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';

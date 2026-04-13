@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
+import {CHANNELS_CATEGORY, DMS_CATEGORY, MANAGED_LOCAL_CATEGORY_PREFIX} from '@constants/categories';
 import DatabaseManager from '@database/manager';
-import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels, queryCategoryChannelsByChannelId} from '@queries/servers/categories';
-import {getCurrentUserId} from '@queries/servers/system';
+import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels, queryCategoryChannelsByChannelId, getChannelCategory} from '@queries/servers/categories';
+import {getConfigValue, getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 
 import type {Database, Model} from '@nozbe/watermelondb';
@@ -108,6 +109,41 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
     } catch (error) {
         logError('Failed to add channel to default category', error);
         return {error};
+    }
+}
+
+export async function removeChannelFromManagedCategoryIfNeeded(serverUrl: string, teamId: string, channelId: string) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const managedEnabled = await getConfigValue(database, 'EnableManagedChannelCategories');
+        if (managedEnabled !== 'true') {
+            return;
+        }
+
+        const category = await getChannelCategory(database, teamId, channelId);
+        if (!category || !category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
+            return;
+        }
+
+        const models: Model[] = [];
+
+        const categoryChannels = await queryCategoryChannelsByChannelId(database, channelId).fetch();
+        for (const cc of categoryChannels) {
+            if (cc.categoryId === category.id) {
+                models.push(cc.prepareDestroyPermanently());
+            }
+        }
+
+        const cwc = await category.toCategoryWithChannels();
+        if (cwc.channel_ids.filter((id) => id !== channelId).length === 0) {
+            models.push(category.prepareDestroyPermanently());
+        }
+
+        if (models.length) {
+            await operator.batchRecords(models, 'removeChannelFromManagedCategory');
+        }
+    } catch (error) {
+        logDebug('[removeChannelFromManagedCategoryIfNeeded]', getFullErrorMessage(error));
     }
 }
 
