@@ -44,6 +44,12 @@ let watermarkCurrentlyShown = false;
 // without ever touching the watermark overlay, preventing any visual flash.
 const shownNonWatermarkOverlayIds = new Set<string>();
 
+/** RNN overlay options for the watermark (pass-through on Android via patched RNN). */
+const watermarkOverlayOptions: NonNullable<Options['overlay']> = {
+    interceptTouchOutside: false,
+    androidIgnoreTouchInside: true,
+};
+
 export const allOrientations: LayoutOrientation[] = ['sensor', 'sensorLandscape', 'sensorPortrait', 'landscape', 'portrait'];
 export const portraitOrientation: LayoutOrientation[] = ['portrait'];
 
@@ -144,7 +150,7 @@ function onScreenWillAppear(event: ComponentWillAppearEvent) {
     // Safety net: re-show watermark if it was somehow dismissed (e.g., by an error path).
     if (watermarkShouldBeShown && !watermarkCurrentlyShown) {
         watermarkCurrentlyShown = true;
-        showOverlay(Screens.WATERMARK, {}, {overlay: {interceptTouchOutside: false}}, Screens.WATERMARK);
+        showOverlay(Screens.WATERMARK, {}, {overlay: watermarkOverlayOptions}, Screens.WATERMARK);
     }
 }
 
@@ -997,7 +1003,7 @@ export const showWatermarkOverlay = () => {
     watermarkShouldBeShown = true;
     if (!watermarkCurrentlyShown) {
         watermarkCurrentlyShown = true;
-        showOverlay(Screens.WATERMARK, {}, {overlay: {interceptTouchOutside: false}}, Screens.WATERMARK);
+        showOverlay(Screens.WATERMARK, {}, {overlay: watermarkOverlayOptions}, Screens.WATERMARK);
     }
 };
 
