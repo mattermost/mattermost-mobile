@@ -103,7 +103,7 @@ describe('watermark overlay', () => {
             expect(showWatermarkOverlay).toHaveBeenCalledTimes(1);
         });
 
-        rerender(<ChannelListScreen {...{...props, isWatermarkEnabled: false}}/>);
+        rerender(<ChannelListScreen {...props, isWatermarkEnabled: false}/>);
         await waitFor(() => {
             expect(dismissWatermarkOverlay).toHaveBeenCalledTimes(1);
         });
