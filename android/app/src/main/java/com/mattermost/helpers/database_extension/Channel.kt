@@ -216,19 +216,36 @@ fun updateMyChannel(db: WMDatabase, myChanel: JSONObject) {
         val isUnread = try { myChanel.getBoolean("is_unread") } catch (e: JSONException) { false }
         val lastPostAt = try { myChanel.getDouble("last_post_at") } catch (e: JSONException) { 0 }
         val lastViewedAt = try { myChanel.getDouble("last_viewed_at") } catch (e: JSONException) { 0 }
-        val lastFetchedAt = try { myChanel.getDouble("last_fetched_at") } catch (e: JSONException) { 0 }
 
-        db.execute(
-                """
-                    UPDATE MyChannel SET message_count=?, mentions_count=?, is_unread=?, 
-                    last_post_at=?, last_viewed_at=?, last_fetched_at=?, _status = 'updated' 
-                    WHERE id=?
-                    """,
-                arrayOf(
-                        msgCount, mentionsCount, isUnread,
-                        lastPostAt, lastViewedAt, lastFetchedAt, id
-                )
-        )
+        // Only write last_fetched_at when the caller explicitly set it in the JSON.
+        // Falling back to 0 on a missing key and writing it unconditionally would regress
+        // the cursor (e.g. when postsData == null or receivingThreads == true).
+        if (myChanel.has("last_fetched_at")) {
+            val lastFetchedAt = myChanel.getDouble("last_fetched_at")
+            db.execute(
+                    """
+                        UPDATE MyChannel SET message_count=?, mentions_count=?, is_unread=?,
+                        last_post_at=?, last_viewed_at=?, last_fetched_at=?, _status = 'updated'
+                        WHERE id=?
+                        """,
+                    arrayOf(
+                            msgCount, mentionsCount, isUnread,
+                            lastPostAt, lastViewedAt, lastFetchedAt, id
+                    )
+            )
+        } else {
+            db.execute(
+                    """
+                        UPDATE MyChannel SET message_count=?, mentions_count=?, is_unread=?,
+                        last_post_at=?, last_viewed_at=?, _status = 'updated'
+                        WHERE id=?
+                        """,
+                    arrayOf(
+                            msgCount, mentionsCount, isUnread,
+                            lastPostAt, lastViewedAt, id
+                    )
+            )
+        }
     } catch (e: Exception) {
         e.printStackTrace()
     }
