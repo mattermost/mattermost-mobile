@@ -37,7 +37,7 @@ on:
         required: false
         type: string
       run_type:
-        description: "Run type for test reporting (PR/RELEASE/NIGHTLY). Defaults to PR."
+        description: "Run type for test reporting (PR/RELEASE/NIGHTLY/MASTER). Defaults to PR."
         required: false
         default: "PR"
         type: string
