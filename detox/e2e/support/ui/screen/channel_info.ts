@@ -37,6 +37,11 @@ class ChannelInfoScreen {
         copyChannelLinkOption: 'channel_info.options.copy_channel_link.option',
         channelSettingsOption: 'channel_info.options.channel_settings.option',
         leaveChannelOption: 'channel_info.options.leave_channel.option',
+        myAutotranslationOption: 'channel_info.options.my_autotranslation.option',
+        myAutotranslationOptionToggledOn: 'channel_info.options.my_autotranslation.option.toggled.true',
+        myAutotranslationOptionToggledOff: 'channel_info.options.my_autotranslation.option.toggled.false',
+        myAutotranslationToggleOnButton: 'channel_info.options.my_autotranslation.option.toggled.true.toggled.true.button',
+        myAutotranslationToggleOffButton: 'channel_info.options.my_autotranslation.option.toggled.false.toggled.false.button',
     };
 
     channelInfoScreen = element(by.id(this.testID.channelInfoScreen));
@@ -64,6 +69,11 @@ class ChannelInfoScreen {
     copyChannelLinkOption = element(by.id(this.testID.copyChannelLinkOption));
     channelSettingsOption = element(by.id(this.testID.channelSettingsOption));
     leaveChannelOption = element(by.id(this.testID.leaveChannelOption));
+    myAutotranslationOption = element(by.id(this.testID.myAutotranslationOption));
+    myAutotranslationOptionToggledOn = element(by.id(this.testID.myAutotranslationOptionToggledOn));
+    myAutotranslationOptionToggledOff = element(by.id(this.testID.myAutotranslationOptionToggledOff));
+    myAutotranslationToggleOnButton = element(by.id(this.testID.myAutotranslationToggleOnButton));
+    myAutotranslationToggleOffButton = element(by.id(this.testID.myAutotranslationToggleOffButton));
 
     getDirectMessageTitle = (userId: string) => {
         const directMessageTitleTestId = `${this.testID.directMessageTitlePrefix}${userId}`;
