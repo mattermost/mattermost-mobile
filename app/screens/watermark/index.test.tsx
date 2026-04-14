@@ -26,30 +26,41 @@ describe('WatermarkScreen', () => {
         DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
-    it('should render watermark text containing username and domain', async () => {
+    it('should render watermark text containing username and server URL', async () => {
         const {getAllByText} = renderWithEverything(
             <WatermarkScreenExport/>,
             {database, serverUrl},
         );
 
-        // Domain extracted from serverUrl should be in the watermark text
+        // The watermark container is hidden from accessibility intentionally;
+        // use includeHiddenElements to still find the text in tests.
         await waitFor(() => {
-            expect(getAllByText(/www\.someserver\.com/).length).toBeGreaterThan(0);
+            expect(getAllByText(/www\.someserver\.com/, {includeHiddenElements: true}).length).toBeGreaterThan(0);
         });
     });
 
-    it('should render watermark text containing username, domain, date and time', async () => {
-        const username = TestHelper.basicUser!.username;
-        const {getAllByText} = renderWithEverything(
-            <WatermarkScreenExport/>,
-            {database, serverUrl},
-        );
-
-        // The full watermark text includes username, server URL, and a formatted date/time.
-        // e.g. "someuser  http://www.someserver.com  4/13/2026  12:34 PM"
-        await waitFor(() => {
-            expect(getAllByText(new RegExp(`${username}.*www\\.someserver\\.com.*\\d+.*\\d+`)).length).toBeGreaterThan(0);
+    it('should render watermark text containing username, server URL, date and time', async () => {
+        // Freeze Date so the watermark's "now" is deterministic.
+        // Only fake Date — keep all timer APIs real so WatermelonDB observables resolve normally.
+        jest.useFakeTimers({
+            now: new Date('2026-04-14T10:30:00'),
+            doNotFake: ['nextTick', 'setImmediate', 'clearImmediate', 'setInterval', 'clearInterval', 'setTimeout', 'clearTimeout', 'queueMicrotask'],
         });
+
+        try {
+            const username = TestHelper.basicUser!.username;
+            const {getAllByText} = renderWithEverything(
+                <WatermarkScreenExport/>,
+                {database, serverUrl},
+            );
+
+            const expectedText = `${username}  ${serverUrl}  4/14/2026  10:30 AM`;
+            await waitFor(() => {
+                expect(getAllByText(expectedText, {includeHiddenElements: true}).length).toBeGreaterThan(0);
+            });
+        } finally {
+            jest.useRealTimers();
+        }
     });
 
     it('should render multiple copies of the watermark text for the grid pattern', async () => {
@@ -60,7 +71,7 @@ describe('WatermarkScreen', () => {
 
         // The watermark renders a grid of repeated text — expect more than one copy
         await waitFor(() => {
-            expect(getAllByText(/www\.someserver\.com/).length).toBeGreaterThan(1);
+            expect(getAllByText(/www\.someserver\.com/, {includeHiddenElements: true}).length).toBeGreaterThan(1);
         });
     });
 });
