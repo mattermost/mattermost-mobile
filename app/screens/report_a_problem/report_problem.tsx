@@ -26,7 +26,6 @@ import {getCommonStyleSheet} from './styles';
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
 
-
 type Props = {
     componentId: AvailableScreens;
     reportAProblemMail?: string;
