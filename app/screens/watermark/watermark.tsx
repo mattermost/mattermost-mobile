@@ -17,6 +17,7 @@ type Props = {
 const WATERMARK_COLOR = 'rgba(128, 128, 128, 0.45)';
 const ROW_HEIGHT = 130;
 const TEXT_GAP = 50;
+const ESTIMATED_CHAR_WIDTH_PX = 9; // ~9px per char for Body/75 typography at 11sp
 
 const styles = {
     container: {
@@ -73,8 +74,7 @@ const WatermarkScreen = ({currentUser}: Props) => {
 
     const numRows = Math.ceil(diagonal / ROW_HEIGHT) + 2;
 
-    // Approximate character width for Body/75 typography (~9px per char at 11sp)
-    const estimatedTextWidth = watermarkText.length * 9;
+    const estimatedTextWidth = watermarkText.length * ESTIMATED_CHAR_WIDTH_PX;
     const colWidth = estimatedTextWidth + TEXT_GAP;
     const numCols = Math.ceil(diagonal / colWidth) + 2;
 
@@ -110,6 +110,8 @@ const WatermarkScreen = ({currentUser}: Props) => {
         <View
             style={styles.container}
             pointerEvents='none'
+            accessibilityElementsHidden={true}
+            importantForAccessibility='no-hide-descendants'
         >
             <View style={[styles.diagonalLayer, layerStyle]}>
                 {renderGrid()}

@@ -3,6 +3,7 @@
 
 import React from 'react';
 
+import DatabaseManager from '@database/manager';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -19,6 +20,10 @@ describe('WatermarkScreen', () => {
     beforeAll(async () => {
         const server = await TestHelper.setupServerDatabase(serverUrl);
         database = server.database;
+    });
+
+    afterAll(() => {
+        DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
     it('should render watermark text containing username and domain', async () => {
