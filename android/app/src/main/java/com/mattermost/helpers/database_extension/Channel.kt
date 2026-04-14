@@ -45,7 +45,7 @@ internal fun DatabaseHelper.handleMyChannel(db: WMDatabase, myChannel: ReadableM
         if (postsData != null && !receivingThreads) {
             val posts = ReadableMapUtils.toJSONObject(postsData.getMap("posts")).toMap()
             val postList = posts.toList()
-            val lastFetchedAt = postList.fold(0.0) { acc, next ->
+            val computedLastFetchedAt = postList.fold(0.0) { acc, next ->
                 val post = next.second as Map<*, *>
                 val createAt = post["create_at"] as Double
                 val updateAt = post["update_at"] as Double
@@ -57,7 +57,16 @@ internal fun DatabaseHelper.handleMyChannel(db: WMDatabase, myChannel: ReadableM
 
                 maxOf(value, acc)
             }
-            json.put("last_fetched_at", lastFetchedAt)
+            // Ensure monotonicity: never regress the cursor. An empty batch produces 0 and a
+            // deleted-only batch may produce an older create_at — clamp against the stored value.
+            val channelId = myChannel.getString("id") ?: ""
+            val existingLastFetchedAt = find(db, "MyChannel", channelId)?.let {
+                try { it.getDouble("last_fetched_at") } catch (e: Exception) { 0.0 }
+            } ?: 0.0
+            val clampedLastFetchedAt = maxOf(existingLastFetchedAt, computedLastFetchedAt)
+            if (clampedLastFetchedAt > 0) {
+                json.put("last_fetched_at", clampedLastFetchedAt)
+            }
         }
 
         if (exists) {
