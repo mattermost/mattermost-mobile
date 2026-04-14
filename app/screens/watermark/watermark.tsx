@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {StyleSheet, Text, useWindowDimensions, View} from 'react-native';
 
 import {useServerUrl} from '@context/server';
+import useDidMount from '@hooks/did_mount';
 import {toMilliseconds} from '@utils/datetime';
 import {typography} from '@utils/typography';
 
@@ -59,10 +60,10 @@ const WatermarkScreen = ({currentUser}: Props) => {
     const {width, height} = useWindowDimensions();
     const [now, setNow] = useState(() => new Date());
 
-    useEffect(() => {
+    useDidMount(() => {
         const interval = setInterval(() => setNow(new Date()), toMilliseconds({minutes: 1}));
         return () => clearInterval(interval);
-    }, []);
+    });
 
     const username = currentUser?.username ?? '';
     const watermarkText = `${username}  ${serverUrl}  ${formatDate(now)}  ${formatTime(now)}`;
