@@ -50,7 +50,10 @@ internal fun DatabaseHelper.handleMyChannel(db: WMDatabase, myChannel: ReadableM
                 val createAt = post["create_at"] as Double
                 val updateAt = post["update_at"] as Double
                 val deleteAt = post["delete_at"] as Double
-                val value = maxOf(createAt, updateAt, deleteAt)
+                // For deleted posts, use only createAt — the server sets updateAt = deleteAt = T_del
+                // on deletion, so including either would advance last_fetched_at to "now" and cause
+                // subsequent fetchPostsSince calls to return 0 posts, making the channel appear empty.
+                val value = if (deleteAt > 0) createAt else maxOf(createAt, updateAt)
 
                 maxOf(value, acc)
             }

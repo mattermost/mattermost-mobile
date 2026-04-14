@@ -215,7 +215,10 @@ extension PushNotification {
                         var lastFetchedAt: Double = 0
                         if let postResponse = data.posts, !receivingThreads {
                             let posts = Array(postResponse.posts.values)
-                            if let fetchedAt = posts.map({max($0.createAt, $0.updateAt, $0.deleteAt)}).max() {
+                            // For deleted posts, use only createAt — the server sets updateAt = deleteAt = T_del
+                            // on deletion, so including either would set last_fetched_at to "now" and cause
+                            // subsequent fetchPostsSince calls to return 0 posts, making the channel appear empty.
+                            if let fetchedAt = posts.map({ $0.deleteAt > 0 ? $0.createAt : max($0.createAt, $0.updateAt) }).max() {
                                 lastFetchedAt = fetchedAt
                             }
                         }

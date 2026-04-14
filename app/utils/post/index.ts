@@ -103,7 +103,12 @@ export const processPostsFetched = (data: PostResponse) => {
 
 export const getLastFetchedAtFromPosts = (posts?: Post[]) => {
     return posts?.reduce((timestamp: number, p) => {
-        const maxTimestamp = Math.max(p.create_at, p.update_at, p.delete_at);
+        // For deleted posts, use only create_at — the server sets update_at = delete_at = T_del
+        // when deleting, so including either would advance last_fetched_at to "now" and
+        // cause all subsequent fetchPostsSince calls to return 0 posts, making the channel appear empty.
+        const maxTimestamp = p.delete_at > 0
+            ? p.create_at
+            : Math.max(p.create_at, p.update_at);
         return Math.max(maxTimestamp, timestamp);
     }, 0) || 0;
 };
