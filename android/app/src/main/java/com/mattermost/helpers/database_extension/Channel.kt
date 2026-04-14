@@ -61,7 +61,10 @@ internal fun DatabaseHelper.handleMyChannel(db: WMDatabase, myChannel: ReadableM
             // deleted-only batch may produce an older create_at — clamp against the stored value.
             val channelId = myChannel.getString("id") ?: ""
             val existingLastFetchedAt = find(db, "MyChannel", channelId)?.let {
-                try { it.getDouble("last_fetched_at") } catch (e: Exception) { 0.0 }
+                try { it.getDouble("last_fetched_at") } catch (e: Exception) {
+                    e.printStackTrace()
+                    0.0
+                }
             } ?: 0.0
             val clampedLastFetchedAt = maxOf(existingLastFetchedAt, computedLastFetchedAt)
             if (clampedLastFetchedAt > 0) {
