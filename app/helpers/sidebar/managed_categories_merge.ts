@@ -1,13 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MANAGED_LOCAL_CATEGORY_PREFIX} from '@constants/categories';
-import {getCategoryById} from '@queries/servers/categories';
+import {MANAGED_CHANNEL_CATEGORIES_FIELD, MANAGED_CHANNEL_CATEGORIES_GROUP, MANAGED_LOCAL_CATEGORY_PREFIX} from '@constants/categories';
+import NetworkManager from '@managers/network_manager';
+import {queryCategoriesByTeamIds} from '@queries/servers/categories';
+import EphemeralStore from '@store/ephemeral_store';
+import {logDebug} from '@utils/log';
 
 import type {Database} from '@nozbe/watermelondb';
 
 export function makeManagedCategoryId(teamId: string, displayName: string): string {
     return `${MANAGED_LOCAL_CATEGORY_PREFIX}${teamId}:${displayName}`;
+}
+
+export function computeManagedSortOrder(index: number): number {
+    return (-1000 + index) * 10;
 }
 
 export async function mergeManagedMappingsIntoSidebarCategories(
@@ -21,11 +28,6 @@ export async function mergeManagedMappingsIntoSidebarCategories(
         return serverCategories;
     }
 
-    const stripped = serverCategories.map((cat) => ({
-        ...cat,
-        channel_ids: cat.channel_ids.filter((id) => !managedChannelIds.has(id)),
-    }));
-
     const byName = new Map<string, string[]>();
     for (const [chId, name] of Object.entries(mappings)) {
         if (!name) {
@@ -37,22 +39,55 @@ export async function mergeManagedMappingsIntoSidebarCategories(
     }
 
     const names = [...byName.keys()].sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
-    const managedCategories = await Promise.all(names.map(async (name, i) => {
+
+    const allLocalCategories = await queryCategoriesByTeamIds(database, [teamId]).fetch();
+    const collapsedById = new Map<string, boolean>();
+    for (const cat of allLocalCategories) {
+        collapsedById.set(cat.id, cat.collapsed);
+    }
+
+    const managedCategories = names.map((name, i) => {
         const channelIds = [...(byName.get(name) ?? [])].sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
         const id = makeManagedCategoryId(teamId, name);
-        const existing = await getCategoryById(database, id);
         return {
             id,
             team_id: teamId,
             display_name: name,
-            sort_order: (-1000 + i) * 10,
+            sort_order: computeManagedSortOrder(i),
             sorting: 'alpha' as CategorySorting,
             type: 'custom' as CategoryType,
             muted: false,
-            collapsed: existing?.collapsed ?? false,
+            collapsed: collapsedById.get(id) ?? false,
             channel_ids: channelIds,
         };
-    }));
+    });
 
-    return [...managedCategories, ...stripped];
+    return [...managedCategories, ...serverCategories];
+}
+
+export async function fetchManagedCategoryPropertyIds(serverUrl: string) {
+    const cached = EphemeralStore.getManagedCategoryPropertyIds(serverUrl);
+    if (cached) {
+        return cached;
+    }
+
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const fields = await client.getPropertyFields(MANAGED_CHANNEL_CATEGORIES_GROUP, 'channel', 'system');
+        if (fields.length === 0) {
+            return undefined;
+        }
+
+        const field = fields.find((f) => f.name === MANAGED_CHANNEL_CATEGORIES_FIELD);
+        if (!field) {
+            return undefined;
+        }
+
+        const ids = {groupId: field.group_id, fieldId: field.id};
+        EphemeralStore.setManagedCategoryPropertyIds(serverUrl, ids);
+        return ids;
+    } catch (error) {
+        logDebug('[fetchManagedCategoryPropertyIds]', error);
+        return undefined;
+    }
 }

@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 import {DeviceEventEmitter} from 'react-native';
 
-import {addChannelToDefaultCategory, handleConvertedGMCategories, removeChannelFromManagedCategoryIfNeeded, storeCategories} from '@actions/local/category';
+import {addChannelToDefaultCategory, removeChannelFromManagedCategoryIfNeeded, handleConvertedGMCategories, storeCategories} from '@actions/local/category';
 import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeAllMyChannels, storeMyChannelsForTeam, switchToChannel, deletePostsForChannel} from '@actions/local/channel';
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import {switchToGlobalThreads} from '@actions/local/thread';
@@ -312,19 +312,18 @@ export async function leaveChannel(serverUrl: string, channelId: string) {
         }
 
         const channelBeforeLeave = await getChannelById(database, channelId);
-        const teamIdForManagedCategories = channelBeforeLeave?.teamId;
 
         await client.removeFromChannel(user.id, channelId);
+
+        if (channelBeforeLeave?.teamId) {
+            await removeChannelFromManagedCategoryIfNeeded(serverUrl, channelBeforeLeave.teamId, channelId);
+        }
 
         if (user.isGuest) {
             const {models: updateVisibleModels} = await updateUsersNoLongerVisible(serverUrl, true);
             if (updateVisibleModels) {
                 models.push(...updateVisibleModels);
             }
-        }
-
-        if (teamIdForManagedCategories && channelBeforeLeave && !isDMorGM(channelBeforeLeave)) {
-            await removeChannelFromManagedCategoryIfNeeded(serverUrl, teamIdForManagedCategories, channelId);
         }
 
         const {models: removeUserModels} = await removeCurrentUserFromChannel(serverUrl, channelId, true);
@@ -1335,11 +1334,16 @@ export const archiveChannel = async (serverUrl: string, channelId: string) => {
         const client = NetworkManager.getClient(serverUrl);
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const config = await getConfig(database);
+        const channelBeforeArchive = await getChannelById(database, channelId);
         await client.deleteChannel(channelId);
         if (config?.ExperimentalViewArchivedChannels === 'true') {
             await setChannelDeleteAt(serverUrl, channelId, Date.now());
         } else {
             removeCurrentUserFromChannel(serverUrl, channelId);
+        }
+
+        if (channelBeforeArchive?.teamId) {
+            await removeChannelFromManagedCategoryIfNeeded(serverUrl, channelBeforeArchive.teamId, channelId);
         }
 
         return {};

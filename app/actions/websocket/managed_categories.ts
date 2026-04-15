@@ -3,10 +3,12 @@
 
 import {removeChannelFromManagedCategoryIfNeeded} from '@actions/local/category';
 import {addChannelToManagedCategoryIfNeeded} from '@actions/remote/category';
-import {MANAGED_CHANNEL_CATEGORIES_GROUP} from '@constants/categories';
 import DatabaseManager from '@database/manager';
+import {fetchManagedCategoryPropertyIds} from '@helpers/sidebar/managed_categories_merge';
+import {getManagedCategoryForChannel} from '@queries/servers/categories';
 import {getChannelById} from '@queries/servers/channel';
 import {getConfigValue} from '@queries/servers/system';
+import EphemeralStore from '@store/ephemeral_store';
 import {logDebug} from '@utils/log';
 
 export async function handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl: string, msg: WebSocketMessage) {
@@ -18,20 +20,32 @@ export async function handleManagedChannelCategoriesPropertyValuesUpdated(server
         }
 
         const data = msg.data as PropertyValuesUpdatedData;
-        const fieldName = data.field_name ?? data.name;
-        const groupName = data.group_name;
-        const isMatchingGroup = groupName === MANAGED_CHANNEL_CATEGORIES_GROUP;
-        const isFallbackMatch = !groupName && fieldName === 'category_name';
-        if (!isMatchingGroup && !isFallbackMatch) {
-            return;
-        }
 
         if (data.object_type && data.object_type !== 'channel') {
             return;
         }
 
-        const channelId = data.target_id ?? data.channel_id;
+        const channelId = data.target_id;
         if (!channelId) {
+            return;
+        }
+
+        const values: PropertyValue[] = JSON.parse(data.values);
+        if (!values.length) {
+            return;
+        }
+
+        const first = values[0];
+
+        let propertyIds = EphemeralStore.getManagedCategoryPropertyIds(serverUrl);
+        if (!propertyIds) {
+            propertyIds = await fetchManagedCategoryPropertyIds(serverUrl);
+        }
+        if (!propertyIds) {
+            return;
+        }
+
+        if (first.group_id !== propertyIds.groupId || first.field_id !== propertyIds.fieldId) {
             return;
         }
 
@@ -40,15 +54,23 @@ export async function handleManagedChannelCategoriesPropertyValuesUpdated(server
             return;
         }
 
-        if (data.delete_at && data.delete_at > 0) {
-            const teamId = channel.teamId;
-            if (teamId) {
-                await removeChannelFromManagedCategoryIfNeeded(serverUrl, teamId, channelId);
+        const categoryName = first.value;
+        const teamId = channel.teamId;
+        if (!teamId) {
+            return;
+        }
+
+        if (categoryName) {
+            const currentManaged = await getManagedCategoryForChannel(database, teamId, channelId);
+            if (currentManaged?.displayName === String(categoryName)) {
+                return;
             }
-        } else {
+            await removeChannelFromManagedCategoryIfNeeded(serverUrl, teamId, channelId);
             await addChannelToManagedCategoryIfNeeded(serverUrl, channel);
+        } else {
+            await removeChannelFromManagedCategoryIfNeeded(serverUrl, teamId, channelId);
         }
     } catch (error) {
-        logDebug('handleManagedChannelCategoriesPropertyValuesUpdated', error);
+        logDebug('[handleManagedCategoryWS]', error);
     }
 }

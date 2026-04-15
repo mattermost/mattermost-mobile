@@ -74,7 +74,9 @@ export async function prepareCategoriesAndCategoriesChannels(operator: ServerDat
                     }
                 } else {
                     for (const cc of localCategoryChannels) {
-                        flattenedModels.push(cc.prepareDestroyPermanently());
+                        if (!teamIdToChannelIds.get(localCategory.teamId)?.has(cc.channelId)) {
+                            flattenedModels.push(cc.prepareDestroyPermanently());
+                        }
                     }
                     flattenedModels.push(localCategory.prepareDestroyPermanently());
                 }
@@ -100,9 +102,10 @@ export async function prepareCategoryChannels(
         const categoryChannels: CategoryChannel[] = [];
 
         categories?.forEach((category) => {
+            const isManaged = category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX);
             category.channel_ids.forEach((channelId, index) => {
                 categoryChannels.push({
-                    id: makeCategoryChannelId(category.team_id, channelId),
+                    id: isManaged ? getManagedCategoryChannelId(category.team_id, channelId) : makeCategoryChannelId(category.team_id, channelId),
                     category_id: category.id,
                     channel_id: channelId,
                     sort_order: index,
@@ -145,6 +148,25 @@ export const getChannelCategory = async (database: Database, teamId: string, cha
     return undefined;
 };
 
+export const getManagedCategoryChannelId = (teamId: string, channelId: string) => {
+    return `${MANAGED_LOCAL_CATEGORY_PREFIX}${makeCategoryChannelId(teamId, channelId)}`;
+};
+
+export const getManagedCategoryChannelById = async (database: Database, teamId: string, channelId: string) => {
+    try {
+        return await database.get<CategoryChannelModel>(CATEGORY_CHANNEL).find(getManagedCategoryChannelId(teamId, channelId));
+    } catch {
+        return undefined;
+    }
+};
+
+export const getManagedCategoryForChannel = async (database: Database, teamId: string, channelId: string) => {
+    const result = await database.get<CategoryModel>(CATEGORY).query(
+        Q.on(CATEGORY_CHANNEL, Q.where('id', getManagedCategoryChannelId(teamId, channelId))),
+    ).fetch();
+    return result.length ? result[0] : undefined;
+};
+
 export const getIsChannelFavorited = async (database: Database, teamId: string, channelId: string) => {
     const result = await queryChannelCategory(database, teamId, channelId).fetch();
     if (result.length > 0) {
@@ -162,8 +184,10 @@ export const observeIsChannelFavorited = (database: Database, teamId: string, ch
 };
 
 export const observeIsChannelInManagedCategory = (database: Database, teamId: string, channelId: string) => {
-    return queryChannelCategory(database, teamId, channelId).observe().pipe(
-        map((result) => (result.length ? result[0].id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX) : false)),
+    return database.get<CategoryModel>(CATEGORY).query(
+        Q.on(CATEGORY_CHANNEL, Q.where('id', getManagedCategoryChannelId(teamId, channelId))),
+    ).observe().pipe(
+        map((result) => result.length > 0),
         distinctUntilChanged(),
     );
 };

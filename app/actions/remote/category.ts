@@ -5,7 +5,7 @@ import {storeCategories} from '@actions/local/category';
 import {General} from '@constants';
 import {CHANNELS_CATEGORY, DMS_CATEGORY, FAVORITES_CATEGORY, MANAGED_CHANNEL_CATEGORIES_GROUP, MANAGED_LOCAL_CATEGORY_PREFIX} from '@constants/categories';
 import DatabaseManager from '@database/manager';
-import {makeManagedCategoryId, mergeManagedMappingsIntoSidebarCategories} from '@helpers/sidebar/managed_categories_merge';
+import {computeManagedSortOrder, fetchManagedCategoryPropertyIds, makeManagedCategoryId, mergeManagedMappingsIntoSidebarCategories} from '@helpers/sidebar/managed_categories_merge';
 import NetworkManager from '@managers/network_manager';
 import {getCategoryById, getChannelCategory, queryCategoriesByTeamIds} from '@queries/servers/categories';
 import {getChannelById} from '@queries/servers/channel';
@@ -33,10 +33,9 @@ export const fetchCategories = async (serverUrl: string, teamId: string, prune =
         const {categories: nonManagedCategories} = await client.getCategories('me', teamId, groupLabel);
         let categories = nonManagedCategories;
         if (managedCategoriesEnabled === 'true') {
+            fetchManagedCategoryPropertyIds(serverUrl);
             const mappings = await client.getManagedCategories(teamId, groupLabel);
-            if (mappings) {
-                categories = await mergeManagedMappingsIntoSidebarCategories(database, teamId, nonManagedCategories, mappings);
-            }
+            categories = await mergeManagedMappingsIntoSidebarCategories(database, teamId, nonManagedCategories, mappings);
         }
 
         if (!fetchOnly) {
@@ -78,23 +77,41 @@ export async function addChannelToManagedCategoryIfNeeded(serverUrl: string, cha
         const managedCategoryId = makeManagedCategoryId(teamId, categoryName);
         const existingCategory = await getCategoryById(database, managedCategoryId);
 
+        const categoriesToStore: CategoryWithChannels[] = [];
         let channelIds: string[];
-        let sortOrder: number;
+
         if (existingCategory) {
             const cwc = await existingCategory.toCategoryWithChannels();
             channelIds = cwc.channel_ids.includes(channelId) ? cwc.channel_ids : [...cwc.channel_ids, channelId];
-            sortOrder = existingCategory.sortOrder;
         } else {
             channelIds = [channelId];
-            const allCategories = await queryCategoriesByTeamIds(database, [teamId]).fetch();
-            const managedNames = allCategories.
-                filter((c) => c.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)).
-                map((c) => c.displayName);
-            managedNames.push(categoryName);
-            managedNames.sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
-            const index = managedNames.indexOf(categoryName);
-            sortOrder = (-1000 + index) * 10;
         }
+
+        const allCategories = await queryCategoriesByTeamIds(database, [teamId]).fetch();
+        const managedCategories = allCategories.filter((c) => c.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX));
+        const managedNames = managedCategories.map((c) => c.displayName);
+        if (!existingCategory) {
+            managedNames.push(categoryName);
+        }
+        managedNames.sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+        const sortedNames = [...new Set(managedNames)];
+        const sortOrder = computeManagedSortOrder(sortedNames.indexOf(categoryName));
+
+        const reorderPromises = managedCategories.map(async (cat) => {
+            const idx = sortedNames.indexOf(cat.displayName);
+            if (idx >= 0) {
+                const newOrder = computeManagedSortOrder(idx);
+                if (cat.sortOrder !== newOrder) {
+                    const cwc = await cat.toCategoryWithChannels();
+                    return {...cwc, sort_order: newOrder};
+                }
+            }
+            return undefined;
+        });
+        const reordered = (await Promise.all(reorderPromises)).filter(
+            (c): c is CategoryWithChannels => c !== undefined,
+        );
+        categoriesToStore.push(...reordered);
 
         const managedCwc: CategoryWithChannels = {
             id: managedCategoryId,
@@ -107,8 +124,9 @@ export async function addChannelToManagedCategoryIfNeeded(serverUrl: string, cha
             collapsed: existingCategory?.collapsed ?? false,
             channel_ids: channelIds,
         };
+        categoriesToStore.push(managedCwc);
 
-        await storeCategories(serverUrl, [managedCwc]);
+        await storeCategories(serverUrl, categoriesToStore);
     } catch (error) {
         logDebug('[addChannelToManagedCategoryIfNeeded]', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);

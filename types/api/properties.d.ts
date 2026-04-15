@@ -13,13 +13,20 @@ type PropertyValue<T = unknown> = {
     delete_at: number;
 };
 
+type PropertyField = {
+    id: string;
+    group_id: string;
+    name: string;
+    type: string;
+    target_type: string;
+    create_at: number;
+    update_at: number;
+    delete_at: number;
+};
+
 type PropertyValuesUpdatedData = {
     object_type?: string;
     target_id?: string;
-    channel_id?: string;
-    group_name?: string;
-    field_name?: string;
-    name?: string;
-    values?: string | Record<string, unknown>;
-    delete_at?: number;
+    field_id?: string;
+    values: string;
 };

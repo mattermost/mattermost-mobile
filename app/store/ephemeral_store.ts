@@ -50,6 +50,8 @@ class EphemeralStoreSingleton {
     // It is cleared any time the connection with the server is lost.
     private channelPlaybooksSynced: {[serverUrl: string]: Set<string>} = {};
 
+    private managedCategoryPropertyIds: {[serverUrl: string]: {groupId: string; fieldId: string} | undefined} = {};
+
     // Track how many translations are being executed at the same time on the channel.
     // We limit this to avoid overwhelming the device.
     private runningTranslations = new Set<string>();
@@ -322,6 +324,18 @@ class EphemeralStoreSingleton {
 
     clearChannelPlaybooksSynced = (serverUrl: string) => {
         delete this.channelPlaybooksSynced[serverUrl];
+    };
+
+    getManagedCategoryPropertyIds = (serverUrl: string) => {
+        return this.managedCategoryPropertyIds[serverUrl];
+    };
+
+    setManagedCategoryPropertyIds = (serverUrl: string, ids: {groupId: string; fieldId: string}) => {
+        this.managedCategoryPropertyIds[serverUrl] = ids;
+    };
+
+    clearManagedCategoryPropertyIds = (serverUrl: string) => {
+        delete this.managedCategoryPropertyIds[serverUrl];
     };
 
     // Ephemeral control for rejected files

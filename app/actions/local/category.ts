@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {CHANNELS_CATEGORY, DMS_CATEGORY, MANAGED_LOCAL_CATEGORY_PREFIX} from '@constants/categories';
+import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
-import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels, queryCategoryChannelsByChannelId, getChannelCategory} from '@queries/servers/categories';
+import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels, queryCategoryChannelsByChannelId, getManagedCategoryForChannel, getManagedCategoryChannelById} from '@queries/servers/categories';
 import {getConfigValue, getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
@@ -120,18 +120,16 @@ export async function removeChannelFromManagedCategoryIfNeeded(serverUrl: string
             return;
         }
 
-        const category = await getChannelCategory(database, teamId, channelId);
-        if (!category || !category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
+        const category = await getManagedCategoryForChannel(database, teamId, channelId);
+        if (!category) {
             return;
         }
 
         const models: Model[] = [];
 
-        const categoryChannels = await queryCategoryChannelsByChannelId(database, channelId).fetch();
-        for (const cc of categoryChannels) {
-            if (cc.categoryId === category.id) {
-                models.push(cc.prepareDestroyPermanently());
-            }
+        const cc = await getManagedCategoryChannelById(database, teamId, channelId);
+        if (cc) {
+            models.push(cc.prepareDestroyPermanently());
         }
 
         const cwc = await category.toCategoryWithChannels();
