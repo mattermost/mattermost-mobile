@@ -95,14 +95,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     titleContainer: {
         alignItems: 'center',
         flex: 1,
+        minWidth: 0,
         paddingRight: 40,
     },
     title: {
         color: theme.centerChannelColor,
+        flexShrink: 1,
+        maxWidth: '100%',
         ...typography('Heading', 300),
     },
     description: {
         color: theme.centerChannelColor,
+        flexShrink: 1,
+        maxWidth: '100%',
         ...typography('Body', 100),
     },
     postList: {
@@ -429,6 +434,7 @@ function Permalink({
                             <FormattedText
                                 id='thread.header.thread'
                                 defaultMessage='Thread'
+                                numberOfLines={1}
                                 style={style.title}
                             />
                         ) : (
@@ -445,6 +451,7 @@ function Permalink({
                                 ellipsizeMode='tail'
                                 id='thread.header.thread_in'
                                 defaultMessage='in {channelName}'
+                                numberOfLines={1}
                                 values={{
                                     channelName: channel?.displayName,
                                 }}

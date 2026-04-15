@@ -25,7 +25,8 @@ export class WebSocketClient extends EventEmitter {
     private readonly serverUrl: string;
     private readonly wsPath: string;
     private authToken: string;
-    private wsClient: WebSocketClientInterface | null = null;
+    // Native client exposes sendBinary at runtime, but the published TS interface does not declare it.
+    private wsClient: (WebSocketClientInterface & {sendBinary?: (data: string) => void}) | null = null;
     private seqNo = 1;
     private serverSeqNo = 0;
     private connID = '';
