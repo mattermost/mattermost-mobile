@@ -21,6 +21,7 @@ import Content from './content';
 import Failed from './failed';
 import Message from './message';
 import Reactions from './reactions';
+import RedactedFilesPlaceholder from './redacted_files_placeholder';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {SearchPattern} from '@typings/global/markdown';
@@ -209,6 +210,7 @@ const Body = ({
 
     const acknowledgementsVisible = isPostAcknowledgementEnabled && post.metadata?.priority?.requested_ack;
     const reactionsVisible = hasReactions && showAddReaction;
+    const redactedFileCount = post.metadata?.redacted_file_count ?? 0;
 
     if (!hasBeenDeleted) {
         body = (
@@ -235,6 +237,9 @@ const Body = ({
                     isReplyPost={isReplyPost}
                 />
                 }
+                {redactedFileCount > 0 && (
+                    <RedactedFilesPlaceholder/>
+                )}
                 {(acknowledgementsVisible || reactionsVisible) && (
                     <View style={style.ackAndReactionsContainer}>
                         {acknowledgementsVisible && (

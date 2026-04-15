@@ -1376,6 +1376,8 @@
   "post_priority.picker.label.urgent": "Urgent",
   "post_priority.picker.title": "Message priority",
   "post.error": "There has been an error rendering this post.",
+  "post.redacted_files.subtitle": "Access to files is restricted based on attributes",
+  "post.redacted_files.title": "Files not available",
   "postList.scrollToBottom.newMessages": "New messages",
   "postList.scrollToBottom.newReplies": "New replies",
   "posts_view.newMsg": "New Messages",
