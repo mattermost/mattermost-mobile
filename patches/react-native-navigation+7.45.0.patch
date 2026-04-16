@@ -68,6 +68,29 @@ index f3f0d5a..970296d 100644
      public void requestPermissions(String[] permissions, int requestCode, PermissionListener listener) {
          mPermissionListener = listener;
          requestPermissions(permissions, requestCode);
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/options/OverlayOptions.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/options/OverlayOptions.java
+index 4056b28..ea730d6 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/options/OverlayOptions.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/options/OverlayOptions.java
+@@ -8,12 +8,18 @@ import org.json.JSONObject;
+ 
+ public class OverlayOptions {
+     public Bool interceptTouchOutside = new NullBool();
++    /**
++     * When true, touches inside the overlay's React content bounds are not delivered to the
++     * overlay and fall through to the underlying navigator content (Android only).
++     */
++    public Bool androidIgnoreTouchInside = new NullBool();
+ 
+     public static OverlayOptions parse(JSONObject json) {
+         OverlayOptions options = new OverlayOptions();
+         if (json == null) return options;
+ 
+         options.interceptTouchOutside = BoolParser.parse(json,"interceptTouchOutside");
++        options.androidIgnoreTouchInside = BoolParser.parse(json, "androidIgnoreTouchInside");
+         return options;
+     }
+ }
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 index 4cc09eb..857bbd4 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
@@ -327,6 +350,91 @@ index f014bff..e4ccc55 100644
         return insets;
      }
  
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildControllersRegistry.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildControllersRegistry.java
+index b74c5f4..045aa53 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildControllersRegistry.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildControllersRegistry.java
+@@ -14,7 +14,7 @@ public class ChildControllersRegistry {
+     public void onViewDisappear(ChildController<?> child) {
+         if (isTopChild(child)) {
+             children.pop();
+-            if (!children.isEmpty()) children.peek().onViewBroughtToFront();
++            if (!children.isEmpty() && !children.peek().isDestroyed()) children.peek().onViewBroughtToFront();
+         } else {
+             children.remove(child);
+         }
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/component/ComponentPresenter.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/component/ComponentPresenter.java
+index 1f915f9..a31a9ad 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/component/ComponentPresenter.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/component/ComponentPresenter.java
+@@ -27,6 +27,8 @@ public class ComponentPresenter extends ComponentPresenterBase {
+     public void mergeOptions(ComponentLayout view, Options options) {
+         if (options.overlayOptions.interceptTouchOutside.hasValue())
+             view.setInterceptTouchOutside(options.overlayOptions.interceptTouchOutside);
++        if (options.overlayOptions.androidIgnoreTouchInside.hasValue())
++            view.setAndroidIgnoreTouchInside(options.overlayOptions.androidIgnoreTouchInside);
+         setBackgroundColor(view, options);
+     }
+ 
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/component/ComponentLayout.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/component/ComponentLayout.java
+index 845b882..e7315f4 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/component/ComponentLayout.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/component/ComponentLayout.java
+@@ -69,12 +69,17 @@ public class ComponentLayout extends CoordinatorLayout implements ReactComponent
+ 
+     public void applyOptions(Options options) {
+         touchDelegate.setInterceptTouchOutside(options.overlayOptions.interceptTouchOutside);
++        touchDelegate.setAndroidIgnoreTouchInside(options.overlayOptions.androidIgnoreTouchInside);
+     }
+ 
+     public void setInterceptTouchOutside(Bool interceptTouchOutside) {
+         touchDelegate.setInterceptTouchOutside(interceptTouchOutside);
+     }
+ 
++    public void setAndroidIgnoreTouchInside(Bool androidIgnoreTouchInside) {
++        touchDelegate.setAndroidIgnoreTouchInside(androidIgnoreTouchInside);
++    }
++
+     @Override
+     public void sendOnNavigationButtonPressed(String buttonId) {
+         reactView.sendOnNavigationButtonPressed(buttonId);
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/touch/OverlayTouchDelegate.kt b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/touch/OverlayTouchDelegate.kt
+index 2c789ae..8f60226 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/touch/OverlayTouchDelegate.kt
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/touch/OverlayTouchDelegate.kt
+@@ -10,17 +10,25 @@ import com.reactnativenavigation.views.component.ComponentLayout
+ 
+ open class OverlayTouchDelegate(private val component: ComponentLayout, private val reactView: ReactView) {
+     var interceptTouchOutside: Bool = NullBool()
++    var androidIgnoreTouchInside: Bool = NullBool()
+ 
+     fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+-        return when (interceptTouchOutside.hasValue() && event.actionMasked == MotionEvent.ACTION_DOWN) {
+-            true -> handleDown(event)
+-            false -> component.superOnInterceptTouchEvent(event)
++        val useOverlayTouchHandling =
++            event.actionMasked == MotionEvent.ACTION_DOWN &&
++                (interceptTouchOutside.hasValue() || androidIgnoreTouchInside.hasValue())
++        return when {
++            useOverlayTouchHandling -> handleDown(event)
++            else -> component.superOnInterceptTouchEvent(event)
+         }
+     }
+ 
+     @VisibleForTesting
+-    open fun handleDown(event: MotionEvent) = when (event.coordinatesInsideView(reactView.getChildAt(0))) {
+-        true -> component.superOnInterceptTouchEvent(event)
+-        false -> interceptTouchOutside.isFalse
++    open fun handleDown(event: MotionEvent) = when {
++        event.coordinatesInsideView(reactView.getChildAt(0)) && androidIgnoreTouchInside.isTrue() ->
++            true
++        event.coordinatesInsideView(reactView.getChildAt(0)) ->
++            component.superOnInterceptTouchEvent(event)
++        else ->
++            interceptTouchOutside.isFalse()
+     }
+ }
+\ No newline at end of file
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java
 index 035ec31..630b8d4 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java
@@ -343,7 +451,7 @@ index 035ec31..630b8d4 100644
 +    }
  }
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt
-index 551f72b..f275c18 100644
+index 551f72b..e27c8aa 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt
 +++ b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt
 @@ -49,17 +49,23 @@ class ModalContentLayout(context: Context?) : ReactViewGroup(context), RootView{
@@ -377,41 +485,43 @@ index 551f72b..f275c18 100644
          val reactContext: ReactContext = this.getReactContext()
          return reactContext.getNativeModule(UIManagerModule::class.java)!!.eventDispatcher
      }
-@@ -73,13 +79,17 @@ class ModalContentLayout(context: Context?) : ReactViewGroup(context), RootView{
-         return this.context as ReactContext
+@@ -74,12 +80,16 @@ class ModalContentLayout(context: Context?) : ReactViewGroup(context), RootView{
      }
  
--    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
 -        mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher())
-+    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
 +        getEventDispatcher()?.let {
 +            mJSTouchDispatcher.handleTouchEvent(event, it)
 +        }
          return super.onInterceptTouchEvent(event)
      }
  
--    override fun onTouchEvent(event: MotionEvent): Boolean {
+     override fun onTouchEvent(event: MotionEvent): Boolean {
 -        mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher())
-+    override fun onTouchEvent(event: MotionEvent): Boolean {
 +        getEventDispatcher()?.let {
 +            mJSTouchDispatcher.handleTouchEvent(event, it)
 +        }
          super.onTouchEvent(event)
          return true
      }
-diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildControllersRegistry.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildControllersRegistry.java
-index 7f1a2e0..c8b3d91 100644
---- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildControllersRegistry.java
-+++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/child/ChildControllersRegistry.java
-@@ -14,7 +14,7 @@ public class ChildControllersRegistry {
-     public void onViewDisappear(ChildController<?> child) {
-         if (isTopChild(child)) {
-             children.pop();
--            if (!children.isEmpty()) children.peek().onViewBroughtToFront();
-+            if (!children.isEmpty() && !children.peek().isDestroyed()) children.peek().onViewBroughtToFront();
-         } else {
-             children.remove(child);
-         }
+diff --git a/node_modules/react-native-navigation/lib/dist/src/interfaces/Options.d.ts b/node_modules/react-native-navigation/lib/dist/src/interfaces/Options.d.ts
+index 08c7298..adcbcfd 100644
+--- a/node_modules/react-native-navigation/lib/dist/src/interfaces/Options.d.ts
++++ b/node_modules/react-native-navigation/lib/dist/src/interfaces/Options.d.ts
+@@ -1012,6 +1012,13 @@ export interface OverlayOptions {
+      * Capture touches outside of the Component View
+      */
+     interceptTouchOutside?: boolean;
++    /**
++     * When true, touches inside the overlay's React content bounds are not delivered to the overlay
++     * and fall through to the underlying navigator content.
++     * #### (Android specific)
++     * @default false
++     */
++    androidIgnoreTouchInside?: boolean;
+     /**
+      * Control whether this Overlay should handle Keyboard events.
+      * Set this to true if your Overlay contains a TextInput.
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m b/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
 index fc482a6..9406bbf 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
@@ -528,7 +638,7 @@ index db0ed23..b548589 100644
      if (!self.subtitle) {
          titleLabel.center = self.titleView.center;
 diff --git a/node_modules/react-native-navigation/lib/src/interfaces/Options.ts b/node_modules/react-native-navigation/lib/src/interfaces/Options.ts
-index f0923ed..b0ea7fc 100644
+index f0923ed..b96ad42 100644
 --- a/node_modules/react-native-navigation/lib/src/interfaces/Options.ts
 +++ b/node_modules/react-native-navigation/lib/src/interfaces/Options.ts
 @@ -1,5 +1,5 @@
@@ -538,3 +648,17 @@ index f0923ed..b0ea7fc 100644
  
  // TODO: Import ColorValue instead when upgrading @types/react-native to 0.63+
  // Only assign PlatformColor or DynamicColorIOS as a Color symbol!
+@@ -1106,6 +1106,13 @@ export interface OverlayOptions {
+    * Capture touches outside of the Component View
+    */
+   interceptTouchOutside?: boolean;
++  /**
++   * When true, touches inside the overlay's React content bounds are not delivered to the overlay
++   * and fall through to the underlying navigator content.
++   * #### (Android specific)
++   * @default false
++   */
++  androidIgnoreTouchInside?: boolean;
+   /**
+    * Control whether this Overlay should handle Keyboard events.
+    * Set this to true if your Overlay contains a TextInput.

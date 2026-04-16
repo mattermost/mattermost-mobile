@@ -6,7 +6,7 @@
 import RNUtils from '@mattermost/rnutils';
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, Platform, Alert, type EmitterSubscription, StatusBar} from 'react-native';
-import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
+import {type ComponentDidDisappearEvent, type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
@@ -35,6 +35,21 @@ const alpha = {
 };
 let subscriptions: Array<EmitterSubscription | EventSubscription> | undefined;
 
+// Watermark overlay state.
+let watermarkShouldBeShown = false;
+let watermarkCurrentlyShown = false;
+
+// IDs of non-watermark overlays that are currently shown.
+// dismissAllOverlays() uses this set so it can dismiss each overlay individually
+// without ever touching the watermark overlay, preventing any visual flash.
+const shownNonWatermarkOverlayIds = new Set<string>();
+
+/** RNN overlay options for the watermark (pass-through on Android via patched RNN). */
+const watermarkOverlayOptions: NonNullable<Options['overlay']> = {
+    interceptTouchOutside: false,
+    androidIgnoreTouchInside: true,
+};
+
 export const allOrientations: LayoutOrientation[] = ['sensor', 'sensorLandscape', 'sensorPortrait', 'landscape', 'portrait'];
 export const portraitOrientation: LayoutOrientation[] = ['portrait'];
 
@@ -61,12 +76,19 @@ function showBottomTabsIfNeeded(screen: AvailableScreens) {
     }
 }
 
+function onWatermarkDidDisappear({componentId}: ComponentDidDisappearEvent) {
+    if (componentId === Screens.WATERMARK) {
+        watermarkCurrentlyShown = false;
+    }
+}
+
 export function registerNavigationListeners() {
     subscriptions?.forEach((v) => v.remove());
     subscriptions = [
         Navigation.events().registerScreenPoppedListener(onPoppedListener),
         Navigation.events().registerCommandListener(onCommandListener),
         Navigation.events().registerComponentWillAppearListener(onScreenWillAppear),
+        Navigation.events().registerComponentDidDisappearListener(onWatermarkDidDisappear),
 
         /**
          * For the time being and until we add the emoji picker in the keyboard area
@@ -75,7 +97,6 @@ export function registerNavigationListeners() {
          * to a different channel or thread.
          */
         // Navigation.events().registerComponentDidAppearListener(onScreenDidAppear),
-        // Navigation.events().registerComponentDidDisappearListener(onScreenDidDisappear),
     ];
 }
 
@@ -121,6 +142,16 @@ function onPoppedListener({componentId}: ScreenPoppedEvent) {
 
 function onScreenWillAppear(event: ComponentWillAppearEvent) {
     showBottomTabsIfNeeded(event.componentId as AvailableScreens);
+
+    if (event.componentId === Screens.WATERMARK) {
+        return;
+    }
+
+    // Safety net: re-show watermark if it was somehow dismissed (e.g., by an error path).
+    if (watermarkShouldBeShown && !watermarkCurrentlyShown) {
+        watermarkCurrentlyShown = true;
+        showOverlay(Screens.WATERMARK, {}, {overlay: watermarkOverlayOptions}, Screens.WATERMARK);
+    }
 }
 
 export const loginAnimationOptions = () => {
@@ -390,6 +421,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
             name: Screens.SERVER,
             passProps: {
                 ...passProps,
+                animated: false,
                 theme,
             },
             options: {
@@ -821,6 +853,11 @@ export function showOverlay(name: AvailableScreens, passProps = {}, options: Opt
         return;
     }
 
+    const overlayId = id ?? name;
+    if (overlayId !== Screens.WATERMARK) {
+        shownNonWatermarkOverlayIds.add(overlayId);
+    }
+
     const defaultOptions = {
         layout: {
             backgroundColor: 'transparent',
@@ -842,6 +879,7 @@ export function showOverlay(name: AvailableScreens, passProps = {}, options: Opt
 }
 
 export async function dismissOverlay(componentId: string) {
+    shownNonWatermarkOverlayIds.delete(componentId);
     try {
         await Navigation.dismissOverlay(componentId);
     } catch (error) {
@@ -851,11 +889,11 @@ export async function dismissOverlay(componentId: string) {
 }
 
 export async function dismissAllOverlays() {
-    try {
-        await Navigation.dismissAllOverlays();
-    } catch {
-        // do nothing
-    }
+    // Dismiss each non-watermark overlay individually so the watermark overlay
+    // is never touched and never flashes during navigation.
+    const ids = [...shownNonWatermarkOverlayIds];
+    shownNonWatermarkOverlayIds.clear();
+    await Promise.allSettled(ids.map((id) => Navigation.dismissOverlay(id)));
 }
 
 type BottomSheetArgs = {
@@ -959,6 +997,20 @@ export const showShareFeedbackOverlay = () => {
         {},
         {overlay: {interceptTouchOutside: true}},
     );
+};
+
+export const showWatermarkOverlay = () => {
+    watermarkShouldBeShown = true;
+    if (!watermarkCurrentlyShown) {
+        watermarkCurrentlyShown = true;
+        showOverlay(Screens.WATERMARK, {}, {overlay: watermarkOverlayOptions}, Screens.WATERMARK);
+    }
+};
+
+export const dismissWatermarkOverlay = () => {
+    watermarkShouldBeShown = false;
+    watermarkCurrentlyShown = false;
+    dismissOverlay(Screens.WATERMARK);
 };
 
 export async function findChannels(title: string, theme: Theme) {

@@ -98,6 +98,7 @@ export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
 export const SHOW_TRANSLATION = 'ShowTranslation';
+export const WATERMARK = 'Watermark';
 
 export default {
     ABOUT,
@@ -192,6 +193,7 @@ export default {
     THREAD_OPTIONS,
     USER_PROFILE,
     SHOW_TRANSLATION,
+    WATERMARK,
     ...PLAYBOOKS_SCREENS,
     ...AGENTS_SCREENS,
 } as const;
@@ -220,6 +222,7 @@ export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
     REVIEW_APP,
     SNACK_BAR,
     GENERIC_OVERLAY,
+    WATERMARK,
 ]);
 
 export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([

@@ -8,7 +8,7 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 import {observeIncomingCalls} from '@calls/state';
 import {withServerUrl} from '@context/server';
 import {queryAllMyChannelsForTeam} from '@queries/servers/channel';
-import {observeCurrentTeamId, observeCurrentUserId, observeLicense} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId, observeLicense} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {observeShowToS} from '@queries/servers/terms_of_service';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
@@ -36,6 +36,7 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
     );
 
     return {
+        isWatermarkEnabled: observeConfigBooleanValue(database, 'ExperimentalEnableWatermark'),
         isCRTEnabled: observeIsCRTEnabled(database),
         hasTeams: teamsCount.pipe(
             switchMap((v) => of$(v > 0)),

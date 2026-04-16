@@ -309,6 +309,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SHOW_TRANSLATION:
             screen = withServerDatabase(require('@screens/show_translation').default);
             break;
+        case Screens.WATERMARK: {
+            const watermarkScreen = withServerDatabase(require('@screens/watermark').default);
+            Navigation.registerComponent(Screens.WATERMARK, () => watermarkScreen);
+            return;
+        }
         case Screens.CALL:
             screen = withServerDatabase(require('@calls/screens/call_screen').default);
             break;
