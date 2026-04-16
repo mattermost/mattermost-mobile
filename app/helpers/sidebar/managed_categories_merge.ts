@@ -83,9 +83,9 @@ export async function fetchManagedCategoryPropertyIds(serverUrl: string) {
             return undefined;
         }
 
-        const ids = {groupId: field.group_id, fieldId: field.id};
-        EphemeralStore.setManagedCategoryPropertyIds(serverUrl, ids);
-        return ids;
+        const managedCategoryPropertyIds = {groupId: field.group_id, fieldId: field.id};
+        EphemeralStore.setManagedCategoryPropertyIds(serverUrl, managedCategoryPropertyIds);
+        return managedCategoryPropertyIds;
     } catch (error) {
         logDebug('[fetchManagedCategoryPropertyIds]', error);
         return undefined;

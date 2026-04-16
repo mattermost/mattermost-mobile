@@ -35,8 +35,6 @@ export async function handleManagedChannelCategoriesPropertyValuesUpdated(server
             return;
         }
 
-        const first = values[0];
-
         let propertyIds = EphemeralStore.getManagedCategoryPropertyIds(serverUrl);
         if (!propertyIds) {
             propertyIds = await fetchManagedCategoryPropertyIds(serverUrl);
@@ -45,7 +43,8 @@ export async function handleManagedChannelCategoriesPropertyValuesUpdated(server
             return;
         }
 
-        if (first.group_id !== propertyIds.groupId || first.field_id !== propertyIds.fieldId) {
+        const matched = values.find((v) => v.group_id === propertyIds!.groupId && v.field_id === propertyIds!.fieldId);
+        if (!matched) {
             return;
         }
 
@@ -54,7 +53,7 @@ export async function handleManagedChannelCategoriesPropertyValuesUpdated(server
             return;
         }
 
-        const categoryName = first.value;
+        const categoryName = matched.value;
         const teamId = channel.teamId;
         if (!teamId) {
             return;
