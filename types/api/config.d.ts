@@ -74,6 +74,7 @@ interface ClientConfig {
     EnableLatex: string;
     EnableLdap: string;
     EnableLinkPreviews: string;
+    EnableManagedChannelCategories?: string;
     EnablePermalinkPreviews: string;
     EnableMarketplace: string;
     EnableMetrics: string;

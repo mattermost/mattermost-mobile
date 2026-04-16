@@ -3,10 +3,11 @@
 
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
-import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels, queryCategoryChannelsByChannelId} from '@queries/servers/categories';
-import {getCurrentUserId} from '@queries/servers/system';
+import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels, queryCategoryChannelsByChannelId, getManagedCategoryForChannel, getManagedCategoryChannelById} from '@queries/servers/categories';
+import {getConfigValue, getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 
 import type {Database, Model} from '@nozbe/watermelondb';
@@ -108,6 +109,39 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
     } catch (error) {
         logError('Failed to add channel to default category', error);
         return {error};
+    }
+}
+
+export async function removeChannelFromManagedCategoryIfNeeded(serverUrl: string, teamId: string, channelId: string) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const managedEnabled = await getConfigValue(database, 'EnableManagedChannelCategories');
+        if (managedEnabled !== 'true') {
+            return;
+        }
+
+        const category = await getManagedCategoryForChannel(database, teamId, channelId);
+        if (!category) {
+            return;
+        }
+
+        const models: Model[] = [];
+
+        const cc = await getManagedCategoryChannelById(database, teamId, channelId);
+        if (cc) {
+            models.push(cc.prepareDestroyPermanently());
+        }
+
+        const cwc = await category.toCategoryWithChannels();
+        if (cwc.channel_ids.filter((id) => id !== channelId).length === 0) {
+            models.push(category.prepareDestroyPermanently());
+        }
+
+        if (models.length) {
+            await operator.batchRecords(models, 'removeChannelFromManagedCategory');
+        }
+    } catch (error) {
+        logDebug('[removeChannelFromManagedCategoryIfNeeded]', getFullErrorMessage(error));
     }
 }
 

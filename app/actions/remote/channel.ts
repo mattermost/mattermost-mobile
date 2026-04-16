@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 import {DeviceEventEmitter} from 'react-native';
 
-import {addChannelToDefaultCategory, handleConvertedGMCategories, storeCategories} from '@actions/local/category';
+import {addChannelToDefaultCategory, removeChannelFromManagedCategoryIfNeeded, handleConvertedGMCategories, storeCategories} from '@actions/local/category';
 import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeAllMyChannels, storeMyChannelsForTeam, switchToChannel, deletePostsForChannel} from '@actions/local/channel';
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import {switchToGlobalThreads} from '@actions/local/thread';
@@ -32,6 +32,7 @@ import {logDebug, logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
+import {addChannelToManagedCategoryIfNeeded, fetchCategories} from './category';
 import {fetchChannelBookmarks} from './channel_bookmark';
 import {fetchGroupsForChannelIfConstrained} from './groups';
 import {fetchPostsForChannel} from './post';
@@ -310,7 +311,13 @@ export async function leaveChannel(serverUrl: string, channelId: string) {
             return {error: 'current user not found'};
         }
 
+        const channelBeforeLeave = await getChannelById(database, channelId);
+
         await client.removeFromChannel(user.id, channelId);
+
+        if (channelBeforeLeave?.teamId) {
+            await removeChannelFromManagedCategoryIfNeeded(serverUrl, channelBeforeLeave.teamId, channelId);
+        }
 
         if (user.isGuest) {
             const {models: updateVisibleModels} = await updateUsersNoLongerVisible(serverUrl, true);
@@ -441,7 +448,6 @@ export async function fetchAllMyChannelsForAllTeams(serverUrl: string, since: nu
             fetchAllMemberships(),
         ];
         const [channels, memberships] = await Promise.all(promises);
-        const categoriesPromises = [];
 
         const teamIdsSet = channels.reduce<Set<string>>((set, c) => {
             if (c.team_id) {
@@ -450,15 +456,9 @@ export async function fetchAllMyChannelsForAllTeams(serverUrl: string, since: nu
             return set;
         }, new Set());
 
-        for (const teamId of teamIdsSet) {
-            categoriesPromises.push(client.getCategories('me', teamId, groupLabel));
-        }
-
-        const categories: CategoryWithChannels[] = [];
-        const results = await Promise.all(categoriesPromises);
-        for (const result of results) {
-            categories.push(...result.categories);
-        }
+        const teamIds = Array.from(teamIdsSet);
+        const categoriesResults = await Promise.all(teamIds.map((tid) => fetchCategories(serverUrl, tid, false, true, groupLabel)));
+        const categories: CategoryWithChannels[] = categoriesResults.flatMap((r) => r.categories ?? []);
 
         if (!fetchOnly) {
             const {models: chModels} = await storeAllMyChannels(serverUrl, channels, memberships, isCRTEnabled, true);
@@ -492,10 +492,10 @@ export async function fetchMyChannelsForTeam(
         }
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const [allChannels, channelMemberships, categoriesWithOrder] = await Promise.all([
+        const [allChannels, channelMemberships, categoriesResult] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since, groupLabel),
             client.getMyChannelMembers(teamId, groupLabel),
-            client.getCategories('me', teamId, groupLabel),
+            fetchCategories(serverUrl, teamId, false, true, groupLabel),
         ]);
 
         let channels = allChannels;
@@ -505,7 +505,7 @@ export async function fetchMyChannelsForTeam(
         }
 
         const channelIds = new Set<string>(channels.map((c) => c.id));
-        const {categories} = categoriesWithOrder;
+        const categories = categoriesResult.categories ?? [];
         memberships = memberships.reduce((result: ChannelMembership[], m: ChannelMembership) => {
             if (channelIds.has(m.channel_id)) {
                 result.push(m);
@@ -707,6 +707,7 @@ export async function joinChannel(serverUrl: string, teamId: string, channelId?:
                     }
                 }
             }
+            await addChannelToManagedCategoryIfNeeded(serverUrl, channel);
         }
     } catch (error) {
         logDebug('error on joinChannel', getFullErrorMessage(error));
@@ -1384,11 +1385,16 @@ export const archiveChannel = async (serverUrl: string, channelId: string) => {
         const client = NetworkManager.getClient(serverUrl);
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const config = await getConfig(database);
+        const channelBeforeArchive = await getChannelById(database, channelId);
         await client.deleteChannel(channelId);
         if (config?.ExperimentalViewArchivedChannels === 'true') {
             await setChannelDeleteAt(serverUrl, channelId, Date.now());
         } else {
             removeCurrentUserFromChannel(serverUrl, channelId);
+        }
+
+        if (channelBeforeArchive?.teamId) {
+            await removeChannelFromManagedCategoryIfNeeded(serverUrl, channelBeforeArchive.teamId, channelId);
         }
 
         return {};

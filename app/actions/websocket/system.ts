@@ -3,9 +3,11 @@
 
 import {updateDmGmDisplayName} from '@actions/local/channel';
 import {storeConfig} from '@actions/local/systems';
+import {fetchCategories} from '@actions/remote/category';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getConfig, getLicense} from '@queries/servers/system';
+import {getConfig, getCurrentTeamId, getLicense} from '@queries/servers/system';
+import EphemeralStore from '@store/ephemeral_store';
 
 export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
@@ -33,6 +35,15 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
         await storeConfig(serverUrl, config);
         if (config?.LockTeammateNameDisplay && (prevConfig?.LockTeammateNameDisplay !== config.LockTeammateNameDisplay)) {
             updateDmGmDisplayName(serverUrl);
+        }
+        const prevManagedSetting = prevConfig?.EnableManagedChannelCategories;
+        const newManagedSetting = config?.EnableManagedChannelCategories;
+        if (newManagedSetting !== prevManagedSetting) {
+            EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);
+            const currentTeamId = await getCurrentTeamId(database);
+            if (currentTeamId) {
+                await fetchCategories(serverUrl, currentTeamId, true);
+            }
         }
     } catch {
         // do nothing

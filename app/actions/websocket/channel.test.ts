@@ -25,6 +25,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 jest.mock('@database/manager');
 jest.mock('@store/ephemeral_store');
 jest.mock('@actions/local/category');
+jest.mock('@actions/remote/category');
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/role');
 jest.mock('@actions/remote/post');

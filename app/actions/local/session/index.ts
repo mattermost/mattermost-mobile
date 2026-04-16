@@ -15,6 +15,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getExpiredSession} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logError, logWarning} from '@utils/log';
 import {clearCookiesForServer, getCSRFFromCookie, urlSafeBase64Encode} from '@utils/security';
@@ -145,6 +146,8 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     await safeExecute('invalidateWebsocketClient', async () => {
         await WebsocketManager.invalidateClient(serverUrl);
     });
+
+    EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);
 
     // Remove push disabled acknowledgment (non-critical)
     if (removeServer) {
