@@ -5,6 +5,10 @@ name: E2E Nightly Trigger
 # instances, and dispatches e2e-detox-pr.yml with the instance URLs.
 # When e2e-detox-pr.yml completes, Matterwick destroys the provisioned instances.
 on:
+  push:
+    branches:
+      - main
+      - 'release-*'
   schedule:
     - cron: "0 0 * * *" # Every day at midnight UTC
 

@@ -315,6 +315,20 @@ class TestHelperSingleton {
         };
     };
 
+    fakeRemoteClusterInfo = (overwrite: Partial<RemoteClusterInfo> = {}): RemoteClusterInfo => {
+        const id = overwrite.remote_id ?? this.generateId();
+        return {
+            remote_id: id,
+            name: `remote-${id}`,
+            display_name: `Remote ${id}`,
+            create_at: 1507840900004,
+            delete_at: 0,
+            last_ping_at: Date.now(),
+            site_url: `https://remote-${id}.example.com`,
+            ...overwrite,
+        };
+    };
+
     fakeDmChannel = (userId: string, otherUserId: string): Partial<Channel> => {
         return {
             name: userId > otherUserId ? otherUserId + '__' + userId : userId + '__' + otherUserId,

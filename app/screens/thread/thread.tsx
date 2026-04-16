@@ -29,6 +29,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type ThreadProps = {
     componentId: AvailableScreens;
     isCRTEnabled: boolean;
+    includeChannelBanner: boolean;
     showJoinCallBanner: boolean;
     isInACall: boolean;
     showIncomingCalls: boolean;
@@ -44,6 +45,7 @@ const styles = StyleSheet.create({
 const Thread = ({
     componentId,
     isCRTEnabled,
+    includeChannelBanner,
     rootId,
     rootPost,
     showJoinCallBanner,
@@ -142,6 +144,7 @@ const Thread = ({
                             scheduledPostCount={scheduledPostCount}
                             containerHeight={containerHeight}
                             enabled={isVisible}
+                            includeChannelBanner={includeChannelBanner}
                             onEmojiSearchFocusChange={setIsEmojiSearchFocused}
                         />
                     </KeyboardProvider>
@@ -152,6 +155,7 @@ const Thread = ({
                         scheduledPostCount={scheduledPostCount}
                         containerHeight={containerHeight}
                         enabled={isVisible}
+                        includeChannelBanner={includeChannelBanner}
                         onEmojiSearchFocusChange={setIsEmojiSearchFocused}
                     />
                 ))
@@ -163,6 +167,7 @@ const Thread = ({
                         showIncomingCalls={showIncomingCalls}
                         isInACall={isInACall}
                         threadScreen={true}
+                        includeChannelBanner={includeChannelBanner}
                     />
                 }
             </SafeAreaView>

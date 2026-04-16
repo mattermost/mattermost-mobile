@@ -37,7 +37,7 @@ on:
         required: false
         type: string
       run_type:
-        description: "Run type for test reporting (PR/RELEASE/NIGHTLY). Defaults to PR."
+        description: "Run type for test reporting (PR/RELEASE/NIGHTLY/MASTER). Defaults to PR."
         required: false
         default: "PR"
         type: string
@@ -159,6 +159,7 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: ${{ inputs.run_type || 'PR' }}
+      record_tests_in_zephyr: ${{ (inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER') && 'true' || 'false' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
@@ -174,6 +175,7 @@ jobs:
     with:
       run-android-tests: true
       run-type: ${{ inputs.run_type || 'PR' }}
+      record_tests_in_zephyr: ${{ (inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER') && 'true' || 'false' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}

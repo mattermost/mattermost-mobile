@@ -5,8 +5,8 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {ChannelBanner} from '@components/channel_banner/channel_banner';
 import {observeChannel} from '@queries/servers/channel';
-import {ChannelBanner} from '@screens/channel/header/channel_banner/channel_banner';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 

@@ -12,6 +12,27 @@ npm install
 
 navigate to the `detox` folder and run `npm install`
 
+## Configure your server details
+in `detox/e2e/support/test_config.ts` will provide some default values for your server, if they differ you can:
+- use environment variables
+```sh
+  export SITE_1_URL="http://your-server:8065"
+  export ADMIN_USERNAME="your-username"
+  export ADMIN_PASSWORD="your-password"
+  export ADMIN_EMAIL="your-email"
+```
+
+- create a .env file in the `detox` folder providing the values:
+```sh
+  # detox/.env
+  SITE_1_URL=http://localhost:8065
+  ADMIN_USERNAME=your-username
+  ADMIN_PASSWORD=your-password
+  ADMIN_EMAIL=your-email@example.com
+```
+
+**Note**: no need to provide all variables, only the ones that differ.
+
 ## Android
 
 ### Build Detox Android App
@@ -52,20 +73,38 @@ npm run e2e:android-test <path to test file>
 
 ### Build iOS Simulator
 
-To build the iOS simulator for Detox, navigate to the `detox` folder and run:
+To build the iOS simulator for Detox, from the project folder run:
 
 ```sh
 npm run e2e:ios-build
 ```
 
-This will build the Simulor .zip file at the root folder.
+This will build the Simulator .zip file at the root folder.
 
-Create a folder named `mobile-artifacts` at the project root. Unzip the zip file and move the mattermost app under `mobile-artifacts.`
+Create a folder named `mobile-artifacts` at the project root. Move the zip file under `mobile-artifacts` and unzip it there.
 
 ```sh
 # From project root
 mkdir mobile-artifacts
 ```
+
+### Configure your local
+Update `detox/.detoxrc.json` to specify which device you want to run it. Change:
+```json
+ "device": {
+     "type": "__DEVICE_NAME__",
+     "os": "__DEVICE_OS_VERSION__"
+ },
+```
+to something like:
+```json
+ "device": {
+     "type": "iPhone 17 Pro",
+     "os": "iOS 26.4"
+ },
+```
+
+To get your values run `xcrun simctl list devices` to find both the device and iOS version.
 
 ### Run iOS Tests
 
@@ -79,9 +118,9 @@ npm run e2e:ios-test
 npm run e2e:android-test path to test file.
 ```
 
-### Disabling Password Autofill (Optional)
+### Disabling Password Autofill
 
-iOS password autofill can interfere with login tests by automatically filling credentials. To disable this feature on your simulator:
+from iOS v26 password autofill can interfere with login tests by automatically filling credentials. To disable this feature on your simulator:
 
 ```sh
 # Interactive mode - select simulator from list
@@ -92,6 +131,7 @@ npm run e2e:ios-disable-autofill -- --simulator-id SIMULATOR_UDID
 ```
 
 **When to use this:**
+- if using iOS 26 or later
 - Before running iOS E2E tests if you notice password fields being auto-filled
 - When login tests fail unexpectedly due to autofill interference
 - After creating a new iOS simulator for testing

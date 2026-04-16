@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -9,13 +9,13 @@ import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls'
 import ConvertToChannelLabel from '@components/channel_actions/convert_to_channel/convert_to_channel_label';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
-import {dismissModal} from '@screens/navigation';
+import {popTopScreen} from '@screens/navigation';
+import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Archive from './archive';
-import ChannelAutotranslation from './channel_autotranslation';
+import ChannelConfigurationOption from './channel_configuration_option';
 import ChannelInfoOption from './channel_info';
 import ConvertPrivate from './convert_private';
 
@@ -28,12 +28,12 @@ type Props = {
     canManageSettings: boolean;
     canUnarchive: boolean;
     channelId: string;
-    closeButtonId?: string;
     componentId: AvailableScreens;
     convertGMOptionAvailable: boolean;
     displayName: string;
     isCallsEnabledInChannel: boolean;
     canManageAutotranslations: boolean;
+    canManageSharedChannel: boolean;
     type?: ChannelType;
 }
 
@@ -61,24 +61,32 @@ const ChannelSettings = ({
     canManageSettings,
     canUnarchive,
     channelId,
-    closeButtonId,
     componentId,
     convertGMOptionAvailable,
     displayName,
     isCallsEnabledInChannel,
     canManageAutotranslations,
+    canManageSharedChannel,
     type,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const onPressed = useCallback(() => {
-        return dismissModal({componentId});
+        return popTopScreen(componentId);
     }, [componentId]);
 
-    if (closeButtonId) {
-        useNavButtonPressed(closeButtonId, componentId, onPressed, [onPressed]);
-    }
+    useEffect(() => {
+        mergeNavigationOptions(componentId, {
+            topBar: {
+                subtitle: {
+                    color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
+                    text: displayName,
+                },
+            },
+        });
+    }, [componentId, displayName, theme.sidebarHeaderTextColor]);
+
     useAndroidHardwareBackHandler(componentId, onPressed);
 
     return (
@@ -116,8 +124,11 @@ const ChannelSettings = ({
                     {convertGMOptionAvailable &&
                         <ConvertToChannelLabel channelId={channelId}/>
                     }
-                    {canManageAutotranslations &&
-                        <ChannelAutotranslation channelId={channelId}/>
+                    {(canManageAutotranslations || canManageSharedChannel) &&
+                        <ChannelConfigurationOption
+                            channelId={channelId}
+                            channelDisplayName={displayName}
+                        />
                     }
                     {(canArchive || canUnarchive) &&
                         <>

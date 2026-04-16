@@ -133,3 +133,5 @@ libraries/@mattermost/intune/*
 node_modules/@mattermost/intune
 # Claude Code
 .claude/settings.local.json
+.codex/
+.cursor/

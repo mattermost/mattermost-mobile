@@ -56,10 +56,11 @@ const getStyleSheet = (bannerTextColor: string) => ({
 
 type Props = {
     bannerInfo?: ChannelBannerInfo;
-    isTopItem?: Boolean;
+    isTopItem?: boolean;
+    skipHeaderOffset?: boolean;
 }
 
-export function ChannelBanner({bannerInfo, isTopItem}: Props) {
+export function ChannelBanner({bannerInfo, isTopItem, skipHeaderOffset}: Props) {
     const intl = useIntl();
     const theme = useTheme();
     const bannerTextColor = getContrastingSimpleColor(bannerInfo?.background_color || '');
@@ -72,9 +73,8 @@ export function ChannelBanner({bannerInfo, isTopItem}: Props) {
     const containerStyle = useMemo(() => ({
         ...style.container,
         backgroundColor: bannerInfo?.background_color,
-        top: defaultHeight,
-        zIndex: 1,
-    }), [bannerInfo?.background_color, defaultHeight, style.container]);
+        ...(skipHeaderOffset ? undefined : {top: defaultHeight, zIndex: 1}),
+    }), [bannerInfo?.background_color, defaultHeight, skipHeaderOffset, style.container]);
 
     const handlePress = useCallback(() => {
         // set snap point based on text length, with a defined

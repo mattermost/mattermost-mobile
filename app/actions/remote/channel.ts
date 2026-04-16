@@ -1081,6 +1081,57 @@ export async function fetchSharedChannels(serverUrl: string, teamId: string, pag
     }
 }
 
+export async function fetchRemoteClusters(serverUrl: string) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const remoteClusters = await client.getRemoteClusters({
+            excludePlugins: true,
+            onlyConfirmed: true,
+        });
+        return {remoteClusters};
+    } catch (error) {
+        logDebug('error on fetchRemoteClusters', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+}
+
+export async function fetchChannelSharedRemotes(serverUrl: string, channelId: string) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const remotes = await client.getChannelSharedRemotes(channelId);
+        return {remotes};
+    } catch (error) {
+        logDebug('error on fetchChannelSharedRemotes', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+}
+
+export async function shareChannelWithRemote(serverUrl: string, channelId: string, remoteId: string) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.shareChannelWithRemote(channelId, remoteId);
+        return {};
+    } catch (error) {
+        logDebug('error on shareChannelWithRemote', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+}
+
+export async function unshareChannelFromRemote(serverUrl: string, channelId: string, remoteId: string) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.unshareChannelFromRemote(channelId, remoteId);
+        return {};
+    } catch (error) {
+        logDebug('error on unshareChannelFromRemote', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+}
+
 export async function makeGroupChannel(serverUrl: string, userIds: string[], shouldSwitchToChannel = true) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

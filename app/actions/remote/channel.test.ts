@@ -39,6 +39,10 @@ import {
     fetchArchivedChannels,
     createGroupChannel,
     fetchSharedChannels,
+    fetchRemoteClusters,
+    fetchChannelSharedRemotes,
+    shareChannelWithRemote,
+    unshareChannelFromRemote,
     makeGroupChannel,
     getChannelMemberCountsByGroup,
     getChannelTimezones,
@@ -122,6 +126,10 @@ const mockClient = {
     savePreferences: jest.fn(),
     getRolesByNames: jest.fn((roles: string[]) => roles.map((r) => ({id: r, name: r} as Role))),
     getSharedChannels: jest.fn((teamId: string) => ([{id: channelId + 'shared', name: 'channel1shared', creatorId: user.id, team_id: teamId, shared: true}])),
+    getRemoteClusters: jest.fn(),
+    getChannelSharedRemotes: jest.fn(),
+    shareChannelWithRemote: jest.fn(),
+    unshareChannelFromRemote: jest.fn(),
     getChannelMemberCountsByGroup: jest.fn((channelId: string) => ({group_id: channelId, channel_member_count: 3, channel_member_timezones_count: 2})),
     getChannelTimezones: jest.fn(() => ['est']),
     autocompleteChannels: jest.fn((teamId: string) => ([{id: channelId, name: 'channel1', creatorId: user.id, team_id: teamId}])),
@@ -474,6 +482,68 @@ describe('channel', () => {
         const {channels, error} = await fetchSharedChannels(serverUrl, teamId);
         expect(error).toBeUndefined();
         expect(channels).toBeDefined();
+    });
+
+    describe('remote clusters and shared channel', () => {
+        it('fetchRemoteClusters - success', async () => {
+            const remoteClusters = [TestHelper.fakeRemoteClusterInfo({remote_id: 'rc1', name: 'Remote 1', site_url: 'https://remote1.com'})];
+            mockClient.getRemoteClusters.mockResolvedValue(remoteClusters);
+            const result = await fetchRemoteClusters(serverUrl);
+            expect(result.error).toBeUndefined();
+            expect(result.remoteClusters).toEqual(remoteClusters);
+            expect(mockClient.getRemoteClusters).toHaveBeenCalledWith({excludePlugins: true, onlyConfirmed: true});
+        });
+
+        it('fetchRemoteClusters - error', async () => {
+            mockClient.getRemoteClusters.mockRejectedValue(new Error('network'));
+            const result = await fetchRemoteClusters(serverUrl);
+            expect(result.remoteClusters).toBeUndefined();
+            expect(result.error).toBeDefined();
+        });
+
+        it('fetchChannelSharedRemotes - success', async () => {
+            const remotes = [TestHelper.fakeRemoteClusterInfo({remote_id: 'rc1', name: 'Remote 1', site_url: 'https://remote1.com'})];
+            mockClient.getChannelSharedRemotes.mockResolvedValue(remotes);
+            const result = await fetchChannelSharedRemotes(serverUrl, channelId);
+            expect(result.error).toBeUndefined();
+            expect(result.remotes).toEqual(remotes);
+            expect(mockClient.getChannelSharedRemotes).toHaveBeenCalledWith(channelId);
+        });
+
+        it('fetchChannelSharedRemotes - error', async () => {
+            mockClient.getChannelSharedRemotes.mockRejectedValue(new Error('network'));
+            const result = await fetchChannelSharedRemotes(serverUrl, channelId);
+            expect(result.remotes).toBeUndefined();
+            expect(result.error).toBeDefined();
+        });
+
+        it('shareChannelWithRemote - success', async () => {
+            mockClient.shareChannelWithRemote.mockResolvedValue(undefined as never);
+            const remoteId = 'remote-id-1';
+            const result = await shareChannelWithRemote(serverUrl, channelId, remoteId);
+            expect(result.error).toBeUndefined();
+            expect(mockClient.shareChannelWithRemote).toHaveBeenCalledWith(channelId, remoteId);
+        });
+
+        it('shareChannelWithRemote - error', async () => {
+            mockClient.shareChannelWithRemote.mockRejectedValue(new Error('network'));
+            const result = await shareChannelWithRemote(serverUrl, channelId, 'remote-id-1');
+            expect(result.error).toBeDefined();
+        });
+
+        it('unshareChannelFromRemote - success', async () => {
+            mockClient.unshareChannelFromRemote.mockResolvedValue(undefined as never);
+            const remoteId = 'remote-id-1';
+            const result = await unshareChannelFromRemote(serverUrl, channelId, remoteId);
+            expect(result.error).toBeUndefined();
+            expect(mockClient.unshareChannelFromRemote).toHaveBeenCalledWith(channelId, remoteId);
+        });
+
+        it('unshareChannelFromRemote - error', async () => {
+            mockClient.unshareChannelFromRemote.mockRejectedValue(new Error('network'));
+            const result = await unshareChannelFromRemote(serverUrl, channelId, 'remote-id-1');
+            expect(result.error).toBeDefined();
+        });
     });
 
     it('getChannelTimezones - base case', async () => {
