@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {Platform} from 'react-native';
 import {firstValueFrom} from 'rxjs';
 
@@ -17,6 +19,7 @@ import {
     getTeamHistory, patchTeamHistory, prepareCommonSystemValues, setCurrentUserId,
     setCurrentChannelId, setCurrentTeamId, setCurrentTeamAndChannelId,
     getLastUnreadChannelId, getExpiredSession,
+    getLastInitialLoad, setLastInitialLoad, getLastTeamLoad, setLastTeamLoad, prepareDeleteTeamLoadCursor,
     observeCurrentChannelId, observeCurrentTeamId, observeCurrentUserId, observeGlobalThreadsTab,
     observePushVerificationStatus, observeConfig, observeConfigValue, observeMaxFileCount,
     observeIsCustomStatusExpirySupported, observeConfigBooleanValue, observeConfigIntValue,
@@ -749,5 +752,80 @@ describe('system observe functions', () => {
 
     it('observeOnlyUnreads emits false when not set', async () => {
         expect(await firstValueFrom(observeOnlyUnreads(database))).toBe(false);
+    });
+});
+
+describe('getLastInitialLoad / setLastInitialLoad', () => {
+    const serverUrl = 'baseHandler.test.com';
+    let database: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['database'];
+    let operator: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['operator'];
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should return 0 when no record exists', async () => {
+        const result = await getLastInitialLoad(database);
+        expect(result).toBe(0);
+    });
+
+    it('should return the stored timestamp after setLastInitialLoad', async () => {
+        const timestamp = 1706000000000;
+        await setLastInitialLoad(operator, timestamp);
+
+        const result = await getLastInitialLoad(database);
+        expect(result).toBe(timestamp);
+    });
+});
+
+describe('getLastTeamLoad / setLastTeamLoad / prepareDeleteTeamLoadCursor', () => {
+    const serverUrl = 'baseHandler.test.com';
+    const teamId = 'team1';
+    let database: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['database'];
+    let operator: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['operator'];
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should return 0 when no record exists', async () => {
+        const result = await getLastTeamLoad(database, teamId);
+        expect(result).toBe(0);
+    });
+
+    it('should return the stored timestamp after setLastTeamLoad', async () => {
+        const timestamp = 1706000000000;
+        await setLastTeamLoad(operator, teamId, timestamp);
+
+        const result = await getLastTeamLoad(database, teamId);
+        expect(result).toBe(timestamp);
+    });
+
+    it('prepareDeleteTeamLoadCursor - returns undefined when record does not exist', async () => {
+        const model = await prepareDeleteTeamLoadCursor(database, teamId);
+        expect(model).toBeUndefined();
+    });
+
+    it('prepareDeleteTeamLoadCursor - returns a prepared destroy model when record exists', async () => {
+        await setLastTeamLoad(operator, teamId, 1706000000000);
+
+        const model = await prepareDeleteTeamLoadCursor(database, teamId);
+        expect(model).toBeDefined();
+
+        await database.write(async () => {
+            await model!.destroyPermanently();
+        });
+        const result = await getLastTeamLoad(database, teamId);
+        expect(result).toBe(0);
     });
 });

@@ -10,7 +10,7 @@ import ServerIcon from '@components/server_icon';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {subscribeAllServers} from '@database/subscription/servers';
-import {subscribeUnreadAndMentionsByServer, type UnreadObserverArgs} from '@database/subscription/unreads';
+import {observeUnreadsByServer} from '@database/subscription/unreads';
 import {useWindowDimensions} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
 import {BUTTON_HEIGHT, TITLE_HEIGHT} from '@screens/bottom_sheet';
@@ -29,7 +29,6 @@ export type ServersRef = {
 
 export const SERVER_ITEM_HEIGHT = 75;
 export const PUSH_ALERT_TEXT_HEIGHT = 42;
-const subscriptions: Map<string, UnreadSubscription> = new Map();
 
 const styles = StyleSheet.create({
     icon: {
@@ -59,7 +58,8 @@ const Servers = React.forwardRef<ServersRef, Props>(({
 }, ref) => {
     const intl = useIntl();
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
-    const registeredServers = useRef<ServersModel[] | undefined>(undefined);
+    const registeredServers = useRef<ServersModel[]|undefined>(undefined);
+    const subscriptions = useRef<Map<string, UnreadSubscription>>(new Map()).current;
     const currentServerUrl = useServerUrl();
     const dimensions = useWindowDimensions();
     const insets = useSafeAreaInsets();
@@ -75,46 +75,36 @@ const Servers = React.forwardRef<ServersRef, Props>(({
         setTotal({mentions, unread});
     };
 
-    const unreadsSubscription = (serverUrl: string, {myChannels, settings, threadMentionCount, threadUnreads}: UnreadObserverArgs) => {
-        const unreads = subscriptions.get(serverUrl);
-        if (unreads) {
-            let mentions = 0;
-            let unread = Boolean(threadUnreads);
-            for (const myChannel of myChannels) {
-                const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
-                mentions += isMuted ? 0 : myChannel.mentionsCount;
-                unread = unread || (myChannel.isUnread && !isMuted);
-            }
-
-            unreads.mentions = mentions + threadMentionCount;
-            unreads.unread = unread;
-            subscriptions.set(serverUrl, unreads);
-            updateTotal();
-        }
-    };
-
     const serversObserver = async (servers: ServersModel[]) => {
         registeredServers.current = sortServersByDisplayName(servers, intl);
 
-        // unsubscribe mentions from servers that were removed
+        // Unsubscribe from servers no longer in the registry and refresh the
+        // badge so their last-seen counts stop contributing.
         const allUrls = new Set(servers.map((s) => s.url));
         const subscriptionsToRemove = [...subscriptions].filter(([key]) => !allUrls.has(key));
         for (const [key, map] of subscriptionsToRemove) {
             map.subscription?.unsubscribe();
             subscriptions.delete(key);
+        }
+        if (subscriptionsToRemove.length) {
             updateTotal();
         }
 
         for (const server of servers) {
-            const {lastActiveAt, url} = server;
-            if (lastActiveAt && (url !== currentServerUrl) && !subscriptions.has(url)) {
-                const unreads: UnreadSubscription = {
-                    mentions: 0,
-                    unread: false,
-                };
+            const {lastActiveAt, url, persistenceFlag} = server;
+            const isWiped = persistenceFlag === 'wiped';
+            const shouldSubscribe = Boolean(lastActiveAt) && !isWiped && url !== currentServerUrl;
+
+            if (shouldSubscribe && !subscriptions.has(url)) {
+                const unreads: UnreadSubscription = {mentions: 0, unread: false};
                 subscriptions.set(url, unreads);
-                unreads.subscription = subscribeUnreadAndMentionsByServer(url, unreadsSubscription);
-            } else if ((!lastActiveAt || (url === currentServerUrl)) && subscriptions.has(url)) {
+                unreads.subscription = observeUnreadsByServer(url).subscribe(({mentions, unread}) => {
+                    unreads.mentions = mentions;
+                    unreads.unread = unread;
+                    subscriptions.set(url, unreads);
+                    updateTotal();
+                });
+            } else if (!shouldSubscribe && subscriptions.has(url)) {
                 subscriptions.get(url)?.subscription?.unsubscribe();
                 subscriptions.delete(url);
                 updateTotal();

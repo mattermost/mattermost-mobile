@@ -4,11 +4,12 @@
 import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {AppState, type AppStateStatus} from 'react-native';
+import {of as of$} from 'rxjs';
 
 import {reconnectErasedServer} from '@actions/remote/ephemeral_mode/reconnect';
 import ServerUrlProvider from '@context/server';
 import {subscribeAllServers} from '@database/subscription/servers';
-import {subscribeUnreadAndMentionsByServer} from '@database/subscription/unreads';
+import {observeUnreadsByServer} from '@database/subscription/unreads';
 import {bottomSheet} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
@@ -26,7 +27,7 @@ jest.mock('@database/subscription/servers', () => ({
     subscribeAllServers: jest.fn(),
 }));
 jest.mock('@database/subscription/unreads', () => ({
-    subscribeUnreadAndMentionsByServer: jest.fn(),
+    observeUnreadsByServer: jest.fn(),
 }));
 
 describe('DataErased', () => {
@@ -50,6 +51,7 @@ describe('DataErased', () => {
         // here so every test gets a valid subscription object.
         (AppState.addEventListener as jest.Mock).mockReturnValue({remove: jest.fn()});
         (subscribeAllServers as jest.Mock).mockReturnValue({unsubscribe: jest.fn()});
+        (observeUnreadsByServer as jest.Mock).mockReturnValue(of$({mentions: 0, unread: false}));
     });
 
     it('renders title, body, and reconnect button', () => {
@@ -160,19 +162,18 @@ describe('DataErased', () => {
             observer = cb;
             return {unsubscribe: jest.fn()};
         });
-        (subscribeUnreadAndMentionsByServer as jest.Mock).mockReturnValue({unsubscribe: jest.fn()});
 
         renderScreen();
 
         await act(async () => {
             observer?.([
-                {url: serverUrl, displayName, lastActiveAt: 1} as ServersModel,
+                {url: serverUrl, displayName, lastActiveAt: 1, persistenceFlag: 'wiped'} as ServersModel,
                 {url: 'https://other.test', displayName: 'Other', lastActiveAt: 1} as ServersModel,
                 {url: 'https://signed-out.test', displayName: 'Signed-out', lastActiveAt: 0} as ServersModel,
             ]);
         });
 
-        expect(subscribeUnreadAndMentionsByServer).toHaveBeenCalledTimes(1);
-        expect(subscribeUnreadAndMentionsByServer).toHaveBeenCalledWith('https://other.test', expect.any(Function));
+        expect(observeUnreadsByServer).toHaveBeenCalledTimes(1);
+        expect(observeUnreadsByServer).toHaveBeenCalledWith('https://other.test');
     });
 });

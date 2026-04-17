@@ -6,6 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
 import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
+import {UseInitialLoadEndpoint} from '@assets/config.json';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -13,9 +14,11 @@ import {removeDuplicatesModels} from '@helpers/database';
 import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
-import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
-import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
+import {prepareMyChannelsForTeam, getDefaultChannelForTeam, prepareDeleteChannel, queryChannelsById, queryMyChannelsByTeam} from '@queries/servers/channel';
+import {prepareEntryModels} from '@queries/servers/entry';
+import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId, getLastTeamLoad, setLastTeamLoad} from '@queries/servers/system';
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, getLastTeam, getTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
@@ -423,6 +426,113 @@ export const removeUserFromTeam = async (serverUrl: string, teamId: string, user
     }
 };
 
+export async function fetchTeamLoad(serverUrl: string, teamId: string, isCRTEnabled: boolean): Promise<{error?: unknown}> {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
+
+        const since = await getLastTeamLoad(database, teamId);
+
+        const teamLoad: TeamLoadResponse = await client.getTeamLoad(teamId, since || undefined);
+
+        const chData = {
+            channels: teamLoad.channels.map((c) => ({
+                id: c.id,
+                create_at: c.create_at ?? 0,
+                update_at: c.update_at ?? 0,
+                delete_at: c.delete_at ?? 0,
+                team_id: c.team_id,
+                type: c.type,
+                display_name: c.display_name,
+                name: c.name,
+                last_post_at: c.last_post_at,
+                total_msg_count: c.total_msg_count,
+                creator_id: c.creator_id ?? '',
+                group_constrained: c.group_constrained,
+                shared: c.shared,
+                total_msg_count_root: c.total_msg_count_root ?? 0,
+                last_root_post_at: c.last_root_post_at ?? 0,
+                policy_enforced: c.policy_enforced ?? false,
+                header: '',
+                purpose: '',
+                scheme_id: '',
+                props: null,
+            } as unknown as Channel)),
+            memberships: teamLoad.channel_members.members.map((m) => ({
+                channel_id: m.channel_id,
+                user_id: m.user_id,
+                roles: m.roles,
+                last_viewed_at: m.last_viewed_at,
+                msg_count: m.msg_count,
+                mention_count: m.mention_count,
+                mention_count_root: m.mention_count_root,
+                urgent_mention_count: m.urgent_mention_count,
+                msg_count_root: m.msg_count_root,
+                last_update_at: m.last_update_at,
+                scheme_guest: m.scheme_guest,
+                scheme_user: m.scheme_user,
+                scheme_admin: m.scheme_admin,
+                notify_props: m.notify_props,
+            } as ChannelMembership)),
+            categories: teamLoad.sidebar_categories?.categories ?? [],
+        };
+
+        const memberCountOverrides: Record<string, number> = {};
+        for (const c of teamLoad.channels) {
+            if (c.type === 'G' && (c.member_count ?? 0) > 0) {
+                memberCountOverrides[c.id] = c.member_count!;
+            }
+        }
+
+        // Filter out removed channels before preparing models — avoids preparing
+        // the same channel both as a live record and a tombstone in the same batch.
+        const removedChannelIds = teamLoad.channel_members.removed_channel_ids ?? [];
+        if (removedChannelIds.length && chData.channels.length) {
+            const chanIds = new Set(removedChannelIds);
+            chData.channels = chData.channels.filter((c) => !chanIds.has(c.id));
+        }
+
+        const modelPromises = await prepareEntryModels({operator, chData, isCRTEnabled, memberCountOverrides});
+
+        // Tombstones: remove channels the user left since the cursor.
+        if (removedChannelIds.length) {
+            const channelsToDelete = await queryChannelsById(database, removedChannelIds).fetch();
+            for (const channel of channelsToDelete) {
+                modelPromises.push(prepareDeleteChannel(serverUrl, channel));
+            }
+        }
+
+        // Roles from the team load response.
+        if (teamLoad.roles?.length) {
+            modelPromises.push(operator.handleRole({
+                roles: teamLoad.roles.map((r) => ({
+                    id: r.id,
+                    name: r.name,
+                    create_at: r.create_at ?? 0,
+                    update_at: r.update_at ?? 0,
+                    delete_at: r.delete_at ?? 0,
+                    permissions: r.permissions,
+                } as Role)),
+                prepareRecordsOnly: true,
+            }));
+        }
+
+        // Persist cursors alongside the data in the same batch.
+        modelPromises.push(setLastTeamLoad(operator, teamId, teamLoad.timestamp, true));
+
+        const models = (await Promise.all(modelPromises)).flat();
+        if (models.length) {
+            await operator.batchRecords(models, 'fetchTeamLoad');
+        }
+
+        return {};
+    } catch (error) {
+        logDebug('error on fetchTeamLoad', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+}
+
 export async function handleTeamChange(serverUrl: string, teamId: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -438,6 +548,19 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
 
     let channelId = '';
     DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
+
+    if (UseInitialLoadEndpoint) {
+        // Fetch channels + members + sidebar for this team before completing the switch
+        // so the channel list is populated when the screen appears.
+        const isCRTEnabled = await getIsCRTEnabled(database);
+        const hasChannels = (await queryMyChannelsByTeam(database, teamId).fetch()).length > 0;
+        if (hasChannels) {
+            fetchTeamLoad(serverUrl, teamId, isCRTEnabled);
+        } else {
+            await fetchTeamLoad(serverUrl, teamId, isCRTEnabled);
+        }
+    }
+
     if (isTablet()) {
         channelId = await getNthLastChannelFromTeam(database, teamId);
         if (channelId) {
@@ -460,6 +583,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     if (models.length) {
         await operator.batchRecords(models, 'handleTeamChange');
     }
+
     DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
 
     // Fetch Groups + GroupTeams

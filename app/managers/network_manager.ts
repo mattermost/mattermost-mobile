@@ -62,7 +62,7 @@ class NetworkManagerSingleton {
             waitsForConnectivity: false,
             httpMaximumConnectionsPerHost: 100,
             cancelRequestsOnUnauthorized: true,
-            collectMetrics: true,
+            collectMetrics: LocalConfig.CollectNetworkMetrics,
         },
         retryPolicyConfiguration: {
             type: RetryTypes.EXPONENTIAL_RETRY,
@@ -140,7 +140,7 @@ class NetworkManagerSingleton {
                 timeoutIntervalForRequest: managedConfig?.timeout ? parseInt(managedConfig.timeout, 10) : this.DEFAULT_CONFIG.sessionConfiguration?.timeoutIntervalForRequest,
                 timeoutIntervalForResource: managedConfig?.timeoutVPN ? parseInt(managedConfig.timeoutVPN, 10) : this.DEFAULT_CONFIG.sessionConfiguration?.timeoutIntervalForResource,
                 waitsForConnectivity: managedConfig?.useVPN === 'true',
-                collectMetrics: true,
+                collectMetrics: LocalConfig.CollectNetworkMetrics,
             },
             headers,
         };

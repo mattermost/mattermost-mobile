@@ -41,6 +41,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             fieldName: 'id',
             transformer: transformRoleRecord,
             createOrUpdateRawValues: roles,
+            deleteRawValues: [],
             tableName: 'Role',
             prepareRecordsOnly: false,
         }, 'handleRole');

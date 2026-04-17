@@ -13,7 +13,7 @@ import {DEFAULT_LOCALE} from '@i18n';
 import {prepareDeleteCategory} from './categories';
 import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount, observeMyChannelUnreads} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
-import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId, getCurrentTeamId} from './system';
+import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId, getCurrentTeamId, prepareDeleteTeamLoadCursor} from './system';
 import {observeThreadMentionCount, observeUnreadsAndMentions} from './thread';
 import {getCurrentUser} from './user';
 
@@ -168,6 +168,17 @@ export const removeTeamFromTeamHistory = async (operator: ServerDataOperator, te
     return patchTeamHistory(operator, teamIds, prepareRecordsOnly);
 };
 
+export const removeTeamsFromTeamHistory = async (operator: ServerDataOperator, teamIds: string[], prepareRecordsOnly = false) => {
+    const {database} = operator;
+    const teamHistory = (await getTeamHistory(database));
+    const teamHistorySet = new Set(teamHistory);
+    for (const id of teamIds) {
+        teamHistorySet.delete(id);
+    }
+
+    return patchTeamHistory(operator, Array.from(teamHistorySet), prepareRecordsOnly);
+};
+
 export const getLastTeam = async (database: Database, ignoreIdForDefault?: string) => {
     const teamHistory = (await getTeamHistory(database));
     if (teamHistory.length > 0) {
@@ -285,6 +296,11 @@ export const prepareDeleteTeam = async (serverUrl: string, team: TeamModel): Pro
                     // Record not found, do nothing
                 }
             }
+        }
+
+        const cursorModel = await prepareDeleteTeamLoadCursor(team.database, team.id);
+        if (cursorModel) {
+            preparedModels.push(cursorModel);
         }
 
         return preparedModels;

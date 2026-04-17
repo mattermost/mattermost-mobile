@@ -9,6 +9,7 @@ import {Config} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {prepareAllMyChannels} from '@queries/servers/channel';
+import ThreadsSyncStore from '@store/threads_sync_store';
 import {renderWithEverything, act} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -51,6 +52,7 @@ describe('TeamItem enhanced component', () => {
     });
 
     afterEach(async () => {
+        ThreadsSyncStore.clearServer(serverUrl);
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
@@ -62,7 +64,10 @@ describe('TeamItem enhanced component', () => {
         ));
         await operator.batchRecords(models.flat(), 'test');
 
-        const {getByTestId} = renderWithEverything(<EnhancedTeamItem myTeam={myTeam}/>, {database});
+        const {getByTestId} = renderWithEverything(
+            <EnhancedTeamItem
+                myTeam={myTeam}
+            />, {database});
         const teamItem = getByTestId('team-item');
         expect(teamItem.props.hasUnreads).toBe(false);
 
@@ -106,7 +111,11 @@ describe('TeamItem enhanced component', () => {
         })], teamId, true);
         await operator.batchRecords([...channelModels.flat(), ...threadModels.models!], 'test');
 
-        const {getByTestId} = renderWithEverything(<EnhancedTeamItem myTeam={myTeam}/>, {database});
+        ThreadsSyncStore.markThreadsFetched(serverUrl, teamId);
+        const {getByTestId} = renderWithEverything(
+            <EnhancedTeamItem
+                myTeam={myTeam}
+            />, {database, serverUrl});
         const teamItem = getByTestId('team-item');
         expect(teamItem.props.hasUnreads).toBe(false);
 
@@ -135,6 +144,143 @@ describe('TeamItem enhanced component', () => {
         expect(teamItem.props.hasUnreads).toBe(false);
     });
 
+    it('should use blob mentionCount when channels are not yet in DB', async () => {
+        const blob: TeamBadgeCounts = {
+            teams: {
+                [teamId]: {mentionCount: 3, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+            },
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        };
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS, value: JSON.stringify(blob)}],
+            prepareRecordsOnly: false,
+        });
+
+        const {getByTestId} = renderWithEverything(
+            <EnhancedTeamItem
+                myTeam={myTeam}
+            />, {database});
+        const teamItem = getByTestId('team-item');
+        expect(teamItem.props.mentionCount).toBe(3);
+        expect(teamItem.props.hasUnreads).toBe(false);
+    });
+
+    it('should use blob hasUnreads when channels are not yet in DB', async () => {
+        const blob: TeamBadgeCounts = {
+            teams: {
+                [teamId]: {mentionCount: 0, hasUnreads: true, threadMentionCount: 0, threadHasUnreads: false},
+            },
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        };
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS, value: JSON.stringify(blob)}],
+            prepareRecordsOnly: false,
+        });
+
+        const {getByTestId} = renderWithEverything(
+            <EnhancedTeamItem
+                myTeam={myTeam}
+            />, {database});
+        const teamItem = getByTestId('team-item');
+        expect(teamItem.props.mentionCount).toBe(0);
+        expect(teamItem.props.hasUnreads).toBe(true);
+    });
+
+    it('should use blob threadMentionCount when threads are not yet fetched', async () => {
+        const blob: TeamBadgeCounts = {
+            teams: {
+                [teamId]: {mentionCount: 0, hasUnreads: false, threadMentionCount: 5, threadHasUnreads: false},
+            },
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        };
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS, value: JSON.stringify(blob)}],
+            prepareRecordsOnly: false,
+        });
+
+        // Write channels so channel gate passes (channelPart = 0 from DB, threadPart = blob)
+        const models = await Promise.all(await prepareAllMyChannels(operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 10})],
+            [TestHelper.fakeMyChannel({id: 'my_channel1', channel_id: 'channel1', msg_count: 10})],
+            false,
+        ));
+        await operator.batchRecords(models.flat(), 'test');
+
+        // No markThreadsFetched — thread gate is false, blob is used for thread part.
+        const {getByTestId} = renderWithEverything(
+            <EnhancedTeamItem
+                myTeam={myTeam}
+            />, {database});
+        const teamItem = getByTestId('team-item');
+        expect(teamItem.props.mentionCount).toBe(5);
+        expect(teamItem.props.hasUnreads).toBe(false);
+    });
+
+    it('should use blob threadHasUnreads when threads are not yet fetched', async () => {
+        const blob: TeamBadgeCounts = {
+            teams: {
+                [teamId]: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: true},
+            },
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        };
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS, value: JSON.stringify(blob)}],
+            prepareRecordsOnly: false,
+        });
+
+        const models = await Promise.all(await prepareAllMyChannels(operator,
+            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 10})],
+            [TestHelper.fakeMyChannel({id: 'my_channel1', channel_id: 'channel1', msg_count: 10})],
+            false,
+        ));
+        await operator.batchRecords(models.flat(), 'test');
+
+        // No markThreadsFetched — thread gate is false, blob is used for thread part.
+        const {getByTestId} = renderWithEverything(
+            <EnhancedTeamItem
+                myTeam={myTeam}
+            />, {database});
+        const teamItem = getByTestId('team-item');
+        expect(teamItem.props.mentionCount).toBe(0);
+        expect(teamItem.props.hasUnreads).toBe(true);
+    });
+
+    it('should switch from blob to DB counts once channels load', async () => {
+        const blob: TeamBadgeCounts = {
+            teams: {
+                [teamId]: {mentionCount: 7, hasUnreads: true, threadMentionCount: 0, threadHasUnreads: false},
+            },
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        };
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS, value: JSON.stringify(blob)}],
+            prepareRecordsOnly: false,
+        });
+
+        const {getByTestId} = renderWithEverything(
+            <EnhancedTeamItem
+                myTeam={myTeam}
+            />, {database});
+        const teamItem = getByTestId('team-item');
+
+        // No channels yet — blob wins.
+        expect(teamItem.props.mentionCount).toBe(7);
+        expect(teamItem.props.hasUnreads).toBe(true);
+
+        // Channels load with no actual mentions or unreads — DB takes over.
+        await act(async () => {
+            const models = await Promise.all(await prepareAllMyChannels(operator,
+                [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 10})],
+                [TestHelper.fakeMyChannel({id: 'my_channel1', channel_id: 'channel1', msg_count: 10})],
+                false,
+            ));
+            await operator.batchRecords(models.flat(), 'test');
+        });
+
+        expect(teamItem.props.mentionCount).toBe(0);
+        expect(teamItem.props.hasUnreads).toBe(false);
+    });
+
     it('should not consider unread threads if collapsed threads is off', async () => {
         const channelId = 'channel1';
         const threadId = 'thread1';
@@ -159,7 +305,10 @@ describe('TeamItem enhanced component', () => {
         })], teamId, true);
         await operator.batchRecords([...channelModels.flat(), ...threadModels.models!], 'test');
 
-        const {getByTestId} = renderWithEverything(<EnhancedTeamItem myTeam={myTeam}/>, {database});
+        const {getByTestId} = renderWithEverything(
+            <EnhancedTeamItem
+                myTeam={myTeam}
+            />, {database});
         const teamItem = getByTestId('team-item');
         expect(teamItem.props.hasUnreads).toBe(false);
 

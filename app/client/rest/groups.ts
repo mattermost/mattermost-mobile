@@ -11,7 +11,7 @@ export interface ClientGroupsMix {
     getGroups: (params: {query?: string; filterAllowReference?: boolean; page?: number; perPage?: number; since?: number; includeMemberCount?: boolean}) => Promise<Group[]>;
     getAllGroupsAssociatedToChannel: (channelId: string, filterAllowReference?: boolean, groupLabel?: RequestGroupLabel) => Promise<{groups: Group[]; total_group_count: number}>;
     getAllGroupsAssociatedToMembership: (userId: string, filterAllowReference?: boolean, groupLabel?: RequestGroupLabel) => Promise<Group[]>;
-    getAllGroupsAssociatedToTeam: (teamId: string, filterAllowReference?: boolean) => Promise<{groups: Group[]; total_group_count: number}>;
+    getAllGroupsAssociatedToTeam: (teamId: string, filterAllowReference?: boolean, groupLabel?: RequestGroupLabel) => Promise<{groups: Group[]; total_group_count: number}>;
 }
 
 const ClientGroups = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -40,10 +40,10 @@ const ClientGroups = <TBase extends Constructor<ClientBase>>(superclass: TBase) 
         );
     };
 
-    getAllGroupsAssociatedToTeam = async (teamId: string, filterAllowReference = false) => {
+    getAllGroupsAssociatedToTeam = async (teamId: string, filterAllowReference = false, groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.urlVersion}/teams/${teamId}/groups${buildQueryString({paginate: false, filter_allow_reference: filterAllowReference})}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
