@@ -18,6 +18,7 @@ import {
 } from '@support/test_config';
 import {
     AccountScreen,
+    ChannelListScreen,
     ChannelScreen,
     HomeScreen,
     LoginScreen,
@@ -34,9 +35,10 @@ describe('Account - Attach App Logs', () => {
     let testChannel: any;
 
     beforeAll(async () => {
-        // # Ensure AllowDownloadLogs is enabled on the server
+        // # Ensure AllowDownloadLogs is enabled on the server before login so the
+        //   client fetches the expected config on startup
         await System.apiUpdateConfig(siteOneUrl, {
-            LogSettings: {
+            SupportSettings: {
                 AllowDownloadLogs: true,
             },
         });
@@ -89,6 +91,7 @@ describe('Account - Attach App Logs', () => {
         await SettingsScreen.close();
 
         // # Open a channel
+        await ChannelListScreen.open();
         await ChannelScreen.open('channels', testChannel.name);
 
         // # Tap the attachment action button to open attachment options
@@ -121,6 +124,7 @@ describe('Account - Attach App Logs', () => {
         await SettingsScreen.close();
 
         // # Open the channel
+        await ChannelListScreen.open();
         await ChannelScreen.open('channels', testChannel.name);
 
         // # Tap the attachment action button to open attachment options
@@ -146,19 +150,21 @@ describe('Account - Attach App Logs', () => {
     });
 
     it('MM-T67856_4 - should not show attach logs toggle when AllowDownloadLogs is disabled', async () => {
-        // # Disable AllowDownloadLogs server config
+        // # Disable AllowDownloadLogs and reload so the client re-fetches the
+        //   updated config on startup
         await System.apiUpdateConfig(siteOneUrl, {
-            LogSettings: {
+            SupportSettings: {
                 AllowDownloadLogs: false,
             },
         });
+        await device.reloadReactNative();
 
         // # Navigate to Report a Problem screen
         await AccountScreen.open();
         await SettingsScreen.open();
         await ReportProblemScreen.open();
 
-        // * Verify the attach logs toggle is NOT visible
+        // * Verify the attach logs toggle is NOT visible in either state
         await expect(ReportProblemScreen.enableLogAttachmentsToggleOff).not.toExist();
         await expect(ReportProblemScreen.enableLogAttachmentsToggleOn).not.toExist();
 
@@ -166,9 +172,9 @@ describe('Account - Attach App Logs', () => {
         await ReportProblemScreen.back();
         await SettingsScreen.close();
 
-        // # Re-enable AllowDownloadLogs for other tests
+        // # Restore AllowDownloadLogs for subsequent test suites
         await System.apiUpdateConfig(siteOneUrl, {
-            LogSettings: {
+            SupportSettings: {
                 AllowDownloadLogs: true,
             },
         });
