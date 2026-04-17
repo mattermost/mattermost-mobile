@@ -159,24 +159,27 @@ describe('Account - Attach App Logs', () => {
         });
         await device.reloadReactNative();
 
-        // # Navigate to Report a Problem screen
-        await AccountScreen.open();
-        await SettingsScreen.open();
-        await ReportProblemScreen.open();
+        try {
+            // # Navigate to Report a Problem screen
+            await AccountScreen.open();
+            await SettingsScreen.open();
+            await ReportProblemScreen.open();
 
-        // * Verify the attach logs toggle is NOT visible in either state
-        await expect(ReportProblemScreen.enableLogAttachmentsToggleOff).not.toExist();
-        await expect(ReportProblemScreen.enableLogAttachmentsToggleOn).not.toExist();
+            // * Verify the attach logs toggle is NOT visible in either state
+            await expect(ReportProblemScreen.enableLogAttachmentsToggleOff).not.toExist();
+            await expect(ReportProblemScreen.enableLogAttachmentsToggleOn).not.toExist();
 
-        // # Close Report a Problem and Settings screens
-        await ReportProblemScreen.back();
-        await SettingsScreen.close();
-
-        // # Restore AllowDownloadLogs for subsequent test suites
-        await System.apiUpdateConfig(siteOneUrl, {
-            SupportSettings: {
-                AllowDownloadLogs: true,
-            },
-        });
+            // # Close Report a Problem and Settings screens
+            await ReportProblemScreen.back();
+            await SettingsScreen.close();
+        } finally {
+            // # Restore AllowDownloadLogs for subsequent test suites even if
+            //   an assertion or interaction above fails
+            await System.apiUpdateConfig(siteOneUrl, {
+                SupportSettings: {
+                    AllowDownloadLogs: true,
+                },
+            });
+        }
     });
 });

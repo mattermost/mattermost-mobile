@@ -18,7 +18,7 @@ class ReportProblemScreen {
     enableLogAttachmentsToggleOn = element(by.id(this.testID.enableLogAttachmentsToggleOn));
 
     toBeVisible = async () => {
-        await waitFor(this.reportProblemScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.reportProblemScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.reportProblemScreen;
     };

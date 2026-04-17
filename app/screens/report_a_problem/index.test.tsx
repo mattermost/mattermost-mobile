@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import {act} from '@testing-library/react-native';
+import {act, waitFor} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 import {View, Text} from 'react-native';
 
@@ -204,6 +204,8 @@ describe('screens/report_a_problem/index', () => {
         });
 
         // * Should react to the value change
-        expect(getByTestId('attachLogsEnabled')).toHaveTextContent('false');
+        await waitFor(() => {
+            expect(getByTestId('attachLogsEnabled')).toHaveTextContent('false');
+        });
     });
 });
