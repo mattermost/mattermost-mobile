@@ -3,6 +3,7 @@
 
 import {setLastServerVersionCheck} from '@actions/local/systems';
 import {fetchAgents} from '@agents/actions/remote/agents';
+import {UseInitialLoadEndpoint} from '@assets/config.json';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -35,7 +36,9 @@ export async function appEntry(serverUrl: string, since = 0) {
         const currentTeamId = await getCurrentTeamId(database);
         const currentChannelId = await getCurrentChannelId(database);
 
-        await entry(serverUrl, currentTeamId, currentChannelId, undefined, undefined, undefined, 'Cold Start');
+        if (UseInitialLoadEndpoint) {
+            await entry(serverUrl, currentTeamId, currentChannelId, undefined, undefined, undefined, 'Cold Start');
+        }
 
         WebsocketManager.openAll('Cold Start');
 

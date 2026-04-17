@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {type Database} from '@nozbe/watermelondb';
-import {type Observable, of as of$} from 'rxjs';
+import {combineLatest, type Observable, of as of$} from 'rxjs';
 import {combineLatestWith, distinctUntilChanged, map as map$, switchMap} from 'rxjs/operators';
 
 import DatabaseManager from '@database/manager';
@@ -22,6 +22,13 @@ export type UnreadObserverArgs = {
 }
 
 type BadgeState = {mentions: number; unread: boolean};
+
+function aggregateBadges(badges: BadgeState[]): BadgeState {
+    return {
+        mentions: badges.reduce((sum, b) => sum + b.mentions, 0),
+        unread: badges.some((b) => b.unread),
+    };
+}
 
 // observeTeamBadge implements the two-layer strategy for one team:
 //   - Channel part: DB (observeChannelUnreadsAndMentions) once channels exist; blob seed until then.
@@ -142,13 +149,7 @@ export const observeUnreadsByServer = (serverUrl: string, excludeThreadMentions 
                 direct$,
             ];
 
-            const addBadge = (acc$: Observable<BadgeState>, badge$: Observable<BadgeState>) => {
-                return acc$.pipe(
-                    combineLatestWith(badge$),
-                    map$(([acc, badge]) => ({mentions: acc.mentions + badge.mentions, unread: acc.unread || badge.unread})),
-                );
-            };
-            return allBadges$.reduce(addBadge, of$({mentions: 0, unread: false} as BadgeState));
+            return combineLatest<BadgeState[]>(allBadges$).pipe(map$(aggregateBadges));
         }),
         distinctUntilChanged((a, b) => a.mentions === b.mentions && a.unread === b.unread),
     );

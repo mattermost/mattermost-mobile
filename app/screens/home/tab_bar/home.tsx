@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import RNUtils from '@mattermost/rnutils/src';
-import React, {useEffect, useState} from 'react';
-import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
+import React, {useState} from 'react';
+import {Platform, StyleSheet, View} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import Badge from '@components/badge';
@@ -12,6 +12,7 @@ import {BOTTOM_TAB_ICON_SIZE} from '@constants/view';
 import {subscribeAllServers} from '@database/subscription/servers';
 import {observeUnreadsByServer} from '@database/subscription/unreads';
 import {useAppState} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import useDidUpdate from '@hooks/did_update';
 import {logDebug} from '@utils/log';
 import {changeOpacity} from '@utils/theme';
@@ -23,10 +24,6 @@ type Props = {
     isFocused: boolean;
     theme: Theme;
 }
-
-const HOME_TOTAL_MENTIONS_EVENT = 'home_total_mentions_event';
-
-const subscriptions: Map<string, UnreadSubscription> = new Map();
 
 const style = StyleSheet.create({
     unread: {
@@ -44,100 +41,110 @@ const style = StyleSheet.create({
     },
 });
 
-const getTotalMentionsAndUnread = () => {
+const totalFromSubscriptions = (subs: Map<string, UnreadSubscription>) => {
     let unread = false;
     let mentions = 0;
-    subscriptions.forEach((value) => {
+    subs.forEach((value) => {
         unread = unread || value.unread;
         mentions += value.mentions;
     });
     return {unread, mentions};
 };
 
-const updateBadge = () => {
-    if (Platform.OS === 'ios') {
-        const {mentions} = getTotalMentionsAndUnread();
-        RNUtils.getDeliveredNotifications().then((delivered) => {
-            if (mentions === 0 && delivered.length > 0) {
-                logDebug('Not updating badge count, since we have no mentions in the database, and the number of notifications in the notification center is', delivered.length);
-                return;
-            }
-
-            logDebug('Setting the badge count based on database values to', mentions);
-            Notifications.ios.setBadgeCount(mentions);
-        });
+const updateBadge = (subs: Map<string, UnreadSubscription>) => {
+    if (Platform.OS !== 'ios') {
+        return;
     }
-};
-
-const serversObserver = async (servers: ServersModel[]) => {
-    // unsubscribe mentions from servers that were removed
-    const allUrls = new Set(servers.map((s) => s.url));
-    const subscriptionsToRemove = [...subscriptions].filter(([key]) => !allUrls.has(key));
-    let hasRemovedServers = false;
-    for (const [key, map] of subscriptionsToRemove) {
-        map.subscription?.unsubscribe();
-        subscriptions.delete(key);
-        hasRemovedServers = true;
-    }
-
-    for (const server of servers) {
-        const {lastActiveAt, url} = server;
-        if (lastActiveAt && !subscriptions.has(url)) {
-            const unreads: UnreadSubscription = {
-                mentions: 0,
-                unread: false,
-            };
-            subscriptions.set(url, unreads);
-            unreads.subscription = observeUnreadsByServer(url).subscribe(({mentions, unread}) => {
-                unreads.mentions = mentions;
-                unreads.unread = unread;
-                subscriptions.set(url, unreads);
-                DeviceEventEmitter.emit(HOME_TOTAL_MENTIONS_EVENT);
-            });
-        } else if (!lastActiveAt && subscriptions.has(url)) {
-            subscriptions.get(url)?.subscription?.unsubscribe();
-            subscriptions.delete(url);
-            hasRemovedServers = true;
+    const {mentions} = totalFromSubscriptions(subs);
+    RNUtils.getDeliveredNotifications().then((delivered) => {
+        if (mentions === 0 && delivered.length > 0) {
+            logDebug('Not updating badge count, since we have no mentions in the database, and the number of notifications in the notification center is', delivered.length);
+            return;
         }
-    }
-    if (hasRemovedServers) {
-        DeviceEventEmitter.emit(HOME_TOTAL_MENTIONS_EVENT);
-    }
+
+        logDebug('Setting the badge count based on database values to', mentions);
+        Notifications.ios.setBadgeCount(mentions);
+    });
 };
 
 const Home = ({isFocused, theme}: Props) => {
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
     const appState = useAppState();
 
-    useEffect(() => {
-        const totalMentionsEventListener = () => {
+    // Each Home instance keeps its own subscriptions map. The TabBar can mount
+    // multiple Home instances simultaneously (e.g. when withServerDatabase remounts
+    // the authenticated subtree during a server switch), so sharing a module-level
+    // map would let one instance's serversObserver no-op for another instance.
+    const subscriptionsRef = React.useRef<Map<string, UnreadSubscription>>(new Map());
+
+    useDidMount(() => {
+        const subs = subscriptionsRef.current;
+
+        const emitTotal = () => {
             setTotal((prev) => {
-                const newTotal = getTotalMentionsAndUnread();
+                const newTotal = totalFromSubscriptions(subs);
                 if (prev.mentions === newTotal.mentions && prev.unread === newTotal.unread) {
                     return prev;
                 }
                 return newTotal;
             });
         };
-        const totalSubscription = DeviceEventEmitter.addListener(HOME_TOTAL_MENTIONS_EVENT, totalMentionsEventListener);
+
+        const serversObserver = (servers: ServersModel[]) => {
+            const allUrls = new Set(servers.map((s) => s.url));
+
+            // Drop subscriptions for servers that were removed from the table.
+            for (const [key, value] of [...subs]) {
+                if (!allUrls.has(key)) {
+                    value.subscription?.unsubscribe();
+                    subs.delete(key);
+                }
+            }
+
+            for (const server of servers) {
+                const {lastActiveAt, url} = server;
+                if (lastActiveAt && !subs.has(url)) {
+                    const unreads: UnreadSubscription = {
+                        mentions: 0,
+                        unread: false,
+                    };
+                    subs.set(url, unreads);
+                    unreads.subscription = observeUnreadsByServer(url).subscribe(({mentions, unread}) => {
+                        unreads.mentions = mentions;
+                        unreads.unread = unread;
+                        emitTotal();
+                    });
+                } else if (!lastActiveAt && subs.has(url)) {
+                    subs.get(url)?.subscription?.unsubscribe();
+                    subs.delete(url);
+                }
+            }
+
+            // After any add/remove pass, recompute the total so the badge reflects
+            // the current set of subscriptions even when no per-server emission fires.
+            emitTotal();
+        };
 
         const subscription = subscribeAllServers(serversObserver);
 
         return () => {
-            totalSubscription.remove();
 
             subscription?.unsubscribe();
-            subscriptions.forEach((unreads) => {
+
+            // Snapshot current totals BEFORE clearing so the iOS badge reflects
+            // the real mention count from the DB, not zero.
+            updateBadge(subs);
+
+            subs.forEach((unreads) => {
                 unreads.subscription?.unsubscribe();
             });
-            subscriptions.clear();
-            updateBadge();
+            subs.clear();
         };
-    }, []);
+    });
 
     useDidUpdate(() => {
         if (appState !== 'active') {
-            updateBadge();
+            updateBadge(subscriptionsRef.current);
         }
     }, [total, appState !== 'active']);
 
