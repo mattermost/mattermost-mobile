@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, of} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
+
+import {UseInitialLoadEndpoint} from '@assets/config.json';
 
 // Tracks whether threads have been fetched for a given (serverUrl, teamId) pair
 // during the current process lifetime. Each pair gets its own BehaviorSubject<boolean>
@@ -36,6 +38,9 @@ class ThreadsSyncStoreSingleton {
     }
 
     observeThreadsFetched(serverUrl: string, teamId: string) {
+        if (!UseInitialLoadEndpoint) {
+            return of(true);
+        }
         return this.getOrCreate(serverUrl, teamId).pipe(distinctUntilChanged());
     }
 

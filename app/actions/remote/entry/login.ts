@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {UseInitialLoadEndpoint} from '@assets/config.json';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import IntuneManager from '@managers/intune_manager';
@@ -40,7 +41,9 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
             const intunePolicy = await IntuneManager.getPolicy(serverUrl);
             SecurityManager.addServer(serverUrl, clData.config, false, intunePolicy);
             WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
-            await entry(serverUrl, undefined, undefined, undefined, clData.config, clData.license, 'Login');
+            if (UseInitialLoadEndpoint) {
+                await entry(serverUrl, undefined, undefined, undefined, clData.config, clData.license, 'Login');
+            }
             await WebsocketManager.initializeClient(serverUrl, 'Login');
         }
 
