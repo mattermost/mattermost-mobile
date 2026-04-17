@@ -298,7 +298,7 @@ describe('ClientTeams', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
-    test('getTeamIconUrl', () => {
+    test('getTeamIconUrl - with timestamp', () => {
         const teamId = 'team1';
         const lastTeamIconUpdate = 123456;
         const expectedUrl = `${client.getTeamRoute(teamId)}/image?_=${lastTeamIconUpdate}`;
@@ -306,5 +306,33 @@ describe('ClientTeams', () => {
         const result = client.getTeamIconUrl(teamId, lastTeamIconUpdate);
 
         expect(result).toBe(expectedUrl);
+    });
+
+    test('getTeamIconUrl - without timestamp (0)', () => {
+        const teamId = 'team1';
+        const expectedUrl = `${client.getTeamRoute(teamId)}/image`;
+
+        const result = client.getTeamIconUrl(teamId, 0);
+
+        expect(result).toBe(expectedUrl);
+    });
+
+    test('getTeamLoad - without params', async () => {
+        const teamId = 'team1';
+        const expectedUrl = `${client.getUserRoute('me')}/teams/${teamId}/load`;
+
+        await client.getTeamLoad(teamId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, {method: 'get', groupLabel: undefined});
+    });
+
+    test('getTeamLoad - with since cursor', async () => {
+        const teamId = 'team1';
+        const since = 1706000000000;
+        const expectedUrl = `${client.getUserRoute('me')}/teams/${teamId}/load?since=${since}`;
+
+        await client.getTeamLoad(teamId, since);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, {method: 'get', groupLabel: undefined});
     });
 });

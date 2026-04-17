@@ -231,6 +231,34 @@ export function observeThreadMentionCount(database: Database, {
     );
 }
 
+// observeDirectThreadUnreadsAndMentions returns thread unreads and mention counts for DM/GM
+// channels only (channel.team_id = ''). Unlike observeUnreadsAndMentions with includeDmGm=true,
+// this query is scoped exclusively to direct channels — no team threads are included.
+export function observeDirectThreadUnreadsAndMentions(database: Database): Observable<{unreads: boolean; mentions: number}> {
+    const observeThreads = () => database.get<ThreadModel>(THREAD).query(
+        Q.where('is_following', true),
+        Q.where('reply_count', Q.gt(0)),
+        Q.where('unread_replies', Q.gt(0)),
+        Q.experimentalNestedJoin(POST, CHANNEL),
+        Q.on(POST, Q.on(CHANNEL, Q.and(Q.where('delete_at', 0), Q.where('team_id', Q.eq(''))))),
+    ).observeWithColumns(['unread_replies', 'unread_mentions']).pipe(
+        switchMap((threads) => {
+            let unreads = false;
+            let mentions = 0;
+            for (const thread of threads) {
+                unreads = unreads || Boolean(thread.unreadReplies);
+                mentions += thread.unreadMentions;
+            }
+            return of$({unreads, mentions});
+        }),
+    );
+
+    return observeIsCRTEnabled(database).pipe(
+        switchMap((hasCRT) => (hasCRT ? observeThreads() : of$({unreads: false, mentions: 0}))),
+        distinctUntilChanged((x, y) => x.mentions === y.mentions && x.unreads === y.unreads),
+    );
+}
+
 type QueryThreadsOptions = {
     teamId?: string;
     onlyUnreads?: boolean;

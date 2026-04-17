@@ -9,6 +9,8 @@ import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 
+import {entry} from './common';
+
 type AfterLoginArgs = {
     serverUrl: string;
 }
@@ -28,7 +30,7 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
     PerformanceMetricsManager.startTimeToInteraction();
 
     try {
-        const clData = await fetchConfigAndLicense(serverUrl, false);
+        const clData = await fetchConfigAndLicense(serverUrl, false, 'Login');
         if (clData.error) {
             return {error: clData.error};
         }
@@ -37,7 +39,8 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
         if (credentials?.token) {
             const intunePolicy = await IntuneManager.getPolicy(serverUrl);
             SecurityManager.addServer(serverUrl, clData.config, false, intunePolicy);
-            await WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
+            WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
+            await entry(serverUrl, undefined, undefined, undefined, clData.config, clData.license, 'Login');
             await WebsocketManager.initializeClient(serverUrl, 'Login');
         }
 

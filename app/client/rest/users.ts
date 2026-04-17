@@ -50,6 +50,7 @@ export interface ClientUsersMix {
     removeRecentCustomStatus: (customStatus: UserCustomStatus) => Promise<{status: string}>;
     exchangeSsoLoginCode: (loginCode: string, codeVerifier: string, state: string) => Promise<{token: string; csrf: string}>;
     getUserLoginType: (loginId: string, deviceId?: string) => Promise<{auth_service: LoginType; is_deactivated: boolean}>;
+    getInitialLoad: (teamId?: string, since?: number, groupLabel?: RequestGroupLabel) => Promise<InitialLoadResponse>;
 }
 
 const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -469,6 +470,20 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
 
         // Expected shape: { token: string, csrf: string }
         return resp?.data || resp;
+    };
+
+    getInitialLoad = async (teamId?: string, since?: number, groupLabel?: RequestGroupLabel) => {
+        const params: Record<string, string> = {};
+        if (teamId) {
+            params.team_id = teamId;
+        }
+        if (since) {
+            params.since = Math.floor(since).toString();
+        }
+        return this.doFetch(
+            `${this.getUserRoute('me')}/initial_load${buildQueryString(params)}`,
+            {method: 'get', groupLabel},
+        );
     };
 };
 

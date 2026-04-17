@@ -9,6 +9,8 @@ import {useServerUrl} from '@context/server';
 import NetworkManager from '@managers/network_manager';
 import {urlSafeBase64Encode} from '@utils/security';
 
+import {useImageRetry} from './use_image_retry';
+
 type ExpoImagePropsWithId = ImageProps & {id: string};
 type ExpoImagePropsMemoryOnly = ImageProps & {cachePolicy: 'memory'; id?: string};
 type ExpoImageProps = ExpoImagePropsWithId | ExpoImagePropsMemoryOnly;
@@ -39,6 +41,7 @@ function shouldAttachServerAuthHeaders(uri: string | undefined, serverUrl: strin
 
 const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
     const serverUrl = useServerUrl();
+    const {retryKey, handleError} = useImageRetry(props.onError);
     const requestHeaders = useMemo(() => {
         try {
             const client = NetworkManager.getClient(serverUrl);
@@ -111,8 +114,10 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
         <Image
             ref={ref}
             {...props}
+            key={retryKey}
             source={source}
             placeholder={placeholder}
+            onError={handleError}
         />
     );
 });
@@ -120,6 +125,7 @@ ExpoImage.displayName = 'ExpoImage';
 
 const ExpoImageBackground = ({id, ...props}: ExpoImageBackgroundProps) => {
     const serverUrl = useServerUrl();
+    const {retryKey, handleError} = useImageRetry(props.onError);
     const cachePath = useMemo(() => urlSafeBase64Encode(serverUrl), [serverUrl]);
     const source: ImageSource = useMemo(() => {
         const src = props.source;
@@ -165,8 +171,10 @@ const ExpoImageBackground = ({id, ...props}: ExpoImageBackgroundProps) => {
     return (
         <ImageBackground
             {...props}
+            key={retryKey}
             source={source}
             placeholder={placeholder}
+            onError={handleError}
         >
             {props.children}
         </ImageBackground>

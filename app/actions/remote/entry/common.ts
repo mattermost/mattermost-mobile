@@ -4,12 +4,12 @@
 import {nativeApplicationVersion} from 'expo-application';
 import {RESULTS, checkNotifications} from 'react-native-permissions';
 
-import {deletePostsForChannel, deletePostsForChannelsWithAutotranslation} from '@actions/local/channel';
 import {fetchChannelById, fetchMyChannelsForTeam, handleKickFromChannel, type MyChannelsRequest} from '@actions/remote/channel';
-import {type MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
+import {fetchMyPreferences} from '@actions/remote/preference';
 import {fetchConfigAndLicense, fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {fetchMyTeams, handleKickFromTeam, type MyTeamsRequest} from '@actions/remote/team';
 import {fetchMe, type MyUserRequest} from '@actions/remote/user';
+import {UseInitialLoadEndpoint} from '@assets/config.json';
 import {General, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
@@ -19,52 +19,26 @@ import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken, getVoIPDeviceToken} from '@queries/app/global';
-import {getChannelById, queryChannelsById, queryMyChannelsByChannelIds} from '@queries/servers/channel';
+import {getChannelById} from '@queries/servers/channel';
 import {prepareEntryModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
 import {getCurrentChannelId, getCurrentTeamId, getIsDataRetentionEnabled, getPushVerificationStatus, getLastFullSync, setCurrentTeamAndChannelId, getConfigValue} from '@queries/servers/system';
-import {getTeamChannelHistory} from '@queries/servers/team';
-import {getCurrentUser} from '@queries/servers/user';
 import {NavigationStore} from '@store/navigation_store';
-import {isDefaultChannel, isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion, isTablet} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
-import type {Database, Model} from '@nozbe/watermelondb';
+import {entryInitialChannelId, handleAutotranslationChanges} from './effects';
+import {entryInitialLoad} from './initial_load';
 
-export type AppEntryData = {
-    initialTeamId: string;
-    teamData: MyTeamsRequest;
-    chData?: MyChannelsRequest;
-    prefData: MyPreferencesRequest;
-    meData: MyUserRequest;
-    removeTeamIds?: string[];
-    removeChannelIds?: string[];
-    isCRTEnabled: boolean;
-    initialChannelId?: string;
-    gmConverted: boolean;
-}
+import type {EntryResponse} from './types';
 
-export type AppEntryError = {
-    error: unknown;
-}
+export const entry = async (serverUrl: string, teamId?: string, channelId?: string, since = 0, config?: ClientConfig, license?: ClientLicense, groupLabel?: RequestGroupLabel): Promise<EntryResponse> => {
+    if (UseInitialLoadEndpoint) {
+        return entryInitialLoad(serverUrl, teamId, channelId, config, license, groupLabel);
+    }
 
-export type EntryResponse = {
-    models: Model[];
-    initialTeamId: string;
-    initialChannelId: string;
-    prefData: MyPreferencesRequest;
-    teamData: MyTeamsRequest;
-    chData?: MyChannelsRequest;
-    meData?: MyUserRequest;
-    gmConverted: boolean;
-} | {
-    error: unknown;
-}
-
-export const entry = async (serverUrl: string, teamId?: string, channelId?: string, since = 0, groupLabel?: RequestGroupLabel): Promise<EntryResponse> => {
     const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
     const result = await entryRest(serverUrl, teamId, channelId, since, groupLabel);
 
@@ -193,103 +167,6 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
         return {error};
     }
 };
-
-export async function handleAutotranslationChanges(serverUrl: string, meData: MyUserRequest | undefined, chData: MyChannelsRequest | undefined) {
-    try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        // Config changes already handled in storeConfigAndLicense
-        const enableAutoTranslation = (await getConfigValue(operator.database, 'EnableAutoTranslation')) === 'true';
-        if (!enableAutoTranslation) {
-            return;
-        }
-
-        // If user locale changed, delete all the posts for all channels with autotranslation enabled
-        // so the posts can be refetch with the new translation
-        if (meData) {
-            const currentUser = await getCurrentUser(database);
-            if (currentUser && meData.user?.locale !== currentUser.locale) {
-                await deletePostsForChannelsWithAutotranslation(serverUrl);
-                return;
-            }
-        }
-
-        if (chData) {
-            // If a channel stop being autotranslated by the admin, delete the posts for that channel
-            // so the posts can be refetch without the translation
-            const newChannels = chData.channels || [];
-            const channels = await queryChannelsById(database, newChannels.map((c) => c.id)).fetch();
-            const chMap = new Map(channels.map((c) => [c.id, c]));
-            const promises = [];
-            for (const ch of newChannels) {
-                const channel = chMap.get(ch.id);
-                if (channel && channel.autotranslation && !ch.autotranslation) { // Autotranslation disabled
-                    promises.push(deletePostsForChannel(serverUrl, ch.id, true));
-                }
-            }
-            const chModels = (await Promise.all(promises)).map((m) => m.models).flat();
-            if (chModels.length) {
-                await operator.batchRecords(chModels, 'handleAutotranslationChanges');
-            }
-
-            // If a channel starts or stops being autotranslated by the user, delete the posts for that channel
-            // so the posts can be refetch with or without the translation
-            const newMemberships = chData.memberships || [];
-            const memberships = await queryMyChannelsByChannelIds(database, newMemberships.map((m) => m.channel_id)).fetch();
-            const membershipMap = new Map(memberships.map((m) => [m.id, m]));
-            for (const m of newMemberships) {
-                const membership = membershipMap.get(m.channel_id);
-                if (membership && membership.autotranslationDisabled !== Boolean(m.autotranslation_disabled)) { // Autotranslation modified
-                    promises.push(deletePostsForChannel(serverUrl, m.channel_id, true));
-                }
-            }
-            const membershipModels = (await Promise.all(promises)).map((m) => m.models).flat();
-            if (membershipModels.length) {
-                await operator.batchRecords(membershipModels, 'handleAutotranslationChanges');
-            }
-        }
-    } catch (error) {
-        logError('handleAutotranslationChanges', getFullErrorMessage(error));
-    }
-}
-
-export async function entryInitialChannelId(database: Database, requestedChannelId = '', requestedTeamId = '', initialTeamId: string, locale: string, channels?: Channel[], memberships?: ChannelMember[]) {
-    const membershipIds = new Set(memberships?.map((m) => m.channel_id));
-    const requestedChannel = channels?.find((c) => (c.id === requestedChannelId) && membershipIds.has(c.id));
-
-    // If team and channel are the requested, return the channel
-    if (initialTeamId === requestedTeamId && requestedChannel) {
-        return requestedChannelId;
-    }
-
-    // DM or GMs don't care about changes in teams, so return directly
-    if (requestedChannel && isDMorGM(requestedChannel)) {
-        return requestedChannelId;
-    }
-
-    // Check if we are still members of any channel on the history
-    const teamChannelHistory = await getTeamChannelHistory(database, initialTeamId);
-    for (const c of teamChannelHistory) {
-        if (membershipIds.has(c) || c === Screens.GLOBAL_THREADS || c === Screens.GLOBAL_DRAFTS) {
-            return c;
-        }
-    }
-
-    // Check if we are member of the default channel.
-    const defaultChannel = channels?.find((c) => isDefaultChannel(c) && c.team_id === initialTeamId);
-    const iAmMemberOfTheTeamDefaultChannel = Boolean(defaultChannel && membershipIds.has(defaultChannel.id));
-    if (iAmMemberOfTheTeamDefaultChannel) {
-        return defaultChannel!.id;
-    }
-
-    // Get the first channel of the list, based on the locale.
-    const myFirstTeamChannel = channels?.filter((c) =>
-        c.team_id === requestedTeamId &&
-        c.type === General.OPEN_CHANNEL &&
-        membershipIds.has(c.id),
-    ).sort(sortChannelsByDisplayName.bind(null, locale))[0];
-    return myFirstTeamChannel?.id || '';
-}
 
 export const setExtraSessionProps = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
     try {

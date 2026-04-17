@@ -9,6 +9,7 @@ import type ClientBase from './base';
 import type {FirstArgument} from '@typings/utils/utils';
 
 export interface ClientTeamsMix {
+    getTeamLoad: (teamId: string, since?: number, groupLabel?: RequestGroupLabel) => Promise<TeamLoadResponse>;
     createTeam: (team: Team) => Promise<Team>;
     deleteTeam: (teamId: string) => Promise<any>;
     updateTeam: (team: Team) => Promise<Team>;
@@ -181,6 +182,17 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/stats`,
             {method: 'get'},
+        );
+    };
+
+    getTeamLoad = async (teamId: string, since?: number, groupLabel?: RequestGroupLabel) => {
+        const params: Record<string, number> = {};
+        if (since) {
+            params.since = since;
+        }
+        return this.doFetch(
+            `${this.getUserRoute('me')}/teams/${teamId}/load${buildQueryString(params)}`,
+            {method: 'get', groupLabel},
         );
     };
 

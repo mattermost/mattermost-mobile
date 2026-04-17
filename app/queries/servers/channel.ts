@@ -84,7 +84,7 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
     return prepareChannels(operator, channels, channelInfos, memberships, memberships, isCRTEnabled);
 }
 
-const buildChannelInfos = async (database: Database, channels: Channel[]) => {
+const buildChannelInfos = async (database: Database, channels: Channel[], memberCountOverrides?: Record<string, number>) => {
     const channelInfos: ChannelInfo[] = [];
 
     const channelsQuery = await queryAllChannels(database);
@@ -121,7 +121,7 @@ const buildChannelInfos = async (database: Database, channels: Channel[]) => {
             header: c.header,
             purpose: c.purpose,
             guest_count,
-            member_count,
+            member_count: memberCountOverrides?.[c.id] ?? member_count,
             pinned_post_count,
             files_count,
         });
@@ -130,13 +130,13 @@ const buildChannelInfos = async (database: Database, channels: Channel[]) => {
     return channelInfos;
 };
 
-export const prepareAllMyChannels = async (operator: ServerDataOperator, channels: Channel[], channelMemberships: ChannelMembership[], isCRTEnabled?: boolean) => {
+export const prepareAllMyChannels = async (operator: ServerDataOperator, channels: Channel[], channelMemberships: ChannelMembership[], isCRTEnabled?: boolean, memberCountOverrides?: Record<string, number>) => {
     const {database} = operator;
 
     const fetchedChannelIds = new Set(channels.map((c) => c.id));
     const memberships = channelMemberships.filter((m) => fetchedChannelIds.has(m.channel_id)).map((m) => ({...m, id: m.channel_id}));
 
-    const channelInfos = await buildChannelInfos(database, channels);
+    const channelInfos = await buildChannelInfos(database, channels, memberCountOverrides);
 
     return prepareChannels(operator, channels, channelInfos, channelMemberships, memberships, isCRTEnabled);
 };
@@ -571,19 +571,24 @@ export function observeMyChannelMentionCount(database: Database, teamId?: string
         conditions.push(Q.where('team_id', Q.eq(teamId)));
     }
 
-    return database.get<MyChannelModel>(MY_CHANNEL).query(
+    const myChannels = database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.on(CHANNEL, Q.and(
             ...conditions,
         )),
-        Q.on(MY_CHANNEL_SETTINGS, Q.where('notify_props', Q.notLike('%"mark_unread":"mention"%'))),
-    ).
-        observeWithColumns(columns).
-        pipe(
-            switchMap((val) => of$(val.reduce((acc, v) => {
-                return acc + v.mentionsCount;
-            }, 0))),
-            distinctUntilChanged(),
-        );
+    ).observeWithColumns(columns);
+    const notifyProps = observeAllMyChannelNotifyProps(database);
+
+    return myChannels.pipe(
+        combineLatestWith(notifyProps),
+        switchMap(([mycs, notify]) => of$(mycs.reduce((acc, v) => {
+            const isMuted = notify?.[v.id]?.mark_unread === 'mention';
+            if (isMuted) {
+                return acc;
+            }
+            return acc + v.mentionsCount;
+        }, 0))),
+        distinctUntilChanged(),
+    );
 }
 
 export function observeMyChannelUnreads(database: Database, teamId: string) {
@@ -596,6 +601,33 @@ export function observeMyChannelUnreads(database: Database, teamId: string) {
             return acc || (v.isUnread && !isMuted);
         }, false))),
         distinctUntilChanged(),
+    );
+}
+
+// observeChannelUnreadsAndMentions returns both mention count and unread status for a team
+// (or DM/GM channels when teamId is '') in a single query pass, avoiding the two separate
+// observeMyChannelMentionCount + observeMyChannelUnreads queries.
+export function observeChannelUnreadsAndMentions(database: Database, teamId: string): Observable<{mentions: number; unread: boolean}> {
+    const myChannels = database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(CHANNEL, Q.and(Q.where('delete_at', Q.eq(0)), Q.where('team_id', Q.eq(teamId)))),
+    ).observeWithColumns(['mentions_count', 'is_unread']);
+    const notifyProps = observeAllMyChannelNotifyProps(database);
+
+    return myChannels.pipe(
+        combineLatestWith(notifyProps),
+        switchMap(([mycs, notify]) => {
+            let mentions = 0;
+            let unread = false;
+            for (const v of mycs) {
+                const isMuted = notify?.[v.id]?.mark_unread === 'mention';
+                if (!isMuted) {
+                    mentions += v.mentionsCount;
+                    unread = unread || v.isUnread;
+                }
+            }
+            return of$({mentions, unread});
+        }),
+        distinctUntilChanged((a, b) => a.mentions === b.mentions && a.unread === b.unread),
     );
 }
 

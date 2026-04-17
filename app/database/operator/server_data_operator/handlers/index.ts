@@ -37,11 +37,14 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             return [];
         }
 
+        const deleteRawValues = roles.filter((r) => (r?.delete_at ?? 0) > 0);
+
         return this.handleRecords({
             fieldName: 'id',
             transformer: transformRoleRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: roles, key: 'id'}),
+            deleteRawValues,
             tableName: ROLE,
         }, 'handleRole') as Promise<RoleModel[]>;
     };

@@ -17,6 +17,10 @@ jest.mock('@context/theme', () => {
     };
 });
 jest.mock('@components/emoji', () => 'Emoji');
+jest.mock('@components/expo_image', () => ({
+    __esModule: true,
+    default: 'ExpoImage',
+}));
 
 describe('components/channel_bookmarks/channel_bookmark/BookmarkIcon', () => {
     const baseProps = {
@@ -106,14 +110,8 @@ describe('components/channel_bookmarks/channel_bookmark/BookmarkIcon', () => {
             <BookmarkIcon {...props}/>,
         );
 
-        const image = getByTestId('bookmark-image');
-        const mockErrorEvent = {
-            nativeEvent: {
-                error: new Error('Image failed to load'),
-            },
-        };
         act(() => {
-            image.props.onError(mockErrorEvent);
+            getByTestId('bookmark-image').props.onError();
         });
 
         expect(getByTestId('bookmark-generic-icon')).toBeOnTheScreen();

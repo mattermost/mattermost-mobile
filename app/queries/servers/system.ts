@@ -415,6 +415,70 @@ export const resetLastFullSync = async (operator: ServerDataOperator, prepareRec
     return [];
 };
 
+// Value is the timestamp returned by the initial_load response, used as ?since= cursor
+// for subsequent initial_load calls.
+export const getLastInitialLoad = async (serverDatabase: Database): Promise<number> => {
+    try {
+        const record = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_INITIAL_LOAD);
+        return parseInt(record?.value || '0', 10) || 0;
+    } catch {
+        return 0;
+    }
+};
+
+export const setLastInitialLoad = (operator: ServerDataOperator, value: number, prepareRecordsOnly = false) => {
+    return operator.handleSystem({systems: [{
+        id: SYSTEM_IDENTIFIERS.LAST_INITIAL_LOAD,
+        value,
+    }],
+    prepareRecordsOnly});
+};
+
+// Per-team load cursor — stored as `lastTeamLoad_{teamId}` so each team has its own value.
+export const getLastTeamLoad = async (serverDatabase: Database, teamId: string): Promise<number> => {
+    try {
+        const record = await serverDatabase.get<SystemModel>(SYSTEM).find(`${SYSTEM_IDENTIFIERS.LAST_TEAM_LOAD}_${teamId}`);
+        return parseInt(record?.value || '0', 10) || 0;
+    } catch {
+        return 0;
+    }
+};
+
+export const setLastTeamLoad = (operator: ServerDataOperator, teamId: string, value: number, prepareRecordsOnly = false) => {
+    return operator.handleSystem({systems: [{
+        id: `${SYSTEM_IDENTIFIERS.LAST_TEAM_LOAD}_${teamId}`,
+        value,
+    }],
+    prepareRecordsOnly});
+};
+
+export const prepareDeleteTeamLoadCursor = async (database: Database, teamId: string): Promise<SystemModel | undefined> => {
+    try {
+        const record = await database.get<SystemModel>(SYSTEM).find(`${SYSTEM_IDENTIFIERS.LAST_TEAM_LOAD}_${teamId}`);
+        return record.prepareDestroyPermanently();
+    } catch {
+        return undefined;
+    }
+};
+
+export const observeTeamBadgeCounts = (database: Database): Observable<TeamBadgeCounts | undefined> => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+        switchMap((model) => {
+            if (!model) {
+                return of$(undefined);
+            }
+            try {
+                const parsed = typeof model.value === 'string' ? JSON.parse(model.value) : model.value;
+                return of$(parsed as TeamBadgeCounts);
+            } catch {
+                return of$(undefined);
+            }
+        }),
+        distinctUntilChanged(),
+    );
+};
+
 export const getTeamHistory = async (serverDatabase: Database): Promise<string[]> => {
     try {
         const teamHistory = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.TEAM_HISTORY);

@@ -20,7 +20,7 @@ import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from 
 import {NavigationStore} from '@store/navigation_store';
 import {logDebug} from '@utils/log';
 
-import {entry, setExtraSessionProps, verifyPushProxy, entryInitialChannelId, handleEntryAfterLoadNavigation} from './common';
+import {entry, setExtraSessionProps, verifyPushProxy, handleEntryAfterLoadNavigation} from './common';
 
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/scheduled_post');
@@ -45,6 +45,9 @@ jest.mock('@queries/servers/system', () => {
 });
 jest.mock('react-native-permissions');
 jest.mock('expo-application');
+jest.mock('@assets/config', () => ({
+    UseInitialLoadEndpoint: false,
+}));
 
 describe('actions/remote/entry/common', () => {
     const serverUrl = 'https://server.example.com';
@@ -151,46 +154,6 @@ describe('actions/remote/entry/common', () => {
             expect(result).toEqual({
                 error: mockError,
             });
-        });
-    });
-
-    describe('entryInitialChannelId', () => {
-        it('should return requested channel id for DM/GM channels', async () => {
-            const channels = [
-                {id: 'dm1', type: 'D', name: 'dm-channel'},
-            ] as Channel[];
-            const memberships = [{channel_id: 'dm1'}] as ChannelMembership[];
-
-            const result = await entryInitialChannelId(
-                mockDatabase as any,
-                'dm1',
-                '',
-                '',
-                'en',
-                channels,
-                memberships,
-            );
-
-            expect(result).toBe('dm1');
-        });
-
-        it('should return default channel when available', async () => {
-            const channels = [
-                {id: 'town-square', name: 'town-square', team_id: 'team1', type: 'O'},
-            ] as Channel[];
-            const memberships = [{channel_id: 'town-square'}] as ChannelMembership[];
-
-            const result = await entryInitialChannelId(
-                mockDatabase as any,
-                '',
-                'team1',
-                'team1',
-                'en',
-                channels,
-                memberships,
-            );
-
-            expect(result).toBe('town-square');
         });
     });
 
@@ -558,4 +521,5 @@ describe('actions/remote/entry/common', () => {
             expect(mockOperator.handleSystem).toHaveBeenCalled();
         });
     });
+
 });

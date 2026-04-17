@@ -5,14 +5,13 @@ import React, {useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import Badge from '@components/badge';
-import {Screens} from '@constants';
+import Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {subscribeAllServers} from '@database/subscription/servers';
-import {subscribeMentionsByServer} from '@database/subscription/unreads';
+import {observeUnreadsByServer} from '@database/subscription/unreads';
 import useDidMount from '@hooks/did_mount';
 
 import type ServersModel from '@typings/database/models/app/servers';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type {UnreadSubscription} from '@typings/database/subscriptions';
 
 type Props = {
@@ -43,27 +42,8 @@ const OtherMentionsBadge = ({channelId}: Props) => {
         setCount(mentions);
     };
 
-    const unreadsSubscription = (serverUrl: string, {myChannels, threadMentionCount}: {myChannels: MyChannelModel[]; threadMentionCount: number}) => {
-        const unreads = subscriptions.get(serverUrl);
-        if (unreads) {
-            let mentions = 0;
-            for (const myChannel of myChannels) {
-                if (channelId !== myChannel.id) {
-                    mentions += myChannel.mentionsCount;
-                }
-            }
-
-            unreads.mentions = mentions;
-            if (serverUrl !== currentServerUrl || channelId !== Screens.GLOBAL_THREADS) {
-                unreads.mentions += threadMentionCount;
-            }
-            subscriptions.set(serverUrl, unreads);
-            updateCount();
-        }
-    };
-
     const serversObserver = async (servers: ServersModel[]) => {
-        // unsubscribe mentions from servers that were removed
+        // unsubscribe from servers that were removed
         const allUrls = new Set(servers.map((s) => s.url));
         const subscriptionsToRemove = [...subscriptions].filter(([key]) => !allUrls.has(key));
         for (const [key, map] of subscriptionsToRemove) {
@@ -74,15 +54,18 @@ const OtherMentionsBadge = ({channelId}: Props) => {
         for (const server of servers) {
             const serverUrl = server.url;
             if (server.lastActiveAt && !subscriptions.has(serverUrl)) {
-                const unreads: UnreadSubscription = {
-                    mentions: 0,
-                    unread: false,
-                };
+                const unreads: UnreadSubscription = {mentions: 0, unread: false};
                 subscriptions.set(serverUrl, unreads);
-                unreads.subscription = subscribeMentionsByServer(serverUrl, unreadsSubscription);
-            } else if (subscriptions.has(serverUrl)) {
+                const excludeThreads = serverUrl === currentServerUrl && channelId === Screens.GLOBAL_THREADS;
+                unreads.subscription = observeUnreadsByServer(serverUrl, excludeThreads).subscribe(({mentions}) => {
+                    unreads.mentions = mentions;
+                    subscriptions.set(serverUrl, unreads);
+                    updateCount();
+                });
+            } else if (!server.lastActiveAt && subscriptions.has(serverUrl)) {
                 subscriptions.get(serverUrl)?.subscription?.unsubscribe();
                 subscriptions.delete(serverUrl);
+                updateCount();
             }
         }
     };

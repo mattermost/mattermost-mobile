@@ -18,7 +18,7 @@ import TutorialSwipeLeft from '@components/tutorial_highlight/swipe_left';
 import {Events} from '@constants';
 import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {useTheme} from '@context/theme';
-import {subscribeServerUnreadAndMentions, type UnreadObserverArgs} from '@database/subscription/unreads';
+import {observeUnreadsByServer} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
 import {dismissBottomSheet, updateParams} from '@screens/navigation';
@@ -161,19 +161,6 @@ const ServerItem = ({
         displayName = intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});
     }
 
-    const unreadsSubscription = ({myChannels, settings, threadMentionCount, threadUnreads}: UnreadObserverArgs) => {
-        let mentions = 0;
-        let isUnread = Boolean(threadUnreads);
-        for (const myChannel of myChannels) {
-            const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
-            mentions += isMuted ? 0 : myChannel.mentionsCount;
-            isUnread = isUnread || (myChannel.isUnread && !isMuted);
-        }
-        mentions += threadMentionCount;
-
-        setBadge({isUnread, mentions});
-    };
-
     const logoutServer = useCallback(async () => {
         updateParams({extra: undefined});
         if (isActive) {
@@ -307,7 +294,9 @@ const ServerItem = ({
     useEffect(() => {
         if (!isActive) {
             if (server.lastActiveAt && !subscription.current) {
-                subscription.current = subscribeServerUnreadAndMentions(server.url, unreadsSubscription);
+                subscription.current = observeUnreadsByServer(server.url).subscribe(({mentions, unread}) => {
+                    setBadge({isUnread: unread, mentions});
+                });
             } else if (!server.lastActiveAt) {
                 subscription.current?.unsubscribe();
                 subscription.current = undefined;

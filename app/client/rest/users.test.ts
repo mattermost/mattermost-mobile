@@ -569,4 +569,40 @@ describe('ClientUsers', () => {
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
+
+    test('getInitialLoad - without params', async () => {
+        const expectedUrl = `${client.getUserRoute('me')}/initial_load`;
+
+        await client.getInitialLoad();
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, {method: 'get', groupLabel: undefined});
+    });
+
+    test('getInitialLoad - with team_id', async () => {
+        const teamId = 'team1';
+        const expectedUrl = `${client.getUserRoute('me')}/initial_load?team_id=${teamId}`;
+
+        await client.getInitialLoad(teamId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, {method: 'get', groupLabel: undefined});
+    });
+
+    test('getInitialLoad - with since cursor', async () => {
+        const since = 1706000000000;
+        const expectedUrl = `${client.getUserRoute('me')}/initial_load?since=${since}`;
+
+        await client.getInitialLoad(undefined, since);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, {method: 'get', groupLabel: undefined});
+    });
+
+    test('getInitialLoad - with team_id and since', async () => {
+        const teamId = 'team1';
+        const since = 1706000000000;
+        const expectedUrl = `${client.getUserRoute('me')}/initial_load?team_id=${teamId}&since=${since}`;
+
+        await client.getInitialLoad(teamId, since);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, {method: 'get', groupLabel: undefined});
+    });
 });

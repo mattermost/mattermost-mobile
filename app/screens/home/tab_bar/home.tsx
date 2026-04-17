@@ -10,7 +10,7 @@ import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {BOTTOM_TAB_ICON_SIZE} from '@constants/view';
 import {subscribeAllServers} from '@database/subscription/servers';
-import {subscribeUnreadAndMentionsByServer, type UnreadObserverArgs} from '@database/subscription/unreads';
+import {observeUnreadsByServer} from '@database/subscription/unreads';
 import {useAppState} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {logDebug} from '@utils/log';
@@ -69,24 +69,6 @@ const updateBadge = () => {
     }
 };
 
-const unreadsSubscription = (serverUrl: string, {myChannels, settings, threadMentionCount}: UnreadObserverArgs) => {
-    const unreads = subscriptions.get(serverUrl);
-    if (unreads) {
-        let mentions = 0;
-        let unread = false;
-        for (const myChannel of myChannels) {
-            const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
-            mentions += isMuted ? 0 : myChannel.mentionsCount;
-            unread = unread || (myChannel.isUnread && !isMuted);
-        }
-
-        unreads.mentions = mentions + threadMentionCount;
-        unreads.unread = unread;
-        subscriptions.set(serverUrl, unreads);
-        DeviceEventEmitter.emit(HOME_TOTAL_MENTIONS_EVENT);
-    }
-};
-
 const serversObserver = async (servers: ServersModel[]) => {
     // unsubscribe mentions from servers that were removed
     const allUrls = new Set(servers.map((s) => s.url));
@@ -106,7 +88,12 @@ const serversObserver = async (servers: ServersModel[]) => {
                 unread: false,
             };
             subscriptions.set(url, unreads);
-            unreads.subscription = subscribeUnreadAndMentionsByServer(url, unreadsSubscription);
+            unreads.subscription = observeUnreadsByServer(url).subscribe(({mentions, unread}) => {
+                unreads.mentions = mentions;
+                unreads.unread = unread;
+                subscriptions.set(url, unreads);
+                DeviceEventEmitter.emit(HOME_TOTAL_MENTIONS_EVENT);
+            });
         } else if (!lastActiveAt && subscriptions.has(url)) {
             subscriptions.get(url)?.subscription?.unsubscribe();
             subscriptions.delete(url);
@@ -144,6 +131,7 @@ const Home = ({isFocused, theme}: Props) => {
                 unreads.subscription?.unsubscribe();
             });
             subscriptions.clear();
+            updateBadge();
         };
     }, []);
 

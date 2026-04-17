@@ -24,7 +24,7 @@ export const subscribeAllServers = (observer: (servers: ServersModel[]) => void)
     return db?.
         get<ServersModel>(SERVERS).
         query().
-        observeWithColumns(['last_active_at']).
+        observeWithColumns(['last_active_at', 'persistence_flag']).
         subscribe(observer);
 };
 

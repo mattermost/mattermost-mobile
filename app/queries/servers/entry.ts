@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {handleAutotranslationChanges} from '@actions/remote/entry/common';
+import {handleAutotranslationChanges} from '@actions/remote/entry/effects';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
@@ -28,6 +28,7 @@ type PrepareModelsArgs = {
     prefData?: MyPreferencesRequest;
     meData?: MyUserRequest;
     isCRTEnabled?: boolean;
+    memberCountOverrides?: Record<string, number>;
 }
 
 type PrepareModelsForDeletionArgs = {
@@ -89,7 +90,7 @@ export async function prepareEntryModelsForDeletion({serverUrl, operator, teamDa
     return modelPromises;
 }
 
-export async function prepareEntryModels({operator, teamData, chData, prefData, meData, isCRTEnabled}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> {
+export async function prepareEntryModels({operator, teamData, chData, prefData, meData, isCRTEnabled, memberCountOverrides}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> {
     const modelPromises: Array<Promise<Model[]>> = [];
 
     if (teamData?.teams?.length && teamData.memberships?.length) {
@@ -102,7 +103,7 @@ export async function prepareEntryModels({operator, teamData, chData, prefData, 
 
     if (chData?.channels?.length && chData.memberships?.length) {
         const {channels, memberships} = chData;
-        modelPromises.push(...await prepareAllMyChannels(operator, channels, memberships, isCRTEnabled));
+        modelPromises.push(...await prepareAllMyChannels(operator, channels, memberships, isCRTEnabled, memberCountOverrides));
     }
 
     if (prefData?.preferences?.length) {
