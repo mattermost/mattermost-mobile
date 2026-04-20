@@ -378,7 +378,7 @@ const AgentChat = ({
                             testID='agent_chat.back_button'
                         >
                             <CompassIcon
-                                name={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'})!}
+                                name={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'}) ?? 'arrow-back-ios'}
                                 size={20}
                                 color={changeOpacity(theme.sidebarText, 0.56)}
                             />
