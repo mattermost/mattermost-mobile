@@ -8,7 +8,7 @@ import {goToAgentChat} from '@agents/screens/navigation';
 import {FlashList, type ListRenderItem} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, Pressable, RefreshControl} from 'react-native';
+import {View, Text, Platform, Pressable, RefreshControl} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
@@ -284,7 +284,7 @@ const AgentThreadsList = ({
                             testID='agent_threads_list.back_button'
                         >
                             <CompassIcon
-                                name='arrow-left'
+                                name={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'})!}
                                 size={20}
                                 color={changeOpacity(theme.sidebarText, 0.56)}
                             />
