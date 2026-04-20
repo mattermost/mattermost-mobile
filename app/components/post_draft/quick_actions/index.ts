@@ -10,7 +10,7 @@ import {map} from 'rxjs/operators';
 import {Preferences} from '@constants';
 import {withServerUrl} from '@context/server';
 import {observeIsBoREnabled, observeIsPostPriorityEnabled} from '@queries/servers/post';
-import {observePreferenceAsBool} from '@queries/servers/preference';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCanUploadFiles} from '@queries/servers/security';
 import {observeConfigBooleanValue, observeMaxFileCount} from '@queries/servers/system';
 
@@ -26,7 +26,9 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhancedProps) => {
     const canUploadFiles = observeCanUploadFiles(database);
     const maxFileCount = observeMaxFileCount(database);
     const allowDownloadLogs = observeConfigBooleanValue(database, 'AllowDownloadLogs', true);
-    const attachLogsEnabled = observePreferenceAsBool(database, Preferences.CATEGORIES.ADVANCED_SETTINGS, Preferences.ATTACH_APP_LOGS);
+    const attachLogsEnabled = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.ADVANCED_SETTINGS, Preferences.ATTACH_APP_LOGS).
+        observeWithColumns(['value']).
+        pipe(map((prefs) => prefs[0]?.value === 'true'));
 
     return {
         canUploadFiles,
