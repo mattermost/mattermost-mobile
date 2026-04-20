@@ -13,6 +13,7 @@ import {logDebug} from '@utils/log';
 
 export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     if (EphemeralStore.isEnablingCRT()) {
+        logDebug('[handlePreferenceChangedEvent] skipping: CRT is being enabled');
         return;
     }
 
@@ -44,6 +45,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
 
 export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     if (EphemeralStore.isEnablingCRT()) {
+        logDebug('[handlePreferencesChangedEvent] skipping: CRT is being enabled');
         return;
     }
 
