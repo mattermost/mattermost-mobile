@@ -7,6 +7,7 @@ import Channel from './channel';
 import ChannelBookmark from './channel_bookmark';
 import Command, {apiGetTeamCommands, waitForSlashCommandTrigger} from './command';
 import CustomProfileAttributes from './custom_profile_attributes';
+import File from './file';
 import Ldap from './ldap';
 import Playbooks from './playbooks';
 import PlaybooksHelpers from './playbooks_helpers';
@@ -33,6 +34,7 @@ export {
     waitForSlashCommandTrigger,
     CustomProfileAttributes,
     DemoPlugin,
+    File,
     Ldap,
     Playbooks,
     PlaybooksHelpers,

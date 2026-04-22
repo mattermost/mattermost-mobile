@@ -10,6 +10,7 @@
 import {
     AccessControl,
     Channel,
+    File,
     Post,
     Setup,
     System,
@@ -21,180 +22,209 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
+    AccountScreen,
     ChannelListScreen,
     ChannelScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-/**
- * Safely extracts a human-readable message from an unknown error payload.
- * getResponseFromError() returns {error: data, status} where data may be a
- * string, an object with a message field, or any other shape.
- */
-const getErrorMessage = (err: unknown): string => {
-    if (typeof err === 'string') {
-        return err;
-    }
-    if (err && typeof err === 'object' && 'message' in err && typeof (err as Record<string, unknown>).message === 'string') {
-        return (err as {message: string}).message;
-    }
-    try {
-        return JSON.stringify(err);
-    } catch {
-        return String(err);
-    }
-};
-
-describe('Messaging - Redacted Files Placeholder (ABAC)', () => {
+describe('Messaging - Redacted Files (ABAC)', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
+
     let testChannel: any;
+    let testTeam: any;
     let deniedUser: any;
-    let createdPolicyId: string | null = null;
+    let allowedUser: any;
+    let permissionPolicyId: string | null = null;
+    let attributeFieldId: string | null = null; // field UUID — used as the property values key
+    let attributeFieldName: string | null = null; // field name  — used in CEL expressions
+    let attributeFieldCreated = false; // true if this run created the field (must clean up)
 
     beforeAll(async () => {
-        // # Require Enterprise license (ABAC is an enterprise feature)
+        await User.apiAdminLogin(siteOneUrl);
+
+        // # Require Enterprise license
         await System.apiRequireLicense(siteOneUrl);
 
-        // # Set up base test data: team, channel, admin user
-        const {channel, team, user: adminUser} = await Setup.apiInit(siteOneUrl);
+        // # Relax password policy for test users
+        await System.apiPatchConfig(siteOneUrl, {
+            PasswordSettings: {MinimumLength: 8},
+        });
+
+        // # Enable ABAC and PermissionPolicies feature flags
+        await System.apiUpdateConfig(siteOneUrl, {
+            FeatureFlags: {AttributeBasedAccessControl: true, PermissionPolicies: true},
+        });
+        const {error: abacError} = await AccessControl.apiEnableABAC(siteOneUrl);
+        if (abacError) {
+            throw new Error(`Failed to enable ABAC: ${JSON.stringify(abacError)}`);
+        }
+
+        // # Enable user-managed attributes so CEL expressions can reference user.attributes.*
+        await System.apiPatchConfig(siteOneUrl, {
+            AccessControlSettings: {EnableUserManagedAttributes: true},
+        });
+
+        // # Reuse existing "Department" attribute field or create it if absent
+        const {field, created, error: fieldError} = await AccessControl.apiGetOrCreateCustomProfileAttributeField(
+            siteOneUrl,
+            'Department',
+        );
+        if (fieldError) {
+            throw new Error(`Failed to get/create attribute field: ${JSON.stringify(fieldError)}`);
+        }
+        attributeFieldId = field.id;
+        attributeFieldName = field.name;
+        attributeFieldCreated = created;
+
+        // # Wait for the server-side attribute view cache to expire (30s refresh gate)
+        await wait(timeouts.HALF_MIN + timeouts.ONE_SEC);
+
+        const {team} = await Setup.apiInit(siteOneUrl);
+        testTeam = team;
+
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: team.id,
+            type: 'O',
+            prefix: 'abac-test',
+        });
         testChannel = channel;
 
-        // # Create a second user (will be denied download access via policy)
+        // # Create denied user (Department: "Sales") and add to team + channel
         ({user: deniedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'denied'}));
         await Team.apiAddUserToTeam(siteOneUrl, deniedUser.id, team.id);
         await Channel.apiAddUserToChannel(siteOneUrl, deniedUser.id, testChannel.id);
+        await AccessControl.apiSetUserPropertyValues(siteOneUrl, deniedUser.id, {
+            [attributeFieldId as string]: 'Sales',
+        });
 
-        // # Upload a file as admin and create a post with that file
-        const {fileId, error: uploadError} = await AccessControl.apiUploadFileToChannel(
+        // # Create allowed user (Department: "Engineering") and add to team + channel
+        ({user: allowedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'allowed'}));
+        await Team.apiAddUserToTeam(siteOneUrl, allowedUser.id, team.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, allowedUser.id, testChannel.id);
+        await AccessControl.apiSetUserPropertyValues(siteOneUrl, allowedUser.id, {
+            [attributeFieldId as string]: 'Engineering',
+        });
+
+        const {fileId, error: uploadError} = await File.apiUploadFileToChannel(
             siteOneUrl,
             testChannel.id,
             'test_attachment.txt',
             `ABAC redacted files test - ${getRandomId()}`,
         );
         if (uploadError) {
-            throw new Error(`File upload failed: ${getErrorMessage(uploadError)}`);
+            throw new Error(`File upload failed: ${JSON.stringify(uploadError)}`);
         }
 
         await Post.apiCreatePost(siteOneUrl, {
             channelId: testChannel.id,
             message: 'Post with attached file',
             fileIds: [fileId],
-            userId: adminUser.id,
-        } as any);
+        });
 
-        // # Enable ABAC
-        const {error: enableError} = await AccessControl.apiEnableABAC(siteOneUrl);
-        if (enableError) {
-            throw new Error(`Failed to enable ABAC: ${getErrorMessage(enableError)}`);
-        }
-
-        // # Create a permission policy that denies file downloads for all users
-        const policyName = `deny-download-${getRandomId()}`;
+        // # Create a permission policy: Engineering can download files, Sales cannot
+        const policyName = `abac-test-policy-${getRandomId()}`;
         const {policy, error: policyError} = await AccessControl.apiCreatePermissionPolicy(
             siteOneUrl,
             policyName,
-            ['download_file_attachment'],
+            [{
+                actions: ['download_file_attachment'],
+                expression: `user.attributes.${attributeFieldName} == "Engineering"`,
+            }],
         );
         if (policyError) {
-            throw new Error(`Failed to create permission policy: ${getErrorMessage(policyError)}`);
+            throw new Error(`Failed to create permission policy: ${JSON.stringify(policyError)}`);
         }
-        createdPolicyId = policy?.id ?? null;
+        permissionPolicyId = policy?.id ?? null;
 
-        // # Log in to the server as the denied user
+        const {error: activateError} = await AccessControl.apiSetPolicyActive(siteOneUrl, permissionPolicyId as string);
+        if (activateError) {
+            throw new Error(`Failed to activate permission policy: ${JSON.stringify(activateError)}`);
+        }
+
+        // # Allow cross-origin WebSocket connections for the Android emulator
+        await System.apiPatchConfig(siteOneUrl, {
+            ServiceSettings: {AllowCorsFrom: '*'},
+        });
+
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(deniedUser);
     });
 
     beforeEach(async () => {
-        // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
     });
 
     afterAll(async () => {
-        // # Log out
         await HomeScreen.logout();
 
-        // # Clean up: delete the permission policy and disable ABAC
-        if (createdPolicyId) {
-            await AccessControl.apiDeletePermissionPolicy(siteOneUrl, createdPolicyId);
+        // # Clean up: policy, attribute field (if created), team, users, restore config
+        if (permissionPolicyId) {
+            await AccessControl.apiDeletePermissionPolicy(siteOneUrl, permissionPolicyId);
+        }
+        if (attributeFieldCreated && attributeFieldId) {
+            await AccessControl.apiDeleteCustomProfileAttributeField(siteOneUrl, attributeFieldId);
+        }
+        if (testTeam?.id) {
+            await Team.apiDeleteTeam(siteOneUrl, testTeam.id);
+        }
+        if (deniedUser?.id) {
+            await User.apiDeactivateUser(siteOneUrl, deniedUser.id);
+        }
+        if (allowedUser?.id) {
+            await User.apiDeactivateUser(siteOneUrl, allowedUser.id);
         }
         await AccessControl.apiDisableABAC(siteOneUrl);
+        await System.apiUpdateConfig(siteOneUrl, {
+            FeatureFlags: {AttributeBasedAccessControl: false, PermissionPolicies: false},
+        });
+        await System.apiPatchConfig(siteOneUrl, {
+            AccessControlSettings: {EnableUserManagedAttributes: false},
+            PasswordSettings: {MinimumLength: 14},
+            ServiceSettings: {AllowCorsFrom: ''},
+        });
     });
 
-    it('MM-68219_1 - should show redacted files placeholder when download access is denied', async () => {
-        // # Open the channel
+    it('MM-68219_1 - should show redacted files placeholder when user attribute does not satisfy the policy', async () => {
+        // # Open channel as denied user (Department: Sales)
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // * Verify the redacted files placeholder is visible on the post
-        await waitFor(element(by.id('redacted-files-placeholder'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        // * Sales user does not satisfy the policy — placeholder is shown
+        await waitFor(element(by.id('redacted-files-placeholder'))).
+            toBeVisible().
+            withTimeout(timeouts.TEN_SEC);
 
-        // # Go back to channel list
         await ChannelScreen.back();
     });
-});
 
-describe('Messaging - Files Visible Without ABAC Restriction', () => {
-    const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
-    let testChannel: any;
-    let testUser: any;
-
-    beforeAll(async () => {
-        // # Require Enterprise license
-        await System.apiRequireLicense(siteOneUrl);
-
-        // # Set up base test data
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
-        testChannel = channel;
-        testUser = user;
-
-        // # Upload a file and post it
-        const {fileId, error: uploadError} = await AccessControl.apiUploadFileToChannel(
-            siteOneUrl,
-            testChannel.id,
-            'test_attachment.txt',
-            `Visible file test - ${getRandomId()}`,
-        );
-        if (uploadError) {
-            throw new Error(`File upload failed: ${getErrorMessage(uploadError)}`);
+    it('MM-68219_2 - should not show redacted placeholder when user attribute satisfies the policy', async () => {
+        // # Dismiss LogBox if present — covers the tab bar in debug builds with stale Metro cache.
+        // No-op in CI where RUNNING_E2E=true is compiled in and LogBox is suppressed.
+        try {
+            await waitFor(element(by.text('Open debugger to view warnings.'))).toBeVisible().withTimeout(timeouts.ONE_SEC);
+            await element(by.text('Open debugger to view warnings.')).tap();
+            await waitFor(element(by.text('Dismiss'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await element(by.text('Dismiss')).tap();
+        } catch {
+            // No LogBox present, continue
         }
 
-        await Post.apiCreatePost(siteOneUrl, {
-            channelId: testChannel.id,
-            message: 'Post with attached file',
-            fileIds: [fileId],
-        } as any);
+        // # Switch to allowed user (Department: Engineering)
+        await AccountScreen.open();
+        await AccountScreen.logout();
+        await LoginScreen.login(allowedUser);
 
-        // # Enable ABAC but do NOT create any deny policy (implicit allow)
-        await AccessControl.apiEnableABAC(siteOneUrl);
-
-        // # Log in as the normal user
-        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(testUser);
-    });
-
-    beforeEach(async () => {
-        await ChannelListScreen.toBeVisible();
-    });
-
-    afterAll(async () => {
-        await HomeScreen.logout();
-        await AccessControl.apiDisableABAC(siteOneUrl);
-    });
-
-    it('MM-68219_2 - should not show redacted placeholder when no deny policy exists', async () => {
-        // # Open the channel
+        // # Open the same channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // * Verify the redacted files placeholder is not rendered (no policy = files accessible)
+        // * Engineering user satisfies the policy — no placeholder
         await expect(element(by.id('redacted-files-placeholder'))).not.toExist();
 
-        // # Go back to channel list
         await ChannelScreen.back();
     });
 });
