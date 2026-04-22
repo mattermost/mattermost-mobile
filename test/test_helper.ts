@@ -1193,6 +1193,51 @@ class TestHelperSingleton {
         value: `Value ${index + 1}`,
     });
 
+    createView = (channelId: string, index: number): View => ({
+        id: `${channelId}-view_${index}`,
+        channel_id: channelId,
+        type: 'kanban',
+        creator_id: 'creator_id',
+        title: `View ${index + 1}`,
+        description: `Description ${index + 1}`,
+        sort_order: index,
+        props: {},
+        create_at: 1700000000000 + index,
+        update_at: 1700000000000 + index,
+        delete_at: 0,
+    });
+
+    createPropertyField = (targetId: string, targetType: PropertyFieldTargetLevel, index: number): PropertyField => ({
+        id: `${targetId}-prop_field_${index}`,
+        group_id: 'group_1',
+        name: `Property ${index + 1}`,
+        type: 'text',
+        attrs: {sort_order: index},
+        object_type: 'card',
+        target_id: targetId,
+        target_type: targetType,
+        protected: false,
+        create_at: 1700000000000 + index,
+        update_at: 1700000000000 + index,
+        delete_at: 0,
+        created_by: 'creator_id',
+        updated_by: 'creator_id',
+    });
+
+    createPropertyValue = (fieldId: string, targetId: string, index: number): PropertyValue => ({
+        id: `${targetId}-${fieldId}-value_${index}`,
+        field_id: fieldId,
+        target_id: targetId,
+        target_type: 'post',
+        group_id: 'group_1',
+        value: `Value ${index + 1}`,
+        create_at: 1700000000000 + index,
+        update_at: 1700000000000 + index,
+        delete_at: 0,
+        created_by: 'creator_id',
+        updated_by: 'creator_id',
+    });
+
     createPlaybookChecklist = (prefix: string, itemsCount: number, index: number): PlaybookChecklist => {
         const items: PlaybookChecklistItem[] = [];
         const id = `${prefix}-checklist_${index}`;

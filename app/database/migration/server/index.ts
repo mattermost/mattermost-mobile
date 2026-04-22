@@ -20,13 +20,72 @@ const {
     FILE,
     MY_CHANNEL,
     POST,
+    PROPERTY_FIELD,
+    PROPERTY_VALUE,
     SCHEDULED_POST,
+    VIEW,
 } = MM_TABLES.SERVER;
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 const {AI_BOT, AI_THREAD} = AGENTS_TABLES;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 20,
+        steps: [
+            createTable({
+                name: VIEW,
+                columns: [
+                    {name: 'channel_id', type: 'string', isIndexed: true},
+                    {name: 'type', type: 'string'},
+                    {name: 'creator_id', type: 'string'},
+                    {name: 'title', type: 'string'},
+                    {name: 'description', type: 'string', isOptional: true},
+                    {name: 'sort_order', type: 'number'},
+                    {name: 'props', type: 'string', isOptional: true},
+                    {name: 'create_at', type: 'number'},
+                    {name: 'update_at', type: 'number', isIndexed: true},
+                    {name: 'delete_at', type: 'number'},
+                ],
+            }),
+            createTable({
+                name: PROPERTY_FIELD,
+                columns: [
+                    {name: 'group_id', type: 'string'},
+                    {name: 'name', type: 'string'},
+                    {name: 'type', type: 'string'},
+                    {name: 'attrs', type: 'string', isOptional: true},
+                    {name: 'object_type', type: 'string'},
+                    {name: 'target_id', type: 'string', isIndexed: true},
+                    {name: 'target_type', type: 'string'},
+                    {name: 'protected', type: 'boolean'},
+                    {name: 'permission_field', type: 'string', isOptional: true},
+                    {name: 'permission_values', type: 'string', isOptional: true},
+                    {name: 'permission_options', type: 'string', isOptional: true},
+                    {name: 'create_at', type: 'number'},
+                    {name: 'update_at', type: 'number', isIndexed: true},
+                    {name: 'delete_at', type: 'number'},
+                    {name: 'created_by', type: 'string'},
+                    {name: 'updated_by', type: 'string'},
+                ],
+            }),
+            createTable({
+                name: PROPERTY_VALUE,
+                columns: [
+                    {name: 'field_id', type: 'string', isIndexed: true},
+                    {name: 'target_id', type: 'string', isIndexed: true},
+                    {name: 'target_type', type: 'string'},
+                    {name: 'group_id', type: 'string'},
+                    {name: 'value', type: 'string'},
+                    {name: 'create_at', type: 'number'},
+                    {name: 'update_at', type: 'number'},
+                    {name: 'delete_at', type: 'number'},
+                    {name: 'created_by', type: 'string'},
+                    {name: 'updated_by', type: 'string'},
+                ],
+            }),
+        ],
+    },
     {
         toVersion: 19,
         steps: [

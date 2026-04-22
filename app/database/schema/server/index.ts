@@ -30,6 +30,8 @@ import {
     PostSchema,
     PostsInChannelSchema,
     PreferenceSchema,
+    PropertyFieldSchema,
+    PropertyValueSchema,
     ReactionSchema,
     RoleSchema,
     ScheduledPostSchema,
@@ -43,10 +45,11 @@ import {
     ThreadParticipantSchema,
     TeamThreadsSyncSchema,
     UserSchema,
+    ViewSchema,
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
-    version: 19,
+    version: 20,
     tables: [
         AiBotSchema,
         AiThreadSchema,
@@ -78,6 +81,8 @@ export const serverSchema: AppSchema = appSchema({
         PostSchema,
         PostsInChannelSchema,
         PreferenceSchema,
+        PropertyFieldSchema,
+        PropertyValueSchema,
         ReactionSchema,
         RoleSchema,
         ScheduledPostSchema,
@@ -91,5 +96,6 @@ export const serverSchema: AppSchema = appSchema({
         ThreadInTeamSchema,
         ThreadParticipantSchema,
         UserSchema,
+        ViewSchema,
     ],
 });

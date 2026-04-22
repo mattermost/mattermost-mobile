@@ -316,6 +316,18 @@ export type HandleCustomProfileAttributesArgs = PrepareOnly & {
   attributes?: CustomProfileAttribute[];
 };
 
+export type HandleViewsArgs = PrepareOnly & {
+  views?: View[];
+};
+
+export type HandlePropertyFieldsArgs = PrepareOnly & {
+  fields?: PropertyField[];
+};
+
+export type HandlePropertyValuesArgs = PrepareOnly & {
+  values?: PropertyValue[];
+};
+
 export type LoginArgs = {
   config: Partial<ClientConfig>;
   ldapOnly?: boolean;

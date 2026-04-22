@@ -1,4 +1,4 @@
-# Server Database - Schema Version 19
+# Server Database - Schema Version 20
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -446,3 +446,59 @@ title string
 channel_id string INDEX FK >- Channel.id
 reply_count number
 update_at number INDEX
+
+
+BoardView
+-
+# WatermelonDB table name is BoardView; the domain model class is ViewModel.
+# "BoardView" avoids collision with SQL's reserved VIEW keyword and encodes the boards semantics.
+id PK string # server-generated
+channel_id string INDEX FK >- Channel.id
+type string # 'kanban'
+creator_id string FK >- User.id
+title string
+description string
+sort_order number
+props string # JSON
+create_at number
+update_at number INDEX
+delete_at number # soft-delete, 0 when active
+
+
+PropertyField
+-
+# Definition of a card (or other object) property. Shared infrastructure reused by future property-based features.
+id PK string # server-generated
+group_id string # opaque; resolved server-side
+name string
+type string # 'text' | 'select' | 'multiselect' | ...
+attrs string # JSON (options, sort_order, ...)
+object_type string # 'card' | 'post' | 'user'
+target_id string INDEX # scope target (channel/team id, empty for system)
+target_type string # 'system' | 'team' | 'channel'
+protected boolean
+permission_field string
+permission_values string # JSON
+permission_options string # JSON
+create_at number
+update_at number INDEX
+delete_at number # soft-delete, 0 when active
+created_by string FK >- User.id
+updated_by string FK >- User.id
+
+
+PropertyValue
+-
+# Single object's value for a single PropertyField.
+# target_id is polymorphic (keyed by target_type); no typed WatermelonDB relation is declared for it.
+id PK string # server-generated
+field_id string INDEX FK >- PropertyField.id
+target_id string INDEX # polymorphic target
+target_type string # 'post' | 'user' | ...
+group_id string
+value string # JSON (shape depends on field type)
+create_at number
+update_at number
+delete_at number # soft-delete, 0 when active
+created_by string FK >- User.id
+updated_by string FK >- User.id
