@@ -10,7 +10,25 @@ import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import TestHelper from '@test/test_helper';
 
-import {queryPostsWithPermalinkReferences, observeIsBoREnabled} from './post';
+import {
+    queryPostsWithPermalinkReferences,
+    observeIsBoREnabled,
+    getPostById,
+    observePost,
+    getRecentPostsInChannel,
+    queryPostsById,
+    queryPostsByType,
+    queryPostsBetween,
+    queryPinnedPostsInChannel,
+    observePinnedPostsInChannel,
+    getIsPostPriorityEnabled,
+    getIsPostAcknowledgementsEnabled,
+    observeIsPostPriorityEnabled,
+    observeIsPostAcknowledgementsEnabled,
+    observeBoRConfig,
+    countUsersFromMentions,
+    findPostsWithPermalinkReferences,
+} from './post';
 
 describe('Post Queries', () => {
     const serverUrl = 'post.test.com';
@@ -365,6 +383,186 @@ describe('Post Queries', () => {
 
             const result = await firstValueFrom(observeIsBoREnabled(database));
             expect(result).toBe(false);
+        });
+    });
+});
+
+describe('post query helpers', () => {
+    const serverUrl = 'post.helpers.test.com';
+    let database: Database;
+    let operator: ServerDataOperator;
+
+    beforeEach(async () => {
+        await TestHelper.setupServerDatabase(serverUrl);
+        ({database, operator} = DatabaseManager.serverDatabases[serverUrl]!);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    describe('getPostById', () => {
+        it('should return undefined when post does not exist', async () => {
+            expect(await getPostById(database, 'nonexistent')).toBeUndefined();
+        });
+
+        it('should return post when it exists', async () => {
+            const post = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id});
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+            const result = await getPostById(database, post.id);
+            expect(result?.id).toBe(post.id);
+        });
+    });
+
+    describe('observePost', () => {
+        it('should emit undefined when post does not exist', async () => {
+            const result = await firstValueFrom(observePost(database, 'nonexistent'));
+            expect(result).toBeUndefined();
+        });
+
+        it('should emit post when it exists', async () => {
+            const post = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id});
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+            const result = await firstValueFrom(observePost(database, post.id));
+            expect(result?.id).toBe(post.id);
+        });
+    });
+
+    describe('getRecentPostsInChannel', () => {
+        it('should return empty array when no posts in channel', async () => {
+            const result = await getRecentPostsInChannel(database, 'nonexistent');
+            expect(result).toEqual([]);
+        });
+    });
+
+    describe('queryPostsById', () => {
+        it('should return posts matching given ids', async () => {
+            const post = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id});
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+            const results = await queryPostsById(database, [post.id]).fetch();
+            expect(results.map((p) => p.id)).toContain(post.id);
+        });
+
+        it('should return empty array when no matching ids', async () => {
+            const results = await queryPostsById(database, ['nonexistent']).fetch();
+            expect(results).toEqual([]);
+        });
+    });
+
+    describe('queryPostsByType', () => {
+        it('should return posts matching given type', async () => {
+            const post = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id, type: 'system_join_channel'});
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+            const results = await queryPostsByType(database, 'system_join_channel').fetch();
+            expect(results.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe('queryPostsBetween', () => {
+        it('should return posts within time range', async () => {
+            const now = Date.now();
+            const post = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id, create_at: now});
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+            const results = await queryPostsBetween(database, now - 1000, now + 1000, null).fetch();
+            expect(results.map((p) => p.id)).toContain(post.id);
+        });
+
+        it('should filter by channelId when provided', async () => {
+            const now = Date.now();
+            const post = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id, create_at: now});
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+            const results = await queryPostsBetween(database, now - 1000, now + 1000, null, undefined, TestHelper.basicChannel!.id).fetch();
+            expect(results.map((p) => p.id)).toContain(post.id);
+        });
+
+        it('should filter by userId when provided', async () => {
+            const now = Date.now();
+            const post = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id, create_at: now, user_id: TestHelper.basicUser!.id});
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+            const results = await queryPostsBetween(database, now - 1000, now + 1000, null, TestHelper.basicUser!.id).fetch();
+            expect(results.map((p) => p.id)).toContain(post.id);
+        });
+
+        it('should filter by rootId when provided', async () => {
+            const now = Date.now();
+            const post = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id, create_at: now, root_id: 'root1'});
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+            const results = await queryPostsBetween(database, now - 1000, now + 1000, null, undefined, undefined, 'root1').fetch();
+            expect(results.map((p) => p.id)).toContain(post.id);
+        });
+    });
+
+    describe('queryPinnedPostsInChannel / observePinnedPostsInChannel', () => {
+        it('should return empty when no pinned posts', async () => {
+            const results = await queryPinnedPostsInChannel(database, TestHelper.basicChannel!.id).fetch();
+            expect(results).toEqual([]);
+        });
+
+        it('should return pinned posts', async () => {
+            const post = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id, is_pinned: true});
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+            const results = await queryPinnedPostsInChannel(database, TestHelper.basicChannel!.id).fetch();
+            expect(results.map((p) => p.id)).toContain(post.id);
+        });
+
+        it('observePinnedPostsInChannel emits pinned posts', async () => {
+            const post = TestHelper.fakePost({channel_id: TestHelper.basicChannel!.id, is_pinned: true});
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+            const results = await firstValueFrom(observePinnedPostsInChannel(database, TestHelper.basicChannel!.id));
+            expect(results.map((p) => p.id)).toContain(post.id);
+        });
+    });
+
+    describe('getIsPostPriorityEnabled / getIsPostAcknowledgementsEnabled', () => {
+        it('getIsPostPriorityEnabled returns false when config not set', async () => {
+            expect(await getIsPostPriorityEnabled(database)).toBe(false);
+        });
+
+        it('getIsPostPriorityEnabled returns true when config is true', async () => {
+            await operator.handleConfigs({configs: [{id: 'PostPriority', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
+            expect(await getIsPostPriorityEnabled(database)).toBe(true);
+        });
+
+        it('getIsPostAcknowledgementsEnabled returns false when config not set', async () => {
+            expect(await getIsPostAcknowledgementsEnabled(database)).toBe(false);
+        });
+
+        it('getIsPostAcknowledgementsEnabled returns true when config is true', async () => {
+            await operator.handleConfigs({configs: [{id: 'PostAcknowledgements', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
+            expect(await getIsPostAcknowledgementsEnabled(database)).toBe(true);
+        });
+    });
+
+    describe('observeIsPostPriorityEnabled / observeIsPostAcknowledgementsEnabled', () => {
+        it('observeIsPostPriorityEnabled emits false when not set', async () => {
+            expect(await firstValueFrom(observeIsPostPriorityEnabled(database))).toBe(false);
+        });
+
+        it('observeIsPostAcknowledgementsEnabled emits false when not set', async () => {
+            expect(await firstValueFrom(observeIsPostAcknowledgementsEnabled(database))).toBe(false);
+        });
+    });
+
+    describe('observeBoRConfig', () => {
+        it('should return default values when config not set', async () => {
+            const result = await firstValueFrom(observeBoRConfig(database));
+            expect(result.enabled).toBe(false);
+            expect(typeof result.borDurationSeconds).toBe('number');
+            expect(typeof result.borMaximumTimeToLiveSeconds).toBe('number');
+        });
+    });
+
+    describe('countUsersFromMentions', () => {
+        it('should return 0 when no matching users or groups', async () => {
+            const count = await countUsersFromMentions(database, ['@nobody']);
+            expect(count).toBe(0);
+        });
+    });
+
+    describe('findPostsWithPermalinkReferences', () => {
+        it('should return empty array when no posts reference the given id', async () => {
+            const results = await findPostsWithPermalinkReferences(database, 'nonexistent');
+            expect(results).toEqual([]);
         });
     });
 });
