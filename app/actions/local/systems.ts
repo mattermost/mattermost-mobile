@@ -20,8 +20,10 @@ import {
     getLastGlobalDataRetentionRun,
     getIsDataRetentionEnabled,
     getLastBoRPostCleanupRun,
+    getDisconnectedSince,
 } from '@queries/servers/system';
 import PostModel from '@typings/database/models/servers/post';
+import SystemModel from '@typings/database/models/servers/system';
 import {isExpiredBoRPost} from '@utils/bor';
 import {logError} from '@utils/log';
 
@@ -30,7 +32,32 @@ import {deletePosts} from './post';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
 
-const {SERVER: {POST}} = MM_TABLES;
+const {SERVER: {POST, SYSTEM}} = MM_TABLES;
+
+export async function setDisconnectedSince(serverUrl: string, value: number | null): Promise<void> {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        if (value === null) {
+            const existing = await getDisconnectedSince(database);
+            if (existing === undefined) {
+                return;
+            }
+            const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE);
+            await database.write(async () => {
+                await record.destroyPermanently();
+            });
+            return;
+        }
+
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE, value}],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('setDisconnectedSince', error);
+    }
+}
 
 export async function storeConfigAndLicense(serverUrl: string, config: ClientConfig, license: ClientLicense) {
     try {

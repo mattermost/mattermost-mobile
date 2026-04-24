@@ -8,6 +8,7 @@ import ManagedApp from '@init/managed_app';
 import PushNotifications from '@init/push_notifications';
 import GlobalEventHandler from '@managers/global_event_handler';
 import NetworkManager from '@managers/network_manager';
+import OfflinePersistenceManager from '@managers/offline_persistence_manager';
 import SecurityManager from '@managers/security_manager';
 import SessionManager from '@managers/session_manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -56,6 +57,7 @@ export async function initialize() {
     CallsManager.initialize();
 
     PushNotifications.init(serverCredentials.length > 0);
+    await OfflinePersistenceManager.init(serverCredentials);
 }
 
 export function cleanup() {
