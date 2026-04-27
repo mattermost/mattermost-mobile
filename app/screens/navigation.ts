@@ -91,6 +91,40 @@ export function navigateToScreenWithBaseRoute(baseRoute: string, screen: Availab
     }
 }
 
+export function resetToDataErased(passProps: {serverUrl: string; displayName: string}) {
+    const theme = getDefaultThemeByAppearance();
+    const edgeToEdge = edgeToEdgeHack(Screens.DATA_ERASED, theme);
+
+    return Navigation.setRoot({
+        root: {
+            stack: {
+                children: [{
+                    component: {
+                        id: Screens.DATA_ERASED,
+                        name: Screens.DATA_ERASED,
+                        passProps,
+                        options: {
+                            layout: {
+                                backgroundColor: theme.centerChannelBg,
+                                componentBackgroundColor: theme.centerChannelBg,
+                            },
+                            statusBar: {
+                                visible: true,
+                                backgroundColor: theme.sidebarBg,
+                                ...edgeToEdge,
+                            },
+                            topBar: {
+                                visible: false,
+                                height: 0,
+                            },
+                        },
+                    },
+                }],
+            },
+        },
+    });
+}
+
 export async function navigateBack() {
     if (router && router.canGoBack()) {
         router.back();

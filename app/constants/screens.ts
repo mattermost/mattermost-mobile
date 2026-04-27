@@ -30,6 +30,7 @@ const CREATE_OR_EDIT_CHANNEL = 'create_or_edit_channel';
 const COMPONENT_LIBRARY = 'component_library';
 const CUSTOM_STATUS = '(custom_status)';
 const CUSTOM_STATUS_CLEAR_AFTER = 'custom_status_clear_after';
+const DATA_ERASED = 'DataErased';
 const DIALOG_ROUTER = 'dialog_router';
 const DRAFT_SCHEDULED_POST_OPTIONS = 'draft_scheduled_post_options';
 const EDIT_POST = 'edit_post';
@@ -114,6 +115,7 @@ export default {
     CREATE_OR_EDIT_CHANNEL,
     CUSTOM_STATUS,
     CUSTOM_STATUS_CLEAR_AFTER,
+    DATA_ERASED,
     DRAFT_SCHEDULED_POST_OPTIONS,
     EDIT_POST,
     EDIT_PROFILE,
