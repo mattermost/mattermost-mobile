@@ -1,5 +1,4 @@
 name: Documentation Impact Review
-
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -136,6 +135,15 @@ jobs:
             7. **Determine the documentation action** for each flagged change: does an existing page need updating (cite the exact RST file), or is an entirely new page needed (suggest the appropriate directory and a proposed filename)?
             Only flag changes that meet at least one of the two criteria above. Internal refactors, test changes, and implementation details that do not alter documented behavior or create a material, persona-relevant gap should not be flagged.
             **Important distinctions to apply during analysis:**
+ 
+            - **The guiding principle for skipping documentation:** docs are **not** needed when the PR does not introduce or change a user/admin capability, documented setting, workflow, UI string, troubleshooting signal, or supported behavior claim. When in doubt, ask: "Would a system administrator, end user, developer, or compliance officer need to read or update any documentation to understand or work with this change?" If no, classify as "No Documentation Changes Needed."
+ 
+            - **Common no-docs-needed patterns** (classify these as "No Documentation Changes Needed" and keep the response brief):
+              - Internal performance improvements or implementation-only refactors with no externally observable behavioral change
+              - Developer-facing renames, internal restructuring, or code organization changes that do not affect any capability, workflow, or behavior visible to admins or end users
+              - Changes where existing documentation already accurately covers the behavior generically and no update is needed to remain accurate
+              - Type or utility changes that reorganize existing logic without introducing new user-facing behavior
+ 
             - **Diagnostic and informational screens** (e.g., About screen, version info modal, license display, app info) are implementation details. They passively display existing data. Changes to what text or version numbers appear on these screens are not doc-relevant unless the screen itself is brand new and represents a user workflow that needs explanation.
             - **i18n: new vs. modified keys.** Only newly added keys in `app/i18n/en.json` are a strong signal of a new user-facing feature. Modified or removed keys almost always indicate a rename, rebrand, or copy edit of existing text — treat these as low-confidence signals and apply the materiality test before flagging.
             - **Cosmetic and display-only changes** — updates to how existing data is formatted, labelled, or styled within an existing screen — do not require documentation. A change only becomes doc-relevant when it alters what the user can *do* or what an admin must *configure*, not merely what they *see*.
@@ -165,7 +173,7 @@ jobs:
             ```
             ## Rules
             - Name exact RST file paths in `./docs/source/` when you find relevant documentation.
-            - Classify as "No Documentation Changes Needed" and keep the response brief when the PR only modifies test files, internal utilities, internal refactors with no behavioral change, CI/build configuration, or cosmetic/display-only UI changes.
+            - Classify as "No Documentation Changes Needed" and keep the response brief when the PR only modifies test files, internal utilities, internal refactors with no behavioral change, CI/build configuration, cosmetic/display-only UI changes, internal performance improvements, implementation-only changes, or developer-facing renames that do not affect any user/admin capability or documented behavior.
             - Apply the materiality test before flagging anything. Prefer "No Documentation Changes Needed" over a speculative recommendation when the change is self-evident or affects a diagnostic/informational screen.
             - When uncertain whether a change needs documentation, recommend a review rather than staying silent — but only after the materiality test has been applied and genuinely passed.
             - Keep analysis focused and actionable so developers can act on recommendations directly.
