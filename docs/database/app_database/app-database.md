@@ -1,4 +1,4 @@
-# App Database - Schema Version 1
+# App Database - Schema Version 2
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -28,3 +28,4 @@ display_name string
 url string INDEX
 last_active_at number INDEX
 identifier string INDEX
+persistence_flag string

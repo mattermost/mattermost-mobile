@@ -29,7 +29,7 @@ import {urlSafeBase64Encode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, Models, RegisterServerDatabaseArgs, ServerDatabase, ServerDatabases} from '@typings/database/database';
-import type ServerModel from '@typings/database/models/app/servers';
+import type {default as ServerModel, PersistenceFlag} from '@typings/database/models/app/servers';
 
 const {SERVERS} = MM_TABLES.APP;
 const APP_DATABASE = 'app';
@@ -192,6 +192,18 @@ class DatabaseManagerSingleton {
             await appDatabase.write(async () => {
                 await server?.update((record) => {
                     record.displayName = displayName;
+                });
+            });
+        }
+    };
+
+    public updatePersistenceFlag = async (serverUrl: string, persistenceFlag: PersistenceFlag) => {
+        const appDatabase = this.appDatabase?.database;
+        if (appDatabase) {
+            const server = await this.getServer(serverUrl);
+            await appDatabase.write(async () => {
+                await server?.update((record) => {
+                    record.persistenceFlag = persistenceFlag;
                 });
             });
         }

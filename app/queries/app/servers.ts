@@ -72,6 +72,15 @@ export const getActiveServerUrl = async () => {
     return server?.url || '';
 };
 
+export const getWipedServers = async () => {
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        return database.get<ServerModel>(SERVERS).query(Q.where('persistence_flag', 'wiped')).fetch();
+    } catch {
+        return [];
+    }
+};
+
 export const getServerByIdentifier = async (identifier: string) => {
     try {
         const {database} = DatabaseManager.getAppDatabaseAndOperator();
