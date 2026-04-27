@@ -22,6 +22,7 @@ import {
     dismissAnnouncement,
     expiredBoRPostCleanup,
     setDisconnectedSince,
+    setPurgeFired,
 } from './systems';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
@@ -284,6 +285,18 @@ describe('setDisconnectedSince', () => {
 
     it('should be a no-op when deleting a non-existent row', async () => {
         await expect(setDisconnectedSince(serverUrl, null)).resolves.toBeUndefined();
+    });
+});
+
+describe('setPurgeFired', () => {
+    it('should write a boolean true to the system table', async () => {
+        await setPurgeFired(serverUrl, true);
+
+        const records = await operator.database.get<SystemModel>('System').
+            query().
+            fetch();
+        const row = records.find((r) => r.id === SYSTEM_IDENTIFIERS.PURGE_FIRED);
+        expect(row?.value).toBe(true);
     });
 });
 

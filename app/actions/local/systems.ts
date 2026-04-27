@@ -21,6 +21,9 @@ import {
     getIsDataRetentionEnabled,
     getLastBoRPostCleanupRun,
     getDisconnectedSince,
+    getLastSeenTime,
+    getOfflineSince,
+    getPurgeFired,
 } from '@queries/servers/system';
 import PostModel from '@typings/database/models/servers/post';
 import SystemModel from '@typings/database/models/servers/system';
@@ -56,6 +59,104 @@ export async function setDisconnectedSince(serverUrl: string, value: number | nu
         });
     } catch (error) {
         logError('setDisconnectedSince', error);
+    }
+}
+
+export async function setOfflineSince(serverUrl: string, value: number | null): Promise<void> {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        if (value === null) {
+            const existing = await getOfflineSince(database);
+            if (existing === undefined) {
+                return;
+            }
+            const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.OFFLINE_SINCE);
+            await database.write(async () => {
+                await record.destroyPermanently();
+            });
+            return;
+        }
+
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.OFFLINE_SINCE, value}],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('setOfflineSince', error);
+    }
+}
+
+export async function setLastSeenTime(serverUrl: string, value: number | null): Promise<void> {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        if (value === null) {
+            const existing = await getLastSeenTime(database);
+            if (existing === undefined) {
+                return;
+            }
+            const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_SEEN_TIME);
+            await database.write(async () => {
+                await record.destroyPermanently();
+            });
+            return;
+        }
+
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LAST_SEEN_TIME, value}],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('setLastSeenTime', error);
+    }
+}
+
+export async function setPurgeFired(serverUrl: string, value: boolean | null): Promise<void> {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        if (value === null) {
+            const existing = await getPurgeFired(database);
+            if (!existing) {
+                return;
+            }
+            const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.PURGE_FIRED);
+            await database.write(async () => {
+                await record.destroyPermanently();
+            });
+            return;
+        }
+
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.PURGE_FIRED, value}],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('setPurgeFired', error);
+    }
+}
+
+export async function clearEphemeralModeState(serverUrl: string): Promise<void> {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const records = await database.get<SystemModel>(SYSTEM).query(
+            Q.where('id', Q.oneOf([
+                SYSTEM_IDENTIFIERS.OFFLINE_SINCE,
+                SYSTEM_IDENTIFIERS.LAST_SEEN_TIME,
+                SYSTEM_IDENTIFIERS.PURGE_FIRED,
+            ])),
+        ).fetch();
+
+        if (records.length === 0) {
+            return;
+        }
+
+        await database.write(async () => {
+            await database.batch(...records.map((r) => r.prepareDestroyPermanently()));
+        });
+    } catch (error) {
+        logError('clearEphemeralModeState', error);
     }
 }
 

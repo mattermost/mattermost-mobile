@@ -13,7 +13,7 @@ import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
-import {getActiveServerUrl} from '@queries/app/servers';
+import {getActiveServerUrl, getServerDisplayName} from '@queries/app/servers';
 import {queryTeamDefaultChannel} from '@queries/servers/channel';
 import {getCommonSystemValues} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
@@ -44,6 +44,7 @@ class GlobalEventHandlerSingleton {
         DeviceEventEmitter.addListener(Events.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
         splitViewEmitter.addListener('SplitViewChanged', this.onSplitViewChanged);
         DeviceEventEmitter.addListener(Events.POST_DELETED_FOR_CHANNEL, this.onPostDeletedForChannel);
+        DeviceEventEmitter.addListener(Events.EPHEMERAL_MODE_PURGE_DUE, this.onEphemeralModePurgeDue);
     }
 
     init = () => {
@@ -58,6 +59,17 @@ class GlobalEventHandlerSingleton {
 
     onPostDeletedForChannel = async ({serverUrl, teamId}: {serverUrl: string; teamId: string}) => {
         batchTeamThreadSync(serverUrl, teamId);
+    };
+    
+    // Stage 2 only: temporary alert. Stage 3 will replace it with the real wipe + blocking screen.
+    onEphemeralModePurgeDue = async ({serverUrl}: {serverUrl: string}) => {
+        const displayName = await getServerDisplayName(serverUrl);
+        Alert.alert(
+            'Data will be erased',
+            `Your organization's security policy removes local data for ${displayName || serverUrl} after a prolonged offline period. Reconnect to keep your data.`,
+            [{text: 'OK'}],
+            {cancelable: false},
+        );
     };
 
     onServerVersionChanged = async ({serverUrl, serverVersion}: {serverUrl: string; serverVersion?: string}) => {

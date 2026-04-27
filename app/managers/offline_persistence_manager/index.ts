@@ -1,25 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, type AppStateStatus, type NativeEventSubscription} from 'react-native';
+import {AppState, DeviceEventEmitter, type AppStateStatus, type NativeEventSubscription} from 'react-native';
 import {BehaviorSubject, combineLatest, from, of as of$, type Observable, type Subscription} from 'rxjs';
 import {distinctUntilChanged, skip, switchMap} from 'rxjs/operators';
 
-import {setDisconnectedSince} from '@actions/local/systems';
+import {clearEphemeralModeState, setDisconnectedSince, setLastSeenTime, setOfflineSince, setPurgeFired} from '@actions/local/systems';
+import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {getDisconnectedSince, observeConfigValue} from '@queries/servers/system';
+import {getDisconnectedSince, getLastSeenTime, getOfflineSince, getPurgeFired, observeConfigValue} from '@queries/servers/system';
 import {logError} from '@utils/log';
 
 class OfflinePersistenceManagerSingleton {
     private offlineSubjects: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
     private disconnectionTimers: Record<string, NodeJS.Timeout> = {};
+    private purgeTimers: Record<string, NodeJS.Timeout> = {};
     private wsSubscriptions: Record<string, Subscription> = {};
     private configSubscriptions: Record<string, Subscription> = {};
     private appStateSubscription?: NativeEventSubscription;
 
     private activeServers = new Set<string>();
     private thresholdMs: Record<string, number> = {};
+    private purgeThresholdMs: Record<string, number> = {};
 
     public init = async (serverCredentials: ServerCredential[]) => {
         for (const url of Object.keys(this.configSubscriptions)) {
@@ -69,13 +72,14 @@ class OfflinePersistenceManagerSingleton {
         this.configSubscriptions[serverUrl] = combineLatest([
             observeConfigValue(database, 'MobileEphemeralModeEnabled'),
             observeConfigValue(database, 'MobileEphemeralModeDisconnectionTimeoutSeconds'),
+            observeConfigValue(database, 'MobileEphemeralModeOfflinePersistenceTimerHours'),
         ]).pipe(
             distinctUntilChanged(
-                ([prevEnabled, prevTimeout], [nextEnabled, nextTimeout]) =>
-                    prevEnabled === nextEnabled && prevTimeout === nextTimeout,
+                ([prevEnabled, prevTimeout, prevPurgeHours], [nextEnabled, nextTimeout, nextPurgeHours]) =>
+                    prevEnabled === nextEnabled && prevTimeout === nextTimeout && prevPurgeHours === nextPurgeHours,
             ),
-        ).subscribe(([enabledStr, timeoutStr]) => {
-            this.onEphemeralModeConfigChange(serverUrl, enabledStr, timeoutStr);
+        ).subscribe(([enabledStr, timeoutStr, purgeHoursStr]) => {
+            this.onEphemeralModeConfigChange(serverUrl, enabledStr, timeoutStr, purgeHoursStr);
         });
     };
 
@@ -83,12 +87,15 @@ class OfflinePersistenceManagerSingleton {
         serverUrl: string,
         enabledStr: string | undefined,
         timeoutStr: string | undefined,
+        purgeHoursStr: string | undefined,
     ) => {
         const nextEnabled = enabledStr === 'true';
         const nextThresholdMs = Math.max(0, Number(timeoutStr ?? '0')) * 1000;
+        const nextPurgeThresholdMs = Math.max(0, Number(purgeHoursStr ?? '0')) * 3600 * 1000;
         const wasActive = this.activeServers.has(serverUrl);
 
         this.thresholdMs[serverUrl] = nextThresholdMs;
+        this.purgeThresholdMs[serverUrl] = nextPurgeThresholdMs;
 
         if (nextEnabled && !wasActive) {
             this.activate(serverUrl);
@@ -100,6 +107,9 @@ class OfflinePersistenceManagerSingleton {
         }
         if (nextEnabled && wasActive) {
             this.evaluateServer(serverUrl);
+            if (this.isOffline(serverUrl)) {
+                this.evaluatePurge(serverUrl);
+            }
             return;
         }
 
@@ -127,6 +137,7 @@ class OfflinePersistenceManagerSingleton {
         this.wsSubscriptions[serverUrl]?.unsubscribe();
         delete this.wsSubscriptions[serverUrl];
         this.clearDisconnectionTimer(serverUrl);
+        this.clearPurgeTimer(serverUrl);
         this.flagOffline(serverUrl, false);
         setDisconnectedSince(serverUrl, null);
         this.maybeRemoveAppStateListener();
@@ -138,6 +149,9 @@ class OfflinePersistenceManagerSingleton {
         }
         for (const url of this.activeServers) {
             this.evaluateServer(url);
+            if (this.isOffline(url)) {
+                this.evaluatePurge(url);
+            }
         }
     };
 
@@ -218,8 +232,109 @@ class OfflinePersistenceManagerSingleton {
         }
     };
 
+    private clearPurgeTimer = (serverUrl: string) => {
+        const handle = this.purgeTimers[serverUrl];
+        if (handle) {
+            clearTimeout(handle);
+            delete this.purgeTimers[serverUrl];
+        }
+    };
+
     private flagOffline = (serverUrl: string, value: boolean) => {
-        this.getOfflineSubject(serverUrl).next(value);
+        const subject = this.getOfflineSubject(serverUrl);
+        const prev = subject.getValue();
+        subject.next(value);
+        if (prev === value) {
+            return;
+        }
+        if (value) {
+            this.onTransitionToOffline(serverUrl);
+        } else {
+            this.onTransitionToOnline(serverUrl);
+        }
+    };
+
+    private onTransitionToOffline = async (serverUrl: string) => {
+        let database;
+        try {
+            database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+        } catch (error) {
+            logError('OfflinePersistenceManager.onTransitionToOffline', error);
+            return;
+        }
+
+        const existing = await getOfflineSince(database);
+        if (existing === undefined) {
+            // Derive offline_since from disconnected_since so a resume-past-threshold
+            // doesn't reset the start of the purge window to "now".
+            const disconnectedSince = await getDisconnectedSince(database);
+            const offlineSince = disconnectedSince === undefined ? Date.now() : disconnectedSince + this.thresholdMs[serverUrl];
+            await setOfflineSince(serverUrl, offlineSince);
+            await setLastSeenTime(serverUrl, Date.now());
+        }
+        this.evaluatePurge(serverUrl);
+    };
+
+    private onTransitionToOnline = async (serverUrl: string) => {
+        this.clearPurgeTimer(serverUrl);
+        await clearEphemeralModeState(serverUrl);
+    };
+
+    private evaluatePurge = async (serverUrl: string) => {
+        if (!this.isOffline(serverUrl)) {
+            return;
+        }
+
+        let database;
+        try {
+            database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+        } catch (error) {
+            logError('OfflinePersistenceManager.evaluatePurge', error);
+            return;
+        }
+
+        const [fired, lastSeen] = await Promise.all([
+            getPurgeFired(database),
+            getLastSeenTime(database),
+        ]);
+        if (fired) {
+            this.clearPurgeTimer(serverUrl);
+            return;
+        }
+
+        let offlineSince = await getOfflineSince(database);
+        if (offlineSince === undefined) {
+            // Defensive: flag says offline but no anchor persisted — fire immediately
+            // rather than risk missing the purge entirely.
+            await this.firePurge(serverUrl);
+            return;
+        }
+
+        const now = Date.now();
+        if (lastSeen !== undefined && now < lastSeen) {
+            const offset = lastSeen - now;
+            offlineSince -= offset;
+            await setOfflineSince(serverUrl, offlineSince);
+        }
+        await setLastSeenTime(serverUrl, now);
+
+        const purgeThresholdMs = this.purgeThresholdMs[serverUrl];
+        const remainingMs = (offlineSince + purgeThresholdMs) - now;
+
+        this.clearPurgeTimer(serverUrl);
+        if (remainingMs <= 0) {
+            await this.firePurge(serverUrl);
+            return;
+        }
+        this.purgeTimers[serverUrl] = setTimeout(() => {
+            delete this.purgeTimers[serverUrl];
+            this.firePurge(serverUrl);
+        }, remainingMs);
+    };
+
+    private firePurge = async (serverUrl: string) => {
+        await setPurgeFired(serverUrl, true);
+        DeviceEventEmitter.emit(Events.EPHEMERAL_MODE_PURGE_DUE, {serverUrl});
     };
 
     private getOfflineSubject = (serverUrl: string) => {

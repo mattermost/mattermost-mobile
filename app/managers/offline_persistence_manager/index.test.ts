@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, type AppStateStatus} from 'react-native';
+import {AppState, DeviceEventEmitter, type AppStateStatus, type EmitterSubscription} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 
+import {Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -24,10 +25,20 @@ describe('OfflinePersistenceManager', () => {
     let wsStates: Record<string, BehaviorSubject<WebsocketConnectedState>>;
     let appStateHandlers: Array<(state: AppStateStatus) => void>;
     let appStateRemoveSpies: jest.Mock[];
+    let purgeDueListener: jest.Mock;
+    let purgeDueSubscription: EmitterSubscription;
 
     const seedConfigAndRow = async (
         url: string,
-        opts: {enabled?: boolean; timeoutSec?: number; disconnectedSince?: number},
+        opts: {
+            enabled?: boolean;
+            timeoutSec?: number;
+            purgeHours?: number;
+            disconnectedSince?: number;
+            offlineSince?: number;
+            lastSeenTime?: number;
+            purgeFired?: boolean;
+        },
     ) => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(url);
         const configs: Array<{id: string; value: string}> = [];
@@ -37,26 +48,44 @@ describe('OfflinePersistenceManager', () => {
         if (opts.timeoutSec !== undefined) {
             configs.push({id: 'MobileEphemeralModeDisconnectionTimeoutSeconds', value: String(opts.timeoutSec)});
         }
+        if (opts.purgeHours !== undefined) {
+            configs.push({id: 'MobileEphemeralModeOfflinePersistenceTimerHours', value: String(opts.purgeHours)});
+        }
         if (configs.length) {
             await operator.handleConfigs({configs, configsToDelete: [], prepareRecordsOnly: false});
         }
+        const systems: Array<{id: string; value: unknown}> = [];
         if (opts.disconnectedSince !== undefined) {
-            await operator.handleSystem({
-                systems: [{id: SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE, value: opts.disconnectedSince}],
-                prepareRecordsOnly: false,
-            });
+            systems.push({id: SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE, value: opts.disconnectedSince});
+        }
+        if (opts.offlineSince !== undefined) {
+            systems.push({id: SYSTEM_IDENTIFIERS.OFFLINE_SINCE, value: opts.offlineSince});
+        }
+        if (opts.lastSeenTime !== undefined) {
+            systems.push({id: SYSTEM_IDENTIFIERS.LAST_SEEN_TIME, value: opts.lastSeenTime});
+        }
+        if (opts.purgeFired !== undefined) {
+            systems.push({id: SYSTEM_IDENTIFIERS.PURGE_FIRED, value: opts.purgeFired});
+        }
+        if (systems.length) {
+            await operator.handleSystem({systems, prepareRecordsOnly: false});
         }
     };
 
-    const getPersistedSince = async (url: string): Promise<number | undefined> => {
+    const getPersistedValue = async <T>(url: string, key: string): Promise<T | undefined> => {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(url);
         try {
-            const rec = await database.get('System').find(SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE);
-            return (rec as unknown as {value: number}).value;
+            const rec = await database.get('System').find(key);
+            return (rec as unknown as {value: T}).value;
         } catch {
             return undefined;
         }
     };
+
+    const getPersistedSince = (url: string) => getPersistedValue<number>(url, SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE);
+    const getPersistedOfflineSince = (url: string) => getPersistedValue<number>(url, SYSTEM_IDENTIFIERS.OFFLINE_SINCE);
+    const getPersistedLastSeen = (url: string) => getPersistedValue<number>(url, SYSTEM_IDENTIFIERS.LAST_SEEN_TIME);
+    const getPersistedPurgeFired = (url: string) => getPersistedValue<boolean>(url, SYSTEM_IDENTIFIERS.PURGE_FIRED);
 
     const setWs = (url: string, state: WebsocketConnectedState) => {
         if (wsStates[url]) {
@@ -71,7 +100,7 @@ describe('OfflinePersistenceManager', () => {
         appStateHandlers.forEach((h) => h(state));
     };
 
-    const updateConfig = async (url: string, patch: {enabled?: boolean; timeoutSec?: number}) => {
+    const updateConfig = async (url: string, patch: {enabled?: boolean; timeoutSec?: number; purgeHours?: number}) => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(url);
         const configs: Array<{id: string; value: string}> = [];
         if (patch.enabled !== undefined) {
@@ -79,6 +108,9 @@ describe('OfflinePersistenceManager', () => {
         }
         if (patch.timeoutSec !== undefined) {
             configs.push({id: 'MobileEphemeralModeDisconnectionTimeoutSeconds', value: String(patch.timeoutSec)});
+        }
+        if (patch.purgeHours !== undefined) {
+            configs.push({id: 'MobileEphemeralModeOfflinePersistenceTimerHours', value: String(patch.purgeHours)});
         }
         await operator.handleConfigs({configs, configsToDelete: [], prepareRecordsOnly: false});
     };
@@ -110,9 +142,13 @@ describe('OfflinePersistenceManager', () => {
             appStateRemoveSpies.push(removeSpy);
             return {remove: removeSpy};
         });
+
+        purgeDueListener = jest.fn();
+        purgeDueSubscription = DeviceEventEmitter.addListener(Events.EPHEMERAL_MODE_PURGE_DUE, purgeDueListener);
     });
 
     afterEach(async () => {
+        purgeDueSubscription.remove();
         await OfflinePersistenceManager.init([]);
         await DatabaseManager.destroyServerDatabase(serverA).catch(() => undefined);
         await DatabaseManager.destroyServerDatabase(serverB).catch(() => undefined);
@@ -348,5 +384,168 @@ describe('OfflinePersistenceManager', () => {
         await advanceTimers(20_000);
 
         expect(OfflinePersistenceManager.isOffline(serverA)).toBe(false);
+    });
+
+    describe('purge timer', () => {
+        const ONE_HOUR_MS = 3600_000;
+
+        it('flipping the offline flag to true schedules the purge timer without firing', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await OfflinePersistenceManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            expect(OfflinePersistenceManager.isOffline(serverA)).toBe(false);
+
+            await advanceTimers(10_000);
+            await advanceTimers(0);
+
+            expect(OfflinePersistenceManager.isOffline(serverA)).toBe(true);
+            expect(await getPersistedOfflineSince(serverA)).toBeDefined();
+            expect(purgeDueListener).not.toHaveBeenCalled();
+        });
+
+        it('purge timer fires after the configured threshold and emits EPHEMERAL_MODE_PURGE_DUE', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await OfflinePersistenceManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            await advanceTimers(0);
+
+            expect(purgeDueListener).not.toHaveBeenCalled();
+
+            await advanceTimers(ONE_HOUR_MS);
+            await advanceTimers(0);
+
+            expect(purgeDueListener).toHaveBeenCalledTimes(1);
+            expect(purgeDueListener).toHaveBeenCalledWith({serverUrl: serverA});
+            expect(await getPersistedPurgeFired(serverA)).toBe(true);
+        });
+
+        it('firing the purge is synchronous when the threshold is zero', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 0});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await OfflinePersistenceManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            await advanceTimers(0);
+
+            expect(purgeDueListener).toHaveBeenCalledTimes(1);
+        });
+
+        it('reconnecting before the purge fires cancels the timer and clears persistence', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await OfflinePersistenceManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            await advanceTimers(0);
+            expect(await getPersistedOfflineSince(serverA)).toBeDefined();
+
+            setWs(serverA, 'connected');
+            await advanceTimers(0);
+
+            expect(await getPersistedOfflineSince(serverA)).toBeUndefined();
+            expect(await getPersistedLastSeen(serverA)).toBeUndefined();
+            expect(await getPersistedPurgeFired(serverA)).toBeUndefined();
+
+            await advanceTimers(ONE_HOUR_MS);
+            expect(purgeDueListener).not.toHaveBeenCalled();
+        });
+
+        it('backward clock jump while offline preserves the remaining time', async () => {
+            const start = 1_700_000_000_000;
+            jest.setSystemTime(start);
+            await seedConfigAndRow(serverA, {
+                enabled: true,
+                timeoutSec: 10,
+                purgeHours: 24,
+                disconnectedSince: start - ONE_HOUR_MS - 10_000,
+                offlineSince: start - ONE_HOUR_MS,
+                lastSeenTime: start - ONE_HOUR_MS,
+            });
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('not_connected');
+
+            await OfflinePersistenceManager.init([credsA]);
+            await advanceTimers(0);
+            await advanceTimers(0);
+
+            const offlineSinceBefore = await getPersistedOfflineSince(serverA);
+            expect(offlineSinceBefore).toBe(start - ONE_HOUR_MS);
+
+            const halfHour = 30 * 60 * 1000;
+            jest.setSystemTime(start - halfHour);
+
+            setAppState('active');
+            await advanceTimers(0);
+            await advanceTimers(0);
+
+            const offlineSinceAfter = await getPersistedOfflineSince(serverA);
+            expect(offlineSinceAfter).toBe((start - ONE_HOUR_MS) - halfHour);
+        });
+
+        it('changing the purge threshold while offline reschedules against offline_since', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 24});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await OfflinePersistenceManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            await advanceTimers(0);
+            await advanceTimers(ONE_HOUR_MS);
+
+            await updateConfig(serverA, {purgeHours: 12});
+            await advanceTimers(0);
+            await advanceTimers(0);
+
+            await advanceTimers((11 * ONE_HOUR_MS) - 1000);
+            expect(purgeDueListener).not.toHaveBeenCalled();
+
+            await advanceTimers(2000);
+            await advanceTimers(0);
+            expect(purgeDueListener).toHaveBeenCalledTimes(1);
+        });
+
+        it('purge_fired prevents re-emission on subsequent foregrounds', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await OfflinePersistenceManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            await advanceTimers(0);
+            await advanceTimers(ONE_HOUR_MS);
+            await advanceTimers(0);
+            expect(purgeDueListener).toHaveBeenCalledTimes(1);
+
+            setAppState('background');
+            setAppState('active');
+            await advanceTimers(0);
+            await advanceTimers(0);
+
+            expect(purgeDueListener).toHaveBeenCalledTimes(1);
+        });
     });
 });
