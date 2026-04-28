@@ -71,7 +71,6 @@ type PostProps = {
     isSaved?: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
-    isPermissionPoliciesEnabled: boolean;
     location: AvailableScreens;
     post: PostModel;
     rootId?: string;
@@ -165,7 +164,6 @@ const Post = ({
     previousPost,
     isLastPost,
     isChannelAutotranslated,
-    isPermissionPoliciesEnabled,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const serverUrl = useServerUrl();
@@ -424,7 +422,6 @@ const Post = ({
                 isJumboEmoji={isJumboEmoji}
                 isLastReply={isLastReply}
                 isPendingOrFailed={isPendingOrFailed}
-                isPermissionPoliciesEnabled={isPermissionPoliciesEnabled}
                 isPostAcknowledgementEnabled={isPostAcknowledgementEnabled}
                 isPostAddChannelMember={isPostAddChannelMember}
                 location={location}

@@ -7,13 +7,27 @@ import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observeIsChannelAutotranslated} from '@queries/servers/channel';
+import {queryFilesForPost} from '@queries/servers/file';
 import {observePost} from '@queries/servers/post';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeUser, observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
 
 import PermalinkPreview from './permalink_preview';
 
+import type {Database} from '@nozbe/watermelondb';
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type PostModel from '@typings/database/models/servers/post';
+
+const observeHasLinkedPostFiles = (database: Database, p: PostModel | undefined, embedData: PermalinkEmbedData) => {
+    // Embed data is recalculated per-user on every channel fetch — trust it over the DB file count.
+    if ((embedData?.post?.metadata?.redacted_file_count ?? 0) > 0) {
+        return of$(false);
+    }
+    if (!p) {
+        return of$((embedData?.post?.metadata?.files?.length ?? 0) > 0);
+    }
+    return queryFilesForPost(database, p.id).observeCount().pipe(map((c) => c > 0));
+};
 
 const enhance = withObservables(['embedData'], ({database, embedData}: WithDatabaseArgs & {embedData: PermalinkEmbedData}) => {
     const teammateNameDisplay = observeTeammateNameDisplay(database);
@@ -26,6 +40,12 @@ const enhance = withObservables(['embedData'], ({database, embedData}: WithDatab
     const author = userId ? observeUser(database, userId) : of$(undefined);
 
     const post = embedData?.post_id ? observePost(database, embedData.post_id) : of$(undefined);
+
+    const hasLinkedPostFiles = post.pipe(
+        switchMap((p) => observeHasLinkedPostFiles(database, p, embedData)),
+        distinctUntilChanged(),
+    );
+
     const isOriginPostDeleted = post.pipe(
         switchMap((p) => {
             const deleteAt = embedData?.post?.delete_at ?? 0;
@@ -45,6 +65,7 @@ const enhance = withObservables(['embedData'], ({database, embedData}: WithDatab
         isMilitaryTime,
         author,
         post,
+        hasLinkedPostFiles,
         isOriginPostDeleted,
         autotranslationsEnabled,
     };

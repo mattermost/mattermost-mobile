@@ -40,7 +40,6 @@ type BodyProps = {
     isJumboEmoji: boolean;
     isLastReply?: boolean;
     isPendingOrFailed: boolean;
-    isPermissionPoliciesEnabled: boolean;
     isPostAcknowledgementEnabled?: boolean;
     isPostAddChannelMember: boolean;
     location: AvailableScreens;
@@ -103,7 +102,6 @@ const Body = ({
     isJumboEmoji,
     isLastReply,
     isPendingOrFailed,
-    isPermissionPoliciesEnabled,
     isPostAcknowledgementEnabled,
     isPostAddChannelMember,
     location,
@@ -239,7 +237,7 @@ const Body = ({
                     isReplyPost={isReplyPost}
                 />
                 }
-                {isPermissionPoliciesEnabled && redactedFileCount > 0 && (
+                {redactedFileCount > 0 && (
                     <RedactedFilesPlaceholder/>
                 )}
                 {(acknowledgementsVisible || reactionsVisible) && (

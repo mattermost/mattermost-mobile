@@ -24,11 +24,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingRight: 16,
         marginTop: 8,
         gap: 16,
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: 0.08,
-        shadowRadius: 3,
-        elevation: 1,
     },
     textContainer: {
         flex: 1,
@@ -36,12 +31,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     title: {
         color: theme.centerChannelColor,
         ...typography('Body', 200, 'SemiBold'),
-        fontStyle: 'italic',
     },
     subtitle: {
         color: changeOpacity(theme.centerChannelColor, 0.72),
         ...typography('Body', 75, 'Regular'),
-        fontStyle: 'italic',
         marginTop: 2,
     },
 }));

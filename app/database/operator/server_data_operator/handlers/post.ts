@@ -386,6 +386,25 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
                     return true;
                 }
 
+                // ABAC permission changes don't bump update_at; detect redaction state drift explicitly.
+                if ((n.metadata?.redacted_file_count ?? 0) !== (e.metadata?.redacted_file_count ?? 0)) {
+                    return true;
+                }
+
+                // Server recalculates embed data per-user on channel fetch without bumping
+                // update_at — force an update when the linked post's ABAC state drifts.
+                const newEmbeds = n.metadata?.embeds ?? [];
+                const oldEmbeds = e.metadata?.embeds ?? [];
+                for (let i = 0; i < newEmbeds.length; i++) {
+                    if (newEmbeds[i]?.type === 'permalink') {
+                        const newCount = (newEmbeds[i].data as PermalinkEmbedData)?.post?.metadata?.redacted_file_count ?? 0;
+                        const oldCount = (oldEmbeds[i]?.data as PermalinkEmbedData)?.post?.metadata?.redacted_file_count ?? 0;
+                        if (newCount !== oldCount) {
+                            return true;
+                        }
+                    }
+                }
+
                 return n.update_at > e.updateAt;
             },
         }));

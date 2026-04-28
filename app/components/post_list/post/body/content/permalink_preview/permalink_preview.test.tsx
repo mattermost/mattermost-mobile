@@ -123,6 +123,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             createAt: 1234567890000,
             editAt: 0,
         }),
+        hasLinkedPostFiles: false,
         isMilitaryTime: false,
         teammateNameDisplay: 'username',
         location: Screens.CHANNEL,
@@ -369,6 +370,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
 
             const propsWithFiles = {
                 ...baseProps,
+                hasLinkedPostFiles: true,
                 embedData: {
                     ...baseProps.embedData,
                     post: TestHelper.fakePost({
@@ -417,6 +419,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
 
             const propsWithMultipleFiles = {
                 ...baseProps,
+                hasLinkedPostFiles: true,
                 embedData: {
                     ...baseProps.embedData,
                     post: TestHelper.fakePost({

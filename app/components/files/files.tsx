@@ -63,7 +63,10 @@ const Files = ({
     isPermalinkPreview = false,
 }: FilesProps) => {
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
-    const [inViewPort, setInViewPort] = useState(false);
+
+    // Permalink previews have already entered the viewport by the time Files mounts;
+    // the ITEM_IN_VIEWPORT event won't fire again, so start as visible.
+    const [inViewPort, setInViewPort] = useState(isPermalinkPreview);
     const isTablet = useIsTablet();
     const {canDownloadFiles, enableSecureFilePreview} = usePostConfig();
 
