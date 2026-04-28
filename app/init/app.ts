@@ -6,7 +6,6 @@ import DatabaseManager from '@database/manager';
 import {getAllServerCredentials} from '@init/credentials';
 import ManagedApp from '@init/managed_app';
 import PushNotifications from '@init/push_notifications';
-import EphemeralModeWipeManager from '@managers/ephemeral_mode_wipe_manager';
 import GlobalEventHandler from '@managers/global_event_handler';
 import NetworkManager from '@managers/network_manager';
 import OfflinePersistenceManager from '@managers/offline_persistence_manager';
@@ -52,14 +51,13 @@ export async function initialize() {
 
     await SecurityManager.init();
 
-    EphemeralModeWipeManager.init();
     GlobalEventHandler.init();
     ManagedApp.init();
     SessionManager.init();
     CallsManager.initialize();
 
     PushNotifications.init(serverCredentials.length > 0);
-    const wipeReconcile = await EphemeralModeWipeManager.reconcile();
+    const wipeReconcile = await OfflinePersistenceManager.reconcile();
 }
 
 export function cleanup() {

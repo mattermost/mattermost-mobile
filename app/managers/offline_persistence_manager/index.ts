@@ -1,16 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, DeviceEventEmitter, type AppStateStatus, type NativeEventSubscription} from 'react-native';
+import {AppState, type AppStateStatus, type NativeEventSubscription} from 'react-native';
 import {BehaviorSubject, combineLatest, from, of as of$, type Observable, type Subscription} from 'rxjs';
 import {distinctUntilChanged, skip, switchMap} from 'rxjs/operators';
 
+import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
 import {clearEphemeralModeState, setDisconnectedSince, setLastSeenTime, setOfflineSince, setPurgeFired} from '@actions/local/systems';
-import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
+import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
+import {getServerDisplayName, getServersWithWipedAt} from '@queries/app/servers';
 import {getDisconnectedSince, getLastSeenTime, getOfflineSince, getPurgeFired, observeConfigValue} from '@queries/servers/system';
+import {resetToDataErased} from '@screens/navigation';
 import {logError} from '@utils/log';
+
+export type ReconcileResult = {
+    showDataErasedFor?: {serverUrl: string; displayName: string};
+};
 
 class OfflinePersistenceManagerSingleton {
     private offlineSubjects: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
@@ -23,6 +31,7 @@ class OfflinePersistenceManagerSingleton {
     private activeServers = new Set<string>();
     private thresholdMs: Record<string, number> = {};
     private purgeThresholdMs: Record<string, number> = {};
+    private wipeInProgress = new Set<string>();
 
     public init = async (serverCredentials: ServerCredential[]) => {
         for (const url of Object.keys(this.configSubscriptions)) {
@@ -36,6 +45,27 @@ class OfflinePersistenceManagerSingleton {
                 logError('OfflinePersistenceManager.init', error);
             }
         }
+    };
+
+    public reconcile = async (): Promise<ReconcileResult> => {
+        const wipedServers = await getServersWithWipedAt();
+        if (wipedServers.length === 0) {
+            return {};
+        }
+
+        await Promise.all(wipedServers.map((row) => wipeServerDatabaseWithRetry(row.url)));
+
+        const activeUrl = await DatabaseManager.getActiveServerUrl();
+        const activeRow = wipedServers.find((row) => row.url === activeUrl);
+        if (activeRow) {
+            return {
+                showDataErasedFor: {
+                    serverUrl: activeRow.url,
+                    displayName: activeRow.displayName || activeRow.url,
+                },
+            };
+        }
+        return {};
     };
 
     public removeServer = (serverUrl: string) => {
@@ -337,7 +367,36 @@ class OfflinePersistenceManagerSingleton {
 
     private firePurge = async (serverUrl: string) => {
         await setPurgeFired(serverUrl, true);
-        DeviceEventEmitter.emit(Events.EPHEMERAL_MODE_PURGE_DUE, {serverUrl});
+        this.runWipe(serverUrl);
+    };
+
+    private runWipe = async (serverUrl: string) => {
+        if (this.wipeInProgress.has(serverUrl)) {
+            return;
+        }
+        this.wipeInProgress.add(serverUrl);
+
+        try {
+            const activeUrl = await DatabaseManager.getActiveServerUrl();
+            const displayName = (await getServerDisplayName(serverUrl)) || serverUrl;
+
+            if (serverUrl === activeUrl) {
+                await resetToDataErased({serverUrl, displayName});
+            }
+
+            await DatabaseManager.updateServerWipedAt(serverUrl, Date.now());
+
+            this.removeServer(serverUrl);
+            SecurityManager.removeServer(serverUrl);
+            await WebsocketManager.invalidateClient(serverUrl);
+            NetworkManager.invalidateClient(serverUrl);
+
+            await wipeServerDatabaseWithRetry(serverUrl);
+        } catch (error) {
+            logError('OfflinePersistenceManager.runWipe', error);
+        } finally {
+            this.wipeInProgress.delete(serverUrl);
+        }
     };
 
     private getOfflineSubject = (serverUrl: string) => {

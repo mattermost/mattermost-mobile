@@ -43,5 +43,4 @@ export default keyMirror({
     CLOSE_INPUT_ACCESSORY_VIEW: null,
     EMOJI_PICKER_SEARCH_FOCUSED: null,
     FILE_REJECTED: null,
-    EPHEMERAL_MODE_PURGE_DUE: null,
 });
