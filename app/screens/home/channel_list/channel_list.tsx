@@ -5,7 +5,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, StyleSheet, ToastAndroid, View} from 'react-native';
+import {BackHandler, DeviceEventEmitter, ToastAndroid, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -13,6 +13,7 @@ import {refetchCurrentUser} from '@actions/remote/user';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import AnnouncementBanner from '@components/announcement_banner';
 import ConnectionBanner from '@components/connection_banner';
+import ConnectedGlobalClassificationBanner from '@components/global_classification_banner';
 import TeamSidebar from '@components/team_sidebar';
 import {Navigation as NavigationConstants, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -24,6 +25,7 @@ import NavigationStore from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
 import {tryRunAppReview} from '@utils/reviews';
 import {addSentryContext} from '@utils/sentry';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
@@ -49,15 +51,19 @@ type ChannelProps = {
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     content: {
         flex: 1,
         flexDirection: 'row',
     },
+    safeAreaView: {
+        flex: 1,
+        backgroundColor: theme.sidebarBg,
+    },
     flex: {
         flex: 1,
     },
-});
+}));
 
 let backPressedCount = 0;
 let backPressTimeout: NodeJS.Timeout|undefined;
@@ -74,6 +80,7 @@ const ChannelListScreen = (props: ChannelProps) => {
     const theme = useTheme();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const intl = useIntl();
+    const styles = getStyleSheet(theme);
 
     const isTablet = useIsTablet();
     const route = useRoute();
@@ -193,10 +200,11 @@ const ChannelListScreen = (props: ChannelProps) => {
         <>
             <Animated.View style={top}/>
             <SafeAreaView
-                style={styles.flex}
+                style={[styles.safeAreaView]}
                 edges={edges}
                 testID='channel_list.screen'
             >
+                <ConnectedGlobalClassificationBanner/>
                 <ConnectionBanner/>
                 {props.isLicensed &&
                     <AnnouncementBanner/>

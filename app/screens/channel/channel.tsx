@@ -17,6 +17,7 @@ import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
+import {useGlobalClassificationBanner} from '@hooks/use_global_classification_banner';
 import {useIsScreenVisible} from '@hooks/use_screen_visibility';
 import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
@@ -82,6 +83,7 @@ const Channel = ({
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
     const isVisible = useIsScreenVisible(componentId);
     const [isEmojiSearchFocused, setIsEmojiSearchFocused] = useState(false);
+    const {bannerHeight} = useGlobalClassificationBanner();
 
     const safeAreaViewEdges: Edge[] = useMemo(() => {
         if (isTablet) {
@@ -108,7 +110,7 @@ const Channel = ({
         return () => listener.remove();
     }, [serverUrl, channelId]);
 
-    const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
+    const marginTop = defaultHeight + bannerHeight + (isTablet ? 0 : -insets.top);
     useEffect(() => {
         // This is done so that the header renders
         // and the screen does not look totally blank

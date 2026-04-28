@@ -20,6 +20,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {useGlobalClassificationBanner} from '@hooks/use_global_classification_banner';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToCreateQuickChecklist, goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
@@ -135,9 +136,10 @@ const ChannelHeader = ({
     }
 
     const isDMorGM = isTypeDMorGM(channelType);
+    const {bannerHeight, BannerComponent} = useGlobalClassificationBanner();
     const contextStyle = useMemo(() => ({
-        top: defaultHeight,
-    }), [defaultHeight]);
+        top: defaultHeight + bannerHeight,
+    }), [bannerHeight, defaultHeight]);
 
     const leftComponent = useMemo(() => {
         if (isTablet || !channelId || !teamId) {
@@ -359,6 +361,7 @@ const ChannelHeader = ({
                 subtitleCompanion={subtitleCompanion}
                 title={title}
                 titleCompanion={titleCompanion}
+                classificationBanner={BannerComponent}
             />
             <View style={contextStyle}>
                 <RoundedHeaderContext/>

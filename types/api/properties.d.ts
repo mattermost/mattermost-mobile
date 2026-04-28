@@ -13,12 +13,23 @@ type PropertyValue<T = unknown> = {
     delete_at: number;
 };
 
+type PropertyFieldOption = {
+    id: string;
+    name: string;
+    color: string;
+    rank?: number;
+};
+
 type PropertyField = {
     id: string;
     group_id: string;
     name: string;
     type: string;
+    object_type: string;
     target_type: string;
+    target_id?: string;
+    linked_field_id?: string;
+    attrs?: Record<string, unknown>;
     create_at: number;
     update_at: number;
     delete_at: number;

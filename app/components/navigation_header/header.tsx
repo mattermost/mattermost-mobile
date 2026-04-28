@@ -39,6 +39,8 @@ type Props = {
     theme: Theme;
     title?: string;
     titleCompanion?: React.ReactElement;
+    topComponent?: React.ReactNode;
+    topComponentHeight?: number;
 }
 
 const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
@@ -49,12 +51,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: Platform.select({android: 'flex-start', ios: 'center'}),
     },
     container: {
-        alignItems: 'center',
         backgroundColor: theme.sidebarBg,
+        zIndex: 10,
+    },
+    headerRow: {
+        alignItems: 'center',
+        flex: 1,
         flexDirection: 'row',
         justifyContent: 'flex-start',
         paddingHorizontal: 16,
-        zIndex: 10,
     },
     subtitleContainer: {
         flexDirection: 'row',
@@ -150,6 +155,8 @@ const Header = ({
     theme,
     title,
     titleCompanion,
+    topComponent,
+    topComponentHeight = 0,
 }: Props) => {
     const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
@@ -175,9 +182,9 @@ const Header = ({
     }, [heightOffset, isLargeTitle, hasSearch]);
 
     const containerAnimatedStyle = useAnimatedStyle(() => ({
-        height: defaultHeight,
+        height: defaultHeight + topComponentHeight,
         paddingTop: insets.top,
-    }), [defaultHeight]);
+    }), [defaultHeight, topComponentHeight]);
 
     const containerStyle = useMemo(() => (
         [styles.container, containerAnimatedStyle]), [styles, containerAnimatedStyle]);
@@ -194,65 +201,67 @@ const Header = ({
 
     return (
         <Animated.View style={containerStyle}>
-            {showBackButton &&
-            <Animated.View style={styles.leftContainer}>
-                <TouchableWithFeedback
-                    borderlessRipple={true}
-                    onPress={onBackPress}
-                    rippleRadius={20}
-                    type={Platform.select({android: 'native', default: 'opacity'})}
-                    testID='navigation.header.back'
-                    hitSlop={hitSlop}
-                >
-                    <Animated.View style={styles.leftAction}>
-                        <CompassIcon
-                            size={24}
-                            name={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'})!}
-                            color={theme.sidebarHeaderTextColor}
-                        />
-                        {leftComponent}
-                    </Animated.View>
-                </TouchableWithFeedback>
-            </Animated.View>
-            }
-            <Animated.View style={[styles.titleContainer, additionalTitleStyle]}>
-                <TouchableWithFeedback
-                    disabled={!onTitlePress}
-                    onPress={onTitlePress}
-                    type='opacity'
-                >
-                    <View style={styles.centered}>
-                        {!hasSearch &&
-                        <View style={styles.titleRow}>
-                            <Animated.Text
-                                ellipsizeMode='tail'
-                                numberOfLines={1}
-                                style={[styles.title, opacity]}
-                                testID='navigation.header.title'
-                            >
-                                {title}
-                            </Animated.Text>
-                            {titleCompanion}
+            {topComponent}
+            <View style={styles.headerRow}>
+                {showBackButton &&
+                <Animated.View style={styles.leftContainer}>
+                    <TouchableWithFeedback
+                        borderlessRipple={true}
+                        onPress={onBackPress}
+                        rippleRadius={20}
+                        type={Platform.select({android: 'native', default: 'opacity'})}
+                        testID='navigation.header.back'
+                        hitSlop={hitSlop}
+                    >
+                        <Animated.View style={styles.leftAction}>
+                            <CompassIcon
+                                size={24}
+                                name={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'})!}
+                                color={theme.sidebarHeaderTextColor}
+                            />
+                            {leftComponent}
+                        </Animated.View>
+                    </TouchableWithFeedback>
+                </Animated.View>
+                }
+                <Animated.View style={[styles.titleContainer, additionalTitleStyle]}>
+                    <TouchableWithFeedback
+                        disabled={!onTitlePress}
+                        onPress={onTitlePress}
+                        type='opacity'
+                    >
+                        <View style={styles.centered}>
+                            {!hasSearch &&
+                            <View style={styles.titleRow}>
+                                <Animated.Text
+                                    ellipsizeMode='tail'
+                                    numberOfLines={1}
+                                    style={[styles.title, opacity]}
+                                    testID='navigation.header.title'
+                                >
+                                    {title}
+                                </Animated.Text>
+                                {titleCompanion}
+                            </View>
+                            }
+                            {!isLargeTitle && Boolean(subtitle || subtitleCompanion) &&
+                            <View style={styles.subtitleContainer}>
+                                <Text
+                                    ellipsizeMode='tail'
+                                    numberOfLines={1}
+                                    style={styles.subtitle}
+                                    testID='navigation.header.subtitle'
+                                >
+                                    {subtitle}
+                                </Text>
+                                {subtitleCompanion}
+                            </View>
+                            }
                         </View>
-                        }
-                        {!isLargeTitle && Boolean(subtitle || subtitleCompanion) &&
-                        <View style={styles.subtitleContainer}>
-                            <Text
-                                ellipsizeMode='tail'
-                                numberOfLines={1}
-                                style={styles.subtitle}
-                                testID='navigation.header.subtitle'
-                            >
-                                {subtitle}
-                            </Text>
-                            {subtitleCompanion}
-                        </View>
-                        }
-                    </View>
-                </TouchableWithFeedback>
-            </Animated.View>
-            <Animated.View style={styles.rightContainer}>
-                {Boolean(rightButtons?.length) &&
+                    </TouchableWithFeedback>
+                </Animated.View>
+                <Animated.View style={styles.rightContainer}>
+                    {Boolean(rightButtons?.length) &&
                 rightButtons?.map((r) => (
                     <TouchableWithFeedback
                         key={r.iconName}
@@ -276,8 +285,9 @@ const Header = ({
                         </View>
                     </TouchableWithFeedback>
                 ))
-                }
-            </Animated.View>
+                    }
+                </Animated.View>
+            </View>
         </Animated.View>
     );
 };

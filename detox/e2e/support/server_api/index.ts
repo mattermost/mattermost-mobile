@@ -9,6 +9,7 @@ import PlaybooksHelpers from './playbooks_helpers';
 import Plugin, {DemoPlugin} from './plugin';
 import Post from './post';
 import Preference from './preference';
+import Properties from './properties';
 import Setup from './setup';
 import Status from './status';
 import System from './system';
@@ -25,6 +26,7 @@ export {
     Plugin,
     Post,
     Preference,
+    Properties,
     Setup,
     Status,
     System,

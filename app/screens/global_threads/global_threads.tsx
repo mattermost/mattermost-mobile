@@ -16,6 +16,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
+import {useGlobalClassificationBanner} from '@hooks/use_global_classification_banner';
 import useTabs, {type TabDefinition} from '@hooks/use_tabs';
 import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
@@ -52,6 +53,7 @@ const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Prop
     const flatListRef = useRef<FlatList<ThreadModel>>(null);
 
     const defaultHeight = useDefaultHeaderHeight();
+    const {bannerHeight, BannerComponent} = useGlobalClassificationBanner();
 
     const tabs = useMemo<Array<TabDefinition<GlobalThreadsTab>>>(() => [
         {
@@ -79,9 +81,9 @@ const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Prop
     const mounted = useRef(false);
 
     const containerStyle = useMemo(() => {
-        const marginTop = defaultHeight;
+        const marginTop = defaultHeight + bannerHeight;
         return {flex: 1, marginTop};
-    }, [defaultHeight]);
+    }, [defaultHeight, bannerHeight]);
 
     const headerLeftComponent = useMemo(() => {
         if (isTablet) {
@@ -100,8 +102,8 @@ const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Prop
     }, [serverUrl, tab]);
 
     const contextStyle = useMemo(() => ({
-        top: defaultHeight,
-    }), [defaultHeight]);
+        top: defaultHeight + bannerHeight,
+    }), [defaultHeight, bannerHeight]);
 
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();
@@ -129,6 +131,7 @@ const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Prop
                     })
                 }
                 leftComponent={headerLeftComponent}
+                classificationBanner={BannerComponent}
             />
             <View style={contextStyle}>
                 <RoundedHeaderContext/>
