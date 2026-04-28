@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
+import {AppState, View} from 'react-native';
 
 import {reconnectErasedServer} from '@actions/local/ephemeral_mode/reconnect';
 import Button from '@components/button';
@@ -69,6 +69,15 @@ const DataErased = ({serverUrl, displayName}: Props) => {
     const [isReconnecting, setIsReconnecting] = useState(false);
     const [hasError, setHasError] = useState(false);
 
+    useEffect(() => {
+        const sub = AppState.addEventListener('change', (state) => {
+            if (state === 'active') {
+                setHasError(false);
+            }
+        });
+        return () => sub.remove();
+    }, []);
+
     const onReconnect = usePreventDoubleTap(useCallback(async () => {
         setIsReconnecting(true);
         setHasError(false);
@@ -97,7 +106,7 @@ const DataErased = ({serverUrl, displayName}: Props) => {
             />
             <FormattedText
                 id='mobile.ephemeralMode.dataErased.body'
-                defaultMessage="Your organization's security policy removed local data for {displayName} after a prolonged offline period. Reconnect to restore your data."
+                defaultMessage="Your organization's security policy removed cached data for {displayName} after a prolonged offline period. Reconnect to restore your data."
                 values={{displayName}}
                 style={styles.description}
             />
