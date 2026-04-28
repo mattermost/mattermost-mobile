@@ -1,12 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import NetInfo from '@react-native-community/netinfo';
+
 import {upgradeEntry} from '@actions/remote/entry';
 import {Launch} from '@constants';
 import DatabaseManager from '@database/manager';
-import {removePreauthSecret, removeServerCredentials} from '@init/credentials';
+import {getServerCredentials, removePreauthSecret, removeServerCredentials} from '@init/credentials';
 import {relaunchApp} from '@init/launch';
+import NetworkManager from '@managers/network_manager';
 import OfflinePersistenceManager from '@managers/offline_persistence_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {resetToHome} from '@screens/navigation';
 import {isErrorWithStatusCode} from '@utils/errors';
 
@@ -16,6 +20,21 @@ type Result = {error?: unknown; needsReauth?: boolean};
 
 export const reconnectErasedServer = async (serverUrl: string, displayName: string): Promise<Result> => {
     try {
+        const netInfo = await NetInfo.fetch();
+        if (!netInfo.isConnected) {
+            return {error: 'no_connection'};
+        }
+
+        const credentials = await getServerCredentials(serverUrl);
+        if (!credentials) {
+            return {error: 'no_credentials'};
+        }
+
+        // The wipe invalidated both the Network and WebSocket clients for this server;
+        // upgradeEntry needs both to fetch config and open the socket.
+        await NetworkManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
+        await WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
+
         await DatabaseManager.createServerDatabase({
             config: {dbName: serverUrl, serverUrl, identifier: '', displayName},
         });
@@ -30,6 +49,7 @@ export const reconnectErasedServer = async (serverUrl: string, displayName: stri
                 relaunchApp({launchType: Launch.AddServer, serverUrl, displayName});
                 return {needsReauth: true};
             }
+            await DatabaseManager.wipeServerData(serverUrl);
             return {error};
         }
 

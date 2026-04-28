@@ -40,7 +40,7 @@ class OfflinePersistenceManagerSingleton {
 
     public removeServer = (serverUrl: string) => {
         if (this.activeServers.has(serverUrl)) {
-            this.deactivate(serverUrl);
+            this.deactivate(serverUrl, {silent: true});
         }
         this.configSubscriptions[serverUrl]?.unsubscribe();
         delete this.configSubscriptions[serverUrl];
@@ -132,14 +132,17 @@ class OfflinePersistenceManagerSingleton {
         this.evaluateServer(serverUrl, true);
     };
 
-    private deactivate = (serverUrl: string) => {
+    private deactivate = (serverUrl: string, {silent = false}: {silent?: boolean} = {}) => {
         this.activeServers.delete(serverUrl);
         this.wsSubscriptions[serverUrl]?.unsubscribe();
         delete this.wsSubscriptions[serverUrl];
         this.clearDisconnectionTimer(serverUrl);
         this.clearPurgeTimer(serverUrl);
-        this.flagOffline(serverUrl, false);
-        setDisconnectedSince(serverUrl, null);
+        if (!silent) {
+            // Server is still alive (feature disabled at runtime); flush offline state.
+            this.flagOffline(serverUrl, false);
+            setDisconnectedSince(serverUrl, null);
+        }
         this.maybeRemoveAppStateListener();
     };
 
