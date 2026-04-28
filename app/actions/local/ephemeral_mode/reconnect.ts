@@ -6,6 +6,7 @@ import {Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {removePreauthSecret, removeServerCredentials} from '@init/credentials';
 import {relaunchApp} from '@init/launch';
+import OfflinePersistenceManager from '@managers/offline_persistence_manager';
 import {resetToHome} from '@screens/navigation';
 import {isErrorWithStatusCode} from '@utils/errors';
 
@@ -33,6 +34,7 @@ export const reconnectErasedServer = async (serverUrl: string, displayName: stri
         }
 
         await DatabaseManager.updateServerWipedAt(serverUrl, 0);
+        OfflinePersistenceManager.addServer(serverUrl);
         await resetToHome({launchType: Launch.Normal, serverUrl, coldStart: false});
         return {};
     } catch (error) {

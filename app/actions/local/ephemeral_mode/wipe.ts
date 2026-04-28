@@ -14,7 +14,7 @@ export const wipeServerDatabaseWithRetry = async (serverUrl: string): Promise<{s
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         try {
             // eslint-disable-next-line no-await-in-loop
-            await DatabaseManager.deleteServerDatabase(serverUrl);
+            await DatabaseManager.wipeServerData(serverUrl);
             logInfo('EphemeralModeWipeManager: wipe complete', serverUrl, `attempts=${attempt + 1}`);
             return {success: true};
         } catch (error) {

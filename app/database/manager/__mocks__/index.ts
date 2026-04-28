@@ -273,6 +273,14 @@ class DatabaseManagerSingleton {
         }
     };
 
+    public wipeServerData = async (serverUrl: string): Promise<void> => {
+        const server = await this.getServer(serverUrl);
+        if (server) {
+            delete this.serverDatabases[serverUrl];
+            await this.deleteServerDatabaseFiles(serverUrl);
+        }
+    };
+
     public deleteServerDatabase = async (serverUrl: string): Promise<void> => {
         const database = this.appDatabase?.database;
         if (database) {

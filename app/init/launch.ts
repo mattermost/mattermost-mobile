@@ -26,6 +26,7 @@ import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 import {removeProtocol} from '@utils/url';
 
+import type {ReconcileResult} from '@managers/ephemeral_mode_wipe_manager';
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 /**

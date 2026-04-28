@@ -23,7 +23,7 @@ describe('wipeServerDatabaseWithRetry', () => {
     });
 
     it('succeeds on first attempt', async () => {
-        const deleteSpy = jest.spyOn(DatabaseManager, 'deleteServerDatabase').mockResolvedValue();
+        const deleteSpy = jest.spyOn(DatabaseManager, 'wipeServerData').mockResolvedValue();
 
         const result = await wipeServerDatabaseWithRetry(serverUrl);
 
@@ -37,7 +37,7 @@ describe('wipeServerDatabaseWithRetry', () => {
     });
 
     it('gives up after exhausting retries', async () => {
-        const deleteSpy = jest.spyOn(DatabaseManager, 'deleteServerDatabase').mockRejectedValue(new Error('fs broken'));
+        const deleteSpy = jest.spyOn(DatabaseManager, 'wipeServerData').mockRejectedValue(new Error('fs broken'));
 
         const wipePromise = wipeServerDatabaseWithRetry(serverUrl);
 

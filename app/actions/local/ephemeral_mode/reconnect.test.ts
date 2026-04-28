@@ -6,6 +6,7 @@ import {Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {removePreauthSecret, removeServerCredentials} from '@init/credentials';
 import {relaunchApp} from '@init/launch';
+import OfflinePersistenceManager from '@managers/offline_persistence_manager';
 import {resetToHome} from '@screens/navigation';
 
 import {reconnectErasedServer} from './reconnect';
@@ -19,6 +20,10 @@ jest.mock('@init/credentials', () => ({
 }));
 jest.mock('@init/launch', () => ({
     relaunchApp: jest.fn(),
+}));
+jest.mock('@managers/offline_persistence_manager', () => ({
+    __esModule: true,
+    default: {addServer: jest.fn()},
 }));
 jest.mock('@screens/navigation', () => ({
     resetToHome: jest.fn(),
@@ -52,6 +57,7 @@ describe('reconnectErasedServer', () => {
         });
         expect(upgradeEntry).toHaveBeenCalledWith(serverUrl);
         expect(updateWipedAtSpy).toHaveBeenCalledWith(serverUrl, 0);
+        expect(OfflinePersistenceManager.addServer).toHaveBeenCalledWith(serverUrl);
         expect(resetToHome).toHaveBeenCalledWith(expect.objectContaining({serverUrl}));
         expect(relaunchApp).not.toHaveBeenCalled();
         expect(result).toEqual({});
