@@ -660,6 +660,17 @@ describe('OfflinePersistenceManager', () => {
             expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(serverA);
             expect(NetworkManager.invalidateClient).toHaveBeenCalledWith(serverA);
         });
+
+        it('leaves the wiped server with an empty in-memory database so contexts can still mount', async () => {
+            jest.mocked(wipeServerDatabaseWithRetry).mockImplementationOnce(async (url: string) => {
+                await DatabaseManager.wipeServerData(url);
+                return {success: true};
+            });
+
+            await triggerWipeForServerA();
+
+            expect(DatabaseManager.serverDatabases[serverA]).toBeDefined();
+        });
     });
 
     describe('reconcile', () => {

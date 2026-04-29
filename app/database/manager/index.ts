@@ -376,10 +376,19 @@ class DatabaseManagerSingleton {
     */
     public wipeServerData = async (serverUrl: string): Promise<void> => {
         const server = await getServer(serverUrl);
-        if (server) {
-            delete this.serverDatabases[serverUrl];
-            await this.deleteServerDatabaseFiles(serverUrl);
+        if (!server) {
+            return;
         }
+        delete this.serverDatabases[serverUrl];
+        await this.deleteServerDatabaseFiles(serverUrl);
+        await this.createServerDatabase({
+            config: {
+                dbName: serverUrl,
+                displayName: server.displayName,
+                identifier: '',
+                serverUrl,
+            },
+        });
     };
 
     /**

@@ -6,12 +6,26 @@ import React from 'react';
 import {AppState, type AppStateStatus} from 'react-native';
 
 import {reconnectErasedServer} from '@actions/local/ephemeral_mode/reconnect';
+import {subscribeAllServers} from '@database/subscription/servers';
+import {subscribeUnreadAndMentionsByServer} from '@database/subscription/unreads';
+import {bottomSheet} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import DataErased from './index';
 
+import type ServersModel from '@typings/database/models/app/servers';
+
 jest.mock('@actions/local/ephemeral_mode/reconnect', () => ({
     reconnectErasedServer: jest.fn(),
+}));
+jest.mock('@screens/navigation', () => ({
+    bottomSheet: jest.fn(),
+}));
+jest.mock('@database/subscription/servers', () => ({
+    subscribeAllServers: jest.fn(),
+}));
+jest.mock('@database/subscription/unreads', () => ({
+    subscribeUnreadAndMentionsByServer: jest.fn(),
 }));
 
 describe('DataErased', () => {
@@ -51,7 +65,7 @@ describe('DataErased', () => {
         fireEvent.press(getByTestId('data_erased.reconnect.button'));
 
         expect(reconnectErasedServer).toHaveBeenCalledTimes(1);
-        expect(reconnectErasedServer).toHaveBeenCalledWith(serverUrl, displayName);
+        expect(reconnectErasedServer).toHaveBeenCalledWith(serverUrl);
 
         // Disabled / loading state surfaces while the promise is pending.
         await waitFor(() => {
@@ -109,5 +123,73 @@ describe('DataErased', () => {
         fireEvent.press(getByTestId('data_erased.reconnect.button'));
 
         expect(await findByText(/Couldn't reach the server/)).toBeTruthy();
+    });
+
+    it('opens the servers bottom sheet when the icon is pressed after servers load', async () => {
+        let observer: ((servers: ServersModel[]) => void) | undefined;
+        (subscribeAllServers as jest.Mock).mockImplementation((cb) => {
+            observer = cb;
+            return {unsubscribe: jest.fn()};
+        });
+
+        const {getByTestId} = renderWithIntlAndTheme(
+            <DataErased
+                serverUrl={serverUrl}
+                displayName={displayName}
+            />,
+        );
+
+        await act(async () => {
+            observer?.([
+                {url: serverUrl, displayName, lastActiveAt: 0} as ServersModel,
+                {url: 'https://other.test', displayName: 'Other', lastActiveAt: 1} as ServersModel,
+            ]);
+        });
+
+        fireEvent.press(getByTestId('data_erased.servers.server_icon'));
+
+        expect(bottomSheet).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not open the bottom sheet when no servers have been observed yet', () => {
+        (subscribeAllServers as jest.Mock).mockReturnValue({unsubscribe: jest.fn()});
+
+        const {getByTestId} = renderWithIntlAndTheme(
+            <DataErased
+                serverUrl={serverUrl}
+                displayName={displayName}
+            />,
+        );
+
+        fireEvent.press(getByTestId('data_erased.servers.server_icon'));
+
+        expect(bottomSheet).not.toHaveBeenCalled();
+    });
+
+    it('subscribes to unreads only for other active servers, never the wiped one', async () => {
+        let observer: ((servers: ServersModel[]) => void) | undefined;
+        (subscribeAllServers as jest.Mock).mockImplementation((cb) => {
+            observer = cb;
+            return {unsubscribe: jest.fn()};
+        });
+        (subscribeUnreadAndMentionsByServer as jest.Mock).mockReturnValue({unsubscribe: jest.fn()});
+
+        renderWithIntlAndTheme(
+            <DataErased
+                serverUrl={serverUrl}
+                displayName={displayName}
+            />,
+        );
+
+        await act(async () => {
+            observer?.([
+                {url: serverUrl, displayName, lastActiveAt: 1} as ServersModel,
+                {url: 'https://other.test', displayName: 'Other', lastActiveAt: 1} as ServersModel,
+                {url: 'https://signed-out.test', displayName: 'Signed-out', lastActiveAt: 0} as ServersModel,
+            ]);
+        });
+
+        expect(subscribeUnreadAndMentionsByServer).toHaveBeenCalledTimes(1);
+        expect(subscribeUnreadAndMentionsByServer).toHaveBeenCalledWith('https://other.test', expect.any(Function));
     });
 });

@@ -11,6 +11,7 @@ import {relaunchApp} from '@init/launch';
 import NetworkManager from '@managers/network_manager';
 import OfflinePersistenceManager from '@managers/offline_persistence_manager';
 import WebsocketManager from '@managers/websocket_manager';
+import {getServerDisplayName} from '@queries/app/servers';
 import {resetToHome} from '@screens/navigation';
 import {isErrorWithStatusCode} from '@utils/errors';
 
@@ -18,7 +19,7 @@ const HTTP_UNAUTHORIZED = 401;
 
 type Result = {error?: unknown; needsReauth?: boolean};
 
-export const reconnectErasedServer = async (serverUrl: string, displayName: string): Promise<Result> => {
+export const reconnectErasedServer = async (serverUrl: string): Promise<Result> => {
     try {
         const netInfo = await NetInfo.fetch();
         if (!netInfo.isConnected) {
@@ -35,14 +36,11 @@ export const reconnectErasedServer = async (serverUrl: string, displayName: stri
         await NetworkManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
         await WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
 
-        await DatabaseManager.createServerDatabase({
-            config: {dbName: serverUrl, serverUrl, identifier: '', displayName},
-        });
-
         const {error} = await upgradeEntry(serverUrl);
 
         if (error) {
             if (isErrorWithStatusCode(error) && error.status_code === HTTP_UNAUTHORIZED) {
+                const displayName = (await getServerDisplayName(serverUrl)) || serverUrl;
                 await DatabaseManager.updateServerWipedAt(serverUrl, 0);
                 await removeServerCredentials(serverUrl);
                 await removePreauthSecret(serverUrl);

@@ -391,7 +391,7 @@ const ServerItem = ({
                                     >
                                         {displayName}
                                     </Text>
-                                    {server.lastActiveAt > 0 && pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
+                                    {server.lastActiveAt > 0 && !server.wipedAt && pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
                                         <CompassIcon
                                             name='alert-outline'
                                             color={theme.errorTextColor}
@@ -421,7 +421,7 @@ const ServerItem = ({
                     </RectButton>
                 </View>
             </Swipeable>
-            {Boolean(pushAlertText && pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
+            {Boolean(pushAlertText && !server.wipedAt && pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
                 <Text style={styles.pushAlertText}>
                     {pushAlertText}
                 </Text>
