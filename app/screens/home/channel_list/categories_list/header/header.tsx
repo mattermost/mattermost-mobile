@@ -28,7 +28,7 @@ import {SEPARATOR_HEIGHT} from './plus_menu/separator';
 import TeamMenu from './team_menu';
 
 const PLUS_BUTTON_SIZE = 28;
-const CHEVRON_SIZE = 18;
+const CHEVRON_SIZE = 24;
 
 type Props = {
     canCreateChannels: boolean;
