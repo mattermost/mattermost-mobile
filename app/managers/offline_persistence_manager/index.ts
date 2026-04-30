@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {AppState, type AppStateStatus, type NativeEventSubscription} from 'react-native';
-import {BehaviorSubject, combineLatest, from, of as of$, type Observable, type Subscription} from 'rxjs';
-import {distinctUntilChanged, skip, switchMap} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, type Subscription} from 'rxjs';
+import {distinctUntilChanged, skip} from 'rxjs/operators';
 
 import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
 import {clearEphemeralModeState, setDisconnectedSince, setLastSeenTime, setOfflineSince} from '@actions/local/systems';
@@ -26,6 +26,18 @@ class OfflinePersistenceManagerSingleton {
     private thresholdMs: Record<string, number> = {};
     private purgeThresholdMs: Record<string, number> = {};
     private wipeInProgress = new Set<string>();
+    private evalQueue: Record<string, Promise<unknown>> = {};
+
+    // Serialise evaluations per server so concurrent emissions (config, WS state,
+    // AppState) cannot interleave their read-modify-write of persisted timer state.
+    private enqueueEval = (serverUrl: string, fn: () => Promise<void>): Promise<void> => {
+        const previous = this.evalQueue[serverUrl] ?? Promise.resolve();
+        const next = previous.then(fn).catch((error) => {
+            logError('OfflinePersistenceManager.enqueueEval', error);
+        });
+        this.evalQueue[serverUrl] = next;
+        return next;
+    };
 
     public init = async (serverCredentials: ServerCredential[]) => {
         for (const url of Object.keys(this.configSubscriptions)) {
@@ -54,17 +66,9 @@ class OfflinePersistenceManagerSingleton {
         this.configSubscriptions[serverUrl]?.unsubscribe();
         delete this.configSubscriptions[serverUrl];
         delete this.thresholdMs[serverUrl];
+        delete this.purgeThresholdMs[serverUrl];
         delete this.offlineSubjects[serverUrl];
-    };
-
-    public observeOffline = (serverUrl: string): Observable<boolean> => {
-        return this.getOfflineSubject(serverUrl).asObservable().pipe(distinctUntilChanged());
-    };
-
-    public observeActiveServerOffline = (): Observable<boolean> => {
-        return from(DatabaseManager.getActiveServerUrl()).pipe(
-            switchMap((url) => (url ? this.observeOffline(url) : of$(false))),
-        );
+        delete this.evalQueue[serverUrl];
     };
 
     public isOffline = (serverUrl: string): boolean => {
@@ -115,10 +119,12 @@ class OfflinePersistenceManagerSingleton {
             return;
         }
         if (nextEnabled && wasActive) {
-            this.evaluateServer(serverUrl);
-            if (this.isOffline(serverUrl)) {
-                this.evaluatePurge(serverUrl);
-            }
+            this.enqueueEval(serverUrl, async () => {
+                await this.evaluateServer(serverUrl);
+                if (this.isOffline(serverUrl)) {
+                    await this.evaluatePurge(serverUrl);
+                }
+            });
             return;
         }
 
@@ -135,10 +141,10 @@ class OfflinePersistenceManagerSingleton {
         this.wsSubscriptions[serverUrl] = WebsocketManager.observeWebsocketState(serverUrl).pipe(
             skip(1),
         ).subscribe(() => {
-            this.evaluateServer(serverUrl);
+            this.enqueueEval(serverUrl, () => this.evaluateServer(serverUrl));
         });
 
-        this.evaluateServer(serverUrl, true);
+        this.enqueueEval(serverUrl, () => this.evaluateServer(serverUrl, true));
     };
 
     private deactivate = (serverUrl: string, {silent = false}: {silent?: boolean} = {}) => {
@@ -160,10 +166,12 @@ class OfflinePersistenceManagerSingleton {
             return;
         }
         for (const url of this.activeServers) {
-            this.evaluateServer(url);
-            if (this.isOffline(url)) {
-                this.evaluatePurge(url);
-            }
+            this.enqueueEval(url, async () => {
+                await this.evaluateServer(url);
+                if (this.isOffline(url)) {
+                    await this.evaluatePurge(url);
+                }
+            });
         }
     };
 

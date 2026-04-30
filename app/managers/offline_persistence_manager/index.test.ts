@@ -380,31 +380,6 @@ describe('OfflinePersistenceManager', () => {
         expect(appStateRemoveSpies[0]).toHaveBeenCalled();
     });
 
-    it('removing a server while it is flagged offline does not flip the offline subject', async () => {
-        await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
-        wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
-
-        await OfflinePersistenceManager.init([credsA]);
-        await advanceTimers(0);
-
-        const emissions: boolean[] = [];
-        const sub = OfflinePersistenceManager.observeOffline(serverA).subscribe((v) => emissions.push(v));
-
-        setWs(serverA, 'not_connected');
-        await advanceTimers(0);
-        await advanceTimers(10_000);
-
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(true);
-        expect(emissions).toEqual([false, true]);
-
-        OfflinePersistenceManager.removeServer(serverA);
-        await advanceTimers(0);
-
-        expect(emissions).toEqual([false, true]);
-
-        sub.unsubscribe();
-    });
-
     it('removing a server tears down its subscriptions and ignores further websocket transitions', async () => {
         await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
         wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');

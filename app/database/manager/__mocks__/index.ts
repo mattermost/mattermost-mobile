@@ -280,7 +280,7 @@ class DatabaseManagerSingleton {
             await this.deleteServerDatabaseFiles(serverUrl);
             await this.createServerDatabase({
                 config: {
-                    dbName: serverUrl,
+                    dbName: urlSafeBase64Encode(serverUrl),
                     displayName: server.displayName,
                     identifier: '',
                     serverUrl,

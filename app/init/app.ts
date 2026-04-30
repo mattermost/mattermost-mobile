@@ -42,8 +42,8 @@ export async function initialize() {
 
         await DatabaseManager.init(serverUrls);
         await NetworkManager.init(serverCredentials);
-        // MEM init runs before WS init so any pending wipes complete before
-        // WebSocket clients start populating server databases.
+        // OfflinePersistenceManager init runs before WS init so any pending wipes
+        // complete before WebSocket clients start populating server databases.
         await OfflinePersistenceManager.init(serverCredentials);
         await WebsocketManager.init(serverCredentials);
     }

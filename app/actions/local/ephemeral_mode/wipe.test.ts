@@ -30,8 +30,8 @@ describe('wipeServerDatabaseWithRetry', () => {
         expect(result).toEqual({success: true});
         expect(deleteSpy).toHaveBeenCalledTimes(1);
         expect(deleteSpy).toHaveBeenCalledWith(serverUrl);
-        expect(logInfo).toHaveBeenCalledWith('EphemeralModeWipeManager: wipe start', serverUrl);
-        expect(logInfo).toHaveBeenCalledWith('EphemeralModeWipeManager: wipe complete', serverUrl, 'attempts=1');
+        expect(logInfo).toHaveBeenCalledWith('wipeServerDatabaseWithRetry: wipe start', serverUrl);
+        expect(logInfo).toHaveBeenCalledWith('wipeServerDatabaseWithRetry: wipe complete', serverUrl, 'attempts=1');
         expect(logWarning).not.toHaveBeenCalled();
         expect(logError).not.toHaveBeenCalled();
     });
@@ -55,6 +55,6 @@ describe('wipeServerDatabaseWithRetry', () => {
         expect(result).toEqual({success: false});
         expect(deleteSpy).toHaveBeenCalledTimes(6);
         expect(logWarning).toHaveBeenCalledTimes(6);
-        expect(logError).toHaveBeenCalledWith('EphemeralModeWipeManager: wipe exhausted retries', serverUrl);
+        expect(logError).toHaveBeenCalledWith('wipeServerDatabaseWithRetry: wipe exhausted retries', serverUrl);
     });
 });

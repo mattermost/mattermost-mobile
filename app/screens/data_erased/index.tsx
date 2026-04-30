@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {AppState, Dimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -101,14 +101,14 @@ const DataErased = ({serverUrl, displayName}: Props) => {
     const [hasError, setHasError] = useState(false);
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
 
-    useEffect(() => {
+    useDidMount(() => {
         const sub = AppState.addEventListener('change', (state) => {
             if (state === 'active') {
                 setHasError(false);
             }
         });
         return () => sub.remove();
-    }, []);
+    });
 
     const updateTotal = () => {
         let unread = false;

@@ -9,16 +9,16 @@ const RETRY_TIME = 1000;
 const MAX_RETRIES = 5;
 
 export const wipeServerDatabaseWithRetry = async (serverUrl: string): Promise<{success: boolean}> => {
-    logInfo('EphemeralModeWipeManager: wipe start', serverUrl);
+    logInfo('wipeServerDatabaseWithRetry: wipe start', serverUrl);
 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         try {
             // eslint-disable-next-line no-await-in-loop
             await DatabaseManager.wipeServerData(serverUrl);
-            logInfo('EphemeralModeWipeManager: wipe complete', serverUrl, `attempts=${attempt + 1}`);
+            logInfo('wipeServerDatabaseWithRetry: wipe complete', serverUrl, `attempts=${attempt + 1}`);
             return {success: true};
         } catch (error) {
-            logWarning('EphemeralModeWipeManager: wipe attempt failed', serverUrl, `attempt=${attempt + 1}`, getFullErrorMessage(error));
+            logWarning('wipeServerDatabaseWithRetry: wipe attempt failed', serverUrl, `attempt=${attempt + 1}`, getFullErrorMessage(error));
             if (attempt < MAX_RETRIES) {
                 // eslint-disable-next-line no-await-in-loop
                 await new Promise((resolve) => setTimeout(resolve, RETRY_TIME));
@@ -26,6 +26,6 @@ export const wipeServerDatabaseWithRetry = async (serverUrl: string): Promise<{s
         }
     }
 
-    logError('EphemeralModeWipeManager: wipe exhausted retries', serverUrl);
+    logError('wipeServerDatabaseWithRetry: wipe exhausted retries', serverUrl);
     return {success: false};
 };
