@@ -7,10 +7,8 @@ import {BehaviorSubject} from 'rxjs';
 import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import NetworkManager from '@managers/network_manager';
-import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {getServerDisplayName, getServersWithWipedAt} from '@queries/app/servers';
+import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {resetToDataErased} from '@screens/navigation';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
@@ -26,21 +24,15 @@ jest.mock('@managers/websocket_manager', () => ({
     default: {
         observeWebsocketState: jest.fn(),
         isConnected: jest.fn(),
-        invalidateClient: jest.fn().mockResolvedValue(undefined),
     },
 }));
-jest.mock('@managers/network_manager', () => ({
-    __esModule: true,
-    default: {invalidateClient: jest.fn()},
-}));
-jest.mock('@managers/security_manager', () => ({
-    __esModule: true,
-    default: {removeServer: jest.fn()},
-}));
-jest.mock('@queries/app/servers', () => ({
-    getServerDisplayName: jest.fn(),
-    getServersWithWipedAt: jest.fn().mockResolvedValue([]),
-}));
+jest.mock('@queries/app/servers', () => {
+    const actual = jest.requireActual('@queries/app/servers');
+    return {
+        getServer: jest.fn(actual.getServer),
+        getServerDisplayName: jest.fn(),
+    };
+});
 jest.mock('@screens/navigation', () => ({
     resetToDataErased: jest.fn(),
 }));
@@ -66,7 +58,6 @@ describe('OfflinePersistenceManager', () => {
             disconnectedSince?: number;
             offlineSince?: number;
             lastSeenTime?: number;
-            purgeFired?: boolean;
         },
     ) => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(url);
@@ -95,9 +86,6 @@ describe('OfflinePersistenceManager', () => {
         if (opts.lastSeenTime !== undefined) {
             systems.push({id: SYSTEM_IDENTIFIERS.LAST_SEEN_TIME, value: opts.lastSeenTime});
         }
-        if (opts.purgeFired !== undefined) {
-            systems.push({id: SYSTEM_IDENTIFIERS.PURGE_FIRED, value: opts.purgeFired});
-        }
         if (systems.length) {
             await operator.handleSystem({systems, prepareRecordsOnly: false});
         }
@@ -116,7 +104,6 @@ describe('OfflinePersistenceManager', () => {
     const getPersistedSince = (url: string) => getPersistedValue<number>(url, SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE);
     const getPersistedOfflineSince = (url: string) => getPersistedValue<number>(url, SYSTEM_IDENTIFIERS.OFFLINE_SINCE);
     const getPersistedLastSeen = (url: string) => getPersistedValue<number>(url, SYSTEM_IDENTIFIERS.LAST_SEEN_TIME);
-    const getPersistedPurgeFired = (url: string) => getPersistedValue<boolean>(url, SYSTEM_IDENTIFIERS.PURGE_FIRED);
 
     const setWs = (url: string, state: WebsocketConnectedState) => {
         if (wsStates[url]) {
@@ -476,7 +463,6 @@ describe('OfflinePersistenceManager', () => {
 
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledTimes(1);
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
-            expect(await getPersistedPurgeFired(serverA)).toBe(true);
         });
 
         it('firing the purge is synchronous when the threshold is zero', async () => {
@@ -510,7 +496,6 @@ describe('OfflinePersistenceManager', () => {
 
             expect(await getPersistedOfflineSince(serverA)).toBeUndefined();
             expect(await getPersistedLastSeen(serverA)).toBeUndefined();
-            expect(await getPersistedPurgeFired(serverA)).toBeUndefined();
 
             await advanceTimers(ONE_HOUR_MS);
             expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
@@ -567,7 +552,7 @@ describe('OfflinePersistenceManager', () => {
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledTimes(1);
         });
 
-        it('purge_fired prevents re-firing on subsequent foregrounds', async () => {
+        it('a foreground after the wipe does not re-fire it', async () => {
             await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
             wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
@@ -610,7 +595,7 @@ describe('OfflinePersistenceManager', () => {
         };
 
         beforeEach(() => {
-            updateWipedAtSpy = jest.spyOn(DatabaseManager, 'updateServerWipedAt').mockResolvedValue(undefined);
+            updateWipedAtSpy = jest.spyOn(DatabaseManager, 'updateServerWipedAt');
             getActiveServerUrlSpy = jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverA);
             jest.mocked(getServerDisplayName).mockResolvedValue(displayName);
         });
@@ -644,21 +629,13 @@ describe('OfflinePersistenceManager', () => {
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
         });
 
-        it('marks wipedAt with a positive timestamp so boot reconcile finds it', async () => {
+        it('marks wipedAt with a positive timestamp so boot wipe-resumption finds it', async () => {
             await triggerWipeForServerA();
 
             expect(updateWipedAtSpy).toHaveBeenCalledTimes(1);
             const [calledUrl, calledValue] = updateWipedAtSpy.mock.calls[0];
             expect(calledUrl).toBe(serverA);
             expect(calledValue).toBeGreaterThan(0);
-        });
-
-        it('invalidates websocket and network clients and clears security state', async () => {
-            await triggerWipeForServerA();
-
-            expect(SecurityManager.removeServer).toHaveBeenCalledWith(serverA);
-            expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(serverA);
-            expect(NetworkManager.invalidateClient).toHaveBeenCalledWith(serverA);
         });
 
         it('leaves the wiped server with an empty in-memory database so contexts can still mount', async () => {
@@ -673,48 +650,27 @@ describe('OfflinePersistenceManager', () => {
         });
     });
 
-    describe('reconcile', () => {
-        const otherUrl = 'https://other.test';
-        const displayName = 'My Server';
-        let getActiveServerUrlSpy: jest.SpyInstance;
+    describe('init wipe-resumption', () => {
+        it('re-runs the wipe for credentials whose server row is marked with wipedAt > 0', async () => {
+            jest.mocked(getServer).mockImplementation(async (url: string) => {
+                if (url === serverA) {
+                    return {url: serverA, wipedAt: 123} as ServersModel;
+                }
+                return {url, wipedAt: 0} as ServersModel;
+            });
 
-        beforeEach(() => {
-            getActiveServerUrlSpy = jest.spyOn(DatabaseManager, 'getActiveServerUrl');
-        });
-
-        it('returns empty when no server is marked for wipe', async () => {
-            jest.mocked(getServersWithWipedAt).mockResolvedValue([]);
-
-            const result = await OfflinePersistenceManager.reconcile();
-
-            expect(result).toEqual({});
-            expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
-        });
-
-        it('re-runs the wipe for every server marked with wipedAt > 0', async () => {
-            jest.mocked(getServersWithWipedAt).mockResolvedValue([
-                {url: serverA, displayName} as ServersModel,
-                {url: otherUrl, displayName: 'Other'} as ServersModel,
-            ]);
-            getActiveServerUrlSpy.mockResolvedValue(undefined);
-
-            await OfflinePersistenceManager.reconcile();
+            await OfflinePersistenceManager.init([credsA, credsB]);
 
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
-            expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(otherUrl);
-            expect(wipeServerDatabaseWithRetry).toHaveBeenCalledTimes(2);
+            expect(wipeServerDatabaseWithRetry).toHaveBeenCalledTimes(1);
         });
 
-        it('returns showDataErasedFor only for the active server', async () => {
-            jest.mocked(getServersWithWipedAt).mockResolvedValue([
-                {url: serverA, displayName} as ServersModel,
-                {url: otherUrl, displayName: 'Other'} as ServersModel,
-            ]);
-            getActiveServerUrlSpy.mockResolvedValue(serverA);
+        it('does not re-wipe servers whose row has wipedAt === 0', async () => {
+            jest.mocked(getServer).mockResolvedValue({url: serverA, wipedAt: 0} as ServersModel);
 
-            const result = await OfflinePersistenceManager.reconcile();
+            await OfflinePersistenceManager.init([credsA]);
 
-            expect(result).toEqual({showDataErasedFor: {serverUrl: serverA, displayName}});
+            expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
         });
     });
 });

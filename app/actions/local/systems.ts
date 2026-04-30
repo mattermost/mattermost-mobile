@@ -23,7 +23,6 @@ import {
     getDisconnectedSince,
     getLastSeenTime,
     getOfflineSince,
-    getPurgeFired,
 } from '@queries/servers/system';
 import PostModel from '@typings/database/models/servers/post';
 import SystemModel from '@typings/database/models/servers/system';
@@ -112,31 +111,6 @@ export async function setLastSeenTime(serverUrl: string, value: number | null): 
     }
 }
 
-export async function setPurgeFired(serverUrl: string, value: boolean | null): Promise<void> {
-    try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        if (value === null) {
-            const existing = await getPurgeFired(database);
-            if (!existing) {
-                return;
-            }
-            const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.PURGE_FIRED);
-            await database.write(async () => {
-                await record.destroyPermanently();
-            });
-            return;
-        }
-
-        await operator.handleSystem({
-            systems: [{id: SYSTEM_IDENTIFIERS.PURGE_FIRED, value}],
-            prepareRecordsOnly: false,
-        });
-    } catch (error) {
-        logError('setPurgeFired', error);
-    }
-}
-
 export async function clearEphemeralModeState(serverUrl: string): Promise<void> {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -144,7 +118,6 @@ export async function clearEphemeralModeState(serverUrl: string): Promise<void> 
             Q.where('id', Q.oneOf([
                 SYSTEM_IDENTIFIERS.OFFLINE_SINCE,
                 SYSTEM_IDENTIFIERS.LAST_SEEN_TIME,
-                SYSTEM_IDENTIFIERS.PURGE_FIRED,
             ])),
         ).fetch();
 

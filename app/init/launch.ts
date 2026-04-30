@@ -16,7 +16,7 @@ import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getLastViewedChannelIdAndServer, getLastViewedThreadIdAndServer, getOnboardingViewed} from '@queries/app/global';
-import {getAllServers} from '@queries/app/servers';
+import {getActiveServer, getAllServers} from '@queries/app/servers';
 import {queryPostsByType} from '@queries/servers/post';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {queryMyTeams} from '@queries/servers/team';
@@ -26,7 +26,6 @@ import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 import {removeProtocol} from '@utils/url';
 
-import type {ReconcileResult} from '@managers/offline_persistence_manager';
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 /**
@@ -44,6 +43,14 @@ const initialNotificationTypes = [PushNotification.NOTIFICATION_TYPE.MESSAGE, Pu
  * Determine initial route for Expo Router based on app launch conditions
  */
 export async function determineInitialExpoRoute(): Promise<ExpoRouterLaunchResult> {
+    const activeServer = await getActiveServer();
+    if (activeServer && activeServer.wipedAt > 0) {
+        return resetToDataErased({
+            serverUrl: activeServer.url,
+            displayName: activeServer.displayName || activeServer.url,
+        });
+    }
+
     // Check for deep link launch
     const deepLinkUrl = await Linking.getInitialURL();
     if (deepLinkUrl) {

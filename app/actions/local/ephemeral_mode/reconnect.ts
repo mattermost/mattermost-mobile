@@ -8,9 +8,7 @@ import {Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials, removePreauthSecret, removeServerCredentials} from '@init/credentials';
 import {relaunchApp} from '@init/launch';
-import NetworkManager from '@managers/network_manager';
 import OfflinePersistenceManager from '@managers/offline_persistence_manager';
-import WebsocketManager from '@managers/websocket_manager';
 import {getServerDisplayName} from '@queries/app/servers';
 import {resetToHome} from '@screens/navigation';
 import {isErrorWithStatusCode} from '@utils/errors';
@@ -30,11 +28,6 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
         if (!credentials) {
             return {error: 'no_credentials'};
         }
-
-        // The wipe invalidated both the Network and WebSocket clients for this server;
-        // upgradeEntry needs both to fetch config and open the socket.
-        await NetworkManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
-        await WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
 
         const {error} = await upgradeEntry(serverUrl);
 

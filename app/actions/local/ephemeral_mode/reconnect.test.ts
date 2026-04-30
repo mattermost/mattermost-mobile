@@ -8,9 +8,7 @@ import {Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials, removePreauthSecret, removeServerCredentials} from '@init/credentials';
 import {relaunchApp} from '@init/launch';
-import NetworkManager from '@managers/network_manager';
 import OfflinePersistenceManager from '@managers/offline_persistence_manager';
-import WebsocketManager from '@managers/websocket_manager';
 import {getServerDisplayName} from '@queries/app/servers';
 import {resetToHome} from '@screens/navigation';
 
@@ -31,17 +29,9 @@ jest.mock('@init/credentials', () => ({
 jest.mock('@init/launch', () => ({
     relaunchApp: jest.fn(),
 }));
-jest.mock('@managers/network_manager', () => ({
-    __esModule: true,
-    default: {createClient: jest.fn()},
-}));
 jest.mock('@managers/offline_persistence_manager', () => ({
     __esModule: true,
     default: {addServer: jest.fn()},
-}));
-jest.mock('@managers/websocket_manager', () => ({
-    __esModule: true,
-    default: {createClient: jest.fn()},
 }));
 jest.mock('@queries/app/servers', () => ({
     getServerDisplayName: jest.fn(),
@@ -82,13 +72,11 @@ describe('reconnectErasedServer', () => {
         expect(result).toEqual({error: 'no_connection'});
     });
 
-    it('on success: re-creates network/ws clients, runs upgradeEntry, clears wipedAt, and navigates home', async () => {
+    it('on success: runs upgradeEntry, clears wipedAt, and navigates home', async () => {
         jest.mocked(upgradeEntry).mockResolvedValue({error: undefined, time: 0});
 
         const result = await reconnectErasedServer(serverUrl);
 
-        expect(NetworkManager.createClient).toHaveBeenCalledWith(serverUrl, 'tok-abc', 'preauth');
-        expect(WebsocketManager.createClient).toHaveBeenCalledWith(serverUrl, 'tok-abc', 'preauth');
         expect(upgradeEntry).toHaveBeenCalledWith(serverUrl);
         expect(updateWipedAtSpy).toHaveBeenCalledWith(serverUrl, 0);
         expect(OfflinePersistenceManager.addServer).toHaveBeenCalledWith(serverUrl);

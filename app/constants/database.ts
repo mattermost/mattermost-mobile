@@ -72,7 +72,6 @@ export const SYSTEM_IDENTIFIERS = {
     LICENSE: 'license',
     OFFLINE_SINCE: 'offlineSince',
     ONLY_UNREADS: 'onlyUnreads',
-    PURGE_FIRED: 'purgeFired',
     PUSH_VERIFICATION_STATUS: 'pushVerificationStatus',
     RECENT_CUSTOM_STATUS: 'recentCustomStatus',
     RECENT_MENTIONS: 'recentMentions',

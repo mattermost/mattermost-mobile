@@ -205,15 +205,6 @@ export const getLastSeenTime = async (database: Database): Promise<number | unde
     }
 };
 
-export const getPurgeFired = async (database: Database): Promise<boolean> => {
-    try {
-        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.PURGE_FIRED);
-        return Boolean(data?.value);
-    } catch {
-        return false;
-    }
-};
-
 export const getLastBoRPostCleanupRun = async (database: Database) => {
     try {
         const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN);

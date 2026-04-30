@@ -278,6 +278,14 @@ class DatabaseManagerSingleton {
         if (server) {
             delete this.serverDatabases[serverUrl];
             await this.deleteServerDatabaseFiles(serverUrl);
+            await this.createServerDatabase({
+                config: {
+                    dbName: serverUrl,
+                    displayName: server.displayName,
+                    identifier: '',
+                    serverUrl,
+                },
+            });
         }
     };
 

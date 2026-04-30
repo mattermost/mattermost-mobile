@@ -16,7 +16,7 @@ import {
     getRecentReactions, getLastFullSync, setLastFullSync, resetLastFullSync,
     getTeamHistory, patchTeamHistory, prepareCommonSystemValues, setCurrentUserId,
     setCurrentChannelId, setCurrentTeamId, setCurrentTeamAndChannelId,
-    getLastUnreadChannelId, getExpiredSession, getPurgeFired,
+    getLastUnreadChannelId, getExpiredSession,
     observeCurrentChannelId, observeCurrentTeamId, observeCurrentUserId, observeGlobalThreadsTab,
     observePushVerificationStatus, observeConfig, observeConfigValue, observeMaxFileCount,
     observeIsCustomStatusExpirySupported, observeConfigBooleanValue, observeConfigIntValue,
@@ -129,38 +129,6 @@ describe('getDisconnectedSince', () => {
 
         const result = await getDisconnectedSince(database);
         expect(result).toBe(timestamp);
-    });
-});
-
-describe('getPurgeFired', () => {
-    const serverUrl = 'baseHandler.test.com';
-    let database: Database;
-    let operator: ServerDataOperator;
-
-    beforeEach(async () => {
-        await DatabaseManager.init([serverUrl]);
-        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        database = serverDatabaseAndOperator.database;
-        operator = serverDatabaseAndOperator.operator;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
-    it('should return false when no record exists', async () => {
-        const result = await getPurgeFired(database);
-        expect(result).toBe(false);
-    });
-
-    it('should return true when the flag has been set', async () => {
-        await operator.handleSystem({
-            systems: [{id: SYSTEM_IDENTIFIERS.PURGE_FIRED, value: true}],
-            prepareRecordsOnly: false,
-        });
-
-        const result = await getPurgeFired(database);
-        expect(result).toBe(true);
     });
 });
 
