@@ -4,8 +4,8 @@
 import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
-import {DEFAULT_REPORT_A_PROBLEM_EMAIL} from '@constants/report_a_problem';
 import {Screens} from '@constants';
+import {DEFAULT_REPORT_A_PROBLEM_EMAIL} from '@constants/report_a_problem';
 import {goToScreen} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {emailLogs, getDefaultReportAProblemLink} from '@utils/share_logs';
