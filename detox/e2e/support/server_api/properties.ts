@@ -4,12 +4,12 @@
 import client from './client';
 import {getResponseFromError} from './common';
 
-const GROUP_NAME = 'custom_profile_attributes';
+const GROUP_NAME = 'classification_markings';
 const OBJECT_TYPE = 'template';
 const TARGET_TYPE = 'system';
 const FIELD_NAME = 'classification';
 const LINKED_FIELD_NAME = 'system_classification';
-const LINKED_OBJECT_TYPE = 'user';
+const LINKED_OBJECT_TYPE = 'system';
 const DISPLAY_BANNER_TOP = 'display_banner_top';
 
 type PropertyFieldOption = {
@@ -22,11 +22,13 @@ type PropertyFieldOption = {
 /**
  * Get all property fields for a group/objectType.
  */
-export const apiGetPropertyFields = async (baseUrl: string, groupName: string, objectType: string, targetType: string) => {
+export const apiGetPropertyFields = async (baseUrl: string, groupName: string, objectType: string, targetType: string, targetId?: string) => {
     try {
-        const response = await client.get(
-            `${baseUrl}/api/v4/properties/groups/${groupName}/${objectType}/fields?target_type=${targetType}`,
-        );
+        let url = `${baseUrl}/api/v4/properties/groups/${groupName}/${objectType}/fields?target_type=${targetType}`;
+        if (targetId !== undefined) {
+            url += `&target_id=${encodeURIComponent(targetId)}`;
+        }
+        const response = await client.get(url);
         return {fields: response.data};
     } catch (err) {
         return getResponseFromError(err);
@@ -90,16 +92,45 @@ export const apiPatchPropertyValues = async (baseUrl: string, groupName: string,
 };
 
 /**
+ * Get system-scoped property values.
+ */
+export const apiGetSystemPropertyValues = async (baseUrl: string, groupName: string) => {
+    try {
+        const response = await client.get(
+            `${baseUrl}/api/v4/properties/groups/${groupName}/system/values`,
+        );
+        return {values: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Upsert system-scoped property values.
+ */
+export const apiPatchSystemPropertyValues = async (baseUrl: string, groupName: string, values: Array<{field_id: string; value: string}>) => {
+    try {
+        const response = await client.patch(
+            `${baseUrl}/api/v4/properties/groups/${groupName}/system/values`,
+            values,
+        );
+        return {values: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Setup a complete classification system for E2E testing:
  * 1. Create a template property field with classification levels
  * 2. Create a linked system classification field with banner actions
- * 3. Set a property value for the classification level
+ * 3. Set a system property value for the classification level
  *
  * @returns Object containing the created field IDs and option IDs
  */
 export const apiSetupClassificationWithBanner = async (
     baseUrl: string,
-    targetUserId: string,
+    _targetUserId: string,
     options?: {
         levels?: PropertyFieldOption[];
         levelName?: string;
@@ -159,8 +190,8 @@ export const apiSetupClassificationWithBanner = async (
 
     const linkedField = linkedResult.field;
 
-    // Set the property value
-    await apiPatchPropertyValues(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, targetUserId, [
+    // Set the system property value
+    await apiPatchSystemPropertyValues(baseUrl, GROUP_NAME, [
         {field_id: linkedField.id, value: selectedOption.id},
     ]);
 
@@ -204,6 +235,8 @@ export const Properties = {
     apiDeletePropertyField,
     apiGetPropertyValues,
     apiPatchPropertyValues,
+    apiGetSystemPropertyValues,
+    apiPatchSystemPropertyValues,
     apiSetupClassificationWithBanner,
     apiCleanupClassification,
 };

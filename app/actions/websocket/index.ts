@@ -7,6 +7,7 @@ import {handleAgentsReconnect} from '@agents/actions/websocket/reconnect';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
+import {fetchClassificationBanner} from '@actions/remote/classification';
 import {
     entry,
     handleEntryAfterLoadNavigation,
@@ -100,6 +101,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
     }
 
     checkIsAgentsPluginEnabled(serverUrl);
+    fetchClassificationBanner(serverUrl);
 
     await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
 

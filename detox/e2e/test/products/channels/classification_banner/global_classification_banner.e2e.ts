@@ -12,7 +12,7 @@ import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {by, device, element, expect, waitFor} from 'detox';
 
 describe('Classification Banner - Global Classification Banner', () => {
     const serverOneDisplayName = 'Server 1';
@@ -33,7 +33,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         testChannel = channel;
 
         // Clean up any pre-existing classification property fields
-        await Properties.apiCleanupClassification(siteOneUrl, testUser.id);
+        await Properties.apiCleanupClassification(siteOneUrl);
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -42,7 +42,7 @@ describe('Classification Banner - Global Classification Banner', () => {
 
     afterAll(async () => {
         // # Clean up classification data and disable feature flag
-        await Properties.apiCleanupClassification(siteOneUrl, testUser.id);
+        await Properties.apiCleanupClassification(siteOneUrl);
         await System.apiPatchConfig(siteOneUrl, {
             FeatureFlags: {
                 ClassificationMarkings: false,
@@ -55,7 +55,7 @@ describe('Classification Banner - Global Classification Banner', () => {
 
     afterEach(async () => {
         // Clean up classification fields between tests
-        await Properties.apiCleanupClassification(siteOneUrl, testUser.id);
+        await Properties.apiCleanupClassification(siteOneUrl);
     });
 
     it('MM-T_CB_1 - should not render the banner when the feature flag is off', async () => {
@@ -153,7 +153,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await GlobalClassificationBanner.toBeVisible();
 
         // # Remove classification data
-        await Properties.apiCleanupClassification(siteOneUrl, testUser.id);
+        await Properties.apiCleanupClassification(siteOneUrl);
         await device.reloadReactNative();
 
         // # Navigate back to channel list

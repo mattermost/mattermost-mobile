@@ -6,6 +6,7 @@ import {handleAgentPostUpdate} from '@agents/actions/websocket';
 import {handleAgentsEvents} from '@agents/actions/websocket/events';
 
 import * as bookmark from '@actions/local/channel_bookmark';
+import {fetchClassificationBanner} from '@actions/remote/classification';
 import {
     handleBoRPostAllRevealed,
     handleBoRPostBurnedEvent,
@@ -314,8 +315,15 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             handleCustomProfileAttributesFieldDeletedEvent(serverUrl, msg);
             break;
 
+        case WebsocketEvents.PROPERTY_FIELD_CREATED:
+        case WebsocketEvents.PROPERTY_FIELD_UPDATED:
+        case WebsocketEvents.PROPERTY_FIELD_DELETED:
+            fetchClassificationBanner(serverUrl);
+            break;
+
         case WebsocketEvents.PROPERTY_VALUES_UPDATED:
             handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl, msg);
+            fetchClassificationBanner(serverUrl);
             break;
 
         // Agents
