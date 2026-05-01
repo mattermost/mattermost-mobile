@@ -64,7 +64,7 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
             return {};
         }
 
-        const options = (templateField.attrs?.options as PropertyFieldOption[]) ?? [];
+        const options = (linkedField.attrs?.options as PropertyFieldOption[]) ?? [];
         const levelOption = options.find((o) => o.id === optionId);
 
         setClassificationBannerState(serverUrl, {

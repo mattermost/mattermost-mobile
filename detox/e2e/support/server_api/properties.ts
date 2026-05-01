@@ -126,6 +126,10 @@ export const apiPatchSystemPropertyValues = async (baseUrl: string, groupName: s
  * 2. Create a linked system classification field with banner actions
  * 3. Set a system property value for the classification level
  *
+ * Levels are identified by their `id` field. The `levelId` option selects which
+ * level the global banner should display, matching the approach used in the
+ * webapp E2E tests (keyed by option ID, not name).
+ *
  * @returns Object containing the created field IDs and option IDs
  */
 export const apiSetupClassificationWithBanner = async (
@@ -133,15 +137,15 @@ export const apiSetupClassificationWithBanner = async (
     _targetUserId: string,
     options?: {
         levels?: PropertyFieldOption[];
-        levelName?: string;
+        levelId?: string;
     },
 ) => {
     const levels = options?.levels ?? [
-        {name: 'TOP SECRET', color: '#FCE83A', rank: 1},
-        {name: 'SECRET', color: '#FF0000', rank: 2},
-        {name: 'UNCLASSIFIED', color: '#00FF00', rank: 3},
+        {id: 'lvl-top-secret', name: 'TOP SECRET', color: '#FCE83A', rank: 1},
+        {id: 'lvl-secret', name: 'SECRET', color: '#FF0000', rank: 2},
+        {id: 'lvl-unclassified', name: 'UNCLASSIFIED', color: '#00FF00', rank: 3},
     ];
-    const levelName = options?.levelName ?? 'TOP SECRET';
+    const levelId = options?.levelId ?? 'lvl-top-secret';
 
     // Clean up any existing fields first
     await apiCleanupClassification(baseUrl);
@@ -153,7 +157,7 @@ export const apiSetupClassificationWithBanner = async (
         target_type: TARGET_TYPE,
         target_id: '',
         attrs: {
-            options: levels.map((l) => ({name: l.name, color: l.color, rank: l.rank})),
+            options: levels.map((l) => ({id: l.id ?? '', name: l.name, color: l.color, rank: l.rank})),
             managed: 'admin',
         },
         permission_field: 'sysadmin',
@@ -161,15 +165,17 @@ export const apiSetupClassificationWithBanner = async (
         permission_options: 'sysadmin',
     });
 
-    if (!templateResult.field) {
+    const templateResult_ = templateResult as {field: any};
+    if (!templateResult_.field) {
         throw new Error('Failed to create template classification field');
     }
 
-    const templateField = templateResult.field;
+    const templateField = templateResult_.field;
     const templateOptions = templateField.attrs?.options ?? [];
-    const selectedOption = templateOptions.find((o: PropertyFieldOption) => o.name === levelName);
+    const selectedOption = templateOptions.find((o: PropertyFieldOption) => o.id === levelId);
     if (!selectedOption) {
-        throw new Error(`Classification level "${levelName}" not found in created options`);
+        const available = templateOptions.map((o: PropertyFieldOption) => `${o.name} (${o.id})`).join(', ');
+        throw new Error(`Classification level ID "${levelId}" not found in created options. Available: [${available}]`);
     }
 
     // Create the linked system classification field
@@ -184,13 +190,14 @@ export const apiSetupClassificationWithBanner = async (
         },
     });
 
-    if (!linkedResult.field) {
+    const linkedResult_ = linkedResult as {field: any};
+    if (!linkedResult_.field) {
         throw new Error('Failed to create linked system classification field');
     }
 
-    const linkedField = linkedResult.field;
+    const linkedField = linkedResult_.field;
 
-    // Set the system property value
+    // Set the system property value (option ID from the template field)
     await apiPatchSystemPropertyValues(baseUrl, GROUP_NAME, [
         {field_id: linkedField.id, value: selectedOption.id},
     ]);
@@ -207,7 +214,7 @@ export const apiSetupClassificationWithBanner = async (
  */
 export const apiCleanupClassification = async (baseUrl: string) => {
     // Delete linked fields
-    const linkedFieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, TARGET_TYPE);
+    const linkedFieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, TARGET_TYPE) as {fields?: any[]};
     if (linkedFieldsResult.fields) {
         for (const field of linkedFieldsResult.fields) {
             if (field.name === LINKED_FIELD_NAME && field.delete_at === 0) {
@@ -218,7 +225,7 @@ export const apiCleanupClassification = async (baseUrl: string) => {
     }
 
     // Delete template fields
-    const templateFieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, OBJECT_TYPE, TARGET_TYPE);
+    const templateFieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, OBJECT_TYPE, TARGET_TYPE) as {fields?: any[]};
     if (templateFieldsResult.fields) {
         for (const field of templateFieldsResult.fields) {
             if (field.name === FIELD_NAME && field.delete_at === 0) {
