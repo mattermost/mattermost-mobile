@@ -11,9 +11,8 @@ import {
     setClassificationBannerState,
     observeClassificationBanner,
     useClassificationBannerState,
+    type ClassificationBannerState,
 } from './classification_banner_store';
-
-import type {ClassificationBannerState} from './classification_banner_store';
 
 const serverUrl = 'classification-store.test.com';
 const hookServerUrl = 'classification-hook.test.com';
