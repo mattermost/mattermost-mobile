@@ -15,7 +15,6 @@ import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
 
 type ReportProblemProps = {
     allowDownloadLogs?: boolean;
-    attachLogsEnabled?: boolean;
     isFreeEdition?: boolean;
     reportAProblemMail?: string;
     reportAProblemType?: string;
@@ -30,7 +29,6 @@ const messages = defineMessages({
 
 const ReportProblem = ({
     allowDownloadLogs,
-    attachLogsEnabled,
     isFreeEdition,
     reportAProblemMail,
     reportAProblemType,
@@ -42,8 +40,7 @@ const ReportProblem = ({
     const skipReportAProblemScreen =
         (reportAProblemType === 'email' && !allowDownloadLogs) ||
         (reportAProblemType === 'default' && isFreeEdition === true) ||
-        (reportAProblemType === 'default' && isFreeEdition === false && !allowDownloadLogs) ||
-        (reportAProblemType === 'default' && isFreeEdition === false && Boolean(attachLogsEnabled));
+        (reportAProblemType === 'default' && isFreeEdition === false && !allowDownloadLogs);
 
     const onPress = useCallback(() => {
         if (skipReportAProblemScreen) {

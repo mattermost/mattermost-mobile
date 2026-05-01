@@ -623,6 +623,7 @@ export const observeIsFreeEdition = (database: Database) => {
             const isEntry = license?.SkuShortName === License.SKU_SHORT_NAME.Entry;
             return of$(!isLicensed || isEntry);
         }),
+        distinctUntilChanged(),
     );
 };
 

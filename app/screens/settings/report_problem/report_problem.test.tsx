@@ -175,7 +175,7 @@ describe('screens/settings/report_problem/report_problem', () => {
         });
     });
 
-    it('should email directly when type is default, paid edition, and logs auto-attached', async () => {
+    it('should navigate to screen when type is default, paid edition, logs allowed, and attach preference is set', async () => {
         const props = {
             ...baseProps,
             allowDownloadLogs: true,
@@ -191,13 +191,9 @@ describe('screens/settings/report_problem/report_problem', () => {
 
         await act(async () => {
             fireEvent.press(getByTestId('settings.report_problem.option'));
-            expect(emailLogs).toHaveBeenCalledWith(
-                props.metadata,
-                props.siteName,
-                DEFAULT_REPORT_A_PROBLEM_EMAIL,
-                false,
-            );
-            expect(goToScreen).not.toHaveBeenCalled();
+            expect(goToScreen).toHaveBeenCalledWith(Screens.REPORT_PROBLEM, 'Report a problem');
+            expect(emailLogs).not.toHaveBeenCalled();
+            expect(tryOpenURL).not.toHaveBeenCalled();
         });
     });
 
