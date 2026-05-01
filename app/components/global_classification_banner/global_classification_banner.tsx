@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
 const GlobalClassificationBanner = ({visible, levelName, color}: Props) => {
     const textColor = useMemo(() => (color ? getContrastingSimpleColor(color) : ''), [color]);
 
-    if (!visible || !levelName) {
+    if (!visible || !levelName || !color) {
         return null;
     }
 

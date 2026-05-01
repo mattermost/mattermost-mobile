@@ -134,7 +134,6 @@ export const apiPatchSystemPropertyValues = async (baseUrl: string, groupName: s
  */
 export const apiSetupClassificationWithBanner = async (
     baseUrl: string,
-    _targetUserId: string,
     options?: {
         levels?: PropertyFieldOption[];
         levelId?: string;

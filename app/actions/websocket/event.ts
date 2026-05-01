@@ -321,10 +321,14 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             fetchClassificationBanner(serverUrl);
             break;
 
-        case WebsocketEvents.PROPERTY_VALUES_UPDATED:
+        case WebsocketEvents.PROPERTY_VALUES_UPDATED: {
             handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl, msg);
-            fetchClassificationBanner(serverUrl);
+            const pvData = msg.data as PropertyValuesUpdatedData;
+            if (!pvData.object_type || pvData.object_type === 'system') {
+                fetchClassificationBanner(serverUrl);
+            }
             break;
+        }
 
         // Agents
         case WebsocketEvents.AGENTS_POST_UPDATE:

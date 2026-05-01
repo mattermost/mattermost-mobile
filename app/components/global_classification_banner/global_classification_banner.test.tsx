@@ -45,6 +45,17 @@ describe('GlobalClassificationBanner', () => {
         expect(screen.queryByTestId('global_classification_banner')).toBeNull();
     });
 
+    it('should not render when color is empty', () => {
+        renderWithIntlAndTheme(
+            <GlobalClassificationBanner
+                {...baseProps}
+                color=''
+            />,
+        );
+
+        expect(screen.queryByTestId('global_classification_banner')).toBeNull();
+    });
+
     it('should display the level name text', () => {
         renderWithIntlAndTheme(
             <GlobalClassificationBanner

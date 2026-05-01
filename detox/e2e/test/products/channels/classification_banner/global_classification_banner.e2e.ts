@@ -79,7 +79,7 @@ describe('Classification Banner - Global Classification Banner', () => {
                 ClassificationMarkings: true,
             },
         });
-        await Properties.apiSetupClassificationWithBanner(siteOneUrl, testUser.id, {
+        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvl-top-secret',
         });
         await device.reloadReactNative();
@@ -101,7 +101,7 @@ describe('Classification Banner - Global Classification Banner', () => {
                 ClassificationMarkings: true,
             },
         });
-        await Properties.apiSetupClassificationWithBanner(siteOneUrl, testUser.id, {
+        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvl-top-secret',
         });
         await device.reloadReactNative();
@@ -129,7 +129,7 @@ describe('Classification Banner - Global Classification Banner', () => {
                 ClassificationMarkings: true,
             },
         });
-        await Properties.apiSetupClassificationWithBanner(siteOneUrl, testUser.id, {
+        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvl-top-secret',
         });
         await device.reloadReactNative();
@@ -171,7 +171,7 @@ describe('Classification Banner - Global Classification Banner', () => {
                 ClassificationMarkings: true,
             },
         });
-        await Properties.apiSetupClassificationWithBanner(siteOneUrl, testUser.id, {
+        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvl-top-secret',
         });
         await device.reloadReactNative();
@@ -206,7 +206,7 @@ describe('Classification Banner - Global Classification Banner', () => {
                 ClassificationMarkings: true,
             },
         });
-        const {linkedFieldId} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, testUser.id, {
+        const {linkedFieldId} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvl-top-secret',
         });
         await device.reloadReactNative();
@@ -240,7 +240,7 @@ describe('Classification Banner - Global Classification Banner', () => {
                 ClassificationMarkings: true,
             },
         });
-        await Properties.apiSetupClassificationWithBanner(siteOneUrl, testUser.id, {
+        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvl-top-secret',
         });
         await device.reloadReactNative();
@@ -270,7 +270,7 @@ describe('Classification Banner - Global Classification Banner', () => {
                 ClassificationMarkings: true,
             },
         });
-        await Properties.apiSetupClassificationWithBanner(siteOneUrl, testUser.id, {
+        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvl-top-secret',
         });
         await device.reloadReactNative();
@@ -305,7 +305,7 @@ describe('Classification Banner - Global Classification Banner', () => {
                 ClassificationMarkings: true,
             },
         });
-        await Properties.apiSetupClassificationWithBanner(siteOneUrl, testUser.id, {
+        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvl-top-secret',
         });
         await device.reloadReactNative();
