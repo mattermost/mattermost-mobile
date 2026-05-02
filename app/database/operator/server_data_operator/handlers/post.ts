@@ -395,6 +395,9 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
                 // update_at — force an update when the linked post's ABAC state drifts.
                 const newEmbeds = n.metadata?.embeds ?? [];
                 const oldEmbeds = e.metadata?.embeds ?? [];
+                if (newEmbeds.length !== oldEmbeds.length) {
+                    return true;
+                }
                 for (let i = 0; i < newEmbeds.length; i++) {
                     if (newEmbeds[i]?.type === 'permalink') {
                         const newCount = (newEmbeds[i].data as PermalinkEmbedData)?.post?.metadata?.redacted_file_count ?? 0;

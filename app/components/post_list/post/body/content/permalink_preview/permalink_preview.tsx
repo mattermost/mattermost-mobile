@@ -237,11 +237,14 @@ const PermalinkPreview = ({
     // host post that hasn't been refetched since the ABAC policy was applied).
     const embedRedactedCount = embedData?.post?.metadata?.redacted_file_count ?? 0;
     const dbRedactedCount = post?.metadata?.redacted_file_count ?? 0;
-    let redactedFileCount = dbRedactedCount;
+
+    // The server only populates redacted_file_count when PermissionPolicies is enabled,
+    // so no explicit client-side feature-flag gate is needed here.
+    let redactedFileCount = dbRedactedCount; // fall back to DB value when embed is ambiguous
     if (embedRedactedCount > 0) {
         redactedFileCount = embedRedactedCount; // embed explicitly denied
     } else if (embedFilesCount > 0) {
-        redactedFileCount = 0; // embed explicitly granted (has files listed)
+        redactedFileCount = 0; // embed explicitly granted (files listed)
     }
 
     const handlePress = usePreventDoubleTap(useCallback(() => {

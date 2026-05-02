@@ -229,9 +229,9 @@ const Body = ({
                     isReplyPost={isReplyPost}
                 />
                 }
-                {redactedFileCount > 0 &&
-                <RedactedFilesPlaceholder/>
-                }
+                {redactedFileCount > 0 && (
+                    <RedactedFilesPlaceholder/>
+                )}
                 {(acknowledgementsVisible || reactionsVisible) && (
                     <View style={style.ackAndReactionsContainer}>
                         {acknowledgementsVisible && (

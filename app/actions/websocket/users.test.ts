@@ -410,6 +410,24 @@ describe('WebSocket Users Actions', () => {
 
             expect(fetchPostsForChannel).not.toHaveBeenCalled();
         });
+
+        it('should not re-fetch posts when no active channel', async () => {
+            operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
+            jest.mocked(getCurrentChannelId).mockResolvedValue('');
+            jest.mocked(fetchPostsForChannel).mockResolvedValue({});
+
+            const msg = {
+                data: {
+                    user_id: currentUserId,
+                    values: {field1: 'newValue'},
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);
+
+            expect(fetchPostsForChannel).not.toHaveBeenCalled();
+        });
     });
 
     describe('handleCustomProfileAttributesFieldUpdatedEvent', () => {
