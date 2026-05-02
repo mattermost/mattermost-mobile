@@ -28,8 +28,8 @@ import {apiUploadFile, getResponseFromError} from './common';
  * @param {string} option.message - The message contents, can be formatted with Markdown
  * @param {string} option.rootId - The post ID to comment on
  * @param {Object} option.props - A general object property bag to attach to the post
- * @param {string[]} option.fileIds - Array of file IDs to attach to the post (top-level API field)
- * @param {Date} option.createAt - The date the post is created at
+ * @param {string[]=} option.fileIds - Optional array of file IDs to attach to the post (top-level API field)
+ * @param {number} option.createAt - The post creation timestamp in milliseconds since epoch, defaults to 0
  * @return {Object} returns {post} on success or {error, status} on error
  */
 export const apiCreatePost = async (baseUrl: string, {channelId, message, rootId, props = {}, fileIds, createAt = 0}: any): Promise<any> => {

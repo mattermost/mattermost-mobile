@@ -161,7 +161,9 @@ export async function handleCustomProfileAttributesValuesUpdatedEvent(serverUrl:
             if (activeServerUrl === serverUrl) {
                 const channelId = await getCurrentChannelId(database);
                 if (channelId) {
-                    fetchPostsForChannel(serverUrl, channelId);
+                    fetchPostsForChannel(serverUrl, channelId).catch((e) =>
+                        logError('handleCustomProfileAttributesValuesUpdatedEvent: failed to re-fetch posts', e),
+                    );
                 }
             }
         }
