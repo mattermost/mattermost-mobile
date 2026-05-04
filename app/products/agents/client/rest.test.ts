@@ -86,4 +86,55 @@ describe('ClientAgents', () => {
             );
         });
     });
+
+    describe('getRewrittenMessage', () => {
+        beforeEach(() => {
+            mockDoFetch.mockResolvedValue({rewritten_text: 'rewritten'});
+        });
+
+        it('should include channel_id in body when channelId is non-empty', async () => {
+            await client.getRewrittenMessage('hello', 'channel-123', 'rephrase', 'prompt', 'agent-1');
+
+            expect(mockDoFetch).toHaveBeenCalledTimes(1);
+            const [, options] = mockDoFetch.mock.calls[0];
+            expect(options.body).toEqual({
+                agent_id: 'agent-1',
+                message: 'hello',
+                channel_id: 'channel-123',
+                action: 'rephrase',
+                custom_prompt: 'prompt',
+            });
+            expect(options.body).toHaveProperty('channel_id', 'channel-123');
+        });
+
+        it('should omit channel_id from body when channelId is an empty string', async () => {
+            await client.getRewrittenMessage('hello', '', 'rephrase', undefined, undefined);
+
+            expect(mockDoFetch).toHaveBeenCalledTimes(1);
+            const [, options] = mockDoFetch.mock.calls[0];
+            expect(options.body).not.toHaveProperty('channel_id');
+            expect(options.body).toEqual({
+                agent_id: undefined,
+                message: 'hello',
+                action: 'rephrase',
+                custom_prompt: undefined,
+            });
+        });
+
+        it('should return rewritten_text from the response', async () => {
+            mockDoFetch.mockResolvedValue({rewritten_text: 'the new text'});
+
+            const result = await client.getRewrittenMessage('hello', 'channel-123');
+
+            expect(result).toBe('the new text');
+        });
+
+        it('should return raw response when rewritten_text is undefined', async () => {
+            mockDoFetch.mockResolvedValue('plain text response');
+
+            const result = await client.getRewrittenMessage('hello', 'channel-123');
+
+            expect(result).toBe('plain text response');
+        });
+    });
 });
