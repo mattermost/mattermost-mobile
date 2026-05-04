@@ -197,9 +197,12 @@ export const apiSetupClassificationWithBanner = async (
     const linkedField = linkedResult_.field;
 
     // Set the system property value (option ID from the template field)
-    await apiPatchSystemPropertyValues(baseUrl, GROUP_NAME, [
+    const patchResult = await apiPatchSystemPropertyValues(baseUrl, GROUP_NAME, [
         {field_id: linkedField.id, value: selectedOption.id},
     ]);
+    if ('error' in patchResult) {
+        throw new Error(`Failed to set system property value for field_id=${linkedField.id}, value=${selectedOption.id}: ${JSON.stringify(patchResult.error)}`);
+    }
 
     return {
         templateFieldId: templateField.id,
