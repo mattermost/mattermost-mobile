@@ -14,8 +14,11 @@ import {
     type ClassificationBannerState,
 } from './classification_banner_store';
 
+import type SystemModel from '@typings/database/models/servers/system';
+
 const serverUrl = 'classification-store.test.com';
 const hookServerUrl = 'classification-hook.test.com';
+const extraServerUrls = new Set<string>();
 
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl, hookServerUrl]);
@@ -24,6 +27,8 @@ beforeEach(async () => {
 afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
     await DatabaseManager.destroyServerDatabase(hookServerUrl);
+    await Promise.all([...extraServerUrls].map((url) => DatabaseManager.destroyServerDatabase(url)));
+    extraServerUrls.clear();
 });
 
 describe('classification_banner_store', () => {
@@ -78,6 +83,7 @@ describe('classification_banner_store', () => {
 
     it('should persist state to database', async () => {
         const persistUrl = 'persist.test.com';
+        extraServerUrls.add(persistUrl);
         await DatabaseManager.init([persistUrl]);
 
         const newState: ClassificationBannerState = {visible: true, levelName: 'TOP SECRET', color: '#FCE83A'};
@@ -87,15 +93,15 @@ describe('classification_banner_store', () => {
         await new Promise((resolve) => setTimeout(resolve, 200));
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(persistUrl);
-        const records = await database.get('System').query().fetch();
-        const record = records.find((r: {id: string}) => r.id === SYSTEM_IDENTIFIERS.CLASSIFICATION_BANNER);
+        const records = await database.get<SystemModel>('System').query().fetch();
+        const record = records.find((r) => r.id === SYSTEM_IDENTIFIERS.CLASSIFICATION_BANNER);
         expect(record).toBeDefined();
-        expect((record as any).value).toEqual(newState);
-        await DatabaseManager.destroyServerDatabase(persistUrl);
+        expect(record!.value).toEqual(newState);
     });
 
     it('should hydrate state from database on first access', async () => {
         const hydrateUrl = 'hydrate.test.com';
+        extraServerUrls.add(hydrateUrl);
         await DatabaseManager.init([hydrateUrl]);
 
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(hydrateUrl);
@@ -114,7 +120,6 @@ describe('classification_banner_store', () => {
 
         expect(emissions[emissions.length - 1]).toEqual(seededState);
         sub.unsubscribe();
-        await DatabaseManager.destroyServerDatabase(hydrateUrl);
     });
 
     describe('useClassificationBannerState', () => {

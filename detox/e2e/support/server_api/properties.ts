@@ -13,7 +13,7 @@ const LINKED_OBJECT_TYPE = 'system';
 const DISPLAY_BANNER_TOP = 'display_banner_top';
 
 type PropertyFieldOption = {
-    id?: string;
+    id: string;
     name: string;
     color: string;
     rank?: number;
@@ -156,7 +156,7 @@ export const apiSetupClassificationWithBanner = async (
         target_type: TARGET_TYPE,
         target_id: '',
         attrs: {
-            options: levels.map((l) => ({id: l.id ?? '', name: l.name, color: l.color, rank: l.rank})),
+            options: levels.map((l) => ({id: l.id, name: l.name, color: l.color, rank: l.rank})),
             managed: 'admin',
         },
         permission_field: 'sysadmin',
