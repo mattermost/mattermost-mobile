@@ -152,7 +152,9 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);
 
     // Drop ephemeral agents caches so a fresh session does not see stale
-    // conversation or streaming state from the previous account.
+    // conversation or streaming state from the previous account. Both stores
+    // are global, so this also clears state for other connected servers; on
+    // logout that's harmless (caches re-fetch on next view).
     clearConversationCache();
     streamingStore.clear();
 

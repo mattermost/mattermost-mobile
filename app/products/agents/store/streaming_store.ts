@@ -181,12 +181,15 @@ class StreamingPostStore {
         }
 
         if (control === CONTROL_SIGNALS.REASONING_SUMMARY_DONE) {
-            // Final reasoning text - mark as complete
-            const state = this.getStreamingState(post_id);
-            if (state && reasoning) {
+            if (reasoning) {
+                // updateReasoning falls back to a fresh state if `start` was
+                // missed, so a reconnect that lands on DONE first still
+                // captures the final reasoning text.
                 this.updateReasoning(post_id, reasoning, false);
-            } else if (state) {
-                // Just mark as done if no new reasoning text
+                return;
+            }
+            const state = this.getStreamingState(post_id);
+            if (state) {
                 this.getSubject(post_id).next({
                     ...state,
                     isReasoningLoading: false,

@@ -105,6 +105,18 @@ describe('collectResponseTurns', () => {
 
         expect(turns.map((t) => t.sequence)).toEqual([1, 2, 3]);
     });
+
+    it('should anchor on the highest-sequence assistant turn when multiple share post_id', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({sequence: 1, role: 'assistant', post_id: POST_ID, content: [{type: BlockType.Text, text: 'stale'}]}),
+            makeTurn({sequence: 2, role: 'assistant', post_id: POST_ID, content: [{type: BlockType.Text, text: 'fresh'}]}),
+        ]);
+
+        const turns = collectResponseTurns(conversation, POST_ID);
+
+        expect(turns.map((t) => t.sequence)).toEqual([1, 2]);
+    });
 });
 
 describe('extractToolCallsForPost', () => {
@@ -302,6 +314,27 @@ describe('deriveApprovalStageForPost', () => {
                 role: 'assistant',
                 post_id: POST_ID,
                 content: [{type: BlockType.Text, text: 'hi'}],
+            }),
+        ]);
+
+        expect(deriveApprovalStageForPost(conversation, POST_ID)).toBe(ToolApprovalStage.Done);
+    });
+
+    it('should read approval_state from the latest assistant anchor when multiple share post_id', () => {
+        const conversation = makeConversation([
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                approval_state: 'call',
+                content: [],
+            }),
+            makeTurn({
+                sequence: 2,
+                role: 'assistant',
+                post_id: POST_ID,
+                approval_state: 'done',
+                content: [],
             }),
         ]);
 

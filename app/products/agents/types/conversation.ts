@@ -43,7 +43,7 @@ export interface WebSearchContext {
 
 // Flat content block; `type` discriminates which optional fields are set.
 export interface ContentBlock {
-    type: string;
+    type: BlockType;
 
     text?: string;
     signature?: string;

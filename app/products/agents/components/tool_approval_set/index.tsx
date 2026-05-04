@@ -154,11 +154,13 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             return;
         }
 
-        const updatedDecisions = {
-            ...toolDecisions,
-            [toolId]: approved,
-        };
-        setToolDecisions((prev) => ({...prev, [toolId]: approved}));
+        // Capture the latest decisions via the functional setter so two rapid
+        // taps each see the previous tap's choice rather than a stale snapshot.
+        let updatedDecisions: ToolDecision = {};
+        setToolDecisions((prev) => {
+            updatedDecisions = {...prev, [toolId]: approved};
+            return updatedDecisions;
+        });
 
         const hasUndecided = actionableTools.some((tool) => {
             return !(tool.id in updatedDecisions) || updatedDecisions[tool.id] === null;
@@ -167,7 +169,6 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         if (!hasUndecided) {
             await submitDecisions(updatedDecisions);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- toolDecisions is read for the submit check but setState uses functional form to avoid stale closure races
     }, [isSubmitting, actionableTools, submitDecisions]);
 
     const handleApprove = useCallback((toolId: string) => {

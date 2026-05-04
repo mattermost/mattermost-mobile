@@ -32,12 +32,18 @@ export function statusStringToEnum(status: string | undefined): ToolCallStatus {
     }
 }
 
-// The anchor (whose post_id matches) is the highest-sequence turn in the
-// response, so tool-round turns sit before it. Walk backwards until a user
+// The anchor is the highest-sequence assistant turn matching post_id, so
+// tool-round turns sit before it. Walk backwards from the anchor until a user
 // turn or a foreign post's anchor.
 export function collectResponseTurns(conversation: ConversationResponse, postId: string): Turn[] {
     const sorted = [...conversation.turns].sort((a, b) => a.sequence - b.sequence);
-    const anchorIdx = sorted.findIndex((t) => t.post_id === postId);
+    let anchorIdx = -1;
+    for (let i = sorted.length - 1; i >= 0; i--) {
+        if (sorted[i].post_id === postId && sorted[i].role === 'assistant') {
+            anchorIdx = i;
+            break;
+        }
+    }
     if (anchorIdx === -1) {
         return [];
     }
@@ -145,7 +151,12 @@ export function extractAnnotationsFromTurn(turn: Turn | undefined): Annotation[]
 // Defaults to Done when the anchor or approval_state is missing so the UI
 // fails closed (no buttons) rather than rendering approval controls in error.
 export function deriveApprovalStageForPost(conversation: ConversationResponse, postId: string): ToolApprovalStage {
-    const anchor = conversation.turns.find((t) => t.post_id === postId && t.role === 'assistant');
+    let anchor: Turn | undefined;
+    for (const turn of conversation.turns) {
+        if (turn.post_id === postId && turn.role === 'assistant' && (!anchor || turn.sequence > anchor.sequence)) {
+            anchor = turn;
+        }
+    }
     return anchor?.approval_state ?? ToolApprovalStage.Done;
 }
 
