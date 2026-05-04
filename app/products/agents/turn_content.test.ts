@@ -11,7 +11,6 @@ import {
     extractAnnotationsFromTurn,
     extractReasoningFromTurn,
     extractToolCallsForPost,
-    hasAutoApprovedToolsForPost,
     statusStringToEnum,
 } from './turn_content';
 
@@ -48,18 +47,18 @@ describe('statusStringToEnum', () => {
         [ToolCallStatusString.Error, ToolCallStatus.Error],
         [ToolCallStatusString.Success, ToolCallStatus.Success],
         [ToolCallStatusString.AutoApproved, ToolCallStatus.AutoApproved],
-    ])('maps %s to numeric enum', (input, expected) => {
+    ])('should map %s to the numeric enum', (input, expected) => {
         expect(statusStringToEnum(input)).toBe(expected);
     });
 
-    it('defaults unknown values to Pending', () => {
+    it('should default unknown values to Pending', () => {
         expect(statusStringToEnum(undefined)).toBe(ToolCallStatus.Pending);
         expect(statusStringToEnum('nonsense')).toBe(ToolCallStatus.Pending);
     });
 });
 
 describe('collectResponseTurns', () => {
-    it('returns empty when no turn matches the post', () => {
+    it('should return empty when no turn matches the post', () => {
         const conversation = makeConversation([
             makeTurn({sequence: 0, role: 'user', content: []}),
             makeTurn({sequence: 1, role: 'assistant', post_id: 'other', content: []}),
@@ -67,7 +66,7 @@ describe('collectResponseTurns', () => {
         expect(collectResponseTurns(conversation, POST_ID)).toEqual([]);
     });
 
-    it('walks backwards across tool-round turns until a user turn', () => {
+    it('should walk backwards across tool-round turns until a user turn', () => {
         const toolUseBlock: ContentBlock = {type: BlockType.ToolUse, id: 't1', name: 'search'};
         const toolResultBlock: ContentBlock = {type: BlockType.ToolResult, tool_use_id: 't1', content: 'ok'};
         const conversation = makeConversation([
@@ -82,7 +81,7 @@ describe('collectResponseTurns', () => {
         expect(turns.map((t) => t.sequence)).toEqual([1, 2, 3]);
     });
 
-    it('stops walking when encountering a turn anchored to a different post', () => {
+    it('should stop walking when encountering a turn anchored to a different post', () => {
         const conversation = makeConversation([
             makeTurn({sequence: 0, role: 'user', content: []}),
             makeTurn({sequence: 1, role: 'assistant', post_id: 'priorPost', content: [{type: BlockType.Text, text: 'prior'}]}),
@@ -94,7 +93,7 @@ describe('collectResponseTurns', () => {
         expect(turns.map((t) => t.sequence)).toEqual([2]);
     });
 
-    it('accepts turns provided in arbitrary order', () => {
+    it('should accept turns provided in arbitrary order', () => {
         const conversation = makeConversation([
             makeTurn({sequence: 3, role: 'assistant', post_id: POST_ID, content: []}),
             makeTurn({sequence: 0, role: 'user', content: []}),
@@ -109,7 +108,7 @@ describe('collectResponseTurns', () => {
 });
 
 describe('extractToolCallsForPost', () => {
-    it('pairs tool_use blocks with their matching tool_result by id', () => {
+    it('should pair tool_use blocks with their matching tool_result by id', () => {
         const conversation = makeConversation([
             makeTurn({sequence: 0, role: 'user', content: []}),
             makeTurn({
@@ -143,7 +142,7 @@ describe('extractToolCallsForPost', () => {
         });
     });
 
-    it('finds results that arrive in turns after the anchor', () => {
+    it('should find results that arrive in turns after the anchor', () => {
         const conversation = makeConversation([
             makeTurn({sequence: 0, role: 'user', content: []}),
             makeTurn({
@@ -167,10 +166,11 @@ describe('extractToolCallsForPost', () => {
 
         const calls = extractToolCallsForPost(conversation, POST_ID);
 
+        expect(calls).toHaveLength(1);
         expect(calls[0].result).toBe('late result');
     });
 
-    it('returns empty arguments when the tool_use input is nulled by the server privacy filter', () => {
+    it('should return empty arguments when the tool_use input is nulled by the server privacy filter', () => {
         const conversation = makeConversation([
             makeTurn({sequence: 0, role: 'user', content: []}),
             makeTurn({
@@ -189,12 +189,13 @@ describe('extractToolCallsForPost', () => {
 
         const calls = extractToolCallsForPost(conversation, POST_ID);
 
+        expect(calls).toHaveLength(1);
         expect(calls[0].arguments).toBeUndefined();
     });
 });
 
 describe('extractReasoningFromTurn', () => {
-    it('concatenates thinking blocks', () => {
+    it('should concatenate thinking blocks', () => {
         const turn = makeTurn({
             sequence: 1,
             role: 'assistant',
@@ -211,19 +212,19 @@ describe('extractReasoningFromTurn', () => {
         expect(result.signature).toBe('sig-2');
     });
 
-    it('returns empty when the turn has no thinking blocks', () => {
+    it('should return empty when the turn has no thinking blocks', () => {
         const turn = makeTurn({sequence: 1, role: 'assistant', content: [{type: BlockType.Text, text: 'hi'}]});
 
         expect(extractReasoningFromTurn(turn)).toEqual({summary: '', signature: ''});
     });
 
-    it('tolerates an undefined turn', () => {
+    it('should tolerate an undefined turn', () => {
         expect(extractReasoningFromTurn(undefined)).toEqual({summary: '', signature: ''});
     });
 });
 
 describe('extractAnnotationsFromTurn', () => {
-    it('flattens citations across text blocks with a running index', () => {
+    it('should flatten citations across text blocks with a running index', () => {
         const turn = makeTurn({
             sequence: 1,
             role: 'assistant',
@@ -258,7 +259,7 @@ describe('extractAnnotationsFromTurn', () => {
 // field on the post-anchor assistant turn. The server owns the state
 // machine; these tests guard the pass-through and the fail-safe default.
 describe('deriveApprovalStageForPost', () => {
-    it('returns the server-set approval_state on the post anchor', () => {
+    it('should return the server-set approval_state on the post anchor', () => {
         const conversation = makeConversation([
             makeTurn({
                 sequence: 0,
@@ -272,7 +273,7 @@ describe('deriveApprovalStageForPost', () => {
         expect(deriveApprovalStageForPost(conversation, POST_ID)).toBe(ToolApprovalStage.Result);
     });
 
-    it('passes through the Call stage when server sets it', () => {
+    it('should pass through the Call stage when server sets it', () => {
         const conversation = makeConversation([
             makeTurn({
                 sequence: 0,
@@ -286,7 +287,7 @@ describe('deriveApprovalStageForPost', () => {
         expect(deriveApprovalStageForPost(conversation, POST_ID)).toBe(ToolApprovalStage.Call);
     });
 
-    it('defaults to Done when the anchor turn is missing', () => {
+    it('should default to Done when the anchor turn is missing', () => {
         const conversation = makeConversation([
             makeTurn({sequence: 0, role: 'user', content: []}),
         ]);
@@ -294,7 +295,7 @@ describe('deriveApprovalStageForPost', () => {
         expect(deriveApprovalStageForPost(conversation, POST_ID)).toBe(ToolApprovalStage.Done);
     });
 
-    it('defaults to Done when approval_state is missing on the anchor', () => {
+    it('should default to Done when approval_state is missing on the anchor', () => {
         const conversation = makeConversation([
             makeTurn({
                 sequence: 0,
@@ -308,50 +309,20 @@ describe('deriveApprovalStageForPost', () => {
     });
 });
 
-describe('hasAutoApprovedToolsForPost', () => {
-    it('detects auto-approved tool use in any response turn', () => {
-        const conversation = makeConversation([
-            makeTurn({sequence: 0, role: 'user', content: []}),
-            makeTurn({
-                sequence: 1,
-                role: 'assistant',
-                post_id: POST_ID,
-                content: [{type: BlockType.ToolUse, id: 'call1', name: 'x', status: ToolCallStatusString.AutoApproved}],
-            }),
-        ]);
-
-        expect(hasAutoApprovedToolsForPost(conversation, POST_ID)).toBe(true);
-    });
-
-    it('returns false when no tool use has the auto-approved status', () => {
-        const conversation = makeConversation([
-            makeTurn({sequence: 0, role: 'user', content: []}),
-            makeTurn({
-                sequence: 1,
-                role: 'assistant',
-                post_id: POST_ID,
-                content: [{type: BlockType.ToolUse, id: 'call1', name: 'x', status: ToolCallStatusString.Pending}],
-            }),
-        ]);
-
-        expect(hasAutoApprovedToolsForPost(conversation, POST_ID)).toBe(false);
-    });
-});
-
 describe('anyToolHasArguments / anyToolHasResult', () => {
-    it('returns false for empty input', () => {
+    it('should return false for empty input', () => {
         expect(anyToolHasArguments([])).toBe(false);
         expect(anyToolHasResult([])).toBe(false);
     });
 
-    it('returns true when at least one tool has arguments', () => {
+    it('should return true when at least one tool has arguments', () => {
         expect(anyToolHasArguments([
             {id: 'a', name: 'x', description: '', arguments: null, status: ToolCallStatus.Success},
             {id: 'b', name: 'y', description: '', arguments: {q: 1}, status: ToolCallStatus.Success},
         ])).toBe(true);
     });
 
-    it('returns true when at least one tool has a result', () => {
+    it('should return true when at least one tool has a result', () => {
         expect(anyToolHasResult([
             {id: 'a', name: 'x', description: '', arguments: {}, status: ToolCallStatus.Success},
             {id: 'b', name: 'y', description: '', arguments: {}, result: 'ok', status: ToolCallStatus.Success},

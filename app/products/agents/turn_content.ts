@@ -172,14 +172,6 @@ export function deriveApprovalStageForPost(conversation: ConversationResponse, p
     return anchor?.approval_state ?? ToolApprovalStage.Done;
 }
 
-/** True if any tool_use block across the post's response is auto-approved. */
-export function hasAutoApprovedToolsForPost(conversation: ConversationResponse, postId: string): boolean {
-    const turns = collectResponseTurns(conversation, postId);
-    return turns.some((t) =>
-        t.content.some((b) => b.type === BlockType.ToolUse && b.status === ToolCallStatusString.AutoApproved),
-    );
-}
-
 /** True if any tool_use carries arguments (requester or shared block). */
 export function anyToolHasArguments(toolCalls: ToolCall[]): boolean {
     return toolCalls.some((tc) => tc.arguments != null);

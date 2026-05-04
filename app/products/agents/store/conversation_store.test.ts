@@ -37,6 +37,10 @@ async function flush(): Promise<void> {
     await Promise.resolve();
 }
 
+// clearConversationCache() drops every cached subject and inflight entry, so
+// each test starts from a fresh store. jest.resetModules() would also work
+// but would force a re-import of React via the test renderer, breaking
+// renderHook's identity assumptions.
 beforeEach(() => {
     mockedFetch.mockReset();
     clearConversationCache();

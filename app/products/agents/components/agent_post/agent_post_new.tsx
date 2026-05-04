@@ -12,7 +12,6 @@ import {
     extractAnnotationsFromTurn,
     extractReasoningFromTurn,
     extractToolCallsForPost,
-    hasAutoApprovedToolsForPost,
 } from '@agents/turn_content';
 import {ToolApprovalStage, type Annotation, type ToolCall} from '@agents/types';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
@@ -110,7 +109,6 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     // Default to 'call' so pending tools get accept/reject buttons during
     // streaming, before the server writes the anchor turn with approval_state.
     const [approvalStage, setApprovalStage] = useState<ToolApprovalStage>(ToolApprovalStage.Call);
-    const [isAutoApproved, setIsAutoApproved] = useState(false);
 
     // Populate from the conversation entity when a finalized turn for this
     // post is available and we're not actively streaming. Streaming events
@@ -127,12 +125,13 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         setReasoning(reasoningText);
         setShowReasoning(reasoningText !== '');
         setApprovalStage(deriveApprovalStageForPost(conversation, post.id));
-        setIsAutoApproved(hasAutoApprovedToolsForPost(conversation, post.id));
     }, [conversation, turn, post.id, isGenerating]);
 
     // Overlay streaming state as events arrive. Only mutate when the
     // streaming store actually produced a value so an empty new stream
-    // doesn't wipe out persisted data.
+    // doesn't wipe out persisted data. Clearing this local state on
+    // restart is delegated to handleRegenerate; any future code path
+    // that initialises a new stream must clear it explicitly too.
     useEffect(() => {
         if (!streamingState) {
             return;
@@ -196,7 +195,6 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         setReasoning('');
         setShowReasoning(false);
         setApprovalStage(ToolApprovalStage.Call);
-        setIsAutoApproved(false);
 
         // Also clear the streaming store so the incoming 'start' event
         // doesn't preserve stale tool calls from the previous response.
@@ -241,7 +239,6 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
                     canExpand={canExpand}
                     showArguments={showArguments}
                     showResults={showResults}
-                    isAutoApproved={isAutoApproved}
                 />
             )}
             {!isPrecontent && (displayMessage || isGenerating) && (

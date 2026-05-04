@@ -26,14 +26,6 @@ interface ToolApprovalSetProps {
     canExpand: boolean;
     showArguments: boolean;
     showResults: boolean;
-
-    /**
-     * Whether the response's tool calls were auto-approved by the server's
-     * MCP policy. When true during the call stage, approve/reject controls
-     * are suppressed since the user has no decision to make. Tools in the
-     * result stage still need the share/keep-private decision.
-     */
-    isAutoApproved?: boolean;
 }
 
 type ToolDecision = {
@@ -67,7 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 /**
  * Container component for displaying and managing tool approval requests
  */
-const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpand, showArguments, showResults, isAutoApproved = false}: ToolApprovalSetProps) => {
+const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpand, showArguments, showResults}: ToolApprovalSetProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -119,10 +111,6 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             return updatedCount === prevCount ? prev : updated;
         });
     }, [toolCalls, approvalStage]);
-
-    // When auto-approved during the call stage the user has no decision to
-    // make — the tools will run as soon as the server resolves them.
-    const effectiveCanApprove = isAutoApproved && approvalStage === ToolApprovalStage.Call ? false : canApprove;
 
     const actionableTools = useMemo(() => {
         if (approvalStage === ToolApprovalStage.Call) {
@@ -254,13 +242,13 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                         isProcessing={isActionable && isSubmitting}
                         localDecision={isActionable ? toolDecisions[tool.id] : undefined}
                         onToggleCollapse={toggleCollapse}
-                        onApprove={isActionable && effectiveCanApprove ? handleApprove : undefined}
-                        onReject={isActionable && effectiveCanApprove ? handleReject : undefined}
+                        onApprove={isActionable && canApprove ? handleApprove : undefined}
+                        onReject={isActionable && canApprove ? handleReject : undefined}
                         approvalStage={approvalStage}
                         canExpand={canExpand}
                         showArguments={showArguments}
                         showResults={showResults}
-                        isAutoApproved={isAutoApproved || tool.status === ToolCallStatus.AutoApproved}
+                        isAutoApproved={tool.status === ToolCallStatus.AutoApproved}
                     />
                 );
             })}

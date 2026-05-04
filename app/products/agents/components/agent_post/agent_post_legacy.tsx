@@ -197,15 +197,15 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
         };
     }, [isRedacted, isRequester, approvalStage, privateToolResults, serverUrl, post.id]);
 
-    // Clear private data when streaming tool calls change
+    // Clear private data when streaming tool calls actually change so a
+    // re-render with the same reference doesn't wipe persisted state.
     const prevStreamingToolCallsRef = useRef(streamingState?.toolCalls);
     useEffect(() => {
         const currentToolCalls = streamingState?.toolCalls;
-        const hadToolCalls = prevStreamingToolCallsRef.current != null;
+        const prevToolCalls = prevStreamingToolCallsRef.current;
         prevStreamingToolCallsRef.current = currentToolCalls;
 
-        // Clear when new streaming tool calls arrive OR when streaming ends
-        if (currentToolCalls || hadToolCalls) {
+        if (currentToolCalls !== prevToolCalls && (currentToolCalls || prevToolCalls)) {
             setPrivateToolCalls(null);
             setPrivateToolResults(null);
         }

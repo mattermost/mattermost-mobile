@@ -16,7 +16,7 @@ import type {ConversationResponse} from '@agents/types';
 export async function fetchConversation(
     serverUrl: string,
     conversationId: string,
-): Promise<{data?: ConversationResponse; error?: unknown}> {
+): Promise<{data?: ConversationResponse; error?: string}> {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const data = await client.getConversation(conversationId);

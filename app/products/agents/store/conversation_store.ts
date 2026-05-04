@@ -10,7 +10,7 @@ import type {ConversationResponse, Turn} from '@agents/types';
 export interface ConversationState {
     conversation?: ConversationResponse;
     loading: boolean;
-    error?: unknown;
+    error?: string;
 }
 
 const INITIAL_STATE: ConversationState = {loading: false};
@@ -61,6 +61,10 @@ class ConversationStore {
         const promise = fetchConversation(serverUrl, conversationId).then(({data, error}) => {
             this.inflight.delete(conversationId);
             if (error) {
+                // Preserve the previously cached conversation on error as a
+                // fail-safe so transient network failures (including those
+                // triggered by invalidate) don't blank the UI. An explicit
+                // evict() is required to drop cached data.
                 subject.next({conversation: subject.value.conversation, loading: false, error});
                 return;
             }
@@ -106,12 +110,14 @@ class ConversationStore {
 
     /** Clear all cached conversations. Called on logout. */
     clear(): void {
+        // Clear inflight first so a fetch resolving after this call does not
+        // try to push state onto the now-completed subjects.
+        this.inflight.clear();
         for (const subject of this.subjects.values()) {
             subject.next(INITIAL_STATE);
             subject.complete();
         }
         this.subjects.clear();
-        this.inflight.clear();
     }
 }
 

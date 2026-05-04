@@ -35,7 +35,7 @@ beforeEach(() => {
 });
 
 describe('fetchAIThreads', () => {
-    it('normalises plugin >= 2.0 threads so id is the root post id', async () => {
+    it('should normalise plugin >= 2.0 threads so id is the root post id', async () => {
         mockClient.getAIThreads.mockResolvedValue([
             {
                 id: 'conv-abc',
@@ -51,6 +51,7 @@ describe('fetchAIThreads', () => {
 
         const result = await fetchAIThreads(serverUrl);
 
+        expect(result.error).toBeUndefined();
         expect(mockOperator.handleAIThreads).toHaveBeenCalledWith({
             threads: [{
                 id: 'post-xyz',
@@ -64,21 +65,24 @@ describe('fetchAIThreads', () => {
             }],
             prepareRecordsOnly: false,
         });
+        expect(result.threads).toHaveLength(1);
         expect(result.threads?.[0].id).toBe('post-xyz');
     });
 
-    it('preserves plugin < 2.0 shape where id is already the root post id', async () => {
+    it('should preserve plugin < 2.0 shape where id is already the root post id', async () => {
         mockClient.getAIThreads.mockResolvedValue([
             {id: 'post-legacy', channel_id: 'dm-1', title: 'Legacy', reply_count: 1, update_at: 50},
         ]);
 
         const result = await fetchAIThreads(serverUrl);
 
+        expect(result.error).toBeUndefined();
+        expect(result.threads).toHaveLength(1);
         expect(result.threads?.[0].id).toBe('post-legacy');
         expect(result.threads?.[0].root_post_id).toBeUndefined();
     });
 
-    it('drops threadless plugin >= 2.0 conversations that have no root post yet', async () => {
+    it('should drop threadless plugin >= 2.0 conversations that have no root post yet', async () => {
         mockClient.getAIThreads.mockResolvedValue([
             {id: 'conv-with-post', root_post_id: 'post-1', channel_id: 'dm-1'},
             {id: 'conv-without-post', root_post_id: null, channel_id: null},
@@ -87,30 +91,34 @@ describe('fetchAIThreads', () => {
 
         const result = await fetchAIThreads(serverUrl);
 
+        expect(result.error).toBeUndefined();
         expect(result.threads).toHaveLength(1);
         expect(result.threads?.[0].id).toBe('post-1');
     });
 
-    it('coerces a null channel_id to an empty string so the handler does not choke', async () => {
+    it('should coerce a null channel_id to an empty string so the handler does not choke', async () => {
         mockClient.getAIThreads.mockResolvedValue([
             {id: 'conv-1', root_post_id: 'post-1', channel_id: null},
         ]);
 
         const result = await fetchAIThreads(serverUrl);
 
+        expect(result.error).toBeUndefined();
+        expect(result.threads).toHaveLength(1);
         expect(result.threads?.[0].channel_id).toBe('');
     });
 
-    it('treats a null API response as an empty list', async () => {
+    it('should treat a null API response as an empty list', async () => {
         mockClient.getAIThreads.mockResolvedValue(null);
 
         const result = await fetchAIThreads(serverUrl);
 
+        expect(result.error).toBeUndefined();
         expect(mockOperator.handleAIThreads).toHaveBeenCalledWith({threads: [], prepareRecordsOnly: false});
         expect(result.threads).toEqual([]);
     });
 
-    it('returns an error and logs on client failure', async () => {
+    it('should return an error and log on client failure', async () => {
         const error = new Error('Network error');
         const errorMessage = 'Failed to fetch threads';
         mockClient.getAIThreads.mockRejectedValue(error);

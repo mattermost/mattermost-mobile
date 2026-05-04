@@ -204,6 +204,7 @@ describe('ToolCard', () => {
             const {getAllByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
             const markdowns = getAllByTestId('mock-markdown');
+            expect(markdowns).toHaveLength(1);
             const argumentsText = markdowns[0].props.children;
             expect(argumentsText).toContain('{}');
             expect(argumentsText).not.toContain('undefined');
@@ -216,6 +217,7 @@ describe('ToolCard', () => {
             const {getAllByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
             const markdowns = getAllByTestId('mock-markdown');
+            expect(markdowns).toHaveLength(1);
             const argumentsText = markdowns[0].props.children;
             expect(argumentsText).toContain('{}');
             expect(argumentsText).not.toContain('null');
