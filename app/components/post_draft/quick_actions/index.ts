@@ -26,11 +26,9 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhancedProps) => {
     const canUploadFiles = observeCanUploadFiles(database);
     const maxFileCount = observeMaxFileCount(database);
     const allowDownloadLogs = observeConfigBooleanValue(database, 'AllowDownloadLogs', true);
-    const attachLogsPref = queryPreferencesByCategoryAndName(
-        database,
-        Preferences.CATEGORIES.ADVANCED_SETTINGS,
-        Preferences.ATTACH_APP_LOGS,
-    ).observe();
+    const attachLogsEnabled = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.ADVANCED_SETTINGS, Preferences.ATTACH_APP_LOGS).
+        observeWithColumns(['value']).
+        pipe(map((prefs) => prefs[0]?.value === 'true'));
 
     return {
         canUploadFiles,
@@ -38,8 +36,8 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhancedProps) => {
         isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
         isBoREnabled: observeIsBoREnabled(database),
         maxFileCount,
-        showAttachLogs: combineLatest([allowDownloadLogs, attachLogsPref]).pipe(
-            map(([allowed, prefs]) => allowed && prefs?.[0]?.value === 'true'),
+        showAttachLogs: combineLatest([allowDownloadLogs, attachLogsEnabled]).pipe(
+            map(([allowed, enabled]) => allowed && enabled),
         ),
     };
 });

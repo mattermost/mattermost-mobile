@@ -8,8 +8,9 @@ import {goToAgentThreadsList} from '@agents/screens/navigation';
 import {PortalProvider} from '@gorhom/portal';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, Pressable, Text, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {type LayoutChangeEvent, Platform, Pressable, ScrollView, Text, View} from 'react-native';
+import {KeyboardProvider} from 'react-native-keyboard-controller';
+import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {createDirectChannel} from '@actions/remote/channel';
 import {buildAbsoluteUrl} from '@actions/remote/file';
@@ -17,6 +18,7 @@ import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {buildProfileImageUrl} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_draft_container';
 import Loading from '@components/loading';
 import PostDraft from '@components/post_draft';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -38,6 +40,9 @@ type Props = {
     componentId: AvailableScreens;
     bots: AiBotModel[];
 };
+
+const AGENT_CHAT_POST_DRAFT_TESTID = 'agent_chat.post_draft';
+const AGENT_CHAT_POST_INPUT_NATIVE_ID = `${AGENT_CHAT_POST_DRAFT_TESTID}.post.input`;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -97,6 +102,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     content: {
         flex: 1,
+        justifyContent: 'flex-end',
+    },
+    introScroll: {
+        flex: 1,
+    },
+    introScrollContent: {
+        flexGrow: 1,
         justifyContent: 'flex-end',
     },
     introContent: {
@@ -299,9 +311,61 @@ const AgentChat = ({
         );
     }
 
+    const mainContent = (
+        <PortalProvider>
+            <View
+                style={styles.mainContent}
+                onLayout={onLayout}
+            >
+                <KeyboardAwarePostDraftContainer
+                    textInputNativeID={AGENT_CHAT_POST_INPUT_NATIVE_ID}
+                    containerStyle={styles.content}
+                    renderList={({postInputContainerHeight}) => (
+                        <ScrollView
+                            style={styles.introScroll}
+                            contentContainerStyle={[styles.introScrollContent, {paddingBottom: postInputContainerHeight}]}
+                            keyboardDismissMode='interactive'
+                            keyboardShouldPersistTaps='handled'
+                            showsVerticalScrollIndicator={false}
+                        >
+                            <View style={styles.introContent}>
+                                <AgentsIntro theme={theme}/>
+                                <FormattedText
+                                    id='agents.chat.intro_title'
+                                    defaultMessage='Ask Agents anything'
+                                    style={styles.welcomeText}
+                                />
+                                <FormattedText
+                                    id='agents.chat.intro_description'
+                                    defaultMessage='Agents are here to help.'
+                                    style={styles.descriptionText}
+                                />
+                                {error && <Text style={styles.errorText}>{error}</Text>}
+                            </View>
+                        </ScrollView>
+                    )}
+                >
+                    {channelId && (
+                        <PostDraft
+                            channelId={channelId}
+                            testID={AGENT_CHAT_POST_DRAFT_TESTID}
+                            containerHeight={containerHeight}
+                            isChannelScreen={false}
+                            location={Screens.AGENT_CHAT}
+                            onPostCreated={handlePostCreated}
+                        />
+                    )}
+                </KeyboardAwarePostDraftContainer>
+            </View>
+        </PortalProvider>
+    );
+
+    const safeAreaEdges: Edge[] = ['left', 'right', 'bottom'];
+
     return (
-        <View
+        <SafeAreaView
             style={styles.container}
+            edges={safeAreaEdges}
         >
             {/* Header */}
             <View style={[styles.headerContainer, {paddingTop: insets.top}]}>
@@ -314,7 +378,7 @@ const AgentChat = ({
                             testID='agent_chat.back_button'
                         >
                             <CompassIcon
-                                name='arrow-left'
+                                name={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'}) ?? 'arrow-back-ios'}
                                 size={20}
                                 color={changeOpacity(theme.sidebarText, 0.56)}
                             />
@@ -373,41 +437,10 @@ const AgentChat = ({
             </View>
 
             {/* Main content */}
-            <PortalProvider>
-                <View
-                    style={styles.mainContent}
-                    onLayout={onLayout}
-                >
-                    <View style={styles.content}>
-                        <View style={styles.introContent}>
-                            <AgentsIntro theme={theme}/>
-                            <FormattedText
-                                id='agents.chat.intro_title'
-                                defaultMessage='Ask Agents anything'
-                                style={styles.welcomeText}
-                            />
-                            <FormattedText
-                                id='agents.chat.intro_description'
-                                defaultMessage='Agents are here to help.'
-                                style={styles.descriptionText}
-                            />
-                            {error && <Text style={styles.errorText}>{error}</Text>}
-                        </View>
-                    </View>
-
-                    {channelId && (
-                        <PostDraft
-                            channelId={channelId}
-                            testID='agent_chat.post_draft'
-                            containerHeight={containerHeight}
-                            isChannelScreen={false}
-                            location={Screens.AGENT_CHAT}
-                            onPostCreated={handlePostCreated}
-                        />
-                    )}
-                </View>
-            </PortalProvider>
-        </View>
+            {Platform.OS === 'ios' ? (
+                <KeyboardProvider>{mainContent}</KeyboardProvider>
+            ) : mainContent}
+        </SafeAreaView>
     );
 };
 

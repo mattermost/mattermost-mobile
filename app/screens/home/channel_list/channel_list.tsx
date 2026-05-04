@@ -32,7 +32,6 @@ import Servers from './servers';
 import type {LaunchType} from '@typings/launch';
 
 type ChannelProps = {
-    canJoinOtherTeams: boolean;
     hasChannels: boolean;
     isCRTEnabled: boolean;
     hasTeams: boolean;
@@ -211,7 +210,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                             hasMoreThanOneTeam={props.hasMoreThanOneTeam}
                         />
                         <CategoriesList
-                            iconPad={canAddOtherServers && !props.hasMoreThanOneTeam && !props.canJoinOtherTeams}
+                            iconPad={canAddOtherServers && !props.hasMoreThanOneTeam}
                             isCRTEnabled={props.isCRTEnabled}
                             moreThanOneTeam={props.hasMoreThanOneTeam}
                             hasChannels={props.hasChannels}

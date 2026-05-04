@@ -25,7 +25,6 @@ import {getCommonStyleSheet} from './styles';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
-export const REPORT_PROBLEM_CLOSE_BUTTON_ID = 'close-report-problem';
 
 type Props = {
     componentId: AvailableScreens;
@@ -150,7 +149,10 @@ const ReportProblem = ({
     });
 
     return (
-        <View style={styles.container}>
+        <View
+            style={styles.container}
+            testID='report_problem.screen'
+        >
             <View style={styles.body}>
                 <ScrollView contentContainerStyle={styles.content}>
                     <View style={styles.detailsSection}>

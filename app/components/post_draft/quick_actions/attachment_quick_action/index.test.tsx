@@ -278,6 +278,28 @@ describe('AttachmentQuickAction', () => {
             });
         });
 
+        it('should pass showAttachLogs to openAttachmentOptions', async () => {
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentQuickAction
+                    {...baseProps}
+                    showAttachLogs={true}
+                />,
+            );
+
+            const button = getByTestId('test-attachment');
+            fireEvent.press(button);
+
+            await waitFor(() => {
+                expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
+                    expect.any(Object), // intl
+                    expect.any(Object), // theme
+                    expect.objectContaining({
+                        showAttachLogs: true,
+                    }),
+                );
+            });
+        });
+
         it('should handle default fileCount when not provided', async () => {
             const propsWithoutFileCount = {
                 ...baseProps,

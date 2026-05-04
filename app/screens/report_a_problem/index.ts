@@ -3,9 +3,8 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import {withObservables} from '@nozbe/watermelondb/react';
-import {switchMap} from '@nozbe/watermelondb/utils/rx';
 import {of as of$} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
@@ -24,8 +23,8 @@ const enhanced = withObservables([], ({database}) => {
         metadata: observeReportAProblemMetadata(database),
         currentUserId: observeCurrentUserId(database),
         attachLogsEnabled: queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.ADVANCED_SETTINGS, Preferences.ATTACH_APP_LOGS).
-            observe().
-            pipe(map((prefs) => prefs?.[0]?.value === 'true')),
+            observeWithColumns(['value']).
+            pipe(map((prefs) => prefs[0]?.value === 'true')),
     };
 });
 

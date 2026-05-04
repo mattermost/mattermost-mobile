@@ -40,6 +40,7 @@ import PostOptionsScreen from './post_options';
 import PushNotificationSettingsScreen from './push_notification_settings';
 import ReactionsScreen from './reactions';
 import RecentMentionsScreen from './recent_mentions';
+import ReportProblemScreen from './report_problem';
 import SavedMessagesScreen from './saved_messages';
 import ScheduleMessageScreen from './scheduled_message_screen';
 import SearchMessagesScreen from './search_messages';
@@ -94,6 +95,7 @@ export {
     PushNotificationSettingsScreen,
     ReactionsScreen,
     RecentMentionsScreen,
+    ReportProblemScreen,
     SavedMessagesScreen,
     SearchMessagesScreen,
     SelectTimezoneScreen,
