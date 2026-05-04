@@ -136,6 +136,7 @@ const EditPostInput = ({
                     />
                     <QuickActions
                         testID='edit_post.quick_actions'
+                        channelId={post.channelId}
                         fileCount={postFiles.length}
                         addFiles={addFiles}
                         updateValue={updateValue}

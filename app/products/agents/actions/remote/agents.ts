@@ -39,13 +39,14 @@ export const fetchAgents = async (serverUrl: string) => {
 export async function rewriteMessage(
     serverUrl: string,
     message: string,
+    channelId: string,
     action: RewriteAction,
     customPrompt: string | undefined,
     agentId: string | undefined,
 ): Promise<{rewrittenText?: string; error?: unknown}> {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const rewrittenText = await client.getRewrittenMessage(message, action, customPrompt, agentId);
+        const rewrittenText = await client.getRewrittenMessage(message, channelId, action, customPrompt, agentId);
         return {rewrittenText};
     } catch (error) {
         logError('[rewriteMessage]', error);

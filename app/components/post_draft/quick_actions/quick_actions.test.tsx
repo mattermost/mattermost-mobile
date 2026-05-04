@@ -18,6 +18,7 @@ describe('Quick Actions', () => {
         updatePostBoRStatus: jest.fn(),
         testID: 'test-quick-actions',
         canUploadFiles: true,
+        channelId: 'channel-id',
         fileCount: 0,
         isAgentsEnabled: true,
         isPostPriorityEnabled: true,

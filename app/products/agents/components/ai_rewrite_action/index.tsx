@@ -19,6 +19,7 @@ const ICON_SIZE = 24;
 type Props = {
     testID?: string;
     disabled?: boolean;
+    channelId: string;
     value: string;
     updateValue: (value: string | ((prevValue: string) => string)) => void;
 }
@@ -34,6 +35,7 @@ const styles = {
 export default function AIRewriteAction({
     testID,
     disabled = false,
+    channelId,
     value,
     updateValue,
 }: Props) {
@@ -53,11 +55,12 @@ export default function AIRewriteAction({
             title,
             props: {
                 closeButtonId: 'close-ai-rewrite',
+                channelId,
                 originalMessage: value,
                 updateValue,
             },
         });
-    }, [intl, isTablet, theme, value, updateValue]);
+    }, [intl, isTablet, theme, channelId, value, updateValue]);
 
     const isDisabled = disabled || isProcessing;
     const actionTestID = isDisabled ? `${testID}.disabled` : testID;

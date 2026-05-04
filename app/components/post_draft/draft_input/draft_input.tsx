@@ -251,6 +251,7 @@ function DraftInput({
                     <View style={style.actionsContainer}>
                         <QuickActions
                             testID={quickActionsTestID}
+                            channelId={channelId}
                             fileCount={files.length}
                             addFiles={addFiles}
                             updateValue={updateValue}

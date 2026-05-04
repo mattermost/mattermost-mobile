@@ -83,6 +83,7 @@ const messages = defineMessages({
 type Props = {
     closeButtonId: string;
     componentId: AvailableScreens;
+    channelId: string;
     originalMessage: string;
     updateValue: (value: string | ((prevValue: string) => string)) => void;
 };
@@ -141,6 +142,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const RewriteOptions = ({
     closeButtonId,
     componentId,
+    channelId,
     originalMessage,
     updateValue,
 }: Props) => {
@@ -204,6 +206,7 @@ const RewriteOptions = ({
             startRewrite(
                 serverUrl,
                 messageToProcess,
+                channelId,
                 action,
                 prompt,
                 agentId,
@@ -222,7 +225,7 @@ const RewriteOptions = ({
             // Still try to start the rewrite even if sheet close failed
             triggerRewrite();
         }
-    }, [originalMessage, serverUrl, closeBottomSheet, selectedAgent, startRewrite, handleRewriteSuccess, handleRewriteError]);
+    }, [originalMessage, channelId, serverUrl, closeBottomSheet, selectedAgent, startRewrite, handleRewriteSuccess, handleRewriteError]);
 
     // Determine if we're in generation mode (empty original message means user wants to generate new content)
     const isInGenerationMode = !originalMessage || !originalMessage.trim();

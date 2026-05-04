@@ -52,6 +52,7 @@ export type AgentsStatusResponse = {
 export type RewriteRequest = {
     agent_id?: string;
     message: string;
+    channel_id?: string;
     action?: string;
     custom_prompt?: string;
 };

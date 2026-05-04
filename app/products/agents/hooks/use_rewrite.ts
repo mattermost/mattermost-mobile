@@ -14,6 +14,7 @@ const TIMEOUT_MS = 30000; // 30 seconds
 type StartRewriteCallback = (
     serverUrl: string,
     message: string,
+    channelId: string,
     action: RewriteAction,
     customPrompt: string | undefined,
     agentId: string | undefined,
@@ -59,6 +60,7 @@ export const useRewrite = (): UseRewriteReturn => {
     const startRewrite = useCallback((
         serverUrl: string,
         message: string,
+        channelId: string,
         action: RewriteAction,
         customPrompt: string | undefined,
         agentId: string | undefined,
@@ -82,7 +84,7 @@ export const useRewrite = (): UseRewriteReturn => {
 
         const runRewrite = async () => {
             try {
-                const rewritePromise = rewriteMessage(serverUrl, message, action, customPrompt, agentId);
+                const rewritePromise = rewriteMessage(serverUrl, message, channelId, action, customPrompt, agentId);
                 currentPromiseRef.current = rewritePromise;
 
                 const result = await Promise.race([rewritePromise, timeoutPromise]);
