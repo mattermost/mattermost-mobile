@@ -72,20 +72,25 @@ export interface AgentPostNewProps {
     isDM: boolean;
 }
 
-/**
- * Conversation-entity agent post renderer. Maintains local display state for
- * tool calls, reasoning, and annotations that is populated from two sources:
- *
- *   - Live streaming events while the assistant is generating — routed
- *     through the global streaming store and merged into local state as they
- *     arrive.
- *   - The finalized conversation entity once a stream finishes — the fetched
- *     turn is decoded into the same local state.
- *
- * Local state acts as a buffer so the UI keeps showing tools/reasoning
- * through the brief window between POST_EDITED clearing the streaming store
- * and the invalidated conversation fetch resolving with fresh turn data.
- */
+interface DisplayState {
+    toolCalls: ToolCall[];
+    annotations: Annotation[];
+    reasoning: string;
+    showReasoning: boolean;
+    approvalStage: ToolApprovalStage;
+}
+
+const INITIAL_DISPLAY_STATE: DisplayState = {
+    toolCalls: [],
+    annotations: [],
+    reasoning: '',
+    showReasoning: false,
+    approvalStage: ToolApprovalStage.Call,
+};
+
+// Buffers tool calls / reasoning / annotations through the brief window
+// between POST_EDITED clearing the streaming store and the invalidated
+// conversation fetch resolving with fresh turn data.
 const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: AgentPostNewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -99,60 +104,55 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const isPrecontent = streamingState?.precontent ?? false;
     const isReasoningLoading = streamingState?.isReasoningLoading ?? false;
 
-    // Local display state — merged from conversation + streaming store so
-    // nothing flickers during the stream-end handoff.
-    const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
-    const [annotations, setAnnotations] = useState<Annotation[]>([]);
-    const [reasoning, setReasoning] = useState('');
-    const [showReasoning, setShowReasoning] = useState(false);
+    const [displayState, setDisplayState] = useState<DisplayState>(INITIAL_DISPLAY_STATE);
+    const {toolCalls, annotations, reasoning, showReasoning, approvalStage} = displayState;
 
-    // Default to 'call' so pending tools get accept/reject buttons during
-    // streaming, before the server writes the anchor turn with approval_state.
-    const [approvalStage, setApprovalStage] = useState<ToolApprovalStage>(ToolApprovalStage.Call);
-
-    // Populate from the conversation entity when a finalized turn for this
-    // post is available and we're not actively streaming. Streaming events
-    // take precedence while live, and we skip when the turn is missing so a
-    // stale conversation (fetched before stream END wrote the anchor turn)
-    // doesn't wipe out data we already received over the wire.
+    // Skip while streaming or when the anchor turn is missing so a stale
+    // conversation doesn't overwrite data already received over the wire.
     useEffect(() => {
         if (!conversation || !turn || isGenerating) {
             return;
         }
-        setToolCalls(extractToolCallsForPost(conversation, post.id));
-        setAnnotations(extractAnnotationsFromTurn(turn));
         const reasoningText = extractReasoningFromTurn(turn).summary;
-        setReasoning(reasoningText);
-        setShowReasoning(reasoningText !== '');
-        setApprovalStage(deriveApprovalStageForPost(conversation, post.id));
+        setDisplayState({
+            toolCalls: extractToolCallsForPost(conversation, post.id),
+            annotations: extractAnnotationsFromTurn(turn),
+            reasoning: reasoningText,
+            showReasoning: reasoningText !== '',
+            approvalStage: deriveApprovalStageForPost(conversation, post.id),
+        });
     }, [conversation, turn, post.id, isGenerating]);
 
-    // Overlay streaming state as events arrive. Only mutate when the
-    // streaming store actually produced a value so an empty new stream
-    // doesn't wipe out persisted data. Clearing this local state on
-    // restart is delegated to handleRegenerate; any future code path
-    // that initialises a new stream must clear it explicitly too.
+    // Only update on non-empty streaming values; handleRegenerate clears state on restart.
     useEffect(() => {
         if (!streamingState) {
             return;
         }
-        if (streamingState.toolCalls.length > 0) {
-            setToolCalls(streamingState.toolCalls);
-        }
-        if (streamingState.annotations.length > 0) {
-            setAnnotations(streamingState.annotations);
-        }
-        if (streamingState.reasoning !== '') {
-            setReasoning(streamingState.reasoning);
-        }
-        if (streamingState.showReasoning) {
-            setShowReasoning(true);
-        }
+        setDisplayState((prev) => {
+            const next: DisplayState = {...prev};
+            let changed = false;
+            if (streamingState.toolCalls.length > 0 && streamingState.toolCalls !== prev.toolCalls) {
+                next.toolCalls = streamingState.toolCalls;
+                changed = true;
+            }
+            if (streamingState.annotations.length > 0 && streamingState.annotations !== prev.annotations) {
+                next.annotations = streamingState.annotations;
+                changed = true;
+            }
+            if (streamingState.reasoning !== '' && streamingState.reasoning !== prev.reasoning) {
+                next.reasoning = streamingState.reasoning;
+                changed = true;
+            }
+            if (streamingState.showReasoning && !prev.showReasoning) {
+                next.showReasoning = true;
+                changed = true;
+            }
+            return changed ? next : prev;
+        });
     }, [streamingState]);
 
-    // Re-fetch the conversation when a stream finishes so the finalized turn
-    // reaches the cache. POST_EDITED will clear the streamingState shortly
-    // after; by then the local display state already has the latest values.
+    // Invalidate the cached conversation when a stream finishes so the next
+    // fetch surfaces the finalised turn.
     const wasGeneratingRef = useRef(isGenerating);
     useEffect(() => {
         const wasGenerating = wasGeneratingRef.current;
@@ -164,12 +164,12 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
 
     const displayMessage = streamingState?.message ?? post.message ?? '';
 
-    const isRequester = currentUserId ? isConversationRequester({post, conversation, currentUserId}) : false;
+    const isRequester = isConversationRequester({post, conversation, currentUserId});
     const canApprove = isRequester;
     const canExpand = isDM || isRequester;
 
-    // The server already filtered per-user, so "has arguments" === "show
-    // arguments". In DMs nothing is filtered.
+    // The server filters per-user already, so non-DMs hide tools whose
+    // arguments/results were redacted for this viewer.
     const showArguments = isDM || anyToolHasArguments(toolCalls);
     const showResults = isDM || anyToolHasResult(toolCalls);
 
@@ -187,17 +187,9 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     }, [serverUrl, post.id]);
 
     const handleRegenerate = useCallback(async () => {
-        // Clear prior-response tool calls / reasoning / annotations so the
-        // regenerated response starts from a clean slate rather than showing
-        // the previous round's data until the new stream's events arrive.
-        setToolCalls([]);
-        setAnnotations([]);
-        setReasoning('');
-        setShowReasoning(false);
-        setApprovalStage(ToolApprovalStage.Call);
-
-        // Also clear the streaming store so the incoming 'start' event
-        // doesn't preserve stale tool calls from the previous response.
+        // Clear local display + streaming store so the new stream starts from
+        // a clean slate instead of showing the previous round's data.
+        setDisplayState(INITIAL_DISPLAY_STATE);
         streamingStore.removePost(post.id);
         const {error} = await regenerateResponse(serverUrl, post.id);
         if (error) {

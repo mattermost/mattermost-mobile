@@ -8,6 +8,7 @@ import {BlockType, ToolCallStatusString, type ConversationResponse} from '@agent
 import {act} from '@testing-library/react-native';
 import React from 'react';
 
+import {Screens} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -15,7 +16,6 @@ import AgentPostNew from './agent_post_new';
 
 import type PostModel from '@typings/database/models/servers/post';
 
-// Mock Markdown to surface the rendered text content for assertion.
 jest.mock('@components/markdown', () => {
     const {Text} = require('react-native');
     const MockMarkdown = ({value}: {value: string}) => (
@@ -24,18 +24,15 @@ jest.mock('@components/markdown', () => {
     return MockMarkdown;
 });
 
-// Mock server context to avoid requiring ServerUrlProvider.
 jest.mock('@context/server', () => ({
     useServerUrl: () => 'https://test.mattermost.com',
 }));
 
-// Mock conversation fetch so the store resolves synchronously in tests.
 const mockFetchConversation = jest.fn();
 jest.mock('@agents/actions/remote/conversation', () => ({
     fetchConversation: (...args: unknown[]) => mockFetchConversation(...args),
 }));
 
-// Prevent network calls for control buttons.
 jest.mock('@agents/actions/remote/generation_controls', () => ({
     regenerateResponse: jest.fn().mockResolvedValue({}),
     stopGeneration: jest.fn().mockResolvedValue({}),
@@ -74,7 +71,6 @@ function makeConversation(overrides: Partial<ConversationResponse> = {}): Conver
     };
 }
 
-// Flush microtasks so Promise.resolve() chains run before assertions.
 async function flush(): Promise<void> {
     await Promise.resolve();
     await Promise.resolve();
@@ -88,7 +84,7 @@ beforeEach(() => {
 });
 
 describe('AgentPostNew — streaming text (Bug #1)', () => {
-    it('renders streaming text as it arrives over the wire', async () => {
+    it('should render streaming text as it arrives over the wire', async () => {
         // Conversation fetch returns empty (no anchor turn yet since stream is active).
         mockFetchConversation.mockResolvedValue({data: makeConversation()});
 
@@ -97,7 +93,7 @@ describe('AgentPostNew — streaming text (Bug #1)', () => {
                 post={makePost()}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
-                location={'Channel' as any}
+                location={Screens.CHANNEL}
                 isDM={true}
             />,
         );
@@ -123,7 +119,7 @@ describe('AgentPostNew — streaming text (Bug #1)', () => {
 });
 
 describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
-    it('renders tool cards on the first mount when the conversation is already cached', async () => {
+    it('should render tool cards on the first mount when the conversation is already cached', async () => {
         // Realistic turn layout from the plugin: tool_use blocks are in a
         // turn BEFORE the anchor (post_id=null), and the anchor turn carries
         // only the final text.
@@ -178,7 +174,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
                 post={makePost({message: 'Final response text'})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
-                location={'Channel' as any}
+                location={Screens.CHANNEL}
                 isDM={true}
             />,
         );
@@ -189,7 +185,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
         expect(await findByText('Search Docs')).toBeTruthy();
     });
 
-    it('still renders tool cards on a stream-end transition when the invalidated fetch returns fresh turns', async () => {
+    it('should still render tool cards on a stream-end transition when the invalidated fetch returns fresh turns', async () => {
         // Initial fetch: conversation has no anchor turn yet because the
         // stream has not ended.
         mockFetchConversation.mockResolvedValueOnce({data: makeConversation()});
@@ -233,7 +229,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
                 post={makePost()}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
-                location={'Channel' as any}
+                location={Screens.CHANNEL}
                 isDM={true}
             />,
         );
@@ -272,7 +268,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
         expect(queryByText('Search Docs')).toBeTruthy();
     });
 
-    it('renders tool cards when conversation and turn both populate asynchronously', async () => {
+    it('should render tool cards when conversation and turn both populate asynchronously', async () => {
         let resolveFetch: (value: {data: ConversationResponse}) => void = () => {};
         mockFetchConversation.mockReturnValue(new Promise((resolve) => {
             resolveFetch = resolve;
@@ -283,7 +279,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
                 post={makePost({message: 'Final response'})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
-                location={'Channel' as any}
+                location={Screens.CHANNEL}
                 isDM={true}
             />,
         );
@@ -323,7 +319,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
         expect(await findByText('Search Docs')).toBeTruthy();
     });
 
-    it('keeps a single pending tool visible after streaming ends and POST_EDITED clears streamingState', async () => {
+    it('should keep a single pending tool visible after streaming ends and POST_EDITED clears streamingState', async () => {
         // Channel scenario: agent streams a single pending tool, then the
         // stream ends awaiting approval. POST_EDITED races in and clears
         // streamingState. The invalidated conversation fetch resolves with
@@ -364,7 +360,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
                 post={makePost({message: ''})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
-                location={'Channel' as any}
+                location={Screens.CHANNEL}
                 isDM={false}
             />,
         );
@@ -412,7 +408,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
         expect(await findByTestId('agents.tool_card.tu_pending.reject')).toBeTruthy();
     });
 
-    it('renders a single pending tool awaiting approval with approve/reject buttons', async () => {
+    it('should render a single pending tool awaiting approval with approve/reject buttons', async () => {
         // Channel scenario: user sent a message, the agent's first (and only)
         // round emitted one pending tool_use block. No tool_result turn yet,
         // because execution is blocked on user approval. Server's
@@ -449,7 +445,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
                 post={makePost({message: ''})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
-                location={'Channel' as any}
+                location={Screens.CHANNEL}
                 isDM={false}
             />,
         );

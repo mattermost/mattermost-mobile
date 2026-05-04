@@ -8,16 +8,10 @@ import {BehaviorSubject, type Observable} from 'rxjs';
 
 import {logWarning} from '@utils/log';
 
-/**
- * Ephemeral store for managing streaming post state
- * Uses RxJS BehaviorSubject for reactive state management
- */
+// Ephemeral per-post streaming state, exposed reactively via RxJS.
 class StreamingPostStore {
     private streamingSubjects: Map<string, BehaviorSubject<StreamingState | undefined>> = new Map();
 
-    /**
-     * Get or create a BehaviorSubject for a post
-     */
     private getSubject(postId: string): BehaviorSubject<StreamingState | undefined> {
         let subject = this.streamingSubjects.get(postId);
         if (!subject) {
@@ -27,17 +21,9 @@ class StreamingPostStore {
         return subject;
     }
 
-    /**
-     * Start streaming for a post.
-     *
-     * The server emits 'start' before any tool_call/text/reasoning broadcasts,
-     * but on the wire the events travel through different WebSocket scopes
-     * (tool_call is user-scoped, 'start' is channel-scoped), and the client
-     * can receive them out of order. If a tool_call landed first, we must
-     * preserve it — wiping here would drop the only evidence that a tool is
-     * pending approval. Regenerate paths are responsible for clearing state
-     * explicitly before triggering a new stream.
-     */
+    // Preserve any early tool_call/annotation/text on `start` — events from
+    // different WebSocket scopes can arrive before `start`, and wiping here
+    // would drop pending-approval state. Regenerate paths clear state explicitly.
     startStreaming(postId: string): void {
         const existing = this.getStreamingState(postId);
         const hasEarlyContent = Boolean(
@@ -64,11 +50,8 @@ class StreamingPostStore {
         this.getSubject(postId).next(state);
     }
 
-    /**
-     * Build the zeroed state used when an event arrives for a post we never
-     * saw a `start` control for — e.g. reconnect mid-stream, or a tool status
-     * update that lands after POST_EDITED has already cleared state.
-     */
+    // Used when an event arrives without a preceding `start` (reconnect mid-stream,
+    // or a tool status update that lands after POST_EDITED cleared state).
     private makeDefaultState(postId: string): StreamingState {
         return {
             postId,
@@ -83,9 +66,6 @@ class StreamingPostStore {
         };
     }
 
-    /**
-     * Update the streaming message
-     */
     updateMessage(postId: string, message: string): void {
         const state = this.getStreamingState(postId) ?? this.makeDefaultState(postId);
 
@@ -97,17 +77,13 @@ class StreamingPostStore {
         });
     }
 
-    /**
-     * End streaming for a post
-     * Preserves message but marks as done - POST_EDITED will call removePost to clear
-     */
+    // Preserves message; POST_EDITED clears via removePost.
     endStreaming(postId: string): void {
         const state = this.getStreamingState(postId);
         if (!state) {
             return;
         }
 
-        // Preserve message but mark as done - wait for POST_EDITED to clear via removePost
         this.getSubject(postId).next({
             ...state,
             generating: false,
@@ -116,13 +92,10 @@ class StreamingPostStore {
         });
     }
 
-    /**
-     * Update reasoning summary
-     */
     updateReasoning(postId: string, reasoning: string, isLoading: boolean): void {
         const state = this.getStreamingState(postId) ?? this.makeDefaultState(postId);
 
-        // During reasoning, explicitly set generating to false to prevent blinking cursor
+        // While reasoning, generating is false to suppress the blinking cursor.
         const generating = isLoading ? false : state.generating;
         const precontent = isLoading ? false : state.precontent;
 
@@ -136,12 +109,8 @@ class StreamingPostStore {
         });
     }
 
-    /**
-     * Update tool calls. Each tool round emits its own WebSocket event; merge
-     * by id so live display shows every round's calls instead of only the
-     * most recent round's. Existing tools update in place so status
-     * transitions (pending → accepted → success) don't shuffle the array.
-     */
+    // Merge by id across rounds so the display retains earlier tools and
+    // status transitions update in place without shuffling order.
     updateToolCalls(postId: string, toolCallsJson: string): void {
         const state = this.getStreamingState(postId) ?? this.makeDefaultState(postId);
 
@@ -171,9 +140,6 @@ class StreamingPostStore {
         }
     }
 
-    /**
-     * Update annotations/citations
-     */
     updateAnnotations(postId: string, annotationsJson: string): void {
         const state = this.getStreamingState(postId) ?? this.makeDefaultState(postId);
 
@@ -189,9 +155,6 @@ class StreamingPostStore {
         }
     }
 
-    /**
-     * Handle a WebSocket message
-     */
     handleWebSocketMessage(data: PostUpdateWebsocketMessage): void {
         const {post_id, next, control, reasoning, tool_call, annotations} = data;
 
@@ -251,48 +214,32 @@ class StreamingPostStore {
         }
     }
 
-    /**
-     * Get the current streaming state for a post (synchronous)
-     */
     getStreamingState(postId: string): StreamingState | undefined {
         return this.streamingSubjects.get(postId)?.value;
     }
 
-    /**
-     * Observe streaming state for a post (reactive)
-     */
     observeStreamingState(postId: string): Observable<StreamingState | undefined> {
         return this.getSubject(postId).asObservable();
     }
 
-    /**
-     * Check if a post is currently streaming (actively generating)
-     */
     isStreaming(postId: string): boolean {
         const state = this.getStreamingState(postId);
         return state?.generating ?? false;
     }
 
-    /**
-     * Remove streaming state for a specific post
-     * Call this when a post is updated via POST_EDITED to ensure
-     * the component uses the persisted data from the database
-     */
+    // Called from POST_EDITED so the component switches from streaming state
+    // to the persisted database row. Subject is kept for potential reuse.
     removePost(postId: string): void {
         const subject = this.streamingSubjects.get(postId);
         if (!subject) {
             return;
         }
 
-        // Signal end to subscribers, but keep subject alive for potential reuse
         subject.next(undefined);
     }
 
-    /**
-     * Clear all streaming state (e.g., on logout)
-     */
+    // Called on logout to drop every cached post.
     clear(): void {
-        // Complete all subjects before clearing
         for (const subject of this.streamingSubjects.values()) {
             subject.next(undefined);
             subject.complete();
@@ -301,12 +248,8 @@ class StreamingPostStore {
     }
 }
 
-// Singleton instance
 const streamingStore = new StreamingPostStore();
 
-/**
- * React hook to subscribe to streaming state for a post
- */
 export function useStreamingState(postId: string): StreamingState | undefined {
     const [state, setState] = useState<StreamingState | undefined>(
         () => streamingStore.getStreamingState(postId),

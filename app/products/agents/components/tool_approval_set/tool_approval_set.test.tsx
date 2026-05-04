@@ -42,7 +42,7 @@ function makeTool(overrides: Partial<ToolCall> = {}): ToolCall {
 }
 
 describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
-    it('shows arguments markdown when a completed tool card is tapped open', () => {
+    it('should show arguments markdown when a completed tool card is tapped open', () => {
         const tool = makeTool();
 
         const {getByText, queryByTestId, getAllByTestId} = renderWithIntlAndTheme(
@@ -64,18 +64,14 @@ describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
         // Tap the tool name to expand.
         fireEvent.press(getByText('Search Docs'));
 
-        // Now the arguments code block should be rendered. The tool card also
-        // renders the result code block since the tool has a result.
         const markdowns = getAllByTestId('mock-markdown');
-        expect(markdowns.length).toBeGreaterThan(0);
-
-        // The first markdown should contain the JSON-stringified arguments.
+        expect(markdowns).toHaveLength(2);
         const argumentsText = markdowns[0].props.children;
         expect(argumentsText).toContain('"query"');
         expect(argumentsText).toContain('"test"');
     });
 
-    it('collapses back when tapped a second time', () => {
+    it('should collapse back when tapped a second time', () => {
         const tool = makeTool();
 
         const {getByText, queryAllByTestId} = renderWithIntlAndTheme(
@@ -99,7 +95,7 @@ describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
         expect(queryAllByTestId('mock-markdown').length).toBe(0);
     });
 
-    it('starts expanded for pending tools that require user decision', () => {
+    it('should start expanded for pending tools that require user decision', () => {
         const tool = makeTool({status: ToolCallStatus.Pending, result: undefined});
 
         const {queryAllByTestId} = renderWithIntlAndTheme(
@@ -118,7 +114,7 @@ describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
         expect(queryAllByTestId('mock-markdown').length).toBeGreaterThan(0);
     });
 
-    it('preserves natural tool order when mixing completed and pending tools', () => {
+    it('should preserve natural tool order when mixing completed and pending tools', () => {
         const tools: ToolCall[] = [
             makeTool({id: 'a', name: 'first_tool', status: ToolCallStatus.Success}),
             makeTool({id: 'b', name: 'second_tool', status: ToolCallStatus.Pending, result: undefined}),
@@ -147,7 +143,7 @@ describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
         ]);
     });
 
-    it('renders approve/reject buttons for pending tools in the Call stage', () => {
+    it('should render approve/reject buttons for pending tools in the Call stage', () => {
         const tool = makeTool({status: ToolCallStatus.Pending, result: undefined});
 
         const {getByTestId} = renderWithIntlAndTheme(

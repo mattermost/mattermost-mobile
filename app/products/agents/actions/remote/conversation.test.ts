@@ -11,7 +11,6 @@ import {fetchConversation} from './conversation';
 jest.mock('@actions/remote/session');
 jest.mock('@managers/network_manager');
 jest.mock('@utils/errors');
-jest.mock('@utils/log');
 
 const serverUrl = 'https://test.mattermost.com';
 const conversationId = 'conv123';
@@ -29,7 +28,7 @@ beforeEach(() => {
 });
 
 describe('fetchConversation', () => {
-    it('returns the conversation on success', async () => {
+    it('should return the conversation on success', async () => {
         const conversation = {id: conversationId, user_id: 'u', bot_id: 'b', channel_id: null, root_post_id: null, title: '', operation: '', turns: []};
         mockClient.getConversation.mockResolvedValue(conversation);
 
@@ -40,7 +39,7 @@ describe('fetchConversation', () => {
         expect(result).toEqual({data: conversation});
     });
 
-    it('returns an error and logs on failure', async () => {
+    it('should return an error and log on failure', async () => {
         const error = new Error('network');
         const errorMessage = 'network error';
         mockClient.getConversation.mockRejectedValue(error);
@@ -48,7 +47,7 @@ describe('fetchConversation', () => {
 
         const result = await fetchConversation(serverUrl, conversationId);
 
-        expect(logError).toHaveBeenCalledWith('[fetchConversation]', error);
+        expect(logError).toHaveBeenCalledWith('[fetchConversation] Failed to fetch conversation', error);
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
         expect(result).toEqual({error: errorMessage});
     });

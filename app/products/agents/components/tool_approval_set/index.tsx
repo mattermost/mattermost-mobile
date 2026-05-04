@@ -137,8 +137,6 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         const submit = approvalStage === ToolApprovalStage.Result ? submitToolResult : submitToolApproval;
         const {error} = await submit(serverUrl, postId, approvedToolIds);
 
-        // Reset submitting state regardless of success/error
-        // On error, user can try again. On success, backend updates via POST_EDITED
         setIsSubmitting(false);
 
         if (error) {
@@ -162,7 +160,6 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         };
         setToolDecisions((prev) => ({...prev, [toolId]: approved}));
 
-        // Check if there are still undecided actionable tools
         const hasUndecided = actionableTools.some((tool) => {
             return !(tool.id in updatedDecisions) || updatedDecisions[tool.id] === null;
         });
@@ -190,7 +187,6 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         }));
     }, [toolCalls, actionableTools]);
 
-    // Calculate how many actionable tools haven't been decided yet
     const undecidedCount = useMemo(() => {
         return actionableTools.filter(
             (tool) => !(tool.id in toolDecisions),
@@ -205,19 +201,12 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     const isCallStage = approvalStage === ToolApprovalStage.Call;
     const isResultStage = approvalStage === ToolApprovalStage.Result;
 
-    // Helper to compute if a tool should be collapsed
     const isToolCollapsed = (tool: ToolCall) => {
-        // Auto-approved tools are always collapsed by default — the user
-        // did not interact with them, so the expanded card would just be
-        // visual noise. Click still toggles.
+        // Auto-approved tools default collapsed; the user never interacted with them.
         if (tool.status === ToolCallStatus.AutoApproved) {
             return !(expandedTools[tool.id] ?? false);
         }
 
-        // Pending tools (call stage) expand by default so users see what
-        // they are being asked to approve. Executed tools in the result
-        // stage also expand so the output is visible during the share
-        // decision. Otherwise collapse.
         let defaultExpanded = false;
         if (isCallStage) {
             defaultExpanded = tool.status === ToolCallStatus.Pending;

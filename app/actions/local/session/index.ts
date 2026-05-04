@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {clearConversationCache} from '@agents/store/conversation_store';
+import streamingStore from '@agents/store/streaming_store';
 import NetInfo from '@react-native-community/netinfo';
 import {Platform} from 'react-native';
 
@@ -148,6 +150,11 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     });
 
     EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);
+
+    // Drop ephemeral agents caches so a fresh session does not see stale
+    // conversation or streaming state from the previous account.
+    clearConversationCache();
+    streamingStore.clear();
 
     // Remove push disabled acknowledgment (non-critical)
     if (removeServer) {

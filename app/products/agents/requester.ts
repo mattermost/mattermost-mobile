@@ -9,18 +9,15 @@ import type PostModel from '@typings/database/models/servers/post';
 interface Params {
     post: PostModel | Post;
     conversation?: ConversationResponse;
-    currentUserId: string;
+    currentUserId?: string;
 }
 
-/**
- * Resolve whether the current user owns the conversation behind an agent post.
- *
- * - If a conversation entity is loaded, its `user_id` is authoritative.
- * - Otherwise, fall back to the legacy `llm_requester_user_id` prop, which the
- *   plugin still sets for meeting-summarization posts and for posts produced
- *   by plugin versions before conversation entities existed.
- */
+// Loaded conversation is authoritative; otherwise fall back to the legacy
+// llm_requester_user_id prop set by older plugins and meeting-summary posts.
 export function isConversationRequester({post, conversation, currentUserId}: Params): boolean {
+    if (!currentUserId) {
+        return false;
+    }
     if (conversation) {
         return conversation.user_id === currentUserId;
     }

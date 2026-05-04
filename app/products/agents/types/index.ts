@@ -82,31 +82,31 @@ export interface StreamingState {
     annotations: Annotation[]; // Citations/annotations for the post
 }
 
-/**
- * AI thread data structure from the server.
- *
- * Wire shape differs between plugin versions:
- * - plugin < 2.0: `id` is the root post id; `channel_id` is always a string.
- * - plugin >= 2.0: `id` is the conversation id; `root_post_id` is the nullable
- *   root post id; `channel_id` may be null for threadless conversations; a new
- *   `bot_id` is present.
- *
- * Mobile normalises to the legacy shape at ingestion — see fetchAIThreads —
- * so by the time this interface reaches the handler, `id` is always the root
- * post id suitable for navigation.
- */
+// Normalised mobile shape: `id` is always the root post id (see fetchAIThreads).
 export interface AIThread {
-    id: string; // Post ID (normalised on ingest)
-    message: string; // Preview text
-    title: string; // Thread title
-    channel_id: string; // DM channel with bot
-    reply_count: number; // Number of replies
-    update_at: number; // Last update timestamp
+    id: string;
+    message: string;
+    title: string;
+    channel_id: string;
+    reply_count: number;
+    update_at: number;
 
     // Raw plugin >= 2.0 fields, surfaced for callers that need them.
     root_post_id?: string | null;
     bot_id?: string;
 }
+
+// Wire-format AI thread before normalisation. plugin < 2.0 omits root_post_id.
+export type RawAIThread = {
+    id: string;
+    message?: string;
+    title?: string;
+    channel_id?: string | null;
+    reply_count?: number;
+    update_at?: number;
+    root_post_id?: string | null;
+    bot_id?: string;
+};
 
 /**
  * Channel access level values
@@ -157,10 +157,6 @@ export interface AIBotsResponse {
     allowUnsafeLinks: boolean;
 }
 
-// ============================================================================
-// Conversation Entity Types (plugin-agents >= 2.0)
-// ============================================================================
-
 export {
     BlockType,
     ToolCallStatusString,
@@ -172,13 +168,6 @@ export {
     type WebSearchContext,
 } from './conversation';
 
-// ============================================================================
-// Rewrite Types
-// ============================================================================
-
 export type {Agent} from './api';
 
-/**
- * Available rewrite action types
- */
 export type RewriteAction = 'shorten' | 'elaborate' | 'improve_writing' | 'fix_spelling' | 'simplify' | 'summarize' | 'custom';

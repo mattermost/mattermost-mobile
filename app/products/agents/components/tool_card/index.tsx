@@ -208,23 +208,18 @@ const ToolCard = ({
     const hasLocalDecision = localDecision !== undefined && localDecision !== null;
     const isAutoApprovedStatus = tool.status === ToolCallStatus.AutoApproved || isAutoApproved;
 
-    // Auto-approved tools executed successfully; render them with the same
-    // result affordances as success so the user can still see the output.
+    // Treat auto-approved as success so the result affordances render.
     const isSuccess = tool.status === ToolCallStatus.Success || isAutoApprovedStatus;
     const isError = tool.status === ToolCallStatus.Error;
     const isRejected = tool.status === ToolCallStatus.Rejected;
     const isResultPhase = approvalStage === ToolApprovalStage.Result;
 
-    // Convert underscores to spaces and capitalize first letter of each word
     const displayName = useMemo(() => {
         return tool.name.
             replace(/_/g, ' ').
             replace(/\b\w/g, (char) => char.toUpperCase());
     }, [tool.name]);
 
-    // Render arguments as JSON code block. Falling back to an empty object
-    // when arguments is null/undefined mirrors the webapp and keeps the code
-    // block from rendering the literal "undefined".
     const argumentsMarkdown = useMemo(() => {
         const value = tool.arguments ?? {};
         return `\`\`\`json\n${JSON.stringify(value, null, 2)}\n\`\`\``;

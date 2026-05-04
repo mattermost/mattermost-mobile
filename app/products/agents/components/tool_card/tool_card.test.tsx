@@ -197,7 +197,7 @@ describe('ToolCard', () => {
     });
 
     describe('arguments rendering', () => {
-        it('falls back to an empty object when arguments is undefined so "undefined" never leaks into the code block', () => {
+        it('should fall back to an empty object when arguments is undefined so "undefined" never leaks into the code block', () => {
             const props = getBaseProps();
             props.tool = createMockTool({arguments: undefined as unknown as ToolCall['arguments']});
             props.isCollapsed = false;
@@ -210,7 +210,7 @@ describe('ToolCard', () => {
             expect(argumentsText).not.toContain('undefined');
         });
 
-        it('falls back to an empty object when arguments is null (server redacted for non-requester)', () => {
+        it('should fall back to an empty object when arguments is null (server redacted for non-requester)', () => {
             const props = getBaseProps();
             props.tool = createMockTool({arguments: null as unknown as ToolCall['arguments']});
             props.isCollapsed = false;

@@ -15,10 +15,8 @@ export interface ConversationState {
 
 const INITIAL_STATE: ConversationState = {loading: false};
 
-/**
- * Coerce null turn.content to an empty array. The backend may persist a turn
- * whose content column is the JSON literal `null`; downstream iterates freely.
- */
+// Backend may serialise turn.content as the JSON literal `null`; coerce to []
+// so downstream code can iterate without a guard.
 function normalizeConversationResponse(raw: ConversationResponse): ConversationResponse {
     return {
         ...raw,
@@ -29,12 +27,8 @@ function normalizeConversationResponse(raw: ConversationResponse): ConversationR
     };
 }
 
-/**
- * Ephemeral per-conversation cache. Stream-END invalidates entries so the next
- * subscriber re-fetches to pick up finalized turn data. Errors are cached so a
- * failed fetch doesn't retry on every render — an explicit invalidate is
- * required to retry.
- */
+// Ephemeral per-conversation cache. Errors are cached so a failed fetch
+// doesn't retry on every render — invalidate() or evict() to retry.
 class ConversationStore {
     private subjects = new Map<string, BehaviorSubject<ConversationState>>();
 
@@ -61,10 +55,8 @@ class ConversationStore {
         const promise = fetchConversation(serverUrl, conversationId).then(({data, error}) => {
             this.inflight.delete(conversationId);
             if (error) {
-                // Preserve the previously cached conversation on error as a
-                // fail-safe so transient network failures (including those
-                // triggered by invalidate) don't blank the UI. An explicit
-                // evict() is required to drop cached data.
+                // Preserve cached data on error so transient failures don't
+                // blank the UI; evict() is required to drop it.
                 subject.next({conversation: subject.value.conversation, loading: false, error});
                 return;
             }
@@ -108,10 +100,9 @@ class ConversationStore {
         return this.getSubject(conversationId).asObservable();
     }
 
-    /** Clear all cached conversations. Called on logout. */
+    // Called on logout to drop every cached conversation.
     clear(): void {
-        // Clear inflight first so a fetch resolving after this call does not
-        // try to push state onto the now-completed subjects.
+        // Clear inflight first so resolutions land on still-active subjects.
         this.inflight.clear();
         for (const subject of this.subjects.values()) {
             subject.next(INITIAL_STATE);
@@ -123,11 +114,6 @@ class ConversationStore {
 
 const conversationStore = new ConversationStore();
 
-/**
- * Subscribe to a conversation by id. Kicks off a fetch if the cache is empty,
- * dedups concurrent fetches, and re-runs whenever `invalidateConversation` is
- * called for this id.
- */
 export function useConversation(serverUrl: string, conversationId?: string): ConversationState {
     const [state, setState] = useState<ConversationState>(() => (
         conversationId ? conversationStore.getState(conversationId) : INITIAL_STATE
@@ -147,7 +133,6 @@ export function useConversation(serverUrl: string, conversationId?: string): Con
     return state;
 }
 
-/** Find the anchor turn whose post_id matches the given post. */
 export function useTurnForPost(conversation: ConversationResponse | undefined, postId: string): Turn | undefined {
     return useMemo(() => {
         if (!conversation) {

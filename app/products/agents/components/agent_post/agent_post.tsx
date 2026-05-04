@@ -16,12 +16,8 @@ export interface AgentPostProps {
     isDM: boolean;
 }
 
-/**
- * Dispatches to the correct agent post renderer based on whether the post
- * carries a conversation_id prop (plugin-agents >= 2.0) or not (older plugin
- * versions, and meeting-summary posts on any version). The mobile app ships
- * to the app store at its own cadence, so both renderers must coexist.
- */
+// Posts carrying a conversation_id render with the new conversation-entity
+// pipeline (plugin >= 2.0); everything else falls back to the legacy renderer.
 const AgentPost = (props: AgentPostProps) => {
     const postProps = props.post.props as Record<string, unknown> | undefined;
     const rawConversationId = postProps?.conversation_id;
@@ -30,23 +26,13 @@ const AgentPost = (props: AgentPostProps) => {
     if (conversationId) {
         return (
             <AgentPostNew
-                post={props.post}
+                {...props}
                 conversationId={conversationId}
-                currentUserId={props.currentUserId}
-                location={props.location}
-                isDM={props.isDM}
             />
         );
     }
 
-    return (
-        <AgentPostLegacy
-            post={props.post}
-            currentUserId={props.currentUserId}
-            location={props.location}
-            isDM={props.isDM}
-        />
-    );
+    return <AgentPostLegacy {...props}/>;
 };
 
 export default AgentPost;

@@ -8,11 +8,8 @@ import {logError} from '@utils/log';
 
 import type {ConversationResponse} from '@agents/types';
 
-/**
- * Fetch the conversation entity for a conversation id. The server applies
- * per-user privacy filtering, so the returned payload reflects what the
- * caller is allowed to see — no extra private fetch is required.
- */
+// The server applies per-user privacy filtering on the response, so callers
+// don't need a separate private fetch.
 export async function fetchConversation(
     serverUrl: string,
     conversationId: string,
@@ -22,7 +19,7 @@ export async function fetchConversation(
         const data = await client.getConversation(conversationId);
         return {data};
     } catch (error) {
-        logError('[fetchConversation]', error);
+        logError('[fetchConversation] Failed to fetch conversation', error);
         forceLogoutIfNecessary(serverUrl, error);
         return {error: getFullErrorMessage(error)};
     }

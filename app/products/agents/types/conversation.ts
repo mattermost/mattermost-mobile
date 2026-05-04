@@ -1,10 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/**
- * Content-block discriminator values. Must stay in sync with Go constants in
- * mattermost-plugin-agents/conversation/content_block.go.
- */
+// Must stay in sync with mattermost-plugin-agents/conversation/content_block.go.
 export const BlockType = {
     Text: 'text',
     Thinking: 'thinking',
@@ -15,14 +12,9 @@ export const BlockType = {
     Annotations: 'annotations',
 } as const;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export type BlockType = typeof BlockType[keyof typeof BlockType];
 
-/**
- * Tool-call status strings used on the wire for conversation entity content
- * blocks. Distinct from the numeric ToolCallStatus enum the mobile UI uses,
- * which is translated at the boundary via turn_content utils.
- */
 export const ToolCallStatusString = {
     Pending: 'pending',
     Accepted: 'accepted',
@@ -32,7 +24,7 @@ export const ToolCallStatusString = {
     AutoApproved: 'auto_approved',
 } as const;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export type ToolCallStatusString = typeof ToolCallStatusString[keyof typeof ToolCallStatusString];
 
 export interface Citation {
@@ -49,20 +41,14 @@ export interface WebSearchContext {
     count: number;
 }
 
-/**
- * Flat content block that carries all shapes — the Type field discriminates
- * which of the optional fields are meaningful. Mirrors the Go struct so the
- * JSON shape is identical.
- */
+// Flat content block; `type` discriminates which optional fields are set.
 export interface ContentBlock {
     type: string;
 
-    // Text / Thinking fields
     text?: string;
     signature?: string;
     citations?: Citation[];
 
-    // ToolUse fields
     id?: string;
     name?: string;
     server_origin?: string;
@@ -70,20 +56,16 @@ export interface ContentBlock {
     status?: ToolCallStatusString;
     shared?: boolean;
 
-    // ToolResult fields
     tool_use_id?: string;
     content?: string;
 
-    // Timestamp (ms) at which the share/keep-private decision was recorded.
-    // Undefined → decision still pending; defined → decision made, no approval UI.
+    // Set when the share/keep-private decision has been recorded; absent means pending.
     decided_at?: number;
 
-    // File / Image fields
     filename?: string;
     mime_type?: string;
     file_id?: string;
 
-    // Annotations fields
     web_search_context?: WebSearchContext;
 }
 
@@ -100,9 +82,7 @@ export interface Turn {
     sequence: number;
     created_at?: number;
 
-    // Set only on post-anchor assistant turns. Server-computed from the
-    // conversation state: 'call' → pending Accept/Reject; 'result' → pending
-    // Share/Keep private; 'done' → no user decision remains.
+    // Server-computed; only set on post-anchor assistant turns.
     approval_state?: 'call' | 'result' | 'done';
 }
 

@@ -47,7 +47,7 @@ beforeEach(() => {
 });
 
 describe('useConversation', () => {
-    it('kicks off a fetch and resolves to the returned conversation', async () => {
+    it('should kick off a fetch and resolve to the returned conversation', async () => {
         const conv = makeConversation('c1');
         mockedFetch.mockResolvedValue({data: conv});
 
@@ -64,7 +64,7 @@ describe('useConversation', () => {
         expect(result.current.loading).toBe(false);
     });
 
-    it('dedups concurrent subscribers for the same id', async () => {
+    it('should dedup concurrent subscribers for the same id', async () => {
         const conv = makeConversation('c1');
         mockedFetch.mockResolvedValue({data: conv});
 
@@ -78,7 +78,7 @@ describe('useConversation', () => {
         expect(hookB.result.current.conversation).toEqual(conv);
     });
 
-    it('caches errors so a remount with the same id does not retry', async () => {
+    it('should cache errors so a remount with the same id does not retry', async () => {
         mockedFetch.mockResolvedValueOnce({error: 'boom'});
 
         const first = renderHook(() => useConversation(SERVER_URL, 'c1'));
@@ -97,7 +97,7 @@ describe('useConversation', () => {
         expect(mockedFetch).toHaveBeenCalledTimes(1);
     });
 
-    it('returns the initial state for an undefined id and performs no fetch', () => {
+    it('should return the initial state for an undefined id and perform no fetch', () => {
         const {result} = renderHook(() => useConversation(SERVER_URL, undefined));
 
         expect(result.current.loading).toBe(false);
@@ -105,7 +105,7 @@ describe('useConversation', () => {
         expect(mockedFetch).not.toHaveBeenCalled();
     });
 
-    it('normalizes null turn content to an empty array', async () => {
+    it('should normalize null turn content to an empty array', async () => {
         // The backend may serialise content as the JSON literal `null`.
         const rawConversation = {
             ...makeConversation('c1'),
@@ -121,7 +121,7 @@ describe('useConversation', () => {
 });
 
 describe('invalidateConversation', () => {
-    it('drops the cached entry and triggers a fresh fetch', async () => {
+    it('should drop the cached entry and trigger a fresh fetch', async () => {
         const first = makeConversation('c1');
         const second = {...makeConversation('c1'), title: 'Updated'};
         mockedFetch.mockResolvedValueOnce({data: first}).mockResolvedValueOnce({data: second});
@@ -141,7 +141,7 @@ describe('invalidateConversation', () => {
 });
 
 describe('useTurnForPost', () => {
-    it('finds the anchor turn by post_id', () => {
+    it('should find the anchor turn by post_id', () => {
         const conversation = {
             ...makeConversation('c1'),
             turns: [
@@ -155,7 +155,7 @@ describe('useTurnForPost', () => {
         expect(result.current?.id).toBe('t1');
     });
 
-    it('returns undefined when the conversation is missing', () => {
+    it('should return undefined when the conversation is missing', () => {
         const {result} = renderHook(() => useTurnForPost(undefined, 'p1'));
         expect(result.current).toBeUndefined();
     });

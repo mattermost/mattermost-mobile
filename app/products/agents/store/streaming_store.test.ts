@@ -94,7 +94,7 @@ describe('StreamingPostStore', () => {
             subscription.unsubscribe();
         });
 
-        it('creates a generating state on the first message if start was missed', () => {
+        it('should create a generating state on the first message if start was missed', () => {
             // Covers WS reconnect mid-stream: the subscriber needs the message
             // even though the `start` control never reached this client.
             const postId = 'post123';
@@ -207,7 +207,7 @@ describe('StreamingPostStore', () => {
             expect(state?.isReasoningLoading).toBe(false);
         });
 
-        it('creates state with reasoning flagged when the start event was missed', () => {
+        it('should create state with reasoning flagged when the start event was missed', () => {
             const postId = 'post123';
             streamingStore.updateReasoning(postId, 'Reasoning', true);
 
@@ -280,7 +280,7 @@ describe('StreamingPostStore', () => {
             expect(state?.toolCalls.map((t) => t.id)).toEqual(['a', 'b']);
         });
 
-        it('preserves an early tool_call when start arrives second (WebSocket event race)', () => {
+        it('should preserve an early tool_call when start arrives second (WebSocket event race)', () => {
             const postId = 'post123';
 
             // tool_call arrives first because the server's tool_call broadcast
@@ -355,7 +355,7 @@ describe('StreamingPostStore', () => {
             expect(state?.annotations).toEqual([]);
         });
 
-        it('creates state with annotations when the start event was missed', () => {
+        it('should create state with annotations when the start event was missed', () => {
             const postId = 'post123';
             const annotations: Annotation[] = [
                 {type: 'citation', start_index: 0, end_index: 1, url: 'https://a', title: 'A', index: 0},

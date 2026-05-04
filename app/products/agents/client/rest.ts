@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {AIBotsResponse, AIThread, ConversationResponse, ToolCall} from '@agents/types';
+import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolCall} from '@agents/types';
 import type {Agent, AgentsResponse, AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, RewriteRequest, RewriteResponse} from '@agents/types/api';
 
 export type {Agent};
@@ -9,7 +9,7 @@ export type {Agent};
 export interface ClientAgentsMix {
     getAgentsRoute: () => string;
     getAIBots: () => Promise<AIBotsResponse>;
-    getAIThreads: () => Promise<AIThread[]>;
+    getAIThreads: () => Promise<RawAIThread[] | null>;
     getAgents: () => Promise<Agent[]>;
     stopGeneration: (postId: string) => Promise<void>;
     regenerateResponse: (postId: string) => Promise<void>;
