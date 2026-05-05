@@ -4,10 +4,11 @@
 import {AppState, type AppStateStatus} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 
-import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
+import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephemeral_mode/wipe';
 import {Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import PushNotifications from '@init/push_notifications';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {navigateToScreen} from '@screens/navigation';
@@ -19,6 +20,13 @@ import type ServersModel from '@typings/database/models/app/servers';
 
 jest.mock('@actions/local/ephemeral_mode/wipe', () => ({
     wipeServerDatabaseWithRetry: jest.fn().mockResolvedValue({success: true}),
+    wipeServerFiles: jest.fn().mockResolvedValue({success: true}),
+}));
+jest.mock('@init/push_notifications', () => ({
+    __esModule: true,
+    default: {
+        removeServerNotifications: jest.fn(),
+    },
 }));
 jest.mock('@managers/websocket_manager', () => ({
     __esModule: true,
@@ -554,7 +562,7 @@ describe('OfflinePersistenceManager', () => {
         const otherUrl = 'https://other.test';
         const displayName = 'My Server';
 
-        let updateWipedAtSpy: jest.SpyInstance;
+        let updatePersistenceFlagSpy: jest.SpyInstance;
         let getActiveServerUrlSpy: jest.SpyInstance;
 
         const triggerWipeForServerA = async () => {
@@ -571,7 +579,7 @@ describe('OfflinePersistenceManager', () => {
         };
 
         beforeEach(() => {
-            updateWipedAtSpy = jest.spyOn(DatabaseManager, 'updatePersistenceFlag');
+            updatePersistenceFlagSpy = jest.spyOn(DatabaseManager, 'updatePersistenceFlag');
             getActiveServerUrlSpy = jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverA);
             jest.mocked(getServerDisplayName).mockResolvedValue(displayName);
         });
@@ -608,8 +616,8 @@ describe('OfflinePersistenceManager', () => {
         it('sets persistenceFlag to wiped so boot wipe-resumption finds it', async () => {
             await triggerWipeForServerA();
 
-            expect(updateWipedAtSpy).toHaveBeenCalledTimes(1);
-            expect(updateWipedAtSpy).toHaveBeenCalledWith(serverA, 'wiped');
+            expect(updatePersistenceFlagSpy).toHaveBeenCalledTimes(1);
+            expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverA, 'wiped');
         });
 
         it('leaves the wiped server with an empty in-memory database so contexts can still mount', async () => {
@@ -621,6 +629,47 @@ describe('OfflinePersistenceManager', () => {
             await triggerWipeForServerA();
 
             expect(DatabaseManager.serverDatabases[serverA]).toBeDefined();
+        });
+
+        it('removes server push notifications before wiping artifacts', async () => {
+            await triggerWipeForServerA();
+
+            expect(PushNotifications.removeServerNotifications).toHaveBeenCalledWith(serverA);
+            const pushOrder = jest.mocked(PushNotifications.removeServerNotifications).mock.invocationCallOrder[0];
+            const wipeFilesOrder = jest.mocked(wipeServerFiles).mock.invocationCallOrder[0];
+            expect(pushOrder).toBeLessThan(wipeFilesOrder);
+        });
+
+        it('wipes database and files in parallel, then re-attaches the server after both complete', async () => {
+            let resolveDb!: (v: {success: boolean}) => void;
+            let resolveFiles!: (v: {success: boolean}) => void;
+
+            jest.mocked(wipeServerDatabaseWithRetry).mockReturnValueOnce(
+                new Promise<{success: boolean}>((res) => {
+                    resolveDb = res;
+                }),
+            );
+            jest.mocked(wipeServerFiles).mockReturnValueOnce(
+                new Promise<{success: boolean}>((res) => {
+                    resolveFiles = res;
+                }),
+            );
+
+            await triggerWipeForServerA();
+
+            // Both started before either resolved (Promise.all parallel semantics)
+            expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
+            expect(wipeServerFiles).toHaveBeenCalledWith(serverA);
+
+            // addServer hasn't run yet — observeWebsocketState still called only once (from init)
+            expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledTimes(1);
+
+            resolveDb({success: true});
+            resolveFiles({success: true});
+            await advanceTimers(0);
+
+            // After both resolved, addServer ran and re-subscribed the WS observer
+            expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledTimes(2);
         });
     });
 
@@ -637,6 +686,8 @@ describe('OfflinePersistenceManager', () => {
 
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledTimes(1);
+            expect(wipeServerFiles).toHaveBeenCalledWith(serverA);
+            expect(wipeServerFiles).toHaveBeenCalledTimes(1);
         });
 
         it('does not re-wipe servers whose row has an empty persistenceFlag', async () => {
@@ -645,6 +696,7 @@ describe('OfflinePersistenceManager', () => {
             await OfflinePersistenceManager.init([credsA]);
 
             expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
+            expect(wipeServerFiles).not.toHaveBeenCalled();
         });
     });
 });

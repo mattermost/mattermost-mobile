@@ -5,10 +5,11 @@ import {AppState, type AppStateStatus, type NativeEventSubscription} from 'react
 import {BehaviorSubject, combineLatest, type Subscription} from 'rxjs';
 import {distinctUntilChanged, skip} from 'rxjs/operators';
 
-import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
+import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephemeral_mode/wipe';
 import {clearEphemeralModeState, setDisconnectedSince, setLastSeenTime, setOfflineSince} from '@actions/local/systems';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
+import PushNotifications from '@init/push_notifications';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';
@@ -50,8 +51,8 @@ class OfflinePersistenceManagerSingleton {
                 const server = await getServer(serverUrl);
                 if (server && server.persistenceFlag === 'wiped') {
                     // Recover from a wipe interrupted by app termination before
-                    // wipeServerDatabaseWithRetry completed.
-                    await wipeServerDatabaseWithRetry(serverUrl);
+                    // the DB + file artifacts were both deleted.
+                    await this.wipeServerArtifacts(serverUrl);
                 }
                 this.addServer(serverUrl);
             } catch (error) {
@@ -365,6 +366,11 @@ class OfflinePersistenceManagerSingleton {
         }, remainingMs);
     };
 
+    private wipeServerArtifacts = (serverUrl: string) => Promise.all([
+        wipeServerDatabaseWithRetry(serverUrl),
+        wipeServerFiles(serverUrl),
+    ]);
+
     private runWipe = async (serverUrl: string) => {
         if (this.wipeInProgress.has(serverUrl)) {
             return;
@@ -382,7 +388,7 @@ class OfflinePersistenceManagerSingleton {
             await DatabaseManager.updatePersistenceFlag(serverUrl, 'wiped');
 
             this.pauseSubscriptions(serverUrl);
-            await wipeServerDatabaseWithRetry(serverUrl);
+            await this.wipeServerArtifacts(serverUrl);
             this.addServer(serverUrl);
         } catch (error) {
             logError('OfflinePersistenceManager.runWipe', error);

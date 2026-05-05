@@ -3,10 +3,15 @@
 
 import DatabaseManager from '@database/manager';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
+import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logError, logInfo, logWarning} from '@utils/log';
 
-import {wipeServerDatabaseWithRetry} from './wipe';
+import {wipeServerDatabaseWithRetry, wipeServerFiles} from './wipe';
 
+jest.mock('@utils/file', () => ({
+    deleteFileCache: jest.fn(),
+    deleteFileCacheByDir: jest.fn(),
+}));
 jest.mock('@utils/log');
 
 describe('wipeServerDatabaseWithRetry', () => {
@@ -56,5 +61,41 @@ describe('wipeServerDatabaseWithRetry', () => {
         expect(deleteSpy).toHaveBeenCalledTimes(6);
         expect(logWarning).toHaveBeenCalledTimes(6);
         expect(logError).toHaveBeenCalledWith('wipeServerDatabaseWithRetry: wipe exhausted retries', serverUrl);
+    });
+});
+
+describe('wipeServerFiles', () => {
+    const serverUrl = 'https://server.test';
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        jest.mocked(deleteFileCache).mockResolvedValue(true);
+        jest.mocked(deleteFileCacheByDir).mockResolvedValue(true);
+    });
+
+    it('calls all three deletions and returns success when all resolve', async () => {
+        const result = await wipeServerFiles(serverUrl);
+
+        expect(result).toEqual({success: true});
+        expect(deleteFileCache).toHaveBeenCalledWith(serverUrl);
+        expect(deleteFileCacheByDir).toHaveBeenCalledWith('mmPasteInput');
+        expect(deleteFileCacheByDir).toHaveBeenCalledWith('thumbnails');
+        expect(logInfo).toHaveBeenCalledWith('wipeServerFiles complete', serverUrl);
+        expect(logWarning).not.toHaveBeenCalled();
+    });
+
+    it('returns failure and logs a warning when one deletion rejects, but the others still run', async () => {
+        jest.mocked(deleteFileCacheByDir).
+            mockResolvedValueOnce(true).
+            mockRejectedValueOnce(new Error('io error'));
+
+        const result = await wipeServerFiles(serverUrl);
+
+        expect(result).toEqual({success: false});
+        expect(deleteFileCache).toHaveBeenCalledWith(serverUrl);
+        expect(deleteFileCacheByDir).toHaveBeenCalledWith('mmPasteInput');
+        expect(deleteFileCacheByDir).toHaveBeenCalledWith('thumbnails');
+        expect(logWarning).toHaveBeenCalledTimes(1);
+        expect(logInfo).not.toHaveBeenCalled();
     });
 });

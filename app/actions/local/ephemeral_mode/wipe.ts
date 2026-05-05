@@ -3,6 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {getFullErrorMessage} from '@utils/errors';
+import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logError, logInfo, logWarning} from '@utils/log';
 
 const RETRY_TIME = 1000;
@@ -28,4 +29,21 @@ export const wipeServerDatabaseWithRetry = async (serverUrl: string): Promise<{s
 
     logError('wipeServerDatabaseWithRetry: wipe exhausted retries', serverUrl);
     return {success: false};
+};
+
+export const wipeServerFiles = async (serverUrl: string): Promise<{success: boolean}> => {
+    const results = await Promise.allSettled([
+        deleteFileCache(serverUrl),
+        deleteFileCacheByDir('mmPasteInput'),
+        deleteFileCacheByDir('thumbnails'),
+    ]);
+    const failures = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
+    if (failures.length) {
+        for (const f of failures) {
+            logWarning('wipeServerFiles', getFullErrorMessage(f.reason));
+        }
+        return {success: false};
+    }
+    logInfo('wipeServerFiles complete', serverUrl);
+    return {success: true};
 };
