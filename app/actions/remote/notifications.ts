@@ -19,6 +19,7 @@ import {getCurrentTeamId} from '@queries/servers/system';
 import {getMyTeamById, prepareMyTeams} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
+import {dismissKeyboard} from '@utils/keyboard';
 import {logWarning} from '@utils/log';
 import {emitNotificationError} from '@utils/notification';
 import {processPostsFetched} from '@utils/post';
@@ -223,6 +224,9 @@ export const openNotification = async (serverUrl: string, notification: Notifica
     }
 
     EphemeralStore.setNotificationTapped(true);
+
+    // Dismiss keyboard before switching channel/thread (e.g. iOS resume from push can leave draft focused)
+    await dismissKeyboard();
 
     const channelId = notification.payload!.channel_id!;
     const rootId = notification.payload!.root_id!;

@@ -6,24 +6,18 @@ import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {observeIncomingCalls} from '@calls/state';
-import {withServerUrl} from '@context/server';
 import {queryAllMyChannelsForTeam} from '@queries/servers/channel';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId, observeLicense} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {observeShowToS} from '@queries/servers/terms_of_service';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
-import EphemeralStore from '@store/ephemeral_store';
 
 import ChannelsList from './channel_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type EnhanceProps = WithDatabaseArgs & {
-    serverUrl?: string;
-}
-
-const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const isLicensed = observeLicense(database).pipe(
         switchMap((lcs) => (lcs ? of$(lcs.IsLicensed === 'true') : of$(false))),
     );
@@ -59,8 +53,7 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
             distinctUntilChanged(),
         ),
         showIncomingCalls,
-        canJoinOtherTeams: EphemeralStore.observeCanJoinOtherTeams(serverUrl || ''),
     };
 });
 
-export default withDatabase(withServerUrl(enhanced(ChannelsList)));
+export default withDatabase(enhanced(ChannelsList));

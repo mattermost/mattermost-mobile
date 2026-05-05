@@ -12,6 +12,7 @@ import SpecialMentionItem from '@components/autocomplete/special_mention_item';
 import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {useServerUrl} from '@context/server';
 import {useDebounce} from '@hooks/utils';
+import {filterProfilesMatchingTerm} from '@utils/user';
 
 import {SECTION_KEY_AGENTS, SECTION_KEY_GROUPS, SECTION_KEY_SPECIAL, emptyGroupList, emptySectionList, emptyUserlList} from './constants';
 import {checkSpecialMentions, filterResults, getAllUsers, getMatchTermForAtMention, keyExtractor, makeSections, searchGroups, sortReceivedUsers} from './utils';
@@ -103,10 +104,13 @@ const AtMention = ({
             const usersOnly = receivedUsers.users.filter((u) => !agentIds.has(u.id));
             const outOfChannelOnly = receivedUsers.out_of_channel?.filter((u) => !agentIds.has(u.id));
 
+            // Server returns all agents regardless of term; filter client-side.
+            const filteredAgents = filterProfilesMatchingTerm(receivedAgents, term);
+
             const [sortedMembers, sortedOutOfChannel] = await sortReceivedUsers(sUrl, term, usersOnly, outOfChannelOnly);
             setUsersInChannel(sortedMembers.length ? sortedMembers : emptyUserlList);
             setUsersOutOfChannel(sortedOutOfChannel.length ? sortedOutOfChannel : emptyUserlList);
-            setAgents(receivedAgents.length ? receivedAgents : emptyUserlList);
+            setAgents(filteredAgents.length ? filteredAgents : emptyUserlList);
         }
 
         setLoading(false);
