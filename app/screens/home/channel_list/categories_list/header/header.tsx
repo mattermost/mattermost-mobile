@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {type Insets, Text, TouchableWithoutFeedback, View} from 'react-native';
+import {type Insets, Pressable, type PressableStateCallbackType, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {logout} from '@actions/remote/session';
@@ -25,16 +25,20 @@ import {typography} from '@utils/typography';
 import LoadingUnreads from './loading_unreads';
 import PlusMenu from './plus_menu';
 import {SEPARATOR_HEIGHT} from './plus_menu/separator';
+import TeamMenu from './team_menu';
 
 const PLUS_BUTTON_SIZE = 28;
+const CHEVRON_SIZE = 24;
 
 type Props = {
     canCreateChannels: boolean;
     canJoinChannels: boolean;
     canInvitePeople: boolean;
+    canJoinOtherTeams: boolean;
+    currentTeamId: string;
     displayName?: string;
+    hasMoreThanOneTeam: boolean;
     iconPad?: boolean;
-    onHeaderPress?: () => void;
     pushProxyStatus: string;
 }
 
@@ -52,12 +56,17 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         justifyContent: 'space-between',
     },
-    chevronButton: {
-        marginLeft: 4,
+    teamPressable: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flexShrink: 1,
+    },
+    teamPressed: {
+        opacity: 0.72,
     },
     chevronIcon: {
-        color: changeOpacity(theme.sidebarText, 0.8),
-        fontSize: 24,
+        color: changeOpacity(theme.sidebarText, 0.64),
+        marginLeft: 4,
     },
     plusButton: {
         backgroundColor: changeOpacity(theme.sidebarText, 0.08),
@@ -100,14 +109,17 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const hitSlop: Insets = {top: 10, bottom: 30, left: 20, right: 20};
+const teamHitSlop: Insets = {top: 8, bottom: 8, left: 8, right: 8};
 
 const ChannelListHeader = ({
     canCreateChannels,
     canJoinChannels,
     canInvitePeople,
+    canJoinOtherTeams,
+    currentTeamId,
     displayName,
+    hasMoreThanOneTeam,
     iconPad,
-    onHeaderPress,
     pushProxyStatus,
 }: Props) => {
     const theme = useTheme();
@@ -122,6 +134,8 @@ const ChannelListHeader = ({
     useEffect(() => {
         marginLeft.value = iconPad ? 50 : 0;
     }, [iconPad, marginLeft]);
+
+    const hasTeamMenuItems = canJoinOtherTeams || hasMoreThanOneTeam;
 
     const onPress = usePreventDoubleTap(useCallback(() => {
         const renderContent = () => {
@@ -153,6 +167,24 @@ const ChannelListHeader = ({
         bottomSheet(renderContent, [1, bottomSheetSnapPoint(items, ITEM_HEIGHT) + (separators * SEPARATOR_HEIGHT)]);
     }, [canCreateChannels, canInvitePeople, canJoinChannels]));
 
+    const onTeamPress = usePreventDoubleTap(useCallback(() => {
+        const rowCount = (canJoinOtherTeams ? 1 : 0) + (hasMoreThanOneTeam ? 1 : 0);
+
+        const renderContent = () => (
+            <TeamMenu
+                canJoinOtherTeams={canJoinOtherTeams}
+                hasMoreThanOneTeam={hasMoreThanOneTeam}
+                currentTeamId={currentTeamId}
+                currentTeamDisplayName={displayName ?? ''}
+            />
+        );
+
+        bottomSheet(
+            renderContent,
+            [1, bottomSheetSnapPoint(rowCount, ITEM_HEIGHT)],
+        );
+    }, [canJoinOtherTeams, hasMoreThanOneTeam, currentTeamId, displayName]));
+
     const onPushAlertPress = useCallback(() => {
         if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {
             alertPushProxyError(intl);
@@ -165,26 +197,40 @@ const ChannelListHeader = ({
         alertServerLogout(serverDisplayName, () => logout(serverUrl, intl), intl);
     }, [intl, serverDisplayName, serverUrl]);
 
+    const teamPressableStyle = useCallback(({pressed}: PressableStateCallbackType): StyleProp<ViewStyle> => {
+        return [styles.teamPressable, pressed && hasTeamMenuItems && styles.teamPressed];
+    }, [hasTeamMenuItems, styles.teamPressable, styles.teamPressed]);
+
     let header;
     if (displayName) {
         header = (
             <View style={styles.outsideBox}>
                 <View style={styles.firstBox}>
                     <View style={styles.headerRow}>
-                        <TouchableWithoutFeedback
-                            onPress={onHeaderPress}
+                        <Pressable
+                            onPress={hasTeamMenuItems ? onTeamPress : undefined}
+                            disabled={!hasTeamMenuItems}
+                            hitSlop={teamHitSlop}
+                            style={teamPressableStyle}
+                            testID='channel_list_header.team.button'
                         >
-                            <View style={styles.headerRow}>
-                                <Text
-                                    numberOfLines={2}
-                                    ellipsizeMode='tail'
-                                    style={styles.headingStyles}
-                                    testID='channel_list_header.team_display_name'
-                                >
-                                    {displayName}
-                                </Text>
-                            </View>
-                        </TouchableWithoutFeedback>
+                            <Text
+                                numberOfLines={2}
+                                ellipsizeMode='tail'
+                                style={styles.headingStyles}
+                                testID='channel_list_header.team_display_name'
+                            >
+                                {displayName}
+                            </Text>
+                            {hasTeamMenuItems && (
+                                <CompassIcon
+                                    name='chevron-down'
+                                    size={CHEVRON_SIZE}
+                                    style={styles.chevronIcon}
+                                    testID='channel_list_header.team.chevron'
+                                />
+                            )}
+                        </Pressable>
                     </View>
                     <View style={styles.subHeadingView}>
                         <Text
