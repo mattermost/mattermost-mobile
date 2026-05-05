@@ -3,6 +3,22 @@
 
 type ViewType = 'kanban';
 
+type KanbanColumn = {
+    id: string;
+    option_id: string;
+    title: string;
+    sort_order: number;
+};
+
+type KanbanGroupBy = {
+    field_id: string;
+    columns: KanbanColumn[];
+};
+
+type KanbanProps = {
+    group_by?: KanbanGroupBy;
+};
+
 type View = {
     id: string;
     channel_id: string;
@@ -11,7 +27,7 @@ type View = {
     title: string;
     description?: string;
     sort_order: number;
-    props: Record<string, unknown>;
+    props: KanbanProps;
     create_at: number;
     update_at: number;
     delete_at: number;

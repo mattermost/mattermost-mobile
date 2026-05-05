@@ -40,8 +40,8 @@ export default class ViewModel extends Model implements ViewModelInterface {
     /** sort_order : The ordering position of this view within the channel */
     @field('sort_order') sortOrder!: number;
 
-    /** props : Free-form view props */
-    @json('props', safeParseJSON) props!: Record<string, unknown> | null;
+    /** props : Typed kanban presentation props (group_by, columns, …) */
+    @json('props', safeParseJSON) props!: KanbanProps | null;
 
     /** create_at : The timestamp when this view was created */
     @field('create_at') createAt!: number;

@@ -26,8 +26,8 @@ declare class ViewModel extends Model {
     /** sort_order : The ordering position of this view within the channel */
     sortOrder: number;
 
-    /** props : Free-form view props */
-    props: Record<string, unknown> | null;
+    /** props : Typed kanban presentation props (group_by, columns, …) */
+    props: KanbanProps | null;
 
     /** create_at : The timestamp when this view was created */
     createAt: number;

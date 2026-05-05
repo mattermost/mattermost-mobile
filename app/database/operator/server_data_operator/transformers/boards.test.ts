@@ -34,7 +34,7 @@ describe('*** BOARDS Prepare Records Test ***', () => {
                         title: 'Roadmap',
                         description: 'Q3 roadmap view',
                         sort_order: 0,
-                        props: {colorBy: 'status'},
+                        props: {group_by: {field_id: 'field_status', columns: []}},
                         create_at: 1,
                         update_at: 1,
                         delete_at: 0,

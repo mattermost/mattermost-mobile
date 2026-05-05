@@ -68,14 +68,24 @@ describe('ViewModel', () => {
         const {database} = operator;
         let stored: ViewModel;
 
+        const props: KanbanProps = {
+            group_by: {
+                field_id: 'field_status',
+                columns: [
+                    {id: 'col_backlog', option_id: 'opt_backlog', title: 'Backlog', sort_order: 0},
+                    {id: 'col_todo', option_id: 'opt_todo', title: 'Todo', sort_order: 1},
+                ],
+            },
+        };
+
         await database.write(async () => {
             stored = await database.get<ViewModel>(VIEW).create((v: ViewModel) => {
                 applyMockData(v, TestHelper.createView('channel_1', 1));
-                v.props = {filters: ['status:open'], color: 'blue'};
+                v.props = props;
             });
         });
 
-        expect(stored!.props).toEqual({filters: ['status:open'], color: 'blue'});
+        expect(stored!.props).toEqual(props);
     });
 
     it('=> should support soft-delete via deleteAt', async () => {
