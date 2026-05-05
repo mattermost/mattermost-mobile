@@ -15,7 +15,7 @@ import {getActiveServerUrl} from '@queries/app/servers';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
-import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, getLastTeam, getTeamById, removeTeamFromTeamHistory, queryMyTeams} from '@queries/servers/team';
+import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, getLastTeam, getTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
 import {navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
@@ -324,9 +324,9 @@ export async function fetchTeamsForComponent(
 export const updateCanJoinTeams = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const myTeams = await queryMyTeams(database).fetch();
+        const myTeams = await client.getMyTeams(groupLabel);
         const myTeamsIds = new Set(myTeams.map((m) => m.id));
 
         const canJoin = await recCanJoinTeams(client, myTeamsIds, 0, groupLabel);
