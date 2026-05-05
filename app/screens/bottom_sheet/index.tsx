@@ -1,29 +1,30 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import BottomSheetM, {BottomSheetBackdrop, BottomSheetScrollView, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
+import BottomSheetM, {BottomSheetBackdrop, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {forwardRef, type ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef} from 'react';
-import {DeviceEventEmitter, type Handle, InteractionManager, type StyleProp, View, type ViewStyle} from 'react-native';
+import {DeviceEventEmitter, type StyleProp, View, type ViewStyle} from 'react-native';
 import {ReduceMotion, useReducedMotion, type WithSpringConfig} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
+import useDidMount from '@hooks/did_mount';
 import {navigateBack} from '@screens/navigation';
 import BottomSheetStore from '@store/bottom_sheet_store';
 import {hapticFeedback} from '@utils/general';
-import {dismissKeyboard} from '@utils/keyboard';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import BottomSheetButton, {BUTTON_HEIGHT} from './button';
 import EmptyBottomSheetFooter from './footer';
 import {useBottomSheetStyle} from './hooks';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-export {default as BottomSheetButton, BUTTON_HEIGHT} from './button';
 export {default as BottomSheetContent, TITLE_HEIGHT} from './content';
+
+export {BUTTON_HEIGHT, BottomSheetButton};
 
 export type BottomSheetRef = {
     close: () => void;
@@ -38,7 +39,6 @@ type Props = {
     snapPoints?: Array<string | number>;
     enableDynamicSizing?: boolean;
     testID?: string;
-    scrollable?: boolean;
     keyboardBehavior?: 'extend' | 'fillParent' | 'interactive';
     keyboardBlurBehavior?: 'none' | 'restore';
 }
@@ -48,7 +48,6 @@ const PADDING_TOP_MOBILE = 20;
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         bottomSheet: {
-            backgroundColor: theme.centerChannelBg,
             borderTopStartRadius: 24,
             borderTopEndRadius: 24,
             shadowOffset: {
@@ -59,7 +58,8 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             shadowRadius: 24,
             shadowColor: '#000',
             elevation: 24,
-            flex: 1,
+            flexGrow: 1,
+            height: 1,
         },
         bottomSheetBackground: {
             backgroundColor: 'transparent',
@@ -87,8 +87,7 @@ export const animatedConfig: Omit<WithSpringConfig, 'velocity'> = {
     mass: 0.3,
     stiffness: 121.6,
     overshootClamping: true,
-    restSpeedThreshold: 0.3,
-    restDisplacementThreshold: 0.3,
+    energyThreshold: 0.01,
 };
 
 const BottomSheet = forwardRef<BottomSheetRef, Props>(({
@@ -100,7 +99,6 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(({
     snapPoints = [1, '50%', '80%'],
     testID,
     enableDynamicSizing = false,
-    scrollable = false,
     keyboardBehavior = 'extend',
     keyboardBlurBehavior = 'restore',
 }: Props, ref) => {
@@ -110,20 +108,12 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(({
     const insets = useSafeAreaInsets();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const interaction = useRef<Handle>();
-    const timeoutRef = useRef<NodeJS.Timeout>();
-
-    const {enabled, panResponder} = useBottomSheetListsFix();
     const screenStyle = useBottomSheetStyle();
 
     const animationConfigs = useMemo(() => ({
         ...animatedConfig,
         reduceMotion: reducedMotion ? ReduceMotion.Always : ReduceMotion.Never,
     }), [reducedMotion]);
-
-    useEffect(() => {
-        interaction.current = InteractionManager.createInteractionHandle();
-    }, []);
 
     const close = useCallback(() => {
         isClosing.current = true;
@@ -144,12 +134,6 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(({
         return () => listener.remove();
     }, [close]);
 
-    const handleAnimationStart = useCallback(() => {
-        if (!interaction.current) {
-            interaction.current = InteractionManager.createInteractionHandle();
-        }
-    }, []);
-
     const handleClose = useCallback(() => {
         if (sheetRef.current) {
             sheetRef.current.close();
@@ -159,13 +143,6 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(({
     }, [close]);
 
     const handleChange = useCallback((index: number) => {
-        timeoutRef.current = setTimeout(() => {
-            if (interaction.current) {
-                InteractionManager.clearInteractionHandle(interaction.current);
-                interaction.current = undefined;
-            }
-        });
-
         if (index <= 0 && !isClosing.current) {
             close();
         }
@@ -179,20 +156,9 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(({
 
     useAndroidHardwareBackHandler(screen, handleClose);
 
-    useEffect(() => {
+    useDidMount(() => {
         hapticFeedback();
-        dismissKeyboard();
-
-        return () => {
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
-
-            if (interaction.current) {
-                InteractionManager.clearInteractionHandle(interaction.current);
-            }
-        };
-    }, []);
+    });
 
     useImperativeHandle(ref, () => ({
         close: () => {
@@ -224,28 +190,6 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(({
         </View>
     );
 
-    const scrollViewProps = {
-        style: styles.view,
-        showsVerticalScrollIndicator: false,
-        scrollEnabled: enabled,
-        ...panResponder.panHandlers,
-    };
-
-    let content;
-    if (scrollable) {
-        content = (
-            <BottomSheetScrollView {...scrollViewProps}>
-                {renderContainerContent()}
-            </BottomSheetScrollView>
-        );
-    } else {
-        content = (
-            <BottomSheetView style={styles.view}>
-                {renderContainerContent()}
-            </BottomSheetView>
-        );
-    }
-
     return (
         <BottomSheetM
             ref={sheetRef}
@@ -253,7 +197,6 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(({
             snapPoints={snapPoints}
             animateOnMount={true}
             backdropComponent={renderBackdrop}
-            onAnimate={handleAnimationStart}
             onChange={handleChange}
             animationConfigs={animationConfigs}
             handleIndicatorStyle={styles.indicator}
@@ -263,11 +206,11 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(({
             keyboardBehavior={keyboardBehavior}
             keyboardBlurBehavior={keyboardBlurBehavior}
             onClose={onBottomSheetClose}
-            bottomInset={insets.bottom}
+            bottomInset={footerComponent ? 0 : insets.bottom}
             enableDynamicSizing={enableDynamicSizing}
         >
-            <View style={[styles.bottomSheet, screenStyle]}>
-                {content}
+            <View style={[screenStyle, styles.bottomSheet]}>
+                {renderContainerContent()}
             </View>
         </BottomSheetM>
     );

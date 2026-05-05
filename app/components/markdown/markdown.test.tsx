@@ -18,7 +18,7 @@ import * as Transforms from './transform';
 const Parser = jest.requireActual('commonmark').Parser;
 
 jest.mock('@screens/navigation', () => ({
-    dismissAllRoutesAndResetToRootRoute: jest.fn(),
+    navigateToRoot: jest.fn(),
 }));
 
 describe('Markdown', () => {

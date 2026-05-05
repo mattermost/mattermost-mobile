@@ -4,6 +4,7 @@
 import React, {useCallback, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ServerIcon from '@components/server_icon';
 import {useServerUrl} from '@context/server';
@@ -46,9 +47,10 @@ const styles = StyleSheet.create({
 const Servers = React.forwardRef<ServersRef>((_, ref) => {
     const intl = useIntl();
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
-    const registeredServers = useRef<ServersModel[]|undefined>();
+    const registeredServers = useRef<ServersModel[] | undefined>(undefined);
     const currentServerUrl = useServerUrl();
     const dimensions = useWindowDimensions();
+    const insets = useSafeAreaInsets();
     const theme = useTheme();
 
     const updateTotal = () => {
@@ -118,7 +120,7 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
             const maxScreenHeight = Math.ceil(0.6 * dimensions.height);
             const maxSnapPoint = Math.min(
                 maxScreenHeight,
-                bottomSheetSnapPoint(registeredServers.current.length, SERVER_ITEM_HEIGHT) + TITLE_HEIGHT + BUTTON_HEIGHT +
+                bottomSheetSnapPoint(registeredServers.current.length, SERVER_ITEM_HEIGHT) + TITLE_HEIGHT + BUTTON_HEIGHT + insets.bottom +
                     (registeredServers.current.filter((s: ServersModel) => s.lastActiveAt).length * PUSH_ALERT_TEXT_HEIGHT),
             );
 
@@ -132,7 +134,7 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
 
             bottomSheet(renderContent, snapPoints, AddServerButton);
         }
-    }, [dimensions.height]);
+    }, [dimensions.height, insets.bottom]);
 
     useImperativeHandle(ref, () => ({
         openServers: onPress,

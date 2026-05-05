@@ -8,7 +8,7 @@ import {logInfo} from '@utils/log';
 export function useWhyDidYouUpdate(name: string, props: any) {
     // Get a mutable ref object where we can store props ...
     // ... for comparison next time this hook runs.
-    const previousProps = useRef<any|undefined>();
+    const previousProps = useRef<any | undefined>(undefined);
     const renderCount = useRef(0);
 
     useEffect(() => {

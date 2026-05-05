@@ -11,7 +11,7 @@ import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {fetchPlaybooks} from '@playbooks/actions/remote/playbooks';
 import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
-import {dismissAllRoutesAndResetToRootRoute, navigateBack} from '@screens/navigation';
+import {navigateToRoot, navigateBack} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -487,7 +487,7 @@ describe('SelectPlaybook', () => {
         });
 
         await waitFor(() => {
-            expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledWith();
+            expect(navigateToRoot).toHaveBeenCalledWith();
             expect(fetchPlaybookRunsForChannel).toHaveBeenCalledWith(mockServerUrl, 'channel-id-1');
             expect(switchToChannelById).toHaveBeenCalledWith(mockServerUrl, 'channel-id-1');
             expect(goToPlaybookRun).toHaveBeenCalledWith('run-1');

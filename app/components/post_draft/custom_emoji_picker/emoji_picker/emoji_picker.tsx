@@ -17,7 +17,7 @@ import CustomEmojiSections from '../emoji_sections';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type {SharedValue} from 'react-native-reanimated';
 
-type Props = {
+export type EmojiPickerProps = {
     customEmojis: CustomEmojiModel[];
     customEmojisEnabled: boolean;
     onEmojiPress: (emoji: string) => void;
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const EmojiPicker: React.FC<Props> = ({
+const EmojiPicker: React.FC<EmojiPickerProps> = ({
     customEmojisEnabled,
     imageUrl,
     file,

@@ -15,6 +15,7 @@ import TestHelper from '@test/test_helper';
 
 import PermalinkPreview from './permalink_preview';
 
+import type {MarkdownProps} from '@components/markdown/markdown';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 
@@ -26,7 +27,7 @@ jest.mock('@components/markdown', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(Markdown).mockImplementation((props) =>
+jest.mocked(Markdown).mockImplementation((props: MarkdownProps) =>
     React.createElement('Text', {testID: 'markdown'}, props.value),
 );
 

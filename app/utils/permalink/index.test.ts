@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Keyboard, Platform} from 'react-native';
+import {DeviceEventEmitter, Platform} from 'react-native';
 
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {dismissToStackRoot, navigateToScreen} from '@screens/navigation';
 
 import {displayPermalink, closePermalink} from './index';
@@ -37,10 +37,9 @@ describe('permalinkUtils', () => {
     });
 
     describe('displayPermalink', () => {
-        it('should dismiss keyboard and show permalink modal', async () => {
-            const dismiss = jest.spyOn(Keyboard, 'dismiss');
+        it('should emit blur event and show permalink modal', async () => {
             await displayPermalink('teamName', 'postId');
-            expect(dismiss).toHaveBeenCalled();
+            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.BLUR_AND_DISMISS_KEYBOARD);
             expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.PERMALINK,
                 {teamName: 'teamName', postId: 'postId'},

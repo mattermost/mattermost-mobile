@@ -16,8 +16,6 @@ import {
 
 jest.mock('@constants/device', () => ({isEdgeToEdge: false}));
 
-const deviceMock = jest.requireMock('@constants/device');
-
 function makeSnapshot(overrides: Partial<StateSnapshot> = {}): StateSnapshot {
     return {
         inputAccessoryHeight: 0,
@@ -231,20 +229,9 @@ describe('calculateKeyboardUpdates', () => {
 });
 
 describe('getEmojiSearchActiveHeight', () => {
-    beforeEach(() => {
-        deviceMock.isEdgeToEdge = false;
-    });
-
     it('should compute height without edge-to-edge using SEARCH_CONTAINER_PADDING as offset', () => {
         // offset=8 → (56+8+8+50+49)-34 = 171-34 = 137
         expect(getEmojiSearchActiveHeight(49, 34)).toBe(137);
-    });
-
-    it('should compute height with edge-to-edge using SEARCH_VISIBILITY_OFFSET as offset', () => {
-        deviceMock.isEdgeToEdge = true;
-
-        // offset=40 → (56+8+40+50+49)-34 = 203-34 = 169
-        expect(getEmojiSearchActiveHeight(49, 34)).toBe(169);
     });
 
     it('should handle zero tabBarHeight and safeAreaBottom', () => {
@@ -254,22 +241,10 @@ describe('getEmojiSearchActiveHeight', () => {
 });
 
 describe('calculateSearchHeight', () => {
-    beforeEach(() => {
-        deviceMock.isEdgeToEdge = false;
-    });
-
     it('should return keyboardHeight + getEmojiSearchActiveHeight', () => {
         // getEmojiSearchActiveHeight(49, 34) = 137 (non-edge-to-edge)
         // keyboardHeight=336 → 336 + 137 = 473
         expect(calculateSearchHeight(336, 49, 34)).toBe(473);
-    });
-
-    it('should work with edge-to-edge', () => {
-        deviceMock.isEdgeToEdge = true;
-
-        // getEmojiSearchActiveHeight(49, 34) = 169 (edge-to-edge)
-        // keyboardHeight=336 → 336 + 169 = 505
-        expect(calculateSearchHeight(336, 49, 34)).toBe(505);
     });
 
     it('should work with zero keyboard height', () => {

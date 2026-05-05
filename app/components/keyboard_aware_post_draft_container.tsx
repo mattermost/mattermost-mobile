@@ -5,11 +5,14 @@ import React, {useCallback, useEffect, useMemo, useRef, type ReactNode} from 're
 import {BackHandler, DeviceEventEmitter, Platform, type StyleProp, StyleSheet, type ViewStyle, View, type LayoutChangeEvent} from 'react-native';
 import {KeyboardGestureArea} from 'react-native-keyboard-controller';
 import Animated, {scrollTo, useAnimatedStyle} from 'react-native-reanimated';
+import {scheduleOnUI} from 'react-native-worklets';
 
 import CustomEmojiPicker from '@components/post_draft/custom_emoji_picker';
 import {Events} from '@constants';
 import {isEdgeToEdge} from '@constants/device';
 import {useKeyboardState} from '@context/keyboard_state';
+import useDidMount from '@hooks/did_mount';
+import {dismissKeyboard} from '@utils/keyboard';
 
 // Use KeyboardGestureArea on iOS and Android 35+ (with edge-to-edge)
 // Android < 35 uses native keyboard handling with adjustResize
@@ -61,6 +64,12 @@ export const KeyboardAwarePostDraftContainer = ({
         },
         [],
     );
+
+    useDidMount(() => {
+        return () => {
+            dismissKeyboard();
+        };
+    });
 
     // Ref to track if a layout update is already scheduled
     const layoutUpdateScheduledRef = useRef(false);
@@ -129,6 +138,10 @@ export const KeyboardAwarePostDraftContainer = ({
         return () => listener.remove();
     }, [closeInputAccessoryView]);
 
+    const scrollToEmojiPickerCompensation = useCallback((offset: number) => {
+        scheduleOnUI(() => scrollTo(listRef, 0, offset, false));
+    }, [listRef]);
+
     // After emoji picker renders, adjust heights and scroll to keep messages visible
     // On iOS, contentInset changes cause the list to shift, so we need to scroll to compensate
     // On Android, marginBottom is used instead and doesn't require scroll adjustment
@@ -144,10 +157,9 @@ export const KeyboardAwarePostDraftContainer = ({
 
                 // Only perform scroll adjustment on iOS
                 // Android uses marginBottom which doesn't require scroll compensation
-                if (Platform.OS === 'ios' && listRef) {
+                if (Platform.OS === 'ios' && listRef.current) {
                     // For inverted list: when bottomInset increases, content shifts UP visually. Scroll UP to compensate.
-                    const targetContentOffset = currentScroll - emojiPickerHeight;
-                    scrollTo(listRef, 0, targetContentOffset, false);
+                    scrollToEmojiPickerCompensation(currentScroll - emojiPickerHeight);
                 }
             });
         }

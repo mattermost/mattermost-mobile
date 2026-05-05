@@ -18,16 +18,11 @@ import type ScheduledPostModel from '@typings/database/models/servers/scheduled_
 
 // Mock the draft_scheduled_post component
 jest.mock('@components/draft_scheduled_post', () => {
-    // Use mockView instead of View to avoid reference error
-    return jest.fn().mockImplementation(({draftType, post}) => ({
-        type: 'mockView',
-        props: {
-            testID: `draft-scheduled-post-${draftType}-${post.id}`,
-        },
-        $$typeof: Symbol.for('react.element'),
-        ref: null,
-        key: null,
-    }));
+    const MockReact = require('react');
+    const {View} = require('react-native');
+    return jest.fn().mockImplementation(({draftType, post}) =>
+        MockReact.createElement(View, {testID: `draft-scheduled-post-${draftType}-${post.id}`}),
+    );
 });
 
 // Mock ReanimatedSwipeable to avoid worklet warnings

@@ -46,7 +46,7 @@ jest.mocked(SelectedUserChip).mockImplementation(
 
 jest.mock('@components/user_item');
 jest.mocked(UserItem).mockImplementation(
-    (props) => React.createElement('UserItem', {testID: 'user-item', ...props}),
+    (props: ComponentProps<typeof UserItem>) => React.createElement('UserItem', {testID: 'user-item', ...props}),
 );
 
 jest.mock('@components/option_item');

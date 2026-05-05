@@ -46,7 +46,7 @@ import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getCurrentTeamId, getLicense, setCurrentTeamId} from '@queries/servers/system';
 import {getThreadById} from '@queries/servers/thread';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
-import {dismissAllRoutesAndResetToRootRoute, dismissAllRoutesAndPopToScreen, navigateToScreen} from '@screens/navigation';
+import {navigateToRoot, dismissAllRoutesAndPopToScreen, navigateToScreen} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/user';
@@ -735,7 +735,7 @@ export const switchToCallThread = async (serverUrl: string, rootId: string, titl
 
         // TODO: this is a temporary solution until we have a proper cross-team thread view.
         //  https://mattermost.atlassian.net/browse/MM-45752
-        await dismissAllRoutesAndResetToRootRoute();
+        await navigateToRoot();
         await DatabaseManager.setActiveServerDatabase(serverUrl);
         WebsocketManager.initializeClient(serverUrl, 'Server Switch');
         navigateToScreen(Screens.THREAD, {rootId, title, channelName: channel?.displayName || ''});

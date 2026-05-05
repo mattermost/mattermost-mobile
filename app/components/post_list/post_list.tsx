@@ -5,7 +5,8 @@ import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useSt
 import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent, type ViewToken} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {KeyboardState, useAnimatedKeyboard, useKeyboardState as useControllerKeyboardState} from 'react-native-keyboard-controller';
-import Animated, {runOnJS, scrollTo, useAnimatedProps, useAnimatedReaction, useAnimatedStyle, type AnimatedStyle} from 'react-native-reanimated';
+import Animated, {scrollTo, useAnimatedProps, useAnimatedReaction, useAnimatedStyle, type AnimatedStyle} from 'react-native-reanimated';
+import {scheduleOnRN, scheduleOnUI} from 'react-native-worklets';
 
 import {removePost} from '@actions/local/post';
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -151,15 +152,15 @@ const PostList = ({
                 return;
             }
 
-            // scrollTo runs on the UI thread — avoids runOnJS latency which causes
+            // scrollTo runs on the UI thread — avoids scheduleOnRN latency which causes
             // the scroll compensation to land after the animation completes on New Architecture.
             scrollTo(listRef, 0, -current.scrollOffset + current.scrollPosition, false);
         },
         [listRef],
     );
 
-    const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
-    const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
+    const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent | undefined>(undefined);
+    const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent | undefined>(undefined);
     const scrolledToHighlighted = useRef(false);
     const initialRenderTracked = useRef(false);
     const viewableItemsDebounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -185,7 +186,7 @@ const PostList = ({
                 const translateY = postInputTranslateY.value;
                 const containerHeight = postInputContainerHeightShared.value;
                 const offset = containerHeight + translateY;
-                runOnJS(setProgressViewOffset)(offset);
+                scheduleOnRN(setProgressViewOffset, offset);
             }
         },
         [],
@@ -214,10 +215,14 @@ const PostList = ({
 
     const scrollToEnd = useCallback(() => {
         if (listRef) {
-            scrollTo(listRef, 0, -postInputTranslateY.value, true);
+            scheduleOnUI(() => {
+                scrollTo(listRef, 0, -postInputTranslateY.value, true);
+            });
         }
         setShowScrollToEndBtn(false);
-    }, [listRef, postInputTranslateY.value]);
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [listRef]);
 
     useEffect(() => {
         const scrollToBottom = (screen: string) => {
@@ -505,13 +510,13 @@ const PostList = ({
             return emojiPickerHeight;
         },
         (emojiPickerHeight) => {
-            runOnJS(setEmojiPickerPadding)(emojiPickerHeight);
+            scheduleOnRN(setEmojiPickerPadding, emojiPickerHeight);
         },
         [isKeyboardVisible],
     );
 
-    const contentContainerStyleWithPadding = useMemo(() => ({
-        paddingTop: location === Screens.PERMALINK || !isEdgeToEdge ? 0 : postInputContainerHeight + emojiPickerPadding,
+    const contentContainerStyleWithMargin = useMemo(() => ({
+        marginTop: location === Screens.PERMALINK || !isEdgeToEdge ? 0 : postInputContainerHeight + emojiPickerPadding,
     }), [location, emojiPickerPadding, postInputContainerHeight]);
 
     const animatedProps = useAnimatedProps(
@@ -532,7 +537,7 @@ const PostList = ({
             };
         }
         return {};
-    }, []);
+    });
 
     // eslint-disable-next-line new-cap
     const nativeGesture = Gesture.Native();
@@ -549,40 +554,42 @@ const PostList = ({
     return (
         <>
             <PostConfigProvider>
-                <GestureDetector gesture={composedGesture}>
-                    <Animated.FlatList
-                        animatedProps={animatedProps}
-                        automaticallyAdjustContentInsets={false}
-                        contentInsetAdjustmentBehavior='never'
-                        contentContainerStyle={contentContainerStyleWithPadding}
-                        data={orderedPosts}
-                        keyboardDismissMode={isEmojiSearchFocused ? 'none' : 'interactive'}
-                        keyboardShouldPersistTaps='handled'
-                        keyExtractor={keyExtractor}
-                        initialNumToRender={INITIAL_BATCH_TO_RENDER}
-                        maxToRenderPerBatch={5}
-                        updateCellsBatchingPeriod={100}
-                        ListHeaderComponent={header}
-                        ListFooterComponent={footer}
-                        onEndReached={onEndReached}
-                        onEndReachedThreshold={0.9}
-                        onMomentumScrollEnd={internalOnScroll}
-                        onScroll={onScrollProp}
-                        onScrollToIndexFailed={onScrollToIndexFailed}
-                        onViewableItemsChanged={onViewableItemsChanged}
-                        progressViewOffset={progressViewOffset}
-                        ref={listRef}
-                        renderItem={renderItem}
-                        testID={`${testID}.flat_list`}
-                        inverted={true}
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                        maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                        removeClippedSubviews={true}
-                        style={[styles.flex, androidExtra]}
-                        windowSize={10}
-                    />
-                </GestureDetector>
+                <Animated.View style={[styles.flex, androidExtra]}>
+                    <GestureDetector gesture={composedGesture}>
+                        <Animated.FlatList
+                            animatedProps={animatedProps}
+                            automaticallyAdjustContentInsets={false}
+                            contentInsetAdjustmentBehavior='never'
+                            contentContainerStyle={contentContainerStyleWithMargin}
+                            data={orderedPosts}
+                            keyboardDismissMode={isEmojiSearchFocused ? 'none' : 'interactive'}
+                            keyboardShouldPersistTaps='handled'
+                            keyExtractor={keyExtractor}
+                            initialNumToRender={INITIAL_BATCH_TO_RENDER}
+                            maxToRenderPerBatch={5}
+                            updateCellsBatchingPeriod={100}
+                            ListHeaderComponent={header}
+                            ListFooterComponent={footer}
+                            onEndReached={onEndReached}
+                            onEndReachedThreshold={0.9}
+                            onMomentumScrollEnd={internalOnScroll}
+                            onScroll={onScrollProp}
+                            onScrollToIndexFailed={onScrollToIndexFailed}
+                            onViewableItemsChanged={onViewableItemsChanged}
+                            progressViewOffset={progressViewOffset}
+                            ref={listRef}
+                            renderItem={renderItem}
+                            testID={`${testID}.flat_list`}
+                            inverted={true}
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
+                            removeClippedSubviews={true}
+                            style={styles.flex}
+                            windowSize={10}
+                        />
+                    </GestureDetector>
+                </Animated.View>
             </PostConfigProvider>
             {location !== Screens.PERMALINK &&
             <ScrollToEndView

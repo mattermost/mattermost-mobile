@@ -21,6 +21,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
 
+    <!-- Opt out of react-native-nitro-bg-timer-plus foreground service (Play Store special-use review not needed) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" tools:node="remove" />
+
     <!-- Request legacy Bluetooth permissions on older devices. -->
     <uses-permission android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
@@ -119,6 +122,9 @@
           android:stopWithTask="false"
           tools:node="merge"
       />
+
+        <!-- Opt out of react-native-nitro-bg-timer-plus foreground service -->
+        <service android:name="com.margelo.nitro.backgroundtimer.NitroBackgroundTimerService" tools:node="remove" />
 
     </application>
 </manifest>

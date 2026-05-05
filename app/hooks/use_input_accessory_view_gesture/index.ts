@@ -4,8 +4,9 @@
 import {useCallback} from 'react';
 import {Platform} from 'react-native';
 import {Gesture} from 'react-native-gesture-handler';
-import {runOnJS, useSharedValue, withTiming} from 'react-native-reanimated';
+import {useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import {useKeyboardState} from '@context/keyboard_state';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
@@ -120,7 +121,7 @@ export function useInputAccessoryViewGesture() {
             if (swipingDown) {
                 stateContext.inputAccessoryHeight.value = withTiming(0, {duration: 250}, () => {
                     stateContext.scrollOffset.value = 0;
-                    runOnJS(dismissEmojiPicker)();
+                    scheduleOnRN(dismissEmojiPicker);
                 });
                 stateContext.postInputTranslateY.value = withTiming(0, {duration: 250});
             } else {

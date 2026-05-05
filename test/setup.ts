@@ -50,20 +50,30 @@ jest.mock('expo-device', () => {
     };
 });
 
-jest.mock('expo-file-system', () => ({
-    downloadAsync: jest.fn(() => Promise.resolve({md5: 'md5', uri: 'uri'})),
-    getInfoAsync: jest.fn(() => Promise.resolve({exists: true, md5: 'md5', uri: 'uri'})),
-    readAsStringAsync: jest.fn(() => Promise.resolve()),
-    writeAsStringAsync: jest.fn(() => Promise.resolve()),
-    deleteAsync: jest.fn(() => Promise.resolve()),
-    moveAsync: jest.fn(() => Promise.resolve()),
-    copyAsync: jest.fn(() => Promise.resolve()),
-    makeDirectoryAsync: jest.fn(() => Promise.resolve()),
-    readDirectoryAsync: jest.fn(() => Promise.resolve()),
-    createDownloadResumable: jest.fn(() => Promise.resolve()),
-    documentDirectory: 'file:///test-directory/',
-    cacheDirectory: 'file://test-cache-directory/',
-}));
+jest.mock('expo-file-system', () => {
+    const mockInfo = {exists: true, uri: 'file:///mock', size: 0, modificationTime: 0};
+
+    function makeFileInstance(uri: string) {
+        return {uri, exists: true, size: 0, delete: jest.fn(), info: jest.fn(() => mockInfo), move: jest.fn(), copy: jest.fn(), create: jest.fn(), write: jest.fn(), text: jest.fn(() => Promise.resolve(''))};
+    }
+    function makeDirectoryInstance(uri: string) {
+        return {uri, exists: true, size: 0, delete: jest.fn(), info: jest.fn(() => mockInfo), create: jest.fn(), list: jest.fn(() => []), move: jest.fn(), copy: jest.fn()};
+    }
+
+    // Both MockFile and MockDirectory are jest.fn() constructors so that individual
+    // tests can call jest.mocked(File).mockImplementation(...) or inspect .mock.instances.
+    const MockFile = jest.fn().mockImplementation((...args: string[]) => makeFileInstance(args.join('')));
+    (MockFile as jest.Mock & {downloadFileAsync: jest.Mock}).downloadFileAsync = jest.fn(() => Promise.resolve(makeFileInstance('file:///downloaded')));
+    const MockDirectory = jest.fn().mockImplementation((...args: string[]) => makeDirectoryInstance(args.join('')));
+    return {
+        File: MockFile,
+        Directory: MockDirectory,
+        Paths: {
+            cache: makeDirectoryInstance('file://test-cache-directory/'),
+            document: makeDirectoryInstance('file:///test-directory/'),
+        },
+    };
+});
 
 jest.mock('expo-web-browser', () => ({
     openAuthSessionAsync: jest.fn().mockResolvedValue(({
@@ -117,6 +127,10 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@react-native-camera-roll/camera-roll', () => ({}));
 
+jest.mock('@react-native-documents/viewer', () => ({
+    viewDocument: jest.fn(),
+}));
+
 jest.mock('@mattermost/react-native-turbo-log', () => ({
     configure: jest.fn(),
     logDebug: jest.fn(),
@@ -169,7 +183,6 @@ jest.doMock('react-native', () => {
         StyleSheet,
         requireNativeComponent,
         Alert: RNAlert,
-        InteractionManager: RNInteractionManager,
         NativeModules: RNNativeModules,
         Linking: RNLinking,
         Keyboard: RNKeyboard,
@@ -186,33 +199,6 @@ jest.doMock('react-native', () => {
         addEventListener: jest.fn(() => ({
             remove: jest.fn(),
         })),
-    };
-
-    let activeInteractions = 0;
-    const pendingCallbacks: Array<() => void> = [];
-    const InteractionManager = {
-        ...RNInteractionManager,
-        createInteractionHandle: jest.fn(() => {
-            activeInteractions += 1;
-            return activeInteractions;
-        }),
-        clearInteractionHandle: jest.fn(() => {
-            activeInteractions = Math.max(0, activeInteractions - 1);
-            if (activeInteractions === 0) {
-                // Execute pending callbacks when interactions are cleared
-                while (pendingCallbacks.length > 0) {
-                    const cb = pendingCallbacks.shift();
-                    cb?.();
-                }
-            }
-        }),
-        runAfterInteractions: jest.fn((callback) => {
-            if (activeInteractions === 0) {
-                callback();
-            } else {
-                pendingCallbacks.push(callback); // Delay execution until interactions finish
-            }
-        }),
     };
 
     const NativeModules = {
@@ -367,7 +353,6 @@ jest.doMock('react-native', () => {
         requireNativeComponent,
         Alert,
         AppState,
-        InteractionManager,
         NativeModules,
         Linking,
         Keyboard,
@@ -390,21 +375,6 @@ jest.doMock('react-native', () => {
         },
         findNodeHandle: jest.fn(() => null),
     }, ReactNative);
-});
-
-jest.mock('react-native-vector-icons', () => {
-    const React = jest.requireActual('react');
-    class CompassIcon extends React.PureComponent {
-        render() {
-            return React.createElement('Icon', this.props);
-        }
-    }
-    CompassIcon.getImageSource = jest.fn().mockResolvedValue({});
-    return {
-        createIconSet: () => CompassIcon,
-
-        createIconSetFromFontello: () => CompassIcon,
-    };
 });
 
 // Mock Intune module - use virtual: true since module may not exist when Intune is disabled
@@ -515,7 +485,7 @@ jest.mock('react-native-localize', () => ({
     ]),
 }));
 
-jest.mock('@react-native-cookies/cookies', () => ({
+jest.mock('@preeternal/react-native-cookie-manager', () => ({
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     openURL: jest.fn(),
@@ -552,7 +522,7 @@ jest.mock('react-native-notifications', () => {
             ios: {
                 getDeliveredNotifications: jest.fn().mockImplementation(() => Promise.resolve(deliveredNotifications)),
                 removeDeliveredNotifications: jest.fn((ids) => {
-                    // eslint-disable-next-line
+
                     // @ts-ignore
                     deliveredNotifications = deliveredNotifications.filter((n) => !ids.includes(n.identifier));
                 }),
@@ -598,7 +568,7 @@ jest.mock('@mattermost/react-native-paste-input', () => {
 
 jest.mock('@react-native-clipboard/clipboard', () => ({}));
 
-jest.mock('react-native-document-picker', () => ({}));
+jest.mock('@react-native-documents/picker', () => ({}));
 
 jest.mock('@mattermost/react-native-network-client', () => ({
     getOrCreateAPIClient: jest.fn((serverUrl: string) => Promise.resolve({client: {
@@ -614,18 +584,46 @@ jest.mock('@mattermost/react-native-network-client', () => ({
 
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
 
+jest.mock('react-native-worklets', () => {
+    const mock = require('react-native-worklets/src/mock');
+    return {
+        ...mock,
+
+        // Override scheduleOnRN to call synchronously so state updates from
+        // useAnimatedReaction fire inside act() rather than via queueMicrotask.
+        scheduleOnRN: <Args extends unknown[]>(fn: (...args: Args) => unknown, ...args: Args) => {
+            fn(...args);
+        },
+    };
+});
+
 require('@shopify/flash-list/jestSetup');
 
 require('react-native-reanimated').setUpTests();
 jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
-jest.mock('react-native-haptic-feedback', () => {
-    const RNHF = jest.requireActual('react-native-haptic-feedback/src/types');
-    return {
-        ...RNHF,
-        trigger: () => '',
-    };
-});
+jest.mock('react-native-haptic-feedback', () => ({
+    trigger: () => '',
+    HapticFeedbackTypes: {
+        selection: 'selection',
+        impactLight: 'impactLight',
+        impactMedium: 'impactMedium',
+        impactHeavy: 'impactHeavy',
+        rigid: 'rigid',
+        soft: 'soft',
+        notificationSuccess: 'notificationSuccess',
+        notificationWarning: 'notificationWarning',
+        notificationError: 'notificationError',
+    },
+}));
+
+jest.mock('react-native-nitro-bg-timer-plus', () => ({
+    BackgroundTimer: {
+        setTimeout: jest.fn(),
+        clearTimeout: jest.fn(),
+        disableForegroundService: jest.fn(),
+    },
+}));
 
 jest.mock('@utils/log', () => ({
     logError: jest.fn(),
@@ -643,6 +641,16 @@ declare const global: {
 
 global.requestAnimationFrame = (callback) => {
     setTimeout(callback, 0);
+};
+
+// @ts-expect-error requestIdleCallback does not exist in global type
+global.requestIdleCallback = (callback: IdleRequestCallback) => {
+    return setTimeout(callback, 0) as unknown as number;
+};
+
+// @ts-expect-error cancelIdleCallback does not exist in global type
+global.cancelIdleCallback = (id: number) => {
+    clearTimeout(id);
 };
 
 global.performance.now = () => Date.now();

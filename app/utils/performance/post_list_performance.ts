@@ -211,14 +211,8 @@ class PostListPerformanceTracker {
     }
 
     private getArchitecture(): 'old' | 'new' {
-        // Check if New Architecture is enabled
-        // In React Native 0.76+, we can check for TurboModules
-        try {
-            const TurboModuleRegistry = require('react-native/Libraries/TurboModule/TurboModuleRegistry');
-            return TurboModuleRegistry ? 'new' : 'old';
-        } catch {
-            return 'old';
-        }
+        // global.nativeFabricUIManager is set by the Fabric renderer when New Architecture is enabled
+        return (global as any).nativeFabricUIManager ? 'new' : 'old';
     }
 }
 

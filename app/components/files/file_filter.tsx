@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {type ListRenderItemInfo, View} from 'react-native';
-import {FlatList} from 'react-native-gesture-handler';
 
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {useTheme} from '@context/theme';
-import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
 import {type FileFilter, FileFilters} from '@utils/file';
@@ -116,7 +115,6 @@ const File_filter = ({initialFilter, setFilter, title}: FilterProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const {enabled, panResponder} = useBottomSheetListsFix();
 
     const handleOnPress = useCallback((fileType: FileFilter) => {
         if (fileType !== initialFilter) {
@@ -130,7 +128,7 @@ const File_filter = ({initialFilter, setFilter, title}: FilterProps) => {
     const renderFilterItem = useCallback(({item}: ListRenderItemInfo<FilterItem>) => {
         return (
             <OptionItem
-                label={intl.formatMessage({id: item.id, defaultMessage: item.defaultMessage})}
+                label={intl.formatMessage(item)}
                 type={'select'}
                 action={() => handleOnPress(item.filterType)}
                 selected={initialFilter === item.filterType}
@@ -145,15 +143,11 @@ const File_filter = ({initialFilter, setFilter, title}: FilterProps) => {
             testID='search.filters'
             title={title}
         >
-            <View>
-                <FlatList
-                    data={data}
-                    renderItem={renderFilterItem}
-                    ItemSeparatorComponent={separator}
-                    scrollEnabled={enabled}
-                    {...panResponder.panHandlers}
-                />
-            </View>
+            <BottomSheetFlatList
+                data={data}
+                renderItem={renderFilterItem}
+                ItemSeparatorComponent={separator}
+            />
         </BottomSheetContent>
     );
 };

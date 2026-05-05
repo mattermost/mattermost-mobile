@@ -3,13 +3,12 @@
 
 import {router} from 'expo-router';
 import {createIntl} from 'react-intl';
-import {Alert} from 'react-native';
+import {Alert, DeviceEventEmitter} from 'react-native';
 
-import {Screens, ServerErrors} from '@constants';
+import {Events, Screens, ServerErrors} from '@constants';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import * as Navigation from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
-import {dismissKeyboard} from '@utils/keyboard';
 
 import {alertTeamRemove, alertChannelRemove, alertChannelArchived, alertTeamAddError, previewPdf, openUserProfile, openAppsForm} from './index';
 
@@ -33,10 +32,6 @@ jest.mock('expo-router', () => ({
         canGoBack: jest.fn(() => true),
         navigate: jest.fn(),
     }),
-}));
-
-jest.mock('@utils/keyboard', () => ({
-    dismissKeyboard: jest.fn().mockResolvedValue(undefined),
 }));
 
 describe('Navigation utils', () => {
@@ -171,11 +166,11 @@ describe('Navigation utils', () => {
     });
 
     describe('openUserProfile', () => {
-        it('should dismiss keyboard when visible and navigate to user profile', async () => {
+        it('should emit blur event and navigate to user profile', () => {
             const props = {userId: 'user123', username: 'johndoe'};
-            await openUserProfile(props);
+            openUserProfile(props);
 
-            expect(dismissKeyboard).toHaveBeenCalled();
+            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.BLUR_AND_DISMISS_KEYBOARD);
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(bottom_sheet)/user_profile',
                 params: {userId: 'user123', username: 'johndoe'},

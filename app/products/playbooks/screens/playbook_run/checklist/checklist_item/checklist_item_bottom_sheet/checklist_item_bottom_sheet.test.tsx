@@ -675,7 +675,7 @@ describe('ChecklistItemBottomSheet', () => {
             const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
             const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
-            expect(icon.props.color).toBe(Preferences.THEMES.denim.centerChannelColor);
+            expect(icon).toHaveStyle({color: Preferences.THEMES.denim.centerChannelColor});
         });
 
         it('should use the correct icon color (error color)', () => {
@@ -686,7 +686,7 @@ describe('ChecklistItemBottomSheet', () => {
             const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
             const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
-            expect(icon.props.color).toBe(Preferences.THEMES.denim.errorTextColor);
+            expect(icon).toHaveStyle({color: Preferences.THEMES.denim.errorTextColor});
         });
 
         it('should display the correct text structure', () => {
@@ -717,14 +717,16 @@ describe('ChecklistItemBottomSheet', () => {
         });
 
         it('should use source-branch icon with size 24', () => {
+            // CompassIcon (name='source-branch') renders as a Text node; the `name` prop is consumed
+            // internally and does not appear on rendered props. Verify the glyph (0xf062c) instead.
+            const SOURCE_BRANCH = String.fromCodePoint(0xf062c);
             const props = getBaseProps();
             props.showConditionIcon = true;
             props.conditionReason = 'Condition reason';
             const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
             const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
-            expect(icon.props.name).toBe('source-branch');
-            expect(icon.props.size).toBe(24);
+            expect(icon.props.children).toContain(SOURCE_BRANCH);
         });
     });
 

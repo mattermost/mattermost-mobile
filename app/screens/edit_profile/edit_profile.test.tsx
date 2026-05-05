@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 /* eslint-disable max-lines */
-import {act} from '@testing-library/react-hooks';
-import {fireEvent, screen, waitFor} from '@testing-library/react-native';
+import {act, fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';

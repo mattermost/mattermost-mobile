@@ -5,7 +5,8 @@ import {requestReview} from 'expo-store-review';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, BackHandler, Pressable, Text, TouchableOpacity, View} from 'react-native';
-import Animated, {runOnJS, SlideInDown, SlideOutDown} from 'react-native-reanimated';
+import Animated, {SlideInDown, SlideOutDown} from 'react-native-reanimated';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import {storeDontAskForReview, storeLastAskForReview} from '@actions/app/global';
 import Button from '@components/button';
@@ -157,7 +158,7 @@ const ReviewApp = ({
     const slideOut = useMemo(() => SlideOutDown.withCallback((finished: boolean) => {
         'worklet';
         if (finished) {
-            runOnJS(doAfterAnimation)();
+            scheduleOnRN(doAfterAnimation);
         }
     }), [doAfterAnimation]);
 

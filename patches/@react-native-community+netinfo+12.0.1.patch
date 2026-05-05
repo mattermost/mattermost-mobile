@@ -20,36 +20,36 @@ index 252d1e7..09328c5 100644
  
              if (network != null) {
 diff --git a/node_modules/@react-native-community/netinfo/src/internal/internetReachability.ts b/node_modules/@react-native-community/netinfo/src/internal/internetReachability.ts
-index 757d784..663abda 100644
+index 7d396aa..ebc49be 100644
 --- a/node_modules/@react-native-community/netinfo/src/internal/internetReachability.ts
 +++ b/node_modules/@react-native-community/netinfo/src/internal/internetReachability.ts
-@@ -109,10 +109,10 @@ export default class InternetReachability {
-           const nextTimeoutInterval = this._isInternetReachable
-             ? this._configuration.reachabilityLongTimeout
-             : this._configuration.reachabilityShortTimeout;
+@@ -108,10 +108,10 @@ export default class InternetReachability {
+         const nextTimeoutInterval = this._isInternetReachable
+           ? this._configuration.reachabilityLongTimeout
+           : this._configuration.reachabilityShortTimeout;
+-        this._currentTimeoutHandle = setTimeout(
+-          this._checkInternetReachability,
+-          nextTimeoutInterval,
+-        );
++        // this._currentTimeoutHandle = setTimeout(
++        //   this._checkInternetReachability,
++        //   nextTimeoutInterval,
++        // );
+       })
+       .catch((error: Error | 'timedout' | 'canceled'): void => {
+         if ('canceled' === error) {
+@@ -122,10 +122,10 @@ export default class InternetReachability {
+           }
+ 
+           this._setIsInternetReachable(false);
 -          this._currentTimeoutHandle = setTimeout(
 -            this._checkInternetReachability,
--            nextTimeoutInterval,
+-            this._configuration.reachabilityShortTimeout,
 -          );
 +          // this._currentTimeoutHandle = setTimeout(
 +          //   this._checkInternetReachability,
-+          //   nextTimeoutInterval,
++          //   this._configuration.reachabilityShortTimeout,
 +          // );
-         },
-       )
-       .catch(
-@@ -125,10 +125,10 @@ export default class InternetReachability {
-             }
-             
-             this._setIsInternetReachable(false);
--            this._currentTimeoutHandle = setTimeout(
--              this._checkInternetReachability,
--              this._configuration.reachabilityShortTimeout,
--            );
-+            // this._currentTimeoutHandle = setTimeout(
-+            //   this._checkInternetReachability,
-+            //   this._configuration.reachabilityShortTimeout,
-+            // );
-           }
-         },
-       )
+         }
+       })
+       // Clear request timeout and propagate any errors

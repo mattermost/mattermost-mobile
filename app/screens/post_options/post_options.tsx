@@ -11,7 +11,6 @@ import CopyTextOption from '@components/copy_text_option';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {REACTION_PICKER_HEIGHT, REACTION_PICKER_MARGIN} from '@constants/reaction_picker';
-import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import BottomSheet from '@screens/bottom_sheet';
 import BORReadReceipts, {BOR_READ_RECEIPTS_HEIGHT} from '@screens/post_options/bor_read_receipts';
 import {isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
@@ -59,7 +58,6 @@ const PostOptions = ({
     isBoRPost, showBoRReadReceipts, borReceiptData, currentUser,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const {enabled, panResponder} = useBottomSheetListsFix();
     const {bottom} = useSafeAreaInsets();
     const isSystemPost = isSystemMessage(post);
 
@@ -100,8 +98,6 @@ const PostOptions = ({
         return (
             <BottomSheetScrollView
                 bounces={false}
-                scrollEnabled={enabled}
-                {...panResponder.panHandlers}
             >
                 {shouldShowBORReadReceipts &&
                     <BORReadReceipts

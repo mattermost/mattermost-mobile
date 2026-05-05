@@ -99,7 +99,7 @@ export function calculateKeyboardUpdates(snapshot: StateSnapshot, adjustedHeight
  * Calculate the total height of search UI components (search bar + padding + visibility offset)
  * This is the additional height added on top of keyboard height when emoji search is active
  * @param tabBarHeight - Tab bar height (for tablets in split view)
- * @param bottomSafeArea - Bottom safe area height (for devices with notch or home indicator)
+ * @param safeAreaBottom - Bottom safe area height (for devices with notch or home indicator)
  * @returns The total height of search components
  */
 export function getEmojiSearchActiveHeight(tabBarHeight: number, safeAreaBottom: number): number {
@@ -113,6 +113,7 @@ export function getEmojiSearchActiveHeight(tabBarHeight: number, safeAreaBottom:
  * Calculate emoji search height based on keyboard height
  * @param keyboardHeight - Current keyboard height (0 if no keyboard or hardware keyboard)
  * @param tabBarHeight - Tab bar height (for tablets in split view)
+ * @param safeAreaBottom - Bottom safe area height
  * @returns The calculated search height
  */
 export function calculateSearchHeight(keyboardHeight: number, tabBarHeight: number, safeAreaBottom: number): number {

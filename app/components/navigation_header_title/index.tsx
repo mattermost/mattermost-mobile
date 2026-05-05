@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
-import {Platform, Pressable, Text, View, type PressableStateCallbackType} from 'react-native';
+import React, {useMemo} from 'react';
+import {Platform, Pressable, Text, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
+import usePressableOpacityStyle from '@hooks/use_pressable_opacity';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -25,7 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         title: {
             color: theme.sidebarHeaderTextColor,
             ...typography('Heading', 300, 'SemiBold'),
-            textAlign: 'center',
+            textAlign: Platform.select({ios: 'center', android: 'flex-start'}),
             width: '100%',
         },
         withSubtitle: {
@@ -57,7 +58,7 @@ export default function NavigationHeaderTitle({title, subtitle, subtitleElement,
         return null;
     }, [styles.subtitle, subtitle, subtitleElement]);
 
-    const pressableStyle = useCallback(({pressed}: PressableStateCallbackType) => [styles.container, pressed && {opacity: 0.72}], [styles.container]);
+    const pressableStyle = usePressableOpacityStyle(styles.container);
 
     return (
         <Pressable

@@ -25,12 +25,12 @@ type Props = {
     canRefresh?: boolean;
     loading?: boolean;
     loadingComponent?: React.ReactElement<any, string> | null;
-    noResults: () => JSX.Element | null;
+    noResults: () => React.ReactNode;
     refreshing?: boolean;
     onRefresh?: () => void;
     onLoadMore: () => void;
     onRowPress: (item: Channel | DialogOption) => void;
-    renderItem: (props: ListItemProps) => JSX.Element;
+    renderItem: (props: ListItemProps) => React.ReactNode;
     selectable?: boolean;
     theme: Theme;
     shouldRenderSeparator?: boolean;
@@ -122,7 +122,7 @@ function CustomList({
         );
     }, [shouldRenderSeparator, style]);
 
-    const renderListItem = useCallback(({item}: any) => {
+    const renderListItem = useCallback(({item}: any): React.ReactElement | null => {
         const props: ListItemProps = {
             id: item.key,
             item,
@@ -136,7 +136,7 @@ function CustomList({
             props.enabled = !item.disableSelect;
         }
 
-        return renderItem(props);
+        return (renderItem(props) ?? null) as React.ReactElement | null;
     }, [onRowPress, selectable, renderItem]);
 
     const renderFooter = useCallback((): React.ReactElement<any, string> | null => {

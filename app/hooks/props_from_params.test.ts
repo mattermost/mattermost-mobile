@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook} from '@testing-library/react-hooks';
+import {renderHook} from '@testing-library/react-native';
 
 import {usePropsFromParams} from '@hooks/props_from_params';
 
@@ -229,7 +229,7 @@ describe('usePropsFromParams', () => {
             userId: 'user2',
         });
 
-        rerender();
+        rerender(undefined);
 
         expect(result.current).toEqual({
             userId: 'user2',

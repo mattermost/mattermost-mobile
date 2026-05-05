@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook} from '@testing-library/react-hooks';
+import {renderHook} from '@testing-library/react-native';
 import React from 'react';
 
 import {
@@ -12,6 +12,9 @@ import {
     getModalHeaderOptions,
     useNavigationHeader,
 } from './navigation_header';
+
+import type {NavigationButtonProps} from '@components/navigation_button';
+import type {ViewProps} from 'react-native';
 
 const mockSetOptions = jest.fn();
 const mockCanGoBack = jest.fn();
@@ -306,7 +309,7 @@ describe('navigation_header', () => {
 
             const result = getLoginModalHeaderOptions(theme, onClose, testID);
 
-            const HeaderLeftComponent = result.headerLeft as () => React.ReactElement;
+            const HeaderLeftComponent = result.headerLeft as () => React.ReactElement<NavigationButtonProps>;
             // eslint-disable-next-line new-cap
             const element = HeaderLeftComponent();
 
@@ -340,7 +343,7 @@ describe('navigation_header', () => {
 
             const result = getLoginModalHeaderOptions(theme, onClose);
 
-            const HeaderLeftComponent = result.headerLeft as () => React.ReactElement;
+            const HeaderLeftComponent = result.headerLeft as () => React.ReactElement<NavigationButtonProps>;
             // eslint-disable-next-line new-cap
             const element = HeaderLeftComponent();
 
@@ -418,7 +421,7 @@ describe('navigation_header', () => {
 
             const result = getModalHeaderOptions(theme, onClose, testID);
 
-            const HeaderLeftComponent = result.headerLeft as () => React.ReactElement;
+            const HeaderLeftComponent = result.headerLeft as () => React.ReactElement<ViewProps>;
             // eslint-disable-next-line new-cap
             const element = HeaderLeftComponent();
 
@@ -428,7 +431,7 @@ describe('navigation_header', () => {
             expect((element.type as any).displayName).toBe('View');
 
             // The NavigationButton inside View
-            const buttonElement = element.props.children;
+            const buttonElement = element.props.children as React.ReactElement<NavigationButtonProps>;
             expect((buttonElement.type as any).name).toBe('NavigationButton');
             expect(buttonElement.props.onPress).toBe(onClose);
             expect(buttonElement.props.iconName).toBe('close');
@@ -446,11 +449,11 @@ describe('navigation_header', () => {
 
             const result = getModalHeaderOptions(theme, onClose);
 
-            const HeaderLeftComponent = result.headerLeft as () => React.ReactElement;
+            const HeaderLeftComponent = result.headerLeft as () => React.ReactElement<ViewProps>;
             // eslint-disable-next-line new-cap
             const element = HeaderLeftComponent();
 
-            const buttonElement = element.props.children;
+            const buttonElement = element.props.children as React.ReactElement<NavigationButtonProps>;
             expect(buttonElement.props.testID).toBeUndefined();
         });
     });

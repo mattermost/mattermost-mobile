@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {type ComponentProps} from 'react';
 import {View} from 'react-native';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
@@ -22,14 +22,14 @@ jest.mock('./channel_autotranslation', () => ({
     default: jest.fn(),
 }));
 jest.mocked(ChannelAutotranslation).mockImplementation(
-    (props) => React.createElement(View, {testID: 'channel_configuration.autotranslation', ...props}),
+    (props: ComponentProps<typeof ChannelAutotranslation>) => React.createElement(View, {testID: 'channel_configuration.autotranslation', ...props}),
 );
 jest.mock('./share_with_connected_workspaces', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
 jest.mocked(ShareWithConnectedWorkspaces).mockImplementation(
-    (props) => React.createElement(View, {testID: 'channel_configuration.share_workspaces', ...props}),
+    (props: ComponentProps<typeof ShareWithConnectedWorkspaces>) => React.createElement(View, {testID: 'channel_configuration.share_workspaces', ...props}),
 );
 
 describe('ChannelConfiguration', () => {

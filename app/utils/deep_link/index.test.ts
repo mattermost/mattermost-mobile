@@ -16,7 +16,7 @@ import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {queryUsersByUsername} from '@queries/servers/user';
-import {dismissAllRoutesAndResetToRootRoute} from '@screens/navigation';
+import {navigateToRoot} from '@screens/navigation';
 import {NavigationStore} from '@store/navigation_store';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
@@ -139,7 +139,7 @@ describe('parseAndHandleDeepLink', () => {
         jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://currentserver.com');
         jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://existingserver.com');
         const result = await parseAndHandleDeepLink('https://existingserver.com/team/channels/town-square');
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalled();
+        expect(navigateToRoot).toHaveBeenCalled();
         expect(DatabaseManager.setActiveServerDatabase).toHaveBeenCalledWith('https://existingserver.com');
         expect(WebsocketManager.initializeClient).toHaveBeenCalledWith('https://existingserver.com', 'DeepLink');
         expect(result).toEqual({error: false});

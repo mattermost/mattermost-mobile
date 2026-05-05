@@ -178,15 +178,15 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
 
     // Delete file caches (critical - we need to wipe local data)
     await safeExecute('deleteFileCache', async () => {
-        await deleteFileCache(serverUrl);
+        deleteFileCache(serverUrl);
     });
 
     await safeExecute('deleteFileCacheMmPasteInput', async () => {
-        await deleteFileCacheByDir('mmPasteInput');
+        deleteFileCacheByDir('mmPasteInput');
     });
 
     await safeExecute('deleteFileCacheThumbnails', async () => {
-        await deleteFileCacheByDir('thumbnails');
+        deleteFileCacheByDir('thumbnails');
     });
 
     if (errors.length > 0) {

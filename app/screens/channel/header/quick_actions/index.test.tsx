@@ -20,7 +20,7 @@ jest.mock('@playbooks/components/channel_actions/playbook_runs_option', () => ({
     default: jest.fn(),
 }));
 jest.mocked(PlaybookRunsOption).mockImplementation(
-    (props) => React.createElement('PlaybookRunsOption', {testID: 'playbook-runs-option', ...props}),
+    (props: ComponentProps<typeof PlaybookRunsOption>) => React.createElement('PlaybookRunsOption', {testID: 'playbook-runs-option', ...props}),
 );
 
 describe('ChannelQuickAction', () => {

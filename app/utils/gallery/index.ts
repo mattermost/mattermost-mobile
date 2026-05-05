@@ -120,7 +120,7 @@ export function measureItem(ref: AnimatedRef<any>, sharedValues: GalleryManagerS
     }
 }
 
-export function measureViewInWindow(ref: RefObject<View>): Promise<{x: number; y: number; width: number; height: number}> {
+export function measureViewInWindow(ref: RefObject<View | null>): Promise<{x: number; y: number; width: number; height: number}> {
     return new Promise((resolve) => {
         if (ref.current) {
             ref.current.measure((x, y, width, height, pageX, pageY) => {

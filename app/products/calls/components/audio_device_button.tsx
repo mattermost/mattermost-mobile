@@ -7,7 +7,7 @@ import {Pressable, type StyleProp, Text, type TextStyle, View, type ViewStyle} f
 
 import {setPreferredAudioRoute} from '@calls/actions/calls';
 import {AudioDevice, type CurrentCall} from '@calls/types/calls';
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Device} from '@constants';
 import {useTheme} from '@context/theme';
@@ -108,7 +108,7 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
         bottomSheet(renderContent, [1, bottomSheetSnapPoint(available.length + 1, ITEM_HEIGHT)]);
     }, [audioDeviceInfo.selectedAudioDevice, audioDeviceInfo.availableAudioDeviceList, isTablet, tabletLabel, style.checkIcon, phoneLabel, speakerLabel, bluetoothLabel, headsetLabel]);
 
-    let icon = 'volume-high';
+    let icon: CompassIconName = 'volume-high';
     let label = speakerLabel;
     switch (audioDeviceInfo.selectedAudioDevice) {
         case AudioDevice.Earpiece:

@@ -117,7 +117,7 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
     layoutWidth,
     firstItem,
 }) => {
-    const swipeable = useRef<SwipeableMethods>(null);
+    const swipeable = useRef<SwipeableMethods | null>(null);
     const intl = useIntl();
     const serverUrl = useServerUrl();
 

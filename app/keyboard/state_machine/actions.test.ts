@@ -209,42 +209,46 @@ describe('enterKeyboardOpen', () => {
 });
 
 describe('enterEmojiSearchActive', () => {
-    it('should capture inputAccessoryHeight as preSearchHeight and emit event', () => {
+    it('should capture inputAccessoryHeight as preSearchHeight and emit event', async () => {
         const snapshot = makeSnapshot({inputAccessoryHeight: 300});
         const result = enterEmojiSearchActive(snapshot);
         expect(result.preSearchHeight).toEqual({value: 300, animated: false});
         expect(result.isEmojiSearchActive).toEqual({value: true, animated: false});
+        await Promise.resolve();
         expect(DeviceEventEmitter.emit).toHaveBeenCalledWith('EMOJI_PICKER_SEARCH_FOCUSED', true);
     });
 });
 
 describe('exitEmojiSearchToPickerOpen', () => {
-    it('should return targetHeight=preSearchHeight, clear preSearchHeight, set isWaitingForKeyboard, and emit event', () => {
+    it('should return targetHeight=preSearchHeight, clear preSearchHeight, set isWaitingForKeyboard, and emit event', async () => {
         const snapshot = makeSnapshot({preSearchHeight: 280});
         const result = exitEmojiSearchToPickerOpen(snapshot);
         expect(result.targetHeight?.value).toBe(280);
         expect(result.targetHeight?.animated).toBe(true);
         expect(result.preSearchHeight).toEqual({value: 0, animated: false});
         expect(result.isWaitingForKeyboard).toEqual({value: true, animated: false});
+        await Promise.resolve();
         expect(DeviceEventEmitter.emit).toHaveBeenCalledWith('EMOJI_PICKER_SEARCH_FOCUSED', false);
     });
 });
 
 describe('exitEmojiSearchToKeyboard', () => {
-    it('should clear preSearchHeight and set targetHeight to preSearchHeight, and emit event', () => {
+    it('should clear preSearchHeight and set targetHeight to preSearchHeight, and emit event', async () => {
         const snapshot = makeSnapshot({preSearchHeight: 290});
         const result = exitEmojiSearchToKeyboard(snapshot);
         expect(result.preSearchHeight).toEqual({value: 0, animated: false});
         expect(result.targetHeight).toEqual({value: 290, animated: false});
+        await Promise.resolve();
         expect(DeviceEventEmitter.emit).toHaveBeenCalledWith('EMOJI_PICKER_SEARCH_FOCUSED', false);
     });
 });
 
 describe('exitEmojiSearchToIdle', () => {
-    it('should set isReconcilerPaused and clear preSearchHeight, and emit event', () => {
+    it('should set isReconcilerPaused and clear preSearchHeight, and emit event', async () => {
         const result = exitEmojiSearchToIdle();
         expect(result.isReconcilerPaused).toEqual({value: true, animated: false});
         expect(result.preSearchHeight).toEqual({value: 0, animated: false});
+        await Promise.resolve();
         expect(DeviceEventEmitter.emit).toHaveBeenCalledWith('EMOJI_PICKER_SEARCH_FOCUSED', false);
     });
 });

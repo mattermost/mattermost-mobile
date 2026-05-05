@@ -4,7 +4,7 @@
 import TurboLogger from '@mattermost/react-native-turbo-log';
 import RNUtils from '@mattermost/rnutils';
 import {fireEvent, waitFor} from '@testing-library/react-native';
-import {getInfoAsync} from 'expo-file-system';
+import {File} from 'expo-file-system';
 import {Alert} from 'react-native';
 
 import {dismissBottomSheet} from '@screens/navigation';
@@ -426,7 +426,18 @@ describe('AttachmentOptions', () => {
         it('should call onUploadFiles with zip file info on successful attach', async () => {
             jest.mocked(TurboLogger.getLogPaths).mockResolvedValue(['/path/to/log1.txt', '/path/to/log2.txt']);
             jest.mocked(RNUtils.createZipFile).mockResolvedValue('/path/to/logs.zip');
-            jest.mocked(getInfoAsync).mockResolvedValue({exists: true, size: 1234, uri: 'file:///path/to/logs.zip', isDirectory: false, modificationTime: 0, md5: ''});
+            jest.mocked(File).mockImplementation((uri: string) => ({
+                uri,
+                exists: true,
+                size: 1234,
+                delete: jest.fn(),
+                info: jest.fn(),
+                move: jest.fn(),
+                copy: jest.fn(),
+                create: jest.fn(),
+                write: jest.fn(),
+                text: jest.fn(() => Promise.resolve('')),
+            } as unknown as InstanceType<typeof File>));
 
             const props = {...baseProps, showAttachLogs: true};
             const {getByTestId} = renderWithIntlAndTheme(

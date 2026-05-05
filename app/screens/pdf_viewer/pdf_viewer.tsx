@@ -9,7 +9,6 @@ import {
     type OnPasswordLimitReachedEvent,
     type OnPasswordRequiredEvent,
 } from '@mattermost/secure-pdf-viewer';
-import {deleteAsync} from 'expo-file-system';
 import {useNavigation} from 'expo-router';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
@@ -20,8 +19,10 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useDidMount from '@hooks/did_mount';
 import {navigateBack} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
+import {deleteFile} from '@utils/file';
 import {logError} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {openLink} from '@utils/url/links';
@@ -46,6 +47,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const dismiss = () => {
+    const onDismiss = CallbackStore.getCallback<() => void>();
+    onDismiss?.();
+    CallbackStore.removeCallback();
+};
+
 const PdfViewer = ({allowPdfLinkNavigation, fileId, filePath, siteURL}: Props) => {
     const navigation = useNavigation();
     const theme = useTheme();
@@ -67,9 +74,6 @@ const PdfViewer = ({allowPdfLinkNavigation, fileId, filePath, siteURL}: Props) =
     }, [navigation]);
 
     const onClose = useCallback(() => {
-        const onDismiss = CallbackStore.getCallback<() => void>();
-        onDismiss?.();
-        CallbackStore.removeCallback();
         return navigateBack();
     }, []);
 
@@ -93,7 +97,7 @@ const PdfViewer = ({allowPdfLinkNavigation, fileId, filePath, siteURL}: Props) =
     const onLoadError = useCallback((event: OnLoadErrorEvent) => {
         logError('Error loading PDF', event.nativeEvent.message);
         setErrorMessage(event.nativeEvent.message);
-        deleteAsync(filePath, {idempotent: true});
+        deleteFile(filePath);
     }, [filePath]);
 
     const onPasswordFailed = useCallback((event: OnPasswordFailedEvent) => {
@@ -125,6 +129,10 @@ const PdfViewer = ({allowPdfLinkNavigation, fileId, filePath, siteURL}: Props) =
     useAndroidHardwareBackHandler(Screens.PDF_VIEWER, onClose);
 
     useEffect(() => setPromptForPassword(maxAttempts !== undefined && maxAttempts > 0), [maxAttempts]);
+
+    useDidMount(() => {
+        return dismiss;
+    });
 
     return (
         <View style={styles.flex}>

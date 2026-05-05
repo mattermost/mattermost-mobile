@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, renderHook} from '@testing-library/react-hooks';
+import {act, renderHook, waitFor} from '@testing-library/react-native';
 import {Alert, AppState} from 'react-native';
 import Permissions from 'react-native-permissions';
 
@@ -221,9 +221,8 @@ describe('Calls Hooks', () => {
                 roles: 'system_admin',
             });
 
-            const {result, waitForNextUpdate} = renderHook(() => useHostControlsAvailable());
-            await waitForNextUpdate();
-            expect(result.current).toBe(true);
+            const {result} = renderHook(() => useHostControlsAvailable());
+            await waitFor(() => expect(result.current).toBe(true));
         });
     });
 

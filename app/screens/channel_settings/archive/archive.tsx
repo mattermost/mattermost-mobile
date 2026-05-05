@@ -10,7 +10,7 @@ import OptionItem from '@components/option_item';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {navigateBack, resetToRootRoute} from '@screens/navigation';
+import {navigateBack, navigateToRoot} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 
 type Props = {
@@ -79,7 +79,7 @@ const Archive = ({
     const close = useCallback(async (pop: boolean) => {
         await navigateBack();
         if (pop) {
-            resetToRootRoute();
+            navigateToRoot();
         }
     }, []);
 

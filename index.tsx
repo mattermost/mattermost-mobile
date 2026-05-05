@@ -6,9 +6,19 @@ import TurboLogger from '@mattermost/react-native-turbo-log';
 import {ExpoRoot} from 'expo-router';
 import React from 'react';
 import {AppRegistry, LogBox, Platform, UIManager} from 'react-native';
+import {BackgroundTimer} from 'react-native-nitro-bg-timer-plus';
 
-import setFontFamily from './app/utils/font_family';
 import {logInfo} from './app/utils/log';
+
+// Opt out of the nitro-bg-timer-plus foreground service — we removed its manifest
+// entries, so we also disable it at runtime to prevent the library from attempting
+// startForegroundService() and hitting an exception.
+if (Platform.OS === 'android') {
+    BackgroundTimer.disableForegroundService();
+}
+
+// eslint-disable-next-line no-process-env
+process.env.EXPO_OS = Platform.OS;
 
 declare const global: { HermesInternal: null | {} };
 
@@ -32,23 +42,21 @@ if (__DEV__) {
     }
 }
 
-setFontFamily();
-
 if (global.HermesInternal) {
     // Polyfills required to use Intl with Hermes engine
-    require('@formatjs/intl-getcanonicallocales/polyfill-force');
-    require('@formatjs/intl-locale/polyfill-force');
-    require('@formatjs/intl-pluralrules/polyfill-force');
-    require('@formatjs/intl-numberformat/polyfill-force');
-    require('@formatjs/intl-datetimeformat/polyfill-force');
-    require('@formatjs/intl-datetimeformat/add-all-tz');
-    require('@formatjs/intl-listformat/polyfill-force');
-    require('@formatjs/intl-relativetimeformat/polyfill-force');
-    require('@formatjs/intl-displaynames/polyfill-force');
+    require('@formatjs/intl-getcanonicallocales/polyfill-force.js');
+    require('@formatjs/intl-locale/polyfill-force.js');
+    require('@formatjs/intl-pluralrules/polyfill-force.js');
+    require('@formatjs/intl-numberformat/polyfill-force.js');
+    require('@formatjs/intl-datetimeformat/polyfill-force.js');
+    require('@formatjs/intl-datetimeformat/add-all-tz.js');
+    require('@formatjs/intl-listformat/polyfill-force.js');
+    require('@formatjs/intl-relativetimeformat/polyfill-force.js');
+    require('@formatjs/intl-displaynames/polyfill-force.js');
 }
 
 if (Platform.OS === 'android') {
-    const ShareExtension = require('share_extension/index.tsx').default;
+    const ShareExtension = require('./share_extension/index.tsx').default;
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
     if (UIManager.setLayoutAnimationEnabledExperimental) {
         UIManager.setLayoutAnimationEnabledExperimental(true);

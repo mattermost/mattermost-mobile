@@ -11,12 +11,6 @@ import AddWorkspaceSheetContent, {getAddWorkspaceSheetContentHeight} from './add
 jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn(() => false),
 }));
-jest.mock('@hooks/bottom_sheet_lists_fix', () => ({
-    useBottomSheetListsFix: jest.fn(() => ({
-        enabled: true,
-        panResponder: {panHandlers: {}},
-    })),
-}));
 jest.mock('@gorhom/bottom-sheet', () => ({
     BottomSheetScrollView: require('react-native').ScrollView,
 }));

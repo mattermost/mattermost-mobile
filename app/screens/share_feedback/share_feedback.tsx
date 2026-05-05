@@ -3,7 +3,8 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {BackHandler, Pressable, Text, TouchableOpacity, View} from 'react-native';
-import Animated, {runOnJS, SlideInDown, SlideOutDown} from 'react-native-reanimated';
+import Animated, {SlideInDown, SlideOutDown} from 'react-native-reanimated';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
@@ -133,7 +134,7 @@ const ShareFeedback = ({
     const slideOut = useMemo(() => SlideOutDown.withCallback((finished: boolean) => {
         'worklet';
         if (finished) {
-            runOnJS(doAfterAnimation)();
+            scheduleOnRN(doAfterAnimation);
         }
     }), [doAfterAnimation]);
 

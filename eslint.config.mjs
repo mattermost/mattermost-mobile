@@ -6,7 +6,7 @@ import tseslint from "@typescript-eslint/eslint-plugin";
 import * as tsparser from "@typescript-eslint/parser";
 import importPlugin from "eslint-plugin-import";
 import reactHooks from "eslint-plugin-react-hooks";
-import stylisticTs from "@stylistic/eslint-plugin-ts";
+import stylistic from "@stylistic/eslint-plugin";
 
 // Load custom rulesets
 import eslintMattermost, {jestConfig} from "./eslint/eslint-mattermost.mjs";
@@ -42,7 +42,7 @@ export default defineConfig([
       sourceType: "module"
     },
     plugins: {
-      "@stylistic/ts": stylisticTs,
+      "@stylistic": stylistic,
       "@typescript-eslint": tseslint,
       "import": importPlugin,
       "react-hooks": reactHooks
@@ -107,7 +107,7 @@ export default defineConfig([
           }
         }
       ],
-      "@stylistic/ts/member-delimiter-style": 2,
+      "@stylistic/member-delimiter-style": 2,
       "@typescript-eslint/no-unsafe-declaration-merging": "off",
       "import/order": [
         2,

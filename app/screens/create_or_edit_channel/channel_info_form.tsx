@@ -113,7 +113,7 @@ export default function ChannelInfoForm({
     const purposeInput = useRef<TextInput>(null);
     const headerInput = useRef<TextInput>(null);
 
-    const updateScrollTimeout = useRef<NodeJS.Timeout>();
+    const updateScrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
     const mainView = useRef<View>(null);
     const [wrapperHeight, setWrapperHeight] = useState(0);

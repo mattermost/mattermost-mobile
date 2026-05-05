@@ -4,8 +4,9 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {GestureDetector, Gesture, GestureHandlerRootView} from 'react-native-gesture-handler';
-import Animated, {runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import {openNotification} from '@actions/remote/notifications';
 import DatabaseManager from '@database/manager';
@@ -172,7 +173,7 @@ const InAppNotification = ({serverName, serverUrl, notification, onDismiss}: InA
     }, [animate, insets.top]);
 
     const message = notification.payload?.body || notification.payload?.message;
-    const gesture = Gesture.Pan().activeOffsetY(-20).onStart(() => runOnJS(animateDismissOverlay)());
+    const gesture = Gesture.Pan().activeOffsetY(-20).onStart(() => scheduleOnRN(animateDismissOverlay));
 
     const database = secureGetFromRecord(DatabaseManager.serverDatabases, serverUrl)?.database;
 

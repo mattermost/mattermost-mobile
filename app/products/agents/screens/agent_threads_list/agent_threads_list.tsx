@@ -10,7 +10,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {fetchAIBots} from '@agents/actions/remote/bots';
 import {fetchAIThreads} from '@agents/actions/remote/threads';
-import ThreadItem, {THREAD_ITEM_HEIGHT} from '@agents/screens/agent_threads_list/thread_item';
+import ThreadItem from '@agents/screens/agent_threads_list/thread_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -315,7 +315,6 @@ const AgentThreadsList = ({
                 <FlashList
                     data={threads}
                     renderItem={renderItem}
-                    estimatedItemSize={THREAD_ITEM_HEIGHT}
                     contentContainerStyle={styles.listContent}
                     ListEmptyComponent={renderEmptyState}
                     refreshControl={

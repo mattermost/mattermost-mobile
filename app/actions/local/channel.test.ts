@@ -12,7 +12,7 @@ import {getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCommonSystemValues, getTeamHistory} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
-import {dismissAllRoutesAndResetToRootRoute, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
+import {navigateToRoot, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -45,7 +45,7 @@ jest.mock('@screens/navigation', () => {
     return {
         ...original,
         dismissAllRoutesAndPopToScreen: jest.fn(),
-        dismissAllRoutesAndResetToRootRoute: jest.fn(),
+        navigateToRoot: jest.fn(),
     };
 });
 
@@ -110,7 +110,7 @@ describe('switchToChannel', () => {
 
         expect(error).toBeTruthy();
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(0);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -132,7 +132,7 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(0);
         expect(member?.lastViewedAt).toBe(undefined);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(0);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -157,7 +157,7 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(0);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -183,7 +183,7 @@ describe('switchToChannel', () => {
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -210,7 +210,7 @@ describe('switchToChannel', () => {
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -238,7 +238,7 @@ describe('switchToChannel', () => {
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -266,7 +266,7 @@ describe('switchToChannel', () => {
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -293,7 +293,7 @@ describe('switchToChannel', () => {
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -319,7 +319,7 @@ describe('switchToChannel', () => {
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -346,7 +346,7 @@ describe('switchToChannel', () => {
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -373,7 +373,7 @@ describe('switchToChannel', () => {
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -401,7 +401,7 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(0);
         expect(member?.lastViewedAt).toBe(0);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(0);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -431,7 +431,7 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(0);
         expect(member?.lastViewedAt).toBe(0);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -460,7 +460,7 @@ describe('switchToChannel', () => {
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(0);
-        expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(1);
         expect(listenerCallback).toHaveBeenCalledTimes(1);
     });
 });

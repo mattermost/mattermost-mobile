@@ -13,16 +13,15 @@ import {logError} from '@utils/log';
 import {
     bottomSheet,
     dismissAllRoutesAndPopToScreen,
-    dismissAllRoutesAndResetToRootRoute,
     dismissBottomSheet,
     dismissToStackRoot,
     navigateBack,
     navigateToChannelInfoScreen,
+    navigateToRoot,
     navigateToScreen,
     navigateToScreenWithBaseRoute,
     navigateToSettingsScreen,
     propsToParams,
-    resetToRootRoute,
     updateParams,
 } from './navigation';
 
@@ -366,42 +365,11 @@ describe('navigation', () => {
         });
     });
 
-    describe('resetToRootRoute', () => {
-        it('should reset to root route with pathname and params', async () => {
-            const rootRouteInfo = {
-                pathname: '/(authenticated)/(home)/channel_list',
-                params: {teamId: 'team123'},
-            };
-            jest.spyOn(NavigationStore, 'getRootRouteInfo').mockReturnValue(rootRouteInfo);
+    describe('navigateToRoot', () => {
+        it('should call dismissTo with the channel_list path', async () => {
+            await navigateToRoot();
 
-            await resetToRootRoute();
-
-            expect(router.replace).toHaveBeenCalledWith({
-                pathname: '/(authenticated)/(home)/channel_list',
-                params: {teamId: 'team123'},
-            });
-        });
-
-        it('should handle missing root route info', async () => {
-            jest.spyOn(NavigationStore, 'getRootRouteInfo').mockReturnValue(undefined);
-
-            await resetToRootRoute();
-
-            expect(router.replace).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('dismissAllRoutesAndResetToRootRoute', () => {
-        it('should dismiss to stack root and then reset to root route', async () => {
-            jest.mocked(router.canDismiss).mockReturnValue(true);
-            jest.spyOn(NavigationStore, 'getRootRouteInfo').mockReturnValue({
-                pathname: '/(authenticated)/(home)/channel_list',
-                params: {},
-            });
-
-            await dismissAllRoutesAndResetToRootRoute();
-            expect(router.dismissAll).toHaveBeenCalled();
-            expect(router.replace).toHaveBeenCalled();
+            expect(router.dismissTo).toHaveBeenCalledWith('/(authenticated)/(home)/channel_list');
         });
     });
 
@@ -411,22 +379,16 @@ describe('navigation', () => {
 
             await dismissAllRoutesAndPopToScreen(Screens.CHANNEL, {channelId: 'abc'});
 
-            expect(router.dismissTo).toHaveBeenCalledWith(Screens.CHANNEL);
+            expect(router.dismissTo).toHaveBeenCalledWith('/(authenticated)/channel');
             expect(router.setParams).toHaveBeenCalledWith({channelId: 'abc'});
         });
 
-        it('should reset and push when screen is not in stack', async () => {
+        it('should reset to root and push when screen is not in stack', async () => {
             jest.spyOn(NavigationStore, 'isScreenInStack').mockReturnValue(false);
-            jest.spyOn(NavigationStore, 'getRootRouteInfo').mockReturnValue({
-                pathname: '/(authenticated)/(home)/channel_list',
-                params: {},
-            });
-            jest.mocked(router.canDismiss).mockReturnValue(true);
 
             await dismissAllRoutesAndPopToScreen(Screens.CHANNEL, {channelId: 'abc'});
 
-            expect(router.dismissAll).toHaveBeenCalled();
-            expect(router.replace).toHaveBeenCalled();
+            expect(router.dismissTo).toHaveBeenCalledWith('/(authenticated)/(home)/channel_list');
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(authenticated)/channel',
                 params: {channelId: 'abc'},
@@ -435,15 +397,10 @@ describe('navigation', () => {
 
         it('should navigate when router is available but screen not in stack', async () => {
             jest.spyOn(NavigationStore, 'isScreenInStack').mockReturnValue(false);
-            jest.spyOn(NavigationStore, 'getRootRouteInfo').mockReturnValue({
-                pathname: '/(authenticated)/(home)/channel_list',
-                params: {},
-            });
-            jest.mocked(router.canDismiss).mockReturnValue(true);
 
             await dismissAllRoutesAndPopToScreen(Screens.MENTIONS);
 
-            expect(router.dismissAll).toHaveBeenCalled();
+            expect(router.dismissTo).toHaveBeenCalledWith('/(authenticated)/(home)/channel_list');
             expect(router.push).toHaveBeenCalled();
         });
 

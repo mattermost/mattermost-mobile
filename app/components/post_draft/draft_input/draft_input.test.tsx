@@ -72,6 +72,15 @@ describe('DraftInput', () => {
     let database: Database;
     let operator: ServerDataOperator;
 
+    // Tracks the most recent render so afterEach can unmount before DB teardown,
+    // preventing withObservables from emitting state updates outside act().
+    let latestUnmount: (() => void) | undefined;
+    const render = (ui: React.ReactElement, opts?: {database: Database}) => {
+        const result = renderWithEverything(ui, opts);
+        latestUnmount = result.unmount;
+        return result;
+    };
+
     beforeEach(async () => {
         const server = await TestHelper.setupServerDatabase(SERVER_URL);
         database = server.database;
@@ -79,13 +88,15 @@ describe('DraftInput', () => {
     });
 
     afterEach(async () => {
+        latestUnmount?.();
+        latestUnmount = undefined;
         await TestHelper.tearDown();
         NetworkManager.invalidateClient(SERVER_URL);
     });
 
     describe('Rendering', () => {
         it('renders all required components', async () => {
-            const {getByTestId, queryByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
+            const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
 
             // Main container
             const container = getByTestId('draft_input');
@@ -112,7 +123,7 @@ describe('DraftInput', () => {
         it('shows upload error with correct message', () => {
             const errorMsg = 'Test error message';
             const props = {...baseProps, uploadFileError: errorMsg};
-            const {getByText, getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+            const {getByText, getByTestId} = render(<DraftInput {...props}/>, {database});
 
             const error = getByText(errorMsg);
             expect(error).toBeVisible();
@@ -125,7 +136,7 @@ describe('DraftInput', () => {
 
     describe('Message Actions', () => {
         it('sends message on press', () => {
-            const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
+            const {getByTestId} = render(<DraftInput {...baseProps}/>, {database});
             fireEvent.press(getByTestId('draft_input.send_action.send.button'));
             expect(baseProps.sendMessage).toHaveBeenCalledWith(undefined);
         });
@@ -142,8 +153,10 @@ describe('DraftInput', () => {
                 prepareRecordsOnly: false,
             });
 
-            const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
-            fireEvent(getByTestId('draft_input.send_action.send.button'), 'longPress');
+            const {getByTestId} = render(<DraftInput {...baseProps}/>, {database});
+            await act(async () => {
+                fireEvent(getByTestId('draft_input.send_action.send.button'), 'longPress');
+            });
             expect(navigateToScreen).toHaveBeenCalledWith(Screens.SCHEDULED_POST_OPTIONS);
 
             // Simulate the scheduled post options screen calling back with a scheduled time
@@ -164,7 +177,7 @@ describe('DraftInput', () => {
                 scheduledPostsEnabled: false,
             };
 
-            const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+            const {getByTestId} = render(<DraftInput {...props}/>, {database});
             fireEvent(getByTestId('draft_input.send_action.send.button'), 'longPress');
             expect(navigateToScreen).not.toHaveBeenCalled();
             expect(baseProps.sendMessage).not.toHaveBeenCalled();
@@ -181,7 +194,7 @@ describe('DraftInput', () => {
                 value: '@user1 @user2 message',
             };
 
-            const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+            const {getByTestId} = render(<DraftInput {...props}/>, {database});
             fireEvent.press(getByTestId('draft_input.send_action.send.button'));
             expect(persistentNotificationsConfirmation).toHaveBeenCalled();
         });
@@ -189,13 +202,13 @@ describe('DraftInput', () => {
 
     describe('Input Handling', () => {
         it('updates text value', () => {
-            const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
+            const {getByTestId} = render(<DraftInput {...baseProps}/>, {database});
             fireEvent.changeText(getByTestId('draft_input.post.input'), 'new message');
             expect(baseProps.updateValue).toHaveBeenCalledWith('new message');
         });
 
         it('handles cursor position', () => {
-            const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
+            const {getByTestId} = render(<DraftInput {...baseProps}/>, {database});
             fireEvent(getByTestId('draft_input.post.input'), 'selectionChange', {
                 nativeEvent: {selection: {start: 5, end: 5}},
             });
@@ -203,7 +216,7 @@ describe('DraftInput', () => {
         });
 
         it('updates focus state', () => {
-            const {getByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
+            const {getByTestId} = render(<DraftInput {...baseProps}/>, {database});
             fireEvent(getByTestId('draft_input.post.input'), 'focus');
             expect(baseProps.setIsFocused).toHaveBeenCalledWith(true);
         });
@@ -212,7 +225,7 @@ describe('DraftInput', () => {
     describe('Validation', () => {
         it('disables send when canSend is false', () => {
             const props = {...baseProps, canSend: false};
-            const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+            const {getByTestId} = render(<DraftInput {...props}/>, {database});
             const sendButton = getByTestId('draft_input.send_action.send.button.disabled');
             expect(sendButton).toBeVisible();
             expect(sendButton).toBeDisabled();
@@ -228,7 +241,7 @@ describe('DraftInput', () => {
     describe('BoR (Burn on Read) Functionality', () => {
 
         it('renders with BoR config disabled by default', () => {
-            const {getByTestId, queryByTestId} = renderWithEverything(<DraftInput {...baseProps}/>, {database});
+            const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
 
             // Component should render successfully with BoR config
             const container = getByTestId('draft_input');
@@ -249,7 +262,7 @@ describe('DraftInput', () => {
                 postBoRConfig: borConfig,
             };
 
-            const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+            const {getByTestId} = render(<DraftInput {...props}/>, {database});
             expect(getByTestId('bor_label')).toBeVisible();
             expect(getByTestId('bor_label')).toHaveTextContent('BURN ON READ (5m)');
         });
@@ -277,7 +290,7 @@ describe('DraftInput', () => {
                 updatePostBoRStatus: updatePostBoRStatusMock,
             };
 
-            const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+            const {getByTestId} = render(<DraftInput {...props}/>, {database});
             const borQuickAction = getByTestId('draft_input.quick_actions.bor_action');
             expect(borQuickAction).toBeVisible();
 
@@ -304,7 +317,7 @@ describe('DraftInput', () => {
                 postBoRConfig: borConfig,
             };
 
-            const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+            const {getByTestId} = render(<DraftInput {...props}/>, {database});
 
             // The Header component should receive the BoR config
             const container = getByTestId('draft_input');
@@ -324,7 +337,7 @@ describe('DraftInput', () => {
                 value: 'test message',
             };
 
-            const {getByTestId} = renderWithEverything(<DraftInput {...props}/>, {database});
+            const {getByTestId} = render(<DraftInput {...props}/>, {database});
 
             // Send message
             fireEvent.press(getByTestId('draft_input.send_action.send.button'));

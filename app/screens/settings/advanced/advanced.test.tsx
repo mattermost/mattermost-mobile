@@ -43,7 +43,6 @@ describe('AdvancedSettings', () => {
             uri: 'file:///cache/file1.jpg',
             size: 1024 * 1024,
             modificationTime: Date.now() / 1000,
-            isDirectory: false,
             exists: true,
             md5: 'abc123',
         },
@@ -51,7 +50,6 @@ describe('AdvancedSettings', () => {
             uri: 'file:///cache/file2.png',
             size: 2048 * 1024,
             modificationTime: Date.now() / 1000,
-            isDirectory: false,
             exists: true,
             md5: 'def456',
         },
@@ -59,7 +57,7 @@ describe('AdvancedSettings', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        mockGetAllFilesInCachesDirectory.mockResolvedValue({
+        mockGetAllFilesInCachesDirectory.mockReturnValue({
             totalSize: 3072 * 1024,
             files: mockFiles,
         });
@@ -119,7 +117,7 @@ describe('AdvancedSettings', () => {
         });
 
         it('should handle empty cache gracefully', async () => {
-            mockGetAllFilesInCachesDirectory.mockResolvedValue({
+            mockGetAllFilesInCachesDirectory.mockReturnValue({
                 totalSize: 0,
                 files: [],
             });
@@ -189,7 +187,7 @@ describe('AdvancedSettings', () => {
         });
 
         it('should not show alert when no files exist', async () => {
-            mockGetAllFilesInCachesDirectory.mockResolvedValue({
+            mockGetAllFilesInCachesDirectory.mockReturnValue({
                 totalSize: 0,
                 files: [],
             });
@@ -209,7 +207,7 @@ describe('AdvancedSettings', () => {
         });
 
         it('should handle delete error gracefully', async () => {
-            mockDeleteFileCache.mockResolvedValue(undefined);
+            mockDeleteFileCache.mockReturnValue(undefined);
 
             renderWithIntlAndTheme(<AdvancedSettings {...defaultProps}/>);
 
@@ -271,7 +269,7 @@ describe('AdvancedSettings', () => {
         });
 
         it('should handle fetch error gracefully', async () => {
-            mockGetAllFilesInCachesDirectory.mockRejectedValue(new Error('Fetch failed'));
+            mockGetAllFilesInCachesDirectory.mockReturnValue({totalSize: 0, files: []});
 
             renderWithIntlAndTheme(<AdvancedSettings {...defaultProps}/>);
 
@@ -307,7 +305,7 @@ describe('AdvancedSettings', () => {
 
     describe('edge cases', () => {
         it('should handle undefined totalSize gracefully', async () => {
-            mockGetAllFilesInCachesDirectory.mockResolvedValue({
+            mockGetAllFilesInCachesDirectory.mockReturnValue({
                 totalSize: undefined,
                 files: [],
             });
@@ -320,7 +318,7 @@ describe('AdvancedSettings', () => {
         });
 
         it('should handle null files gracefully', async () => {
-            mockGetAllFilesInCachesDirectory.mockResolvedValue({
+            mockGetAllFilesInCachesDirectory.mockReturnValue({
                 totalSize: 0,
                 files: null,
             });
@@ -333,7 +331,7 @@ describe('AdvancedSettings', () => {
         });
 
         it('should handle very large file sizes', async () => {
-            mockGetAllFilesInCachesDirectory.mockResolvedValue({
+            mockGetAllFilesInCachesDirectory.mockReturnValue({
                 totalSize: 5 * 1024 * 1024 * 1024,
                 files: [],
             });

@@ -11,8 +11,7 @@ export const pagerPanSpringConfig = (evt: GestureStateChangeEvent<PanGestureHand
         damping: Math.max(20, Math.abs(evt.velocityX) * 0.2), // 🔥 More velocity = less damping
         mass: 1.5, // 🔥 A little extra mass for smooth movement
         overshootClamping: true, // 🔥 Prevents bounce
-        restDisplacementThreshold: 0.01,
-        restSpeedThreshold: 0.01,
+        energyThreshold: 0.01,
     };
 };
 
@@ -27,8 +26,7 @@ export function pagerSpringVelocityConfig(velocity: number): WithSpringConfig {
         stiffness,
         mass,
         damping: ratio * 2.0 * Math.sqrt(mass * stiffness),
-        restDisplacementThreshold: 1,
-        restSpeedThreshold: 5,
+        energyThreshold: 0.01,
         velocity,
     };
 }
@@ -38,6 +36,5 @@ export const transformerSpringConfig: WithSpringConfig = {
     damping: 25,
     mass: 1,
     overshootClamping: true,
-    restDisplacementThreshold: 0.00001,
-    restSpeedThreshold: 0.00001,
+    energyThreshold: 0.00001,
 };

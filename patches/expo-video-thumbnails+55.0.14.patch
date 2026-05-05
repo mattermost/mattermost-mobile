@@ -15,7 +15,7 @@ index 4c9b7c1..f98bee8 100644
  
  data class VideoThumbnailResult(
 diff --git a/node_modules/expo-video-thumbnails/android/src/main/java/expo/modules/videothumbnails/VideoThumbnailsModule.kt b/node_modules/expo-video-thumbnails/android/src/main/java/expo/modules/videothumbnails/VideoThumbnailsModule.kt
-index b5e6e5e..aae71b3 100644
+index 2c2d794..8204f98 100644
 --- a/node_modules/expo-video-thumbnails/android/src/main/java/expo/modules/videothumbnails/VideoThumbnailsModule.kt
 +++ b/node_modules/expo-video-thumbnails/android/src/main/java/expo/modules/videothumbnails/VideoThumbnailsModule.kt
 @@ -43,7 +43,14 @@ class VideoThumbnailsModule : Module() {
@@ -53,7 +53,7 @@ index 207cbb8..d9f1791 100644
  //# sourceMappingURL=VideoThumbnailsTypes.types.d.ts.map
 \ No newline at end of file
 diff --git a/node_modules/expo-video-thumbnails/ios/VideoThumbnailsModule.swift b/node_modules/expo-video-thumbnails/ios/VideoThumbnailsModule.swift
-index 069e3e4..11f6577 100644
+index b2996dd..73b1ab1 100644
 --- a/node_modules/expo-video-thumbnails/ios/VideoThumbnailsModule.swift
 +++ b/node_modules/expo-video-thumbnails/ios/VideoThumbnailsModule.swift
 @@ -7,7 +7,7 @@ public class VideoThumbnailsModule: Module {

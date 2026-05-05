@@ -4,7 +4,7 @@
 import React, {useCallback, useRef, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {addMembersToChannel} from '@actions/remote/channel';
 import {fetchProfilesNotInChannel, searchProfiles} from '@actions/remote/user';
@@ -17,6 +17,7 @@ import ServerUserList from '@components/server_user_list';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {TutorialProvider} from '@context/tutorial';
 import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useKeyboardOverlap} from '@hooks/device';
@@ -61,6 +62,8 @@ type Props = {
     teammateNameDisplay: string;
     tutorialWatched: boolean;
 }
+
+const safeAreaEdges: Edge[] = ['bottom', 'left', 'right'];
 
 const close = () => {
     Keyboard.dismiss();
@@ -247,61 +250,63 @@ export default function ChannelAddMembers({
             testID={`${TEST_ID}.screen`}
             onLayout={onLayout}
             ref={mainView}
-            edges={['top', 'left', 'right']}
+            edges={safeAreaEdges}
         >
-            {showBanner && (
-                <SectionNotice
-                    type='info'
-                    title={formatMessage({
-                        id: 'channel.abac_policy_enforced.title',
-                        defaultMessage: 'Channel access is restricted by user attributes',
-                    })}
-                    text={formatMessage({
-                        id: 'channel.abac_policy_enforced.description',
-                        defaultMessage: 'Only people who match the specified access rules can be selected and added to this channel.',
-                    })}
-                    tags={attributeTags.length > 0 ? attributeTags : undefined}
-                    isDismissable={true}
-                    onDismissClick={handleDismissBanner}
+            <TutorialProvider>
+                {showBanner && (
+                    <SectionNotice
+                        type='info'
+                        title={formatMessage({
+                            id: 'channel.abac_policy_enforced.title',
+                            defaultMessage: 'Channel access is restricted by user attributes',
+                        })}
+                        text={formatMessage({
+                            id: 'channel.abac_policy_enforced.description',
+                            defaultMessage: 'Only people who match the specified access rules can be selected and added to this channel.',
+                        })}
+                        tags={attributeTags.length > 0 ? attributeTags : undefined}
+                        isDismissable={true}
+                        onDismissClick={handleDismissBanner}
+                        location={Screens.CHANNEL_ADD_MEMBERS}
+                        testID={`${TEST_ID}.notice`}
+                        squareCorners={true}
+                    />
+                )}
+                <View style={style.searchBar}>
+                    <Search
+                        testID={`${TEST_ID}.search_bar`}
+                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                        cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        onChangeText={onTextChange}
+                        onCancel={clearSearch}
+                        autoCapitalize='none'
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        value={term}
+                    />
+                </View>
+                <ServerUserList
+                    handleSelectProfile={handleSelectProfile}
+                    selectedIds={selectedIds}
+                    term={term}
+                    testID={`${TEST_ID}.user_list`}
+                    tutorialWatched={tutorialWatched}
+                    fetchFunction={userFetchFunction}
+                    searchFunction={userSearchFunction}
+                    createFilter={createUserFilter}
                     location={Screens.CHANNEL_ADD_MEMBERS}
-                    testID={`${TEST_ID}.notice`}
-                    squareCorners={true}
                 />
-            )}
-            <View style={style.searchBar}>
-                <Search
-                    testID={`${TEST_ID}.search_bar`}
-                    placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    onChangeText={onTextChange}
-                    onCancel={clearSearch}
-                    autoCapitalize='none'
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    value={term}
+                <SelectedUsers
+                    keyboardOverlap={keyboardOverlap}
+                    selectedIds={selectedIds}
+                    onRemove={handleRemoveProfile}
+                    teammateNameDisplay={teammateNameDisplay}
+                    onPress={addMembers}
+                    buttonIcon={'account-plus-outline'}
+                    buttonText={formatMessage({id: 'channel_add_members.add_members.button', defaultMessage: 'Add Members'})}
+                    testID={`${TEST_ID}.selected`}
                 />
-            </View>
-            <ServerUserList
-                handleSelectProfile={handleSelectProfile}
-                selectedIds={selectedIds}
-                term={term}
-                testID={`${TEST_ID}.user_list`}
-                tutorialWatched={tutorialWatched}
-                fetchFunction={userFetchFunction}
-                searchFunction={userSearchFunction}
-                createFilter={createUserFilter}
-                location={Screens.CHANNEL_ADD_MEMBERS}
-            />
-            <SelectedUsers
-                keyboardOverlap={keyboardOverlap}
-                selectedIds={selectedIds}
-                onRemove={handleRemoveProfile}
-                teammateNameDisplay={teammateNameDisplay}
-                onPress={addMembers}
-                buttonIcon={'account-plus-outline'}
-                buttonText={formatMessage({id: 'channel_add_members.add_members.button', defaultMessage: 'Add Members'})}
-                testID={`${TEST_ID}.selected`}
-            />
+            </TutorialProvider>
         </SafeAreaView>
     );
 }

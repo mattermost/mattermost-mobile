@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {showBiometricFailureAlertForOrganization} from '@utils/alerts';
 import {isMinimumLicenseTier} from '@utils/helpers';
-import {logDebug, logError, logWarning} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 import type {
     IntuneAuthRequiredEvent,
@@ -33,7 +33,7 @@ if (Platform.OS === 'ios') {
         Intune = require('@mattermost/intune').default;
     } catch {
         // Intune library not available
-        logWarning('Intune library not available - MAM features disabled');
+        logDebug('Intune library not available - MAM features disabled');
     }
 }
 

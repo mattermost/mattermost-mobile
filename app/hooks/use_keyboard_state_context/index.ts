@@ -29,6 +29,7 @@ type UseKeyboardStateContextConfig = {
 export type KeyboardStateContextReturn = StateContext & {
     processEvent: (event: StateEvent) => void;
     isEmojiPickerActive: () => boolean;
+    forceResetToIdle: () => void;
 };
 
 const DEFAULT_POST_INPUT_HEIGHT = 91;
@@ -84,10 +85,6 @@ export function useKeyboardStateContext(config: UseKeyboardStateContextConfig): 
     useEffect(() => {
         tabBarHeight.value = config.tabBarHeight;
     }, [config.tabBarHeight, tabBarHeight]);
-
-    useEffect(() => {
-        isEnabled.value = config.enabled;
-    }, [config.enabled, isEnabled]);
 
     // Helper: Create snapshot by reading all SharedValues
     const createStateSnapshot = (): StateSnapshot => {
@@ -332,6 +329,33 @@ export function useKeyboardStateContext(config: UseKeyboardStateContextConfig): 
 
     };
 
+    // Force the state machine to IDLE regardless of current state.
+    // Called when the keyboard context is disabled (screen navigates away) to ensure
+    // the machine doesn't stay stuck in KEYBOARD_OPEN if the dismiss animation events
+    // arrive after isEnabled is already false (common on edge-to-edge Android).
+    const forceResetToIdle = (): void => {
+        'worklet';
+        if (currentState.value === InputContainerStateType.IDLE) {
+            return;
+        }
+
+        currentState.value = InputContainerStateType.IDLE;
+
+        // Reset all height/position values
+        targetHeight.value = 0;
+        postInputTranslateY.value = 0;
+        inputAccessoryHeight.value = 0;
+
+        // Reset flags
+        isReconcilerPaused.value = false;
+        isWaitingForKeyboard.value = false;
+        isEmojiPickerTransition.value = false;
+        isEmojiSearchActive.value = false;
+        isDraggingKeyboard.value = false;
+        maxKeyboardProgress.value = 0;
+        hasZeroKeyboardHeight.value = false;
+    };
+
     // Return all SharedValues + functions
     return {
 
@@ -361,5 +385,6 @@ export function useKeyboardStateContext(config: UseKeyboardStateContextConfig): 
         // Functions
         processEvent,
         isEmojiPickerActive: isEmojiPickerActiveFunc,
+        forceResetToIdle,
     };
 }

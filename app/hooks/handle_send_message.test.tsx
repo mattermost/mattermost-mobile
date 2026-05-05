@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 /* eslint-disable max-lines */
 
-import {renderHook, act} from '@testing-library/react-hooks';
+import {renderHook, act} from '@testing-library/react-native';
 import React from 'react';
 import {IntlProvider} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
@@ -411,9 +411,7 @@ describe('useHandleSendMessage', () => {
             membersCount: 25,
         };
 
-        act(() => {
-            renderHook(() => useHandleSendMessage(props), {wrapper});
-        });
+        renderHook(() => useHandleSendMessage(props), {wrapper});
 
         expect(getChannelTimezones).toHaveBeenCalledWith(
             'https://server.com',

@@ -151,10 +151,12 @@ export default function PostInput({
     // Register updateValue and updateCursorPosition with context
     useEffect(() => {
         if (registerPostInputCallbacks) {
-            registerPostInputCallbacks(updateValue, updateCursorPosition);
+            registerPostInputCallbacks(updateValue, updateCursorPosition, value);
         }
 
-        // updateValue and updateCursorPosition are stable setState functions, don't need to be in deps
+        // updateValue and updateCursorPosition are stable setState functions — no need in deps.
+        // value is intentionally excluded: we only want to seed cursorPosition once at registration
+        // time, not on every keystroke. Ongoing cursor tracking is handled by setCursorPosition.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [registerPostInputCallbacks]);
 

@@ -3,7 +3,7 @@
 
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {Platform} from 'react-native';
-import {runOnUI} from 'react-native-reanimated';
+import {scheduleOnUI} from 'react-native-worklets';
 
 import {isAndroidEdgeToEdge} from '@constants/device';
 import {useKeyboardState} from '@context/keyboard_state';
@@ -82,11 +82,11 @@ export const useFocusAfterEmojiDismiss = (
             stateContext.isEmojiPickerTransition.value = true;
 
             // Animate emoji picker to 0 and dispatch close event
-            runOnUI(() => {
+            scheduleOnUI(() => {
                 'worklet';
                 stateContext.inputAccessoryHeight.value = 0;
                 stateContext.postInputTranslateY.value = 0;
-            })();
+            });
 
             setIsEmojiSearchFocused(false);
             setShowInputAccessoryView(false);

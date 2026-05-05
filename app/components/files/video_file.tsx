@@ -100,7 +100,7 @@ const VideoFile = ({
         const getThumbnail = async () => {
             const data = {...file};
             try {
-                const exists = data.mini_preview ? await fileExists(data.mini_preview) : false;
+                const exists = data.mini_preview ? fileExists(data.mini_preview) : false;
                 if (!data.mini_preview || !exists) {
                     const videoUrl = buildFileUrl(serverUrl, data.id!);
                     if (videoUrl) {

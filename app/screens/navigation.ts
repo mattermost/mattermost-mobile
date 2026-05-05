@@ -106,6 +106,7 @@ export async function dismissToStackRoot() {
 }
 
 export function bottomSheet(renderContent: () => React.ReactNode, snapPoints: Array<string | number>, footerComponent?: (props: BottomSheetFooterProps) => React.ReactNode) {
+    DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
     BottomSheetStore.setSnapPoints(snapPoints);
     BottomSheetStore.setRenderContentCallback(renderContent);
     if (footerComponent) {
@@ -125,25 +126,14 @@ export async function dismissBottomSheet() {
     await new Promise((resolve) => setTimeout(resolve, 250));
 }
 
-export async function resetToRootRoute() {
+// Dismiss all screens (modals, bottom sheets, stack pushes) and return to channel_list.
+// router.dismissTo traverses all navigator boundaries in expo-router 55, so a single call
+// handles any stack shape: bottom sheet on top of modals on top of authenticated stack pushes.
+export async function navigateToRoot() {
     if (router) {
-        // Get the root route info from NavigationStore
-        const rootRouteInfo = NavigationStore.getRootRouteInfo();
-
-        if (rootRouteInfo) {
-            // Use replace to reset the stack to root with original params
-            router.replace({
-                pathname: rootRouteInfo.pathname,
-                params: rootRouteInfo.params,
-            });
-        }
+        router.dismissTo(getExpoRouterPath(Screens.CHANNEL_LIST)!);
+        await new Promise((resolve) => setTimeout(resolve, 250));
     }
-    await new Promise((resolve) => setTimeout(resolve, 250));
-}
-
-export async function dismissAllRoutesAndResetToRootRoute() {
-    await dismissToStackRoot();
-    await resetToRootRoute();
 }
 
 export async function dismissAllRoutesAndPopToScreen(screenId: AvailableScreens, passProps = {}) {
@@ -158,13 +148,13 @@ export async function dismissAllRoutesAndPopToScreen(screenId: AvailableScreens,
             const params = propsToParams(passProps);
 
             if (NavigationStore.isScreenInStack(screenId)) {
-                // Screen is in stack - navigate to it (router handles popping back to it)
-                router.dismissTo(screenId);
+                // Screen is in stack - pop back to it across all navigator boundaries
+                router.dismissTo(route);
                 router.setParams(params);
                 await new Promise((resolve) => setTimeout(resolve, 250));
             } else {
-                // Screen not in stack - push new screen
-                await dismissAllRoutesAndResetToRootRoute();
+                // Screen not in stack - reset to root then push target
+                await navigateToRoot();
                 navigateToScreen(screenId, passProps);
             }
         }

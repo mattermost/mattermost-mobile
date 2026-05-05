@@ -9,11 +9,13 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {CompassIconName} from '@components/compass_icon';
+
 type Props = {
     action?: string;
     count?: number;
     enabled?: boolean;
-    iconName?: string;
+    iconName?: CompassIconName;
     onPress?: () => void;
     title: string;
     testID: string;

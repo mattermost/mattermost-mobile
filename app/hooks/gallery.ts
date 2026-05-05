@@ -3,10 +3,11 @@
 
 import {useCallback} from 'react';
 import {
-    Easing, runOnJS, useAnimatedRef, useAnimatedStyle,
+    Easing, useAnimatedRef, useAnimatedStyle,
     useSharedValue,
     withTiming, type WithTimingConfig,
 } from 'react-native-reanimated';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import {useGallery} from '@context/gallery';
 
@@ -117,7 +118,7 @@ export function useGalleryItem(
 
         activeIndex.value = index;
 
-        runOnJS(onPress)(identifier, index);
+        scheduleOnRN(onPress, identifier, index);
     };
 
     return {

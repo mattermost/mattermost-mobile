@@ -27,6 +27,7 @@ const OPTIONS_PADDING = 12;
 const OPTIONS_SEPARATOR_HEIGHT = 1;
 const TITLE_HEIGHT = 54;
 const ITEM_HEIGHT = 48;
+const ERROR_HEIGHT = 16;
 
 export const SCHEDULED_POST_OPTIONS_BUTTON = 'close-scheduled-post-options';
 
@@ -76,10 +77,11 @@ export function ScheduledPostOptions({currentUserTimezone}: ScheduledPostOptions
         // 9 items to display inline date-time picker, 4 items otherwise
         const iosNumberOfItems = customTimeSelected ? 9 : 4;
         const andriodNumberOfItems = customTimeSelected ? 5 : 4;
+        const errorHeight = isError ? ERROR_HEIGHT : 0;
         const numberOfItems = Platform.select({ios: iosNumberOfItems, default: andriodNumberOfItems});
-        const COMPONENT_HEIGHT = TITLE_HEIGHT + (numberOfItems * ITEM_HEIGHT) + FOOTER_HEIGHT + bottomSheetAdjust;
-        return [1, COMPONENT_HEIGHT];
-    }, [customTimeSelected]);
+        const componentHeight = TITLE_HEIGHT + (numberOfItems * ITEM_HEIGHT) + FOOTER_HEIGHT + errorHeight + bottomSheetAdjust;
+        return [1, componentHeight];
+    }, [customTimeSelected, isError]);
 
     const onSelectTime = useCallback((selectedValue: string) => {
         setIsError(false);

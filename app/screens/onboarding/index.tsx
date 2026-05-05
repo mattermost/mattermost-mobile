@@ -4,7 +4,6 @@
 import React, {useCallback, useRef} from 'react';
 import {
     View,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     type NativeSyntheticEvent,
@@ -12,6 +11,7 @@ import {
     BackHandler,
 } from 'react-native';
 import Animated, {useDerivedValue, useSharedValue} from 'react-native-reanimated';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
 import {Screens} from '@constants';

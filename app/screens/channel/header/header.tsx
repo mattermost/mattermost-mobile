@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, Text, View} from 'react-native';
+import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
 
 import {useAgentsConfig} from '@agents/store/agents_config';
 import {getCallsConfig} from '@calls/state';
@@ -15,7 +15,7 @@ import NavigationHeader from '@components/navigation_header';
 import {ITEM_HEIGHT} from '@components/option_item';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {General, Screens} from '@constants';
+import {Events, General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -26,7 +26,6 @@ import {goToCreateQuickChecklist, goToPlaybookRun, goToPlaybookRuns} from '@play
 import {bottomSheet, navigateBack, navigateToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTypeDMorGM} from '@utils/channel';
-import {dismissKeyboard} from '@utils/keyboard';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -144,7 +143,7 @@ const ChannelHeader = ({
     }, [isTablet, channelId, teamId]);
 
     const onBackPress = useCallback(() => {
-        dismissKeyboard();
+        DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
         navigateBack();
     }, []);
 
@@ -177,7 +176,7 @@ const ChannelHeader = ({
         if (agentsEnabled) {
             items += 1; // Ask Agents action (shown in all channel types)
         }
-        const height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + MARGIN + (items * ITEM_HEIGHT);
+        const height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + (MARGIN * 2) + (items * ITEM_HEIGHT);
 
         const renderContent = () => {
             return (

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
-import {View, type LayoutChangeEvent, InteractionManager, type ListRenderItemInfo, Text, FlatList} from 'react-native';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
+import {View, type LayoutChangeEvent, type ListRenderItemInfo, Text, FlatList} from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
 import {storeScheduledPostsListTutorial} from '@actions/app/global';
@@ -75,17 +75,22 @@ const GlobalScheduledPostList: React.FC<Props> = ({
     const styles = getStyleSheet(theme);
     const [layoutWidth, setLayoutWidth] = useState(0);
     const [tooltipVisible, setTooltipVisible] = useState(false);
+    const tutorialTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setLayoutWidth(e.nativeEvent.layout.width - DRAFT_SCHEDULED_POST_LAYOUT_PADDING);
     }, []);
 
     useDidMount(() => {
-        if (tutorialWatched) {
-            return;
+        if (!tutorialWatched) {
+            tutorialTimerRef.current = setTimeout(() => {
+                setTooltipVisible(true);
+            }, 300);
         }
-        InteractionManager.runAfterInteractions(() => {
-            setTooltipVisible(true);
-        });
+        return () => {
+            if (tutorialTimerRef.current !== undefined) {
+                clearTimeout(tutorialTimerRef.current);
+            }
+        };
     });
 
     const firstScheduledPostId = allScheduledPosts[0]?.id || '';
@@ -111,7 +116,6 @@ const GlobalScheduledPostList: React.FC<Props> = ({
             return (
                 <Tooltip
                     isVisible={tooltipVisible}
-                    useInteractionManager={true}
                     contentStyle={styles.tooltipContentStyle}
                     placement={'bottom'}
                     content={

@@ -187,7 +187,7 @@ const Files = ({
     useEffect(() => {
         let isCancelled = false;
 
-        const validateFiles = async () => {
+        const validateFiles = () => {
             // If no files have localPath, skip validation but still update state
             const hasLocalPaths = filesInfo.some((f) => f.localPath);
             if (!hasLocalPaths) {
@@ -198,17 +198,12 @@ const Files = ({
             }
 
             // Validate each file's localPath
-            const validated = await Promise.all(
-                filesInfo.map(async (file) => {
-                    if (file.localPath) {
-                        const exists = await fileExists(file.localPath);
-                        if (!exists) {
-                            return {...file, localPath: ''};
-                        }
-                    }
-                    return file;
-                }),
-            );
+            const validated = filesInfo.map((file) => {
+                if (file.localPath && !fileExists(file.localPath)) {
+                    return {...file, localPath: ''};
+                }
+                return file;
+            });
 
             // Only update state if component is still mounted
             if (!isCancelled) {

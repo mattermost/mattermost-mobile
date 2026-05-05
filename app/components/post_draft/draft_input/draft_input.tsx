@@ -4,8 +4,9 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
-import {runOnJS, useAnimatedReaction} from 'react-native-reanimated';
+import {useAnimatedReaction} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import RewritingIndicator from '@agents/components/rewriting_indicator';
 import {Screens} from '@constants';
@@ -18,7 +19,6 @@ import {usePersistentNotificationProps} from '@hooks/persistent_notification_pro
 import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import {useCurrentScreen} from '@store/navigation_store';
-import {dismissKeyboard} from '@utils/keyboard';
 import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -153,7 +153,7 @@ function DraftInput({
     const currentScreen = useCurrentScreen();
     const [layoutHeight, setLayoutHeight] = React.useState(0);
     const {bottom} = useSafeAreaInsets();
-    const {inputRef, stateContext} = useKeyboardState();
+    const {inputRef, stateContext, blurAndDismissKeyboard} = useKeyboardState();
 
     const focus = useCallback(() => {
         inputRef.current?.focus();
@@ -200,22 +200,22 @@ function DraftInput({
         return sendMessage(schedulingInfo);
     }, [persistentNotificationsEnabled, serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType]);
 
-    const handleShowScheduledPostOptions = useCallback(() => {
+    const handleShowScheduledPostOptions = useCallback(async () => {
         if (!scheduledPostsEnabled) {
             return;
         }
 
-        dismissKeyboard();
+        await blurAndDismissKeyboard();
         CallbackStore.setCallback<((schedulingInfo: SchedulingInfo) => Promise<void | {data?: boolean; error?: unknown}>)>(handleSendMessage);
         navigateToScreen(Screens.SCHEDULED_POST_OPTIONS);
-    }, [handleSendMessage, scheduledPostsEnabled]);
+    }, [blurAndDismissKeyboard, handleSendMessage, scheduledPostsEnabled]);
 
     const sendActionDisabled = !canSend || noMentionsError;
     useAnimatedReaction(
         () => stateContext.postInputTranslateY.value,
         (translateY) => {
             if (isAndroidEdgeToEdge) {
-                runOnJS(updatePostInputTop)(layoutHeight + translateY + (2 * bottom));
+                scheduleOnRN(updatePostInputTop, layoutHeight + translateY + (2 * bottom));
             }
         },
         [layoutHeight, updatePostInputTop, bottom, stateContext.postInputTranslateY],

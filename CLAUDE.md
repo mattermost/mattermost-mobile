@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-React Native 0.76.9 with **New Architecture disabled** (RCT_NEW_ARCH_ENABLED=0).
+React Native 0.83.9 with **New Architecture enabled** (RCT_NEW_ARCH_ENABLED=1).
 
 ## Important Development Notes
 - Always run the checks before committing code

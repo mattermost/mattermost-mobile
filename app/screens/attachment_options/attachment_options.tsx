@@ -3,7 +3,7 @@
 
 import TurboLogger from '@mattermost/react-native-turbo-log';
 import RNUtils from '@mattermost/rnutils';
-import {getInfoAsync} from 'expo-file-system';
+import {File} from 'expo-file-system';
 import React, {useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, View} from 'react-native';
@@ -150,8 +150,8 @@ const AttachmentOptions: React.FC<Props> = ({
                 throw new Error('createZipFile returned empty path');
             }
             const zipUri = pathWithPrefix('file://', zipFilePath);
-            const fileInfoResult = await getInfoAsync(zipUri, {size: true});
-            if (!fileInfoResult.exists) {
+            const zipFile = new File(zipUri);
+            if (!zipFile.exists) {
                 throw new Error('Zip file does not exist after creation');
             }
             const fileInfo: ExtractedFileInfo = {
@@ -159,7 +159,7 @@ const AttachmentOptions: React.FC<Props> = ({
                 name: `app-logs-${Date.now()}.zip`,
                 mime_type: 'application/zip',
                 extension: 'zip',
-                size: fileInfoResult.size,
+                size: zipFile.size,
                 localPath: zipUri,
             };
             onUploadFiles([fileInfo]);

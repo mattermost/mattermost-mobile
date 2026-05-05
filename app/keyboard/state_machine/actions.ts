@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {DeviceEventEmitter, Platform} from 'react-native';
-import {runOnJS} from 'react-native-reanimated';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import {isEdgeToEdge} from '@constants/device';
 import Events from '@constants/events';
@@ -15,7 +15,7 @@ import {InputContainerStateType, type ActionUpdates, type InputContainerState, t
 
 /**
  * Helper to emit device events from worklet context
- * Must be defined at module level (not inline) for runOnJS to work
+ * Must be defined at module level (not inline) for scheduleOnRN to work
  */
 const emitDeviceEvent = (eventName: string, value: boolean) => {
     DeviceEventEmitter.emit(eventName, value);
@@ -154,7 +154,7 @@ export function enterEmojiSearchActive(snapshot: StateSnapshot): ActionUpdates {
     const keyboardHeight = snapshot.lastKeyboardHeight > 0 ? snapshot.lastKeyboardHeight : snapshot.keyboardEventHeight;
     const searchHeight = calculateSearchHeight(keyboardHeight, snapshot.tabBarHeight, snapshot.safeAreaBottom);
 
-    runOnJS(emitDeviceEvent)(Events.EMOJI_PICKER_SEARCH_FOCUSED, true);
+    scheduleOnRN(emitDeviceEvent, Events.EMOJI_PICKER_SEARCH_FOCUSED, true);
 
     return {
         preSearchHeight: {value: preSearchHeight, animated: false},
@@ -171,7 +171,7 @@ export function exitEmojiSearchToPickerOpen(snapshot: StateSnapshot): ActionUpda
     'worklet';
 
     // Emit event for other components
-    runOnJS(emitDeviceEvent)(Events.EMOJI_PICKER_SEARCH_FOCUSED, false);
+    scheduleOnRN(emitDeviceEvent, Events.EMOJI_PICKER_SEARCH_FOCUSED, false);
 
     // Restore to pre-search height (with animation)
     // Set isWaitingForKeyboard to block spurious iOS KEYBOARD_EVENT_START(rawHeight=0) that
@@ -191,7 +191,7 @@ export function exitEmojiSearchToKeyboard(snapshot: StateSnapshot): ActionUpdate
     'worklet';
 
     // Emit event for other components
-    runOnJS(emitDeviceEvent)(Events.EMOJI_PICKER_SEARCH_FOCUSED, false);
+    scheduleOnRN(emitDeviceEvent, Events.EMOJI_PICKER_SEARCH_FOCUSED, false);
 
     // Clear pre-search height tracking
     return {
@@ -208,7 +208,7 @@ export function exitEmojiSearchToIdle(): ActionUpdates {
     'worklet';
 
     // Emit event for other components
-    runOnJS(emitDeviceEvent)(Events.EMOJI_PICKER_SEARCH_FOCUSED, false);
+    scheduleOnRN(emitDeviceEvent, Events.EMOJI_PICKER_SEARCH_FOCUSED, false);
 
     // Pause reconciler so it doesn't fire scroll compensation while inputAccessoryHeight
     // and postInputTranslateY animate to 0 (transition action handles the animation).

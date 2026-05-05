@@ -106,7 +106,7 @@ describe('Files', () => {
         jest.clearAllMocks();
 
         // Mock fileExists to resolve immediately to avoid timing issues
-        jest.mocked(fileExists).mockImplementation(async () => true);
+        jest.mocked(fileExists).mockImplementation(() => true);
     });
 
     it('should render attachments, with images in the image row', async () => {
@@ -732,7 +732,7 @@ describe('Files', () => {
             TestHelper.fakeFileInfo({id: '2', localPath: '/path/to/file2.png'}),
         ];
 
-        jest.mocked(fileExists).mockResolvedValue(true);
+        jest.mocked(fileExists).mockReturnValue(true);
         jest.mocked(useImageAttachments).mockImplementation((fi) => {
             return useMemo(() => ({
                 images: fi,
@@ -761,8 +761,8 @@ describe('Files', () => {
 
         // Mock fileExists to return true for first file, false for second
         jest.mocked(fileExists).
-            mockResolvedValueOnce(true).
-            mockResolvedValueOnce(false);
+            mockReturnValueOnce(true).
+            mockReturnValueOnce(false);
 
         // Track what filesInfo is passed to useImageAttachments
         const capturedFilesInfo: FileInfo[] = [];
@@ -802,7 +802,7 @@ describe('Files', () => {
             TestHelper.fakeFileInfo({id: '3', localPath: '/path/to/file3.png'}),
         ];
 
-        jest.mocked(fileExists).mockResolvedValue(true);
+        jest.mocked(fileExists).mockReturnValue(true);
         jest.mocked(useImageAttachments).mockImplementation((fi) => {
             return useMemo(() => ({
                 images: fi,

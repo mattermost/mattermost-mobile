@@ -4,7 +4,7 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {getFileType} from '@utils/file';
 
@@ -23,8 +23,8 @@ const BLUE_ICON = '#338AFF';
 const RED_ICON = '#ED522A';
 const GREEN_ICON = '#1CA660';
 const GRAY_ICON = '#999999';
-const FAILED_ICON_NAME_AND_COLOR = ['file-image-broken-outline-large', GRAY_ICON];
-const ICON_NAME_AND_COLOR_FROM_FILE_TYPE: Record<string, string[]> = {
+const FAILED_ICON_NAME_AND_COLOR: [CompassIconName, string] = ['file-image-broken-outline-large', GRAY_ICON];
+const ICON_NAME_AND_COLOR_FROM_FILE_TYPE: Record<string, [CompassIconName, string]> = {
     audio: ['file-audio-outline-large', BLUE_ICON],
     code: ['file-code-outline-large', BLUE_ICON],
     image: ['file-image-outline-large', BLUE_ICON],

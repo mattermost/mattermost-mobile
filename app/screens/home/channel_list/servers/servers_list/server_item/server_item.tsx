@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Animated, DeviceEventEmitter, InteractionManager, Platform, processColor, type StyleProp, Text, View, type ViewStyle} from 'react-native';
+import {Animated, DeviceEventEmitter, Platform, processColor, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
@@ -20,6 +20,7 @@ import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@cons
 import {useTheme} from '@context/theme';
 import {subscribeServerUnreadAndMentions, type UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import {dismissBottomSheet, updateParams} from '@screens/navigation';
 import {alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -149,11 +150,10 @@ const ServerItem = ({
     const [badge, setBadge] = useState<BadgeValues>({isUnread: false, mentions: 0});
     const styles = getStyleSheet(theme);
     const swipeable = useRef<Swipeable>(null);
-    const subscription = useRef<Subscription|undefined>();
+    const subscription = useRef<Subscription | undefined>(undefined);
     const viewRef = useRef<View>(null);
+    const tutorialTimerRef = useRef<NodeJS.Timeout | null>(null);
     const [showTutorial, setShowTutorial] = useState(false);
-    const [itemBounds, setItemBounds] = useState<TutorialItemBounds>({startX: 0, startY: 0, endX: 0, endY: 0});
-    const tutorialShown = useRef(false);
 
     let displayName = server.displayName;
 
@@ -192,39 +192,21 @@ const ServerItem = ({
         await logout(server.url, intl, {skipServerLogout, removeServer: true});
     }, [intl, server.lastActiveAt, server.url]);
 
-    const startTutorial = () => {
-        viewRef.current?.measureInWindow((x, y, w, h) => {
-            const bounds: TutorialItemBounds = {
-                startX: x,
-                startY: y,
-                endX: x + w,
-                endY: y + h,
-            };
-
-            if (viewRef.current) {
-                setItemBounds(bounds);
-            }
-        });
-    };
-
     const onLayout = useCallback(() => {
         if (highlight && !tutorialWatched) {
-            if (isTablet) {
+            tutorialTimerRef.current = setTimeout(() => {
+                swipeable.current?.close();
                 setShowTutorial(true);
-                return;
-            }
-            InteractionManager.runAfterInteractions(() => {
-                setShowTutorial(true);
-            });
+            }, 500);
         }
-    }, [highlight, isTablet, tutorialWatched]);
+    }, [highlight, tutorialWatched]);
 
-    useLayoutEffect(() => {
-        if (showTutorial && !tutorialShown.current) {
-            swipeable.current?.close();
-            tutorialShown.current = true;
-            startTutorial();
-        }
+    useDidMount(() => {
+        return () => {
+            if (tutorialTimerRef.current) {
+                clearTimeout(tutorialTimerRef.current);
+            }
+        };
     });
 
     const containerStyle = useMemo(() => {
@@ -452,17 +434,15 @@ const ServerItem = ({
             }
             {showTutorial &&
             <TutorialHighlight
-                itemBounds={itemBounds}
+                itemRef={viewRef}
                 onDismiss={handleDismissTutorial}
                 onShow={handleShowTutorial}
                 itemBorderRadius={8}
             >
-                {Boolean(itemBounds.endX) &&
                 <TutorialSwipeLeft
                     message={intl.formatMessage({id: 'server.tutorial.swipe', defaultMessage: 'Swipe left on a server to see more actions'})}
                     style={isTablet ? styles.tutorialTablet : styles.tutorial}
                 />
-                }
             </TutorialHighlight>
             }
         </>

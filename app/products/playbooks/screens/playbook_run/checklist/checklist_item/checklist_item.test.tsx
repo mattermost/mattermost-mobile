@@ -34,7 +34,7 @@ jest.mock('@components/chips/base_chip');
 jest.mocked(BaseChip).mockImplementation((props) => React.createElement('BaseChip', {...props, testID: 'base-chip-component'}));
 
 jest.mock('./checklist_item_bottom_sheet');
-jest.mocked(ChecklistItemBottomSheet).mockImplementation((props) => React.createElement('ChecklistItemBottomSheet', {...props, testID: 'checklist-item-bottom-sheet-component'}));
+jest.mocked(ChecklistItemBottomSheet).mockImplementation((props: ComponentProps<typeof ChecklistItemBottomSheet>) => React.createElement('ChecklistItemBottomSheet', {...props, testID: 'checklist-item-bottom-sheet-component'}));
 
 jest.mock('@calls/actions');
 jest.mock('@playbooks/actions/remote/checklist');
@@ -446,6 +446,9 @@ describe('ChecklistItem', () => {
         });
 
         it('should show condition icon when conditionReason is set', () => {
+            // CompassIcon (name='source-branch') renders as a Text node; the `name` prop is consumed
+            // internally and does not appear on rendered props. Verify the glyph (0xf062c) instead.
+            const SOURCE_BRANCH = String.fromCodePoint(0xf062c);
             const props = getBaseProps();
             const item = TestHelper.fakePlaybookChecklistItemModel({
                 conditionReason: 'Some condition reason',
@@ -457,11 +460,13 @@ describe('ChecklistItem', () => {
 
             const icon = getByTestId('checklist_item.condition_icon');
             expect(icon).toBeVisible();
-            expect(icon.props.name).toBe('source-branch');
-            expect(icon.props.size).toBe(16);
+            expect(icon.props.children).toContain(SOURCE_BRANCH);
         });
 
         it('should show condition icon when conditionAction is shown_because_modified', () => {
+            // CompassIcon (name='source-branch') renders as a Text node; the `name` prop is consumed
+            // internally and does not appear on rendered props. Verify the glyph (0xf062c) instead.
+            const SOURCE_BRANCH = String.fromCodePoint(0xf062c);
             const props = getBaseProps();
             const item = TestHelper.fakePlaybookChecklistItemModel({
                 conditionReason: '',
@@ -473,8 +478,7 @@ describe('ChecklistItem', () => {
 
             const icon = getByTestId('checklist_item.condition_icon');
             expect(icon).toBeVisible();
-            expect(icon.props.name).toBe('source-branch');
-            expect(icon.props.size).toBe(16);
+            expect(icon.props.children).toContain(SOURCE_BRANCH);
         });
 
         it('should show condition icon with error color for shown_because_modified', () => {
@@ -489,7 +493,9 @@ describe('ChecklistItem', () => {
 
             const icon = getByTestId('checklist_item.condition_icon');
             expect(icon).toBeVisible();
-            expect(icon.props.color).toBe(Preferences.THEMES.denim.errorTextColor);
+
+            // CompassIcon applies color via style, not as a prop on the rendered Text element
+            expect(icon).toHaveStyle({color: Preferences.THEMES.denim.errorTextColor});
         });
 
         it('should show condition icon with normal color when conditionReason is set but not shown_because_modified', () => {
@@ -505,9 +511,8 @@ describe('ChecklistItem', () => {
             const icon = getByTestId('checklist_item.condition_icon');
             expect(icon).toBeVisible();
 
-            // Normal color should be theme.centerChannelColor with 0.56 opacity
-            // Since we can't easily check the opacity, we just verify it's not the error color
-            expect(icon.props.color).not.toBe(Preferences.THEMES.denim.errorTextColor);
+            // CompassIcon applies color via style, not as a prop on the rendered Text element
+            expect(icon).not.toHaveStyle({color: Preferences.THEMES.denim.errorTextColor});
         });
 
         it('should not show condition icon when conditionAction is hidden', () => {
@@ -524,6 +529,9 @@ describe('ChecklistItem', () => {
         });
 
         it('should handle API format (snake_case) condition fields', () => {
+            // CompassIcon (name='source-branch') renders as a Text node; the `name` prop is consumed
+            // internally and does not appear on rendered props. Verify the glyph (0xf062c) instead.
+            const SOURCE_BRANCH = String.fromCodePoint(0xf062c);
             const props = getBaseProps();
             const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
                 condition_reason: 'Some condition reason',
@@ -535,7 +543,7 @@ describe('ChecklistItem', () => {
 
             const icon = getByTestId('checklist_item.condition_icon');
             expect(icon).toBeVisible();
-            expect(icon.props.name).toBe('source-branch');
+            expect(icon.props.children).toContain(SOURCE_BRANCH);
         });
 
         it('should show error color for API format shown_because_modified', () => {
@@ -550,7 +558,9 @@ describe('ChecklistItem', () => {
 
             const icon = getByTestId('checklist_item.condition_icon');
             expect(icon).toBeVisible();
-            expect(icon.props.color).toBe(Preferences.THEMES.denim.errorTextColor);
+
+            // CompassIcon applies color via style, not as a prop on the rendered Text element
+            expect(icon).toHaveStyle({color: Preferences.THEMES.denim.errorTextColor});
         });
     });
 });

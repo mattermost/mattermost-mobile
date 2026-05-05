@@ -197,48 +197,6 @@ describe('NavigationStore', () => {
         });
     });
 
-    describe('getRootRouteInfo', () => {
-        it('should return pathname and params for root route', () => {
-            const navState = createNavigationState([
-                {
-                    key: 'channel-1',
-                    name: 'channel',
-                },
-            ]);
-
-            (navState.routes[0] as {params?: Record<string, string>}).params = {channelId: '123'};
-
-            NavigationStore.updateFromNavigationState(navState);
-
-            const rootInfo = NavigationStore.getRootRouteInfo();
-            expect(rootInfo).toEqual({
-                pathname: '/channel',
-                params: {channelId: '123'},
-            });
-        });
-
-        it('should build nested pathname', () => {
-            const navState = createNavigationState([
-                {
-                    key: 'channel-1',
-                    name: 'channel',
-                    state: createNavigationState([
-                        {key: 'thread-2', name: 'thread'},
-                    ]),
-                },
-            ]);
-
-            NavigationStore.updateFromNavigationState(navState);
-
-            const rootInfo = NavigationStore.getRootRouteInfo();
-            expect(rootInfo?.pathname).toBe('/channel/thread');
-        });
-
-        it('should return undefined when no navigation state', () => {
-            expect(NavigationStore.getRootRouteInfo()).toBeUndefined();
-        });
-    });
-
     describe('reset', () => {
         it('should clear all state', () => {
             const navState = createNavigationState([
@@ -255,7 +213,6 @@ describe('NavigationStore', () => {
 
             expect(NavigationStore.getScreensInStack()).toEqual([]);
             expect(NavigationStore.getVisibleScreen()).toBeUndefined();
-            expect(NavigationStore.getRootRouteInfo()).toBeUndefined();
             expect(NavigationStore.isToSOpen()).toBe(false);
         });
     });

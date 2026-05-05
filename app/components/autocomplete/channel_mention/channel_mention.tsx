@@ -147,7 +147,7 @@ const filterResults = (channels: Array<Channel | ChannelModel>, term: string) =>
     });
 };
 
-type Props = {
+export type ChannelMentionProps = {
     cursorPosition: number;
     isSearch: boolean;
     myMembers: MyChannelModel[];
@@ -178,7 +178,7 @@ const ChannelMention = ({
     localChannels,
     teamId,
     currentUserId,
-}: Props) => {
+}: ChannelMentionProps) => {
     const serverUrl = useServerUrl();
 
     const [sections, setSections] = useState<Array<SectionListData<(Channel | ChannelModel)>>>(emptySections);

@@ -134,10 +134,7 @@ const Notifications = ({
             <SettingItem
                 onPress={goToNotificationSettingsMentions}
                 optionName='mentions'
-                label={intl.formatMessage({
-                    id: isCRTEnabled ? mentionTexts.crtOn.id : mentionTexts.crtOff.id,
-                    defaultMessage: isCRTEnabled ? mentionTexts.crtOn.defaultMessage : mentionTexts.crtOff.defaultMessage,
-                })}
+                label={intl.formatMessage(isCRTEnabled ? mentionTexts.callsOn : mentionTexts.callsOff)}
                 testID='notification_settings.mentions.option'
             />
             <SettingItem
@@ -149,10 +146,7 @@ const Notifications = ({
                 <SettingItem
                     optionName='call_notification'
                     onPress={goToNotificationSettingsCall}
-                    info={intl.formatMessage({
-                        id: callsNotificationsOn ? mentionTexts.callsOn.id : mentionTexts.callsOff.id,
-                        defaultMessage: callsNotificationsOn ? mentionTexts.callsOn.defaultMessage : mentionTexts.callsOff.defaultMessage,
-                    })}
+                    info={intl.formatMessage(callsNotificationsOn ? mentionTexts.callsOn : mentionTexts.callsOff)}
                     testID='notification_settings.call_notifications.option'
                 />
             }

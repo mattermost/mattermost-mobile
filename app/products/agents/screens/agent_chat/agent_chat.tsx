@@ -35,10 +35,8 @@ import AgentChatContent from './agent_chat_content';
 import AgentChatHeader from './header';
 
 import type AiBotModel from '@agents/types/database/models/ai_bot';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    componentId: AvailableScreens;
     bots: AiBotModel[];
 };
 
@@ -243,8 +241,8 @@ const AgentChat = ({bots}: Props) => {
                         )}
                     >
                         <PostDraft
-                            channelId={channelId || ''}
-                            testID='agent_chat.post_draft'
+                            channelId={channelId}
+                            testID={AGENT_CHAT_TESTID}
                             containerHeight={containerHeight}
                             isChannelScreen={false}
                             location={Screens.AGENT_CHAT}

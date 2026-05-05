@@ -93,7 +93,7 @@ export function useKeyboardHeight() {
     return height;
 }
 
-export function useViewPosition(viewRef: RefObject<View>, deps: React.DependencyList = []) {
+export function useViewPosition(viewRef: RefObject<View | null>, deps: React.DependencyList = []) {
     const [modalPosition, setModalPosition] = useState(0);
     const isTablet = useIsTablet();
     const height = useKeyboardHeight();
@@ -112,7 +112,7 @@ export function useViewPosition(viewRef: RefObject<View>, deps: React.Dependency
     return modalPosition;
 }
 
-export function useKeyboardOverlap(viewRef: RefObject<View>, containerHeight: number) {
+export function useKeyboardOverlap(viewRef: RefObject<View | null>, containerHeight: number) {
     const keyboardHeight = useKeyboardHeight();
     const isTablet = useIsTablet();
     const viewPosition = useViewPosition(viewRef, [containerHeight]);

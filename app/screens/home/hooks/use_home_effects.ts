@@ -13,7 +13,7 @@ import {useAppState} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
 import SecurityManager from '@managers/security_manager';
 import {getAllServers} from '@queries/app/servers';
-import {navigateToScreen, resetToRootRoute} from '@screens/navigation';
+import {navigateToScreen, navigateToRoot} from '@screens/navigation';
 import {NavigationStore} from '@store/navigation_store';
 import {alertInvalidDeepLink, parseAndHandleDeepLink} from '@utils/deep_link';
 import {logError} from '@utils/log';
@@ -73,7 +73,7 @@ export function useHomeScreenEffects(props: LaunchProps) {
 
         const crtToggledListener = DeviceEventEmitter.addListener(Events.CRT_TOGGLED, (isSameServer: boolean) => {
             if (isSameServer) {
-                resetToRootRoute();
+                navigateToRoot();
             }
         });
 

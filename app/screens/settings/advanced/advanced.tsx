@@ -3,7 +3,7 @@
 
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, TouchableOpacity} from 'react-native';
+import {Alert, Pressable, type PressableStateCallbackType} from 'react-native';
 
 import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
@@ -31,8 +31,8 @@ const AdvancedSettings = ({
     const [dataSize, setDataSize] = useState<number | undefined>(0);
     const [files, setFiles] = useState<FileInfo[]>(EMPTY_FILES);
 
-    const getAllCachedFiles = useCallback(async () => {
-        const {totalSize = 0, files: cachedFiles} = await getAllFilesInCachesDirectory(serverUrl);
+    const getAllCachedFiles = useCallback(() => {
+        const {totalSize = 0, files: cachedFiles} = getAllFilesInCachesDirectory(serverUrl);
         setDataSize(totalSize);
         setFiles(cachedFiles || EMPTY_FILES);
     }, [serverUrl]);
@@ -53,8 +53,8 @@ const AdvancedSettings = ({
                         {
                             text: formatMessage({id: 'settings.advanced.delete', defaultMessage: 'Delete'}),
                             style: 'destructive',
-                            onPress: async () => {
-                                await deleteFileCache(serverUrl);
+                            onPress: () => {
+                                deleteFileCache(serverUrl);
                                 getAllCachedFiles();
                             },
                         },
@@ -79,12 +79,15 @@ const AdvancedSettings = ({
 
     const hasData = Boolean(dataSize && dataSize > 0);
 
+    const pressedStyleFn = useCallback(({pressed}: PressableStateCallbackType) => (pressed && hasData && {opacity: 0.72}), [hasData]);
+    const pressedStyleDevFn = useCallback(({pressed}: PressableStateCallbackType) => (pressed && {opacity: 0.72}), []);
+
     return (
         <SettingContainer testID='advanced_settings'>
-            <TouchableOpacity
+            <Pressable
                 onPress={onPressDeleteData}
                 disabled={!hasData}
-                activeOpacity={hasData ? 1 : 0}
+                style={pressedStyleFn}
             >
                 <SettingOption
                     destructive={true}
@@ -95,10 +98,11 @@ const AdvancedSettings = ({
                     type='none'
                 />
                 <SettingSeparator/>
-            </TouchableOpacity>
+            </Pressable>
             {isDevMode && (
-                <TouchableOpacity
+                <Pressable
                     onPress={onPressComponentLibrary}
+                    style={pressedStyleDevFn}
                 >
                     <SettingOption
                         label={intl.formatMessage({id: 'settings.advanced.component_library', defaultMessage: 'Component library'})}
@@ -106,7 +110,7 @@ const AdvancedSettings = ({
                         type='none'
                     />
                     <SettingSeparator/>
-                </TouchableOpacity>
+                </Pressable>
             )}
         </SettingContainer>
     );

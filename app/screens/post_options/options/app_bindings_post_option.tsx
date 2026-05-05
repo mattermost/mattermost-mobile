@@ -15,6 +15,7 @@ import {observeCurrentTeamId} from '@queries/servers/system';
 import {dismissBottomSheet} from '@screens/navigation';
 import {isSystemMessage} from '@utils/post';
 
+import type {CompassIconName} from '@components/compass_icon';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -76,7 +77,7 @@ const BindingOptionItem = ({binding, onPress}: {binding: AppBinding; onPress: (b
         <OptionItem
             label={binding.label || ''}
             labelNumberOfLines={1}
-            icon={binding.icon}
+            icon={binding.icon as CompassIconName}
             action={handlePress}
             type='default'
             testID={`post_options.app_binding.option.${binding.location}`}

@@ -5,7 +5,8 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {Platform, StyleSheet} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {useKeyboardState as useControllerKeyboardState} from 'react-native-keyboard-controller';
-import Animated, {runOnJS, scrollTo, useAnimatedProps, useAnimatedReaction, useAnimatedStyle} from 'react-native-reanimated';
+import Animated, {scrollTo, useAnimatedProps, useAnimatedReaction, useAnimatedStyle} from 'react-native-reanimated';
+import {scheduleOnRN, scheduleOnUI} from 'react-native-worklets';
 
 import {isAndroidEdgeToEdge, isEdgeToEdge} from '@constants/device';
 import {useKeyboardState} from '@context/keyboard_state';
@@ -75,16 +76,21 @@ const AgentChatContent = ({error, loading}: Props) => {
             return emojiPickerHeight;
         },
         (emojiPickerHeight) => {
-            runOnJS(setEmojiPickerPadding)(emojiPickerHeight);
+            scheduleOnRN(setEmojiPickerPadding, emojiPickerHeight);
         },
         [isKeyboardVisible],
     );
 
     const scrollToEnd = useCallback(() => {
         if (listRef) {
-            scrollTo(listRef, 0, -postInputTranslateY.value, true);
+            scheduleOnUI(() => {
+                scrollTo(listRef, 0, -postInputTranslateY.value, true);
+            });
         }
-    }, [listRef, postInputTranslateY.value]);
+
+    // postInputTranslateY is a stable shared value ref — .value is read on the UI thread inside scheduleOnUI
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [listRef]);
 
     useDidMount(() => {
         const t = setTimeout(() => {

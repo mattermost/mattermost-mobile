@@ -43,7 +43,25 @@ jest.mock('@gorhom/bottom-sheet', () => ({
 // Capture the setOptions mock from the global expo-router mock so individual tests can inspect it.
 const mockSetOptions = jest.fn();
 jest.mock('expo-router', () => ({
-    ...jest.requireActual('expo-router'),
+    router: {
+        push: jest.fn(),
+        replace: jest.fn(),
+        back: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        canDismiss: jest.fn(() => true),
+        dismiss: jest.fn(),
+        dismissAll: jest.fn(),
+        dismissTo: jest.fn(),
+        setParams: jest.fn(),
+        navigate: jest.fn(),
+    },
+    useRouter: () => ({
+        push: jest.fn(),
+        replace: jest.fn(),
+        back: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        navigate: jest.fn(),
+    }),
     useNavigation: () => ({
         navigate: jest.fn(),
         goBack: jest.fn(),
@@ -53,6 +71,7 @@ jest.mock('expo-router', () => ({
         getState: jest.fn(() => ({})),
         addListener: jest.fn(() => jest.fn()),
     }),
+    useSegments: () => [],
 }));
 
 function getHeaderRight() {
@@ -161,14 +180,14 @@ describe('ChannelShare', () => {
     it('should show no-remotes message when there are no connected workspaces', async () => {
         jest.mocked(fetchRemoteClusters).mockResolvedValue({remoteClusters: []});
         jest.mocked(fetchChannelSharedRemotes).mockResolvedValue({remotes: []});
-        const {getByText, getByTestId} = renderWithIntlAndTheme(
+        const {getByTestId} = renderWithIntlAndTheme(
             <ChannelShare
                 channelId='channel1'
                 displayName='Test Channel'
             />,
         );
         await waitFor(() => {
-            expect(getByText('No connected workspaces are available. Contact your system admin to add one.')).toBeTruthy();
+            expect(getByTestId('channel_share.no_remotes_warning')).toBeTruthy();
         });
         expect(getByTestId('channel_share.toggle')).toBeTruthy();
     });

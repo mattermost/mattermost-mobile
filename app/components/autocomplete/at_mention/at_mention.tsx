@@ -21,7 +21,7 @@ import type {SpecialMention, UserMentionSections} from './types';
 import type GroupModel from '@typings/database/models/servers/group';
 import type UserModel from '@typings/database/models/servers/user';
 
-type Props = {
+export type AtMentionProps = {
     channelId?: string;
     teamId: string;
     cursorPosition: number;
@@ -51,7 +51,7 @@ const AtMention = ({
     isChannelConstrained,
     isTeamConstrained,
     listStyle,
-}: Props) => {
+}: AtMentionProps) => {
     const serverUrl = useServerUrl();
 
     const [sections, setSections] = useState<UserMentionSections>(emptySectionList);

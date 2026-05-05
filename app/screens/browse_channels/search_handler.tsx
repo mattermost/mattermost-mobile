@@ -141,7 +141,7 @@ export default function SearchHandler(props: Props) {
     const nextArchived = useRef(true);
     const loadedChannels = useRef<(data: Channel[] | undefined, typeOfChannels: string) => Promise<void>>(async () => {/* Do nothing */});
 
-    const searchTimeout = useRef<NodeJS.Timeout>();
+    const searchTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
     const [searchResults, setSearchResults] = useState<Channel[]>(defaultSearchResults);
 
     const isSearch = Boolean(term);

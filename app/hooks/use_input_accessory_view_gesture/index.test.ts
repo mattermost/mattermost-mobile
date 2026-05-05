@@ -66,7 +66,6 @@ jest.mock('react-native-reanimated', () => ({
         callback?.(true);
         return toValue;
     }),
-    runOnJS: jest.fn(<T extends (...args: unknown[]) => unknown>(fn: T) => fn),
 }));
 
 const mockSetIsEmojiSearchFocused = jest.fn();
@@ -355,9 +354,10 @@ describe('useInputAccessoryViewGesture', () => {
             expect(mockStateContext.scrollOffset.value).toBe(0);
         });
 
-        it('should call setIsEmojiSearchFocused(false) and stateMachine.onUserCloseEmoji()', () => {
+        it('should call setIsEmojiSearchFocused(false) and stateMachine.onUserCloseEmoji()', async () => {
             setupActiveDrag();
             capturedCallbacks.onEnd();
+            await Promise.resolve();
             expect(mockSetIsEmojiSearchFocused).toHaveBeenCalledWith(false);
             expect(mockOnUserCloseEmoji).toHaveBeenCalledTimes(1);
         });

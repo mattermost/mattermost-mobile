@@ -20,7 +20,7 @@ jest.mock('@components/data_time_selector', () => ({
     default: jest.fn(),
 }));
 jest.mocked(DateTimeSelector).mockImplementation(
-    (props) => React.createElement('DateTimeSelector', {testID: 'date-time-selector', ...props}),
+    (props: ComponentProps<typeof DateTimeSelector>) => React.createElement('DateTimeSelector', {testID: 'date-time-selector', ...props}),
 );
 
 jest.mock('@components/navigation_button', () => ({

@@ -4,13 +4,7 @@
 // eslint-disable-next-line no-process-env
 const intuneEnabled = process.env.INTUNE_ENABLED === '1';
 
-const dependencies = {
-    'react-native-notifications': {
-        platforms: {
-            android: null,
-        },
-    },
-};
+const dependencies = {};
 
 // Conditionally add Intune dependency when enabled
 if (intuneEnabled) {

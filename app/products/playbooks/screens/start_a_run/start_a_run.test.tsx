@@ -30,25 +30,25 @@ jest.mock('@components/floating_input/floating_text_input_label', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(FloatingTextInput).mockImplementation((props) => React.createElement('FloatingTextInput', {testID: props.testID, ...props}));
+jest.mocked(FloatingTextInput).mockImplementation((props: ComponentProps<typeof FloatingTextInput>) => React.createElement('FloatingTextInput', {testID: props.testID, ...props}));
 
 jest.mock('@components/floating_input/floating_autocomplete_selector', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(FloatingAutocompleteSelector).mockImplementation((props) => React.createElement('FloatingAutocompleteSelector', props));
+jest.mocked(FloatingAutocompleteSelector).mockImplementation((props: ComponentProps<typeof FloatingAutocompleteSelector>) => React.createElement('FloatingAutocompleteSelector', props));
 
 jest.mock('@components/option_item', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(OptionItem).mockImplementation((props) => React.createElement('OptionItem', props));
+jest.mocked(OptionItem).mockImplementation((props: ComponentProps<typeof OptionItem>) => React.createElement('OptionItem', props));
 
 jest.mock('@components/navigation_button', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(NavigationButton).mockImplementation((props) => React.createElement('NavigationButton', {...props}));
+jest.mocked(NavigationButton).mockImplementation((props: ComponentProps<typeof NavigationButton>) => React.createElement('NavigationButton', {...props}));
 
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn(() => 'https://server-url.com'),
@@ -122,7 +122,7 @@ describe('StartARun', () => {
         jest.clearAllMocks();
         CallbackStore.removeCallback();
         CallbackStore.setCallback(mockOnRunCreated);
-        jest.mocked(CompassIcon.getImageSource).mockResolvedValue({uri: 'close-icon'});
+        jest.mocked(CompassIcon.getImageSource).mockResolvedValue({uri: 'close-icon', width: 48, height: 48, scale: 1});
         jest.mocked(createPlaybookRun).mockResolvedValue({
             data: TestHelper.fakePlaybookRun({id: 'run-id'}),
         });

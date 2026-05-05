@@ -453,7 +453,7 @@ const Post = ({
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                 style={styles.postContent}
             >
-                <>
+                <View>
                     <PreHeader
                         isConsecutivePost={isConsecutivePost}
                         isSaved={isSaved}
@@ -470,7 +470,7 @@ const Post = ({
                         </View>
                         {unreadDot}
                     </View>
-                </>
+                </View>
             </TouchableHighlight>
             <ShimmerAnimation {...shimmerAnimationProps}/>
         </View>

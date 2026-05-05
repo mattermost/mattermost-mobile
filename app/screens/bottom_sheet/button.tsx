@@ -9,12 +9,12 @@ import Button from '@components/button';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import {useBottomSheetStyle} from './hooks';
+import type {CompassIconName} from '@components/compass_icon';
 
 type Props = {
     disabled?: boolean;
     onPress?: () => void;
-    icon?: string;
+    icon?: CompassIconName;
     iconComponent?: React.ReactNode;
     isIconOnTheRight?: boolean;
     showLoader?: boolean;
@@ -39,24 +39,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export const BUTTON_HEIGHT = 101;
+export const BUTTON_HEIGHT = 69;
 
 function BottomSheetButton({disabled = false, onPress, icon, iconComponent, isIconOnTheRight, showLoader = false, testID, text}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const containerStyle = useBottomSheetStyle();
     const {bottom} = useSafeAreaInsets();
 
     const bottomViewStyle = useMemo(() => {
         return {
-            top: bottom, // we need to move it down the same amount as the height
-            height: bottom,
-            backgroundColor: theme.centerChannelBg,
+            paddingBottom: bottom,
         };
-    }, [bottom, theme.centerChannelBg]);
+    }, [bottom]);
 
     return (
-        <View style={[styles.container, containerStyle]}>
+        <View style={[styles.container, bottomViewStyle]}>
             <View style={[styles.separator]}/>
             <View style={styles.buttonContainer}>
                 <Button
@@ -72,7 +69,6 @@ function BottomSheetButton({disabled = false, onPress, icon, iconComponent, isIc
                     showLoader={showLoader}
                 />
             </View>
-            <View style={bottomViewStyle}/>
         </View>
     );
 }

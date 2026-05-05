@@ -244,6 +244,7 @@ describe('components/post_list/PostList', () => {
     });
 
     it('handles onViewableItemsChanged callback', async () => {
+        jest.useFakeTimers({doNotFake: ['nextTick']});
         const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
         const {getByTestId} = renderWithEverything(
             <PostList {...baseProps}/>,
@@ -267,6 +268,13 @@ describe('components/post_list/PostList', () => {
                 {[`${Screens.CHANNEL}-${mockPosts[0].id}`]: true},
             );
         });
+
+        // Flush the 250ms debounce timer (trackInitialRenderMetrics → setShowAllPosts)
+        // so it doesn't fire outside act() after the test ends.
+        act(() => {
+            jest.runAllTimers();
+        });
+        jest.useRealTimers();
     });
 
     it('handles scroll to index failure', async () => {

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetFlashList} from '@gorhom/bottom-sheet';
-import {type ListRenderItemInfo} from '@shopify/flash-list';
+import {useBottomSheetScrollableCreator} from '@gorhom/bottom-sheet';
+import {FlashList, type ListRenderItemInfo} from '@shopify/flash-list';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
@@ -79,6 +79,7 @@ export const ParticipantsList = ({
     const {height} = useWindowDimensions();
     const {bottom} = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
+    const BottomSheetScrollable = useBottomSheetScrollableCreator();
 
     const sessions = sortSessions(intl.locale, teammateNameDisplay, sessionsDict);
     const snapPoint1 = bottomSheetSnapPoint(Math.min(sessions.length, MIN_ROWS), ROW_HEIGHT) + HEADER_HEIGHT;
@@ -131,10 +132,10 @@ export const ParticipantsList = ({
                         </TouchableOpacity>
                     }
                 </View>
-                <BottomSheetFlashList
+                <FlashList
                     data={sessions}
                     renderItem={renderItem}
-                    estimatedItemSize={ROW_HEIGHT}
+                    renderScrollComponent={BottomSheetScrollable}
                 />
             </>
         );

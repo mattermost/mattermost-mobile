@@ -52,3 +52,10 @@ runs:
         cp "$COMPASS_ICONS" "assets/fonts/"
         cp "$COMPASS_ICONS" "android/app/src/main/assets/fonts"
         echo "::endgroup::"
+
+    - name: ci/generate-compass-glyph-map
+      shell: bash
+      run: |
+        echo "::group::generate-compass-glyph-map"
+        node scripts/generate-compass-glyph-map.mjs
+        echo "::endgroup::"

@@ -17,7 +17,7 @@ import {goToSelectPlaybook} from '@playbooks/screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmptyState from './empty_state';
-import PlaybookCard, {CARD_HEIGHT} from './playbook_card';
+import PlaybookCard from './playbook_card';
 import ShowMoreButton from './show_more_button';
 
 import type {RunListTabsNames} from './types';
@@ -164,7 +164,6 @@ const RunList = ({
                     renderItem={renderItem}
                     contentContainerStyle={styles.container}
                     ItemSeparatorComponent={ItemSeparator}
-                    estimatedItemSize={CARD_HEIGHT}
                     ListFooterComponent={footerComponent}
                     testID='runs.list'
                 />

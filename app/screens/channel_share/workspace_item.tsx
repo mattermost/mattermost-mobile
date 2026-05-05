@@ -120,7 +120,12 @@ const WorkspaceItem = ({item, onRemove, isFirst, removeDisabled = false}: Props)
                     {item.display_name || item.name}
                 </Text>
             </View>
-            <Text style={statusStyle}>{icon}{icon ? ' ' : ''}{statusLabel}</Text>
+            <Text
+                style={statusStyle}
+                testID='channel_share.workspace_item.status'
+            >
+                {icon}{icon ? ' ' : ''}{statusLabel}
+            </Text>
             <TouchableOpacity
                 onPress={handleRemove}
                 disabled={removeDisabled}

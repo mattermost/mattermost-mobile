@@ -5,7 +5,6 @@ import {act, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {createDirectChannel} from '@actions/remote/channel';
-import {Screens} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -157,10 +156,7 @@ describe('AgentChat', () => {
 
     it('should render PostDraft without error when channel is available', async () => {
         const {getByTestId} = renderWithEverything(
-            <AgentChat
-                componentId={Screens.AGENT_CHAT}
-                bots={[mockBot]}
-            />,
+            <AgentChat bots={[mockBot]}/>,
             {database},
         );
 
@@ -184,10 +180,7 @@ describe('AgentChat', () => {
 
     it('should render intro screen when no bots are available', async () => {
         const {getByTestId, queryByTestId} = renderWithEverything(
-            <AgentChat
-                componentId={Screens.AGENT_CHAT}
-                bots={[]}
-            />,
+            <AgentChat bots={[]}/>,
             {database},
         );
 

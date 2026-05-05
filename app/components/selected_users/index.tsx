@@ -14,12 +14,14 @@ import {useTheme} from '@context/theme';
 import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import type {CompassIconName} from '@components/compass_icon';
+
 type Props = {
 
     /**
      * Name of the button Icon
      */
-    buttonIcon: string;
+    buttonIcon: CompassIconName;
 
     /*
      * Text displayed on the action button
@@ -69,7 +71,7 @@ type Props = {
     /**
      * toast Icon
      */
-    toastIcon?: string;
+    toastIcon?: CompassIconName;
 
     /**
      * toast Message

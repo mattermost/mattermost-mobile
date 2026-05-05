@@ -71,7 +71,6 @@ const Reactions = ({initialEmoji, location, reactions}: Props) => {
                     key={emojiAlias}
                     location={location}
                     reactions={reactionsByName.get(emojiAlias)!}
-                    type={'BottomSheetFlatList'}
                 />
             </>
         );
