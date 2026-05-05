@@ -4,7 +4,7 @@
 import React from 'react';
 
 import {useServerUrl} from '@context/server';
-import {useClassificationBannerState} from '@store/classification_banner_store';
+import {useClassificationBannerState} from '@hooks/use_classification_banner';
 
 import GlobalClassificationBanner from './global_classification_banner';
 

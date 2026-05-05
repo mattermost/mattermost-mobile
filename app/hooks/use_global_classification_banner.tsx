@@ -6,7 +6,7 @@ import React, {useMemo} from 'react';
 import GlobalClassificationBanner from '@components/global_classification_banner/global_classification_banner';
 import {CLASSIFICATION_BANNER_TOTAL_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
-import {useClassificationBannerState} from '@store/classification_banner_store';
+import {useClassificationBannerState} from '@hooks/use_classification_banner';
 
 type GlobalClassificationBannerResult = {
     bannerHeight: number;

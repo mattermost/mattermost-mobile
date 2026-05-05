@@ -6,7 +6,6 @@ import {handleAgentPostUpdate} from '@agents/actions/websocket';
 import {handleAgentsEvents} from '@agents/actions/websocket/events';
 
 import * as bookmark from '@actions/local/channel_bookmark';
-import {fetchClassificationBanner} from '@actions/remote/classification';
 import {
     handleBoRPostAllRevealed,
     handleBoRPostBurnedEvent,
@@ -19,6 +18,7 @@ import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
 
 import * as category from './category';
 import * as channel from './channel';
+import {handlePropertyFieldCreatedOrUpdated, handlePropertyFieldDeleted, handlePropertyValuesUpdated} from './properties';
 import * as files from './files';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
@@ -317,18 +317,17 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         case WebsocketEvents.PROPERTY_FIELD_CREATED:
         case WebsocketEvents.PROPERTY_FIELD_UPDATED:
-        case WebsocketEvents.PROPERTY_FIELD_DELETED:
-            fetchClassificationBanner(serverUrl);
+            handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
             break;
 
-        case WebsocketEvents.PROPERTY_VALUES_UPDATED: {
-            handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl, msg);
-            const pvData = msg.data as PropertyValuesUpdatedData;
-            if (!pvData.object_type || pvData.object_type === 'system') {
-                fetchClassificationBanner(serverUrl);
-            }
+        case WebsocketEvents.PROPERTY_FIELD_DELETED:
+            handlePropertyFieldDeleted(serverUrl, msg);
             break;
-        }
+
+        case WebsocketEvents.PROPERTY_VALUES_UPDATED:
+            handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl, msg);
+            handlePropertyValuesUpdated(serverUrl, msg);
+            break;
 
         // Agents
         case WebsocketEvents.AGENTS_POST_UPDATE:

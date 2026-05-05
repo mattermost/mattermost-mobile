@@ -16,11 +16,16 @@ jest.mock('@queries/servers/system', () => ({
     getConfigValue: jest.fn(),
 }));
 
-jest.mock('@store/classification_banner_store', () => ({
-    setClassificationBannerState: jest.fn(),
+jest.mock('@store/system_property_store', () => ({
+    setPropertyFields: jest.fn(),
+    setSystemPropertyValues: jest.fn(),
+    getPropertyFields: jest.fn(() => []),
+    getSystemPropertyValues: jest.fn(() => []),
+    subscribe: jest.fn(() => jest.fn()),
+    usePropertyStoreGroup: jest.fn(() => ({fields: [], values: []})),
 }));
 
-const {setClassificationBannerState} = require('@store/classification_banner_store');
+const {setPropertyFields, setSystemPropertyValues} = require('@store/system_property_store');
 const mockedGetConfigValue = jest.mocked(getConfigValue);
 
 const serverUrl = 'classification.test.com';
@@ -96,70 +101,45 @@ afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
-const defaultState = {visible: false, levelName: '', color: ''};
-
 describe('fetchClassificationBanner', () => {
-    it('should set default state when feature flag is not true', async () => {
+    it('should clear store when feature flag is not true', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('false');
 
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({});
-        expect(setClassificationBannerState).toHaveBeenCalledWith(serverUrl, defaultState);
+        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', []);
+        expect(setSystemPropertyValues).toHaveBeenCalledWith(serverUrl, 'classification_markings', []);
         expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
     });
 
-    it('should set default state when template field is missing', async () => {
+    it('should seed store with only linked field when template is missing', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
         mockClient.getPropertyFields.mockResolvedValueOnce([linkedField]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
 
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({});
-        expect(setClassificationBannerState).toHaveBeenCalledWith(serverUrl, defaultState);
+        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', [linkedField]);
+        expect(setSystemPropertyValues).toHaveBeenCalledWith(serverUrl, 'classification_markings', [systemValue]);
     });
 
-    it('should set default state when linked field is missing', async () => {
+    it('should seed store with only template field when linked is missing', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockResolvedValueOnce([templateField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
-
-        const result = await fetchClassificationBanner(serverUrl);
-
-        expect(result).toEqual({});
-        expect(setClassificationBannerState).toHaveBeenCalledWith(serverUrl, defaultState);
-    });
-
-    it('should set default state when DISPLAY_BANNER_TOP is not in actions', async () => {
-        const linkedFieldNoAction = {
-            ...linkedField,
-            attrs: {...linkedField.attrs, actions: ['display_banner_bottom']},
-        } as PropertyField;
-
-        mockedGetConfigValue.mockResolvedValueOnce('true');
-        mockClient.getPropertyFields.mockResolvedValueOnce([templateField]);
-        mockClient.getPropertyFields.mockResolvedValueOnce([linkedFieldNoAction]);
-
-        const result = await fetchClassificationBanner(serverUrl);
-
-        expect(result).toEqual({});
-        expect(setClassificationBannerState).toHaveBeenCalledWith(serverUrl, defaultState);
-    });
-
-    it('should set default state when no system property value matches the linked field', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
-        mockClient.getPropertyFields.mockResolvedValueOnce([templateField]);
-        mockClient.getPropertyFields.mockResolvedValueOnce([linkedField]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([]);
 
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({});
-        expect(setClassificationBannerState).toHaveBeenCalledWith(serverUrl, defaultState);
+        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', [templateField]);
+        expect(setSystemPropertyValues).toHaveBeenCalledWith(serverUrl, 'classification_markings', []);
     });
 
-    it('should set visible state with level name and color on happy path', async () => {
+    it('should seed store with both fields and values on happy path', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockResolvedValueOnce([templateField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([linkedField]);
@@ -168,14 +148,11 @@ describe('fetchClassificationBanner', () => {
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({});
-        expect(setClassificationBannerState).toHaveBeenCalledWith(serverUrl, {
-            visible: true,
-            levelName: 'TOP SECRET',
-            color: '#FCE83A',
-        });
+        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', [templateField, linkedField]);
+        expect(setSystemPropertyValues).toHaveBeenCalledWith(serverUrl, 'classification_markings', [systemValue]);
     });
 
-    it('should set default state and return error when network client throws', async () => {
+    it('should clear store and return error when network client throws', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         const networkError = new Error('network failure');
         mockClient.getPropertyFields.mockRejectedValueOnce(networkError);
@@ -183,6 +160,7 @@ describe('fetchClassificationBanner', () => {
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({error: networkError});
-        expect(setClassificationBannerState).toHaveBeenCalledWith(serverUrl, defaultState);
+        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', []);
+        expect(setSystemPropertyValues).toHaveBeenCalledWith(serverUrl, 'classification_markings', []);
     });
 });

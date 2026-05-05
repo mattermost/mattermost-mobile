@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {
-    DISPLAY_BANNER_TOP,
     FIELD_NAME,
     GROUP_NAME,
     LINKED_FIELD_NAME,
@@ -15,17 +14,16 @@ import {
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getConfigValue} from '@queries/servers/system';
-import {setClassificationBannerState} from '@store/classification_banner_store';
+import {setPropertyFields, setSystemPropertyValues} from '@store/system_property_store';
 import {logDebug} from '@utils/log';
-
-const defaultState = {visible: false, levelName: '', color: ''};
 
 export async function fetchClassificationBanner(serverUrl: string): Promise<{error?: unknown}> {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const featureFlag = await getConfigValue(database, 'FeatureFlagClassificationMarkings');
         if (featureFlag !== 'true') {
-            setClassificationBannerState(serverUrl, defaultState);
+            setPropertyFields(serverUrl, GROUP_NAME, []);
+            setSystemPropertyValues(serverUrl, GROUP_NAME, []);
             return {};
         }
 
@@ -44,39 +42,24 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
             (f: PropertyField) => f.object_type === LINKED_OBJECT_TYPE && f.name === LINKED_FIELD_NAME && f.linked_field_id && f.delete_at === 0,
         );
 
-        if (!templateField || !linkedField) {
-            setClassificationBannerState(serverUrl, defaultState);
-            return {};
-        }
-
-        const actions = (linkedField.attrs?.actions as string[] | undefined) ?? [];
-        if (!actions.includes(DISPLAY_BANNER_TOP)) {
-            setClassificationBannerState(serverUrl, defaultState);
-            return {};
-        }
-
         const values = await client.getSystemPropertyValues<string>(GROUP_NAME);
-        const systemValue = values.find((v: PropertyValue<string>) => v.field_id === linkedField.id);
-        const optionId = systemValue?.value ?? '';
 
-        if (!optionId) {
-            setClassificationBannerState(serverUrl, defaultState);
-            return {};
+        const allFields: PropertyField[] = [];
+        if (templateField) {
+            allFields.push(templateField);
+        }
+        if (linkedField) {
+            allFields.push(linkedField);
         }
 
-        const options = (linkedField.attrs?.options as PropertyFieldOption[]) ?? [];
-        const levelOption = options.find((o) => o.id === optionId);
-
-        setClassificationBannerState(serverUrl, {
-            visible: Boolean(levelOption?.name),
-            levelName: levelOption?.name ?? '',
-            color: levelOption?.color ?? '',
-        });
+        setPropertyFields(serverUrl, GROUP_NAME, allFields);
+        setSystemPropertyValues(serverUrl, GROUP_NAME, values);
 
         return {};
     } catch (error) {
         logDebug('fetchClassificationBanner', 'Failed to fetch classification banner data', error);
-        setClassificationBannerState(serverUrl, defaultState);
+        setPropertyFields(serverUrl, GROUP_NAME, []);
+        setSystemPropertyValues(serverUrl, GROUP_NAME, []);
         return {error};
     }
 }
