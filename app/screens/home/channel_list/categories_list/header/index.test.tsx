@@ -49,7 +49,7 @@ describe('ChannelListHeader Index', () => {
     it('renders ChannelListHeader component with no data', () => {
         const {getByTestId} = renderWithEverything(
             <ChannelListHeaderIndex/>,
-            {database},
+            {database, serverUrl},
         );
 
         const component = getByTestId('channel-list-header');
@@ -59,6 +59,35 @@ describe('ChannelListHeader Index', () => {
         expect(component.props.canCreateChannels).toBe(true); // By default, we allow creating channels
         expect(component.props.canJoinChannels).toBe(true); // By default, we allow joining channels
         expect(component.props.canInvitePeople).toBe(false);
+        expect(component.props.canJoinOtherTeams).toBe(false);
+        expect(component.props.hasMoreThanOneTeam).toBe(false);
+        expect(component.props.currentTeamId).toBe('');
+    });
+
+    it('reflects current team id and team count', async () => {
+        const team1 = TestHelper.fakeTeam({id: currentTeamId, display_name: teamDisplayName});
+        const team2 = TestHelper.fakeTeam({id: 'other-team-id', display_name: 'Team Two'});
+
+        await operator.handleTeam({teams: [team1, team2], prepareRecordsOnly: false});
+        await operator.handleMyTeam({
+            myTeams: [
+                {id: currentTeamId, roles: 'team_user'},
+                {id: 'other-team-id', roles: 'team_user'},
+            ],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: currentTeamId}],
+            prepareRecordsOnly: false,
+        });
+
+        const {getByTestId} = renderWithEverything(<ChannelListHeaderIndex/>, {database, serverUrl});
+
+        await waitFor(() => {
+            const component = getByTestId('channel-list-header');
+            expect(component.props.currentTeamId).toBe(currentTeamId);
+            expect(component.props.hasMoreThanOneTeam).toBe(true);
+        });
     });
 
     it('renders ChannelListHeader component with team and user data', async () => {

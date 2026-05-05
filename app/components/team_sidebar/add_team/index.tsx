@@ -6,10 +6,9 @@ import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {navigateToScreen} from '@screens/navigation';
+import {openJoinTeamModal} from '@utils/team_menu';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -39,7 +38,7 @@ export default function AddTeam() {
     const styles = getStyleSheet(theme);
 
     const onPress = usePreventDoubleTap(useCallback(() => {
-        navigateToScreen(Screens.JOIN_TEAM);
+        openJoinTeamModal();
     }, []));
 
     return (

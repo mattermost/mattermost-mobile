@@ -24,14 +24,8 @@ jest.mock('@react-native-camera-roll/camera-roll', () => ({
     },
 }));
 
-jest.mock('@screens/navigation', () => ({
-    resetToTeams: jest.fn(),
-    openToS: jest.fn(),
-}));
-
 function getBaseProps(): ComponentProps<typeof ChannelListScreen> {
     return {
-        canJoinOtherTeams: false,
         hasChannels: true,
         hasCurrentUser: true,
         hasMoreThanOneTeam: true,
@@ -71,9 +65,12 @@ describe('team sidebar visibility', () => {
         database = server.database;
     });
 
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('should render when canJoinOtherTeams is true and user has only one team', async () => {
         const props = getBaseProps();
-        props.canJoinOtherTeams = true;
         props.hasMoreThanOneTeam = false;
         const {getByTestId} = renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
         await waitFor(() => {
@@ -83,7 +80,6 @@ describe('team sidebar visibility', () => {
 
     it('should render when canJoinOtherTeams is false and user has only one team', async () => {
         const props = getBaseProps();
-        props.canJoinOtherTeams = false;
         props.hasMoreThanOneTeam = false;
         const {getByTestId} = renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
         await waitFor(() => {
