@@ -18,7 +18,6 @@ import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
 
 import * as category from './category';
 import * as channel from './channel';
-import {handlePropertyFieldCreatedOrUpdated, handlePropertyFieldDeleted, handlePropertyValuesUpdated} from './properties';
 import * as files from './files';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
@@ -26,6 +25,7 @@ import {handleManagedChannelCategoriesPropertyValuesUpdated} from './managed_cat
 import * as posts from './posts';
 import {handlePostTranslationUpdatedEvent} from './posts';
 import * as preferences from './preferences';
+import {handlePropertyFieldCreatedOrUpdated, handlePropertyFieldDeleted, handlePropertyValuesUpdated} from './properties';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';

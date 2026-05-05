@@ -19,6 +19,8 @@ export type ClassificationBannerState = {
     color: string;
 };
 
+const hiddenState: ClassificationBannerState = {visible: false, levelName: '', color: ''};
+
 export function useClassificationBannerState(serverUrl: string): ClassificationBannerState {
     const {fields, values} = usePropertyStoreGroup(serverUrl, GROUP_NAME);
 
@@ -31,19 +33,19 @@ export function useClassificationBannerState(serverUrl: string): ClassificationB
         );
 
         if (!templateField || !linkedField) {
-            return {visible: false, levelName: '', color: ''};
+            return hiddenState;
         }
 
         const actions = (linkedField.attrs?.actions as string[] | undefined) ?? [];
         if (!actions.includes(DISPLAY_BANNER_TOP)) {
-            return {visible: false, levelName: '', color: ''};
+            return hiddenState;
         }
 
         const systemValue = values.find((v) => v.field_id === linkedField.id);
         const optionId = systemValue?.value ?? '';
 
         if (!optionId) {
-            return {visible: false, levelName: '', color: ''};
+            return hiddenState;
         }
 
         const options = (linkedField.attrs?.options as PropertyFieldOption[]) ?? [];

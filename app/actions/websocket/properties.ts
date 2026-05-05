@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {updatePropertyField, removePropertyFieldById, updateSystemPropertyValues} from '@store/system_property_store';
+import {safeParseJSON} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
 export function handlePropertyFieldCreatedOrUpdated(serverUrl: string, msg: WebSocketMessage) {
@@ -10,10 +11,8 @@ export function handlePropertyFieldCreatedOrUpdated(serverUrl: string, msg: WebS
         return;
     }
 
-    let field: PropertyField;
-    try {
-        field = JSON.parse(data.property_field);
-    } catch {
+    const field = safeParseJSON(data.property_field) as PropertyField | string;
+    if (typeof field === 'string') {
         logDebug('handlePropertyFieldCreatedOrUpdated', 'Failed to parse property_field from WS event');
         return;
     }
@@ -36,10 +35,8 @@ export function handlePropertyValuesUpdated(serverUrl: string, msg: WebSocketMes
         return;
     }
 
-    let values: Array<PropertyValue<string>>;
-    try {
-        values = JSON.parse(data.values);
-    } catch {
+    const values = safeParseJSON(data.values) as Array<PropertyValue<string>> | string;
+    if (typeof values === 'string') {
         logDebug('handlePropertyValuesUpdated', 'Failed to parse values from WS event');
         return;
     }
