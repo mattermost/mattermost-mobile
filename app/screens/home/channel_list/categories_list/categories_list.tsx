@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AgentsButton from '@agents/components/agents_button';
 import React, {useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, useWindowDimensions} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -39,7 +38,6 @@ type ChannelListProps = {
     scheduledPostHasError: boolean;
     lastChannelId?: string;
     scheduledPostsEnabled?: boolean;
-    agentsEnabled?: boolean;
     showPlaybooksButton?: boolean;
 };
 
@@ -59,7 +57,6 @@ const CategoriesList = ({
     scheduledPostHasError,
     lastChannelId,
     scheduledPostsEnabled,
-    agentsEnabled,
     showPlaybooksButton,
 }: ChannelListProps) => {
     const theme = useTheme();
@@ -130,18 +127,6 @@ const CategoriesList = ({
         return null;
     }, [activeScreen, draftsCount, isTablet, scheduledPostCount, scheduledPostHasError, scheduledPostsEnabled]);
 
-    const agentsButtonComponent = useMemo(() => {
-        if (!agentsEnabled) {
-            return null;
-        }
-
-        return (
-            <AgentsButton
-                shouldHighlightActive={activeScreen === AGENTS}
-            />
-        );
-    }, [agentsEnabled, activeScreen]);
-
     const playbooksButtonComponent = useMemo(() => {
         if (!showPlaybooksButton) {
             return null;
@@ -162,12 +147,11 @@ const CategoriesList = ({
                 <SubHeader/>
                 {threadButtonComponent}
                 {draftsButtonComponent}
-                {agentsButtonComponent}
                 {playbooksButtonComponent}
                 <Categories isTablet={isTablet}/>
             </>
         );
-    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isTablet, playbooksButtonComponent, threadButtonComponent]);
+    }, [draftsButtonComponent, hasChannels, isTablet, playbooksButtonComponent, threadButtonComponent]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
