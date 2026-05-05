@@ -7,10 +7,12 @@ export type PropertyStoreListener = (serverUrl: string, groupId: string) => void
 
 type FieldStore = Record<string, Record<string, Record<string, PropertyField>>>;
 type ValueStore = Record<string, Record<string, Record<string, PropertyValue<string>>>>;
+type GroupNameIndex = Record<string, Record<string, string>>;
 
 const fieldStore: FieldStore = {};
 const valueStore: ValueStore = {};
 const listeners = new Set<PropertyStoreListener>();
+const groupNameToId: GroupNameIndex = {};
 
 function getFieldMap(serverUrl: string, groupId: string): Record<string, PropertyField> {
     if (!fieldStore[serverUrl]) {
@@ -36,6 +38,17 @@ function notify(serverUrl: string, groupId: string) {
     for (const listener of listeners) {
         listener(serverUrl, groupId);
     }
+}
+
+export function registerGroupName(serverUrl: string, groupName: string, groupId: string): void {
+    if (!groupNameToId[serverUrl]) {
+        groupNameToId[serverUrl] = {};
+    }
+    groupNameToId[serverUrl][groupName] = groupId;
+}
+
+export function getGroupIdByName(serverUrl: string, groupName: string): string | undefined {
+    return groupNameToId[serverUrl]?.[groupName];
 }
 
 export function setPropertyFields(serverUrl: string, groupId: string, fields: PropertyField[]): void {

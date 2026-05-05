@@ -2,8 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {
+    getGroupIdByName,
     getPropertyFields,
     getSystemPropertyValues,
+    registerGroupName,
     removePropertyField,
     removePropertyFieldById,
     setPropertyFields,
@@ -263,6 +265,34 @@ describe('system_property_store', () => {
 
             unsub1();
             unsub2();
+        });
+    });
+
+    describe('group name registry', () => {
+        it('should register and retrieve group name to id mapping', () => {
+            registerGroupName(serverUrl, 'my_group', 'uuid-123');
+            expect(getGroupIdByName(serverUrl, 'my_group')).toBe('uuid-123');
+        });
+
+        it('should return undefined for unregistered group name', () => {
+            expect(getGroupIdByName(serverUrl, 'unknown_group')).toBeUndefined();
+        });
+
+        it('should return undefined for unregistered server', () => {
+            expect(getGroupIdByName('unknown-server', 'my_group')).toBeUndefined();
+        });
+
+        it('should overwrite existing mapping when re-registered', () => {
+            registerGroupName(serverUrl, 'my_group', 'uuid-old');
+            registerGroupName(serverUrl, 'my_group', 'uuid-new');
+            expect(getGroupIdByName(serverUrl, 'my_group')).toBe('uuid-new');
+        });
+
+        it('should support multiple group names per server', () => {
+            registerGroupName(serverUrl, 'group_a', 'id-a');
+            registerGroupName(serverUrl, 'group_b', 'id-b');
+            expect(getGroupIdByName(serverUrl, 'group_a')).toBe('id-a');
+            expect(getGroupIdByName(serverUrl, 'group_b')).toBe('id-b');
         });
     });
 });

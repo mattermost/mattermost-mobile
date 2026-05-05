@@ -3,7 +3,7 @@
 
 import {renderHook, act} from '@testing-library/react-hooks';
 
-import {setPropertyFields, setSystemPropertyValues} from '@store/system_property_store';
+import {registerGroupName, setPropertyFields, setSystemPropertyValues} from '@store/system_property_store';
 
 import {useClassificationBannerState} from './use_classification_banner';
 
@@ -63,11 +63,19 @@ const systemValue: PropertyValue<string> = {
 };
 
 beforeEach(() => {
+    registerGroupName(serverUrl, GROUP, GROUP);
     setPropertyFields(serverUrl, GROUP, []);
     setSystemPropertyValues(serverUrl, GROUP, []);
 });
 
 describe('useClassificationBannerState', () => {
+    it('should return default state when group name is not registered', () => {
+        const unknownServer = 'unknown-server.test.com';
+        const {result} = renderHook(() => useClassificationBannerState(unknownServer));
+
+        expect(result.current).toEqual({visible: false, levelName: '', color: ''});
+    });
+
     it('should return default state when store is empty', () => {
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
 

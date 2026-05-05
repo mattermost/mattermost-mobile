@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useMemo} from 'react';
+import {useEffect, useMemo, useReducer} from 'react';
 
 import {
     DISPLAY_BANNER_TOP,
@@ -11,7 +11,7 @@ import {
     LINKED_OBJECT_TYPE,
     OBJECT_TYPE,
 } from '@constants/classification';
-import {usePropertyStoreGroup} from '@store/system_property_store';
+import {getGroupIdByName, getPropertyFields, getSystemPropertyValues, subscribe} from '@store/system_property_store';
 
 export type ClassificationBannerState = {
     visible: boolean;
@@ -22,9 +22,29 @@ export type ClassificationBannerState = {
 const hiddenState: ClassificationBannerState = {visible: false, levelName: '', color: ''};
 
 export function useClassificationBannerState(serverUrl: string): ClassificationBannerState {
-    const {fields, values} = usePropertyStoreGroup(serverUrl, GROUP_NAME);
+    const [renderCount, forceRender] = useReducer((x: number) => x + 1, 0);
+
+    useEffect(() => {
+        const unsub = subscribe((url, _groupId) => {
+            if (url === serverUrl) {
+                const resolvedId = getGroupIdByName(serverUrl, GROUP_NAME);
+                if (resolvedId && resolvedId === _groupId) {
+                    forceRender();
+                }
+            }
+        });
+        return unsub;
+    }, [serverUrl]);
 
     return useMemo(() => {
+        const groupId = getGroupIdByName(serverUrl, GROUP_NAME) ?? '';
+        if (!groupId) {
+            return hiddenState;
+        }
+
+        const fields = getPropertyFields(serverUrl, groupId);
+        const values = getSystemPropertyValues(serverUrl, groupId);
+
         const templateField = fields.find(
             (f) => f.object_type === OBJECT_TYPE && f.name === FIELD_NAME && f.delete_at === 0,
         );
@@ -56,5 +76,6 @@ export function useClassificationBannerState(serverUrl: string): ClassificationB
             levelName: levelOption?.name ?? '',
             color: levelOption?.color ?? '',
         };
-    }, [fields, values]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [serverUrl, renderCount]);
 }
