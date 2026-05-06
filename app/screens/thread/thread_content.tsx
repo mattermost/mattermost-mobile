@@ -5,7 +5,6 @@ import {PortalProvider} from '@gorhom/portal';
 import React from 'react';
 import {StyleSheet} from 'react-native';
 
-import ChannelBanner from '@components/channel_banner';
 import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_draft_container';
 import PostDraft from '@components/post_draft';
 import ScheduledPostIndicator from '@components/scheduled_post_indicator';
@@ -21,7 +20,6 @@ type ThreadContentProps = {
     scheduledPostCount: number;
     containerHeight: number;
     enabled?: boolean;
-    includeChannelBanner?: boolean;
     onEmojiSearchFocusChange?: (focused: boolean) => void;
 }
 
@@ -42,7 +40,6 @@ const ThreadContent = ({
     scheduledPostCount,
     containerHeight,
     enabled = true,
-    includeChannelBanner,
     onEmojiSearchFocusChange,
 }: ThreadContentProps) => {
     return (
@@ -54,21 +51,12 @@ const ThreadContent = ({
                 enabled={enabled}
                 onEmojiSearchFocusChange={onEmojiSearchFocusChange}
                 renderList={({listRef, onTouchMove, onTouchEnd}) => (
-                    <>
-                        {includeChannelBanner &&
-                            <ChannelBanner
-                                channelId={rootPost.channelId}
-                                isTopItem={true}
-                                skipHeaderOffset={true}
-                            />
-                        }
-                        <ThreadPostList
-                            rootPost={rootPost}
-                            listRef={listRef}
-                            onTouchMove={onTouchMove}
-                            onTouchEnd={onTouchEnd}
-                        />
-                    </>
+                    <ThreadPostList
+                        rootPost={rootPost}
+                        listRef={listRef}
+                        onTouchMove={onTouchMove}
+                        onTouchEnd={onTouchEnd}
+                    />
                 )}
             >
                 {scheduledPostCount > 0 &&

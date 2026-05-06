@@ -9,6 +9,7 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
+import ChannelBanner from '@components/channel_banner';
 import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
@@ -160,6 +161,12 @@ const Thread = ({
                 <View style={contextStyle}>
                     <RoundedHeaderContext/>
                 </View>
+                {includeChannelBanner && rootPost &&
+                    <ChannelBanner
+                        channelId={rootPost.channelId}
+                        isTopItem={true}
+                    />
+                }
                 {Boolean(rootPost) &&
                 (Platform.OS === 'ios' ? (
                     <KeyboardProvider>
@@ -169,7 +176,6 @@ const Thread = ({
                             scheduledPostCount={scheduledPostCount}
                             containerHeight={containerHeight}
                             enabled={isVisible}
-                            includeChannelBanner={includeChannelBanner}
                             onEmojiSearchFocusChange={setIsEmojiSearchFocused}
                         />
                     </KeyboardProvider>
@@ -180,7 +186,6 @@ const Thread = ({
                         scheduledPostCount={scheduledPostCount}
                         containerHeight={containerHeight}
                         enabled={isVisible}
-                        includeChannelBanner={includeChannelBanner}
                         onEmojiSearchFocusChange={setIsEmojiSearchFocused}
                     />
                 ))
