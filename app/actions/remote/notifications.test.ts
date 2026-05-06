@@ -70,6 +70,11 @@ const throwFunc = (e?: string) => {
     throw Error(e == null ? 'error' : e);
 };
 
+const mockDismissKeyboard = jest.fn();
+jest.mock('@utils/keyboard', () => ({
+    dismissKeyboard: (...args: unknown[]) => mockDismissKeyboard(...args),
+}));
+
 let mockEmitNotificationError: jest.Mock;
 jest.mock('@utils/notification', () => {
     const original = jest.requireActual('@utils/notification');
@@ -198,6 +203,7 @@ describe('notifications', () => {
         const result = await openNotification(serverUrl, {payload: {...notificationData, team_id: ''}} as NotificationWithData) as {error?: unknown};
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
+        expect(mockDismissKeyboard).toHaveBeenCalled();
     });
 });
 
