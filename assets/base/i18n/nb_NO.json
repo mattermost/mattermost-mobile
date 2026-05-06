@@ -1014,6 +1014,7 @@
   "mobile.system_message.update_channel_purpose_message.removed": "{username} fjernet formålet med kanalen (var: {oldPurpose})",
   "mobile.system_message.update_channel_purpose_message.updated_from": "{username} oppdaterte formålet med kanalen fra: {oldPurpose} til: {newPurpose}",
   "mobile.system_message.update_channel_purpose_message.updated_to": "{username} oppdaterte kanalens formål til: {newPurpose}",
+  "mobile.team_menu.leave_team": "Forlat team",
   "mobile.tos_link": "Betingelser for bruk",
   "mobile.translation.auto_translated_badge": "AUTO-OVERSATT",
   "mobile.translation.original_badge": "ORIGINAL",
