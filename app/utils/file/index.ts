@@ -679,8 +679,8 @@ export const resizeImageIfNeeded = async (file: FileInfo, maxDimension: number):
             {compress: 1, format},
         );
 
-        const info = await getInfoAsync(result.uri);
-        const newSize = info.exists ? info.size : file.size;
+        const info = await getInfoAsync(result.uri, {size: true});
+        const newSize = (info.exists && info.size) ? info.size : file.size;
 
         return {
             ...file,
