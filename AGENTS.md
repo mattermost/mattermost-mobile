@@ -74,6 +74,10 @@ grep -oP 'text="[^"]*"' /tmp/ui.xml | grep -v 'text=""'
 
 The first screen is the "Let's Connect to a Server" screen. On the software emulator, visual rendering lags behind the accessibility tree — use `uiautomator dump` to verify screen state.
 
+### Suppressing React Native LogBox warnings
+
+The `.env` file (gitignored) controls `RUNNING_E2E`. Set `RUNNING_E2E=true` to call `LogBox.ignoreAllLogs(true)`, which suppresses the yellow "Open debugger to view warnings" toast in dev builds. The update script creates this file automatically. After changing `.env`, restart Metro with `--reset-cache` for the change to take effect.
+
 ### Gotchas
 
 - **Do not use `npm install`** directly — the `preinstall` script calls `npx solidarity` which will fail on Linux (expects macOS toolchain). Always use `npm ci --ignore-scripts` then run post-steps manually.
