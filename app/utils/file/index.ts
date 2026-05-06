@@ -7,6 +7,7 @@ import {
     cacheDirectory, deleteAsync, documentDirectory, getInfoAsync,
     type FileInfo as ExpoFileInfo,
 } from 'expo-file-system';
+import {manipulateAsync, SaveFormat} from 'expo-image-manipulator';
 import mimeDB from 'mime-db';
 import {Alert, Linking, Platform} from 'react-native';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
@@ -641,4 +642,48 @@ export const filesLocalPathValidation = async (files: FileModel[], authorId: str
     }
 
     return filesInfo;
+};
+
+export const resizeImageIfNeeded = async (file: FileInfo, maxDimension: number): Promise<FileInfo> => {
+    if (!isImage(file) || isGif(file)) {
+        return file;
+    }
+
+    const {width = 0, height = 0} = file;
+    if (!width || !height || !file.localPath) {
+        return file;
+    }
+
+    if (width <= maxDimension && height <= maxDimension) {
+        return file;
+    }
+
+    try {
+        const scale = maxDimension / Math.max(width, height);
+        const newWidth = Math.round(width * scale);
+        const newHeight = Math.round(height * scale);
+
+        const isJpeg = file.mime_type === 'image/jpeg' || file.mime_type === 'image/jpg';
+        const format = isJpeg ? SaveFormat.JPEG : SaveFormat.PNG;
+
+        const result = await manipulateAsync(
+            file.localPath,
+            [{resize: {width: newWidth, height: newHeight}}],
+            {compress: 1, format},
+        );
+
+        const info = await getInfoAsync(result.uri);
+        const newSize = info.exists ? info.size : file.size;
+
+        return {
+            ...file,
+            localPath: result.uri,
+            width: result.width,
+            height: result.height,
+            size: newSize,
+        };
+    } catch (e) {
+        logError('resizeImageIfNeeded', e);
+        return file;
+    }
 };
