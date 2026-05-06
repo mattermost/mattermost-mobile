@@ -103,7 +103,7 @@ export const observeTutorialWatched = (tutorial: string) => {
 
 export const getResizeImages = async (): Promise<boolean> => {
     const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.RESIZE_IMAGES)?.fetch();
-    return Boolean(records?.[0]?.value ?? false);
+    return Boolean(records?.[0]?.value);
 };
 
 export const getResizeImagesMaxDimension = async (): Promise<number> => {
