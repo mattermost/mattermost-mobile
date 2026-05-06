@@ -3,11 +3,13 @@
 
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, TouchableOpacity} from 'react-native';
+import {Alert, Pressable} from 'react-native';
 
+import {storeResizeImages, storeResizeImagesMaxDimension} from '@actions/app/global';
 import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
+import TextSetting from '@components/settings/text_setting';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -24,15 +26,21 @@ const EMPTY_FILES: FileInfo[] = [];
 type AdvancedSettingsProps = {
     componentId: AvailableScreens;
     isDevMode: boolean;
+    resizeImages: boolean;
+    resizeImagesMaxDimension: number;
 };
+
 const AdvancedSettings = ({
     componentId,
     isDevMode,
+    resizeImages,
+    resizeImagesMaxDimension,
 }: AdvancedSettingsProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [dataSize, setDataSize] = useState<number | undefined>(0);
     const [files, setFiles] = useState<FileInfo[]>(EMPTY_FILES);
+    const [dimensionText, setDimensionText] = useState(() => String(resizeImagesMaxDimension));
 
     const getAllCachedFiles = useCallback(async () => {
         const {totalSize = 0, files: cachedFiles} = await getAllFilesInCachesDirectory(serverUrl);
@@ -77,6 +85,18 @@ const AdvancedSettings = ({
         goToScreen(screen, title);
     }, [intl]);
 
+    const onToggleResizeImages = useCallback((value: string | boolean) => {
+        storeResizeImages(Boolean(value));
+    }, []);
+
+    const onDimensionChange = useCallback((value: string) => {
+        setDimensionText(value);
+        const parsed = parseInt(value, 10);
+        if (!isNaN(parsed) && parsed >= 100 && parsed <= 9999) {
+            storeResizeImagesMaxDimension(parsed);
+        }
+    }, []);
+
     useDidMount(() => {
         getAllCachedFiles();
     });
@@ -89,12 +109,17 @@ const AdvancedSettings = ({
 
     const hasData = Boolean(dataSize && dataSize > 0);
 
+    const parsedDimension = parseInt(dimensionText, 10);
+    const dimensionError = dimensionText.length > 0 && (isNaN(parsedDimension) || parsedDimension < 100 || parsedDimension > 9999)
+        ? intl.formatMessage({id: 'settings.advanced.resize_max_dimension.error', defaultMessage: 'Must be between 100 and 9999'})
+        : undefined;
+
     return (
         <SettingContainer testID='advanced_settings'>
-            <TouchableOpacity
+            <Pressable
                 onPress={onPressDeleteData}
                 disabled={!hasData}
-                activeOpacity={hasData ? 1 : 0}
+                style={({pressed}) => (pressed && hasData ? {opacity: 0.72} : undefined)}
             >
                 <SettingOption
                     destructive={true}
@@ -105,10 +130,11 @@ const AdvancedSettings = ({
                     type='none'
                 />
                 <SettingSeparator/>
-            </TouchableOpacity>
+            </Pressable>
             {isDevMode && (
-                <TouchableOpacity
+                <Pressable
                     onPress={onPressComponentLibrary}
+                    style={({pressed}) => (pressed ? {opacity: 0.72} : undefined)}
                 >
                     <SettingOption
                         label={intl.formatMessage({id: 'settings.advanced.component_library', defaultMessage: 'Component library'})}
@@ -116,7 +142,34 @@ const AdvancedSettings = ({
                         type='none'
                     />
                     <SettingSeparator/>
-                </TouchableOpacity>
+                </Pressable>
+            )}
+            <SettingOption
+                action={onToggleResizeImages}
+                icon='image-outline'
+                label={intl.formatMessage({id: 'settings.advanced.resize_images', defaultMessage: 'Resize images before uploading'})}
+                selected={resizeImages}
+                testID='advanced_settings.resize_images.option'
+                type='toggle'
+            />
+            <SettingSeparator/>
+            {resizeImages && (
+                <>
+                    <TextSetting
+                        disabled={false}
+                        errorText={dimensionError}
+                        keyboardType='numeric'
+                        label={intl.formatMessage({id: 'settings.advanced.resize_max_dimension', defaultMessage: 'Maximum dimension (px)'})}
+                        location={Screens.SETTINGS_ADVANCED}
+                        multiline={false}
+                        onChange={onDimensionChange}
+                        optional={false}
+                        secureTextEntry={false}
+                        testID='advanced_settings.resize_max_dimension'
+                        value={dimensionText}
+                    />
+                    <SettingSeparator/>
+                </>
             )}
         </SettingContainer>
     );

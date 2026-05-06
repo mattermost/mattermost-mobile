@@ -3,6 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
+import {observeResizeImages, observeResizeImagesMaxDimension} from '@queries/app/global';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 
 import AdvancedSettings from './advanced';
@@ -12,6 +13,8 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         isDevMode: observeConfigBooleanValue(database, 'EnableDeveloper', false),
+        resizeImages: observeResizeImages(),
+        resizeImagesMaxDimension: observeResizeImagesMaxDimension(),
     };
 });
 
