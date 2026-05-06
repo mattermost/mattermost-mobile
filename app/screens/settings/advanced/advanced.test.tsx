@@ -50,7 +50,7 @@ describe('AdvancedSettings', () => {
         componentId: 'SettingsAdvanced' as const,
         isDevMode: false,
         resizeImages: false,
-        resizeImagesMaxDimension: 1920,
+        resizeImagesMaxDimension: 2048,
     };
 
     const mockFiles: FileInfo[] = [
@@ -355,24 +355,29 @@ describe('AdvancedSettings', () => {
             });
             const input = screen.getByTestId('advanced_settings.resize_max_dimension.input');
 
-            // invalid: below min
+            // invalid: below min — blur should not persist
             fireEvent.changeText(input, '99');
+            fireEvent(input, 'blur');
             expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalledWith(99);
 
-            // valid: min boundary
+            // valid: min boundary — blur persists
             fireEvent.changeText(input, '100');
+            fireEvent(input, 'blur');
             expect(mockStoreResizeImagesMaxDimension).toHaveBeenCalledWith(100);
 
-            // valid: max boundary
+            // valid: max boundary — blur persists
             fireEvent.changeText(input, '9999');
+            fireEvent(input, 'blur');
             expect(mockStoreResizeImagesMaxDimension).toHaveBeenCalledWith(9999);
 
-            // invalid: above max
+            // invalid: above max — blur should not persist
             fireEvent.changeText(input, '10000');
+            fireEvent(input, 'blur');
             expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalledWith(10000);
 
-            // invalid: trailing non-numeric chars
+            // invalid: trailing non-numeric chars — blur should not persist
             fireEvent.changeText(input, '300abc');
+            fireEvent(input, 'blur');
             expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalledWith(300);
         });
     });
