@@ -8,7 +8,8 @@ import {addFilesToDraft, removeDraft} from '@actions/local/draft';
 import {useServerUrl} from '@context/server';
 import useFileUploadError from '@hooks/file_upload_error';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
-import {fileMaxWarning, fileSizeWarning, getUploadErrorMessage, uploadDisabledWarning} from '@utils/file';
+import {getResizeImages, getResizeImagesMaxDimension} from '@queries/app/global';
+import {fileMaxWarning, fileSizeWarning, getUploadErrorMessage, resizeImageIfNeeded, uploadDisabledWarning} from '@utils/file';
 
 import SendHandler from '../send_handler';
 
@@ -71,7 +72,7 @@ export default function DraftHandler(props: Props) {
         updateValue('');
     }, [serverUrl, channelId, rootId, updateValue]);
 
-    const addFiles = useCallback((newFiles: FileInfo[]) => {
+    const addFiles = useCallback(async (newFiles: FileInfo[]) => {
         if (!newFiles.length) {
             return;
         }
@@ -81,22 +82,29 @@ export default function DraftHandler(props: Props) {
             return;
         }
 
+        const resizeEnabled = await getResizeImages();
+        let filesToUpload = newFiles;
+        if (resizeEnabled) {
+            const maxDim = await getResizeImagesMaxDimension();
+            filesToUpload = await Promise.all(newFiles.map((f) => resizeImageIfNeeded(f, maxDim)));
+        }
+
         const currentFileCount = files?.length || 0;
         const availableCount = maxFileCount - currentFileCount;
-        if (newFiles.length > availableCount) {
+        if (filesToUpload.length > availableCount) {
             newUploadError(fileMaxWarning(intl, maxFileCount));
             return;
         }
 
-        const largeFile = newFiles.find((file) => file.size > maxFileSize);
+        const largeFile = filesToUpload.find((file) => file.size > maxFileSize);
         if (largeFile) {
             newUploadError(fileSizeWarning(intl, maxFileSize));
             return;
         }
 
-        addFilesToDraft(serverUrl, channelId, rootId, newFiles);
+        addFilesToDraft(serverUrl, channelId, rootId, filesToUpload);
 
-        for (const file of newFiles) {
+        for (const file of filesToUpload) {
             DraftEditPostUploadManager.prepareUpload(serverUrl, file, channelId, rootId);
             uploadErrorHandlers.current[file.clientId!] = DraftEditPostUploadManager.registerErrorHandler(file.clientId!, handleUploadError);
         }
