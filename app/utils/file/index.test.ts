@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {getInfoAsync, deleteAsync} from 'expo-file-system';
-import {manipulateAsync, SaveFormat} from 'expo-image-manipulator';
+import {manipulateAsync} from 'expo-image-manipulator';
 import {Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
@@ -400,6 +400,13 @@ describe('resizeImageIfNeeded', () => {
         const noSizeFile = {...jpegFile, width: 0, height: 0};
         const result = await resizeImageIfNeeded(noSizeFile, 2048);
         expect(result).toBe(noSizeFile);
+        expect(mockManipulateAsync).not.toHaveBeenCalled();
+    });
+
+    it('should return the file unchanged when localPath is missing', async () => {
+        const noPathFile = {...jpegFile, localPath: undefined};
+        const result = await resizeImageIfNeeded(noPathFile, 2048);
+        expect(result).toBe(noPathFile);
         expect(mockManipulateAsync).not.toHaveBeenCalled();
     });
 
