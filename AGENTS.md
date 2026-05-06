@@ -29,7 +29,13 @@ cp assets/sounds/* android/app/src/main/res/raw/
 
 ### Running the Android app on the emulator
 
-The VM has a pre-configured Android SDK at `/home/ubuntu/android-sdk` with a `Pixel_7` AVD (Android 34, x86_64). There is no KVM support, so the emulator runs in software mode (`-no-accel`) and is very slow (~2-3 min boot, ~6 min APK install for the 233MB debug APK).
+The VM has a pre-configured Android SDK at `/home/ubuntu/android-sdk` with a `Pixel_7` AVD (Android 34, x86_64). **KVM is NOT available** in Firecracker Cloud Agent VMs (no VMX CPU flag exposed), so the emulator must run in software mode (`-no-accel`).
+
+**Known limitations without KVM:**
+- App initialization takes 5-10 minutes per launch
+- `screencap` sometimes returns black frames (GPU rendering issues)
+- Touch/tap input may not properly activate React Native EditText fields
+- For interactive testing (login, form entry), prefer using the **Detox E2E framework** in `detox/` instead
 
 ```bash
 # Start adb server
@@ -38,22 +44,35 @@ $ANDROID_HOME/platform-tools/adb start-server
 # Start emulator (no KVM, software rendering)
 $ANDROID_HOME/emulator/emulator -avd Pixel_7 -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-accel -memory 4096 &
 
-# Wait for boot
+# Wait for boot (~3 min)
 adb wait-for-device
 adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 5; done'
 
+# Disable animations & kill background apps (important for performance)
+adb shell settings put global window_animation_scale 0
+adb shell settings put global transition_animation_scale 0
+adb shell settings put global animator_duration_scale 0
+adb shell am force-stop com.google.android.youtube
+
+# Grant notification permission to avoid dialog blocking startup
+adb shell pm grant com.mattermost.rnbeta android.permission.POST_NOTIFICATIONS
+
 # Build debug APK (x86_64 only for emulator, ~2 min)
-cd android && ./gradlew assembleDebug -PreactNativeArchitectures=x86_64 --no-daemon
+cd android && ANDROID_HOME=/home/ubuntu/android-sdk JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew assembleDebug -PreactNativeArchitectures=x86_64 --no-daemon
 
 # Install (push first, then pm install — faster than adb install for large APKs)
 adb push app/build/outputs/apk/debug/app-debug.apk /data/local/tmp/app-debug.apk
 adb shell pm install -r /data/local/tmp/app-debug.apk
 
-# Launch
+# Launch (ensure Metro is running first: npm start)
 adb shell am start -n com.mattermost.rnbeta/.MainActivity
+
+# Verify UI loaded (UI Automator is more reliable than screencap on software emulator)
+adb shell uiautomator dump /sdcard/ui.xml && adb pull /sdcard/ui.xml /tmp/ui.xml
+grep -oP 'text="[^"]*"' /tmp/ui.xml | grep -v 'text=""'
 ```
 
-The app takes several minutes to fully initialize on the software emulator. The first screen is the "Let's Connect to a Server" screen with a server URL input.
+The first screen is the "Let's Connect to a Server" screen. On the software emulator, visual rendering lags behind the accessibility tree — use `uiautomator dump` to verify screen state.
 
 ### Gotchas
 
