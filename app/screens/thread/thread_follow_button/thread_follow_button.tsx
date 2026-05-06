@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {defineMessages} from 'react-intl';
-import {Platform, type StyleProp, StyleSheet, TouchableOpacity, View, type ViewStyle} from 'react-native';
+import {Pressable, type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';
@@ -28,19 +28,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 4.5,
             paddingHorizontal: 10,
             opacity: 0.72,
-            ...Platform.select({
-                android: {
-                    marginRight: 12,
-                },
-                ios: {
-                    right: -4,
-                },
-            }),
         },
         containerActive: {
             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.24),
             borderColor: 'transparent',
             opacity: 1,
+        },
+        pressed: {
+            opacity: 0.72,
         },
         text: {
             color: theme.sidebarHeaderTextColor,
@@ -84,9 +79,10 @@ function ThreadFollow({isFollowing, teamId, threadId}: Props) {
     const followThreadButtonTestId = isFollowing ? 'thread.following_thread.button' : 'thread.follow_thread.button';
 
     return (
-        <TouchableOpacity
+        <Pressable
             onPress={onPress}
             testID={followThreadButtonTestId}
+            style={({pressed}) => [pressed && styles.pressed]}
         >
             <View style={containerStyle}>
                 <FormattedText
@@ -94,7 +90,7 @@ function ThreadFollow({isFollowing, teamId, threadId}: Props) {
                     style={styles.text}
                 />
             </View>
-        </TouchableOpacity>
+        </Pressable>
     );
 }
 

@@ -94,7 +94,6 @@ export const TABLE = 'Table';
 export const TEAM_SELECTOR_LIST = 'TeamSelectorList';
 export const TERMS_OF_SERVICE = 'TermsOfService';
 export const THREAD = 'Thread';
-export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
 export const SHOW_TRANSLATION = 'ShowTranslation';
@@ -189,7 +188,6 @@ export default {
     TEAM_SELECTOR_LIST,
     TERMS_OF_SERVICE,
     THREAD,
-    THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
     SHOW_TRANSLATION,

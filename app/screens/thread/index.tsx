@@ -37,6 +37,12 @@ const enhanced = withObservables(['rootId'], ({database, serverUrl, rootId}: Enh
 
     const channelType = channel.pipe(
         switchMap((c) => of$(c?.type)),
+        distinctUntilChanged(),
+    );
+
+    const channelDisplayName = channel.pipe(
+        switchMap((c) => of$(c?.displayName || '')),
+        distinctUntilChanged(),
     );
 
     const includeChannelBanner = observeChannelBannerIncluded(database, channelType, channelId);
@@ -48,6 +54,8 @@ const enhanced = withObservables(['rootId'], ({database, serverUrl, rootId}: Enh
         ...observeCallStateInChannel(serverUrl, database, channelId),
         rootId: of$(rId),
         rootPost,
+        channelDisplayName,
+        channelType,
         includeChannelBanner,
         scheduledPostCount,
     };

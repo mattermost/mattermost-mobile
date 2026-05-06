@@ -32,6 +32,7 @@ type Props = {
     onBackPress?: () => void;
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
+    rightComponent?: React.ReactElement;
     scrollValue?: Animated.SharedValue<number>;
     showBackButton?: boolean;
     subtitle?: string;
@@ -148,6 +149,7 @@ const Header = ({
     onBackPress,
     onTitlePress,
     rightButtons,
+    rightComponent,
     scrollValue,
     showBackButton = true,
     subtitle,
@@ -190,14 +192,15 @@ const Header = ({
         [styles.container, containerAnimatedStyle]), [styles, containerAnimatedStyle]);
 
     const additionalTitleStyle = useMemo(() => {
+        const rightItemCount = (rightButtons?.length || 0) + (rightComponent ? 1 : 0);
         return {
             marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),
             paddingHorizontal: Platform.select({
-                ios: rightButtons?.length === 2 ? 90 : 60,
+                ios: rightItemCount >= 2 ? 90 : 60,
                 android: 8,
             }),
         };
-    }, [leftComponent, showBackButton, rightButtons]);
+    }, [leftComponent, showBackButton, rightButtons, rightComponent]);
 
     return (
         <Animated.View style={containerStyle}>
@@ -286,6 +289,7 @@ const Header = ({
                     </TouchableWithFeedback>
                 ))
                     }
+                    {rightComponent}
                 </Animated.View>
             </View>
         </Animated.View>

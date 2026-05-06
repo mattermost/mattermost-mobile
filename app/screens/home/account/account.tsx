@@ -8,6 +8,7 @@ import {ScrollView, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import ConnectedGlobalClassificationBanner from '@components/global_classification_banner';
 import {View as ViewConstants} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -121,6 +122,7 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
                     <View style={[styles.flex, tabletSidebarStyle]}/>
                     {isTablet && <View style={styles.tabletContainer}/>}
                 </View>
+                <ConnectedGlobalClassificationBanner/>
                 <Animated.View
                     onLayout={onLayout}
                     style={[styles.flexRow, animated]}

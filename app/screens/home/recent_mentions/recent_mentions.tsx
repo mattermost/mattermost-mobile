@@ -5,7 +5,7 @@ import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useState, useEffect, useMemo} from 'react';
 import {Freeze} from 'react-freeze';
 import {useIntl} from 'react-intl';
-import {ActivityIndicator, DeviceEventEmitter, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {ActivityIndicator, DeviceEventEmitter, type ListRenderItemInfo, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
@@ -21,6 +21,7 @@ import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
 import {useGlobalClassificationBanner} from '@hooks/use_global_classification_banner';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmptyState from './components/empty';
 
@@ -36,19 +37,23 @@ type Props = {
     mentions: PostModel[];
 }
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     flex: {
         flex: 1,
+    },
+    backgroundColor: {
+        backgroundColor: theme.centerChannelBg,
     },
     empty: {
         alignItems: 'center',
         flex: 1,
         justifyContent: 'center',
     },
-});
+}));
 
 const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentTimezone}: Props) => {
     const theme = useTheme();
+    const styles = getStyleSheet(theme);
     const route = useRoute();
     const isFocused = useIsFocused();
     const {formatMessage} = useIntl();
@@ -167,7 +172,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
         <Freeze freeze={!isFocused}>
             <ExtraKeyboardProvider>
                 <SafeAreaView
-                    style={styles.flex}
+                    style={[styles.flex, styles.backgroundColor]}
                     edges={EDGES}
                     testID='recent_mentions.screen'
                 >

@@ -38,6 +38,7 @@ import Header from './results/header';
 import type {SearchRef} from '@components/search';
 import type PostModel from '@typings/database/models/servers/post';
 import type TeamModel from '@typings/database/models/servers/team';
+import { makeStyleSheetFromTheme } from '@utils/theme';
 
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -56,9 +57,12 @@ type Props = {
     crossTeamSearchEnabled: boolean;
 }
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     flex: {
         flex: 1,
+    },
+    backgroundColor: {
+        backgroundColor: theme.centerChannelBg,
     },
     loading: {
         flex: 1,
@@ -67,7 +71,7 @@ const styles = StyleSheet.create({
     autocompleteContainer: {
         zIndex: 11,
     },
-});
+}));
 
 const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     const fileExtensions = filterFileExtensions(filterValue);
@@ -103,6 +107,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const isFocused = useIsFocused();
     const intl = useIntl();
     const theme = useTheme();
+    const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
     const keyboardHeight = useKeyboardHeight();
     const {bannerHeight, BannerComponent} = useGlobalClassificationBanner();
@@ -430,7 +435,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     return (
         <Freeze freeze={!isFocused}>
             <SafeAreaView
-                style={styles.flex}
+                style={[styles.flex, styles.backgroundColor]}
                 edges={EDGES}
                 onLayout={onLayout}
                 testID='search_messages.screen'

@@ -1,27 +1,31 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {uniqueId} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Platform, type LayoutChangeEvent, StyleSheet} from 'react-native';
+import {useIntl} from 'react-intl';
+import {Platform, View, type LayoutChangeEvent} from 'react-native';
 import {KeyboardProvider} from 'react-native-keyboard-controller';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
+import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {Screens} from '@constants';
+import {General, Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
+import {useDefaultHeaderHeight} from '@hooks/header';
+import {useGlobalClassificationBanner} from '@hooks/use_global_classification_banner';
 import {useIsScreenVisible} from '@hooks/use_screen_visibility';
 import SecurityManager from '@managers/security_manager';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 
 import ThreadContent from './thread_content';
+import ThreadFollowButton from './thread_follow_button';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -29,6 +33,8 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type ThreadProps = {
     componentId: AvailableScreens;
     isCRTEnabled: boolean;
+    channelDisplayName: string;
+    channelType?: ChannelType;
     includeChannelBanner: boolean;
     showJoinCallBanner: boolean;
     isInACall: boolean;
@@ -38,13 +44,13 @@ type ThreadProps = {
     scheduledPostCount: number;
 };
 
-const styles = StyleSheet.create({
-    flex: {flex: 1},
-});
+const styles = {flex: {flex: 1}} as const;
 
 const Thread = ({
     componentId,
     isCRTEnabled,
+    channelDisplayName,
+    channelType,
     includeChannelBanner,
     rootId,
     rootPost,
@@ -54,11 +60,13 @@ const Thread = ({
     scheduledPostCount,
 }: ThreadProps) => {
     const [containerHeight, setContainerHeight] = useState(0);
+    const intl = useIntl();
     const isVisible = useIsScreenVisible(componentId);
     const isTablet = useIsTablet();
     const [isEmojiSearchFocused, setIsEmojiSearchFocused] = useState(false);
+    const defaultHeight = useDefaultHeaderHeight();
+    const {bannerHeight, BannerComponent} = useGlobalClassificationBanner();
 
-    // Remove bottom safe area when emoji search is focused to eliminate gap between emoji picker and keyboard
     const safeAreaViewEdges: Edge[] = useMemo(() => {
         if (isTablet) {
             return ['left', 'right'];
@@ -69,6 +77,34 @@ const Thread = ({
         return ['left', 'right', 'bottom'];
     }, [isTablet, isEmojiSearchFocused]);
 
+    const contextStyle = useMemo(() => ({
+        top: defaultHeight + bannerHeight,
+    }), [bannerHeight, defaultHeight]);
+
+    const title = intl.formatMessage({id: 'thread.header.thread', defaultMessage: 'Thread'});
+
+    const subtitle = useMemo(() => {
+        if (!channelDisplayName) {
+            return '';
+        }
+        if (channelType === General.DM_CHANNEL) {
+            return channelDisplayName;
+        }
+        return intl.formatMessage(
+            {id: 'thread.header.thread_in', defaultMessage: 'in {channelName}'},
+            {channelName: channelDisplayName},
+        );
+    }, [channelDisplayName, channelType, intl]);
+
+    const rightComponent = useMemo(() => {
+        if (!isCRTEnabled || !rootId) {
+            return undefined;
+        }
+        return (
+            <ThreadFollowButton threadId={rootId}/>
+        );
+    }, [isCRTEnabled, rootId]);
+
     const close = useCallback(() => {
         popTopScreen(componentId);
     }, [componentId]);
@@ -76,26 +112,6 @@ const Thread = ({
     useAndroidHardwareBackHandler(componentId, close);
 
     useEffect(() => {
-        if (isCRTEnabled && rootId) {
-            const id = `${componentId}-${rootId}-${uniqueId()}`;
-            const name = Screens.THREAD_FOLLOW_BUTTON;
-            setButtons(componentId, {rightButtons: [{
-                id,
-                component: {
-                    name,
-                    passProps: {
-                        threadId: rootId,
-                    },
-                },
-            }]});
-        } else {
-            setButtons(componentId, {rightButtons: []});
-        }
-    }, [componentId, rootId, isCRTEnabled]);
-
-    useEffect(() => {
-        // when opened from notification, first screen in stack is HOME
-        // if last screen was global thread or thread opened from notification, store the last viewed thread id
         const isFromGlobalOrNotification = NavigationStore.getScreensInStack()[1] === Screens.GLOBAL_THREADS || NavigationStore.getScreensInStack()[1] === Screens.HOME;
         if (isCRTEnabled && isFromGlobalOrNotification) {
             storeLastViewedThreadIdAndServer(rootId);
@@ -108,7 +124,6 @@ const Thread = ({
             if (rootId === EphemeralStore.getCurrentThreadId()) {
                 EphemeralStore.setCurrentThreadId('');
             }
-            setButtons(componentId, {rightButtons: []});
         };
     }, [rootId, componentId, isCRTEnabled]);
 
@@ -134,7 +149,17 @@ const Thread = ({
                 onLayout={onLayout}
                 nativeID={SecurityManager.getShieldScreenId(componentId)}
             >
-                <RoundedHeaderContext/>
+                <NavigationHeader
+                    isLargeTitle={false}
+                    onBackPress={close}
+                    rightComponent={rightComponent}
+                    title={title}
+                    subtitle={subtitle}
+                    classificationBanner={BannerComponent}
+                />
+                <View style={contextStyle}>
+                    <RoundedHeaderContext/>
+                </View>
                 {Boolean(rootPost) &&
                 (Platform.OS === 'ios' ? (
                     <KeyboardProvider>

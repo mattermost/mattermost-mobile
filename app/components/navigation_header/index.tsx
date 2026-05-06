@@ -23,6 +23,7 @@ type Props = SearchProps & {
     onBackPress?: () => void;
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
+    rightComponent?: React.ReactElement;
     scrollValue?: Animated.SharedValue<number>;
     lockValue?: number;
     hideHeader?: () => void;
@@ -50,6 +51,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
     onBackPress,
     onTitlePress,
     rightButtons,
+    rightComponent,
     scrollValue,
     lockValue,
     showBackButton,
@@ -103,6 +105,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
                 onBackPress={onBackPress}
                 onTitlePress={onTitlePress}
                 rightButtons={rightButtons}
+                rightComponent={rightComponent}
                 scrollValue={scrollValue}
                 showBackButton={showBackButton}
                 subtitle={subtitle}
