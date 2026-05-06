@@ -348,37 +348,47 @@ describe('AdvancedSettings', () => {
             });
         });
 
-        it('should store valid dimension values and reject invalid ones', async () => {
+        const renderDimensionInput = async () => {
             renderWithIntlAndTheme(<AdvancedSettings {...defaultProps} resizeImages={true}/>);
             await waitFor(() => {
                 expect(screen.getByTestId('advanced_settings.resize_max_dimension.input')).toBeTruthy();
             });
-            const input = screen.getByTestId('advanced_settings.resize_max_dimension.input');
+            return screen.getByTestId('advanced_settings.resize_max_dimension.input');
+        };
 
-            // invalid: below min — blur should not persist
-            fireEvent.changeText(input, '99');
-            fireEvent(input, 'blur');
-            expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalledWith(99);
-
-            // valid: min boundary — blur persists
+        it('should persist dimension at minimum boundary on blur', async () => {
+            const input = await renderDimensionInput();
             fireEvent.changeText(input, '100');
             fireEvent(input, 'blur');
             expect(mockStoreResizeImagesMaxDimension).toHaveBeenCalledWith(100);
+        });
 
-            // valid: max boundary — blur persists
+        it('should persist dimension at maximum boundary on blur', async () => {
+            const input = await renderDimensionInput();
             fireEvent.changeText(input, '9999');
             fireEvent(input, 'blur');
             expect(mockStoreResizeImagesMaxDimension).toHaveBeenCalledWith(9999);
+        });
 
-            // invalid: above max — blur should not persist
+        it('should not persist when dimension is below minimum on blur', async () => {
+            const input = await renderDimensionInput();
+            fireEvent.changeText(input, '99');
+            fireEvent(input, 'blur');
+            expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalled();
+        });
+
+        it('should not persist when dimension is above maximum on blur', async () => {
+            const input = await renderDimensionInput();
             fireEvent.changeText(input, '10000');
             fireEvent(input, 'blur');
-            expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalledWith(10000);
+            expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalled();
+        });
 
-            // invalid: trailing non-numeric chars — blur should not persist
+        it('should not persist when dimension contains non-numeric characters on blur', async () => {
+            const input = await renderDimensionInput();
             fireEvent.changeText(input, '300abc');
             fireEvent(input, 'blur');
-            expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalledWith(300);
+            expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalled();
         });
     });
 
