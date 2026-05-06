@@ -35,7 +35,6 @@ describe('AdvancedSettings', () => {
     const defaultProps = {
         componentId: 'SettingsAdvanced' as const,
         isDevMode: false,
-        lowConnectivityMonitorEnabled: false,
         resizeImages: false,
         resizeImagesMaxDimension: 1920,
     };

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Pressable} from 'react-native';
 
@@ -41,6 +41,13 @@ const AdvancedSettings = ({
     const [dataSize, setDataSize] = useState<number | undefined>(0);
     const [files, setFiles] = useState<FileInfo[]>(EMPTY_FILES);
     const [dimensionText, setDimensionText] = useState(() => String(resizeImagesMaxDimension));
+
+    useEffect(() => {
+        setDimensionText(String(resizeImagesMaxDimension));
+
+        // resizeImagesMaxDimension is the only meaningful dep; dimensionText is local state we're syncing
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [resizeImagesMaxDimension]);
 
     const getAllCachedFiles = useCallback(async () => {
         const {totalSize = 0, files: cachedFiles} = await getAllFilesInCachesDirectory(serverUrl);
