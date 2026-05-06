@@ -256,6 +256,22 @@ describe('Image utils', () => {
             result = await extractFileInfo([{uri: 'file://somefile', size: 12345, fileName: 'file.png', type: 'image/png'}]);
             expect(result).toEqual(expect.any(Array));
         });
+
+        it('should copy width and height from image assets', async () => {
+            const file = {uri: 'file://somefile', fileSize: 12345, fileName: 'photo.jpg', type: 'image/jpeg', width: 3024, height: 4032};
+            const result = await extractFileInfo([file]);
+            expect(result).toHaveLength(1);
+            expect(result[0].width).toBe(3024);
+            expect(result[0].height).toBe(4032);
+        });
+
+        it('should not set width or height when asset has none', async () => {
+            const file = {uri: 'file://somefile', fileSize: 12345, fileName: 'doc.pdf', type: 'application/pdf'};
+            const result = await extractFileInfo([file]);
+            expect(result).toHaveLength(1);
+            expect(result[0].width).toBeUndefined();
+            expect(result[0].height).toBeUndefined();
+        });
     });
 
     describe('fileSizeWarning', () => {
