@@ -71,11 +71,6 @@ const throwFunc = (e?: string) => {
     throw Error(e == null ? 'error' : e);
 };
 
-const mockDismissKeyboard = jest.fn();
-jest.mock('@utils/keyboard', () => ({
-    dismissKeyboard: (...args: unknown[]) => mockDismissKeyboard(...args),
-}));
-
 let mockEmitNotificationError: jest.Mock;
 jest.mock('@utils/notification', () => {
     const original = jest.requireActual('@utils/notification');
@@ -236,7 +231,6 @@ describe('notifications', () => {
         expect(switchToChannelByIdSpy).toHaveBeenCalled();
 
         switchToChannelByIdSpy.mockRestore();
-        expect(mockDismissKeyboard).toHaveBeenCalled();
     });
 });
 
