@@ -681,7 +681,7 @@ export const resizeImageIfNeeded = async (file: FileInfo, maxDimension: number):
         const result = await manipulateAsync(
             file.localPath,
             [{resize: {width: newWidth, height: newHeight}}],
-            {compress: 1, format},
+            {compress: isJpeg ? 0.85 : 1, format},
         );
 
         const info = await getInfoAsync(result.uri, {size: true});

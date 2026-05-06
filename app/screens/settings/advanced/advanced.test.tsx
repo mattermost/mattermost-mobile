@@ -9,6 +9,7 @@ import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import {deleteFileCache, getAllFilesInCachesDirectory} from '@utils/file';
+import {storeResizeImages, storeResizeImagesMaxDimension} from '@actions/app/global';
 
 import AdvancedSettings from './advanced';
 
@@ -27,9 +28,22 @@ jest.mock('@hooks/utils', () => ({
     usePreventDoubleTap: jest.fn((callback) => callback),
 }));
 
+jest.mock('@components/settings/text_setting', () => {
+    const {TextInput} = require('react-native');
+    return ({onChange, testID, value}: {onChange: (v: string) => void; testID: string; value: string}) => (
+        <TextInput
+            testID={`${testID}.input`}
+            onChangeText={onChange}
+            value={value}
+        />
+    );
+});
+
 const mockGetAllFilesInCachesDirectory = getAllFilesInCachesDirectory as jest.Mock;
 const mockDeleteFileCache = deleteFileCache as jest.Mock;
 const mockGoToScreen = goToScreen as jest.Mock;
+const mockStoreResizeImages = storeResizeImages as jest.Mock;
+const mockStoreResizeImagesMaxDimension = storeResizeImagesMaxDimension as jest.Mock;
 
 describe('AdvancedSettings', () => {
     const defaultProps = {
@@ -300,6 +314,66 @@ describe('AdvancedSettings', () => {
             await waitFor(() => {
                 expect(mockGetAllFilesInCachesDirectory).toHaveBeenCalledTimes(2);
             });
+        });
+    });
+
+    describe('resize images settings', () => {
+        it('should render the resize images toggle', async () => {
+            renderWithIntlAndTheme(<AdvancedSettings {...defaultProps}/>);
+            await waitFor(() => {
+                expect(screen.getByTestId('advanced_settings.resize_images.option')).toBeTruthy();
+            });
+        });
+
+        it('should call storeResizeImages when the toggle is pressed', async () => {
+            renderWithIntlAndTheme(<AdvancedSettings {...defaultProps}/>);
+            await waitFor(() => {
+                expect(screen.getByTestId('advanced_settings.resize_images.option')).toBeTruthy();
+            });
+            fireEvent(screen.getByTestId('advanced_settings.resize_images.option'), 'action', true);
+            expect(mockStoreResizeImages).toHaveBeenCalledWith(true);
+        });
+
+        it('should not render dimension input when resizeImages is false', async () => {
+            renderWithIntlAndTheme(<AdvancedSettings {...defaultProps} resizeImages={false}/>);
+            await waitFor(() => {
+                expect(screen.queryByTestId('advanced_settings.resize_max_dimension')).toBeNull();
+            });
+        });
+
+        it('should render dimension input when resizeImages is true', async () => {
+            renderWithIntlAndTheme(<AdvancedSettings {...defaultProps} resizeImages={true}/>);
+            await waitFor(() => {
+                expect(screen.getByTestId('advanced_settings.resize_max_dimension.input')).toBeTruthy();
+            });
+        });
+
+        it('should store valid dimension values and reject invalid ones', async () => {
+            renderWithIntlAndTheme(<AdvancedSettings {...defaultProps} resizeImages={true}/>);
+            await waitFor(() => {
+                expect(screen.getByTestId('advanced_settings.resize_max_dimension.input')).toBeTruthy();
+            });
+            const input = screen.getByTestId('advanced_settings.resize_max_dimension.input');
+
+            // invalid: below min
+            fireEvent.changeText(input, '99');
+            expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalledWith(99);
+
+            // valid: min boundary
+            fireEvent.changeText(input, '100');
+            expect(mockStoreResizeImagesMaxDimension).toHaveBeenCalledWith(100);
+
+            // valid: max boundary
+            fireEvent.changeText(input, '9999');
+            expect(mockStoreResizeImagesMaxDimension).toHaveBeenCalledWith(9999);
+
+            // invalid: above max
+            fireEvent.changeText(input, '10000');
+            expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalledWith(10000);
+
+            // invalid: trailing non-numeric chars
+            fireEvent.changeText(input, '300abc');
+            expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalledWith(300);
         });
     });
 

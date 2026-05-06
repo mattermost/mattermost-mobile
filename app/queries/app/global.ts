@@ -101,6 +101,8 @@ export const observeTutorialWatched = (tutorial: string) => {
     );
 };
 
+const DEFAULT_RESIZE_IMAGES_MAX_DIMENSION = 2048;
+
 export const getResizeImages = async (): Promise<boolean> => {
     const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.RESIZE_IMAGES)?.fetch();
     return Boolean(records?.[0]?.value);
@@ -108,7 +110,7 @@ export const getResizeImages = async (): Promise<boolean> => {
 
 export const getResizeImagesMaxDimension = async (): Promise<number> => {
     const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.RESIZE_IMAGES_MAX_DIMENSION)?.fetch();
-    return (records?.[0]?.value as number | undefined) ?? 2048;
+    return (records?.[0]?.value as number | undefined) ?? DEFAULT_RESIZE_IMAGES_MAX_DIMENSION;
 };
 
 export const observeResizeImages = () => {
@@ -125,10 +127,10 @@ export const observeResizeImages = () => {
 export const observeResizeImagesMaxDimension = () => {
     const query = queryGlobalValue(GLOBAL_IDENTIFIERS.RESIZE_IMAGES_MAX_DIMENSION);
     if (!query) {
-        return of$(2048);
+        return of$(DEFAULT_RESIZE_IMAGES_MAX_DIMENSION);
     }
     return query.observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(null))),
-        switchMap((record) => of$((record?.value as number | undefined) ?? 2048)),
+        switchMap((record) => of$((record?.value as number | undefined) ?? DEFAULT_RESIZE_IMAGES_MAX_DIMENSION)),
     );
 };

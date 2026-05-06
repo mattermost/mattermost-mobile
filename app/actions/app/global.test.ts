@@ -208,7 +208,7 @@ describe('/app/actions/app/global', () => {
         expect(records?.[0]?.value).toBe(true);
     });
 
-    test('storeResizeImages', async () => {
+    it('should store and retrieve the resize images setting', async () => {
         let value = await getResizeImages();
         expect(value).toBe(false);
 
@@ -221,7 +221,7 @@ describe('/app/actions/app/global', () => {
         expect(value).toBe(false);
     });
 
-    test('storeResizeImagesMaxDimension', async () => {
+    it('should store and retrieve the resize images max dimension setting', async () => {
         let value = await getResizeImagesMaxDimension();
         expect(value).toBe(2048);
 
