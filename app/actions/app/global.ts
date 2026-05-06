@@ -97,3 +97,11 @@ export const storePushDisabledInServerAcknowledged = async (serverUrl: string) =
 export const removePushDisabledInServerAcknowledged = async (serverUrl: string) => {
     return storeGlobal(`${GLOBAL_IDENTIFIERS.PUSH_DISABLED_ACK}${serverUrl}`, null, false);
 };
+
+export const storeResizeImages = async (enabled: boolean) => {
+    return storeGlobal(GLOBAL_IDENTIFIERS.RESIZE_IMAGES, enabled);
+};
+
+export const storeResizeImagesMaxDimension = async (value: number) => {
+    return storeGlobal(GLOBAL_IDENTIFIERS.RESIZE_IMAGES_MAX_DIMENSION, value);
+};
