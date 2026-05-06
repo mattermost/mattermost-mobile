@@ -12,6 +12,7 @@ import EditedIndicator from '@components/edited_indicator';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
+import RedactedFilesPlaceholder from '@components/post_list/post/body/redacted_files_placeholder';
 import TranslateIcon from '@components/post_list/post/header/translate_icon';
 import ProfilePicture from '@components/profile_picture';
 import {View as ViewConstants} from '@constants';
@@ -25,7 +26,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername, getUserTimezone} from '@utils/user';
 
-import RedactedFilesPlaceholder from '../../redacted_files_placeholder';
 import Opengraph from '../opengraph';
 
 import PermalinkFiles from './permalink_files';
