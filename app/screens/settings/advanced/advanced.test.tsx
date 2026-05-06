@@ -30,9 +30,10 @@ jest.mock('@hooks/utils', () => ({
 
 jest.mock('@components/settings/text_setting', () => {
     const {TextInput} = require('react-native');
-    return ({onChange, testID, value}: {onChange: (v: string) => void; testID: string; value: string}) => (
+    return ({onBlur, onChange, testID, value}: {onBlur?: () => void; onChange: (v: string) => void; testID: string; value: string}) => (
         <TextInput
             testID={`${testID}.input`}
+            onBlur={onBlur}
             onChangeText={onChange}
             value={value}
         />
