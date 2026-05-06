@@ -10,6 +10,7 @@ import RemoveMarkdown from '@components/remove_markdown';
 import {CHANNEL_BANNER_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {useGlobalClassificationBanner} from '@hooks/use_global_classification_banner';
 import {bottomSheet} from '@screens/navigation';
 import {getContrastingSimpleColor} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -64,12 +65,14 @@ export function ChannelBanner({bannerInfo, isTopItem, skipHeaderOffset}: Props) 
     const intl = useIntl();
     const theme = useTheme();
     const bannerTextColor = getContrastingSimpleColor(bannerInfo?.background_color || '');
+    const {bannerHeight} = useGlobalClassificationBanner();
 
     const style = useMemo(() => {
         return getStyleSheet(bannerTextColor);
     }, [bannerTextColor]);
 
-    const defaultHeight = useDefaultHeaderHeight();
+    let defaultHeight = useDefaultHeaderHeight();
+    defaultHeight += bannerHeight ?? 0;
     const containerStyle = useMemo(() => ({
         ...style.container,
         backgroundColor: bannerInfo?.background_color,

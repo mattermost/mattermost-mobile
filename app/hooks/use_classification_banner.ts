@@ -61,7 +61,7 @@ export function useClassificationBannerState(serverUrl: string): ClassificationB
             return hiddenState;
         }
 
-        const systemValue = values.find((v) => v.field_id === linkedField.id);
+        const systemValue = values.find((v) => v.field_id === linkedField.id && v.delete_at === 0);
         const optionId = systemValue?.value ?? '';
 
         if (!optionId) {
