@@ -478,6 +478,13 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
             outFile.mime_type = lookupMimeType(outFile.name);
         }
 
+        if ('width' in file && file.width) {
+            outFile.width = file.width;
+        }
+        if ('height' in file && file.height) {
+            outFile.height = file.height;
+        }
+
         out.push(outFile);
     }));
 
