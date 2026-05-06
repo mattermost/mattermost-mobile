@@ -20,6 +20,7 @@ import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
+import {useGlobalClassificationBanner} from '@hooks/use_global_classification_banner';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './components/empty';
@@ -55,7 +56,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
     const serverUrl = useServerUrl();
     const route = useRoute();
     const isFocused = useIsFocused();
-
+    const {bannerHeight, BannerComponent} = useGlobalClassificationBanner();
     const params = route.params as {direction: string};
     const toLeft = params.direction === 'left';
     const translateSide = toLeft ? -25 : 25;
@@ -86,7 +87,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
         }
     }, [serverUrl, isFocused]);
 
-    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<Animated.FlatList<string>>(true, onSnap);
+    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<Animated.FlatList<string>>(true, onSnap, bannerHeight);
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [currentTimezone, posts]);
 
@@ -179,6 +180,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
                         title={title}
                         hasSearch={false}
                         scrollValue={scrollValue}
+                        classificationBanner={BannerComponent}
                     />
                     <Animated.View style={[styles.flex, animated]}>
                         <Animated.View style={top}>

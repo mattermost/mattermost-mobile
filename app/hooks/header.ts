@@ -47,15 +47,19 @@ export const useHeaderHeight = () => {
     }), [defaultHeight, headerOffset, largeHeight]);
 };
 
-export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset: number) => void) => {
+export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset: number) => void, bannerHeight = 0) => {
     const insets = useSafeAreaInsets();
     const animatedRef = useAnimatedRef<Animated.ScrollView>();
-    const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight();
+    const {largeHeight: rawLargeHeight, defaultHeight: rawDefaultHeight, headerOffset: rawHeaderOffset} = useHeaderHeight();
     const scrollValue = useSharedValue(0);
     const [lockValue, setLockValue] = useState<number>(0);
     const autoScroll = useSharedValue(false);
     const snapping = useSharedValue(false);
     const scrollEnabled = useSharedValue(true);
+
+    const defaultHeight = rawDefaultHeight + bannerHeight;
+    const largeHeight = rawLargeHeight + bannerHeight;
+    const headerOffset = rawHeaderOffset;
 
     const headerHeight = useDerivedValue(() => {
         const value = -(scrollValue.value);

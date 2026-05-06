@@ -9,6 +9,7 @@ import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
+import {useGlobalClassificationBanner} from '@hooks/use_global_classification_banner';
 import {Screens} from '@constants';
 import {DRAFT_SCREEN_TAB_DRAFTS, type DraftScreenTab} from '@constants/draft';
 import {useIsTablet} from '@hooks/device';
@@ -44,6 +45,7 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
     const isTablet = useIsTablet();
 
     const defaultHeight = useDefaultHeaderHeight();
+    const {bannerHeight, BannerComponent} = useGlobalClassificationBanner();
 
     const headerLeftComponent = useMemo(() => {
         if (isTablet) {
@@ -54,13 +56,13 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
     }, [isTablet]);
 
     const contextStyle = useMemo(() => ({
-        top: defaultHeight,
-    }), [defaultHeight]);
+        top: defaultHeight + bannerHeight,
+    }), [defaultHeight, bannerHeight]);
 
     const containerStyle = useMemo(() => {
-        const marginTop = defaultHeight;
+        const marginTop = defaultHeight + bannerHeight;
         return {flex: 1, marginTop};
-    }, [defaultHeight]);
+    }, [defaultHeight, bannerHeight]);
 
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();
@@ -100,6 +102,7 @@ const GlobalDraftsAndScheduledPosts = ({componentId, scheduledPostsEnabled, init
                     })
                 }
                 leftComponent={headerLeftComponent}
+                classificationBanner={BannerComponent}
             />
             <View style={contextStyle}>
                 <RoundedHeaderContext/>

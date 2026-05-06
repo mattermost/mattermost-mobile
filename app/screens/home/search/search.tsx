@@ -25,6 +25,7 @@ import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useCollapsibleHeader} from '@hooks/header';
+import {useGlobalClassificationBanner} from '@hooks/use_global_classification_banner';
 import useTabs from '@hooks/use_tabs';
 import NavigationStore from '@store/navigation_store';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
@@ -104,7 +105,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const keyboardHeight = useKeyboardHeight();
-
+    const {bannerHeight, BannerComponent} = useGlobalClassificationBanner();
     const stateIndex = nav.getState()?.index;
     const serverUrl = useServerUrl();
     const searchTerm: string = stateIndex === undefined ? '' : (nav.getState()?.routes[stateIndex]?.params as any)?.searchTerm || '';
@@ -161,7 +162,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         scrollValue,
         setAutoScroll,
         unlock,
-    } = useCollapsibleHeader<FlatList>(true, onSnap);
+    } = useCollapsibleHeader<FlatList>(true, onSnap, bannerHeight);
 
     const resetToInitial = useCallback(() => {
         setShowResults(false);
@@ -452,6 +453,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                     onFocus={onFocus}
                     defaultValue={searchValue}
                     ref={searchRef}
+                    classificationBanner={BannerComponent}
                 />
                 <KeyboardAvoidingView
                     style={styles.flex}
