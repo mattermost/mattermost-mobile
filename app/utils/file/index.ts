@@ -656,6 +656,12 @@ export const resizeImageIfNeeded = async (file: FileInfo, maxDimension: number):
         return file;
     }
 
+    const isJpeg = file.mime_type === 'image/jpeg' || file.mime_type === 'image/jpg';
+    const isPng = file.mime_type === 'image/png';
+    if (!isJpeg && !isPng) {
+        return file;
+    }
+
     const {width = 0, height = 0} = file;
     if (!width || !height || !file.localPath) {
         return file;
@@ -670,7 +676,6 @@ export const resizeImageIfNeeded = async (file: FileInfo, maxDimension: number):
         const newWidth = Math.round(width * scale);
         const newHeight = Math.round(height * scale);
 
-        const isJpeg = file.mime_type === 'image/jpeg' || file.mime_type === 'image/jpg';
         const format = isJpeg ? SaveFormat.JPEG : SaveFormat.PNG;
 
         const result = await manipulateAsync(

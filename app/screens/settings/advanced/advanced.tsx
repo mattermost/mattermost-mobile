@@ -98,9 +98,11 @@ const AdvancedSettings = ({
 
     const onDimensionChange = useCallback((value: string) => {
         setDimensionText(value);
-        const parsed = parseInt(value, 10);
-        if (!isNaN(parsed) && parsed >= 100 && parsed <= 9999) {
-            storeResizeImagesMaxDimension(parsed);
+        if (/^\d+$/.test(value)) {
+            const parsed = parseInt(value, 10);
+            if (parsed >= 100 && parsed <= 9999) {
+                storeResizeImagesMaxDimension(parsed);
+            }
         }
     }, []);
 
@@ -116,7 +118,7 @@ const AdvancedSettings = ({
 
     const hasData = Boolean(dataSize && dataSize > 0);
 
-    const parsedDimension = parseInt(dimensionText, 10);
+    const parsedDimension = /^\d+$/.test(dimensionText) ? parseInt(dimensionText, 10) : NaN;
     const dimensionError = dimensionText.length > 0 && (isNaN(parsedDimension) || parsedDimension < 100 || parsedDimension > 9999)
         ? intl.formatMessage({id: 'settings.advanced.resize_max_dimension.error', defaultMessage: 'Must be between 100 and 9999'})
         : undefined;

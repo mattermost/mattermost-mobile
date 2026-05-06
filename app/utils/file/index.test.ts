@@ -405,6 +405,13 @@ describe('resizeImageIfNeeded', () => {
         expect(mockManipulateAsync).not.toHaveBeenCalled();
     });
 
+    it('should return the file unchanged for non-JPEG/PNG image types like BMP', async () => {
+        const bmpFile = {...jpegFile, name: 'image.bmp', extension: 'bmp', mime_type: 'image/bmp'} as FileInfo;
+        const result = await resizeImageIfNeeded(bmpFile, 100);
+        expect(result).toBe(bmpFile);
+        expect(mockManipulateAsync).not.toHaveBeenCalled();
+    });
+
     it('should return the file unchanged when both dimensions are within the limit', async () => {
         const smallFile = {...jpegFile, width: 1000, height: 800};
         const result = await resizeImageIfNeeded(smallFile, 2048);
