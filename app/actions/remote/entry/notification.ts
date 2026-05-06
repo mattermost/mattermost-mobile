@@ -17,6 +17,7 @@ import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import {isErrorWithStatusCode} from '@utils/errors';
+import {dismissKeyboard} from '@utils/keyboard';
 import {emitNotificationError} from '@utils/notification';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 
@@ -33,6 +34,9 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+
+    // Cold start from push: ensure keyboard is not stuck over the channel after navigation
+    await dismissKeyboard();
 
     PerformanceMetricsManager.startTimeToInteraction();
 
