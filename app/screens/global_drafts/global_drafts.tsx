@@ -9,12 +9,12 @@ import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {useGlobalClassificationBanner} from '@hooks/use_global_classification_banner';
 import {Screens} from '@constants';
 import {DRAFT_SCREEN_TAB_DRAFTS, type DraftScreenTab} from '@constants/draft';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
+import {useGlobalClassificationBanner} from '@hooks/use_global_classification_banner';
 import SecurityManager from '@managers/security_manager';
 import TabbedContents from '@screens/global_drafts/components/tabbed_contents';
 

@@ -6,7 +6,7 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Freeze} from 'react-freeze';
 import {defineMessage, useIntl} from 'react-intl';
-import {FlatList, type LayoutChangeEvent, Platform, type ViewStyle, KeyboardAvoidingView, Keyboard, StyleSheet} from 'react-native';
+import {FlatList, type LayoutChangeEvent, Platform, type ViewStyle, KeyboardAvoidingView, Keyboard} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming, type AnimatedStyle} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -30,6 +30,7 @@ import useTabs from '@hooks/use_tabs';
 import NavigationStore from '@store/navigation_store';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes} from '@utils/search';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Initial from './initial';
 import Results from './results';
@@ -38,7 +39,6 @@ import Header from './results/header';
 import type {SearchRef} from '@components/search';
 import type PostModel from '@typings/database/models/servers/post';
 import type TeamModel from '@typings/database/models/servers/team';
-import { makeStyleSheetFromTheme } from '@utils/theme';
 
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -321,6 +321,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         scrollPaddingTop,
         searchTeamId,
         searchValue,
+        styles.loading,
         teams,
         theme.buttonBg,
         updateSearchTeamId,
