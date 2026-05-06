@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Pressable} from 'react-native';
 
@@ -41,9 +41,12 @@ const AdvancedSettings = ({
     const [dataSize, setDataSize] = useState<number | undefined>(0);
     const [files, setFiles] = useState<FileInfo[]>(EMPTY_FILES);
     const [dimensionText, setDimensionText] = useState(() => String(resizeImagesMaxDimension));
+    const isDirty = useRef(false);
 
     useEffect(() => {
-        setDimensionText(String(resizeImagesMaxDimension));
+        if (!isDirty.current) {
+            setDimensionText(String(resizeImagesMaxDimension));
+        }
 
         // resizeImagesMaxDimension is the only meaningful dep; dimensionText is local state we're syncing
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,14 +100,17 @@ const AdvancedSettings = ({
     }, []);
 
     const onDimensionChange = useCallback((value: string) => {
+        isDirty.current = true;
         setDimensionText(value);
-        if (/^\d+$/.test(value)) {
-            const parsed = parseInt(value, 10);
-            if (parsed >= 100 && parsed <= 9999) {
-                storeResizeImagesMaxDimension(parsed);
-            }
-        }
     }, []);
+
+    const onDimensionBlur = useCallback(() => {
+        isDirty.current = false;
+        const parsed = /^\d+$/.test(dimensionText) ? parseInt(dimensionText, 10) : NaN;
+        if (!isNaN(parsed) && parsed >= 100 && parsed <= 9999) {
+            storeResizeImagesMaxDimension(parsed);
+        }
+    }, [dimensionText]);
 
     useDidMount(() => {
         getAllCachedFiles();
@@ -171,6 +177,7 @@ const AdvancedSettings = ({
                         label={intl.formatMessage({id: 'settings.advanced.resize_max_dimension', defaultMessage: 'Maximum dimension (px)'})}
                         location={Screens.SETTINGS_ADVANCED}
                         multiline={false}
+                        onBlur={onDimensionBlur}
                         onChange={onDimensionChange}
                         optional={false}
                         secureTextEntry={false}

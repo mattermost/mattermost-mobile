@@ -56,6 +56,7 @@ type Props = {
     disabledText?: string;
     maxLength?: number;
     optional: boolean;
+    onBlur?: () => void;
     onChange: (value: string) => void;
     value?: string;
     multiline: boolean;
@@ -73,6 +74,7 @@ function TextSetting({
     disabledText,
     maxLength,
     optional,
+    onBlur,
     onChange,
     value,
     multiline,
@@ -105,6 +107,7 @@ function TextSetting({
                         value={value}
                         placeholder={placeholder}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        onBlur={onBlur}
                         onChangeText={onChange}
                         style={inputStyle}
                         autoCapitalize='none'

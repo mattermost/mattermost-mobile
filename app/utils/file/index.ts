@@ -656,8 +656,9 @@ export const resizeImageIfNeeded = async (file: FileInfo, maxDimension: number):
         return file;
     }
 
-    const isJpeg = file.mime_type === 'image/jpeg' || file.mime_type === 'image/jpg';
-    const isPng = file.mime_type === 'image/png';
+    const normalizedMime = (file.mime_type ?? '').trim().toLowerCase().split(';')[0].trim();
+    const isJpeg = normalizedMime === 'image/jpeg' || normalizedMime === 'image/jpg';
+    const isPng = normalizedMime === 'image/png';
     if (!isJpeg && !isPng) {
         return file;
     }
