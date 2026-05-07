@@ -2364,7 +2364,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-emm (1.6.2):
+  - react-native-emm (1.7.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2505,7 +2505,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-network-client (1.9.3):
+  - react-native-network-client (1.10.0):
     - Alamofire (~> 5.11.2)
     - boost
     - DoubleConversion
@@ -2538,7 +2538,7 @@ PODS:
     - Yoga
   - react-native-notifications (5.2.2):
     - React-Core
-  - react-native-paste-input (1.0.0):
+  - react-native-paste-input (2.0.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -4483,13 +4483,13 @@ SPEC CHECKSUMS:
   react-native-cameraroll: ae31ba7ee17d31c5ee05d7bb248742e3af482783
   react-native-document-picker: 49c296acec7ed2374ac696f50fb2a1536c9aa100
   react-native-document-viewer: 0ed0f600b005a4b85b0a319ba329b6b4f5ed17f9
-  react-native-emm: b8c3652aff5c0a701d8d49e2a7aed89e5893ebf1
+  react-native-emm: 469f5ff2c0d6c33ba7bdc43c29e38d1fb32b7ffc
   react-native-image-picker: 6051cfd030121b880a58f1cc0e5e33e9887804e4
   react-native-keyboard-controller: c610d1f839ad9cd41f4420db14beaa1cf64263f6
   react-native-netinfo: 9fad4eedfec9840a10e73ac4591ea1158523309b
-  react-native-network-client: b3567d8a1ddfe35e8dd648b503000d3986558952
+  react-native-network-client: e8848cbc7f4890ebdb5724fcd9fbedce0f2f9482
   react-native-notifications: e2d3c022d6077de7e420ba5c01b4bd9464f3941d
-  react-native-paste-input: 67bd9654415c25672c267ca1873778ea038d8c48
+  react-native-paste-input: 6f2672db3421c3df2c1059f16023ab7629555203
   react-native-performance: a7a65d0b0f3055c5db33e1433e4345143ef6a100
   react-native-safe-area-context: eda63a662750758c1fdd7e719c9f1026c8d161cb
   react-native-video: d7e6372a63833708a2f7a8b48fed59036910428c
