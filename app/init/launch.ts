@@ -44,7 +44,7 @@ const initialNotificationTypes = [PushNotification.NOTIFICATION_TYPE.MESSAGE, Pu
  */
 export async function determineInitialExpoRoute(): Promise<ExpoRouterLaunchResult> {
     const activeServer = await getActiveServer();
-    if (activeServer && activeServer.wipedAt > 0) {
+    if (activeServer && activeServer.persistenceFlag === 'wiped') {
         return resetToDataErased({
             serverUrl: activeServer.url,
             displayName: activeServer.displayName || activeServer.url,

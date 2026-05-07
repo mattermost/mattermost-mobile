@@ -34,7 +34,7 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
         if (error) {
             if (isErrorWithStatusCode(error) && error.status_code === HTTP_UNAUTHORIZED) {
                 const displayName = (await getServerDisplayName(serverUrl)) || serverUrl;
-                await DatabaseManager.updateServerWipedAt(serverUrl, 0);
+                await DatabaseManager.updatePersistenceFlag(serverUrl, '');
                 await removeServerCredentials(serverUrl);
                 await removePreauthSecret(serverUrl);
                 relaunchApp({launchType: Launch.AddServer, serverUrl, displayName});
@@ -44,7 +44,7 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
             return {error};
         }
 
-        await DatabaseManager.updateServerWipedAt(serverUrl, 0);
+        await DatabaseManager.updatePersistenceFlag(serverUrl, '');
         OfflinePersistenceManager.addServer(serverUrl);
         await resetToHome({launchType: Launch.Normal, serverUrl, coldStart: false});
         return {};

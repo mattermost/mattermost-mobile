@@ -570,7 +570,7 @@ describe('OfflinePersistenceManager', () => {
         };
 
         beforeEach(() => {
-            updateWipedAtSpy = jest.spyOn(DatabaseManager, 'updateServerWipedAt');
+            updateWipedAtSpy = jest.spyOn(DatabaseManager, 'updatePersistenceFlag');
             getActiveServerUrlSpy = jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverA);
             jest.mocked(getServerDisplayName).mockResolvedValue(displayName);
         });
@@ -604,13 +604,11 @@ describe('OfflinePersistenceManager', () => {
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
         });
 
-        it('marks wipedAt with a positive timestamp so boot wipe-resumption finds it', async () => {
+        it('sets persistenceFlag to wiped so boot wipe-resumption finds it', async () => {
             await triggerWipeForServerA();
 
             expect(updateWipedAtSpy).toHaveBeenCalledTimes(1);
-            const [calledUrl, calledValue] = updateWipedAtSpy.mock.calls[0];
-            expect(calledUrl).toBe(serverA);
-            expect(calledValue).toBeGreaterThan(0);
+            expect(updateWipedAtSpy).toHaveBeenCalledWith(serverA, 'wiped');
         });
 
         it('leaves the wiped server with an empty in-memory database so contexts can still mount', async () => {
@@ -626,12 +624,12 @@ describe('OfflinePersistenceManager', () => {
     });
 
     describe('init wipe-resumption', () => {
-        it('re-runs the wipe for credentials whose server row is marked with wipedAt > 0', async () => {
+        it('re-runs the wipe for credentials whose server row is marked with persistenceFlag wiped', async () => {
             jest.mocked(getServer).mockImplementation(async (url: string) => {
                 if (url === serverA) {
-                    return {url: serverA, wipedAt: 123} as ServersModel;
+                    return {url: serverA, persistenceFlag: 'wiped'} as ServersModel;
                 }
-                return {url, wipedAt: 0} as ServersModel;
+                return {url, persistenceFlag: ''} as ServersModel;
             });
 
             await OfflinePersistenceManager.init([credsA, credsB]);
@@ -640,8 +638,8 @@ describe('OfflinePersistenceManager', () => {
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledTimes(1);
         });
 
-        it('does not re-wipe servers whose row has wipedAt === 0', async () => {
-            jest.mocked(getServer).mockResolvedValue({url: serverA, wipedAt: 0} as ServersModel);
+        it('does not re-wipe servers whose row has an empty persistenceFlag', async () => {
+            jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: ''} as ServersModel);
 
             await OfflinePersistenceManager.init([credsA]);
 

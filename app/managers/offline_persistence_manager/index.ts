@@ -47,7 +47,7 @@ class OfflinePersistenceManagerSingleton {
         await Promise.all(serverCredentials.map(async ({serverUrl}) => {
             try {
                 const server = await getServer(serverUrl);
-                if (server && server.wipedAt > 0) {
+                if (server && server.persistenceFlag === 'wiped') {
                     // Recover from a wipe interrupted by app termination before
                     // wipeServerDatabaseWithRetry completed.
                     await wipeServerDatabaseWithRetry(serverUrl);
@@ -306,7 +306,7 @@ class OfflinePersistenceManagerSingleton {
         }
 
         const server = await getServer(serverUrl);
-        if (server && server.wipedAt > 0) {
+        if (server && server.persistenceFlag === 'wiped') {
             this.clearPurgeTimer(serverUrl);
             return;
         }
@@ -364,7 +364,7 @@ class OfflinePersistenceManagerSingleton {
                 await resetToDataErased({serverUrl, displayName});
             }
 
-            await DatabaseManager.updateServerWipedAt(serverUrl, Date.now());
+            await DatabaseManager.updatePersistenceFlag(serverUrl, 'wiped');
 
             this.removeServer(serverUrl);
             await wipeServerDatabaseWithRetry(serverUrl);
