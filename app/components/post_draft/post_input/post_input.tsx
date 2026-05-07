@@ -367,7 +367,7 @@ export default function PostInput({
             updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
         };
 
-    // - updateValue, updateCursorPosition, propagateValue are stable setState/hook functions
+    // - updateValue and updateCursorPosition are stable setState/hook functions
     // - inputRef is a ref (stable reference, doesn't need to be in deps)
     // - serverUrl, value, lastNativeValue are either stable or we want their latest values when event fires
     // - We need to recreate the listener when channelId/rootId changes to check the correct source screen
@@ -378,10 +378,6 @@ export default function PostInput({
         if (value !== lastNativeValue.current) {
             lastNativeValue.current = value;
         }
-
-        // - propagateValue is from useInputPropagation hook (stable reference, doesn't need to be in deps)
-        // - lastNativeValue is a ref (stable reference, doesn't need to be in deps)
-
     }, [value]);
 
     const events = useMemo(() => ({

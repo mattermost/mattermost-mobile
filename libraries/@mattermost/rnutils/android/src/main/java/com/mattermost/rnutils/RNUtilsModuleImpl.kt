@@ -171,9 +171,19 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
         return map
     }
 
-    fun unlockOrientation() {}
+    fun unlockOrientation() {
+        val activity = reactContext.currentActivity ?: return
+        activity.runOnUiThread {
+            activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
+        }
+    }
 
-    fun lockPortrait() {}
+    fun lockPortrait() {
+        val activity = reactContext.currentActivity ?: return
+        activity.runOnUiThread {
+            activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+        }
+    }
 
     fun deleteDatabaseDirectory(): WritableMap {
         val map = Arguments.createMap()

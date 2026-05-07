@@ -71,6 +71,7 @@ export default defineConfig([
             "Gesture.Exclusive",
             "Gesture.Simultaneous",
             "Gesture.Race",
+            "Gesture.Native",
           ]
         }
       ],

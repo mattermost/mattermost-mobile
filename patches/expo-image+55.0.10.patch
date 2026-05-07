@@ -1,5 +1,5 @@
 diff --git a/node_modules/expo-image/android/build.gradle b/node_modules/expo-image/android/build.gradle
-index b2af5e5..f48d18b 100644
+index 2668d8d..4f097c2 100644
 --- a/node_modules/expo-image/android/build.gradle
 +++ b/node_modules/expo-image/android/build.gradle
 @@ -1,17 +1,9 @@
@@ -18,7 +18,7 @@ index b2af5e5..f48d18b 100644
 -apply plugin: 'com.google.devtools.ksp'
 -
  group = 'expo.modules.image'
- version = '55.0.9'
+ version = '55.0.10'
  
 @@ -42,7 +34,7 @@ dependencies {
    implementation 'com.facebook.react:react-android'

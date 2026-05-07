@@ -5,7 +5,7 @@ import {RUNNING_E2E} from '@env';
 import TurboLogger from '@mattermost/react-native-turbo-log';
 import {ExpoRoot} from 'expo-router';
 import React from 'react';
-import {AppRegistry, LogBox, Platform, UIManager} from 'react-native';
+import {AppRegistry, LogBox, Platform} from 'react-native';
 import {BackgroundTimer} from 'react-native-nitro-bg-timer-plus';
 
 import {logInfo} from './app/utils/log';
@@ -58,9 +58,6 @@ if (global.HermesInternal) {
 if (Platform.OS === 'android') {
     const ShareExtension = require('./share_extension/index.tsx').default;
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
-    if (UIManager.setLayoutAnimationEnabledExperimental) {
-        UIManager.setLayoutAnimationEnabledExperimental(true);
-    }
 }
 
 // Must be exported or Fast Refresh won't update the context

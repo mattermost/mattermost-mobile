@@ -129,7 +129,7 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
         if (!tutorialWatched) {
             tutorialTimeoutRef.current = setTimeout(() => {
                 setTooltipVisible(true);
-            }, 300);
+            }, 500); // Give enough time for the transitions
         }
 
         return () => {

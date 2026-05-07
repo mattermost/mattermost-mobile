@@ -25,8 +25,10 @@ const styles = StyleSheet.create({
     },
 });
 
+const EMPTY_FILES_INFO: FileInfo[] = [];
+
 const PermalinkFiles = (props: PermalinkFilesProps) => {
-    const {parentLocation, parentPostId, post, location, isReplyPost, failed, filesInfo = []} = props;
+    const {parentLocation, parentPostId, post, location, isReplyPost, failed, filesInfo = EMPTY_FILES_INFO} = props;
     const [layoutWidth, setLayoutWidth] = useState(0);
 
     const listener = useCallback((viewableItemsMap: Record<string, boolean>) => {

@@ -221,6 +221,7 @@ const PostList = ({
         }
         setShowScrollToEndBtn(false);
 
+        // PasteInputTranslateY is a SharedValue
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [listRef]);
 
@@ -539,17 +540,8 @@ const PostList = ({
         return {};
     });
 
-    // eslint-disable-next-line new-cap
     const nativeGesture = Gesture.Native();
-    const composedGesture = useMemo(() => {
-        if (emojiPickerGesture) {
-            return Gesture.Simultaneous(nativeGesture, emojiPickerGesture);
-        }
-        return nativeGesture;
-
-        // nativeGesture is stable — created once outside this memo
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [emojiPickerGesture]);
+    const composedGesture = emojiPickerGesture ? Gesture.Simultaneous(nativeGesture, emojiPickerGesture) : nativeGesture;
 
     return (
         <>

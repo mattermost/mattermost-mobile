@@ -176,18 +176,10 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     // Clear cookies (synchronous)
     clearCookiesForServer(serverUrl);
 
-    // Delete file caches (critical - we need to wipe local data)
-    await safeExecute('deleteFileCache', async () => {
-        deleteFileCache(serverUrl);
-    });
-
-    await safeExecute('deleteFileCacheMmPasteInput', async () => {
-        deleteFileCacheByDir('mmPasteInput');
-    });
-
-    await safeExecute('deleteFileCacheThumbnails', async () => {
-        deleteFileCacheByDir('thumbnails');
-    });
+    // Delete file caches (synchronous, no error handling needed)
+    deleteFileCache(serverUrl);
+    deleteFileCacheByDir('mmPasteInput');
+    deleteFileCacheByDir('thumbnails');
 
     if (errors.length > 0) {
         return {error: errors};
