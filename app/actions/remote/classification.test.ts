@@ -18,8 +18,9 @@ jest.mock('@queries/servers/system', () => ({
 
 jest.mock('@store/system_property_store', () => ({
     registerGroupName: jest.fn(),
-    setPropertyFields: jest.fn(),
-    setSystemPropertyValues: jest.fn(),
+    updatePropertyField: jest.fn(),
+    updateSystemPropertyValues: jest.fn(),
+    removePropertyFieldById: jest.fn(),
     getPropertyFields: jest.fn(() => []),
     getSystemPropertyValues: jest.fn(() => []),
     subscribe: jest.fn(() => jest.fn()),
@@ -27,7 +28,7 @@ jest.mock('@store/system_property_store', () => ({
     getGroupIdByName: jest.fn(),
 }));
 
-const {registerGroupName, setPropertyFields, setSystemPropertyValues} = require('@store/system_property_store');
+const {registerGroupName, updatePropertyField, updateSystemPropertyValues, removePropertyFieldById} = require('@store/system_property_store');
 const mockedGetConfigValue = jest.mocked(getConfigValue);
 
 const serverUrl = 'classification.test.com';
@@ -110,12 +111,12 @@ describe('fetchClassificationBanner', () => {
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({});
-        expect(setPropertyFields).not.toHaveBeenCalled();
-        expect(setSystemPropertyValues).not.toHaveBeenCalled();
+        expect(updatePropertyField).not.toHaveBeenCalled();
+        expect(updateSystemPropertyValues).not.toHaveBeenCalled();
         expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
     });
 
-    it('should seed store with only linked field when template is missing', async () => {
+    it('should merge only linked field into store when template is missing', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
         mockClient.getPropertyFields.mockResolvedValueOnce([linkedField]);
@@ -125,11 +126,11 @@ describe('fetchClassificationBanner', () => {
 
         expect(result).toEqual({});
         expect(registerGroupName).toHaveBeenCalledWith(serverUrl, 'classification_markings', 'classification_markings');
-        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', [linkedField]);
-        expect(setSystemPropertyValues).toHaveBeenCalledWith(serverUrl, 'classification_markings', [systemValue]);
+        expect(updatePropertyField).toHaveBeenCalledWith(serverUrl, linkedField);
+        expect(updateSystemPropertyValues).toHaveBeenCalledWith(serverUrl, 'classification_markings', [systemValue]);
     });
 
-    it('should return early when neither field is found', async () => {
+    it('should return early when no fields are returned by the API', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
@@ -138,11 +139,11 @@ describe('fetchClassificationBanner', () => {
 
         expect(result).toEqual({});
         expect(registerGroupName).not.toHaveBeenCalled();
-        expect(setPropertyFields).not.toHaveBeenCalled();
-        expect(setSystemPropertyValues).not.toHaveBeenCalled();
+        expect(updatePropertyField).not.toHaveBeenCalled();
+        expect(updateSystemPropertyValues).not.toHaveBeenCalled();
     });
 
-    it('should seed store with only template field when linked is missing', async () => {
+    it('should merge only template field into store when linked is missing', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockResolvedValueOnce([templateField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
@@ -152,11 +153,11 @@ describe('fetchClassificationBanner', () => {
 
         expect(result).toEqual({});
         expect(registerGroupName).toHaveBeenCalledWith(serverUrl, 'classification_markings', 'classification_markings');
-        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', [templateField]);
-        expect(setSystemPropertyValues).toHaveBeenCalledWith(serverUrl, 'classification_markings', []);
+        expect(updatePropertyField).toHaveBeenCalledWith(serverUrl, templateField);
+        expect(updateSystemPropertyValues).not.toHaveBeenCalled();
     });
 
-    it('should seed store with both fields and values on happy path', async () => {
+    it('should merge both fields and values into store on happy path', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockResolvedValueOnce([templateField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([linkedField]);
@@ -166,8 +167,24 @@ describe('fetchClassificationBanner', () => {
 
         expect(result).toEqual({});
         expect(registerGroupName).toHaveBeenCalledWith(serverUrl, 'classification_markings', 'classification_markings');
-        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', [templateField, linkedField]);
-        expect(setSystemPropertyValues).toHaveBeenCalledWith(serverUrl, 'classification_markings', [systemValue]);
+        expect(updatePropertyField).toHaveBeenCalledWith(serverUrl, templateField);
+        expect(updatePropertyField).toHaveBeenCalledWith(serverUrl, linkedField);
+        expect(updateSystemPropertyValues).toHaveBeenCalledWith(serverUrl, 'classification_markings', [systemValue]);
+    });
+
+    it('should remove soft-deleted fields from store', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        const deletedTemplate = {...templateField, delete_at: 5000};
+        mockClient.getPropertyFields.mockResolvedValueOnce([deletedTemplate]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([linkedField]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([]);
+
+        const result = await fetchClassificationBanner(serverUrl);
+
+        expect(result).toEqual({});
+        expect(removePropertyFieldById).toHaveBeenCalledWith(serverUrl, deletedTemplate.id);
+        expect(updatePropertyField).toHaveBeenCalledWith(serverUrl, linkedField);
+        expect(updatePropertyField).not.toHaveBeenCalledWith(serverUrl, deletedTemplate);
     });
 
     it('should return error without modifying store when network client throws', async () => {
@@ -178,7 +195,7 @@ describe('fetchClassificationBanner', () => {
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({error: networkError});
-        expect(setPropertyFields).not.toHaveBeenCalled();
-        expect(setSystemPropertyValues).not.toHaveBeenCalled();
+        expect(updatePropertyField).not.toHaveBeenCalled();
+        expect(updateSystemPropertyValues).not.toHaveBeenCalled();
     });
 });
