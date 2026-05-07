@@ -74,6 +74,39 @@ grep -oP 'text="[^"]*"' /tmp/ui.xml | grep -v 'text=""'
 
 The first screen is the "Let's Connect to a Server" screen. On the software emulator, visual rendering lags behind the accessibility tree — use `uiautomator dump` to verify screen state.
 
+### Running Detox E2E tests
+
+The Detox test suite is in `detox/` with its own `package.json`. To run on the Cloud Agent:
+
+```bash
+# 1. Install Detox deps
+cd detox && npm ci && cd ..
+
+# 2. Build the test instrumentation APK (app debug APK should already exist)
+cd android && ANDROID_HOME=/home/ubuntu/android-sdk JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 \
+  ./gradlew assembleAndroidTest -DtestBuildType=debug -PreactNativeArchitectures=x86_64 --no-daemon && cd ..
+
+# 3. Create the Detox AVD (if not exists)
+echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd \
+  -n detox_pixel_4_xl_api_34 -k "system-images;android-34;google_apis;x86_64" -d "pixel_4_xl" --force
+
+# 4. Create detox/.env with test server credentials
+cat > detox/.env << 'EOF'
+SITE_1_URL=https://your-test-server.example.com
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your-password
+EOF
+
+# 5. Run tests (kill any existing emulator first!)
+# Detox manages the emulator lifecycle. Use --device-boot-args for no-accel.
+cd detox && npx detox test -c android.emu.debug \
+  --device-boot-args="-no-accel -gpu swiftshader_indirect -no-audio -memory 4096" \
+  --headless \
+  -- --testPathPattern="smoke_test/server_login"
+```
+
+**Known limitation:** Without KVM, the emulator is too slow for the default 180s test timeout. Detox boots the emulator and launches the app correctly, but tests time out during app initialization. This is an environment constraint, not a setup issue.
+
 ### Suppressing React Native LogBox warnings
 
 The `.env` file (gitignored) controls `RUNNING_E2E`. Set `RUNNING_E2E=true` to call `LogBox.ignoreAllLogs(true)`, which suppresses the yellow "Open debugger to view warnings" toast in dev builds. The update script creates this file automatically. After changing `.env`, restart Metro with `--reset-cache` for the change to take effect.
