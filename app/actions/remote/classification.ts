@@ -48,7 +48,7 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
             allFields.push(linkedField);
         }
 
-        const groupId = templateField?.group_id || linkedField?.group_id;
+        const groupId = templateFields[0]?.group_id || linkedFields[0]?.group_id || templateField?.group_id || linkedField?.group_id;
         if (!groupId) {
             return {};
         }

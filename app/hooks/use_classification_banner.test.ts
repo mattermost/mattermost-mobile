@@ -7,6 +7,10 @@ import {registerGroupName, setPropertyFields, setSystemPropertyValues} from '@st
 
 import {useClassificationBannerState} from './use_classification_banner';
 
+jest.mock('@actions/remote/classification', () => ({
+    fetchClassificationBanner: jest.fn(),
+}));
+
 const serverUrl = 'hook-classification.test.com';
 const GROUP = 'classification_markings';
 
@@ -176,5 +180,47 @@ describe('useClassificationBannerState', () => {
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
 
         expect(result.current).toEqual({visible: false, levelName: '', color: ''});
+    });
+
+    it('should auto-register group name and re-render when field arrives for unregistered group', () => {
+        const unregisteredServer = 'unregistered.test.com';
+        const groupUuid = 'uuid-new-group';
+        const field = {...templateField, group_id: groupUuid};
+        const linked = {...linkedField, group_id: groupUuid};
+        const value = {...systemValue, group_id: groupUuid};
+
+        const {result} = renderHook(() => useClassificationBannerState(unregisteredServer));
+        expect(result.current).toEqual({visible: false, levelName: '', color: ''});
+
+        act(() => {
+            setPropertyFields(unregisteredServer, groupUuid, [field, linked]);
+            setSystemPropertyValues(unregisteredServer, groupUuid, [value]);
+        });
+
+        expect(result.current).toEqual({
+            visible: true,
+            levelName: 'TOP SECRET',
+            color: '#FCE83A',
+        });
+    });
+
+    it('should bootstrap fetch when expected data is missing', () => {
+        const {fetchClassificationBanner} = require('@actions/remote/classification');
+        fetchClassificationBanner.mockClear();
+
+        renderHook(() => useClassificationBannerState(serverUrl));
+
+        expect(fetchClassificationBanner).toHaveBeenCalledWith(serverUrl);
+    });
+
+    it('should not bootstrap fetch when all data is present', () => {
+        const {fetchClassificationBanner} = require('@actions/remote/classification');
+        setPropertyFields(serverUrl, GROUP, [templateField, linkedField]);
+        setSystemPropertyValues(serverUrl, GROUP, [systemValue]);
+        fetchClassificationBanner.mockClear();
+
+        renderHook(() => useClassificationBannerState(serverUrl));
+
+        expect(fetchClassificationBanner).not.toHaveBeenCalled();
     });
 });

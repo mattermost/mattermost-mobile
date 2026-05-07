@@ -3,6 +3,7 @@
 
 import {useEffect, useMemo, useReducer} from 'react';
 
+import {fetchClassificationBanner} from '@actions/remote/classification';
 import {
     DISPLAY_BANNER_TOP,
     FIELD_NAME,
@@ -11,7 +12,7 @@ import {
     LINKED_OBJECT_TYPE,
     OBJECT_TYPE,
 } from '@constants/classification';
-import {getGroupIdByName, getPropertyFields, getSystemPropertyValues, subscribe} from '@store/system_property_store';
+import {getGroupIdByName, getPropertyFields, getSystemPropertyValues, registerGroupName, subscribe} from '@store/system_property_store';
 
 export type ClassificationBannerState = {
     visible: boolean;
@@ -26,9 +27,23 @@ export function useClassificationBannerState(serverUrl: string): ClassificationB
 
     useEffect(() => {
         const unsub = subscribe((url, _groupId) => {
-            if (url === serverUrl) {
-                const resolvedId = getGroupIdByName(serverUrl, GROUP_NAME);
-                if (resolvedId && resolvedId === _groupId) {
+            if (url !== serverUrl) {
+                return;
+            }
+
+            const resolvedId = getGroupIdByName(serverUrl, GROUP_NAME);
+            if (resolvedId && resolvedId === _groupId) {
+                forceRender();
+                return;
+            }
+
+            if (!resolvedId) {
+                const fields = getPropertyFields(serverUrl, _groupId);
+                const isClassificationGroup = fields.some(
+                    (f) => f.name === FIELD_NAME || f.name === LINKED_FIELD_NAME,
+                );
+                if (isClassificationGroup) {
+                    registerGroupName(serverUrl, GROUP_NAME, _groupId);
                     forceRender();
                 }
             }
@@ -36,23 +51,29 @@ export function useClassificationBannerState(serverUrl: string): ClassificationB
         return unsub;
     }, [serverUrl]);
 
-    return useMemo(() => {
-        const groupId = getGroupIdByName(serverUrl, GROUP_NAME) ?? '';
-        if (!groupId) {
-            return hiddenState;
+    const groupId = getGroupIdByName(serverUrl, GROUP_NAME) ?? '';
+    const fields = groupId ? getPropertyFields(serverUrl, groupId) : [];
+    const values = groupId ? getSystemPropertyValues(serverUrl, groupId) : [];
+
+    const templateField = fields.find(
+        (f) => f.object_type === OBJECT_TYPE && f.name === FIELD_NAME && f.delete_at === 0,
+    );
+    const linkedField = fields.find(
+        (f) => f.object_type === LINKED_OBJECT_TYPE && f.name === LINKED_FIELD_NAME && f.linked_field_id && f.delete_at === 0,
+    );
+    const systemValue = linkedField ? values.find((v) => v.field_id === linkedField.id && v.delete_at === 0) : undefined;
+
+    // Bootstrap a fetch when expected data is missing.
+    // This handles cases where classification was enabled while the app was running,
+    // or where the initial reconnect fetch happened before the configuration existed.
+    useEffect(() => {
+        if (!templateField || !linkedField || (linkedField && !systemValue)) {
+            fetchClassificationBanner(serverUrl);
         }
+    }, [serverUrl, templateField, linkedField, systemValue]);
 
-        const fields = getPropertyFields(serverUrl, groupId);
-        const values = getSystemPropertyValues(serverUrl, groupId);
-
-        const templateField = fields.find(
-            (f) => f.object_type === OBJECT_TYPE && f.name === FIELD_NAME && f.delete_at === 0,
-        );
-        const linkedField = fields.find(
-            (f) => f.object_type === LINKED_OBJECT_TYPE && f.name === LINKED_FIELD_NAME && f.linked_field_id && f.delete_at === 0,
-        );
-
-        if (!templateField || !linkedField) {
+    return useMemo(() => {
+        if (!groupId || !templateField || !linkedField) {
             return hiddenState;
         }
 
@@ -61,9 +82,7 @@ export function useClassificationBannerState(serverUrl: string): ClassificationB
             return hiddenState;
         }
 
-        const systemValue = values.find((v) => v.field_id === linkedField.id && v.delete_at === 0);
         const optionId = systemValue?.value ?? '';
-
         if (!optionId) {
             return hiddenState;
         }
@@ -77,5 +96,5 @@ export function useClassificationBannerState(serverUrl: string): ClassificationB
             color: levelOption?.color ?? '',
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [serverUrl, renderCount]);
+    }, [serverUrl, renderCount, groupId, templateField, linkedField, systemValue]);
 }
