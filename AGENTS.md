@@ -74,6 +74,30 @@ grep -oP 'text="[^"]*"' /tmp/ui.xml | grep -v 'text=""'
 
 The first screen is the "Let's Connect to a Server" screen. On the software emulator, visual rendering lags behind the accessibility tree — use `uiautomator dump` to verify screen state.
 
+### Running UI tests with Maestro (recommended for Cloud Agent)
+
+[Maestro](https://maestro.dev) is the recommended tool for UI testing on Cloud Agent VMs because it handles slow software emulators gracefully — it waits automatically for elements to appear, uses the accessibility layer (no instrumentation APK needed), and supports generous timeouts via `extendedWaitUntil`.
+
+```bash
+# Install Maestro CLI (one-time)
+curl -fsSL "https://get.maestro.mobile.dev" | bash
+export PATH="$PATH:$HOME/.maestro/bin"
+
+# Key env vars for slow emulator
+export MAESTRO_DRIVER_STARTUP_TIMEOUT=600000  # 10 min for driver startup
+export MAESTRO_CLI_NO_ANALYTICS=1
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+
+# Run a flow
+maestro test path/to/flow.yaml --debug-output ./maestro-debug
+```
+
+**Tips for slow software emulator:**
+- Use `extendedWaitUntil` with `timeout: 600000` (10 min) for initial screen loads
+- Split long text into ~16-char `inputText` chunks to stay under the 120s gRPC deadline
+- Pre-install the Maestro driver APK via `adb push` + `pm install` to speed up first run
+- Use `takeScreenshot` after key steps for debugging (screenshots may be black due to GPU — use Maestro's `hierarchy` command to verify UI state)
+
 ### Running Detox E2E tests
 
 The Detox test suite is in `detox/` with its own `package.json`. To run on the Cloud Agent:
