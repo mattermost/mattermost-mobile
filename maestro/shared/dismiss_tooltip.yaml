@@ -1,0 +1,6 @@
+# Dismisses the scheduled post tutorial tooltip if present.
+# Called via runFlow with a `when` condition.
+appId: com.mattermost.rnbeta
+---
+- tapOn:
+    id: "scheduled_post\\.tooltip\\.close\\.button"

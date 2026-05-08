@@ -16,17 +16,31 @@ appId: com.mattermost.rnbeta
       PASSWORD: "admin@7k831gmpy7da5xr8d1hka5k3cr"
 
 # -- Step 2: Navigate to Off-Topic channel --
-# The channel list is now visible. Tap Off-Topic.
-# testID pattern: channel_list.category.<type>.channel_item.<channel-name>
-- tapOn:
-    id: "channel_list\\.category\\..*\\.channel_item\\.off-topic"
+# Wait for channel data to sync from server (categories load after the screen)
+- extendedWaitUntil:
+    visible: "Off-Topic"
+    timeout: 180000
+- tapOn: "Off-Topic"
 
-# -- Step 3: Wait for the message input to appear --
-# testID: channel.post_draft.post.input
+# -- Step 3: Wait for channel content, handle tooltip, find post input --
+# Wait for either the post draft OR the tooltip (whichever loads first)
+# The channel content takes minutes on software emulator.
+- extendedWaitUntil:
+    visible: "Write to"
+    timeout: 600000
+
+# Dismiss scheduled_post tooltip if present (blocks view on first channel visit)
+- runFlow:
+    when:
+      visible:
+        id: "scheduled_post\\.tooltip\\.close\\.button"
+    file: shared/dismiss_tooltip.yaml
+
+# Now the post draft input should be visible
 - extendedWaitUntil:
     visible:
       id: "channel\\.post_draft\\.post\\.input"
-    timeout: 120000
+    timeout: 60000
 
 - takeScreenshot: channel_opened
 
