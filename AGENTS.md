@@ -76,7 +76,9 @@ The first screen is the "Let's Connect to a Server" screen. On the software emul
 
 ### Running UI tests with Maestro (recommended for Cloud Agent)
 
-[Maestro](https://maestro.dev) is the recommended tool for UI testing on Cloud Agent VMs because it handles slow software emulators gracefully — it waits automatically for elements to appear, uses the accessibility layer (no instrumentation APK needed), and supports generous timeouts via `extendedWaitUntil`.
+[Maestro](https://maestro.dev) is the recommended tool for UI testing on Cloud Agent VMs. It handles slow software emulators gracefully — it waits automatically for elements, uses the accessibility layer (no instrumentation APK needed), and supports generous timeouts.
+
+#### Quick start
 
 ```bash
 # Install Maestro CLI (one-time)
@@ -89,14 +91,80 @@ export MAESTRO_CLI_NO_ANALYTICS=1
 export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
 # Run a flow
-maestro test path/to/flow.yaml --debug-output ./maestro-debug
+maestro test maestro/login_flow.yaml --debug-output ./maestro-debug
 ```
 
-**Tips for slow software emulator:**
-- Use `extendedWaitUntil` with `timeout: 600000` (10 min) for initial screen loads
-- Split long text into ~16-char `inputText` chunks to stay under the 120s gRPC deadline
-- Pre-install the Maestro driver APK via `adb push` + `pm install` to speed up first run
-- Use `takeScreenshot` after key steps for debugging (screenshots may be black due to GPU — use Maestro's `hierarchy` command to verify UI state)
+#### Reusable login sub-flow
+
+Login is handled by `maestro/shared/login.yaml`. Other flows call it via `runFlow`:
+
+```yaml
+- runFlow:
+    file: shared/login.yaml
+    env:
+      SERVER_URL: "https://your-server.example.com"
+      SERVER_NAME: "testing"
+      USERNAME: "admin"
+      PASSWORD: "your-password"
+```
+
+The sub-flow launches the app with `clearState: true`, enters the server URL, connects, enters credentials, taps Log In, and waits for the channel list screen.
+
+#### testID-based selectors (prefer over text matching)
+
+Always use `testID` (mapped to `id:` in Maestro YAML) when available. This is more reliable than text matching, especially on slow emulators where text rendering may lag behind the accessibility tree. Escape dots in testIDs with `\\` in Maestro regex selectors.
+
+**Key testIDs for common flows:**
+
+| Screen | Element | testID |
+|--------|---------|--------|
+| Server entry | URL input | `server_form.server_url.input` |
+| Server entry | Display name input | `server_form.server_display_name.input` |
+| Server entry | Connect button | `server_form.connect.button` |
+| Login | Username input | `login_form.username.input` |
+| Login | Password input | `login_form.password.input` |
+| Login | Sign In button | `login_form.signin.button` |
+| Channel list | Screen root | `channel_list.screen` |
+| Channel list | Channel row | `channel_list.category.<type>.channel_item.<channel-name>` |
+| Channel list | Search button | `channel_list_subheader.search_field.button` |
+| Channel list | Plus/create button | `channel_list_header.plus.button` |
+| Post draft | Message input | `channel.post_draft.post.input` |
+| Post draft | Send button | `channel.post_draft.send_action.send.button` |
+| Tab bar | Home | `tab_bar.home.tab` |
+| Tab bar | Search | `tab_bar.search.tab` |
+| Tab bar | Mentions | `tab_bar.mentions.tab` |
+| Tab bar | Saved | `tab_bar.saved_messages.tab` |
+| Tab bar | Account | `tab_bar.account.tab` |
+
+If an element is missing a testID, add one following the convention `component.subcomponent.element` (see `CLAUDE.md` for the full testID naming guide).
+
+#### Writing Maestro flows — best practices
+
+1. **Use `extendedWaitUntil` with `id:` selectors** before interacting. The first screen load takes ~10 min on the software emulator:
+   ```yaml
+   - extendedWaitUntil:
+       visible:
+         id: "channel_list\\.screen"
+       timeout: 600000
+   ```
+
+2. **Chunk long text** into ~16-char `inputText` calls to stay under the 120s gRPC deadline:
+   ```yaml
+   - inputText: "https://example"
+   - inputText: ".mattermost.com"
+   ```
+
+3. **Use `takeScreenshot`** after key steps. Screenshots may be black on the software emulator GPU, but they work when the emulator has had time to render.
+
+4. **Use `runFlow` for reusable steps** (login, navigation). Store shared flows in `maestro/shared/`.
+
+5. **Prefer `id:` over `text:` selectors** — testIDs are stable across languages and themes. Fall back to text only when no testID exists.
+
+6. **Pre-install Maestro driver** on first run. The driver APK install can take several minutes. Push it manually to speed up:
+   ```bash
+   adb push /tmp/maestro-app*.apk /data/local/tmp/maestro.apk
+   adb shell pm install -r -g /data/local/tmp/maestro.apk
+   ```
 
 ### Running Detox E2E tests
 

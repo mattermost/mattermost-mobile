@@ -1,60 +1,18 @@
+# Logs in and verifies the channel list is visible.
+# Uses the shared login sub-flow for reusability.
+#
+# Run: maestro test maestro/login_flow.yaml
+
 appId: com.mattermost.rnbeta
 ---
-# Launch the app
-- launchApp:
-    appId: com.mattermost.rnbeta
-    clearState: true
 
-# Wait for the server URL screen to load (slow emulator needs generous timeout)
-- extendedWaitUntil:
-    visible: "Enter Server URL"
-    timeout: 600000
+- runFlow:
+    file: shared/login.yaml
+    env:
+      SERVER_URL: "https://test-e2e.test.mattermost.cloud"
+      SERVER_NAME: "testing"
+      USERNAME: "admin"
+      PASSWORD: "admin@7k831gmpy7da5xr8d1hka5k3cr"
 
-# Take a screenshot of the server entry screen
-- takeScreenshot: 01_server_entry_screen
-
-# Tap the Server URL field and type URL in chunks (slow emulator has 120s gRPC timeout)
-- tapOn: "Enter Server URL"
-- inputText: "https://test-e2e"
-- inputText: ".test.mattermost"
-- inputText: ".cloud"
-
-# Tap the Display Name field and type name
-- tapOn: "Display Name"
-- inputText: "testing"
-
-# Take screenshot before connecting
-- takeScreenshot: 02_before_connect
-
-# Tap Connect
-- tapOn: "Connect"
-
-# Wait for the login screen
-- extendedWaitUntil:
-    visible: "Log in"
-    timeout: 180000
-
-# Take screenshot of login screen
-- takeScreenshot: 03_login_screen
-
-# Enter username - look for a text input field
-- tapOn:
-    text: ".*Email or Username.*"
-- inputText: "admin"
-
-# Enter password
-- tapOn:
-    text: ".*Password.*"
-- inputText: "admin@7k831gmpy7"
-- inputText: "da5xr8d1hka5k3cr"
-
-# Tap Log In
-- tapOn: "Log In"
-
-# Wait for the main screen
-- extendedWaitUntil:
-    visible: "Town Square"
-    timeout: 180000
-
-# Take final screenshot
-- takeScreenshot: 04_logged_in
+# Verify channel list loaded
+- takeScreenshot: logged_in_channel_list

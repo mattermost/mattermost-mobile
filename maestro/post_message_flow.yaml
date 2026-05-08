@@ -1,0 +1,50 @@
+# Logs in, opens a channel, and posts a test message.
+# Demonstrates: login sub-flow reuse, testID-based selectors, chunked text input.
+#
+# Run: maestro test maestro/post_message_flow.yaml
+
+appId: com.mattermost.rnbeta
+---
+
+# -- Step 1: Log in using the shared login sub-flow --
+- runFlow:
+    file: shared/login.yaml
+    env:
+      SERVER_URL: "https://test-e2e.test.mattermost.cloud"
+      SERVER_NAME: "testing"
+      USERNAME: "admin"
+      PASSWORD: "admin@7k831gmpy7da5xr8d1hka5k3cr"
+
+# -- Step 2: Navigate to Off-Topic channel --
+# The channel list is now visible. Tap Off-Topic.
+# testID pattern: channel_list.category.<type>.channel_item.<channel-name>
+- tapOn:
+    id: "channel_list\\.category\\..*\\.channel_item\\.off-topic"
+
+# -- Step 3: Wait for the message input to appear --
+# testID: channel.post_draft.post.input
+- extendedWaitUntil:
+    visible:
+      id: "channel\\.post_draft\\.post\\.input"
+    timeout: 120000
+
+- takeScreenshot: channel_opened
+
+# -- Step 4: Type and send a message --
+- tapOn:
+    id: "channel\\.post_draft\\.post\\.input"
+- inputText: "Hello from Maestro"
+- inputText: " on Cloud Agent!"
+
+- takeScreenshot: message_typed
+
+# Tap the send button (testID: channel.post_draft.send_action.send.button)
+- tapOn:
+    id: "channel\\.post_draft\\.send_action\\.send\\.button"
+
+# -- Step 5: Verify message appeared --
+- extendedWaitUntil:
+    visible: "Hello from Maestro on Cloud Agent!"
+    timeout: 60000
+
+- takeScreenshot: message_sent
