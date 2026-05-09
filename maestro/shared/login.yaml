@@ -1,0 +1,77 @@
+# Reusable login sub-flow for Mattermost Mobile.
+# Callers must set these env vars (or Maestro will use defaults):
+#   SERVER_URL   - e.g. https://mattermost.example.com
+#   SERVER_NAME  - display name, e.g. testing
+#   USERNAME     - e.g. admin
+#   PASSWORD     - e.g. mysecretpassword
+#
+# Usage from another flow:
+#   - runFlow:
+#       file: shared/login.yaml
+#       env:
+#         SERVER_URL: "https://mattermost.example.com"
+#         SERVER_NAME: "testing"
+#         USERNAME: "admin"
+#         PASSWORD: "the-password"
+
+appId: com.mattermost.rnbeta
+---
+
+# Launch with clean state so we always start from the server entry screen
+- launchApp:
+    appId: com.mattermost.rnbeta
+    clearState: true
+
+# -- Server Entry Screen --
+# Software emulator (no KVM): RN can take >10 min to mount after clearState.
+# Wait for welcome first, then the URL field.
+- extendedWaitUntil:
+    visible:
+      id: "server_header\\.welcome"
+    timeout: 3600000
+- extendedWaitUntil:
+    visible:
+      id: "server_form\\.server_url\\.input"
+    timeout: 300000
+
+# Tap and fill server URL (chunk long URLs to reduce flaky input on slow emulators)
+- tapOn:
+    id: "server_form\\.server_url\\.input"
+- inputText: "${SERVER_URL}"
+
+# Tap and fill display name
+- tapOn:
+    id: "server_form\\.server_display_name\\.input"
+- inputText: "${SERVER_NAME}"
+
+# Tap Connect (testID: server_form.connect.button)
+- tapOn:
+    id: "server_form\\.connect\\.button"
+
+# -- Login Screen --
+# Wait for login form (testID: login_form.username.input)
+- extendedWaitUntil:
+    visible:
+      id: "login_form\\.username\\.input"
+    timeout: 180000
+
+# Enter username
+- tapOn:
+    id: "login_form\\.username\\.input"
+- inputText: "${USERNAME}"
+
+# Enter password
+- tapOn:
+    id: "login_form\\.password\\.input"
+- inputText: "${PASSWORD}"
+
+# Tap Log In (testID: login_form.signin.button)
+- tapOn:
+    id: "login_form\\.signin\\.button"
+
+# -- Verify Login Success --
+# Wait for the channel list screen (testID: channel_list.screen)
+- extendedWaitUntil:
+    visible:
+      id: "channel_list\\.screen"
+    timeout: 600000

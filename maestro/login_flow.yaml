@@ -1,0 +1,23 @@
+# Logs in and verifies the channel list is visible.
+# Uses the shared login sub-flow for reusability.
+#
+# Run from repo root (pass secrets via -e; never commit real values):
+#   maestro test maestro/login_flow.yaml \
+#     -e SERVER_URL="$MM_TEST_SERVER_URL" \
+#     -e SERVER_NAME="testing" \
+#     -e USERNAME="$MM_TEST_USER_NAME" \
+#     -e PASSWORD="$MM_TEST_PASSWORD"
+
+appId: com.mattermost.rnbeta
+---
+
+- runFlow:
+    file: shared/login.yaml
+    env:
+      SERVER_URL: "${SERVER_URL}"
+      SERVER_NAME: "${SERVER_NAME}"
+      USERNAME: "${USERNAME}"
+      PASSWORD: "${PASSWORD}"
+
+# Verify channel list loaded
+- takeScreenshot: logged_in_channel_list

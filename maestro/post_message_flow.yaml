@@ -1,0 +1,69 @@
+# Logs in, opens a channel, and posts a test message.
+# Demonstrates: login sub-flow reuse, testID-based selectors, chunked text input.
+#
+# Run from repo root:
+#   maestro test maestro/post_message_flow.yaml \
+#     -e SERVER_URL="$MM_TEST_SERVER_URL" \
+#     -e SERVER_NAME="testing" \
+#     -e USERNAME="$MM_TEST_USER_NAME" \
+#     -e PASSWORD="$MM_TEST_PASSWORD"
+
+appId: com.mattermost.rnbeta
+---
+
+# -- Step 1: Log in using the shared login sub-flow --
+- runFlow:
+    file: shared/login.yaml
+    env:
+      SERVER_URL: "${SERVER_URL}"
+      SERVER_NAME: "${SERVER_NAME}"
+      USERNAME: "${USERNAME}"
+      PASSWORD: "${PASSWORD}"
+
+# -- Step 2: Navigate to Off-Topic channel --
+# Wait for channel data to sync from server (categories load after the screen)
+- extendedWaitUntil:
+    visible: "Off-Topic"
+    timeout: 180000
+- tapOn: "Off-Topic"
+
+# -- Step 3: Wait for channel content, handle tooltip, find post input --
+# Wait for either the post draft OR the tooltip (whichever loads first)
+# The channel content takes minutes on software emulator.
+- extendedWaitUntil:
+    visible: "Write to"
+    timeout: 600000
+
+# Dismiss scheduled_post tooltip if present (blocks view on first channel visit)
+- runFlow:
+    when:
+      visible:
+        id: "scheduled_post\\.tooltip\\.close\\.button"
+    file: shared/dismiss_tooltip.yaml
+
+# Now the post draft input should be visible
+- extendedWaitUntil:
+    visible:
+      id: "channel\\.post_draft\\.post\\.input"
+    timeout: 60000
+
+- takeScreenshot: channel_opened
+
+# -- Step 4: Type and send a message --
+- tapOn:
+    id: "channel\\.post_draft\\.post\\.input"
+- inputText: "Hello from Maestro"
+- inputText: " on Cloud Agent!"
+
+- takeScreenshot: message_typed
+
+# Tap the send button (testID: channel.post_draft.send_action.send.button)
+- tapOn:
+    id: "channel\\.post_draft\\.send_action\\.send\\.button"
+
+# -- Step 5: Verify message appeared --
+- extendedWaitUntil:
+    visible: "Hello from Maestro on Cloud Agent!"
+    timeout: 60000
+
+- takeScreenshot: message_sent
