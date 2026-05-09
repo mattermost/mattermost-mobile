@@ -406,6 +406,7 @@ const Server = ({
                     keyboardShouldPersistTaps='handled'
                     scrollToOverflowEnabled={true}
                     style={styles.flex}
+                    mode='layout'
                 >
                     <ServerHeader
                         additionalServer={additionalServer}

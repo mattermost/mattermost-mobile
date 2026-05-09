@@ -188,6 +188,7 @@ function UserListRow({
             <TutorialHighlight
                 itemRef={viewRef}
                 onDismiss={handleDismissTutorial}
+                inModal={true}
             >
                 <TutorialLongPress
                     message={formatMessage({id: 'user.tutorial.long_press', defaultMessage: "Long-press on an item to view a user's profile"})}

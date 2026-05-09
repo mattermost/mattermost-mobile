@@ -222,6 +222,7 @@ const EditServer = ({server, theme}: ServerProps) => {
                     keyboardShouldPersistTaps='handled'
                     scrollToOverflowEnabled={true}
                     style={styles.flex}
+                    mode='layout'
                 >
                     <Header theme={theme}/>
                     <Form

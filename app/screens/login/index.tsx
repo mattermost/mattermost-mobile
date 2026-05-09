@@ -202,6 +202,7 @@ const LoginOptions = ({
                     keyboardShouldPersistTaps='handled'
                     scrollToOverflowEnabled={true}
                     style={styles.flex}
+                    mode='layout'
                 >
                     <View
                         onLayout={onLayout}

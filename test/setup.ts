@@ -466,6 +466,7 @@ jest.mock('react-native-keyboard-controller', () => {
             dismiss: jest.fn(() => Promise.resolve()),
         },
         KeyboardAwareScrollView: 'KeyboardAwareScrollView',
+        KeyboardAvoidingView: 'KeyboardAvoidingView',
         KeyboardState: {
             UNKNOWN: 0,
             OPENING: 1,

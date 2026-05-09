@@ -160,6 +160,7 @@ function StartARun({
                 style={styles.content}
                 contentContainerStyle={styles.contentContainer}
                 keyboardShouldPersistTaps='handled'
+                mode='layout'
             >
                 <FloatingTextInput
                     label={intl.formatMessage({

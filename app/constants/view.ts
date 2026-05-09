@@ -33,6 +33,8 @@ export const ANNOUNCEMENT_BAR_HEIGHT = 40;
 export const BOOKMARKS_BAR_HEIGHT = 48;
 export const CHANNEL_BANNER_HEIGHT = 26;
 
+export const NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN = 24;
+
 export const HOME_PADDING = {
     paddingLeft: 18,
     paddingRight: 20,

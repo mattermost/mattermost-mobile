@@ -60,7 +60,7 @@ export class WebSocketClient extends EventEmitter {
 
         const websocketURL = await getConfigValue(database, 'WebsocketURL');
         const baseUrl = toWsUrl(websocketURL || this.serverUrl);
-        const wsUrl = `${baseUrl}${this.wsPath}?connection_id=${this.connID}&sequence_number=${this.serverSeqNo}`;
+        const wsUrl = `${baseUrl}${this.wsPath}?calls=true&connection_id=${this.connID}&sequence_number=${this.serverSeqNo}`;
 
         const {client} = await getOrCreateWebSocketClient(wsUrl, {
             headers: {authorization: `Bearer ${this.authToken}`},

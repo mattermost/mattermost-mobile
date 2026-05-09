@@ -2538,7 +2538,7 @@ PODS:
     - Yoga
   - react-native-notifications (5.2.2):
     - React-Core
-  - react-native-paste-input (2.0.0):
+  - react-native-paste-input (2.0.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -3526,7 +3526,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNReanimated (4.3.0):
+  - RNReanimated (4.3.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -3553,12 +3553,12 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/apple (= 4.3.0)
-    - RNReanimated/common (= 4.3.0)
+    - RNReanimated/apple (= 4.3.1)
+    - RNReanimated/common (= 4.3.1)
     - RNWorklets
     - SocketRocket
     - Yoga
-  - RNReanimated/apple (4.3.0):
+  - RNReanimated/apple (4.3.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -3588,7 +3588,7 @@ PODS:
     - RNWorklets
     - SocketRocket
     - Yoga
-  - RNReanimated/common (4.3.0):
+  - RNReanimated/common (4.3.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -3677,7 +3677,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNSentry (8.10.0):
+  - RNSentry (8.11.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -3704,7 +3704,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry (= 9.12.0)
+    - Sentry (= 9.12.1)
     - SocketRocket
     - Yoga
   - RNShare (12.3.1):
@@ -3917,9 +3917,9 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - Sentry (9.12.0):
-    - Sentry/Core (= 9.12.0)
-  - Sentry/Core (9.12.0)
+  - Sentry (9.12.1):
+    - Sentry/Core (= 9.12.1)
+  - Sentry/Core (9.12.1)
   - simdjson (3.9.4)
   - SocketRocket (0.7.1)
   - SQLite.swift (0.15.4):
@@ -4079,7 +4079,7 @@ DEPENDENCIES:
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNWorklets (from `../node_modules/react-native-worklets`)
   - "secure-pdf-viewer (from `../libraries/@mattermost/secure-pdf-viewer`)"
-  - Sentry (= 9.12.0)
+  - Sentry (= 9.12.1)
   - "simdjson (from `../node_modules/@nozbe/simdjson`)"
   - SocketRocket (~> 0.7.1)
   - TurboLogIOSNative (from `https://github.com/larkox/react-native-turbo-log-ios-native.git`)
@@ -4489,7 +4489,7 @@ SPEC CHECKSUMS:
   react-native-netinfo: 9fad4eedfec9840a10e73ac4591ea1158523309b
   react-native-network-client: e8848cbc7f4890ebdb5724fcd9fbedce0f2f9482
   react-native-notifications: e2d3c022d6077de7e420ba5c01b4bd9464f3941d
-  react-native-paste-input: 6f2672db3421c3df2c1059f16023ab7629555203
+  react-native-paste-input: 4b1423c882afacf39d7e2617e6c94835dcefaf39
   react-native-performance: a7a65d0b0f3055c5db33e1433e4345143ef6a100
   react-native-safe-area-context: eda63a662750758c1fdd7e719c9f1026c8d161cb
   react-native-video: d7e6372a63833708a2f7a8b48fed59036910428c
@@ -4533,11 +4533,11 @@ SPEC CHECKSUMS:
   RNGestureHandler: 445f4e60308b44ab423660b37073afc01977f48c
   RNKeychain: 76d042fc1dfba47f3945920bc82e0bce9ad1ff55
   RNLocalize: c46dd4008dc8990a098fcafd6ee051122a1ccfda
-  RNPermissions: c77c13e6759e37275f4e0553cf9909f5b3f9e999
+  RNPermissions: 0269bbd619fcd111b15162c015437fb95b60af44
   RNReactNativeHapticFeedback: 8f6dc89cf13406a754487d8f8bd6df4d6feb789b
-  RNReanimated: 63187e23286e126741b17a3f654dff8ca1bf4529
+  RNReanimated: 879497d7fcda8c61e52b1f00ebc7ce9fd97e3cc0
   RNScreens: e902eba58a27d3ad399a495d578e8aba3ea0f490
-  RNSentry: 51365fd551f24a9d90e8b243d6dd96a2ae48c4a0
+  RNSentry: f7b79e2c2078ff7c1cf62960e8f52db686717546
   RNShare: 61cad1e65b8e3788c97ee7c5cac4bcbb25a8df40
   RNSVG: 4a2ac4d20e011e0168f79adc3c04d42bcd69f7b5
   RNWorklets: 534af667da0c0049e0060ae43f03c7df8cc9a6e0
@@ -4545,7 +4545,7 @@ SPEC CHECKSUMS:
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   secure-pdf-viewer: c3bb66d4d5741248f0b9d201556ee0580f30f7d7
-  Sentry: 19f0f2f9d0d51f2234e270962e7c060bef1bd05c
+  Sentry: 49ca124994347ba8f89a70f99784bbeedabfa35e
   simdjson: 7bb9e33d87737cec966e7b427773c67baa4458fe
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SQLite.swift: a107c734115fea616a4ad31371d39f1637e8de56
@@ -4556,6 +4556,6 @@ SPEC CHECKSUMS:
   WatermelonDB: 4c846c8cb94eef3cba90fa034d15310163226703
   Yoga: e9fea23bf9b2766818ce9a8df72f584bf5ad36cd
 
-PODFILE CHECKSUM: ba851b189cca3cb037d4243543e164840f9e1510
+PODFILE CHECKSUM: ebd4ca8ecaf68d41df3c7f8c0da4d615f7a76f9c
 
 COCOAPODS: 1.16.1

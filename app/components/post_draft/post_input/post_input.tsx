@@ -8,7 +8,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessage, type IntlShape, useIntl} from 'react-intl';
 import {
     Alert, AppState, type AppStateStatus, DeviceEventEmitter,
-    type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
+    Platform, type TextInputSelectionChangeEvent,
 } from 'react-native';
 import {useAnimatedKeyboard} from 'react-native-keyboard-controller';
 import Animated, {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
@@ -261,7 +261,7 @@ export default function PostInput({
         }
     }, [intl, longMessageAlertShown, maxMessageLength]);
 
-    const handlePostDraftSelectionChanged = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData> | null, fromHandleTextChange = false) => {
+    const handlePostDraftSelectionChanged = useCallback((event: TextInputSelectionChangeEvent | null, fromHandleTextChange = false) => {
         if (showInputAccessoryView && !fromHandleTextChange) {
             return;
         }

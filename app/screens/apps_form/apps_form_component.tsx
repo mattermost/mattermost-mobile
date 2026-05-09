@@ -423,6 +423,7 @@ function AppsFormComponent({
                 keyboardDismissMode='interactive'
                 keyboardShouldPersistTaps='handled'
                 contentContainerStyle={style.scrollView}
+                mode='layout'
             >
                 {error && (
                     <View style={style.errorContainer} >

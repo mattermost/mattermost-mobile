@@ -10,13 +10,13 @@ import {
     type LayoutRectangle,
     Platform,
     Pressable,
-    SafeAreaView,
     ScrollView,
     StatusBar,
     Text,
     useWindowDimensions,
     View,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {RTCView} from 'react-native-webrtc';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
@@ -55,6 +55,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {bottomSheet, dismissBottomSheet, navigateBack, navigateToScreen} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {dismissKeyboard} from '@utils/keyboard';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
@@ -393,14 +394,14 @@ const CallScreen = ({
     }, [currentCall?.channelId, currentCall?.serverUrl, EnableTranscriptions]);
 
     const toggleCC = useCallback(async () => {
-        Keyboard.dismiss();
+        await dismissKeyboard();
         await dismissBottomSheet();
 
         setShowCC((prev) => !prev);
     }, [setShowCC]);
 
     const switchToThread = useCallback(async () => {
-        Keyboard.dismiss();
+        await dismissKeyboard();
         await dismissBottomSheet();
         if (!currentCall) {
             return;

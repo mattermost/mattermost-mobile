@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 // eslint-disable-next-line no-process-env
-const intuneEnabled = process.env.INTUNE_ENABLED === '1';
+const intuneEnabled = process.env.INTUNE_ENABLED === '1' || process.env.INTUNE_ENABLED === 'true';
 
 const dependencies = {};
 

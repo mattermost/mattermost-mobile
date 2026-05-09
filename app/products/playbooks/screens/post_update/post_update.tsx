@@ -271,6 +271,7 @@ const PostUpdate = ({
             keyboardDismissMode='interactive'
             keyboardShouldPersistTaps='handled'
             style={styles.flex}
+            mode='layout'
         >
             <Text style={styles.introMessage}>{introMessage}</Text>
             <FloatingTextInput

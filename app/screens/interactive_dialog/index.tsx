@@ -206,6 +206,7 @@ function InteractiveDialog({
                 scrollToOverflowEnabled={true}
                 keyboardDismissMode='interactive'
                 keyboardShouldPersistTaps='handled'
+                mode='layout'
             >
                 {Boolean(error) && (
                     <ErrorText

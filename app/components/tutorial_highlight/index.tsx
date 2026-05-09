@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {Modal, View, useWindowDimensions} from 'react-native';
+import {Modal, Platform, StatusBar, View, useWindowDimensions} from 'react-native';
 
+import {isAndroidEdgeToEdge} from '@constants/device';
 import {useTutorial} from '@context/tutorial';
 
 import HighlightItem from './item';
@@ -14,25 +15,31 @@ type Props = {
     itemBorderRadius?: number;
     onDismiss: () => void;
     onShow?: () => void;
+    inModal?: boolean;
 }
 
 const EMPTY_BOUNDS: TutorialItemBounds = {startX: 0, startY: 0, endX: 0, endY: 0};
 
-const TutorialHighlight = ({children, itemRef, itemBorderRadius, onDismiss, onShow}: Props) => {
+const TutorialHighlight = ({children, itemRef, itemBorderRadius, inModal, onDismiss, onShow}: Props) => {
     const {width, height} = useWindowDimensions();
     const {rootOffset} = useTutorial();
     const [itemBounds, setItemBounds] = useState<TutorialItemBounds>(EMPTY_BOUNDS);
 
     const onRootLayout = useCallback(() => {
-        itemRef.current?.measureInWindow((x, y, w, h) => {
+        itemRef.current?.measure((x, y, w, h, pageX, pageY) => {
+            let offset = inModal && Platform.OS === 'ios' ? rootOffset : 0;
+            if (!isAndroidEdgeToEdge && StatusBar.currentHeight) {
+                offset = StatusBar.currentHeight;
+            }
+
             setItemBounds({
-                startX: x,
-                startY: y + rootOffset,
-                endX: x + w,
-                endY: y + rootOffset + h,
+                startX: pageX,
+                startY: pageY + offset,
+                endX: pageX + w,
+                endY: pageY + h + offset,
             });
         });
-    }, [itemRef, rootOffset]);
+    }, [itemRef, inModal, rootOffset]);
 
     const handleShowTutorial = useCallback(() => {
         if (onShow) {
@@ -48,11 +55,13 @@ const TutorialHighlight = ({children, itemRef, itemBorderRadius, onDismiss, onSh
             onDismiss={onDismiss}
             onRequestClose={onDismiss}
             testID='tutorial_highlight'
+            statusBarTranslucent={true}
         >
             <View
                 style={{flex: 1}}
                 onLayout={onRootLayout}
             >
+                {itemBounds.endX > 0 &&
                 <HighlightItem
                     borderRadius={itemBorderRadius}
                     itemBounds={itemBounds}
@@ -61,6 +70,7 @@ const TutorialHighlight = ({children, itemRef, itemBorderRadius, onDismiss, onSh
                     width={width}
                     onLayout={handleShowTutorial}
                 />
+                }
                 {itemBounds.endX > 0 && children}
             </View>
         </Modal>

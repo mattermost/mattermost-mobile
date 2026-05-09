@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, type LayoutChangeEvent, Platform, View} from 'react-native';
+import {Keyboard, Platform, View} from 'react-native';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
 import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remote/user';
@@ -16,7 +17,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {TutorialProvider} from '@context/tutorial';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useKeyboardOverlap} from '@hooks/device';
 import {navigateBack} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
@@ -48,6 +48,8 @@ type Props = {
     teammateNameDisplay: string;
     tutorialWatched: boolean;
 }
+
+const safeAreaEdges: Edge[] = ['bottom', 'left', 'right'];
 
 const close = () => {
     Keyboard.dismiss();
@@ -104,10 +106,6 @@ export default function CreateDirectMessage({
     const style = getStyleFromTheme(theme);
     const intl = useIntl();
     const {formatMessage} = intl;
-
-    const mainView = useRef<View>(null);
-    const [containerHeight, setContainerHeight] = useState(0);
-    const keyboardOverlap = useKeyboardOverlap(mainView, containerHeight);
 
     const [term, setTerm] = useState('');
     const [startingConversation, setStartingConversation] = useState(false);
@@ -190,10 +188,6 @@ export default function CreateDirectMessage({
         }
     }, [currentUserId, startConversation, clearSearch, selectedCount]);
 
-    const onLayout = useCallback((e: LayoutChangeEvent) => {
-        setContainerHeight(e.nativeEvent.layout.height);
-    }, []);
-
     const onChangeText = useCallback((searchTerm: string) => {
         setTerm(searchTerm);
     }, []);
@@ -259,11 +253,10 @@ export default function CreateDirectMessage({
     }
 
     return (
-        <View
+        <SafeAreaView
             style={style.container}
             testID='create_direct_message.screen'
-            onLayout={onLayout}
-            ref={mainView}
+            edges={safeAreaEdges}
         >
             <TutorialProvider>
                 <View style={style.searchBar}>
@@ -291,7 +284,6 @@ export default function CreateDirectMessage({
                     location={Screens.CREATE_DIRECT_MESSAGE}
                 />
                 <SelectedUsers
-                    keyboardOverlap={keyboardOverlap}
                     showToast={showToast}
                     setShowToast={setShowToast}
                     toastIcon={'check'}
@@ -306,7 +298,7 @@ export default function CreateDirectMessage({
                     maxUsers={General.MAX_USERS_IN_GM}
                 />
             </TutorialProvider>
-        </View>
+        </SafeAreaView>
     );
 }
 

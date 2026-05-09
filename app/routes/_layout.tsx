@@ -198,6 +198,9 @@ export default function RootLayout() {
                         <PortalProvider>
                             <KeyboardProvider
                                 enabled={isEdgeToEdge}
+                                statusBarTranslucent={isEdgeToEdge}
+                                navigationBarTranslucent={isEdgeToEdge}
+                                preserveEdgeToEdge={isEdgeToEdge}
                                 preload={true}
                             >
                                 <Stack screenOptions={stackScreenOptions}>

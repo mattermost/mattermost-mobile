@@ -8,6 +8,8 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
+import {isEdgeToEdge} from '@constants/device';
+import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
@@ -81,7 +83,8 @@ const AgentSelector = ({
 
         // Calculate height based on number of agents
         const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(agents.length, ITEM_HEIGHT);
-        const componentHeight = optionsHeight + paddingBottom + insets.bottom;
+        const bottom = isEdgeToEdge ? insets.bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
+        const componentHeight = optionsHeight + paddingBottom + bottom;
 
         const points: Array<string | number> = [1, componentHeight];
 

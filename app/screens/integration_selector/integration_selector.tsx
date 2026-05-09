@@ -5,7 +5,7 @@ import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {getExistingUserProfilesByIdWithFallback} from '@actions/local/user';
 import {fetchChannels, searchChannels} from '@actions/remote/channel';
@@ -44,8 +44,12 @@ const VALID_DATASOURCES = [
     ViewConstants.DATA_SOURCE_DYNAMIC];
 
 const close = () => {
+    SettingsStore.removeIntegrationsSelectCallback();
+    SettingsStore.removeIntegrationsDynamicOptionsCallback();
     navigateBack();
 };
+
+const safeAreaEdges: Edge[] = ['bottom', 'left', 'right'];
 
 const extractItemKey = (dataSource: string, item: DataType): string => {
     switch (dataSource) {
@@ -241,21 +245,20 @@ function IntegrationSelector({
     const handleRemoveOption = useCallback((item: Channel | DialogOption | UserProfile) => {
         const itemKey = extractItemKey(dataSource, item);
 
-        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-            setSelectedIds((current) => {
-                const selectedIdItems = {...current};
-                delete selectedIdItems[itemKey];
-                return selectedIdItems;
-            });
-        } else {
-            setMultiselectSelected((current) => {
-                const multiselectSelectedItems = {...current};
-                if (secureGetFromRecord<any>(multiselectSelectedItems, itemKey) !== undefined) {
-                    delete multiselectSelectedItems[itemKey];
-                }
-                return multiselectSelectedItems;
-            });
-        }
+        setSelectedIds((current) => {
+            const selectedIdItems = {...current};
+            delete selectedIdItems[itemKey];
+            return selectedIdItems;
+        });
+
+        setMultiselectSelected((current) => {
+            const multiselectSelectedItems = {...current};
+            if (secureGetFromRecord<any>(multiselectSelectedItems, itemKey) !== undefined) {
+                delete multiselectSelectedItems[itemKey];
+            }
+            return multiselectSelectedItems;
+        });
+
     }, [dataSource]);
 
     const getChannels = useDebounce(useCallback(async () => {
@@ -277,7 +280,7 @@ function IntegrationSelector({
 
     const loadMore = useCallback(async () => {
         if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
-            await getChannels();
+            getChannels();
         }
 
         // dynamic options are not paged so are not reloaded on scroll
@@ -426,13 +429,6 @@ function IntegrationSelector({
     }, [onHandleMultiselectSubmit, isMultiselect, navigation, intl]);
 
     useEffect(() => {
-        return () => {
-            SettingsStore.removeIntegrationsSelectCallback();
-            SettingsStore.removeIntegrationsDynamicOptionsCallback();
-        };
-    }, []);
-
-    useEffect(() => {
         const multiselectItems: MultiselectSelectedMap = {};
 
         if (isMultiselect && Array.isArray(selected) && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
@@ -563,7 +559,9 @@ function IntegrationSelector({
             // New multiselect
             selectedItems = Object.values(selectedIds) as UserProfile[];
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
-            selectedItems = [...Object.values(multiselectSelected), ...Object.values(selectedIds)] as Channel[];
+            selectedItems = Array.from(
+                new Set([...Object.values(multiselectSelected), ...Object.values(selectedIds)]),
+            ) as Channel[];
         }
 
         if (!selectedItems.length) {
@@ -658,7 +656,10 @@ function IntegrationSelector({
     const selectedOptionsComponent = renderSelectedOptions();
 
     return (
-        <SafeAreaView style={style.container}>
+        <SafeAreaView
+            edges={safeAreaEdges}
+            style={style.container}
+        >
             <View
                 testID='integration_selector.screen'
                 style={style.searchBar}

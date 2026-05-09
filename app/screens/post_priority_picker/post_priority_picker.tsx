@@ -10,7 +10,9 @@ import FormattedText from '@components/formatted_text';
 import {getItemHeightWithDescription} from '@components/option_item';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
+import {isEdgeToEdge} from '@constants/device';
 import {PostPriorityColors, PostPriorityType} from '@constants/post';
+import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import BottomSheet from '@screens/bottom_sheet';
@@ -113,7 +115,9 @@ const PostPriorityPicker = ({
             }
         }
 
-        return [1, componentHeight + bottom];
+        const snapBottom = isEdgeToEdge ? bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
+
+        return [1, componentHeight + snapBottom];
     }, [bottom, displayPersistentNotifications, isPostAcknowledgementEnabled]);
 
     const handleUpdatePriority = useCallback((priority: PostPriority['priority']) => {

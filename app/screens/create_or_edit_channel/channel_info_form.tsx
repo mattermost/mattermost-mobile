@@ -115,9 +115,8 @@ export default function ChannelInfoForm({
 
     const updateScrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
-    const mainView = useRef<View>(null);
     const [wrapperHeight, setWrapperHeight] = useState(0);
-    const keyboardOverlap = useKeyboardOverlap(mainView, wrapperHeight);
+    const keyboardOverlap = useKeyboardOverlap();
 
     const keyboardHeight = useKeyboardHeight();
     const [keyboardVisible, setKeyBoardVisible] = useState(false);
@@ -259,7 +258,6 @@ export default function ChannelInfoForm({
             style={styles.container}
             testID='create_or_edit_channel.screen'
             onLayout={onLayoutWrapper}
-            ref={mainView}
         >
             <KeyboardAwareScrollView
                 bounces={false}
@@ -269,6 +267,7 @@ export default function ChannelInfoForm({
                 contentContainerStyle={styles.scrollView}
                 scrollToOverflowEnabled={true}
                 onScroll={onScroll}
+                mode='layout'
             >
                 {displayError}
                 <TouchableWithoutFeedback

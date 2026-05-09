@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
-import {Keyboard, type LayoutChangeEvent, Platform, View} from 'react-native';
+import {Keyboard, Platform, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {addMembersToChannel} from '@actions/remote/channel';
@@ -20,7 +20,6 @@ import {useTheme} from '@context/theme';
 import {TutorialProvider} from '@context/tutorial';
 import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useKeyboardOverlap} from '@hooks/device';
 import {navigateBack} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {showAddChannelMembersSnackbar} from '@utils/snack_bar';
@@ -123,10 +122,6 @@ export default function ChannelAddMembers({
     const intl = useIntl();
     const {formatMessage} = intl;
 
-    const mainView = useRef<View>(null);
-    const [containerHeight, setContainerHeight] = useState(0);
-    const keyboardOverlap = useKeyboardOverlap(mainView, containerHeight);
-
     const [term, setTerm] = useState('');
     const [addingMembers, setAddingMembers] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set<string>());
@@ -191,10 +186,6 @@ export default function ChannelAddMembers({
         setTerm(searchTerm);
     }, []);
 
-    const onLayout = useCallback((e: LayoutChangeEvent) => {
-        setContainerHeight(e.nativeEvent.layout.height);
-    }, []);
-
     const userFetchFunction = useCallback(async (page: number) => {
         if (!channel) {
             return [];
@@ -248,8 +239,6 @@ export default function ChannelAddMembers({
         <SafeAreaView
             style={style.container}
             testID={`${TEST_ID}.screen`}
-            onLayout={onLayout}
-            ref={mainView}
             edges={safeAreaEdges}
         >
             <TutorialProvider>
@@ -297,7 +286,6 @@ export default function ChannelAddMembers({
                     location={Screens.CHANNEL_ADD_MEMBERS}
                 />
                 <SelectedUsers
-                    keyboardOverlap={keyboardOverlap}
                     selectedIds={selectedIds}
                     onRemove={handleRemoveProfile}
                     teammateNameDisplay={teammateNameDisplay}

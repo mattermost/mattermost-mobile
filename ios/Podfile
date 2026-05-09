@@ -38,7 +38,8 @@ setup_permissions([
   "Camera",
   "Microphone",
   "Notifications",
-  "PhotoLibrary"
+  "PhotoLibrary",
+  "Bluetooth"
 ])
 
 # Conditional Intune MAM support
@@ -91,13 +92,13 @@ end
 target 'NotificationService' do
   inherit! :search_paths
   pod 'TurboLogIOSNative', :git => 'https://github.com/larkox/react-native-turbo-log-ios-native.git', :modular_headers => true
-  pod 'Sentry', '9.12.0'
+  pod 'Sentry', '9.12.1'
   pod 'Gekidou', :path => './Gekidou'
 end
 
 target 'MattermostShare' do
   inherit! :search_paths
-  pod 'Sentry', '9.12.0'
+  pod 'Sentry', '9.12.1'
   pod 'Gekidou', :path => './Gekidou'
   pod 'OpenGraph', '1.4.1'
 end
