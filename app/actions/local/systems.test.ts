@@ -8,6 +8,7 @@ import {ActionType} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
+import {getServer} from '@queries/app/servers';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 
@@ -100,6 +101,27 @@ describe('storeConfigAndLicense', () => {
         const models = await storeConfigAndLicense(serverUrl, {AboutLink: 'link'} as ClientConfig, {Announcement: 'test'} as ClientLicense);
         expect(models).toBeDefined();
         expect(models.length).toBe(1); // config
+    });
+
+    it('sets persistenceFlag to zero-persistence when MEM is enabled and AutoCacheCleanupDays is 0', async () => {
+        await storeConfigAndLicense(
+            serverUrl,
+            {MobileEphemeralModeEnabled: 'true', MobileEphemeralModeAutoCacheCleanupDays: '0'} as ClientConfig,
+            {} as ClientLicense,
+        );
+        const server = await getServer(serverUrl);
+        expect(server?.persistenceFlag).toBe('zero-persistence');
+    });
+
+    it('resets persistenceFlag to empty when MEM config no longer qualifies for zero-persistence', async () => {
+        await DatabaseManager.updatePersistenceFlag(serverUrl, 'zero-persistence');
+        await storeConfigAndLicense(
+            serverUrl,
+            {MobileEphemeralModeEnabled: 'false'} as ClientConfig,
+            {} as ClientLicense,
+        );
+        const server = await getServer(serverUrl);
+        expect(server?.persistenceFlag).toBe('');
     });
 });
 

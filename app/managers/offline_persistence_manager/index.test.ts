@@ -13,6 +13,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {navigateToScreen} from '@screens/navigation';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
+import {deleteFileCache} from '@utils/file';
 
 import OfflinePersistenceManager from './index';
 
@@ -21,6 +22,9 @@ import type ServersModel from '@typings/database/models/app/servers';
 jest.mock('@actions/local/ephemeral_mode/wipe', () => ({
     wipeServerDatabaseWithRetry: jest.fn().mockResolvedValue({success: true}),
     wipeServerFiles: jest.fn().mockReturnValue({success: true}),
+}));
+jest.mock('@utils/file', () => ({
+    deleteFileCache: jest.fn().mockResolvedValue(true),
 }));
 jest.mock('@init/push_notifications', () => ({
     __esModule: true,
@@ -177,6 +181,12 @@ describe('OfflinePersistenceManager', () => {
         await DatabaseManager.destroyServerDatabase(serverB).catch(() => undefined);
         disableFakeTimers();
         jest.clearAllMocks();
+
+        // Some tests override getServer with mockResolvedValue; restore the actual implementation
+        // so later tests that depend on the real DB query are not affected.
+        jest.mocked(getServer).mockImplementation(
+            jest.requireActual<typeof import('@queries/app/servers')>('@queries/app/servers').getServer,
+        );
     });
 
     it('initializing with ephemeral mode disabled skips subscriptions and clears any stale disconnected_since', async () => {
@@ -688,6 +698,82 @@ describe('OfflinePersistenceManager', () => {
 
             expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
             expect(wipeServerFiles).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('zero persistence mode guard', () => {
+        it('addServer skips OPM subscription for a ZPM server even when ephemeral mode config is enabled', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+            await seedConfigAndRow(serverA, {enabled: false, timeoutSec: 10});
+
+            await OfflinePersistenceManager.init([credsA]);
+            await advanceTimers(0);
+
+            // Enabling MEM would normally activate OPM, but ZPM guard must prevent it
+            await updateConfig(serverA, {enabled: true});
+            await advanceTimers(0);
+
+            expect(WebsocketManager.observeWebsocketState).not.toHaveBeenCalledWith(serverA);
+        });
+
+        it('addServer still activates OPM for non-ZPM servers when ephemeral mode config is enabled', async () => {
+            await seedConfigAndRow(serverA, {enabled: false, timeoutSec: 10});
+
+            await OfflinePersistenceManager.init([credsA]);
+            await advanceTimers(0);
+
+            await updateConfig(serverA, {enabled: true});
+            await advanceTimers(0);
+
+            expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledWith(serverA);
+        });
+
+        it('deletes file cache on background for ZPM servers', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+
+            await OfflinePersistenceManager.init([credsA, credsB]);
+            await advanceTimers(0);
+            jest.mocked(deleteFileCache).mockClear();
+
+            setAppState('background');
+            await advanceTimers(0);
+
+            expect(deleteFileCache).toHaveBeenCalledWith(serverA);
+            expect(deleteFileCache).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not delete file cache on foreground transitions', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+
+            await OfflinePersistenceManager.init([credsA]);
+            await advanceTimers(0);
+            jest.mocked(deleteFileCache).mockClear();
+
+            setAppState('active');
+            await advanceTimers(0);
+
+            expect(deleteFileCache).not.toHaveBeenCalled();
+        });
+
+        it('installs the AppState listener for a ZPM server even when no MEM-active server exists', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+
+            await OfflinePersistenceManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(AppState.addEventListener).toHaveBeenCalledTimes(1);
+        });
+
+        it('removes the AppState listener once the last ZPM server is removed', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+
+            await OfflinePersistenceManager.init([credsA]);
+            await advanceTimers(0);
+            expect(AppState.addEventListener).toHaveBeenCalledTimes(1);
+
+            OfflinePersistenceManager.removeServer(serverA);
+
+            expect(appStateRemoveSpies[0]).toHaveBeenCalled();
         });
     });
 });
