@@ -16,6 +16,7 @@ import {prepareEntryModels, truncateCrtRelatedTables} from '@queries/servers/ent
 import {getHasCRTChanged} from '@queries/servers/preference';
 import {getLastInitialLoad} from '@queries/servers/system';
 import {getTeamById, prepareDeleteTeam, queryTeamsById, removeTeamsFromTeamHistory} from '@queries/servers/team';
+import EphemeralStore from '@store/ephemeral_store';
 import {logDebug, logError} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
@@ -317,6 +318,11 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
         if (models.length) {
             await operator.batchRecords(models, 'entryInitialLoad');
         }
+
+        // can_join_other_teams is computed server-side from the user's ListPublicTeams /
+        // ListPrivateTeams permissions and team membership. Stored in EphemeralStore so the
+        // "Join Another Team" UI doesn't have to wait for the deferred-actions queue.
+        EphemeralStore.setCanJoinOtherTeams(serverUrl, initialLoad.can_join_other_teams);
 
         if (activeTeam?.team.group_constrained) {
             fetchGroupsForTeamIfConstrained(serverUrl, initialTeamId);
