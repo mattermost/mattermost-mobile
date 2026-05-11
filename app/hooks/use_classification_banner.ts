@@ -22,6 +22,8 @@ export type ClassificationBannerState = {
 
 const hiddenState: ClassificationBannerState = {visible: false, levelName: '', color: ''};
 
+const isClassificationField = (f: {name: string}) => f.name === FIELD_NAME || f.name === LINKED_FIELD_NAME;
+
 export function useClassificationBannerState(serverUrl: string): ClassificationBannerState {
     const [renderCount, forceRender] = useReducer((x: number) => x + 1, 0);
 
@@ -39,10 +41,7 @@ export function useClassificationBannerState(serverUrl: string): ClassificationB
 
             if (!resolvedId) {
                 const fields = getPropertyFields(serverUrl, _groupId);
-                const isClassificationGroup = fields.some(
-                    (f) => f.name === FIELD_NAME || f.name === LINKED_FIELD_NAME,
-                );
-                if (isClassificationGroup) {
+                if (fields.some(isClassificationField)) {
                     registerGroupName(serverUrl, GROUP_NAME, _groupId);
                     forceRender();
                 }
