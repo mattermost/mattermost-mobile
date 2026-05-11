@@ -422,6 +422,27 @@ describe('teams', () => {
             expect(mockClient.getMyTeams).toHaveBeenCalledWith(groupLabel);
             expect(mockClient.getTeams).toHaveBeenCalledWith(0, PER_PAGE_DEFAULT, false, groupLabel);
         });
+
+        it('should set canJoin false when getMyTeams fails', async () => {
+            const err = new Error('network unavailable');
+            (mockClient.getMyTeams as jest.Mock).mockRejectedValue(err);
+
+            const result = await updateCanJoinTeams(serverUrl) as {error: unknown};
+
+            expect(result?.error).toBeDefined();
+            expect(setCanJoinSpy).toHaveBeenCalledWith(serverUrl, false);
+        });
+
+        it('should set canJoin false when getTeams fails', async () => {
+            const err = new Error('server timeout');
+            (mockClient.getMyTeams as jest.Mock).mockResolvedValue([activeTeam('t1')]);
+            (mockClient.getTeams as jest.Mock).mockRejectedValue(err);
+
+            const result = await updateCanJoinTeams(serverUrl) as {error: unknown};
+
+            expect(result?.error).toBeDefined();
+            expect(setCanJoinSpy).toHaveBeenCalledWith(serverUrl, false);
+        });
     });
 
     it('fetchTeamsThreads - handle not found database', async () => {
