@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {DeviceEventEmitter} from 'react-native';
+import {firstValueFrom} from 'rxjs';
 
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {Events} from '@constants';
@@ -11,6 +12,7 @@ import NetworkManager from '@managers/network_manager';
 import {prepareEntryModels} from '@queries/servers/entry';
 import {getLastInitialLoad, getLastTeamLoad, getTeamHistory} from '@queries/servers/system';
 import {getTeamById} from '@queries/servers/team';
+import EphemeralStore from '@store/ephemeral_store';
 
 import {entryInitialLoad} from './index';
 
@@ -51,6 +53,7 @@ const mockInitialLoad = {
     roles: [],
     preferences: [],
     timestamp: 1706000001000,
+    can_join_other_teams: false,
 };
 
 const mockConfig = {
@@ -126,6 +129,26 @@ describe('entryInitialLoad', () => {
 
         expect(result).toEqual({error: mockError});
         expect(mockClient.getInitialLoad).toHaveBeenCalled();
+    });
+
+    it('should set canJoinOtherTeams in EphemeralStore from the response', async () => {
+        mockClient.getInitialLoad.mockResolvedValue({...mockInitialLoad, can_join_other_teams: true});
+
+        await entryInitialLoad(serverUrl, 'team1');
+
+        const value = await firstValueFrom(EphemeralStore.observeCanJoinOtherTeams(serverUrl));
+        expect(value).toBe(true);
+    });
+
+    it('should set canJoinOtherTeams to false when server returns false', async () => {
+        // First seed it to true so we can verify the false write actually flips it.
+        EphemeralStore.setCanJoinOtherTeams(serverUrl, true);
+        mockClient.getInitialLoad.mockResolvedValue({...mockInitialLoad, can_join_other_teams: false});
+
+        await entryInitialLoad(serverUrl, 'team1');
+
+        const value = await firstValueFrom(EphemeralStore.observeCanJoinOtherTeams(serverUrl));
+        expect(value).toBe(false);
     });
 
     describe('stale team_id — removed_team_ids handling', () => {

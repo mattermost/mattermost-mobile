@@ -111,4 +111,5 @@ type InitialLoadResponse = {
     preference_tombstones?: Array<{user_id: string; category: string; name: string; delete_at: number}>;
     timestamp: number;
     priority_hints?: InitialLoadPriorityHints;
+    can_join_other_teams: boolean;
 };
