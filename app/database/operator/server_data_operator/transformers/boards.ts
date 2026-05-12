@@ -17,7 +17,7 @@ export const transformViewRecord = ({action, database, value}: TransformerArgs<V
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
     if (!isCreateAction && !record) {
-        return Promise.reject(new Error('Record not found for non create action'));
+        throw new Error('Record not found for non create action');
     }
 
     const fieldsMapper = (view: ViewModel) => {
@@ -51,7 +51,7 @@ export const transformPropertyFieldRecord = ({action, database, value}: Transfor
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
     if (!isCreateAction && !record) {
-        return Promise.reject(new Error('Record not found for non create action'));
+        throw new Error('Record not found for non create action');
     }
 
     const fieldsMapper = (field: PropertyFieldModel) => {
@@ -91,7 +91,7 @@ export const transformPropertyValueRecord = ({action, database, value}: Transfor
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
     if (!isCreateAction && !record) {
-        return Promise.reject(new Error('Record not found for non create action'));
+        throw new Error('Record not found for non create action');
     }
 
     const fieldsMapper = (propertyValue: PropertyValueModel) => {

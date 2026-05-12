@@ -52,7 +52,7 @@ describe('*** BOARDS Prepare Records Test ***', () => {
             const database = await createTestConnection({databaseName: 'boards_view_error', setActive: true});
             expect(database).toBeTruthy();
 
-            await expect(transformViewRecord({
+            expect(() => transformViewRecord({
                 action: OperationType.UPDATE,
                 database: database!,
                 value: {
@@ -70,7 +70,7 @@ describe('*** BOARDS Prepare Records Test ***', () => {
                         delete_at: 0,
                     } as View,
                 },
-            })).rejects.toThrow('Record not found for non create action');
+            })).toThrow('Record not found for non create action');
         });
 
         it('should preserve existing fields when partial payload omits them', async () => {
@@ -155,14 +155,14 @@ describe('*** BOARDS Prepare Records Test ***', () => {
             const database = await createTestConnection({databaseName: 'boards_field_error', setActive: true});
             expect(database).toBeTruthy();
 
-            await expect(transformPropertyFieldRecord({
+            expect(() => transformPropertyFieldRecord({
                 action: OperationType.UPDATE,
                 database: database!,
                 value: {
                     record: undefined,
                     raw: {id: 'field1'} as PropertyField,
                 },
-            })).rejects.toThrow('Record not found for non create action');
+            })).toThrow('Record not found for non create action');
         });
     });
 
