@@ -10,13 +10,14 @@ import type {PostUpdateWebsocketMessage} from '@agents/types';
  * Handle agent post update WebSocket events
  * Called when the server sends streaming updates for agent responses
  */
-export function handleAgentPostUpdate(msg: WebSocketMessage<PostUpdateWebsocketMessage>): void {
+export function handleAgentPostUpdate(serverUrl: string, msg: WebSocketMessage<PostUpdateWebsocketMessage>): void {
     if (!msg.data) {
         return;
     }
 
-    // Delegate to the streaming store
-    streamingStore.handleWebSocketMessage(msg.data);
+    // Delegate to the streaming store, passing serverUrl so per-server eviction
+    // on logout works correctly when multiple servers are connected.
+    streamingStore.handleWebSocketMessage(msg.data, serverUrl);
 }
 
 /**

@@ -34,6 +34,10 @@ class ConversationStore {
 
     private inflight = new Map<string, Promise<void>>();
 
+    // Track which server each conversation was fetched from so we can evict
+    // only the conversations belonging to a specific server on logout.
+    private serverMap = new Map<string, string>();
+
     private getSubject(conversationId: string): BehaviorSubject<ConversationState> {
         let subject = this.subjects.get(conversationId);
         if (!subject) {
@@ -48,6 +52,8 @@ class ConversationStore {
         if (existing) {
             return existing;
         }
+
+        this.serverMap.set(conversationId, serverUrl);
 
         const subject = this.getSubject(conversationId);
         subject.next({...subject.value, loading: true, error: undefined});
@@ -86,9 +92,19 @@ class ConversationStore {
     /** Drop a conversation's cache entry without re-fetching. */
     evict(conversationId: string): void {
         this.inflight.delete(conversationId);
+        this.serverMap.delete(conversationId);
         const subject = this.subjects.get(conversationId);
         if (subject) {
             subject.next(INITIAL_STATE);
+        }
+    }
+
+    /** Evict all conversations that belong to a specific server. */
+    clearForServer(serverUrl: string): void {
+        for (const [conversationId, url] of this.serverMap) {
+            if (url === serverUrl) {
+                this.evict(conversationId);
+            }
         }
     }
 
@@ -100,10 +116,11 @@ class ConversationStore {
         return this.getSubject(conversationId).asObservable();
     }
 
-    // Called on logout to drop every cached conversation.
+    // Called on full logout to drop every cached conversation across all servers.
     clear(): void {
         // Clear inflight first so resolutions land on still-active subjects.
         this.inflight.clear();
+        this.serverMap.clear();
         for (const subject of this.subjects.values()) {
             subject.next(INITIAL_STATE);
             subject.complete();
@@ -148,6 +165,10 @@ export function invalidateConversation(serverUrl: string, conversationId: string
 
 export function evictConversation(conversationId: string): void {
     conversationStore.evict(conversationId);
+}
+
+export function clearConversationCacheForServer(serverUrl: string): void {
+    conversationStore.clearForServer(serverUrl);
 }
 
 export function clearConversationCache(): void {

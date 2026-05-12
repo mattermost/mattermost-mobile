@@ -12,6 +12,10 @@ import {logWarning} from '@utils/log';
 class StreamingPostStore {
     private streamingSubjects: Map<string, BehaviorSubject<StreamingState | undefined>> = new Map();
 
+    // Track which server each post belongs to so we can evict only a specific
+    // server's state on logout without disrupting other active servers.
+    private postServerMap: Map<string, string> = new Map();
+
     private getSubject(postId: string): BehaviorSubject<StreamingState | undefined> {
         let subject = this.streamingSubjects.get(postId);
         if (!subject) {
@@ -24,7 +28,10 @@ class StreamingPostStore {
     // Preserve any early tool_call/annotation/text on `start` — events from
     // different WebSocket scopes can arrive before `start`, and wiping here
     // would drop pending-approval state. Regenerate paths clear state explicitly.
-    startStreaming(postId: string): void {
+    startStreaming(postId: string, serverUrl?: string): void {
+        if (serverUrl) {
+            this.postServerMap.set(postId, serverUrl);
+        }
         const existing = this.getStreamingState(postId);
         const hasEarlyContent = Boolean(
             existing && (
@@ -155,7 +162,7 @@ class StreamingPostStore {
         }
     }
 
-    handleWebSocketMessage(data: PostUpdateWebsocketMessage): void {
+    handleWebSocketMessage(data: PostUpdateWebsocketMessage, serverUrl?: string): void {
         const {post_id, next, control, reasoning, tool_call, annotations} = data;
 
         if (!post_id) {
@@ -164,7 +171,7 @@ class StreamingPostStore {
 
         // Handle control signals
         if (control === CONTROL_SIGNALS.START) {
-            this.startStreaming(post_id);
+            this.startStreaming(post_id, serverUrl);
             return;
         }
 
@@ -238,15 +245,26 @@ class StreamingPostStore {
             return;
         }
 
+        this.postServerMap.delete(postId);
         subject.next(undefined);
     }
 
-    // Called on logout to drop every cached post.
+    /** Evict all streaming state for posts belonging to a specific server. */
+    clearForServer(serverUrl: string): void {
+        for (const [postId, url] of this.postServerMap) {
+            if (url === serverUrl) {
+                this.removePost(postId);
+            }
+        }
+    }
+
+    // Called on full logout to drop every cached post across all servers.
     clear(): void {
+        this.postServerMap.clear();
         for (const subject of this.streamingSubjects.values()) {
             subject.next(undefined);
             subject.complete();
-        }
+
         this.streamingSubjects.clear();
     }
 }

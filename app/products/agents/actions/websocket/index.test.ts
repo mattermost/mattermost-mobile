@@ -25,7 +25,7 @@ describe('handleAgentPostUpdate', () => {
         jest.clearAllMocks();
     });
 
-    it('should call streamingStore.handleWebSocketMessage with message data', () => {
+    it('should call streamingStore.handleWebSocketMessage with message data and serverUrl', () => {
         const messageData: PostUpdateWebsocketMessage = {
             post_id: 'post123',
             next: 'Hello world',
@@ -44,10 +44,10 @@ describe('handleAgentPostUpdate', () => {
             seq: 1,
         };
 
-        handleAgentPostUpdate(msg);
+        handleAgentPostUpdate('https://test.mattermost.com', msg);
 
         expect(streamingStore.handleWebSocketMessage).toHaveBeenCalledTimes(1);
-        expect(streamingStore.handleWebSocketMessage).toHaveBeenCalledWith(messageData);
+        expect(streamingStore.handleWebSocketMessage).toHaveBeenCalledWith(messageData, 'https://test.mattermost.com');
     });
 
     it('should return early when data is undefined', () => {
@@ -63,7 +63,7 @@ describe('handleAgentPostUpdate', () => {
             seq: 1,
         };
 
-        handleAgentPostUpdate(msg as unknown as WebSocketMessage<PostUpdateWebsocketMessage>);
+        handleAgentPostUpdate('https://test.mattermost.com', msg as unknown as WebSocketMessage<PostUpdateWebsocketMessage>);
 
         expect(streamingStore.handleWebSocketMessage).not.toHaveBeenCalled();
     });
@@ -81,7 +81,7 @@ describe('handleAgentPostUpdate', () => {
             seq: 2,
         };
 
-        handleAgentPostUpdate(msg as unknown as WebSocketMessage<PostUpdateWebsocketMessage>);
+        handleAgentPostUpdate('https://test.mattermost.com', msg as unknown as WebSocketMessage<PostUpdateWebsocketMessage>);
 
         expect(streamingStore.handleWebSocketMessage).not.toHaveBeenCalled();
     });
