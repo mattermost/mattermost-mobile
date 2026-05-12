@@ -94,4 +94,23 @@ describe('*** Database Manager tests ***', () => {
         const serverUrl = await DatabaseManager.getServerUrlFromIdentifier('appv3');
         expect(serverUrl).toBe('https://appv3.mattermost.com');
     });
+
+    it('=> updatePersistenceFlag persists the flag on the matching server record', async () => {
+        expect.assertions(2);
+
+        const targetUrl = 'https://appv3.mattermost.com';
+        const fetchServer = async () => {
+            const servers = await DatabaseManager.appDatabase?.database.collections.
+                get<ServersModel>(SERVERS).query(Q.where('url', targetUrl)).fetch();
+            return servers?.[0];
+        };
+
+        const before = await fetchServer();
+        expect(before?.persistenceFlag).toBe('');
+
+        await DatabaseManager.updatePersistenceFlag(targetUrl, 'wiped');
+
+        const after = await fetchServer();
+        expect(after?.persistenceFlag).toBe('wiped');
+    });
 });
