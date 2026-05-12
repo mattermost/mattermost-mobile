@@ -6,6 +6,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getThreadById} from '@queries/servers/thread';
+import ThreadsSyncStore from '@store/threads_sync_store';
 import TestHelper from '@test/test_helper';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
@@ -163,6 +164,38 @@ describe('thread remote actions', () => {
             expect(result2.error).toBeFalsy();
             expect(result2.models).toBeDefined();
             expect(result2.models?.length).toBe(1); // 1 team thread sync
+        });
+
+        it('syncTeamThreads - marks the team as threads-fetched after successful sync', async () => {
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+            await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
+            ThreadsSyncStore.clearServer(serverUrl);
+            expect(ThreadsSyncStore.hasThreadsBeenFetched(serverUrl, team.id)).toBe(false);
+
+            const result = await syncTeamThreads(serverUrl, team.id);
+
+            expect(result.error).toBeFalsy();
+            expect(ThreadsSyncStore.hasThreadsBeenFetched(serverUrl, team.id)).toBe(true);
+        });
+
+        it('syncTeamThreads - does NOT mark the gate when fetchOnly is true (caller batches upstream)', async () => {
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+            await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
+            ThreadsSyncStore.clearServer(serverUrl);
+
+            const result = await syncTeamThreads(serverUrl, team.id, {fetchOnly: true});
+
+            expect(result.error).toBeFalsy();
+            expect(ThreadsSyncStore.hasThreadsBeenFetched(serverUrl, team.id)).toBe(false);
+        });
+
+        it('syncTeamThreads - does NOT mark the gate when the sync fails', async () => {
+            ThreadsSyncStore.clearServer(serverUrl);
+
+            const result = await syncTeamThreads('foo', team.id);
+
+            expect(result.error).toBeTruthy();
+            expect(ThreadsSyncStore.hasThreadsBeenFetched(serverUrl, team.id)).toBe(false);
         });
 
         it('syncThreadsIfNeeded - handle error', async () => {

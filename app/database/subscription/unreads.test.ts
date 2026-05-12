@@ -5,6 +5,7 @@ import {of as of$} from 'rxjs';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import ChannelsSyncStore from '@store/channels_sync_store';
 import ThreadsSyncStore from '@store/threads_sync_store';
 import TestHelper from '@test/test_helper';
 import {enableFakeTimers, disableFakeTimers, advanceTimers} from '@test/timer_helpers';
@@ -124,7 +125,8 @@ describe('observeUnreadsByServer', () => {
             prepareRecordsOnly: false,
         });
 
-        // Default: threads not fetched (false) so blob values are used for thread counts
+        // Default: neither channels nor threads fetched (false) so blob values are used
+        jest.spyOn(ChannelsSyncStore, 'observeChannelsFetched').mockReturnValue(of$(false));
         jest.spyOn(ThreadsSyncStore, 'observeThreadsFetched').mockReturnValue(of$(false));
     });
 
@@ -213,6 +215,10 @@ describe('observeUnreadsByServer', () => {
     });
 
     describe('DB path (channel rows present, threads fetched)', () => {
+        beforeEach(() => {
+            jest.spyOn(ChannelsSyncStore, 'observeChannelsFetched').mockReturnValue(of$(true));
+        });
+
         it('should use DB channel mentions when channel rows are present', async () => {
             const teamId = TestHelper.generateId();
             const channelId = TestHelper.generateId();
@@ -307,6 +313,7 @@ describe('observeUnreadsByServer', () => {
             await insertChannel(operator, channelId, teamId, 4, false);
             await insertThread(operator, channelId, teamId, 6);
 
+            jest.spyOn(ChannelsSyncStore, 'observeChannelsFetched').mockReturnValue(of$(true));
             jest.spyOn(ThreadsSyncStore, 'observeThreadsFetched').mockReturnValue(of$(true));
 
             const promise = firstEmission(observeUnreadsByServer(serverUrl, true));

@@ -20,6 +20,7 @@ import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId, getLastTe
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, getLastTeam, getTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {navigateToRoot} from '@screens/navigation';
+import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {getFullErrorMessage} from '@utils/errors';
@@ -524,6 +525,10 @@ export async function fetchTeamLoad(serverUrl: string, teamId: string, isCRTEnab
         if (models.length) {
             await operator.batchRecords(models, 'fetchTeamLoad');
         }
+
+        // All of this team's channels are now in the DB — flip the gate so the
+        // badge observable can switch from the TEAM_BADGE_COUNTS blob to the DB sum.
+        ChannelsSyncStore.markChannelsFetched(serverUrl, teamId);
 
         return {};
     } catch (error) {

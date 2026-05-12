@@ -12,6 +12,7 @@ import NetworkManager from '@managers/network_manager';
 import {prepareEntryModels} from '@queries/servers/entry';
 import {getLastInitialLoad, getLastTeamLoad, getTeamHistory} from '@queries/servers/system';
 import {getTeamById} from '@queries/servers/team';
+import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 
 import {entryInitialLoad} from './index';
@@ -149,6 +150,24 @@ describe('entryInitialLoad', () => {
 
         const value = await firstValueFrom(EphemeralStore.observeCanJoinOtherTeams(serverUrl));
         expect(value).toBe(false);
+    });
+
+    it('should mark the active team as channels-fetched after the batch', async () => {
+        ChannelsSyncStore.clearServer(serverUrl);
+        expect(ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, 'team1')).toBe(false);
+
+        await entryInitialLoad(serverUrl, 'team1');
+
+        expect(ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, 'team1')).toBe(true);
+    });
+
+    it('should not mark any team as channels-fetched when the response has no active team', async () => {
+        ChannelsSyncStore.clearServer(serverUrl);
+        mockClient.getInitialLoad.mockResolvedValue({...mockInitialLoad, active_team: null});
+
+        await entryInitialLoad(serverUrl);
+
+        expect(ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, 'team1')).toBe(false);
     });
 
     describe('stale team_id — removed_team_ids handling', () => {
