@@ -324,7 +324,6 @@ export async function fetchTeamsForComponent(
 export const updateCanJoinTeams = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const myTeams = await client.getMyTeams(groupLabel);
         const myTeamsIds = new Set(myTeams.map((m) => m.id));
@@ -334,8 +333,11 @@ export const updateCanJoinTeams = async (serverUrl: string, groupLabel?: Request
         EphemeralStore.setCanJoinOtherTeams(serverUrl, canJoin);
         return {};
     } catch (error) {
+        // Preserve the last known value on transient failures so a spotty
+        // connection doesn't hide the Join Team affordance for users who can
+        // legitimately join. The ephemeral store defaults to false, so this
+        // only retains a previously-computed value.
         logDebug('error on updateCanJoinTeams', getFullErrorMessage(error));
-        EphemeralStore.setCanJoinOtherTeams(serverUrl, false);
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

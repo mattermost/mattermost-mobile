@@ -361,11 +361,6 @@ describe('teams', () => {
         expect(result.hasMore).toBeFalsy();
     });
 
-    it('updateCanJoinTeams - handle not found database', async () => {
-        const result = await updateCanJoinTeams('foo') as {error: unknown};
-        expect(result?.error).toBeDefined();
-    });
-
     it('updateCanJoinTeams - base case', async () => {
         const result = await updateCanJoinTeams(serverUrl);
         expect(result).toBeDefined();
@@ -423,17 +418,17 @@ describe('teams', () => {
             expect(mockClient.getTeams).toHaveBeenCalledWith(0, PER_PAGE_DEFAULT, false, groupLabel);
         });
 
-        it('should set canJoin false when getMyTeams fails', async () => {
+        it('should preserve the last known canJoin value when getMyTeams fails', async () => {
             const err = new Error('network unavailable');
             (mockClient.getMyTeams as jest.Mock).mockRejectedValue(err);
 
             const result = await updateCanJoinTeams(serverUrl) as {error: unknown};
 
             expect(result?.error).toBeDefined();
-            expect(setCanJoinSpy).toHaveBeenCalledWith(serverUrl, false);
+            expect(setCanJoinSpy).not.toHaveBeenCalled();
         });
 
-        it('should set canJoin false when getTeams fails', async () => {
+        it('should preserve the last known canJoin value when getTeams fails', async () => {
             const err = new Error('server timeout');
             (mockClient.getMyTeams as jest.Mock).mockResolvedValue([activeTeam('t1')]);
             (mockClient.getTeams as jest.Mock).mockRejectedValue(err);
@@ -441,7 +436,7 @@ describe('teams', () => {
             const result = await updateCanJoinTeams(serverUrl) as {error: unknown};
 
             expect(result?.error).toBeDefined();
-            expect(setCanJoinSpy).toHaveBeenCalledWith(serverUrl, false);
+            expect(setCanJoinSpy).not.toHaveBeenCalled();
         });
     });
 
