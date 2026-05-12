@@ -117,9 +117,6 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.CHANNEL_CONVERTED:
             channel.handleChannelConvertedEvent(serverUrl, msg);
             break;
-        case WebsocketEvents.CHANNEL_VIEWED:
-            channel.handleChannelViewedEvent(serverUrl, msg);
-            break;
         case WebsocketEvents.MULTIPLE_CHANNELS_VIEWED:
             channel.handleMultipleChannelsViewedEvent(serverUrl, msg);
             break;

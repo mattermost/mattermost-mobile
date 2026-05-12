@@ -17,7 +17,7 @@ import {setCurrentTeamId, getCurrentChannelId, getCurrentTeamId, canViewArchived
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 
-import {handleChannelCreatedEvent, handleChannelUnarchiveEvent, handleChannelConvertedEvent, handleChannelUpdatedEvent, handleChannelViewedEvent, handleMultipleChannelsViewedEvent, handleChannelMemberUpdatedEvent, handleChannelDeletedEvent, handleDirectAddedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
+import {handleChannelCreatedEvent, handleChannelUnarchiveEvent, handleChannelConvertedEvent, handleChannelUpdatedEvent, handleMultipleChannelsViewedEvent, handleChannelMemberUpdatedEvent, handleChannelDeletedEvent, handleDirectAddedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -280,29 +280,6 @@ describe('WebSocket Channel Actions', () => {
             await handleChannelUpdatedEvent(serverUrl, msg);
 
             expect(deletePostsForChannel).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('handleChannelViewedEvent', () => {
-        it('should handle channel viewed event', async () => {
-            (DatabaseManager.getActiveServerUrl as jest.Mock).mockResolvedValue(serverUrl);
-            (getCurrentChannelId as jest.Mock).mockResolvedValue('different_channel_id');
-            (EphemeralStore.isSwitchingToChannel as jest.Mock).mockReturnValue(false);
-
-            await handleChannelViewedEvent(serverUrl, msg);
-
-            expect(getCurrentChannelId).toHaveBeenCalled();
-            expect(markChannelAsViewed).toHaveBeenCalledWith(serverUrl, channelId);
-        });
-
-        it('should return if current channel ID is the same and not switching to channel', async () => {
-            (DatabaseManager.getActiveServerUrl as jest.Mock).mockResolvedValue(serverUrl);
-            (getCurrentChannelId as jest.Mock).mockResolvedValue(channelId);
-            (EphemeralStore.isSwitchingToChannel as jest.Mock).mockReturnValue(false);
-
-            await handleChannelViewedEvent(serverUrl, msg);
-
-            expect(markChannelAsViewed).not.toHaveBeenCalled();
         });
     });
 
