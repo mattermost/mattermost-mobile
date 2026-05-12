@@ -3,9 +3,12 @@
 
 import {Stack, Redirect} from 'expo-router';
 import {useMemo} from 'react';
+import {StyleSheet, View} from 'react-native';
+import {SafeAreaInsetsContext, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
 import {withServerDatabase} from '@database/components';
+import {useGlobalClassificationBanner} from '@hooks/use_global_classification_banner';
 import {useHasCredentials} from '@hooks/use_has_credentials';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -13,19 +16,31 @@ import {typography} from '@utils/typography';
 import type {NativeStackNavigationOptions} from '@react-navigation/native-stack';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    safeAreaView: {
-        flex: 1,
-        backgroundColor: theme.centerChannelBg,
-    },
     card: {
         backgroundColor: theme.centerChannelBg,
     },
 }));
 
+const rootStyles = StyleSheet.create({
+    flex: {flex: 1},
+    bannerOverlay: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+    },
+});
+
 function AuthenticatedLayout() {
     const hasCredentials = useHasCredentials();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const realInsets = useSafeAreaInsets();
+    const {bannerHeight, BannerComponent} = useGlobalClassificationBanner();
+
+    const adjustedInsets = useMemo(
+        () => ({...realInsets, top: realInsets.top + bannerHeight}),
+        [realInsets, bannerHeight],
+    );
 
     const stackScreenOptions = useMemo<NativeStackNavigationOptions>(() => ({
         headerShown: false,
@@ -43,15 +58,26 @@ function AuthenticatedLayout() {
         return null; // Loading
     }
 
-    // Redirect to unauthenticated if no credentials
     if (!hasCredentials) {
         return <Redirect href='/(unauthenticated)'/>;
     }
 
     return (
-        <Stack screenOptions={stackScreenOptions}>
-            <Stack.Screen name='(home)'/>
-        </Stack>
+        <View style={rootStyles.flex}>
+            <SafeAreaInsetsContext.Provider value={adjustedInsets}>
+                <Stack screenOptions={stackScreenOptions}>
+                    <Stack.Screen name='(home)'/>
+                </Stack>
+            </SafeAreaInsetsContext.Provider>
+            {BannerComponent && (
+                <View
+                    style={[rootStyles.bannerOverlay, {top: realInsets.top}]}
+                    pointerEvents='none'
+                >
+                    {BannerComponent}
+                </View>
+            )}
+        </View>
     );
 }
 
