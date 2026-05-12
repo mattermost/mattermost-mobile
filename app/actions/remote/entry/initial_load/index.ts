@@ -16,6 +16,7 @@ import {prepareEntryModels, truncateCrtRelatedTables} from '@queries/servers/ent
 import {getHasCRTChanged} from '@queries/servers/preference';
 import {getLastInitialLoad} from '@queries/servers/system';
 import {getTeamById, prepareDeleteTeam, queryTeamsById, removeTeamsFromTeamHistory} from '@queries/servers/team';
+import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {logDebug, logError} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
@@ -317,6 +318,13 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
         const models = (await Promise.all(modelPromises)).flat();
         if (models.length) {
             await operator.batchRecords(models, 'entryInitialLoad');
+        }
+
+        // Only the active team's channels were fully fetched and batched above.
+        // Other teams' channels stay lazy until the user switches to them; their
+        // badge observables continue reading from the TEAM_BADGE_COUNTS blob.
+        if (initialTeamId) {
+            ChannelsSyncStore.markChannelsFetched(serverUrl, initialTeamId);
         }
 
         // can_join_other_teams is computed server-side from the user's ListPublicTeams /

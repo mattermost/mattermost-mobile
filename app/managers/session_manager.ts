@@ -18,7 +18,9 @@ import OfflinePersistenceManager from '@managers/offline_persistence_manager';
 import SecurityManager from '@managers/security_manager';
 import {queryGlobalValue} from '@queries/app/global';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
+import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
+import ThreadsSyncStore from '@store/threads_sync_store';
 import {deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
 import {logDebug} from '@utils/log';
@@ -135,6 +137,8 @@ export class SessionManagerSingleton {
             await terminateSession(serverUrl, removeServer);
             SecurityManager.removeServer(serverUrl);
             OfflinePersistenceManager.removeServer(serverUrl);
+            ChannelsSyncStore.clearServer(serverUrl);
+            ThreadsSyncStore.clearServer(serverUrl);
 
             if (activeServerUrl === serverUrl) {
                 let displayName = '';

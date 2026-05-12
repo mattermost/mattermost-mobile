@@ -13,6 +13,7 @@ import {getPostById} from '@queries/servers/post';
 import {getConfigValue, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById, getTeamThreadsSyncData} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
+import ThreadsSyncStore from '@store/threads_sync_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 import {showThreadFollowingSnackbar} from '@utils/snack_bar';
@@ -466,6 +467,15 @@ export const syncTeamThreads = async (
                 }
             }
         }
+
+        // Mark the gate flipped only when this call actually batched (or had
+        // nothing to batch, which still means we tried and the DB is correct).
+        // fetchOnly callers compose their own batch upstream; they're
+        // responsible for flipping the gate at that level.
+        if (!fetchOnly) {
+            ThreadsSyncStore.markThreadsFetched(serverUrl, teamId);
+        }
+
         return {error: false, models};
     } catch (error) {
         return {error};

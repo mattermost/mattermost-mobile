@@ -7,6 +7,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
+import ChannelsSyncStore from '@store/channels_sync_store';
 
 import {fetchScheduledPosts} from './scheduled_post';
 import {
@@ -712,6 +713,28 @@ describe('remote team actions', () => {
 
             const result = await fetchTeamLoad(serverUrl, teamId, false);
             expect(result.error).toBeUndefined();
+        });
+
+        it('should mark the team as channels-fetched after the batch succeeds', async () => {
+            ChannelsSyncStore.clearServer(serverUrl);
+            expect(ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, teamId)).toBe(false);
+
+            const result = await fetchTeamLoad(serverUrl, teamId, false);
+
+            expect(result.error).toBeUndefined();
+            expect(ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, teamId)).toBe(true);
+        });
+
+        it('should NOT mark the team as channels-fetched when the fetch fails', async () => {
+            ChannelsSyncStore.clearServer(serverUrl);
+            mockClient.getTeamLoad.mockImplementationOnce(() => {
+                throw new Error('network');
+            });
+
+            const result = await fetchTeamLoad(serverUrl, teamId, false);
+
+            expect(result.error).toBeDefined();
+            expect(ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, teamId)).toBe(false);
         });
     });
 });

@@ -6,10 +6,11 @@ import {of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged, map, combineLatestWith} from 'rxjs/operators';
 
 import {withServerUrl} from '@context/server';
-import {observeMyChannelMentionCount, observeMyChannelUnreads, queryMyChannelsByTeam} from '@queries/servers/channel';
+import {observeMyChannelMentionCount, observeMyChannelUnreads} from '@queries/servers/channel';
 import {observeCurrentTeamId, observeTeamBadgeCounts} from '@queries/servers/system';
 import {observeTeam} from '@queries/servers/team';
 import {observeThreadMentionCount, observeUnreadsAndMentions} from '@queries/servers/thread';
+import ChannelsSyncStore from '@store/channels_sync_store';
 import ThreadsSyncStore from '@store/threads_sync_store';
 
 import TeamItem from './team_item';
@@ -29,11 +30,10 @@ const enhance = withObservables(['myTeam', 'serverUrl'], ({myTeam, database, ser
         distinctUntilChanged(),
     );
 
-    // Gate 1: true once deferredAppEntryActions has fetched this team's channels into DB.
-    const hasChannelsInDB = queryMyChannelsByTeam(database, teamId).observe().pipe(
-        map((channels) => channels.length > 0),
-        distinctUntilChanged(),
-    );
+    // Gate 1: true once ChannelsSyncStore marks the team as fully fetched this session.
+    // Explicit gate (not "any row exists") so a WS event writing a single MyChannel row
+    // for a not-yet-loaded team doesn't flip the DB sum on with only that row visible.
+    const hasChannelsInDB = ChannelsSyncStore.observeChannelsFetched(serverUrl, teamId);
 
     // Gate 2: true once fetchTeamsThreads has run for this team this session.
     const threadsFetched = ThreadsSyncStore.observeThreadsFetched(serverUrl, teamId);

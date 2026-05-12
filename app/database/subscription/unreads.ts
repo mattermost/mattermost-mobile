@@ -10,6 +10,7 @@ import {observeChannelUnreadsAndMentions, queryMyChannelsByTeam} from '@queries/
 import {observeCurrentTeamId, observeTeamBadgeCounts} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {observeDirectThreadUnreadsAndMentions, observeUnreadsAndMentions} from '@queries/servers/thread';
+import ChannelsSyncStore from '@store/channels_sync_store';
 import ThreadsSyncStore from '@store/threads_sync_store';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -31,7 +32,7 @@ function aggregateBadges(badges: BadgeState[]): BadgeState {
 }
 
 // observeTeamBadge implements the two-layer strategy for one team:
-//   - Channel part: DB (observeChannelUnreadsAndMentions) once channels exist; blob seed until then.
+//   - Channel part: DB (observeChannelUnreadsAndMentions) once ChannelsSyncStore marks fetched; blob seed until then.
 //   - Thread part: DB (observeUnreadsAndMentions, team-only) once ThreadsSyncStore marks fetched; blob seed until then.
 // blob$ is passed from the caller so the System row is queried once for all teams.
 // excludeThreadMentions: when true, thread mentions are excluded (used for current server on global threads screen).
@@ -42,10 +43,11 @@ const observeTeamBadge = (
     blob$: Observable<TeamBadgeCounts | undefined>,
     excludeThreadMentions = false,
 ): Observable<BadgeState> => {
-    const hasChannels$ = queryMyChannelsByTeam(database, teamId).observe().pipe(
-        map$((ch) => ch.length > 0),
-        distinctUntilChanged(),
-    );
+    // Channels-fetched gate is explicit (session-scoped flip from ChannelsSyncStore)
+    // rather than "any row exists". A WS event writing a single MyChannel row for a
+    // not-yet-loaded team would otherwise flip the gate to true with only that one
+    // row visible, causing the DB sum to under-count vs the blob seed.
+    const channelsFetched$ = ChannelsSyncStore.observeChannelsFetched(serverUrl, teamId);
     const threadsFetched$ = ThreadsSyncStore.observeThreadsFetched(serverUrl, teamId);
     const blobTeam$ = blob$.pipe(map$((b) => b?.teams[teamId]));
 
@@ -55,11 +57,11 @@ const observeTeamBadge = (
     // One query for team thread mentions + unread (no DM threads via {teamId} only).
     const dbThreads$ = observeUnreadsAndMentions(database, {teamId});
 
-    return hasChannels$.pipe(
+    return channelsFetched$.pipe(
         combineLatestWith(threadsFetched$, dbChannel$, dbThreads$, blobTeam$),
-        map$(([hasChannels, threadsFetched, dbChan, dbThreads, blob]) => {
-            const channelMentions = hasChannels ? dbChan.mentions : (blob?.mentionCount ?? 0);
-            const channelUnread = hasChannels ? dbChan.unread : (blob?.hasUnreads ?? false);
+        map$(([channelsFetched, threadsFetched, dbChan, dbThreads, blob]) => {
+            const channelMentions = channelsFetched ? dbChan.mentions : (blob?.mentionCount ?? 0);
+            const channelUnread = channelsFetched ? dbChan.unread : (blob?.hasUnreads ?? false);
             let threadMentions = 0;
             let threadUnread = false;
             if (!excludeThreadMentions) {
