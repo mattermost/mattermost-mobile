@@ -138,23 +138,6 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
     }
 }
 
-export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
-    try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        const {channel_id: channelId} = msg.data;
-
-        const activeServerUrl = await DatabaseManager.getActiveServerUrl();
-        const currentChannelId = await getCurrentChannelId(database);
-
-        if (activeServerUrl !== serverUrl || (currentChannelId !== channelId && !EphemeralStore.isSwitchingToChannel(channelId))) {
-            await markChannelAsViewed(serverUrl, channelId);
-        }
-    } catch {
-        // do nothing
-    }
-}
-
 export async function handleMultipleChannelsViewedEvent(serverUrl: string, msg: any) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

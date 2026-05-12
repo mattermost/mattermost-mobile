@@ -204,12 +204,6 @@ describe('handleWebSocketEvent', () => {
         expect(channel.handleChannelConvertedEvent).toHaveBeenCalledWith(serverUrl, msg);
     });
 
-    it('should handle CHANNEL_VIEWED event', async () => {
-        msg.event = WebsocketEvents.CHANNEL_VIEWED;
-        await handleWebSocketEvent(serverUrl, msg);
-        expect(channel.handleChannelViewedEvent).toHaveBeenCalledWith(serverUrl, msg);
-    });
-
     it('should handle MULTIPLE_CHANNELS_VIEWED event', async () => {
         msg.event = WebsocketEvents.MULTIPLE_CHANNELS_VIEWED;
         await handleWebSocketEvent(serverUrl, msg);
