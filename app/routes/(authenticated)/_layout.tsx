@@ -6,9 +6,9 @@ import {useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {SafeAreaInsetsContext, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import GlobalBannerOverlay, {useGlobalBannerHeight} from '@components/global_banner_overlay';
 import {useTheme} from '@context/theme';
 import {withServerDatabase} from '@database/components';
-import {useGlobalClassificationBanner} from '@hooks/use_global_classification_banner';
 import {useHasCredentials} from '@hooks/use_has_credentials';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -35,7 +35,7 @@ function AuthenticatedLayout() {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const realInsets = useSafeAreaInsets();
-    const {bannerHeight, BannerComponent} = useGlobalClassificationBanner();
+    const bannerHeight = useGlobalBannerHeight();
 
     const adjustedInsets = useMemo(
         () => ({...realInsets, top: realInsets.top + bannerHeight}),
@@ -69,14 +69,7 @@ function AuthenticatedLayout() {
                     <Stack.Screen name='(home)'/>
                 </Stack>
             </SafeAreaInsetsContext.Provider>
-            {BannerComponent && (
-                <View
-                    style={[rootStyles.bannerOverlay, {top: realInsets.top}]}
-                    pointerEvents='none'
-                >
-                    {BannerComponent}
-                </View>
-            )}
+            <GlobalBannerOverlay style={[rootStyles.bannerOverlay, {top: realInsets.top}]}/>
         </View>
     );
 }
