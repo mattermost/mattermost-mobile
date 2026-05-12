@@ -25,7 +25,7 @@ type View = {
     type: ViewType;
     creator_id: string;
     title: string;
-    description?: string;
+    description?: string | null;
     sort_order: number;
     props: KanbanProps | null;
     create_at: number;
