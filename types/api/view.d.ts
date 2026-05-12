@@ -27,7 +27,7 @@ type View = {
     title: string;
     description?: string;
     sort_order: number;
-    props: KanbanProps;
+    props: KanbanProps | null;
     create_at: number;
     update_at: number;
     delete_at: number;
