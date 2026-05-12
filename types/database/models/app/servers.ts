@@ -6,7 +6,7 @@ import type {Model} from '@nozbe/watermelondb';
 /**
  * Marks a server's local database as being in a non-default persistence state
  * - 'wiped': database has been wiped and is awaiting recovery on next reconnection.
- * - 'zero-persistence': server runs with the no persistence on disk.
+ * - 'zero-persistence': server runs with no persistence on disk.
  */
 export type PersistenceFlag = '' | 'wiped' | 'zero-persistence';
 
