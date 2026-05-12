@@ -8,11 +8,12 @@ import {
     CLASSIFICATIONS_GROUP_NAME,
     CLASSIFICATIONS_SYSTEM_FIELD_NAME,
     CLASSIFICATIONS_SYSTEM_OBJECT_TYPE,
+    CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
     CLASSIFICATIONS_TEMPLATE_FIELD_NAME,
     CLASSIFICATIONS_TEMPLATE_OBJECT_TYPE,
     DISPLAY_BANNER_TOP,
 } from '@constants/classification';
-import {getGroupIdByName, getPropertyFields, getSystemPropertyValues, registerGroupName, subscribe} from '@store/system_property_store';
+import {getGroupIdByName, getPropertyFields, getPropertyValuesForTarget, registerGroupName, subscribe} from '@store/system_property_store';
 
 export type ClassificationBannerState = {
     visible: boolean;
@@ -52,7 +53,7 @@ export function useClassificationBannerState(serverUrl: string): ClassificationB
 
     const groupId = getGroupIdByName(serverUrl, CLASSIFICATIONS_GROUP_NAME) ?? '';
     const fields = groupId ? getPropertyFields(serverUrl, groupId) : [];
-    const values = groupId ? getSystemPropertyValues(serverUrl, groupId) : [];
+    const values = groupId ? getPropertyValuesForTarget(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID) : [];
 
     const templateField = fields.find(
         (f) => f.object_type === CLASSIFICATIONS_TEMPLATE_OBJECT_TYPE && f.name === CLASSIFICATIONS_TEMPLATE_FIELD_NAME && f.delete_at === 0,

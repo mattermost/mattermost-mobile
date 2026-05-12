@@ -4,19 +4,21 @@
 import {
     getGroupIdByName,
     getPropertyFields,
-    getSystemPropertyValues,
+    getPropertyValueForField,
+    getPropertyValuesForTarget,
     registerGroupName,
     removePropertyField,
     removePropertyFieldById,
     setPropertyFields,
-    setSystemPropertyValues,
+    setPropertyValues,
     subscribe,
     updatePropertyField,
-    updateSystemPropertyValues,
+    updatePropertyValues,
 } from './system_property_store';
 
 const serverUrl = 'property-store.test.com';
 const groupId = 'test_group';
+const targetId = 'system';
 
 const makeField = (id: string, overrides?: Partial<PropertyField>): PropertyField => ({
     id,
@@ -33,9 +35,9 @@ const makeField = (id: string, overrides?: Partial<PropertyField>): PropertyFiel
     ...overrides,
 });
 
-const makeValue = (fieldId: string, value: string): PropertyValue<string> => ({
+const makeValue = (fieldId: string, value: string, overrides?: Partial<PropertyValue<string>>): PropertyValue<string> => ({
     id: `val-${fieldId}`,
-    target_id: 'system',
+    target_id: targetId,
     target_type: 'system',
     group_id: groupId,
     field_id: fieldId,
@@ -43,12 +45,13 @@ const makeValue = (fieldId: string, value: string): PropertyValue<string> => ({
     create_at: 1000,
     update_at: 1000,
     delete_at: 0,
+    ...overrides,
 });
 
 describe('system_property_store', () => {
     beforeEach(() => {
         setPropertyFields(serverUrl, groupId, []);
-        setSystemPropertyValues(serverUrl, groupId, []);
+        setPropertyValues(serverUrl, targetId, groupId, []);
     });
 
     describe('field operations', () => {
@@ -145,42 +148,61 @@ describe('system_property_store', () => {
     });
 
     describe('value operations', () => {
-        it('should store and retrieve values via setSystemPropertyValues', () => {
+        it('should store and retrieve values via setPropertyValues', () => {
             const values = [makeValue('f1', 'v1'), makeValue('f2', 'v2')];
-            setSystemPropertyValues(serverUrl, groupId, values);
+            setPropertyValues(serverUrl, targetId, groupId, values);
 
-            const result = getSystemPropertyValues(serverUrl, groupId);
+            const result = getPropertyValuesForTarget(serverUrl, targetId);
             expect(result).toHaveLength(2);
         });
 
-        it('should overwrite existing values on setSystemPropertyValues', () => {
-            setSystemPropertyValues(serverUrl, groupId, [makeValue('f1', 'old')]);
-            setSystemPropertyValues(serverUrl, groupId, [makeValue('f2', 'new')]);
+        it('should overwrite existing values on setPropertyValues', () => {
+            setPropertyValues(serverUrl, targetId, groupId, [makeValue('f1', 'old')]);
+            setPropertyValues(serverUrl, targetId, groupId, [makeValue('f2', 'new')]);
 
-            const result = getSystemPropertyValues(serverUrl, groupId);
+            const result = getPropertyValuesForTarget(serverUrl, targetId);
             expect(result).toHaveLength(1);
             expect(result[0].field_id).toBe('f2');
         });
 
-        it('should merge values via updateSystemPropertyValues', () => {
-            setSystemPropertyValues(serverUrl, groupId, [makeValue('f1', 'v1')]);
-            updateSystemPropertyValues(serverUrl, groupId, [makeValue('f2', 'v2')]);
+        it('should merge values via updatePropertyValues', () => {
+            setPropertyValues(serverUrl, targetId, groupId, [makeValue('f1', 'v1')]);
+            updatePropertyValues(serverUrl, targetId, groupId, [makeValue('f2', 'v2')]);
 
-            const result = getSystemPropertyValues(serverUrl, groupId);
+            const result = getPropertyValuesForTarget(serverUrl, targetId);
             expect(result).toHaveLength(2);
         });
 
-        it('should update existing value via updateSystemPropertyValues', () => {
-            setSystemPropertyValues(serverUrl, groupId, [makeValue('f1', 'old')]);
-            updateSystemPropertyValues(serverUrl, groupId, [makeValue('f1', 'new')]);
+        it('should update existing value via updatePropertyValues', () => {
+            setPropertyValues(serverUrl, targetId, groupId, [makeValue('f1', 'old')]);
+            updatePropertyValues(serverUrl, targetId, groupId, [makeValue('f1', 'new')]);
 
-            const result = getSystemPropertyValues(serverUrl, groupId);
+            const result = getPropertyValuesForTarget(serverUrl, targetId);
             expect(result).toHaveLength(1);
             expect(result[0].value).toBe('new');
         });
 
-        it('should return empty array for unknown server/group', () => {
-            expect(getSystemPropertyValues('unknown-server', 'unknown-group')).toEqual([]);
+        it('should return empty array for unknown target', () => {
+            expect(getPropertyValuesForTarget('unknown-server', 'unknown-target')).toEqual([]);
+        });
+
+        it('should isolate values across different target ids', () => {
+            const channelId = 'channel-abc';
+            setPropertyValues(serverUrl, targetId, groupId, [makeValue('f1', 'sys-val')]);
+            updatePropertyValues(serverUrl, channelId, groupId, [makeValue('f1', 'chan-val', {target_id: channelId})]);
+
+            expect(getPropertyValuesForTarget(serverUrl, targetId)).toHaveLength(1);
+            expect(getPropertyValuesForTarget(serverUrl, targetId)[0].value).toBe('sys-val');
+            expect(getPropertyValuesForTarget(serverUrl, channelId)).toHaveLength(1);
+            expect(getPropertyValuesForTarget(serverUrl, channelId)[0].value).toBe('chan-val');
+        });
+
+        it('should look up a single value by field id', () => {
+            setPropertyValues(serverUrl, targetId, groupId, [makeValue('f1', 'v1'), makeValue('f2', 'v2')]);
+
+            expect(getPropertyValueForField(serverUrl, targetId, 'f1')?.value).toBe('v1');
+            expect(getPropertyValueForField(serverUrl, targetId, 'f2')?.value).toBe('v2');
+            expect(getPropertyValueForField(serverUrl, targetId, 'f3')).toBeUndefined();
         });
     });
 
@@ -219,23 +241,23 @@ describe('system_property_store', () => {
             unsub();
         });
 
-        it('should notify subscriber on setSystemPropertyValues', () => {
+        it('should notify subscriber on setPropertyValues', () => {
             const listener = jest.fn();
             const unsub = subscribe(listener);
             listener.mockClear();
 
-            setSystemPropertyValues(serverUrl, groupId, [makeValue('f1', 'v1')]);
+            setPropertyValues(serverUrl, targetId, groupId, [makeValue('f1', 'v1')]);
             expect(listener).toHaveBeenCalledWith(serverUrl, groupId);
 
             unsub();
         });
 
-        it('should notify subscriber on updateSystemPropertyValues', () => {
+        it('should notify subscriber on updatePropertyValues', () => {
             const listener = jest.fn();
             const unsub = subscribe(listener);
             listener.mockClear();
 
-            updateSystemPropertyValues(serverUrl, groupId, [makeValue('f1', 'v1')]);
+            updatePropertyValues(serverUrl, targetId, groupId, [makeValue('f1', 'v1')]);
             expect(listener).toHaveBeenCalledWith(serverUrl, groupId);
 
             unsub();

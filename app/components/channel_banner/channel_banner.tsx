@@ -8,6 +8,8 @@ import {Text, TouchableOpacity, View} from 'react-native';
 import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
 import RemoveMarkdown from '@components/remove_markdown';
 import {CHANNEL_BANNER_HEIGHT} from '@constants/view';
+import {useServerUrl} from '@context/server';
+import {useChannelClassificationBanner} from '@hooks/use_channel_classification_banner';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet} from '@screens/navigation';
 import {getContrastingSimpleColor} from '@utils/general';
@@ -52,14 +54,22 @@ const getStyleSheet = (bannerTextColor: string) => ({
 });
 
 type Props = {
+    channelId: string;
     bannerInfo?: ChannelBannerInfo;
     isTopItem?: boolean;
     skipHeaderOffset?: boolean;
 }
 
-export function ChannelBanner({bannerInfo, isTopItem, skipHeaderOffset}: Props) {
+export function ChannelBanner({channelId, bannerInfo, isTopItem, skipHeaderOffset}: Props) {
     const intl = useIntl();
-    const bannerTextColor = getContrastingSimpleColor(bannerInfo?.background_color || '');
+    const serverUrl = useServerUrl();
+    const classification = useChannelClassificationBanner(serverUrl, channelId, bannerInfo);
+
+    const effectiveBanner = classification.hasClassification
+        ? classification.classificationBanner
+        : bannerInfo;
+
+    const bannerTextColor = getContrastingSimpleColor(effectiveBanner?.background_color || '');
 
     const style = useMemo(() => {
         return getStyleSheet(bannerTextColor);
@@ -68,14 +78,14 @@ export function ChannelBanner({bannerInfo, isTopItem, skipHeaderOffset}: Props) 
     const defaultHeight = useDefaultHeaderHeight();
     const containerStyle = useMemo(() => ({
         ...style.container,
-        backgroundColor: bannerInfo?.background_color,
+        backgroundColor: effectiveBanner?.background_color,
         ...(skipHeaderOffset ? undefined : {top: defaultHeight, zIndex: 1}),
-    }), [bannerInfo?.background_color, defaultHeight, skipHeaderOffset, style.container]);
+    }), [effectiveBanner?.background_color, defaultHeight, skipHeaderOffset, style.container]);
 
     const handlePress = useCallback(() => {
         // set snap point based on text length, with a defined
         // minimum and maximum height for the text container
-        const length = bannerInfo!.text!.length / 100;
+        const length = effectiveBanner!.text!.length / 100;
         const snapPoint = SNAP_POINT + Math.min(Math.max(bottomSheetSnapPoint(length, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
 
         const expandedChannelBannerTitle = intl.formatMessage({
@@ -86,17 +96,17 @@ export function ChannelBanner({bannerInfo, isTopItem, skipHeaderOffset}: Props) 
         const renderContent = () => (
             <ExpandedAnnouncementBanner
                 allowDismissal={false}
-                bannerText={bannerInfo!.text || ''}
+                bannerText={effectiveBanner!.text || ''}
                 headingText={expandedChannelBannerTitle}
             />
         );
 
         bottomSheet(renderContent, [1, snapPoint]);
-    }, [bannerInfo, intl]);
+    }, [effectiveBanner, intl]);
 
     // banner info will be complete when this component renders,
     // but this check is still here to avoid having to use non-null assertion everywhere.
-    if (!bannerInfo || !bannerInfo.enabled || !bannerInfo.text || !bannerInfo.background_color) {
+    if (!effectiveBanner || !effectiveBanner.enabled || !effectiveBanner.text || !effectiveBanner.background_color) {
         return null;
     }
 
@@ -112,7 +122,7 @@ export function ChannelBanner({bannerInfo, isTopItem, skipHeaderOffset}: Props) 
                     style={style.bannerText}
                 >
                     <RemoveMarkdown
-                        value={bannerInfo.text}
+                        value={effectiveBanner.text}
                         baseStyle={style.baseTextStyle}
                     />
                 </Text>

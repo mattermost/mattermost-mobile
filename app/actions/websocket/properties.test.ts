@@ -39,9 +39,11 @@ const makeValue = (fieldId: string, value: string): PropertyValue<string> => ({
     delete_at: 0,
 });
 
+const systemTargetId = 'system';
+
 beforeEach(() => {
     store.setPropertyFields(serverUrl, groupId, []);
-    store.setSystemPropertyValues(serverUrl, groupId, []);
+    store.setPropertyValues(serverUrl, systemTargetId, groupId, []);
 });
 
 describe('handlePropertyFieldCreatedOrUpdated', () => {
@@ -170,12 +172,12 @@ describe('handlePropertyValuesUpdated', () => {
 
         handlePropertyValuesUpdated(serverUrl, msg);
 
-        const stored = store.getSystemPropertyValues(serverUrl, groupId);
+        const stored = store.getPropertyValuesForTarget(serverUrl, systemTargetId);
         expect(stored).toHaveLength(2);
     });
 
     it('should update existing values in the store', () => {
-        store.setSystemPropertyValues(serverUrl, groupId, [makeValue('f1', 'old')]);
+        store.setPropertyValues(serverUrl, systemTargetId, groupId, [makeValue('f1', 'old')]);
 
         const updated = [makeValue('f1', 'new')];
         const msg = {
@@ -187,7 +189,7 @@ describe('handlePropertyValuesUpdated', () => {
 
         handlePropertyValuesUpdated(serverUrl, msg);
 
-        const stored = store.getSystemPropertyValues(serverUrl, groupId);
+        const stored = store.getPropertyValuesForTarget(serverUrl, systemTargetId);
         expect(stored).toHaveLength(1);
         expect(stored[0].value).toBe('new');
     });
@@ -206,8 +208,7 @@ describe('handlePropertyValuesUpdated', () => {
 
         handlePropertyValuesUpdated(serverUrl, msg);
 
-        expect(store.getSystemPropertyValues(serverUrl, groupId)).toHaveLength(1);
-        expect(store.getSystemPropertyValues(serverUrl, otherGroupId)).toHaveLength(1);
+        expect(store.getPropertyValuesForTarget(serverUrl, systemTargetId)).toHaveLength(2);
     });
 
     it('should ignore events with no values', () => {
@@ -262,5 +263,59 @@ describe('handlePropertyValuesUpdated', () => {
         expect(listener).not.toHaveBeenCalled();
 
         unsub();
+    });
+
+    it('should store channel property values by their target_id', () => {
+        const channelId = 'channel-abc';
+        const channelValue: PropertyValue<string> = {
+            id: 'val-chan',
+            target_id: channelId,
+            target_type: 'channel',
+            group_id: groupId,
+            field_id: 'chan-field',
+            value: 'level-1',
+            create_at: 1000,
+            update_at: 1000,
+            delete_at: 0,
+        };
+        const msg = {
+            event: 'property_values_updated',
+            data: {values: JSON.stringify([channelValue])},
+            broadcast: {},
+            seq: 1,
+        } as WebSocketMessage;
+
+        handlePropertyValuesUpdated(serverUrl, msg);
+
+        expect(store.getPropertyValuesForTarget(serverUrl, channelId)).toHaveLength(1);
+        expect(store.getPropertyValuesForTarget(serverUrl, channelId)[0].value).toBe('level-1');
+    });
+
+    it('should isolate values across different target ids', () => {
+        const channelId = 'channel-xyz';
+        const systemVal = makeValue('sys-field', 'sys-val');
+        const channelVal: PropertyValue<string> = {
+            id: 'val-chan',
+            target_id: channelId,
+            target_type: 'channel',
+            group_id: groupId,
+            field_id: 'chan-field',
+            value: 'chan-val',
+            create_at: 1000,
+            update_at: 1000,
+            delete_at: 0,
+        };
+
+        const msg = {
+            event: 'property_values_updated',
+            data: {values: JSON.stringify([systemVal, channelVal])},
+            broadcast: {},
+            seq: 1,
+        } as WebSocketMessage;
+
+        handlePropertyValuesUpdated(serverUrl, msg);
+
+        expect(store.getPropertyValuesForTarget(serverUrl, systemTargetId)).toHaveLength(1);
+        expect(store.getPropertyValuesForTarget(serverUrl, channelId)).toHaveLength(1);
     });
 });

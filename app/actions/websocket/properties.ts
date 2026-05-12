@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {updatePropertyField, removePropertyFieldById, updateSystemPropertyValues} from '@store/system_property_store';
+import {updatePropertyField, removePropertyFieldById, updatePropertyValues} from '@store/system_property_store';
 import {safeParseJSON} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
@@ -45,15 +45,16 @@ export function handlePropertyValuesUpdated(serverUrl: string, msg: WebSocketMes
         return;
     }
 
-    const byGroup: Record<string, Array<PropertyValue<string>>> = {};
+    const byKey: Record<string, {targetId: string; groupId: string; values: Array<PropertyValue<string>>}> = {};
     for (const v of values) {
-        if (!byGroup[v.group_id]) {
-            byGroup[v.group_id] = [];
+        const key = `${v.target_id}\0${v.group_id}`;
+        if (!byKey[key]) {
+            byKey[key] = {targetId: v.target_id, groupId: v.group_id, values: []};
         }
-        byGroup[v.group_id].push(v);
+        byKey[key].values.push(v);
     }
 
-    for (const [groupId, groupValues] of Object.entries(byGroup)) {
-        updateSystemPropertyValues(serverUrl, groupId, groupValues);
+    for (const entry of Object.values(byKey)) {
+        updatePropertyValues(serverUrl, entry.targetId, entry.groupId, entry.values);
     }
 }

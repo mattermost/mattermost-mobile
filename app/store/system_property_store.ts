@@ -5,8 +5,14 @@ import {useEffect, useReducer} from 'react';
 
 export type PropertyStoreListener = (serverUrl: string, groupId: string) => void;
 
+// fieldStore[serverUrl][groupId][fieldId]
 type FieldStore = Record<string, Record<string, Record<string, PropertyField>>>;
+
+// Unified value store: valueStore[serverUrl][targetId][fieldId]
+// System-scoped values carry their own target_id (e.g. 'system'), channel
+// values carry the channelId, etc.  Callers decide which target_id to query.
 type ValueStore = Record<string, Record<string, Record<string, PropertyValue<string>>>>;
+
 type GroupNameIndex = Record<string, Record<string, string>>;
 
 const fieldStore: FieldStore = {};
@@ -24,14 +30,14 @@ function getFieldMap(serverUrl: string, groupId: string): Record<string, Propert
     return fieldStore[serverUrl][groupId];
 }
 
-function getValueMap(serverUrl: string, groupId: string): Record<string, PropertyValue<string>> {
+function getValueMap(serverUrl: string, targetId: string): Record<string, PropertyValue<string>> {
     if (!valueStore[serverUrl]) {
         valueStore[serverUrl] = {};
     }
-    if (!valueStore[serverUrl][groupId]) {
-        valueStore[serverUrl][groupId] = {};
+    if (!valueStore[serverUrl][targetId]) {
+        valueStore[serverUrl][targetId] = {};
     }
-    return valueStore[serverUrl][groupId];
+    return valueStore[serverUrl][targetId];
 }
 
 function notify(serverUrl: string, groupId: string) {
@@ -50,6 +56,8 @@ export function registerGroupName(serverUrl: string, groupName: string, groupId:
 export function getGroupIdByName(serverUrl: string, groupName: string): string | undefined {
     return groupNameToId[serverUrl]?.[groupName];
 }
+
+// --- Field operations ---
 
 export function setPropertyFields(serverUrl: string, groupId: string, fields: PropertyField[]): void {
     if (!fieldStore[serverUrl]) {
@@ -99,7 +107,9 @@ export function getPropertyFields(serverUrl: string, groupId: string): PropertyF
     return Object.values(map);
 }
 
-export function setSystemPropertyValues(serverUrl: string, groupId: string, values: Array<PropertyValue<string>>): void {
+// --- Value operations (unified, target-keyed) ---
+
+export function setPropertyValues(serverUrl: string, targetId: string, groupId: string, values: Array<PropertyValue<string>>): void {
     if (!valueStore[serverUrl]) {
         valueStore[serverUrl] = {};
     }
@@ -107,25 +117,31 @@ export function setSystemPropertyValues(serverUrl: string, groupId: string, valu
     for (const v of values) {
         map[v.field_id] = v;
     }
-    valueStore[serverUrl][groupId] = map;
+    valueStore[serverUrl][targetId] = map;
     notify(serverUrl, groupId);
 }
 
-export function updateSystemPropertyValues(serverUrl: string, groupId: string, values: Array<PropertyValue<string>>): void {
-    const map = getValueMap(serverUrl, groupId);
+export function updatePropertyValues(serverUrl: string, targetId: string, groupId: string, values: Array<PropertyValue<string>>): void {
+    const map = getValueMap(serverUrl, targetId);
     for (const v of values) {
         map[v.field_id] = v;
     }
     notify(serverUrl, groupId);
 }
 
-export function getSystemPropertyValues(serverUrl: string, groupId: string): Array<PropertyValue<string>> {
-    const map = valueStore[serverUrl]?.[groupId];
+export function getPropertyValuesForTarget(serverUrl: string, targetId: string): Array<PropertyValue<string>> {
+    const map = valueStore[serverUrl]?.[targetId];
     if (!map) {
         return [];
     }
     return Object.values(map);
 }
+
+export function getPropertyValueForField(serverUrl: string, targetId: string, fieldId: string): PropertyValue<string> | undefined {
+    return valueStore[serverUrl]?.[targetId]?.[fieldId];
+}
+
+// --- Subscription ---
 
 export function subscribe(listener: PropertyStoreListener): () => void {
     listeners.add(listener);
@@ -148,6 +164,5 @@ export function usePropertyStoreGroup(serverUrl: string, groupId: string) {
 
     return {
         fields: getPropertyFields(serverUrl, groupId),
-        values: getSystemPropertyValues(serverUrl, groupId),
     };
 }

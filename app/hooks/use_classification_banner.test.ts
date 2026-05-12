@@ -3,7 +3,8 @@
 
 import {renderHook, act} from '@testing-library/react-native';
 
-import {registerGroupName, setPropertyFields, setSystemPropertyValues} from '@store/system_property_store';
+import {CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID} from '@constants/classification';
+import {registerGroupName, setPropertyFields, setPropertyValues} from '@store/system_property_store';
 
 import {useClassificationBannerState} from './use_classification_banner';
 
@@ -69,7 +70,7 @@ const systemValue: PropertyValue<string> = {
 beforeEach(() => {
     registerGroupName(serverUrl, GROUP, GROUP);
     setPropertyFields(serverUrl, GROUP, []);
-    setSystemPropertyValues(serverUrl, GROUP, []);
+    setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, []);
 });
 
 describe('useClassificationBannerState', () => {
@@ -88,7 +89,7 @@ describe('useClassificationBannerState', () => {
 
     it('should return default state when template field is missing', () => {
         setPropertyFields(serverUrl, GROUP, [linkedField]);
-        setSystemPropertyValues(serverUrl, GROUP, [systemValue]);
+        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
 
@@ -97,7 +98,7 @@ describe('useClassificationBannerState', () => {
 
     it('should return default state when linked field is missing', () => {
         setPropertyFields(serverUrl, GROUP, [templateField]);
-        setSystemPropertyValues(serverUrl, GROUP, [systemValue]);
+        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
 
@@ -107,7 +108,7 @@ describe('useClassificationBannerState', () => {
     it('should return default state when DISPLAY_BANNER_TOP action is missing', () => {
         const noActionLinked = {...linkedField, attrs: {...linkedField.attrs, actions: []}} as PropertyField;
         setPropertyFields(serverUrl, GROUP, [templateField, noActionLinked]);
-        setSystemPropertyValues(serverUrl, GROUP, [systemValue]);
+        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
 
@@ -116,7 +117,7 @@ describe('useClassificationBannerState', () => {
 
     it('should return default state when no system value is set', () => {
         setPropertyFields(serverUrl, GROUP, [templateField, linkedField]);
-        setSystemPropertyValues(serverUrl, GROUP, []);
+        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, []);
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
 
@@ -125,7 +126,7 @@ describe('useClassificationBannerState', () => {
 
     it('should return visible state with correct level on happy path', () => {
         setPropertyFields(serverUrl, GROUP, [templateField, linkedField]);
-        setSystemPropertyValues(serverUrl, GROUP, [systemValue]);
+        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
 
@@ -138,14 +139,14 @@ describe('useClassificationBannerState', () => {
 
     it('should re-derive when store values change', () => {
         setPropertyFields(serverUrl, GROUP, [templateField, linkedField]);
-        setSystemPropertyValues(serverUrl, GROUP, [systemValue]);
+        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
         expect(result.current.visible).toBe(true);
 
         act(() => {
             const updatedValue = {...systemValue, value: 'opt-s'};
-            setSystemPropertyValues(serverUrl, GROUP, [updatedValue]);
+            setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [updatedValue]);
         });
 
         expect(result.current).toEqual({
@@ -156,7 +157,7 @@ describe('useClassificationBannerState', () => {
     });
 
     it('should re-derive when store fields change', () => {
-        setSystemPropertyValues(serverUrl, GROUP, [systemValue]);
+        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
         expect(result.current.visible).toBe(false);
@@ -175,7 +176,7 @@ describe('useClassificationBannerState', () => {
     it('should return default state when option_id does not match any option', () => {
         const badValue = {...systemValue, value: 'non-existent-opt'};
         setPropertyFields(serverUrl, GROUP, [templateField, linkedField]);
-        setSystemPropertyValues(serverUrl, GROUP, [badValue]);
+        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [badValue]);
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
 
@@ -194,7 +195,7 @@ describe('useClassificationBannerState', () => {
 
         act(() => {
             setPropertyFields(unregisteredServer, groupUuid, [field, linked]);
-            setSystemPropertyValues(unregisteredServer, groupUuid, [value]);
+            setPropertyValues(unregisteredServer, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, groupUuid, [value]);
         });
 
         expect(result.current).toEqual({
@@ -216,7 +217,7 @@ describe('useClassificationBannerState', () => {
     it('should not bootstrap fetch when all data is present', () => {
         const {fetchClassificationBanner} = require('@actions/remote/classification');
         setPropertyFields(serverUrl, GROUP, [templateField, linkedField]);
-        setSystemPropertyValues(serverUrl, GROUP, [systemValue]);
+        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
         fetchClassificationBanner.mockClear();
 
         renderHook(() => useClassificationBannerState(serverUrl));
