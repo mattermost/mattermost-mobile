@@ -5,6 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {deletePostsForChannelsWithAutotranslation, updateChannelsDisplayName} from '@actions/local/channel';
 import {setCurrentUserStatus} from '@actions/local/user';
+import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {General, Events, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -12,7 +13,7 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getConfig, getLicense} from '@queries/servers/system';
+import {getConfig, getCurrentChannelId, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 import {logError} from '@utils/log';
@@ -129,7 +130,7 @@ export async function handleStatusChangedEvent(serverUrl: string, msg: WebSocket
 
 export async function handleCustomProfileAttributesValuesUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
     try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const {user_id, values} = msg.data;
         const attributesForDatabase = Object.entries(values).map(([fieldId, value]) => ({
@@ -147,10 +148,24 @@ export async function handleCustomProfileAttributesValuesUpdatedEvent(serverUrl:
         } catch (error) {
             logError('Error handling custom profile attributes values updated event', error);
         }
+
+        // ABAC policies evaluate against user attributes; refresh the active channel so
+        // redacted_file_count updates if the current user's own attributes changed.
+        const currentUser = await getCurrentUser(database);
+        if (currentUser?.id === user_id) {
+            const activeServerUrl = await DatabaseManager.getActiveServerUrl();
+            if (activeServerUrl === serverUrl) {
+                const channelId = await getCurrentChannelId(database);
+                if (channelId) {
+                    fetchPostsForChannel(serverUrl, channelId).catch((e) =>
+                        logError('handleCustomProfileAttributesValuesUpdatedEvent: failed to re-fetch posts', e),
+                    );
+                }
+            }
+        }
     } catch (error) {
         logError('Error getting the operator for the custom profile attributes values updated event', error);
     }
-
 }
 
 export async function handleCustomProfileAttributesFieldUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {

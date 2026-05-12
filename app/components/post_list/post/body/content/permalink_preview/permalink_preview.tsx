@@ -6,11 +6,13 @@ import React, {useMemo, useCallback, useEffect, useState} from 'react';
 import {Text, View, Pressable, type LayoutChangeEvent} from 'react-native';
 
 import {showPermalink} from '@actions/remote/permalink';
+import {fetchPostById} from '@actions/remote/post';
 import {fetchUsersByIds} from '@actions/remote/user';
 import EditedIndicator from '@components/edited_indicator';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
+import RedactedFilesPlaceholder from '@components/post_list/post/body/redacted_files_placeholder';
 import TranslateIcon from '@components/post_list/post/header/translate_icon';
 import ProfilePicture from '@components/profile_picture';
 import {View as ViewConstants} from '@constants';
@@ -41,6 +43,7 @@ type PermalinkPreviewProps = {
     embedData: PermalinkEmbedData;
     author?: UserModel;
     currentUser?: UserModel;
+    hasLinkedPostFiles: boolean;
     isMilitaryTime: boolean;
     teammateNameDisplay: string;
     post?: PostModel;
@@ -126,6 +129,7 @@ const PermalinkPreview = ({
     embedData,
     author,
     currentUser,
+    hasLinkedPostFiles,
     isMilitaryTime,
     teammateNameDisplay,
     post,
@@ -163,6 +167,25 @@ const PermalinkPreview = ({
             fetchUsersByIds(serverUrl, [userId], false);
         }
     }, [userId, author, serverUrl]);
+
+    const linkedPostId = embedData?.post_id;
+    const embedFilesCount = embedData?.post?.metadata?.files?.length ?? 0;
+    useEffect(() => {
+        if (!linkedPostId) {
+            return;
+        }
+        if (!post) {
+            fetchPostById(serverUrl, linkedPostId);
+            return;
+        }
+
+        // When the embed shows accessible files but DB records are missing (e.g. after ABAC
+        // access is granted and file records were deleted during the denial period), re-fetch
+        // the linked post so handlePosts repopulates the file records.
+        if (embedFilesCount > 0 && !hasLinkedPostFiles) {
+            fetchPostById(serverUrl, linkedPostId);
+        }
+    }, [linkedPostId, post, serverUrl, embedFilesCount, hasLinkedPostFiles]);
 
     if (isOriginPostDeleted) {
         return null;
@@ -207,11 +230,22 @@ const PermalinkPreview = ({
         return `~${displayName}`;
     }, [channel_display_name, channel_type, authorDisplayName]);
 
-    const filesInfo = useMemo(() => {
-        return embedData?.post?.metadata?.files || [];
-    }, [embedData?.post?.metadata?.files]);
+    // Embed data is recalculated per-user on each channel fetch (no update_at bump).
+    // Trust it when it's conclusive: explicitly denied (redacted_file_count > 0) or
+    // explicitly granted (files are listed). Fall back to the DB linked-post value
+    // only when the embed is ambiguous — no files and no redacted count (e.g. stale
+    // host post that hasn't been refetched since the ABAC policy was applied).
+    const embedRedactedCount = embedData?.post?.metadata?.redacted_file_count ?? 0;
+    const dbRedactedCount = post?.metadata?.redacted_file_count ?? 0;
 
-    const hasFiles = filesInfo.length > 0;
+    // The server only populates redacted_file_count when PermissionPolicies is enabled,
+    // so no explicit client-side feature-flag gate is needed here.
+    let redactedFileCount = dbRedactedCount; // fall back to DB value when embed is ambiguous
+    if (embedRedactedCount > 0) {
+        redactedFileCount = embedRedactedCount; // embed explicitly denied
+    } else if (embedFilesCount > 0) {
+        redactedFileCount = 0; // embed explicitly granted (files listed)
+    }
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
         const teamName = embedData.team_name;
@@ -306,7 +340,7 @@ const PermalinkPreview = ({
                         isEmbedded={true}
                     />
 
-                    {hasFiles && post && (
+                    {hasLinkedPostFiles && post && (
                         <PermalinkFiles
                             post={post}
                             location='permalink_preview'
@@ -314,6 +348,9 @@ const PermalinkPreview = ({
                             parentLocation={parentLocation}
                             parentPostId={parentPostId}
                         />
+                    )}
+                    {redactedFileCount > 0 && (
+                        <RedactedFilesPlaceholder/>
                     )}
                 </View>
 

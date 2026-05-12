@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AccessControl from './access_control';
 import Bot from './bot';
 import Channel from './channel';
+import File from './file';
 import Ldap from './ldap';
 import Playbooks from './playbooks';
 import PlaybooksHelpers from './playbooks_helpers';
@@ -16,9 +18,11 @@ import Team from './team';
 import User from './user';
 
 export {
+    AccessControl,
     Bot,
     Channel,
     DemoPlugin,
+    File,
     Ldap,
     Playbooks,
     PlaybooksHelpers,

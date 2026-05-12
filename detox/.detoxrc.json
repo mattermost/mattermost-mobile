@@ -34,7 +34,8 @@
         "os": "__DEVICE_OS_VERSION__"
       },
       "environment": {
-        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
+        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true",
+        "MM_FEATUREFLAGS_PermissionPolicies": "true"
       }
     },
     "android.emulator": {
@@ -43,7 +44,8 @@
         "avdName": "detox_pixel_4_xl_api_34"
       },
       "environment": {
-        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
+        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true",
+        "MM_FEATUREFLAGS_PermissionPolicies": "true"
       }
     }
   },

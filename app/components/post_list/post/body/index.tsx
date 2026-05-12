@@ -22,6 +22,7 @@ import Content from './content';
 import Failed from './failed';
 import Message from './message';
 import Reactions from './reactions';
+import RedactedFilesPlaceholder from './redacted_files_placeholder';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {SearchPattern} from '@typings/global/markdown';
@@ -124,6 +125,7 @@ const Body = ({
 
     const isReplyPost = Boolean(post.rootId && (!isEphemeral || !hasBeenDeleted) && location !== THREAD);
     const hasContent = Boolean((post.metadata?.embeds?.length || (appsEnabled && nBindings)) || nAttachments);
+    const redactedFileCount = post.metadata?.redacted_file_count ?? 0;
 
     const replyBarStyle = useMemo<StyleProp<ViewStyle>|undefined>(() => {
         if (!isReplyPost || (isCRTEnabled && location === Screens.PERMALINK)) {
@@ -227,6 +229,9 @@ const Body = ({
                     isReplyPost={isReplyPost}
                 />
                 }
+                {redactedFileCount > 0 && (
+                    <RedactedFilesPlaceholder/>
+                )}
                 {(acknowledgementsVisible || reactionsVisible) && (
                     <View style={style.ackAndReactionsContainer}>
                         {acknowledgementsVisible && (

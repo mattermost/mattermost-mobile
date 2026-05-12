@@ -107,6 +107,7 @@ type PostMetadata = {
     borConfig?: PostBoRConfig;
     recipients?: string[];
     translations?: Record<string, PostTranslation>;
+    redacted_file_count?: number;
 };
 
 type Post = {
