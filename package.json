@@ -83,7 +83,7 @@
     "react": "19.2.6",
     "react-freeze": "1.0.4",
     "react-intl": "10.1.5",
-    "react-native": "0.83.9",
+    "react-native": "0.85.0",
     "react-native-dotenv": "3.4.11",
     "react-native-gesture-handler": "2.31.2",
     "react-native-haptic-feedback": "3.0.0",
