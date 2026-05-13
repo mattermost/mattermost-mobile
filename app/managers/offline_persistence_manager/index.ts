@@ -7,11 +7,12 @@ import {distinctUntilChanged, skip} from 'rxjs/operators';
 
 import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
 import {clearEphemeralModeState, setDisconnectedSince, setLastSeenTime, setOfflineSince} from '@actions/local/systems';
+import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';
-import {resetToDataErased} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import {logError} from '@utils/log';
 
 class OfflinePersistenceManagerSingleton {
@@ -59,7 +60,22 @@ class OfflinePersistenceManagerSingleton {
         }));
     };
 
+    public cleanup = () => {
+        for (const url of Object.keys(this.configSubscriptions)) {
+            this.removeServer(url);
+        }
+        this.wipeInProgress.clear();
+    };
+
     public removeServer = (serverUrl: string) => {
+        this.pauseSubscriptions(serverUrl);
+        delete this.evalQueue[serverUrl];
+    };
+
+    // Tears down everything removeServer does except evalQueue, so callers that
+    // hold the eval lock (runWipe) can pause subs without orphaning the in-flight
+    // promise that serializes work for this server.
+    private pauseSubscriptions = (serverUrl: string) => {
         if (this.activeServers.has(serverUrl)) {
             this.deactivate(serverUrl, {silent: true});
         }
@@ -68,7 +84,6 @@ class OfflinePersistenceManagerSingleton {
         delete this.thresholdMs[serverUrl];
         delete this.purgeThresholdMs[serverUrl];
         delete this.offlineSubjects[serverUrl];
-        delete this.evalQueue[serverUrl];
     };
 
     public isOffline = (serverUrl: string): boolean => {
@@ -96,7 +111,7 @@ class OfflinePersistenceManagerSingleton {
         });
     };
 
-    private onEphemeralModeConfigChange = (
+    private onEphemeralModeConfigChange = async (
         serverUrl: string,
         enabledStr: string | undefined,
         timeoutStr: string | undefined,
@@ -129,7 +144,7 @@ class OfflinePersistenceManagerSingleton {
         }
 
         // Disabled + inactive: clear any stale row left over from a prior enabled session.
-        setDisconnectedSince(serverUrl, null);
+        await setDisconnectedSince(serverUrl, null);
     };
 
     private activate = (serverUrl: string) => {
@@ -147,7 +162,7 @@ class OfflinePersistenceManagerSingleton {
         this.enqueueEval(serverUrl, () => this.evaluateServer(serverUrl, true));
     };
 
-    private deactivate = (serverUrl: string, {silent = false}: {silent?: boolean} = {}) => {
+    private deactivate = async (serverUrl: string, {silent = false}: {silent?: boolean} = {}) => {
         this.activeServers.delete(serverUrl);
         this.wsSubscriptions[serverUrl]?.unsubscribe();
         delete this.wsSubscriptions[serverUrl];
@@ -155,8 +170,8 @@ class OfflinePersistenceManagerSingleton {
         this.clearPurgeTimer(serverUrl);
         if (!silent) {
             // Server is still alive (feature disabled at runtime); flush offline state.
-            this.flagOffline(serverUrl, false);
-            setDisconnectedSince(serverUrl, null);
+            await this.flagOffline(serverUrl, false);
+            await setDisconnectedSince(serverUrl, null);
         }
         this.maybeRemoveAppStateListener();
     };
@@ -195,7 +210,7 @@ class OfflinePersistenceManagerSingleton {
 
         if (WebsocketManager.isConnected(serverUrl)) {
             this.clearDisconnectionTimer(serverUrl);
-            this.flagOffline(serverUrl, false);
+            await this.flagOffline(serverUrl, false);
             await setDisconnectedSince(serverUrl, null);
             return;
         }
@@ -225,22 +240,22 @@ class OfflinePersistenceManagerSingleton {
         const threshold = this.thresholdMs[serverUrl];
         if (elapsed >= threshold) {
             this.clearDisconnectionTimer(serverUrl);
-            this.flagOffline(serverUrl, true);
+            await this.flagOffline(serverUrl, true);
             return;
         }
-        this.flagOffline(serverUrl, false);
+        await this.flagOffline(serverUrl, false);
         this.startDisconnectionTimer(serverUrl, threshold - elapsed);
     };
 
     private startDisconnectionTimer = (serverUrl: string, remainingMs: number) => {
         this.clearDisconnectionTimer(serverUrl);
         if (remainingMs <= 0) {
-            this.flagOffline(serverUrl, true);
+            this.enqueueEval(serverUrl, () => this.flagOffline(serverUrl, true));
             return;
         }
         this.disconnectionTimers[serverUrl] = setTimeout(() => {
             delete this.disconnectionTimers[serverUrl];
-            this.flagOffline(serverUrl, true);
+            this.enqueueEval(serverUrl, () => this.flagOffline(serverUrl, true));
         }, remainingMs);
     };
 
@@ -260,7 +275,7 @@ class OfflinePersistenceManagerSingleton {
         }
     };
 
-    private flagOffline = (serverUrl: string, value: boolean) => {
+    private flagOffline = async (serverUrl: string, value: boolean) => {
         const subject = this.getOfflineSubject(serverUrl);
         const prev = subject.getValue();
         subject.next(value);
@@ -268,9 +283,9 @@ class OfflinePersistenceManagerSingleton {
             return;
         }
         if (value) {
-            this.onTransitionToOffline(serverUrl);
+            await this.onTransitionToOffline(serverUrl);
         } else {
-            this.onTransitionToOnline(serverUrl);
+            await this.onTransitionToOnline(serverUrl);
         }
     };
 
@@ -292,7 +307,7 @@ class OfflinePersistenceManagerSingleton {
             await setOfflineSince(serverUrl, offlineSince);
             await setLastSeenTime(serverUrl, Date.now());
         }
-        this.evaluatePurge(serverUrl);
+        await this.evaluatePurge(serverUrl);
     };
 
     private onTransitionToOnline = async (serverUrl: string) => {
@@ -346,7 +361,7 @@ class OfflinePersistenceManagerSingleton {
         }
         this.purgeTimers[serverUrl] = setTimeout(() => {
             delete this.purgeTimers[serverUrl];
-            this.runWipe(serverUrl);
+            this.enqueueEval(serverUrl, () => this.runWipe(serverUrl));
         }, remainingMs);
     };
 
@@ -361,12 +376,12 @@ class OfflinePersistenceManagerSingleton {
             const displayName = (await getServerDisplayName(serverUrl)) || serverUrl;
 
             if (serverUrl === activeUrl) {
-                await resetToDataErased({serverUrl, displayName});
+                await navigateToScreen(Screens.DATA_ERASED, {serverUrl, displayName}, true);
             }
 
             await DatabaseManager.updatePersistenceFlag(serverUrl, 'wiped');
 
-            this.removeServer(serverUrl);
+            this.pauseSubscriptions(serverUrl);
             await wipeServerDatabaseWithRetry(serverUrl);
             this.addServer(serverUrl);
         } catch (error) {

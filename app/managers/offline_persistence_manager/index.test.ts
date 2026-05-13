@@ -5,11 +5,12 @@ import {AppState, type AppStateStatus} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 
 import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
+import {Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
-import {resetToDataErased} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
 import OfflinePersistenceManager from './index';
@@ -34,7 +35,7 @@ jest.mock('@queries/app/servers', () => {
     };
 });
 jest.mock('@screens/navigation', () => ({
-    resetToDataErased: jest.fn(),
+    navigateToScreen: jest.fn(),
 }));
 jest.mock('react-native/Libraries/AppState/AppState');
 jest.mock('@utils/log');
@@ -581,18 +582,18 @@ describe('OfflinePersistenceManager', () => {
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
         });
 
-        it('triggers resetToDataErased when the wiped server is active', async () => {
+        it('navigates to the data-erased screen as a root reset when the wiped server is active', async () => {
             await triggerWipeForServerA();
 
-            expect(resetToDataErased).toHaveBeenCalledWith({serverUrl: serverA, displayName});
+            expect(navigateToScreen).toHaveBeenCalledWith(Screens.DATA_ERASED, {serverUrl: serverA, displayName}, true);
         });
 
-        it('triggers resetToDataErased before any data is destroyed', async () => {
+        it('navigates to the data-erased screen before any data is destroyed', async () => {
             await triggerWipeForServerA();
 
-            const setRootOrder = jest.mocked(resetToDataErased).mock.invocationCallOrder[0];
+            const navigateOrder = jest.mocked(navigateToScreen).mock.invocationCallOrder[0];
             const wipeOrder = jest.mocked(wipeServerDatabaseWithRetry).mock.invocationCallOrder[0];
-            expect(setRootOrder).toBeLessThan(wipeOrder);
+            expect(navigateOrder).toBeLessThan(wipeOrder);
         });
 
         it('does not navigate when the wiped server is not active', async () => {
@@ -600,7 +601,7 @@ describe('OfflinePersistenceManager', () => {
 
             await triggerWipeForServerA();
 
-            expect(resetToDataErased).not.toHaveBeenCalled();
+            expect(navigateToScreen).not.toHaveBeenCalled();
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
         });
 

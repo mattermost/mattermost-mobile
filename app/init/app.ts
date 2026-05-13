@@ -42,6 +42,7 @@ export async function initialize() {
 
         await DatabaseManager.init(serverUrls);
         await NetworkManager.init(serverCredentials);
+
         // OfflinePersistenceManager init runs before WS init so any pending wipes
         // complete before WebSocket clients start populating server databases.
         await OfflinePersistenceManager.init(serverCredentials);
@@ -69,4 +70,5 @@ export function cleanup() {
     SessionManager.cleanup();
     CallsManager.cleanup();
     PushNotifications.cleanup();
+    OfflinePersistenceManager.cleanup();
 }

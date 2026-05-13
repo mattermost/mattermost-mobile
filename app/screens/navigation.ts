@@ -28,7 +28,7 @@ export function updateParams(props: Record<string, any>) {
 }
 
 // Helper to build Expo Router path from screen constant
-function getExpoRouterPath(screen: AvailableScreens, props?: any): string | undefined {
+export function getExpoRouterPath(screen: AvailableScreens, props?: any): string | undefined {
     if (UNAUTHENTICATED_SCREENS.has(screen)) {
         if (props?.isModal) {
             return `/(modals)/(add-server)/${screen}`;
@@ -89,40 +89,6 @@ export function navigateToScreenWithBaseRoute(baseRoute: string, screen: Availab
     } catch (e) {
         logError('navigateToScreenWithBaseRoute: Expo Router navigation failed', e);
     }
-}
-
-export function resetToDataErased(passProps: {serverUrl: string; displayName: string}) {
-    const theme = getDefaultThemeByAppearance();
-    const edgeToEdge = edgeToEdgeHack(Screens.DATA_ERASED, theme);
-
-    return Navigation.setRoot({
-        root: {
-            stack: {
-                children: [{
-                    component: {
-                        id: Screens.DATA_ERASED,
-                        name: Screens.DATA_ERASED,
-                        passProps,
-                        options: {
-                            layout: {
-                                backgroundColor: theme.centerChannelBg,
-                                componentBackgroundColor: theme.centerChannelBg,
-                            },
-                            statusBar: {
-                                visible: true,
-                                backgroundColor: theme.sidebarBg,
-                                ...edgeToEdge,
-                            },
-                            topBar: {
-                                visible: false,
-                                height: 0,
-                            },
-                        },
-                    },
-                }],
-            },
-        },
-    });
 }
 
 export async function navigateBack() {

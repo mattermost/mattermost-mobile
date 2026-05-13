@@ -29,12 +29,10 @@ import {typography} from '@utils/typography';
 import type ServersModel from '@typings/database/models/app/servers';
 import type {UnreadMessages, UnreadSubscription} from '@typings/database/subscriptions';
 
-interface Props {
+export interface DataErasedProps {
     serverUrl: string;
     displayName: string;
 }
-
-const subscriptions: Map<string, UnreadSubscription> = new Map();
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -90,12 +88,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const DataErased = ({serverUrl, displayName}: Props) => {
+const DataErased = ({serverUrl, displayName}: DataErasedProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
-    const registeredServers = useRef<ServersModel[]|undefined>();
+    const registeredServers = useRef<ServersModel[]|undefined>(undefined);
+    const subscriptions = useRef<Map<string, UnreadSubscription>>(new Map());
     const isTablet = useIsTablet();
     const [isReconnecting, setIsReconnecting] = useState(false);
     const [hasError, setHasError] = useState(false);
@@ -113,7 +112,7 @@ const DataErased = ({serverUrl, displayName}: Props) => {
     const updateTotal = () => {
         let unread = false;
         let mentions = 0;
-        subscriptions.forEach((value) => {
+        subscriptions.current.forEach((value) => {
             unread = unread || value.unread;
             mentions += value.mentions;
         });
@@ -121,7 +120,7 @@ const DataErased = ({serverUrl, displayName}: Props) => {
     };
 
     const unreadsSubscription = (url: string, {myChannels, settings, threadMentionCount, threadUnreads}: UnreadObserverArgs) => {
-        const unreads = subscriptions.get(url);
+        const unreads = subscriptions.current.get(url);
         if (unreads) {
             let mentions = 0;
             let unread = Boolean(threadUnreads);
@@ -133,7 +132,7 @@ const DataErased = ({serverUrl, displayName}: Props) => {
 
             unreads.mentions = mentions + threadMentionCount;
             unreads.unread = unread;
-            subscriptions.set(url, unreads);
+            subscriptions.current.set(url, unreads);
             updateTotal();
         }
     };
@@ -142,22 +141,22 @@ const DataErased = ({serverUrl, displayName}: Props) => {
         registeredServers.current = sortServersByDisplayName(servers, intl);
 
         const allUrls = new Set(servers.map((s) => s.url));
-        const subscriptionsToRemove = [...subscriptions].filter(([key]) => !allUrls.has(key));
+        const subscriptionsToRemove = [...subscriptions.current].filter(([key]) => !allUrls.has(key));
         for (const [key, map] of subscriptionsToRemove) {
             map.subscription?.unsubscribe();
-            subscriptions.delete(key);
+            subscriptions.current.delete(key);
             updateTotal();
         }
 
         for (const server of servers) {
             const {lastActiveAt, url} = server;
-            if (lastActiveAt && (url !== serverUrl) && !subscriptions.has(url)) {
+            if (lastActiveAt && (url !== serverUrl) && !subscriptions.current.has(url)) {
                 const unreads: UnreadSubscription = {mentions: 0, unread: false};
-                subscriptions.set(url, unreads);
+                subscriptions.current.set(url, unreads);
                 unreads.subscription = subscribeUnreadAndMentionsByServer(url, unreadsSubscription);
-            } else if ((!lastActiveAt || (url === serverUrl)) && subscriptions.has(url)) {
-                subscriptions.get(url)?.subscription?.unsubscribe();
-                subscriptions.delete(url);
+            } else if ((!lastActiveAt || (url === serverUrl)) && subscriptions.current.has(url)) {
+                subscriptions.current.get(url)?.subscription?.unsubscribe();
+                subscriptions.current.delete(url);
                 updateTotal();
             }
         }
@@ -168,10 +167,10 @@ const DataErased = ({serverUrl, displayName}: Props) => {
 
         return () => {
             subscription?.unsubscribe();
-            subscriptions.forEach((unreads) => {
+            subscriptions.current.forEach((unreads) => {
                 unreads.subscription?.unsubscribe();
             });
-            subscriptions.clear();
+            subscriptions.current.clear();
         };
     });
 
@@ -211,17 +210,9 @@ const DataErased = ({serverUrl, displayName}: Props) => {
                 snapPoints.push('80%');
             }
 
-            const closeButtonId = 'close-your-servers';
-            bottomSheet({
-                closeButtonId,
-                renderContent,
-                footerComponent: isTablet ? undefined : AddServerButton,
-                snapPoints,
-                theme,
-                title: intl.formatMessage({id: 'your.servers', defaultMessage: 'Your servers'}),
-            });
+            bottomSheet(renderContent, snapPoints, isTablet ? undefined : AddServerButton);
         }
-    }, [intl, isTablet, theme]);
+    }, [isTablet]);
 
     const buttonTestID = isReconnecting ? 'data_erased.reconnect.button.disabled' : 'data_erased.reconnect.button';
 
