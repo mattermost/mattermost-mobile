@@ -73,10 +73,10 @@ describe('AppsFormComponent navigation header', () => {
         const headerRight = lastHeaderRight();
         expect(headerRight).toBeDefined();
 
-        const button = headerRight!();
-        expect(button.props.testID).toBe('interactive_dialog.submit.button');
-        expect(button.props.text).toBe('Submit');
-        expect(button.props.disabled).toBe(false);
+        const button = headerRight?.();
+        expect(button?.props.testID).toBe('interactive_dialog.submit.button');
+        expect(button?.props.text).toBe('Submit');
+        expect(button?.props.disabled).toBe(false);
     });
 
     it('clears header Submit when submit_buttons field has options (inline buttons render)', () => {
@@ -112,7 +112,7 @@ describe('AppsFormComponent navigation header', () => {
 
         const headerRight = lastHeaderRight();
         expect(headerRight).toBeDefined();
-        expect(headerRight!().props.testID).toBe('interactive_dialog.submit.button');
+        expect(headerRight?.().props.testID).toBe('interactive_dialog.submit.button');
     });
 
     it('honors form.submit_label as the header button text', () => {
@@ -122,6 +122,6 @@ describe('AppsFormComponent navigation header', () => {
         );
 
         const headerRight = lastHeaderRight();
-        expect(headerRight!().props.text).toBe('Triage');
+        expect(headerRight?.().props.text).toBe('Triage');
     });
 });
