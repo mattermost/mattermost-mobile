@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PortalHost} from '@gorhom/portal';
 import {Stack, Redirect} from 'expo-router';
 import {useMemo} from 'react';
 import {View} from 'react-native';
 import {SafeAreaInsetsContext, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import GlobalBannerOverlay, {useGlobalBannerHeight} from '@components/global_banner_overlay';
+import GlobalBannerContainer, {GLOBAL_BANNER_PORTAL_HOST, useGlobalBannerHeight} from '@components/global_banner_overlay';
 import {useTheme} from '@context/theme';
 import {withServerDatabase} from '@database/components';
 import {useHasCredentials} from '@hooks/use_has_credentials';
@@ -19,11 +20,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     safeAreaView: {
         flex: 1,
         backgroundColor: theme.centerChannelBg,
-    },
-    bannerOverlay: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
     },
     card: {
         backgroundColor: theme.centerChannelBg,
@@ -40,11 +36,6 @@ function AuthenticatedLayout() {
     const adjustedInsets = useMemo(
         () => ({...realInsets, top: realInsets.top + bannerHeight}),
         [realInsets, bannerHeight],
-    );
-
-    const bannerOverlayStyle = useMemo(
-        () => [styles.bannerOverlay, {top: realInsets.top}],
-        [styles.bannerOverlay, realInsets.top],
     );
 
     const stackScreenOptions = useMemo<NativeStackNavigationOptions>(() => ({
@@ -75,7 +66,8 @@ function AuthenticatedLayout() {
                     <Stack.Screen name='(home)'/>
                 </Stack>
             </SafeAreaInsetsContext.Provider>
-            <GlobalBannerOverlay style={bannerOverlayStyle}/>
+            <PortalHost name={GLOBAL_BANNER_PORTAL_HOST}/>
+            <GlobalBannerContainer/>
         </View>
     );
 }
