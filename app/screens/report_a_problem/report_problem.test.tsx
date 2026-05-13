@@ -6,7 +6,7 @@ import React, {type ComponentProps} from 'react';
 import {View} from 'react-native';
 
 import {savePreference} from '@actions/remote/preference';
-import {Preferences, Screens} from '@constants';
+import {Preferences} from '@constants';
 import {DEFAULT_REPORT_A_PROBLEM_EMAIL} from '@constants/report_a_problem';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {logDebug} from '@utils/log';
