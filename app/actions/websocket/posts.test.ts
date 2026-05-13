@@ -292,6 +292,7 @@ describe('WebSocket Post Actions', () => {
             mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([]);
             mockedFetchPostAuthors.mockResolvedValue({authors: []});
             mockedGetIsCRTEnabled.mockResolvedValue(false);
+            jest.spyOn(EphemeralStore, 'addEditingPost').mockImplementation(jest.fn());
         });
 
         it('should handle post edited event - post exists locally', async () => {

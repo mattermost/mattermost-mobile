@@ -12,7 +12,9 @@ import RescheduledDraft from '@components/draft_scheduled_post/draft_scheduled_p
 import FormattedText from '@components/formatted_text';
 import SendHandler from '@components/post_draft/send_handler/';
 import {Screens} from '@constants';
+import {isEdgeToEdge} from '@constants/device';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
+import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
 import BottomSheet from '@screens/bottom_sheet';
 import {emptyFunction} from '@utils/general';
@@ -59,8 +61,9 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
     const styles = getStyleSheet(theme);
     const {bottom} = useSafeAreaInsets();
     const snapPoints = useMemo(() => {
+        const snapBottom = isEdgeToEdge ? bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
         const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(4, ITEM_HEIGHT);
-        return [1, componentHeight + bottom];
+        return [1, componentHeight + snapBottom];
     }, [bottom]);
 
     const renderContent = () => {

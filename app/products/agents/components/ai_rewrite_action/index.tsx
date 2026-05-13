@@ -7,10 +7,10 @@ import {useRewrite} from '@agents/hooks';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
+import {useKeyboardState} from '@context/keyboard_state';
 import {useTheme} from '@context/theme';
 import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
-import {dismissKeyboard} from '@utils/keyboard';
 import {changeOpacity} from '@utils/theme';
 
 const ICON_SIZE = 24;
@@ -38,12 +38,13 @@ export default function AIRewriteAction({
 }: Props) {
     const theme = useTheme();
     const {isProcessing} = useRewrite();
+    const {blurAndDismissKeyboard} = useKeyboardState();
 
-    const handlePress = useCallback(() => {
-        dismissKeyboard();
+    const handlePress = useCallback(async () => {
+        await blurAndDismissKeyboard();
         CallbackStore.setCallback(updateValue);
         navigateToScreen(Screens.AGENTS_REWRITE_OPTIONS, {originalMessage: value});
-    }, [value, updateValue]);
+    }, [blurAndDismissKeyboard, updateValue, value]);
 
     const isDisabled = disabled || isProcessing;
     const actionTestID = isDisabled ? `${testID}.disabled` : testID;

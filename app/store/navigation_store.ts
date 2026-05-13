@@ -18,7 +18,6 @@ const initialState: NavigationState = {
 class NavigationStoreSingleton {
     private stateSubject = new BehaviorSubject<NavigationState>(initialState);
     private screenSubject = new BehaviorSubject<AvailableScreens | undefined>(undefined);
-    private currentNavigationState: ExpoNavigationState | undefined;
     private tosOpen = false;
 
     // Observable access
@@ -46,31 +45,10 @@ class NavigationStoreSingleton {
         return this.state.screenStack.includes('(modals)');
     }
 
-    getRootRouteInfo(): {pathname: string; params?: Record<string, string>} | undefined {
-        if (!this.currentNavigationState) {
-            return undefined;
-        }
-
-        // Get the root route (first route in the navigation state)
-        const rootRoute = this.currentNavigationState.routes[0];
-        if (!rootRoute) {
-            return undefined;
-        }
-
-        // Build the pathname by traversing nested routes
-        const pathname = this.buildPathname(rootRoute);
-
-        // Extract params from the root route
-        const params = rootRoute.params as Record<string, string> | undefined;
-
-        return {pathname, params};
-    }
-
     // State management
     reset() {
         this.stateSubject.next(initialState);
         this.screenSubject.next(undefined);
-        this.currentNavigationState = undefined;
         this.tosOpen = false;
     }
 
@@ -78,9 +56,6 @@ class NavigationStoreSingleton {
         if (!navState) {
             return;
         }
-
-        // Store the current navigation state for getRootRouteInfo
-        this.currentNavigationState = navState;
 
         // Update screenStack with current screens
         const screenStack: AvailableScreens[] = [];
@@ -180,26 +155,6 @@ class NavigationStoreSingleton {
     }
 
     // Private methods
-    private buildPathname(route: ExpoNavigationState['routes'][0]): string {
-        // Start with the route name
-        let pathname = `/${route.name}`;
-
-        // If there's a nested state, traverse to the deepest active route
-        const routeState = (route as {state?: ExpoNavigationState}).state;
-        if (routeState) {
-            const activeIndex = routeState.index ?? 0;
-            const activeRoute = routeState.routes[activeIndex];
-
-            if (activeRoute) {
-                // Append the nested route path
-                const nestedPath = this.buildPathname(activeRoute);
-                pathname += nestedPath;
-            }
-        }
-
-        return pathname;
-    }
-
     private extractScreenIds(state: ExpoNavigationState, screenStack: AvailableScreens[]) {
         if (!state) {
             return;

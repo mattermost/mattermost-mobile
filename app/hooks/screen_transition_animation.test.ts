@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook} from '@testing-library/react-hooks';
+import {renderHook} from '@testing-library/react-native';
 import {Platform} from 'react-native';
 
 import {useScreenTransitionAnimation} from './screen_transition_animation';
@@ -210,7 +210,7 @@ describe('useScreenTransitionAnimation', () => {
 
             // Change reducedMotion to true
             mockUseReducedMotion.mockReturnValue(true);
-            rerender();
+            rerender(undefined);
 
             expect(sharedValue.value).toBe(0);
         });
@@ -243,7 +243,7 @@ describe('useScreenTransitionAnimation', () => {
 
             // Change width
             mockUseWindowDimensions.mockReturnValue({width: 414, height: 896});
-            rerender();
+            rerender(undefined);
 
             // Get the new focus effect callback
             const newFocusEffectCallback = mockUseFocusEffect.mock.calls[1][0];

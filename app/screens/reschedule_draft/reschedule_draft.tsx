@@ -5,7 +5,8 @@ import {useNavigation} from 'expo-router';
 import moment, {type Moment} from 'moment-timezone';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, SafeAreaView, StyleSheet, View} from 'react-native';
+import {Keyboard, StyleSheet, View} from 'react-native';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {updateScheduledPost} from '@actions/remote/scheduled_post';
 import DateTimeSelector from '@components/data_time_selector';
@@ -28,6 +29,8 @@ type Props = {
     currentUserTimezone?: UserTimezone | null;
     draft: ScheduledPostModel;
 }
+
+const safeAreaEdges: Edge[] = ['bottom', 'left', 'right'];
 
 const styles = StyleSheet.create({
     container: {
@@ -125,6 +128,7 @@ const RescheduledDraft: React.FC<Props> = ({
 
     return (
         <SafeAreaView
+            edges={safeAreaEdges}
             testID='edit_post.screen'
             style={styles.container}
         >

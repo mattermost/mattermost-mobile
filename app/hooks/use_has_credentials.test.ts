@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook} from '@testing-library/react-hooks';
-import {waitFor} from '@testing-library/react-native';
+import {renderHook, waitFor} from '@testing-library/react-native';
 
 import {useHasCredentials} from '@hooks/use_has_credentials';
 import {getAllServerCredentials} from '@init/credentials';
@@ -93,8 +92,8 @@ describe('useHasCredentials', () => {
         });
 
         // Re-render the hook
-        rerender();
-        rerender();
+        rerender(undefined);
+        rerender(undefined);
 
         // Should still only have called once
         expect(mockGetAllServerCredentials).toHaveBeenCalledTimes(1);

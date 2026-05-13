@@ -7,7 +7,7 @@ import UserAvatarsStack from '@components/user_avatars_stack';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
-import {renderWithEverything} from '@test/intl-test-helper';
+import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import ThreadFooter from './thread_footer';
@@ -77,6 +77,9 @@ describe('ThreadFooter', () => {
     it('should pass the correct props to the UserAvatarsStack', async () => {
         const props = await getBaseProps();
         const {getByTestId} = renderWithEverything(<ThreadFooter {...props}/>, {database});
+        await waitFor(() => {
+            expect(getByTestId('user-avatars-stack')).toBeTruthy();
+        });
         const userAvatarsStack = getByTestId('user-avatars-stack');
         expect(userAvatarsStack).toHaveProp('channelId', props.channelId);
         expect(userAvatarsStack).toHaveProp('location', props.location);

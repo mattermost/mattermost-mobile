@@ -50,6 +50,9 @@ export default function InputQuickAction({
             const currentCursorPosition = getCursorPosition();
 
             updateValue((v) => {
+                let newCursorPosition: number;
+                let newValue: string;
+
                 if (inputType === 'at') {
                     let insertedText = '@';
                     const charBeforeCursor = currentCursorPosition > 0 ? v[currentCursorPosition - 1] : '';
@@ -58,20 +61,19 @@ export default function InputQuickAction({
                         insertedText = ' @';
                     }
 
-                    const newValue = v.slice(0, currentCursorPosition) + insertedText + v.slice(currentCursorPosition);
-                    const newCursorPosition = currentCursorPosition + insertedText.length;
-
-                    setCursorPosition(newCursorPosition);
-                    updateCursorPosition(newCursorPosition);
-
-                    return newValue;
+                    newValue = v.slice(0, currentCursorPosition) + insertedText + v.slice(currentCursorPosition);
+                    newCursorPosition = currentCursorPosition + insertedText.length;
+                } else {
+                    newValue = v.slice(0, currentCursorPosition) + '/' + v.slice(currentCursorPosition);
+                    newCursorPosition = currentCursorPosition + 1;
                 }
-
-                const newValue = v.slice(0, currentCursorPosition) + '/' + v.slice(currentCursorPosition);
-                const newCursorPosition = currentCursorPosition + 1;
 
                 setCursorPosition(newCursorPosition);
                 updateCursorPosition(newCursorPosition);
+
+                // On Android the controlled PasteInput doesn't reposition the native cursor
+                // after a value change unless we explicitly call setSelection.
+                inputRef.current?.setSelection(newCursorPosition, newCursorPosition);
 
                 return newValue;
             });
@@ -87,6 +89,9 @@ export default function InputQuickAction({
             });
         }
         focusWithEmojiDismiss();
+
+    // inputRef is a stable MutableRefObject from useKeyboardState — its identity never changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [inputType, updateValue, focusWithEmojiDismiss, getCursorPosition, setCursorPosition, updateCursorPosition]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;

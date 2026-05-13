@@ -3,7 +3,7 @@
 
 import NetInfo from '@react-native-community/netinfo';
 import {AppState} from 'react-native';
-import BackgroundTimer from 'react-native-background-timer';
+import {BackgroundTimer} from 'react-native-nitro-bg-timer-plus';
 
 import {fetchStatusByIds} from '@actions/remote/user';
 import {handleFirstConnect, handleReconnect} from '@actions/websocket';
@@ -20,7 +20,6 @@ import type {ServerDatabase} from '@typings/database/database';
 
 jest.mock('@react-native-community/netinfo');
 jest.mock('react-native/Libraries/AppState/AppState');
-jest.mock('react-native-background-timer');
 jest.mock('@actions/local/user');
 jest.mock('@actions/remote/user');
 jest.mock('@actions/websocket');
@@ -199,16 +198,16 @@ describe('WebsocketManager', () => {
         });
 
         it('should handle app state changes', () => {
-            const mockIntervalId = 123;
-            jest.spyOn(BackgroundTimer, 'setInterval').mockReturnValue(mockIntervalId);
+            const mockTimerId = 123;
+            jest.spyOn(BackgroundTimer, 'setTimeout').mockReturnValue(mockTimerId);
 
             // Get the app state callback and simulate background state
             const mockAppStateChange = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
             mockAppStateChange('active');
             mockAppStateChange('background');
 
-            expect(BackgroundTimer.setInterval).toHaveBeenCalled();
-            expect(BackgroundTimer.setInterval).toHaveBeenCalledWith(expect.any(Function), 15000);
+            expect(BackgroundTimer.setTimeout).toHaveBeenCalled();
+            expect(BackgroundTimer.setTimeout).toHaveBeenCalledWith(expect.any(Function), 15000);
         });
 
         it('should handle network state changes', () => {

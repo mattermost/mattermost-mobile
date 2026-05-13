@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef, useState} from 'react';
-import {Keyboard, type LayoutChangeEvent, View} from 'react-native';
+import React, {useCallback, useMemo, useState} from 'react';
+import {View} from 'react-native';
+import {useAnimatedKeyboard} from 'react-native-keyboard-controller';
 
 import SearchBar from '@components/search';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useKeyboardOverlap} from '@hooks/device';
 import {navigateBack} from '@screens/navigation';
+import {dismissKeyboard} from '@utils/keyboard';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -41,10 +42,8 @@ const FindChannels = () => {
     const [loading, setLoading] = useState(false);
     const styles = getStyleSheet(theme);
     const color = useMemo(() => changeOpacity(theme.centerChannelColor, 0.72), [theme]);
-    const listView = useRef<View>(null);
 
-    const [containerHeight, setContainerHeight] = useState(0);
-    const overlap = useKeyboardOverlap(listView, containerHeight);
+    const {height: keyboardHeight} = useAnimatedKeyboard();
 
     const cancelButtonProps = useMemo(() => ({
         color,
@@ -53,12 +52,8 @@ const FindChannels = () => {
         },
     }), [color]);
 
-    const onLayout = useCallback((e: LayoutChangeEvent) => {
-        setContainerHeight(e.nativeEvent.layout.height);
-    }, []);
-
     const close = useCallback(async () => {
-        Keyboard.dismiss();
+        await dismissKeyboard();
         navigateBack();
         await new Promise((resolve) => setTimeout(resolve, 250));
     }, []);
@@ -99,26 +94,22 @@ const FindChannels = () => {
                 testID='find_channels.search_bar'
             />
             {term === '' && <QuickOptions close={close}/>}
-            <View
-                style={styles.listContainer}
-                onLayout={onLayout}
-                ref={listView}
-            >
+            <View style={styles.listContainer}>
                 {term === '' &&
                 <UnfilteredList
                     close={close}
-                    keyboardOverlap={overlap}
+                    keyboardHeight={keyboardHeight}
                     testID='find_channels.unfiltered_list'
                 />
                 }
                 {Boolean(term) &&
                 <FilteredList
                     close={close}
-                    keyboardOverlap={overlap}
                     loading={loading}
                     onLoading={setLoading}
                     term={term}
                     testID='find_channels.filtered_list'
+                    keyboardHeight={keyboardHeight}
                 />
                 }
             </View>

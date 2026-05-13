@@ -25,13 +25,13 @@ jest.mock('@components/floating_input/floating_text_input_label', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(FloatingTextInput).mockImplementation((props) => React.createElement('FloatingTextInput', {testID: 'FloatingTextInput', ...props}));
+jest.mocked(FloatingTextInput).mockImplementation((props: ComponentProps<typeof FloatingTextInput>) => React.createElement('FloatingTextInput', {testID: 'FloatingTextInput', ...props}));
 
 jest.mock('@components/floating_input/floating_autocomplete_selector', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(FloatingAutocompleteSelector).mockImplementation((props) => React.createElement('FloatingAutocompleteSelector', props));
+jest.mocked(FloatingAutocompleteSelector).mockImplementation((props: ComponentProps<typeof FloatingAutocompleteSelector>) => React.createElement('FloatingAutocompleteSelector', props));
 
 jest.mock('@components/option_item', () => ({
     __esModule: true,
@@ -161,11 +161,13 @@ describe('PostUpdate', () => {
         jest.mocked(postStatusUpdate).mockResolvedValue({data: true});
     });
 
-    it('should render loading state initially', () => {
+    it('should render loading state initially', async() => {
         const props = getBaseProps();
         const {getByTestId} = renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
-        expect(getByTestId('loader')).toBeTruthy();
+        await waitFor(() => {
+            expect(getByTestId('loader')).toBeTruthy();
+        });
     });
 
     it('should render correctly after loading', async () => {
@@ -412,10 +414,11 @@ describe('PostUpdate', () => {
 
     it('should post update without confirmation when alsoMarkRunAsFinished is false', async () => {
         const props = getBaseProps();
-        renderWithIntlAndTheme(<PostUpdate {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
+        // Wait for async data to load and message template to be populated
         await waitFor(() => {
-            expect(mockSetOptions).toHaveBeenCalled();
+            expect(getByTestId('FloatingTextInput')).toHaveProp('value', 'Default message template');
         });
 
         const lastCall = getLastCall(jest.mocked(mockSetOptions));
@@ -662,7 +665,7 @@ describe('PostUpdate', () => {
         });
     });
 
-    it('should handle Android back button press', () => {
+    it('should handle Android back button press', async () => {
         const props = getBaseProps();
         renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
@@ -677,8 +680,10 @@ describe('PostUpdate', () => {
             backHandler();
         });
 
-        expect(navigateBack).toHaveBeenCalled();
-        expect(Keyboard.dismiss).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(navigateBack).toHaveBeenCalled();
+            expect(Keyboard.dismiss).toHaveBeenCalled();
+        });
     });
 
     it('should update reminder value correctly for different time options', async () => {

@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, type LayoutChangeEvent, Platform, View} from 'react-native';
+import {Keyboard, Platform, View} from 'react-native';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
 import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remote/user';
@@ -14,8 +15,8 @@ import ServerUserList from '@components/server_user_list';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {TutorialProvider} from '@context/tutorial';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useKeyboardOverlap} from '@hooks/device';
 import {navigateBack} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
@@ -47,6 +48,8 @@ type Props = {
     teammateNameDisplay: string;
     tutorialWatched: boolean;
 }
+
+const safeAreaEdges: Edge[] = ['bottom', 'left', 'right'];
 
 const close = () => {
     Keyboard.dismiss();
@@ -103,10 +106,6 @@ export default function CreateDirectMessage({
     const style = getStyleFromTheme(theme);
     const intl = useIntl();
     const {formatMessage} = intl;
-
-    const mainView = useRef<View>(null);
-    const [containerHeight, setContainerHeight] = useState(0);
-    const keyboardOverlap = useKeyboardOverlap(mainView, containerHeight);
 
     const [term, setTerm] = useState('');
     const [startingConversation, setStartingConversation] = useState(false);
@@ -189,10 +188,6 @@ export default function CreateDirectMessage({
         }
     }, [currentUserId, startConversation, clearSearch, selectedCount]);
 
-    const onLayout = useCallback((e: LayoutChangeEvent) => {
-        setContainerHeight(e.nativeEvent.layout.height);
-    }, []);
-
     const onChangeText = useCallback((searchTerm: string) => {
         setTerm(searchTerm);
     }, []);
@@ -258,52 +253,52 @@ export default function CreateDirectMessage({
     }
 
     return (
-        <View
+        <SafeAreaView
             style={style.container}
             testID='create_direct_message.screen'
-            onLayout={onLayout}
-            ref={mainView}
+            edges={safeAreaEdges}
         >
-            <View style={style.searchBar}>
-                <Search
-                    testID='create_direct_message.search_bar'
-                    placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    onChangeText={onChangeText}
-                    onCancel={clearSearch}
-                    autoCapitalize='none'
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    value={term}
+            <TutorialProvider>
+                <View style={style.searchBar}>
+                    <Search
+                        testID='create_direct_message.search_bar'
+                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                        cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        onChangeText={onChangeText}
+                        onCancel={clearSearch}
+                        autoCapitalize='none'
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        value={term}
+                    />
+                </View>
+                <ServerUserList
+                    handleSelectProfile={handleSelectProfile}
+                    selectedIds={selectedIds}
+                    term={term}
+                    testID='create_direct_message.user_list'
+                    tutorialWatched={tutorialWatched}
+                    fetchFunction={userFetchFunction}
+                    searchFunction={userSearchFunction}
+                    createFilter={createUserFilter}
+                    location={Screens.CREATE_DIRECT_MESSAGE}
                 />
-            </View>
-            <ServerUserList
-                handleSelectProfile={handleSelectProfile}
-                selectedIds={selectedIds}
-                term={term}
-                testID='create_direct_message.user_list'
-                tutorialWatched={tutorialWatched}
-                fetchFunction={userFetchFunction}
-                searchFunction={userSearchFunction}
-                createFilter={createUserFilter}
-                location={Screens.CREATE_DIRECT_MESSAGE}
-            />
-            <SelectedUsers
-                keyboardOverlap={keyboardOverlap}
-                showToast={showToast}
-                setShowToast={setShowToast}
-                toastIcon={'check'}
-                toastMessage={formatMessage(messages.toastMessage, {maxCount: General.MAX_USERS_IN_GM})}
-                selectedIds={selectedIds}
-                onRemove={handleRemoveProfile}
-                teammateNameDisplay={teammateNameDisplay}
-                onPress={startConversation}
-                buttonIcon={'forum-outline'}
-                buttonText={formatMessage(messages.buttonText)}
-                testID='create_direct_message'
-                maxUsers={General.MAX_USERS_IN_GM}
-            />
-        </View>
+                <SelectedUsers
+                    showToast={showToast}
+                    setShowToast={setShowToast}
+                    toastIcon={'check'}
+                    toastMessage={formatMessage(messages.toastMessage, {maxCount: General.MAX_USERS_IN_GM})}
+                    selectedIds={selectedIds}
+                    onRemove={handleRemoveProfile}
+                    teammateNameDisplay={teammateNameDisplay}
+                    onPress={startConversation}
+                    buttonIcon={'forum-outline'}
+                    buttonText={formatMessage(messages.buttonText)}
+                    testID='create_direct_message'
+                    maxUsers={General.MAX_USERS_IN_GM}
+                />
+            </TutorialProvider>
+        </SafeAreaView>
     );
 }
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, renderHook} from '@testing-library/react-hooks';
+import {act, renderHook, waitFor} from '@testing-library/react-native';
 
 import {getLocalFileInfo} from '@actions/local/file';
 import {buildFilePreviewUrl, buildFileUrl, downloadFile} from '@actions/remote/file';
@@ -28,6 +28,7 @@ jest.mock('@utils/file', () => ({
     isPdf: jest.fn(),
     fileExists: jest.fn(),
     getLocalFilePathFromFile: jest.fn(),
+    deleteFile: jest.fn(),
 }));
 
 jest.mock('@context/server', () => ({
@@ -44,11 +45,8 @@ jest.mock('@utils/document', () => ({
 jest.mock('@utils/navigation', () => ({
     previewPdf: jest.fn(),
 }));
-jest.mock('react-native-file-viewer', () => ({
-    open: jest.fn().mockResolvedValue(undefined),
-}));
-jest.mock('expo-file-system', () => ({
-    deleteAsync: jest.fn(),
+jest.mock('@react-native-documents/viewer', () => ({
+    viewDocument: jest.fn().mockResolvedValue(null),
 }));
 
 describe('useImageAttachments', () => {
@@ -135,7 +133,7 @@ describe('useImageAttachments', () => {
 
         const firstResult = result.current;
 
-        rerender();
+        rerender(undefined);
 
         const secondResult = result.current;
 
@@ -199,9 +197,11 @@ describe('useChannelBookmarkFiles', () => {
         (buildFilePreviewUrl as jest.Mock).mockImplementation((url, id) => `${url}/files/${id}/preview`);
         (getImageSize as jest.Mock).mockImplementation(() => ({width: 100, height: 100}));
 
-        const {result, waitForNextUpdate} = renderHook(() => useChannelBookmarkFiles(bookmarks));
+        const {result} = renderHook(() => useChannelBookmarkFiles(bookmarks));
 
-        await waitForNextUpdate();
+        await waitFor(() => {
+            expect(result.current).toHaveLength(2);
+        });
 
         expect(result.current).toHaveLength(2);
         expect(result.current[0].id).toBe('1');
@@ -215,7 +215,7 @@ describe('useDownloadFileAndPreview', () => {
     beforeEach(() => {
         jest.mocked(useServerUrl).mockReturnValue(serverUrl);
         jest.spyOn(require('react-intl'), 'useIntl').mockReturnValue({formatMessage: jest.fn((d: any) => d.defaultMessage || d.id)});
-        jest.mocked(fileExists).mockResolvedValue(false);
+        jest.mocked(fileExists).mockReturnValue(false);
         jest.mocked(getLocalFilePathFromFile).mockReturnValue('/local/path/file.pdf');
         jest.mocked(isPdf).mockReturnValue(false);
     });
@@ -230,7 +230,7 @@ describe('useDownloadFileAndPreview', () => {
     it('should set downloading to true when file does not exist locally', async () => {
         const progressPromise: any = Object.assign(Promise.resolve(), {progress: jest.fn(), cancel: jest.fn()});
         jest.mocked(downloadFile).mockReturnValue(progressPromise);
-        jest.mocked(fileExists).mockResolvedValue(false);
+        jest.mocked(fileExists).mockReturnValue(false);
 
         const file = TestHelper.fakeFileInfo({id: 'file1', localPath: ''});
         const {result} = renderHook(() => useDownloadFileAndPreview(false));
@@ -243,8 +243,8 @@ describe('useDownloadFileAndPreview', () => {
     });
 
     it('should open document directly when file exists locally', async () => {
-        const FileViewer = require('react-native-file-viewer');
-        jest.mocked(fileExists).mockResolvedValue(true);
+        const {viewDocument} = require('@react-native-documents/viewer');
+        jest.mocked(fileExists).mockReturnValue(true);
 
         const file = TestHelper.fakeFileInfo({id: 'file1', localPath: '/local/existing/file.pdf'});
         const {result} = renderHook(() => useDownloadFileAndPreview(false));
@@ -253,12 +253,12 @@ describe('useDownloadFileAndPreview', () => {
             result.current.toggleDownloadAndPreview(file);
         });
 
-        expect(FileViewer.open).toHaveBeenCalled();
+        expect(viewDocument).toHaveBeenCalled();
     });
 
     it('should open pdf with previewPdf when enableSecureFilePreview is true and file is pdf', async () => {
         const {previewPdf: previewPdfMock} = require('@utils/navigation');
-        jest.mocked(fileExists).mockResolvedValue(true);
+        jest.mocked(fileExists).mockReturnValue(true);
         jest.mocked(isPdf).mockReturnValue(true);
 
         const file = TestHelper.fakeFileInfo({id: 'file1', localPath: '/local/file.pdf'});
@@ -273,8 +273,12 @@ describe('useDownloadFileAndPreview', () => {
 
     it('should alert on download failure', async () => {
         const {alertDownloadFailed} = require('@utils/document');
-        jest.mocked(downloadFile).mockReturnValue(Object.assign(Promise.reject(new Error('network error')), {progress: jest.fn(), cancel: jest.fn()}));
-        jest.mocked(fileExists).mockResolvedValue(false);
+
+        jest.mocked(downloadFile).mockReturnValue(Object.assign(
+            Promise.reject(new Error('network error')),
+            {progress: jest.fn(), cancel: jest.fn()},
+        ) as unknown as ReturnType<typeof downloadFile>);
+        jest.mocked(fileExists).mockReturnValue(false);
 
         const file = TestHelper.fakeFileInfo({id: 'file1', localPath: ''});
         const {result} = renderHook(() => useDownloadFileAndPreview(false));
@@ -283,6 +287,8 @@ describe('useDownloadFileAndPreview', () => {
             result.current.toggleDownloadAndPreview(file);
         });
 
-        expect(alertDownloadFailed).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(alertDownloadFailed).toHaveBeenCalled();
+        });
     });
 });

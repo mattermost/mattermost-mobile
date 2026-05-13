@@ -27,7 +27,7 @@ import {MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet} from '@hooks/device';
-import {navigateToScreen} from '@screens/navigation';
+import {navigateToSettingsScreen} from '@screens/navigation';
 import SettingsStore from '@store/settings_store';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
@@ -297,7 +297,7 @@ export default function Selection({
         };
 
         SettingsStore.setIntegrationsSelectCallback(handleSelectChannels);
-        navigateToScreen(Screens.INTEGRATION_SELECTOR, {title, dataSource: 'channels', selected: selectedChannels, isMultiselect: true});
+        navigateToSettingsScreen(Screens.INTEGRATION_SELECTOR, {title, dataSource: 'channels', selected: selectedChannels, isMultiselect: true});
     }), [intl, selectedChannels, onSendOptionsChange]);
 
     const handleInviteAsGuestChange = useCallback(() => {
@@ -372,6 +372,7 @@ export default function Selection({
             />
             <KeyboardAwareScrollView
                 contentContainerStyle={styles.contentContainer}
+                mode='layout'
             >
                 <SelectionSearchBar
                     term={term}

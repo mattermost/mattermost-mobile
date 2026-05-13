@@ -35,10 +35,8 @@ import AgentChatContent from './agent_chat_content';
 import AgentChatHeader from './header';
 
 import type AiBotModel from '@agents/types/database/models/ai_bot';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    componentId: AvailableScreens;
     bots: AiBotModel[];
 };
 
@@ -235,19 +233,16 @@ const AgentChat = ({bots}: Props) => {
                     <KeyboardAwarePostDraftContainer
                         textInputNativeID={AGENT_CHAT_INPUT_NATIVE_ID}
                         containerStyle={[styles.flex, {marginTop}]}
-                        renderList={({listRef, onTouchMove, onTouchEnd}) => (
+                        renderList={() => (
                             <AgentChatContent
-                                listRef={listRef}
-                                onTouchMove={onTouchMove}
-                                onTouchEnd={onTouchEnd}
                                 loading={loading && bots.length === 0}
                                 error={error}
                             />
                         )}
                     >
                         <PostDraft
-                            channelId={channelId || ''}
-                            testID='agent_chat.post_draft'
+                            channelId={channelId}
+                            testID={AGENT_CHAT_TESTID}
                             containerHeight={containerHeight}
                             isChannelScreen={false}
                             location={Screens.AGENT_CHAT}

@@ -4,13 +4,13 @@
 import React, {useCallback} from 'react';
 import {TouchableOpacity} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     currentIndex: number;
-    icon: string;
+    icon: CompassIconName;
     index: number;
     scrollToIndex: (index: number) => void;
     theme: Theme;

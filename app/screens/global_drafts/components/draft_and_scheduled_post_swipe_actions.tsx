@@ -67,11 +67,11 @@ function RightAction({deletePost, drag, draftType}: { deletePost: () => void; dr
         };
     });
 
-    const handleLayout = (event: { nativeEvent: { layout: { width: number } } }) => {
+    const handleLayout = useCallback((event: { nativeEvent: { layout: { width: number } } }) => {
         const width = event.nativeEvent.layout.width;
         containerWidth.value = width;
         setIsReady(true);
-    };
+    }, [containerWidth]);
 
     return (
         <Reanimated.View
@@ -117,7 +117,7 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
     layoutWidth,
     firstItem,
 }) => {
-    const swipeable = useRef<SwipeableMethods>(null);
+    const swipeable = useRef<SwipeableMethods | null>(null);
     const intl = useIntl();
     const serverUrl = useServerUrl();
 

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {LinearGradient} from 'expo-linear-gradient';
-import React, {useCallback, useEffect, useMemo, useRef, useState, type ReactNode} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode} from 'react';
 import {type LayoutChangeEvent, Platform, ScrollView, type StyleProp, TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -162,7 +162,7 @@ function MarkdownTable({children, numColumns}: MarkdownTableProps) {
     const renderRows = useCallback((isFullView = false, isPreview = false) => {
         const tableStyle = getTableStyle(isFullView);
 
-        let rows = React.Children.toArray(children) as React.ReactElement[];
+        let rows = React.Children.toArray(children) as Array<ReactElement<any>>;
 
         if (!rows.length) {
             return null;

@@ -49,7 +49,7 @@ const FloatingCallContainer = ({
     const topBarForTablet = (isTablet && !threadScreen) ? TABLET_HEADER_HEIGHT : 0;
     const topBarChannel = (!isTablet && !threadScreen) ? DEFAULT_HEADER_HEIGHT : 0;
     const wrapperTop = {
-        top: insets.top + topBarForTablet + topBarChannel + (includeBookmarkBar ? BOOKMARKS_BAR_HEIGHT : 0) + (includeChannelBanner ? CHANNEL_BANNER_HEIGHT : 0),
+        top: (threadScreen ? 0 : insets.top) + topBarForTablet + topBarChannel + (includeBookmarkBar ? BOOKMARKS_BAR_HEIGHT : 0) + (includeChannelBanner ? CHANNEL_BANNER_HEIGHT : 0),
     };
     const wrapperBottom = {
         bottom: 8,

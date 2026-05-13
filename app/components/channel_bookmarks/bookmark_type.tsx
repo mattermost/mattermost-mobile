@@ -8,6 +8,8 @@ import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 
+import type {CompassIconName} from '@components/compass_icon';
+
 type Props = {
     channelId: string;
     type: ChannelBookmarkType;
@@ -23,7 +25,7 @@ const BookmarkType = ({channelId, type, ownerId}: Props) => {
         navigateToScreen(Screens.CHANNEL_BOOKMARK, {channelId, type, ownerId});
     }, [channelId, type, ownerId]);
 
-    let icon;
+    let icon: CompassIconName;
     let label;
     if (type === 'link') {
         icon = 'link-variant';

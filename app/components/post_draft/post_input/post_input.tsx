@@ -8,7 +8,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessage, type IntlShape, useIntl} from 'react-intl';
 import {
     Alert, AppState, type AppStateStatus, DeviceEventEmitter,
-    type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
+    Platform, type TextInputSelectionChangeEvent,
 } from 'react-native';
 import {useAnimatedKeyboard} from 'react-native-keyboard-controller';
 import Animated, {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
@@ -22,8 +22,7 @@ import {useKeyboardState} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {useInputPropagation} from '@hooks/input';
-import {NavigationStore} from '@store/navigation_store';
+import {useCurrentScreen} from '@store/navigation_store';
 import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -123,6 +122,7 @@ export default function PostInput({
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+    const currentScreen = useCurrentScreen();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const animatedKeyboard = useAnimatedKeyboard();
 
@@ -151,16 +151,16 @@ export default function PostInput({
     // Register updateValue and updateCursorPosition with context
     useEffect(() => {
         if (registerPostInputCallbacks) {
-            registerPostInputCallbacks(updateValue, updateCursorPosition);
+            registerPostInputCallbacks(updateValue, updateCursorPosition, value);
         }
 
-        // updateValue and updateCursorPosition are stable setState functions, don't need to be in deps
+        // updateValue and updateCursorPosition are stable setState functions — no need in deps.
+        // value is intentionally excluded: we only want to seed cursorPosition once at registration
+        // time, not on every keystroke. Ongoing cursor tracking is handled by setCursorPosition.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [registerPostInputCallbacks]);
 
-    const [propagateValue, shouldProcessEvent] = useInputPropagation();
     const {isProcessing} = useRewrite();
-
     const lastTypingEventSent = useRef(0);
 
     const lastNativeValue = useRef('');
@@ -227,7 +227,9 @@ export default function PostInput({
         // so we dispatch USER_FOCUS_INPUT whenever the emoji picker is active.
         // On edge-to-edge, only dispatch when keyboard is not expected to appear (hasZeroKeyboardHeight).
         const isNonEdgeToEdgeAndroid = Platform.OS === 'android' && !isAndroidEdgeToEdge;
-        const shouldDispatch = (stateContext.hasZeroKeyboardHeight.value || isNonEdgeToEdgeAndroid) && stateMachine.isEmojiPickerActive();
+        const hasZeroKbHeight = stateContext.hasZeroKeyboardHeight.value;
+        const isPickerActive = stateMachine.isEmojiPickerActive();
+        const shouldDispatch = (hasZeroKbHeight || isNonEdgeToEdgeAndroid) && isPickerActive;
         if (shouldDispatch || asHardwareKeyboard) {
             stateMachine.onUserFocusInput(asHardwareKeyboard);
         }
@@ -259,7 +261,7 @@ export default function PostInput({
         }
     }, [intl, longMessageAlertShown, maxMessageLength]);
 
-    const handlePostDraftSelectionChanged = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData> | null, fromHandleTextChange = false) => {
+    const handlePostDraftSelectionChanged = useCallback((event: TextInputSelectionChangeEvent | null, fromHandleTextChange = false) => {
         if (showInputAccessoryView && !fromHandleTextChange) {
             return;
         }
@@ -269,9 +271,6 @@ export default function PostInput({
     }, [showInputAccessoryView, cursorPosition, updateCursorPosition]);
 
     const handleTextChange = useCallback((newValue: string) => {
-        if (!shouldProcessEvent(newValue)) {
-            return;
-        }
         updateValue(newValue);
         lastNativeValue.current = newValue;
 
@@ -287,7 +286,6 @@ export default function PostInput({
             lastTypingEventSent.current = Date.now();
         }
     }, [
-        shouldProcessEvent,
         updateValue,
         checkMessageLength,
         timeBetweenUserTypingUpdatesMilliseconds,
@@ -308,20 +306,18 @@ export default function PostInput({
     }, [addFiles, intl]);
 
     const handleHardwareEnterPress = useCallback(() => {
-        const topScreen = NavigationStore.getVisibleScreen();
         let sourceScreen: AvailableScreens = Screens.CHANNEL;
         if (rootId) {
             sourceScreen = Screens.THREAD;
         } else if (isTablet) {
             sourceScreen = Screens.HOME;
         }
-        if (topScreen === sourceScreen) {
+        if (currentScreen === sourceScreen) {
             sendMessage();
         }
-    }, [sendMessage, rootId, isTablet]);
+    }, [rootId, isTablet, currentScreen, sendMessage]);
 
     const handleHardwareShiftEnter = useCallback(() => {
-        const topScreen = NavigationStore.getVisibleScreen();
         let sourceScreen: AvailableScreens = Screens.CHANNEL;
         if (rootId) {
             sourceScreen = Screens.THREAD;
@@ -329,16 +325,16 @@ export default function PostInput({
             sourceScreen = Screens.HOME;
         }
 
-        if (topScreen === sourceScreen) {
+        if (currentScreen === sourceScreen) {
             let newValue: string;
             updateValue((v) => {
                 newValue = v.substring(0, cursorPosition) + '\n' + v.substring(cursorPosition);
                 return newValue;
             });
+
             updateCursorPosition((pos) => pos + 1);
-            propagateValue(newValue!);
         }
-    }, [rootId, isTablet, updateValue, updateCursorPosition, cursorPosition, propagateValue]);
+    }, [rootId, isTablet, currentScreen, updateValue, updateCursorPosition, cursorPosition]);
 
     const onAppStateChange = useCallback((appState: AppStateStatus) => {
         if (appState !== 'active' && previousAppState.current === 'active') {
@@ -363,7 +359,6 @@ export default function PostInput({
                 const draft = value ? `${value} ${text} ` : `${text} `;
                 updateValue(draft);
                 updateCursorPosition(draft.length);
-                propagateValue(draft);
                 inputRef.current?.focus();
             }
         });
@@ -372,7 +367,7 @@ export default function PostInput({
             updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
         };
 
-    // - updateValue, updateCursorPosition, propagateValue are stable setState/hook functions
+    // - updateValue and updateCursorPosition are stable setState/hook functions
     // - inputRef is a ref (stable reference, doesn't need to be in deps)
     // - serverUrl, value, lastNativeValue are either stable or we want their latest values when event fires
     // - We need to recreate the listener when channelId/rootId changes to check the correct source screen
@@ -381,13 +376,8 @@ export default function PostInput({
 
     useEffect(() => {
         if (value !== lastNativeValue.current) {
-            propagateValue(value);
             lastNativeValue.current = value;
         }
-
-    // - propagateValue is from useInputPropagation hook (stable reference, doesn't need to be in deps)
-    // - lastNativeValue is a ref (stable reference, doesn't need to be in deps)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 
     const events = useMemo(() => ({

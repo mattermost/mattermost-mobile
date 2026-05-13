@@ -9,7 +9,7 @@ import {observeDraftCount} from '@queries/servers/drafts';
 import {observeScheduledPostCount, observeScheduledPostEnabled} from '@queries/servers/scheduled_post';
 import {observeCurrentTeamId} from '@queries/servers/system';
 
-import GlobalDraftsAndScheduledPosts from './global_drafts';
+import GlobalDraftsAndScheduledPosts, {type GlobalDraftProps} from './global_drafts';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -33,3 +33,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 });
 
 export default withDatabase(enhanced(GlobalDraftsAndScheduledPosts));
+
+export type {
+    GlobalDraftProps,
+};
+

@@ -47,7 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const Table = ({renderAsFlex, width}: TableScreenProps) => {
-    const contentCallback = CallbackStore.getCallback<(isFullView: boolean) => JSX.Element|null>();
+    const contentCallback = CallbackStore.getCallback<(isFullView: boolean) => React.ReactNode>();
     const content = contentCallback?.(true);
     const intl = useIntl();
     const theme = useTheme();

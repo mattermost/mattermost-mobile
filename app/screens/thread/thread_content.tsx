@@ -53,7 +53,7 @@ const ThreadContent = ({
                 <KeyboardAwarePostDraftContainer
                     textInputNativeID={THREAD_POST_INPUT_NATIVE_ID}
                     containerStyle={styles.flex}
-                    renderList={({listRef, onTouchMove, onTouchEnd}) => (
+                    renderList={() => (
                         <>
                             {includeChannelBanner &&
                                 <ChannelBanner
@@ -64,9 +64,6 @@ const ThreadContent = ({
                             }
                             <ThreadPostList
                                 rootPost={rootPost}
-                                listRef={listRef}
-                                onTouchMove={onTouchMove}
-                                onTouchEnd={onTouchEnd}
                             />
                         </>
                     )}

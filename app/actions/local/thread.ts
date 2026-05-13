@@ -11,7 +11,7 @@ import {getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, type Prep
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
 import {getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import {navigateToScreen, dismissToStackRoot, dismissAllRoutesAndResetToRootRoute} from '@screens/navigation';
+import {navigateToScreen, dismissToStackRoot, navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
@@ -57,6 +57,7 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
 };
 
 export const switchToThread = async (serverUrl: string, rootId: string, isFromNotification = false) => {
+    DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const user = await getCurrentUser(database);
@@ -85,7 +86,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
                 return {};
             }
 
-            await dismissAllRoutesAndResetToRootRoute();
+            await navigateToRoot();
             await NavigationStore.waitUntilScreenIsTop(Screens.HOME);
             if (currentTeamId !== teamId && isTabletDevice) {
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);

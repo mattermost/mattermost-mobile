@@ -341,6 +341,7 @@ const CustomStatus = ({
                 <KeyboardAwareScrollView
                     contentContainerStyle={style.contentContainerStyle}
                     keyboardShouldPersistTaps='handled'
+                    mode='layout'
                 >
                     <ScrollView
                         bounces={false}

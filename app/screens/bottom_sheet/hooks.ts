@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useMemo} from 'react';
-import {StyleSheet, type StyleProp, type ViewStyle} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {type StyleProp, type ViewStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -16,17 +15,6 @@ export function useBottomSheetStyle() {
         alignSelf: 'center',
         backgroundColor: theme.centerChannelBg,
     }), [isTablet, theme.centerChannelBg]);
-
-    return style;
-}
-
-export function useBottomSheetFooterStyles() {
-    const bStyle = useBottomSheetStyle();
-    const {bottom} = useSafeAreaInsets();
-    const style = useMemo<StyleProp<ViewStyle>>(() => StyleSheet.flatten([bStyle, {
-        top: bottom, // we need to move it down the same amount as the height
-        height: bottom,
-    }]), [bStyle, bottom]);
 
     return style;
 }

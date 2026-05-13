@@ -24,7 +24,7 @@ import GlobalScheduledPostList from './components/global_scheduled_post_list';
 
 const edges: Edge[] = ['left', 'right'];
 
-type Props = {
+export type GlobalDraftProps = {
     scheduledPostsEnabled?: boolean;
     initialTab?: DraftScreenTab;
 };
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const GlobalDraftsAndScheduledPosts = ({scheduledPostsEnabled, initialTab}: Props) => {
+const GlobalDraftsAndScheduledPosts = ({scheduledPostsEnabled, initialTab}: GlobalDraftProps) => {
     const intl = useIntl();
     const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();

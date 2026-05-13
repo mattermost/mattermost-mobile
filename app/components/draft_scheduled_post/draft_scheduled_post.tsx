@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {Keyboard, View, type PressableStateCallbackType} from 'react-native';
+import {View, type PressableStateCallbackType} from 'react-native';
 import {Pressable} from 'react-native-gesture-handler';
 
 import {switchToThread} from '@actions/local/thread';
@@ -97,8 +97,7 @@ const DraftAndScheduledPost: React.FC<Props> = ({
     const serverUrl = useServerUrl();
     const showPostPriority = Boolean(isPostPriorityEnabled && post.metadata?.priority && post.metadata?.priority?.priority);
 
-    const onLongPress = useCallback(() => {
-        Keyboard.dismiss();
+    const onLongPress = useCallback(async () => {
         navigateToScreen(Screens.DRAFT_SCHEDULED_POST_OPTIONS, {
             channelId: channel.id,
             rootId: post.rootId,

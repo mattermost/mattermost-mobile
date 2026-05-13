@@ -2,25 +2,23 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {Platform, StyleSheet, type FlatList, type GestureResponderEvent} from 'react-native';
+import {Platform, StyleSheet} from 'react-native';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {useKeyboardState as useControllerKeyboardState} from 'react-native-keyboard-controller';
-import Animated, {runOnJS, useAnimatedProps, useAnimatedReaction, useAnimatedStyle} from 'react-native-reanimated';
+import Animated, {scrollTo, useAnimatedProps, useAnimatedReaction, useAnimatedStyle} from 'react-native-reanimated';
+import {scheduleOnRN, scheduleOnUI} from 'react-native-worklets';
 
 import {isAndroidEdgeToEdge, isEdgeToEdge} from '@constants/device';
 import {useKeyboardState} from '@context/keyboard_state';
 import useDidMount from '@hooks/did_mount';
+import {useInputAccessoryViewGesture} from '@hooks/use_input_accessory_view_gesture';
 import {DEFAULT_INPUT_ACCESSORY_HEIGHT} from '@keyboard';
 
 import AgentChatIntro from './agent_chat_intro';
 
-import type PostModel from '@typings/database/models/servers/post';
-
 type Props = {
     loading: boolean;
     error: string | null;
-    listRef?: React.RefObject<FlatList<string | PostModel>>;
-    onTouchMove?: (event: GestureResponderEvent) => void;
-    onTouchEnd?: () => void;
 }
 
 const emptyList: string[] = [];
@@ -32,9 +30,9 @@ const styles = StyleSheet.create({
     },
 });
 
-const AgentChatContent = ({error, loading, listRef, onTouchEnd, onTouchMove}: Props) => {
+const AgentChatContent = ({error, loading}: Props) => {
     const {isVisible: isKeyboardVisible} = useControllerKeyboardState();
-    const {stateContext, onScroll: onScrollProp, postInputContainerHeight, stateMachine} = useKeyboardState();
+    const {stateContext, onScroll: onScrollProp, postInputContainerHeight, stateMachine, isEmojiSearchFocused, listRef} = useKeyboardState();
     const [emojiPickerPadding, setEmojiPickerPadding] = useState(0);
 
     const {
@@ -43,14 +41,6 @@ const AgentChatContent = ({error, loading, listRef, onTouchEnd, onTouchMove}: Pr
         postInputTranslateY,
         inputAccessoryHeight,
     } = stateContext;
-
-    const scrollToOffsetCallback = useCallback((offset: number, position: number) => {
-        const targetOffset = -offset + position;
-        listRef?.current?.scrollToOffset({
-            offset: targetOffset,
-            animated: false,
-        });
-    }, [listRef]);
 
     useAnimatedReaction(
         () => ({
@@ -63,7 +53,7 @@ const AgentChatContent = ({error, loading, listRef, onTouchEnd, onTouchMove}: Pr
 
             // Skip scroll compensation if reconciler is paused
             // This allows exit actions to manually adjust scrollPosition without interference
-            if (current.isReconcilerPaused) {
+            if (current.isReconcilerPaused || !listRef) {
                 return;
             }
 
@@ -74,10 +64,9 @@ const AgentChatContent = ({error, loading, listRef, onTouchEnd, onTouchMove}: Pr
             if (!offsetChanged) {
                 return;
             }
-
-            runOnJS(scrollToOffsetCallback)(current.scrollOffset, current.scrollPosition);
+            scrollTo(listRef, 0, -current.scrollOffset + current.scrollPosition, false);
         },
-        [scrollToOffsetCallback],
+        [],
     );
 
     useAnimatedReaction(
@@ -87,14 +76,21 @@ const AgentChatContent = ({error, loading, listRef, onTouchEnd, onTouchMove}: Pr
             return emojiPickerHeight;
         },
         (emojiPickerHeight) => {
-            runOnJS(setEmojiPickerPadding)(emojiPickerHeight);
+            scheduleOnRN(setEmojiPickerPadding, emojiPickerHeight);
         },
         [isKeyboardVisible],
     );
 
     const scrollToEnd = useCallback(() => {
-        listRef?.current?.scrollToOffset({offset: -postInputTranslateY.value, animated: true});
-    }, [listRef, postInputTranslateY.value]);
+        if (listRef) {
+            scheduleOnUI(() => {
+                scrollTo(listRef, 0, -postInputTranslateY.value, true);
+            });
+        }
+
+    // postInputTranslateY is a stable shared value ref — .value is read on the UI thread inside scheduleOnUI
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [listRef]);
 
     useDidMount(() => {
         const t = setTimeout(() => {
@@ -128,30 +124,44 @@ const AgentChatContent = ({error, loading, listRef, onTouchEnd, onTouchMove}: Pr
         return {};
     }, []);
 
+    const {panGesture: emojiPickerGesture} = useInputAccessoryViewGesture();
+
+    // eslint-disable-next-line new-cap
+    const nativeGesture = Gesture.Native();
+    const composedGesture = useMemo(() => {
+        if (emojiPickerGesture) {
+            return Gesture.Simultaneous(nativeGesture, emojiPickerGesture);
+        }
+        return nativeGesture;
+
+        // nativeGesture is stable — created once outside this memo
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [emojiPickerGesture]);
+
     return (
-        <Animated.FlatList
-            animatedProps={animatedProps}
-            automaticallyAdjustContentInsets={false}
-            contentInsetAdjustmentBehavior='never'
-            contentContainerStyle={contentContainerStyleWithPadding}
-            data={emptyList}
-            keyboardDismissMode='interactive'
-            keyboardShouldPersistTaps='handled'
-            ListHeaderComponent={
-                <AgentChatIntro
-                    loading={loading}
-                    error={error}
-                />
-            }
-            onScroll={onScrollProp}
-            ref={listRef}
-            removeClippedSubviews={true}
-            renderItem={renderItem}
-            style={[styles.flex, androidExtra]}
-            inverted={true}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-        />
+        <GestureDetector gesture={composedGesture}>
+            <Animated.FlatList
+                animatedProps={animatedProps}
+                automaticallyAdjustContentInsets={false}
+                contentInsetAdjustmentBehavior='never'
+                contentContainerStyle={contentContainerStyleWithPadding}
+                data={emptyList}
+                keyboardDismissMode={isEmojiSearchFocused ? 'none' : 'interactive'}
+                keyboardShouldPersistTaps='handled'
+                ListHeaderComponent={
+                    <AgentChatIntro
+                        loading={loading}
+                        error={error}
+                    />
+                }
+                onScroll={onScrollProp}
+                ref={listRef}
+                removeClippedSubviews={true}
+                renderItem={renderItem}
+                style={[styles.flex, androidExtra]}
+                inverted={true}
+            />
+        </GestureDetector>
     );
 };
 

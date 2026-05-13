@@ -44,7 +44,7 @@ const MarkdownTableRow = ({isFirstRow, isLastRow, children}: MarkdownTableRowPro
 
     // Add an extra prop to the last cell so that it knows not to render a right border since the container
     // will handle that
-    const renderChildren = React.Children.toArray(children) as ReactElement[];
+    const renderChildren = React.Children.toArray(children) as Array<ReactElement<any>>;
     if (renderChildren.length > 0) {
         renderChildren[renderChildren.length - 1] = React.cloneElement(renderChildren[renderChildren.length - 1], {
             isLastCell: true,

@@ -10,8 +10,9 @@ import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption, ShowTr
 import CopyTextOption from '@components/copy_text_option';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
+import {isEdgeToEdge} from '@constants/device';
 import {REACTION_PICKER_HEIGHT, REACTION_PICKER_MARGIN} from '@constants/reaction_picker';
-import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
+import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import BottomSheet from '@screens/bottom_sheet';
 import BORReadReceipts, {BOR_READ_RECEIPTS_HEIGHT} from '@screens/post_options/bor_read_receipts';
 import {isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
@@ -59,7 +60,6 @@ const PostOptions = ({
     isBoRPost, showBoRReadReceipts, borReceiptData, currentUser,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const {enabled, panResponder} = useBottomSheetListsFix();
     const {bottom} = useSafeAreaInsets();
     const isSystemPost = isSystemMessage(post);
 
@@ -83,10 +83,12 @@ const PostOptions = ({
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
 
+        const snapBottom = isEdgeToEdge ? bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
+
         items.push(
             bottomSheetSnapPoint(optionsCount, ITEM_HEIGHT) +
             (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0) +
-            (shouldShowBORReadReceipts ? BOR_READ_RECEIPTS_HEIGHT : 0) + bottom,
+            (shouldShowBORReadReceipts ? BOR_READ_RECEIPTS_HEIGHT : 0) + snapBottom,
         );
 
         if (shouldShowBindings) {
@@ -100,8 +102,6 @@ const PostOptions = ({
         return (
             <BottomSheetScrollView
                 bounces={false}
-                scrollEnabled={enabled}
-                {...panResponder.panHandlers}
             >
                 {shouldShowBORReadReceipts &&
                     <BORReadReceipts

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CookieManager from '@react-native-cookies/cookies';
+import CookieManager from '@preeternal/react-native-cookie-manager';
 import {AppState, DeviceEventEmitter, Platform} from 'react-native';
 
 import {cancelAllSessionNotifications} from '@actions/local/session';
@@ -26,7 +26,7 @@ import {SessionManagerSingleton as SessionManagerClass} from './session_manager'
 import type {Query} from '@nozbe/watermelondb';
 import type GlobalModel from '@typings/database/models/app/global';
 
-jest.mock('@react-native-cookies/cookies', () => ({
+jest.mock('@preeternal/react-native-cookie-manager', () => ({
     get: jest.fn(),
     clearByName: jest.fn(),
     flush: jest.fn(),
@@ -109,6 +109,8 @@ describe('SessionManager', () => {
 
         AppState.currentState = 'active';
         Platform.OS = 'ios';
+
+        jest.mocked(determineRouteFromLaunchProps).mockResolvedValue({route: '/', params: {}});
 
         // Reset queryGlobalValue mock to return cache migration as done
         jest.mocked(queryGlobalValue).mockReturnValue({

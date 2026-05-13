@@ -158,6 +158,7 @@ const PdfPassword = forwardRef<PasswordRef, Props>(({maxAttempts, remainingAttem
             contentContainerStyle={styles.container}
             keyboardShouldPersistTaps='handled'
             style={styles.keyboardAwareScrollView}
+            mode='layout'
         >
             <CompassIcon
                 name='lock-outline'

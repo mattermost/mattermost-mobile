@@ -25,10 +25,12 @@ import EmptyState from './components/empty';
 
 import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
+import type UserModel from '@typings/database/models/servers/user';
 
 const EDGES: Edge[] = ['left', 'right'];
 
 type Props = {
+    currentUser: UserModel;
     appsEnabled: boolean;
     customEmojiNames: string[];
     currentTimezone: string | null;
@@ -46,7 +48,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentTimezone}: Props) => {
+const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, mentions, currentTimezone}: Props) => {
     const theme = useTheme();
     const route = useRoute();
     const isFocused = useIsFocused();
@@ -154,6 +156,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
             case 'post':
                 return (
                     <PostWithChannelInfo
+                        currentUser={currentUser}
                         appsEnabled={appsEnabled}
                         customEmojiNames={customEmojiNames}
                         key={item.value.currentPost.id}
@@ -165,7 +168,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
             default:
                 return null;
         }
-    }, [appsEnabled, currentTimezone, customEmojiNames]);
+    }, [appsEnabled, currentTimezone, currentUser, customEmojiNames]);
 
     return (
         <SafeAreaView

@@ -83,7 +83,7 @@ function ChannelFiles({
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
     const [loading, setLoading] = useState(true);
     const [term, setTerm] = useState('');
-    const lastSearchRequest = useRef<number>();
+    const lastSearchRequest = useRef<number | undefined>(undefined);
 
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
 

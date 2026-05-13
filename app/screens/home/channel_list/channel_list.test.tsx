@@ -47,6 +47,10 @@ describe('performance metrics', () => {
         database = server.database;
     });
 
+    afterAll(async () => {
+        await TestHelper.tearDown(serverUrl);
+    });
+
     it('finish load on load', async () => {
         const props = getBaseProps();
         renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});

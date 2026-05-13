@@ -269,10 +269,11 @@ function AppsFormComponent({
             const newError = checkDialogElementForError(
                 element,
                 element.name === form.submit_buttons ? button : secureGetFromRecord(values, element.name),
+                intl,
             );
             if (newError) {
                 hasErrors = true;
-                fieldErrors[element.name] = intl.formatMessage({id: newError.id, defaultMessage: newError.defaultMessage}, newError.values);
+                fieldErrors[element.name] = newError;
             }
         });
 
@@ -422,6 +423,7 @@ function AppsFormComponent({
                 keyboardDismissMode='interactive'
                 keyboardShouldPersistTaps='handled'
                 contentContainerStyle={style.scrollView}
+                mode='layout'
             >
                 {error && (
                     <View style={style.errorContainer} >

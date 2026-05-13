@@ -83,9 +83,8 @@ export default function Invite({
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
-    const mainView = useRef<View>(null);
     const [wrapperHeight, setWrapperHeight] = useState(0);
-    const keyboardOverlap = useKeyboardOverlap(mainView, wrapperHeight);
+    const keyboardOverlap = useKeyboardOverlap();
 
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const retryTimeoutId = useRef<NodeJS.Timeout | null>(null);
@@ -314,7 +313,6 @@ export default function Invite({
         <View
             style={styles.container}
             onLayout={onLayoutWrapper}
-            ref={mainView}
             testID='invite.screen'
         >
             {renderContent()}

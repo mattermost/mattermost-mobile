@@ -47,17 +47,17 @@ jest.mocked(useServerUrl).mockReturnValue(serverUrl);
 
 jest.mock('@components/chips/user_chip');
 jest.mocked(UserChip).mockImplementation(
-    (props) => React.createElement('UserChip', {testID: 'user-chip', ...props}),
+    (props: ComponentProps<typeof UserChip>) => React.createElement('UserChip', {testID: 'user-chip', ...props}),
 );
 
 jest.mock('@components/user_avatars_stack');
 jest.mocked(UserAvatarsStack).mockImplementation(
-    (props) => React.createElement('UserAvatarsStack', {testID: 'user-avatars-stack', ...props}),
+    (props: ComponentProps<typeof UserAvatarsStack>) => React.createElement('UserAvatarsStack', {testID: 'user-avatars-stack', ...props}),
 );
 
 jest.mock('./checklist_list');
 jest.mocked(ChecklistList).mockImplementation(
-    (props) => React.createElement('ChecklistList', {testID: 'checklist-list', ...props}),
+    (props: ComponentProps<typeof ChecklistList>) => React.createElement('ChecklistList', {testID: 'checklist-list', ...props}),
 );
 
 jest.mock('./error_state');
@@ -67,12 +67,12 @@ jest.mocked(ErrorState).mockImplementation(
 
 jest.mock('./out_of_date_header');
 jest.mocked(OutOfDateHeader).mockImplementation(
-    (props) => React.createElement('OutOfDateHeader', {testID: 'out-of-date-header', ...props}),
+    (props: ComponentProps<typeof OutOfDateHeader>) => React.createElement('OutOfDateHeader', {testID: 'out-of-date-header', ...props}),
 );
 
 jest.mock('./status_update_indicator');
 jest.mocked(StatusUpdateIndicator).mockImplementation(
-    (props) => React.createElement('StatusUpdateIndicator', {testID: 'status-update-indicator', ...props}),
+    (props: ComponentProps<typeof StatusUpdateIndicator>) => React.createElement('StatusUpdateIndicator', {testID: 'status-update-indicator', ...props}),
 );
 
 jest.mock('../navigation', () => ({

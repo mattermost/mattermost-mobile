@@ -14,6 +14,15 @@ jest.mock('@screens/navigation', () => ({
     bottomSheet: jest.fn(),
 }));
 
+jest.mock('@gorhom/bottom-sheet', () => ({
+    useBottomSheetScrollableCreator: jest.fn().mockReturnValue(
+        (props: object) => {
+            const {View} = require('react-native');
+            return <View {...props}/>;
+        },
+    ),
+}));
+
 jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn().mockReturnValue(false),
 }));

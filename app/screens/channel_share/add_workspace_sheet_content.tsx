@@ -7,7 +7,6 @@ import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
-import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -71,7 +70,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const AddWorkspaceSheetContent = ({available, onSelect}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const {enabled, panResponder} = useBottomSheetListsFix();
     const styles = getStyleSheet(theme);
 
     return (
@@ -94,9 +92,7 @@ const AddWorkspaceSheetContent = ({available, onSelect}: Props) => {
             ) : (
                 <BottomSheetScrollView
                     style={styles.scrollContainer}
-                    scrollEnabled={enabled}
                     showsVerticalScrollIndicator={false}
-                    {...panResponder.panHandlers}
                 >
                     {available.map((r) => (
                         <WorkspaceOptionRow

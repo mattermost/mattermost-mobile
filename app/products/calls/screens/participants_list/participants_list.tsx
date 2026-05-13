@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetFlashList} from '@gorhom/bottom-sheet';
-import {type ListRenderItemInfo} from '@shopify/flash-list';
+import {useBottomSheetScrollableCreator} from '@gorhom/bottom-sheet';
+import {FlashList, type ListRenderItemInfo} from '@shopify/flash-list';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
@@ -16,6 +16,8 @@ import {sortSessions} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
+import {isEdgeToEdge} from '@constants/device';
+import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -79,11 +81,13 @@ export const ParticipantsList = ({
     const {height} = useWindowDimensions();
     const {bottom} = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
+    const BottomSheetScrollable = useBottomSheetScrollableCreator();
 
     const sessions = sortSessions(intl.locale, teammateNameDisplay, sessionsDict);
     const snapPoint1 = bottomSheetSnapPoint(Math.min(sessions.length, MIN_ROWS), ROW_HEIGHT) + HEADER_HEIGHT;
     const snapPoint2 = height * 0.8;
-    const snapPoints = [1, Math.min(snapPoint1, snapPoint2) + bottom];
+    const snapBottom = isEdgeToEdge ? bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
+    const snapPoints = [1, Math.min(snapPoint1, snapPoint2) + snapBottom];
     if (sessions.length > MIN_ROWS && snapPoint1 < snapPoint2) {
         snapPoints.push(snapPoint2);
     }
@@ -131,10 +135,10 @@ export const ParticipantsList = ({
                         </TouchableOpacity>
                     }
                 </View>
-                <BottomSheetFlashList
+                <FlashList
                     data={sessions}
                     renderItem={renderItem}
-                    estimatedItemSize={ROW_HEIGHT}
+                    renderScrollComponent={BottomSheetScrollable}
                 />
             </>
         );

@@ -41,7 +41,7 @@ const SaveOption = ({isSaved, postId}: CopyTextProps) => {
             message={message}
             iconName='bookmark-outline'
             onPress={onHandlePress}
-            testID={`post_options.${message.defaultMessage.toLocaleLowerCase()}_post.option`}
+            testID={`post_options.${message.defaultMessage}_post.option`}
         />
     );
 };

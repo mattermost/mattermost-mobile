@@ -1690,7 +1690,7 @@ class TestHelperSingleton {
         };
     };
 
-    tearDown = async () => {
+    tearDown = async (url?: string) => {
         nock.restore();
 
         this.basicClient = null;
@@ -1700,6 +1700,10 @@ class TestHelperSingleton {
         this.basicChannel = null;
         this.basicChannelMember = null;
         this.basicPost = null;
+
+        if (url) {
+            await DatabaseManager.destroyServerDatabase(url);
+        }
     };
 
     wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time));

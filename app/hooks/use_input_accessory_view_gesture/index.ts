@@ -1,203 +1,148 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useCallback, useRef} from 'react';
-import {Keyboard, type GestureResponderEvent} from 'react-native';
-import {runOnJS, useAnimatedReaction, useSharedValue, withTiming} from 'react-native-reanimated';
+import {useCallback} from 'react';
+import {Platform} from 'react-native';
+import {Gesture} from 'react-native-gesture-handler';
+import {useSharedValue, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import {useKeyboardState} from '@context/keyboard_state';
-
-type UseInputAccessoryViewGestureConfig = {
-    effectiveWindowHeight: number;
-    onDismiss: () => void;
-};
+import {useIsTablet, useWindowDimensions} from '@hooks/device';
 
 /**
- * Hook to handle emoji picker swipe-to-dismiss gesture
- * Manages touch tracking, height adjustments, and smooth scroll coordination during interactive dismissal
+ * Hook that returns a Gesture.Pan() for interactive emoji picker dismiss.
+ * Runs entirely on the UI thread — zero JS bridge per frame.
+ * iOS only — Android handles this differently.
+ * Designed to be used with Gesture.Simultaneous(Gesture.Native(), panGesture)
+ * wrapping the post list FlatList, so the gesture can activate while the list
+ * is still scrolling (the native scroll gesture and this pan run simultaneously).
+ *
+ * Activation logic mirrors interactive keyboard dismiss:
+ * - Touch starts in list area, finger moves down into post input boundary → activate
  */
-export function useInputAccessoryViewGesture(config: UseInputAccessoryViewGestureConfig) {
-    const {effectiveWindowHeight, onDismiss} = config;
-    const {stateContext, listRef, showInputAccessoryView} = useKeyboardState();
+export function useInputAccessoryViewGesture() {
+    const {height: windowHeight} = useWindowDimensions();
+    const insets = useSafeAreaInsets();
+    const isTablet = useIsTablet();
+    const {stateContext, isEmojiSearchFocused, setIsEmojiSearchFocused, stateMachine} = useKeyboardState();
 
-    // Refs for tracking gesture state
-    const previousTouchYRef = useRef<number | null>(null);
-    const lastDistanceFromBottomRef = useRef<number | null>(null);
-    const lastIsSwipingDownRef = useRef<boolean | null>(null);
-    const originalEmojiPickerHeightRef = useRef<number>(0);
-    const isGestureActiveRef = useRef<boolean>(false);
-    const gestureStartedInEmojiPickerRef = useRef<boolean>(false);
+    const effectiveWindowHeight = isTablet ? windowHeight : windowHeight - insets.bottom;
 
-    // Shared value to track scroll adjustment during emoji picker animation
-    const animatedScrollAdjustment = useSharedValue(0);
+    const originalEmojiPickerHeight = useSharedValue(0);
+    const lastDragHeight = useSharedValue(0);
+    const dragVelocityY = useSharedValue(0);
+    const isDragActive = useSharedValue(false);
+    const previousTouchY = useSharedValue(-1);
 
-    // Callback to perform scroll adjustment
-    const performScrollAdjustment = useCallback((targetOffset: number) => {
-        listRef.current?.scrollToOffset({
-            offset: targetOffset,
-            animated: false,
-        });
+    const dismissEmojiPicker = useCallback(() => {
+        setIsEmojiSearchFocused(false);
+        stateMachine.onUserCloseEmoji();
+    }, [setIsEmojiSearchFocused, stateMachine]);
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const panGesture = Gesture.Pan().
+        manualActivation(true).
+        onTouchesMove((e, manager) => {
+            'worklet';
 
-    // React to animatedScrollAdjustment changes and scroll the list accordingly
-    // This enables smooth scrolling as emoji picker animates
-    useAnimatedReaction(
-        () => animatedScrollAdjustment.value,
-        (current, previous) => {
-            // Only scroll if value actually changed and is valid
-            if (previous !== null && current !== previous && current !== 0) {
-                runOnJS(performScrollAdjustment)(current);
-            }
-        },
-        [animatedScrollAdjustment],
-    );
-
-    // Handle touch move: track finger position and adjust emoji picker height
-    const handleTouchMove = useCallback((event: GestureResponderEvent) => {
-        const currentShowInputAccessoryView = showInputAccessoryView;
-        if (!currentShowInputAccessoryView || Keyboard.isVisible()) {
-            return;
-        }
-
-        // Get finger Y position on screen
-        const fingerY = event.nativeEvent.pageY;
-        if (fingerY == null) {
-            return;
-        }
-
-        const effectiveContainerHeight = stateContext.postInputContainerHeight.value;
-
-        // On first touch, check if gesture started within emoji picker bounds
-        if (!isGestureActiveRef.current) {
-            const currentEmojiPickerHeight = stateContext.inputAccessoryHeight.value;
-            const emojiPickerTopEdge = effectiveWindowHeight - effectiveContainerHeight - currentEmojiPickerHeight;
-            const emojiPickerBottomEdge = effectiveWindowHeight - effectiveContainerHeight;
-
-            // Check if touch is within emoji picker area
-            const isTouchInEmojiPicker = fingerY >= emojiPickerTopEdge && fingerY <= emojiPickerBottomEdge;
-
-            if (!isTouchInEmojiPicker) {
+            // Skip if emoji picker is not open or search is active
+            if (!stateContext.inputAccessoryHeight.value || isEmojiSearchFocused) {
                 return;
             }
 
-            isGestureActiveRef.current = true;
-            gestureStartedInEmojiPickerRef.current = true;
+            const touch = e.changedTouches[0];
+            if (!touch) {
+                return;
+            }
 
-            // Set isDraggingKeyboard flag to signal that we're interactively dragging
-            // This tells the state machine to skip animations in exitEmojiPickerToIdle
-            stateContext.isDraggingKeyboard.value = true;
-        }
+            const fingerY = touch.absoluteY;
+            const containerHeight = stateContext.postInputContainerHeight.value;
+            const pickerHeight = stateContext.inputAccessoryHeight.value;
+            const interactiveTopEdge = effectiveWindowHeight - containerHeight - pickerHeight;
+            const interactiveBottomEdge = effectiveWindowHeight - containerHeight;
 
-        // Only process if gesture started in emoji picker
-        if (!gestureStartedInEmojiPickerRef.current) {
-            return;
-        }
+            const isMovingDown = previousTouchY.value >= 0 && fingerY > previousTouchY.value;
+            previousTouchY.value = fingerY;
 
-        const distanceFromBottom = effectiveWindowHeight - fingerY;
+            // Activate when the finger is within the post input / picker area and moving downward
+            // This mirrors the old onTouchMove: we don't care where the touch started
+            if (fingerY >= interactiveTopEdge && fingerY <= interactiveBottomEdge && isMovingDown) {
+                if (!isDragActive.value) {
+                    originalEmojiPickerHeight.value = pickerHeight;
+                    stateContext.isDraggingKeyboard.value = true;
+                    isDragActive.value = true;
+                    lastDragHeight.value = pickerHeight;
+                }
+                manager.activate();
+            }
+        }).
+        onTouchesUp((_, manager) => {
+            'worklet';
+            previousTouchY.value = -1;
+            if (!isDragActive.value) {
+                manager.fail();
+            }
+        }).
+        onUpdate((e) => {
+            'worklet';
 
-        // Subtract input container height to get emoji picker height
-        const emojiPickerHeight = distanceFromBottom - effectiveContainerHeight;
-        const maxHeight = originalEmojiPickerHeightRef.current;
-        const clampedHeight = emojiPickerHeight < 0 ? 0 : Math.min(emojiPickerHeight, maxHeight);
+            if (!isDragActive.value) {
+                return;
+            }
 
-        // Update emoji picker height AND input container position
-        // In NEW architecture, input container position is driven by postInputTranslateY
-        // postInputTranslateY also drives scroll padding (contentInset/marginBottom)
-        stateContext.inputAccessoryHeight.value = clampedHeight;
-        stateContext.postInputTranslateY.value = clampedHeight;
-        lastDistanceFromBottomRef.current = clampedHeight;
-        lastIsSwipingDownRef.current = previousTouchYRef.current !== null && fingerY > previousTouchYRef.current;
-        previousTouchYRef.current = fingerY;
+            dragVelocityY.value = e.velocityY;
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [showInputAccessoryView, effectiveWindowHeight]);
+            const containerHeight = stateContext.postInputContainerHeight.value;
+            const distanceFromBottom = effectiveWindowHeight - e.absoluteY;
+            const pickerHeight = distanceFromBottom - containerHeight;
+            const maxHeight = originalEmojiPickerHeight.value;
 
-    // Handle touch end: decide whether to collapse or expand emoji picker
-    const handleTouchEnd = useCallback(() => {
-        isGestureActiveRef.current = false;
+            let clamped = pickerHeight < 0 ? 0 : pickerHeight;
+            if (clamped > maxHeight) {
+                clamped = maxHeight;
+            }
 
-        // Only process if gesture started in emoji picker
-        if (!gestureStartedInEmojiPickerRef.current) {
-            // Reset dragging flag if gesture didn't start in emoji picker
-            stateContext.isDraggingKeyboard.value = false;
-            return;
-        }
+            lastDragHeight.value = clamped;
+            stateContext.inputAccessoryHeight.value = clamped;
+            stateContext.postInputTranslateY.value = clamped;
+        }).
+        onEnd(() => {
+            'worklet';
 
-        if (lastDistanceFromBottomRef.current !== null && lastIsSwipingDownRef.current !== null) {
-            const currentInsetHeight = lastDistanceFromBottomRef.current;
-            const currentScrollValue = stateContext.scrollPosition.value;
+            if (!isDragActive.value) {
+                return;
+            }
+            isDragActive.value = false;
 
-            if (lastIsSwipingDownRef.current) {
-                // User was swiping DOWN → Collapse and dismiss emoji picker
-                // Calculate scroll positions: as postInputTranslateY decreases from current to 0,
-                // list should scroll from current position to final position
-                const startScrollOffset = -currentInsetHeight + currentScrollValue;
-                const endScrollOffset = currentScrollValue;
+            const swipingDown = dragVelocityY.value > 0;
+            const currentHeight = lastDragHeight.value;
 
-                // CRITICAL: Keep isDraggingKeyboard = true during animation to prevent reconciler sync
-                // The exit action will clear it after setting final values
-                // Animate emoji picker height AND input container position to 0
-                stateContext.inputAccessoryHeight.value = withTiming(
-                    0,
-                    {duration: 250},
-                    () => {
-                        // After animation completes, call onDismiss to update state machine
-                        runOnJS(onDismiss)();
-                    },
-                );
-                stateContext.postInputTranslateY.value = withTiming(0, {duration: 250});
-
-                // Animate scroll position from start to end - this makes list scroll down smoothly
-                animatedScrollAdjustment.value = startScrollOffset;
-                animatedScrollAdjustment.value = withTiming(endScrollOffset, {
-                    duration: 250,
-                }, () => {
-                    animatedScrollAdjustment.value = 0;
+            if (swipingDown) {
+                stateContext.inputAccessoryHeight.value = withTiming(0, {duration: 250}, () => {
+                    stateContext.scrollOffset.value = 0;
+                    scheduleOnRN(dismissEmojiPicker);
                 });
+                stateContext.postInputTranslateY.value = withTiming(0, {duration: 250});
             } else {
-                // User was swiping UP → Expand to full height
-                const targetHeight = originalEmojiPickerHeightRef.current;
+                const targetHeight = originalEmojiPickerHeight.value;
 
-                // Calculate scroll positions: as postInputTranslateY increases from current to targetHeight,
-                // list should scroll from current position to final position
-                const startScrollOffset = -currentInsetHeight + currentScrollValue;
-                const endScrollOffset = -targetHeight + currentScrollValue;
-
-                // CRITICAL: Keep isDraggingKeyboard = true during animation to prevent reconciler sync
-                // Clear it after animation completes
-                // Animate emoji picker height AND input container position to target height
-                stateContext.inputAccessoryHeight.value = withTiming(targetHeight, {
-                    duration: 250,
-                }, () => {
-                    // Clear dragging flag after swipe up animation completes
-                    'worklet';
+                stateContext.inputAccessoryHeight.value = withTiming(targetHeight, {duration: 250}, () => {
                     stateContext.isDraggingKeyboard.value = false;
+                    stateContext.scrollOffset.value = 0;
                 });
                 stateContext.postInputTranslateY.value = withTiming(targetHeight, {duration: 250});
 
-                // Animate scroll position from start to end - this makes list scroll up smoothly
-                animatedScrollAdjustment.value = startScrollOffset;
-                animatedScrollAdjustment.value = withTiming(endScrollOffset, {
-                    duration: 250,
-                }, () => {
-                    animatedScrollAdjustment.value = 0;
-                });
+                // Restore scroll position to compensate for partial drag
+                const correctedScroll = (stateContext.scrollPosition.value - currentHeight) + targetHeight;
+                stateContext.scrollPosition.value = correctedScroll;
             }
-        }
+        }).
+        onFinalize(() => {
+            'worklet';
+            isDragActive.value = false;
+        });
 
-        previousTouchYRef.current = null;
-        lastDistanceFromBottomRef.current = null;
-        lastIsSwipingDownRef.current = null;
-        gestureStartedInEmojiPickerRef.current = false;
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [onDismiss]);
-
-    return {
-        handleTouchMove,
-        handleTouchEnd,
-        originalEmojiPickerHeightRef,
-    };
+    // Only use on iOS — Android handles emoji picker dismiss differently
+    return {panGesture: Platform.OS === 'ios' ? panGesture : undefined};
 }

@@ -160,7 +160,7 @@ describe('draft upload manager', () => {
         AppState.currentState = 'active';
         const manager = new DraftEditPostUploadManagerSingleton();
 
-        const progressFunc: {[fileUrl: string] : ((fractionCompleted: number, bytesRead?: number | null | undefined) => void)} = {};
+        const progressFunc: {[fileUrl: string]: ((fractionCompleted: number, bytesRead?: number | null | undefined) => void)} = {};
         const cancel = jest.fn();
 
         let promise: ProgressPromise<ClientResponse>;

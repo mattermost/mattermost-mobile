@@ -109,7 +109,8 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
             return children;
         }
 
-        return Children.map(children, (child: ReactElement) => {
+        return Children.map(children, (c) => {
+            const child = c as ReactElement<any>;
             if (!child.props.literal || typeof child.props.literal !== 'string' || (child.props.context && child.props.context.length && !child.props.context.includes('link'))) {
                 return child;
             }

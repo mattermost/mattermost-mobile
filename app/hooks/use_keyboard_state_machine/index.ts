@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {runOnUI} from 'react-native-reanimated';
+import {scheduleOnUI} from 'react-native-worklets';
 
 import {StateMachineEventType, type StateEvent} from '@keyboard';
 
@@ -53,13 +53,13 @@ export function useKeyboardStateMachine(context: KeyboardStateContextReturn): Us
     };
 
     // User event dispatchers
-    // CRITICAL: These are called from JS thread, so must use runOnUI to execute processEvent on UI thread
-    // NOTE: runOnUI schedules async, so keyboard events may arrive first and be blocked
+    // CRITICAL: These are called from JS thread, so must use scheduleOnUI to execute processEvent on UI thread
+    // NOTE: scheduleOnUI schedules async, so keyboard events may arrive first and be blocked
     // This is acceptable - the user event will eventually process and subsequent keyboard events work
     const onUserFocusInput = (asHardwareKeyboard = false) => {
         const value = asHardwareKeyboard ? 0 : undefined;
 
-        runOnUI(processWithOptionalHardwareKeyboard)({
+        scheduleOnUI(processWithOptionalHardwareKeyboard, {
             type: StateMachineEventType.USER_FOCUS_INPUT,
             rawHeight: value,
             height: value, // for backward compatibility with events from onStart which only have rawHeight
@@ -68,23 +68,23 @@ export function useKeyboardStateMachine(context: KeyboardStateContextReturn): Us
     };
 
     const onUserOpenEmoji = () => {
-        runOnUI(processEvent)({
+        scheduleOnUI(processEvent, {
             type: StateMachineEventType.USER_OPEN_EMOJI,
         });
     };
 
     const onUserCloseEmoji = () => {
-        runOnUI(processEvent)({
+        scheduleOnUI(processEvent, {
             type: StateMachineEventType.USER_CLOSE_EMOJI,
         });
     };
 
     const onUserFocusEmojiSearch = (asHardwareKeyboard = false) => {
-        runOnUI(processWithOptionalHardwareKeyboard)({type: StateMachineEventType.USER_FOCUS_EMOJI_SEARCH}, asHardwareKeyboard);
+        scheduleOnUI(processWithOptionalHardwareKeyboard, {type: StateMachineEventType.USER_FOCUS_EMOJI_SEARCH}, asHardwareKeyboard);
     };
 
     const onUserBlurEmojiSearch = () => {
-        runOnUI(processEvent)({
+        scheduleOnUI(processEvent, {
             type: StateMachineEventType.USER_BLUR_EMOJI_SEARCH,
         });
     };

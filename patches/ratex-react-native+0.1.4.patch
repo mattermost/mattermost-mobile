@@ -1,0 +1,46 @@
+diff --git a/node_modules/ratex-react-native/ios/RaTeXViewManager.mm b/node_modules/ratex-react-native/ios/RaTeXViewManager.mm
+index 10323ea..99d35a5 100644
+--- a/node_modules/ratex-react-native/ios/RaTeXViewManager.mm
++++ b/node_modules/ratex-react-native/ios/RaTeXViewManager.mm
+@@ -14,7 +14,11 @@
+ #endif
+ 
+ // Swift-generated header (module name derived from podspec/target name)
+-#import "ratex_react_native-Swift.h"
++#if __has_include("ratex_react_native-Swift.h")
++#import <ratex_react_native-Swift.h>
++#else
++#import <ratex_react_native/ratex_react_native-Swift.h>
++#endif
+ 
+ // ---------------------------------------------------------------------------
+ // MARK: - New Architecture (Fabric)
+diff --git a/node_modules/ratex-react-native/ratex-react-native.podspec b/node_modules/ratex-react-native/ratex-react-native.podspec
+index 09ce3d9..7e4bc0c 100644
+--- a/node_modules/ratex-react-native/ratex-react-native.podspec
++++ b/node_modules/ratex-react-native/ratex-react-native.podspec
+@@ -13,8 +13,23 @@ Pod::Spec.new do |s|
+   s.source         = { :git => "https://github.com/erweixin/RaTeX.git", :tag => s.version.to_s }
+ 
+   # Swift source files + ObjC++ bridge
+-  s.source_files   = "ios/**/*.{h,m,mm,swift}"
++  s.source_files   = "ios/*.{h,m,mm,swift}"
+   s.swift_version  = "5.9"
++  s.module_name    = "ratex_react_native"
++
++  s.pod_target_xcconfig = {
++    "USE_HEADERMAP" => "YES",
++    "DEFINES_MODULE" => "YES",
++    "SWIFT_COMPILATION_MODE" => "wholemodule",
++    "BUILD_LIBRARY_FOR_DISTRIBUTION" => "YES",
++    "OTHER_SWIFT_FLAGS" => "-no-verify-emitted-module-interface",
++  }
++
++  # Expose the Swift Compatibility Header directory so that RaTeXViewManager.mm
++  # can resolve the #import "ratex_react_native-Swift.h" quoted import.
++  s.user_target_xcconfig = {
++    "HEADER_SEARCH_PATHS" => '"${PODS_CONFIGURATION_BUILD_DIR}/ratex-react-native/Swift Compatibility Header"',
++  }
+ 
+   # Prebuilt static library (libratex_ffi.a) packaged as XCFramework
+   s.vendored_frameworks = "ios/RaTeX.xcframework"

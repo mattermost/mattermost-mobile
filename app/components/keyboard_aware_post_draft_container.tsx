@@ -1,34 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, type ReactNode, type MutableRefObject} from 'react';
-import {BackHandler, DeviceEventEmitter, Platform, type StyleProp, StyleSheet, type ViewStyle, View, type LayoutChangeEvent, type GestureResponderEvent, type FlatList} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useRef, type ReactNode} from 'react';
+import {BackHandler, DeviceEventEmitter, Platform, type StyleProp, StyleSheet, type ViewStyle, View, type LayoutChangeEvent} from 'react-native';
 import {KeyboardGestureArea} from 'react-native-keyboard-controller';
-import Animated, {useAnimatedStyle, useSharedValue} from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Animated, {scrollTo, useAnimatedStyle} from 'react-native-reanimated';
+import {scheduleOnUI} from 'react-native-worklets';
 
 import CustomEmojiPicker from '@components/post_draft/custom_emoji_picker';
 import {Events} from '@constants';
 import {isEdgeToEdge} from '@constants/device';
 import {useKeyboardState} from '@context/keyboard_state';
-import {useIsTablet, useWindowDimensions} from '@hooks/device';
-import {useInputAccessoryViewGesture} from '@hooks/use_input_accessory_view_gesture';
-
-import type PostModel from '@typings/database/models/servers/post';
+import useDidMount from '@hooks/did_mount';
+import {dismissKeyboard} from '@utils/keyboard';
 
 // Use KeyboardGestureArea on iOS and Android 35+ (with edge-to-edge)
 // Android < 35 uses native keyboard handling with adjustResize
 const Wrapper = isEdgeToEdge ? KeyboardGestureArea : View;
 
-type RenderListProps = {
-    listRef: MutableRefObject<FlatList<string | PostModel> | null>;
-    onTouchMove: (event: GestureResponderEvent) => void;
-    onTouchEnd: () => void;
-};
-
 type Props = {
     children: ReactNode;
-    renderList: (props: RenderListProps) => ReactNode;
+    renderList: () => ReactNode;
     textInputNativeID: string;
     containerStyle?: StyleProp<ViewStyle>;
 };
@@ -56,16 +48,8 @@ export const KeyboardAwarePostDraftContainer = ({
     textInputNativeID,
     containerStyle,
 }: Props) => {
-    const {height: windowHeight} = useWindowDimensions();
-    const insets = useSafeAreaInsets();
-    const isTablet = useIsTablet();
-
-    const effectiveWindowHeight = isTablet ? windowHeight : windowHeight - insets.bottom;
-
     const {
         stateContext,
-        stateMachine,
-        setIsEmojiSearchFocused,
         showInputAccessoryView,
         closeInputAccessoryView,
         listRef,
@@ -80,6 +64,12 @@ export const KeyboardAwarePostDraftContainer = ({
         },
         [],
     );
+
+    useDidMount(() => {
+        return () => {
+            dismissKeyboard();
+        };
+    });
 
     // Ref to track if a layout update is already scheduled
     const layoutUpdateScheduledRef = useRef(false);
@@ -123,31 +113,12 @@ export const KeyboardAwarePostDraftContainer = ({
         requestAnimationFrame(applyBatchedHeightUpdate);
     }, [applyBatchedHeightUpdate]);
 
-    // Callback to dismiss emoji picker after swipe gesture animation completes
-    const dismissEmojiPicker = useCallback(() => {
-        // Reset emoji search focus when dismissing emoji picker
-        setIsEmojiSearchFocused(false);
-
-        // IMPORTANT: Dispatch USER_CLOSE_EMOJI event to state machine
-        // The gesture already animated the values, and isDraggingKeyboard flag is set
-        // exitEmojiPickerToIdle will check this flag and skip animations
-        stateMachine.onUserCloseEmoji();
-    }, [stateMachine, setIsEmojiSearchFocused]);
-
-    // Emoji picker swipe-to-dismiss gesture handling
-    const {handleTouchMove, handleTouchEnd, originalEmojiPickerHeightRef} = useInputAccessoryViewGesture({
-        effectiveWindowHeight,
-        onDismiss: dismissEmojiPicker,
-    });
-
     useEffect(() => {
         if (Platform.OS !== 'android') {
             return undefined;
         }
 
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            // Check emoji picker visibility based on architecture
-
             if (showInputAccessoryView) {
                 closeInputAccessoryView();
                 return true;
@@ -167,6 +138,10 @@ export const KeyboardAwarePostDraftContainer = ({
         return () => listener.remove();
     }, [closeInputAccessoryView]);
 
+    const scrollToEmojiPickerCompensation = useCallback((offset: number) => {
+        scheduleOnUI(() => scrollTo(listRef, 0, offset, false));
+    }, [listRef]);
+
     // After emoji picker renders, adjust heights and scroll to keep messages visible
     // On iOS, contentInset changes cause the list to shift, so we need to scroll to compensate
     // On Android, marginBottom is used instead and doesn't require scroll adjustment
@@ -180,22 +155,11 @@ export const KeyboardAwarePostDraftContainer = ({
                 const emojiPickerHeight = stateContext.targetHeight.value;
                 const currentScroll = stateContext.scrollPosition.value;
 
-                originalScrollBeforeEmojiPicker.value = currentScroll;
-                originalEmojiPickerHeightRef.current = emojiPickerHeight;
-
-                // Note: postInputTranslateY and scrollOffset are already set by emoji picker entry action
-                // with smooth animations, so we don't need to set them here
-
                 // Only perform scroll adjustment on iOS
                 // Android uses marginBottom which doesn't require scroll compensation
-                if (Platform.OS === 'ios') {
+                if (Platform.OS === 'ios' && listRef.current) {
                     // For inverted list: when bottomInset increases, content shifts UP visually. Scroll UP to compensate.
-                    const targetContentOffset = currentScroll - emojiPickerHeight;
-
-                    listRef.current?.scrollToOffset({
-                        offset: targetContentOffset,
-                        animated: false,
-                    });
+                    scrollToEmojiPickerCompensation(currentScroll - emojiPickerHeight);
                 }
             });
         }
@@ -203,9 +167,6 @@ export const KeyboardAwarePostDraftContainer = ({
         // Only depend on showInputAccessoryView - the effect should only run when emoji picker visibility changes
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showInputAccessoryView]);
-
-    // Store the original scroll value when emoji picker opens (used by gesture)
-    const originalScrollBeforeEmojiPicker = useSharedValue(0);
 
     const wrapperProps = useMemo(() => {
         if (isEdgeToEdge) {
@@ -220,36 +181,27 @@ export const KeyboardAwarePostDraftContainer = ({
         return {style: styles.gestureArea};
     }, [textInputNativeID, postInputContainerHeight]);
 
-    const content = (
-        <>
-            <View style={containerStyle}>
-                {renderList({
-                    listRef,
-                    onTouchMove: handleTouchMove,
-                    onTouchEnd: handleTouchEnd,
-                })}
-            </View>
-            <Animated.View
-                style={[
-                    inputContainerAnimatedStyle,
-                    isEdgeToEdge && styles.inputContainer,
-                ]}
-            >
-                <View onLayout={onLayout}>
-                    {children}
-                </View>
-            </Animated.View>
-            {showInputAccessoryView && <CustomEmojiPicker/>}
-        </>
-    );
-
     return (
         <Wrapper
             {...wrapperProps}
             enableSwipeToDismiss={false} // this applies only to Android
         >
-            {content}
+            <View style={styles.gestureArea}>
+                <View style={containerStyle}>
+                    {renderList()}
+                </View>
+                <Animated.View
+                    style={[
+                        inputContainerAnimatedStyle,
+                        isEdgeToEdge && styles.inputContainer,
+                    ]}
+                >
+                    <View onLayout={onLayout}>
+                        {children}
+                    </View>
+                </Animated.View>
+                {showInputAccessoryView && <CustomEmojiPicker/>}
+            </View>
         </Wrapper>
     );
 };
-

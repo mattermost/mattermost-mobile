@@ -3,8 +3,6 @@
 
 import React, {useCallback, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
 import {useServerUrl} from '@context/server';
@@ -43,7 +41,6 @@ const Picker = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const [searchTerm, setSearchTerm] = useState<string|undefined>();
-    const insets = useSafeAreaInsets();
 
     const onCancelSearch = useCallback(() => setSearchTerm(undefined), []);
 
@@ -82,13 +79,7 @@ const Picker = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress
     }
 
     return (
-        <KeyboardAwareScrollView
-            contentContainerStyle={styles.flex}
-            testID={`${testID}.screen`}
-            keyboardShouldPersistTaps='handled'
-            scrollToOverflowEnabled={true}
-            extraKeyboardSpace={-insets.bottom}
-        >
+        <>
             <View style={styles.searchBar}>
                 <PickerHeader
                     autoCapitalize='none'
@@ -100,7 +91,7 @@ const Picker = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress
                 />
             </View>
             {EmojiList}
-        </KeyboardAwareScrollView>
+        </>
     );
 };
 

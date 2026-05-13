@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {screen} from '@testing-library/react-native';
+import {cleanup, screen} from '@testing-library/react-native';
 import React from 'react';
 
 import {ActionType} from '@constants';
@@ -60,6 +60,13 @@ describe('DraftScheduledPostOptions', () => {
         });
     });
 
+    afterEach(async () => {
+        cleanup();
+
+        // Allow observables to settle before next test
+        await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
     afterAll(async () => {
         await DatabaseManager.destroyServerDatabase('https://appv1.mattermost.com');
     });
@@ -80,7 +87,7 @@ describe('DraftScheduledPostOptions', () => {
         expect(screen.getByTestId('delete_draft')).toBeTruthy();
     });
 
-    it('renders scheduled post options correctly', () => {
+    it('renders scheduled post options correctly', async () => {
         const scheduledProps = {
             ...baseProps,
             channelId: scheduled![0].channelId,

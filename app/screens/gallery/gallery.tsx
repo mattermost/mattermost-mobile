@@ -3,7 +3,8 @@
 
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {BackHandler} from 'react-native';
-import {runOnJS, runOnUI, useAnimatedReaction, type SharedValue} from 'react-native-reanimated';
+import {useAnimatedReaction, type SharedValue} from 'react-native-reanimated';
+import {scheduleOnRN, scheduleOnUI} from 'react-native-worklets';
 
 import {buildFileUrl} from '@actions/remote/file';
 import {ExpoImageAnimated} from '@components/expo_image';
@@ -62,7 +63,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
     }, [onIndexChange]);
 
     useEffect(() => {
-        runOnUI(() => {
+        scheduleOnUI(() => {
             'worklet';
 
             const tw = targetDimensions.width;
@@ -70,7 +71,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
             const scaleFactor = item.width / targetDimensions.width;
             const th = item.height / scaleFactor;
             sharedValues.targetHeight.value = th;
-        })();
+        });
 
         // sharedValues do not trigger re-renders
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -105,7 +106,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
     const onIndexChangeWorklet = useCallback((nextIndex: number) => {
         'worklet';
 
-        runOnJS(onLocalIndex)(nextIndex);
+        scheduleOnRN(onLocalIndex, nextIndex);
         sharedValues.activeIndex.value = nextIndex;
     }, [onLocalIndex, sharedValues]);
 
@@ -145,7 +146,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
         sharedValues.x.value = 0;
         sharedValues.y.value = 0;
 
-        runOnJS(onHide)();
+        scheduleOnRN(onHide);
     }, [onHide, sharedValues]);
 
     const onRenderItem = useCallback((info: RenderItemInfo) => {

@@ -22,7 +22,7 @@ import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
-import {dismissAllRoutesAndResetToRootRoute, updateParams} from '@screens/navigation';
+import {navigateToRoot, updateParams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/draft';
@@ -73,7 +73,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
         }
 
         if (existingServerUrl !== currentServerUrl && NavigationStore.getVisibleScreen()) {
-            await dismissAllRoutesAndResetToRootRoute();
+            await navigateToRoot();
             DatabaseManager.setActiveServerDatabase(existingServerUrl);
             WebsocketManager.initializeClient(existingServerUrl, 'DeepLink');
             await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
@@ -116,7 +116,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
             case DeepLink.Permalink: {
                 const deepLinkData = deepLink.data as DeepLinkPermalink;
                 if (!deepLinkScreens.includes(NavigationStore.getVisibleScreen())) {
-                    await dismissAllRoutesAndResetToRootRoute();
+                    await navigateToRoot();
                 }
                 showPermalink(existingServerUrl, deepLinkData.teamName, deepLinkData.postId);
                 break;

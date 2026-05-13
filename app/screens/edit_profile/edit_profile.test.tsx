@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 /* eslint-disable max-lines */
-import {act} from '@testing-library/react-hooks';
-import {fireEvent, screen, waitFor} from '@testing-library/react-native';
+import {act, fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
@@ -608,9 +607,11 @@ describe('EditProfile', () => {
             />,
         );
 
-        // Verify the ProfileForm component is rendered (which means customFields was passed)
-        const scrollView = screen.getByTestId('edit_profile.scroll_view');
-        expect(scrollView).toBeTruthy();
+        await waitFor(() => {
+            // Verify the ProfileForm component is rendered (which means customFields was passed)
+            const scrollView = screen.getByTestId('edit_profile.scroll_view');
+            expect(scrollView).toBeTruthy();
+        });
     });
 
     describe('SAML Field Handling', () => {

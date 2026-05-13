@@ -2,17 +2,27 @@
 // See LICENSE.txt for license information.
 
 import {BottomSheetFooter, type BottomSheetFooterProps} from '@gorhom/bottom-sheet';
-import React from 'react';
+import React, {useMemo} from 'react';
 import {View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {useBottomSheetFooterStyles} from './hooks';
+import {useTheme} from '@context/theme';
 
 const EmptyBottomSheetFooter = (props: BottomSheetFooterProps) => {
-    const style = useBottomSheetFooterStyles();
+    const {bottom} = useSafeAreaInsets();
+    const theme = useTheme();
+
+    const bottomViewStyle = useMemo(() => {
+        return {
+            height: bottom,
+            top: bottom, // translate down the same amount as the height
+            backgroundColor: theme.centerChannelBg,
+        };
+    }, [bottom, theme.centerChannelBg]);
 
     return (
         <BottomSheetFooter {...props}>
-            <View style={style}/>
+            <View style={bottomViewStyle}/>
         </BottomSheetFooter>
     );
 };

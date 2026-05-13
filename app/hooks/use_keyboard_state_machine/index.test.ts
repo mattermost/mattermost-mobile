@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook} from '@testing-library/react-native';
+import {renderHook, act} from '@testing-library/react-native';
 
 import {StateMachineEventType} from '@keyboard';
 
@@ -9,8 +9,21 @@ import {useKeyboardStateMachine} from './index';
 
 jest.mock('react-native-reanimated', () => ({
     ...jest.requireActual('react-native-reanimated'),
-    runOnUI: (fn: (...args: unknown[]) => void) => fn,
 }));
+
+beforeEach(() => {
+    jest.useFakeTimers({doNotFake: ['nextTick']});
+});
+
+afterEach(() => {
+    jest.useRealTimers();
+});
+
+async function flushScheduled() {
+    await act(async () => {
+        jest.runAllTimers();
+    });
+}
 
 function makeContext() {
     const processEvent = jest.fn();
@@ -20,11 +33,13 @@ function makeContext() {
 
 describe('useKeyboardStateMachine', () => {
     describe('onUserFocusInput', () => {
-        it('should dispatch USER_FOCUS_INPUT with undefined height and progress by default', () => {
+        it('should dispatch USER_FOCUS_INPUT with undefined height and progress by default', async () => {
             const ctx = makeContext();
             const {result} = renderHook(() => useKeyboardStateMachine(ctx as never));
 
             result.current.onUserFocusInput();
+
+            await flushScheduled();
 
             expect(ctx.processEvent).toHaveBeenCalledWith({
                 type: StateMachineEventType.USER_FOCUS_INPUT,
@@ -34,11 +49,13 @@ describe('useKeyboardStateMachine', () => {
             });
         });
 
-        it('should dispatch USER_FOCUS_INPUT with height=0 and progress=0 when asHardwareKeyboard=true', () => {
+        it('should dispatch USER_FOCUS_INPUT with height=0 and progress=0 when asHardwareKeyboard=true', async () => {
             const ctx = makeContext();
             const {result} = renderHook(() => useKeyboardStateMachine(ctx as never));
 
             result.current.onUserFocusInput(true);
+
+            await flushScheduled();
 
             expect(ctx.processEvent).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -50,11 +67,13 @@ describe('useKeyboardStateMachine', () => {
             );
         });
 
-        it('should also dispatch KEYBOARD_EVENT_START and KEYBOARD_EVENT_END when asHardwareKeyboard=true', () => {
+        it('should also dispatch KEYBOARD_EVENT_START and KEYBOARD_EVENT_END when asHardwareKeyboard=true', async () => {
             const ctx = makeContext();
             const {result} = renderHook(() => useKeyboardStateMachine(ctx as never));
 
             result.current.onUserFocusInput(true);
+
+            await flushScheduled();
 
             expect(ctx.processEvent).toHaveBeenCalledWith({
                 type: StateMachineEventType.KEYBOARD_EVENT_START,
@@ -71,11 +90,13 @@ describe('useKeyboardStateMachine', () => {
             expect(ctx.processEvent).toHaveBeenCalledTimes(3);
         });
 
-        it('should NOT dispatch hardware keyboard events when asHardwareKeyboard=false', () => {
+        it('should NOT dispatch hardware keyboard events when asHardwareKeyboard=false', async () => {
             const ctx = makeContext();
             const {result} = renderHook(() => useKeyboardStateMachine(ctx as never));
 
             result.current.onUserFocusInput(false);
+
+            await flushScheduled();
 
             expect(ctx.processEvent).toHaveBeenCalledTimes(1);
             expect(ctx.processEvent).not.toHaveBeenCalledWith(
@@ -85,11 +106,13 @@ describe('useKeyboardStateMachine', () => {
     });
 
     describe('onUserOpenEmoji', () => {
-        it('should dispatch USER_OPEN_EMOJI', () => {
+        it('should dispatch USER_OPEN_EMOJI', async () => {
             const ctx = makeContext();
             const {result} = renderHook(() => useKeyboardStateMachine(ctx as never));
 
             result.current.onUserOpenEmoji();
+
+            await flushScheduled();
 
             expect(ctx.processEvent).toHaveBeenCalledWith({
                 type: StateMachineEventType.USER_OPEN_EMOJI,
@@ -98,11 +121,13 @@ describe('useKeyboardStateMachine', () => {
     });
 
     describe('onUserCloseEmoji', () => {
-        it('should dispatch USER_CLOSE_EMOJI', () => {
+        it('should dispatch USER_CLOSE_EMOJI', async () => {
             const ctx = makeContext();
             const {result} = renderHook(() => useKeyboardStateMachine(ctx as never));
 
             result.current.onUserCloseEmoji();
+
+            await flushScheduled();
 
             expect(ctx.processEvent).toHaveBeenCalledWith({
                 type: StateMachineEventType.USER_CLOSE_EMOJI,
@@ -111,11 +136,13 @@ describe('useKeyboardStateMachine', () => {
     });
 
     describe('onUserFocusEmojiSearch', () => {
-        it('should dispatch USER_FOCUS_EMOJI_SEARCH without hardware keyboard events by default', () => {
+        it('should dispatch USER_FOCUS_EMOJI_SEARCH without hardware keyboard events by default', async () => {
             const ctx = makeContext();
             const {result} = renderHook(() => useKeyboardStateMachine(ctx as never));
 
             result.current.onUserFocusEmojiSearch();
+
+            await flushScheduled();
 
             expect(ctx.processEvent).toHaveBeenCalledWith({
                 type: StateMachineEventType.USER_FOCUS_EMOJI_SEARCH,
@@ -123,11 +150,13 @@ describe('useKeyboardStateMachine', () => {
             expect(ctx.processEvent).toHaveBeenCalledTimes(1);
         });
 
-        it('should also dispatch KEYBOARD_EVENT_START and KEYBOARD_EVENT_END when asHardwareKeyboard=true', () => {
+        it('should also dispatch KEYBOARD_EVENT_START and KEYBOARD_EVENT_END when asHardwareKeyboard=true', async () => {
             const ctx = makeContext();
             const {result} = renderHook(() => useKeyboardStateMachine(ctx as never));
 
             result.current.onUserFocusEmojiSearch(true);
+
+            await flushScheduled();
 
             expect(ctx.processEvent).toHaveBeenCalledWith({
                 type: StateMachineEventType.USER_FOCUS_EMOJI_SEARCH,
@@ -149,11 +178,13 @@ describe('useKeyboardStateMachine', () => {
     });
 
     describe('onUserBlurEmojiSearch', () => {
-        it('should dispatch USER_BLUR_EMOJI_SEARCH', () => {
+        it('should dispatch USER_BLUR_EMOJI_SEARCH', async () => {
             const ctx = makeContext();
             const {result} = renderHook(() => useKeyboardStateMachine(ctx as never));
 
             result.current.onUserBlurEmojiSearch();
+
+            await flushScheduled();
 
             expect(ctx.processEvent).toHaveBeenCalledWith({
                 type: StateMachineEventType.USER_BLUR_EMOJI_SEARCH,

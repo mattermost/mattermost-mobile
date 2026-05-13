@@ -11,7 +11,6 @@ import {queryPostsById} from '@queries/servers/post';
 import {querySavedPostsPreferences} from '@queries/servers/preference';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
-import {getTimezone} from '@utils/user';
 
 import SavedMessagesScreen from './saved_messages';
 
@@ -23,8 +22,6 @@ function getPostIDs(preferences: PreferenceModel[]) {
 }
 
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentUser = observeCurrentUser(database);
-
     return {
         posts: querySavedPostsPreferences(database, undefined, 'true').observeWithColumns(['name']).pipe(
             switchMap((rows) => {
@@ -37,7 +34,7 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
                 return queryPostsById(database, ids, Q.asc).observe();
             }),
         ),
-        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone))))),
+        currentUser: observeCurrentUser(database),
         customEmojiNames: queryAllCustomEmojis(database).observe().pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
         ),

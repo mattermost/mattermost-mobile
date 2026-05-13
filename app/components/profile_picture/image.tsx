@@ -7,7 +7,7 @@ import {Platform} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {ExpoImageAnimated} from '@components/expo_image';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
@@ -22,7 +22,7 @@ type Props = {
     forwardRef?: React.RefObject<any>;
     iconSize?: number;
     size: number;
-    source?: ImageSource | string;
+    source?: ImageSource | CompassIconName;
     url?: string;
 };
 

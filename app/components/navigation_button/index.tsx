@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useCallback, useMemo} from 'react';
-import {Pressable, Text, type PressableStateCallbackType} from 'react-native';
+import {useMemo} from 'react';
+import {Pressable, Text} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import usePressableOpacityStyle from '@hooks/use_pressable_opacity';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -13,7 +14,7 @@ export type NavigationButtonProps = {
     borderless?: boolean;
     color?: string;
     disabled?: boolean;
-    iconName?: string;
+    iconName?: CompassIconName;
     iconSize?: number;
     text?: string;
     count?: number | string;
@@ -50,7 +51,7 @@ function NavigationButton({
 
     const colorStyle = useMemo(() => ({color: disabled ? changeOpacity(color ?? theme.sidebarHeaderTextColor, 0.32) : (color ?? theme.sidebarHeaderTextColor)}), [color, disabled, theme.sidebarHeaderTextColor]);
     const ripple = useMemo(() => ({borderless, radius: rippleRadius}), [borderless, rippleRadius]);
-    const pressableStyle = useCallback(({pressed}: PressableStateCallbackType) => [styles.container, pressed && {opacity: 0.72}], [styles.container]);
+    const pressableStyle = usePressableOpacityStyle(styles.container);
 
     return (
         <Pressable

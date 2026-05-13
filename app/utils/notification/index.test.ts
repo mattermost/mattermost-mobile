@@ -8,7 +8,7 @@ import {Notifications} from 'react-native-notifications';
 
 import {Events} from '@constants';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
-import {dismissAllRoutesAndResetToRootRoute} from '@screens/navigation';
+import {navigateToRoot} from '@screens/navigation';
 
 import {
     convertToNotificationData,
@@ -18,7 +18,7 @@ import {
 } from './index';
 
 jest.mock('@screens/navigation', () => ({
-    dismissAllRoutesAndResetToRootRoute: jest.fn(),
+    navigateToRoot: jest.fn(),
 }));
 
 describe('Notification Utils', () => {
@@ -89,7 +89,7 @@ describe('Notification Utils', () => {
                 'Message not found',
                 'This message belongs to a channel where you are not a member.',
             );
-            expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalled();
+            expect(navigateToRoot).toHaveBeenCalled();
         });
 
         it('should display alert and popToRoot for Team type', () => {
@@ -98,7 +98,7 @@ describe('Notification Utils', () => {
                 'Message not found',
                 'This message belongs to a team where you are not a member.',
             );
-            expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalled();
+            expect(navigateToRoot).toHaveBeenCalled();
         });
 
         it('should display alert and popToRoot for Post type', () => {
@@ -107,7 +107,7 @@ describe('Notification Utils', () => {
                 'Message not found',
                 'The message has not been found.',
             );
-            expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalled();
+            expect(navigateToRoot).toHaveBeenCalled();
         });
 
         it('should display alert and popToRoot for Connection type', () => {
@@ -116,7 +116,7 @@ describe('Notification Utils', () => {
                 'Message not found',
                 'The server is unreachable and it was not possible to retrieve the specific message information for the notification.',
             );
-            expect(dismissAllRoutesAndResetToRootRoute).toHaveBeenCalled();
+            expect(navigateToRoot).toHaveBeenCalled();
         });
     });
 

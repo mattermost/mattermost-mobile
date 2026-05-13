@@ -5,7 +5,7 @@ import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {fetchChannelMemberships} from '@actions/remote/channel';
 import {fetchUsersByIds, searchProfiles} from '@actions/remote/user';
@@ -17,6 +17,7 @@ import UserList from '@components/user_list';
 import {Events, General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {TutorialProvider} from '@context/tutorial';
 import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
@@ -36,6 +37,8 @@ type Props = {
     teammateDisplayNameSetting: string;
     channelAbacPolicyEnforced: boolean;
 }
+
+const safeAreaEdges: Edge[] = ['bottom', 'left', 'right'];
 
 const styles = StyleSheet.create({
     container: {
@@ -292,50 +295,53 @@ export default function ManageChannelMembers({
         <SafeAreaView
             style={styles.container}
             testID={`${TEST_ID}.screen`}
+            edges={safeAreaEdges}
         >
-            {channelAbacPolicyEnforced && (
-                <SectionNotice
-                    type='info'
-                    title={formatMessage({
-                        id: 'channel.abac_policy_enforced.title',
-                        defaultMessage: 'Channel access is restricted by user attributes',
-                    })}
-                    tags={attributeTags.length > 0 ? attributeTags : undefined}
+            <TutorialProvider>
+                {channelAbacPolicyEnforced && (
+                    <SectionNotice
+                        type='info'
+                        title={formatMessage({
+                            id: 'channel.abac_policy_enforced.title',
+                            defaultMessage: 'Channel access is restricted by user attributes',
+                        })}
+                        tags={attributeTags.length > 0 ? attributeTags : undefined}
+                        location={Screens.MANAGE_CHANNEL_MEMBERS}
+                        testID={`${TEST_ID}.notice`}
+                        squareCorners={true}
+                    />
+                )}
+                <View style={styles.searchBar}>
+                    <Search
+                        autoCapitalize='none'
+                        cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        onCancel={clearSearch}
+                        onChangeText={onSearch}
+                        onSubmitEditing={search}
+                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        testID={`${TEST_ID}.search_bar`}
+                        value={term}
+                    />
+                </View>
+                <UserList
+                    handleSelectProfile={handleSelectProfile}
+                    loading={loading}
+                    manageMode={true} // default true to change row select icon to a dropdown
+                    profiles={data}
+                    channelMembers={channelMembers}
+                    selectedIds={EMPTY_IDS}
+                    showManageMode={canManageAndRemoveMembers && isManageMode}
+                    showNoResults={!loading}
+                    term={searchedTerm}
+                    testID={`${TEST_ID}.user_list`}
+                    tutorialWatched={tutorialWatched}
+                    includeUserMargin={true}
+                    fetchMore={handleReachedBottom}
                     location={Screens.MANAGE_CHANNEL_MEMBERS}
-                    testID={`${TEST_ID}.notice`}
-                    squareCorners={true}
                 />
-            )}
-            <View style={styles.searchBar}>
-                <Search
-                    autoCapitalize='none'
-                    cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    onCancel={clearSearch}
-                    onChangeText={onSearch}
-                    onSubmitEditing={search}
-                    placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    testID={`${TEST_ID}.search_bar`}
-                    value={term}
-                />
-            </View>
-            <UserList
-                handleSelectProfile={handleSelectProfile}
-                loading={loading}
-                manageMode={true} // default true to change row select icon to a dropdown
-                profiles={data}
-                channelMembers={channelMembers}
-                selectedIds={EMPTY_IDS}
-                showManageMode={canManageAndRemoveMembers && isManageMode}
-                showNoResults={!loading}
-                term={searchedTerm}
-                testID={`${TEST_ID}.user_list`}
-                tutorialWatched={tutorialWatched}
-                includeUserMargin={true}
-                fetchMore={handleReachedBottom}
-                location={Screens.MANAGE_CHANNEL_MEMBERS}
-            />
+            </TutorialProvider>
         </SafeAreaView>
     );
 }

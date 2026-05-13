@@ -39,7 +39,7 @@ jest.mock('./participants', () => ({
     default: jest.fn(),
 }));
 jest.mocked(Participants).mockImplementation(
-    (props) => React.createElement('Participants', {testID: 'participants', ...props}),
+    (props: ComponentProps<typeof Participants>) => React.createElement('Participants', {testID: 'participants', ...props}),
 );
 
 describe('StatusUpdatePost', () => {

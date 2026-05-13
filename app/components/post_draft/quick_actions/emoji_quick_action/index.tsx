@@ -6,6 +6,7 @@ import {StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {isAndroidEdgeToEdge} from '@constants/device';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useKeyboardState} from '@context/keyboard_state';
 import {useTheme} from '@context/theme';
@@ -43,7 +44,13 @@ export default function EmojiQuickAction({
         isEmojiPickerTransition.value = true;
 
         stateMachine.onUserOpenEmoji();
-        inputRef.current?.blur();
+        if (isAndroidEdgeToEdge) {
+            requestAnimationFrame(() => {
+                inputRef.current?.blur();
+            });
+        } else {
+            inputRef.current?.blur();
+        }
 
         // Shared values don't need to be in dependencies - they're stable references
         // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -197,48 +197,6 @@ describe('NavigationStore', () => {
         });
     });
 
-    describe('getRootRouteInfo', () => {
-        it('should return pathname and params for root route', () => {
-            const navState = createNavigationState([
-                {
-                    key: 'channel-1',
-                    name: 'channel',
-                },
-            ]);
-
-            (navState.routes[0] as {params?: Record<string, string>}).params = {channelId: '123'};
-
-            NavigationStore.updateFromNavigationState(navState);
-
-            const rootInfo = NavigationStore.getRootRouteInfo();
-            expect(rootInfo).toEqual({
-                pathname: '/channel',
-                params: {channelId: '123'},
-            });
-        });
-
-        it('should build nested pathname', () => {
-            const navState = createNavigationState([
-                {
-                    key: 'channel-1',
-                    name: 'channel',
-                    state: createNavigationState([
-                        {key: 'thread-2', name: 'thread'},
-                    ]),
-                },
-            ]);
-
-            NavigationStore.updateFromNavigationState(navState);
-
-            const rootInfo = NavigationStore.getRootRouteInfo();
-            expect(rootInfo?.pathname).toBe('/channel/thread');
-        });
-
-        it('should return undefined when no navigation state', () => {
-            expect(NavigationStore.getRootRouteInfo()).toBeUndefined();
-        });
-    });
-
     describe('reset', () => {
         it('should clear all state', () => {
             const navState = createNavigationState([
@@ -255,7 +213,6 @@ describe('NavigationStore', () => {
 
             expect(NavigationStore.getScreensInStack()).toEqual([]);
             expect(NavigationStore.getVisibleScreen()).toBeUndefined();
-            expect(NavigationStore.getRootRouteInfo()).toBeUndefined();
             expect(NavigationStore.isToSOpen()).toBe(false);
         });
     });
@@ -334,6 +291,15 @@ describe('NavigationStore', () => {
     });
 
     describe('async wait utilities', () => {
+        beforeEach(() => {
+            jest.useFakeTimers({doNotFake: ['nextTick', 'setImmediate']});
+        });
+
+        afterEach(() => {
+            jest.runOnlyPendingTimers();
+            jest.useRealTimers();
+        });
+
         it('should resolve waitUntilScreenHasLoaded when screen is added', async () => {
             const promise = NavigationStore.waitUntilScreenHasLoaded(Screens.ABOUT);
 
@@ -407,8 +373,6 @@ describe('NavigationStore', () => {
         });
 
         it('should timeout after 30 seconds', async () => {
-            jest.useFakeTimers({doNotFake: ['nextTick', 'setImmediate']});
-
             const promise = NavigationStore.waitUntilScreenHasLoaded(Screens.ABOUT);
 
             // Fast-forward 30 seconds to trigger setTimeout callback
@@ -419,8 +383,6 @@ describe('NavigationStore', () => {
 
             // Should resolve even though screen was never added
             expect(NavigationStore.isScreenInStack(Screens.ABOUT)).toBe(false);
-
-            jest.useRealTimers();
         });
     });
 });

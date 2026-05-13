@@ -29,6 +29,8 @@
 		<key>NSExtensionPrincipalClass</key>
 		<string>$(PRODUCT_MODULE_NAME).NotificationService</string>
 	</dict>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 	<key>SENTRY_DSN_IOS</key>
 	<string>$(SENTRY_DSN_IOS)</string>
 	<key>SENTRY_ENABLED</key>

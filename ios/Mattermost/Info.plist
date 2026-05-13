@@ -77,6 +77,8 @@
 	<array>
 		<string>INSendMessageIntent</string>
 	</array>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 	<key>UIAppFonts</key>
 	<array>
 		<string>OpenSans-Bold.ttf</string>
@@ -101,6 +103,8 @@
 		<string>remote-notification</string>
 		<string>voip</string>
 	</array>
+	<key>UIDesignRequiresCompatibility</key>
+	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -124,7 +128,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>UIDesignRequiresCompatibility</key>
-	<true/>
 </dict>
 </plist>

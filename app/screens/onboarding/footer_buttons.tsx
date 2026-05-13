@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {Pressable, StyleSheet, useWindowDimensions, View} from 'react-native';
-import Animated, {Extrapolate, interpolate, useAnimatedStyle} from 'react-native-reanimated';
+import Animated, {Extrapolate, interpolate, useAnimatedStyle, type SharedValue} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -15,7 +15,7 @@ type Props = {
     lastSlideIndex: number;
     nextSlideHandler: () => void;
     signInHandler: () => void;
-    scrollX: Animated.SharedValue<number>;
+    scrollX: SharedValue<number>;
 };
 
 const styles = StyleSheet.create({

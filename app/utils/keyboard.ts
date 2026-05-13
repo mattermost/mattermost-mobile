@@ -17,6 +17,7 @@ export const dismissKeyboard = async (): Promise<void> => {
         await KeyboardController.dismiss({animated: false});
     } else {
         Keyboard.dismiss();
+        await new Promise((resolve) => setTimeout(resolve, 250));
     }
 };
 

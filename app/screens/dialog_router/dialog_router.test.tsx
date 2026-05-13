@@ -135,7 +135,7 @@ describe('DialogRouter', () => {
             expect(getByTestId('interactive-dialog')).toBeTruthy();
             expect(mockInteractiveDialog).toHaveBeenCalledWith({
                 config: mockConfig,
-            }, {});
+            }, undefined);
         });
 
         it('should not call dialog conversion when feature flag is disabled', () => {
@@ -166,7 +166,7 @@ describe('DialogRouter', () => {
                 submit: expect.any(Function),
                 performLookupCall: expect.any(Function),
                 refreshOnSelect: expect.any(Function),
-            }, {});
+            }, undefined);
         });
 
         it('should call dialog conversion with correct config', () => {
@@ -396,7 +396,7 @@ describe('DialogRouter', () => {
                 expect.objectContaining({
                     form: expect.any(Object),
                 }),
-                expect.any(Object),
+                undefined,
             );
 
             rerender(
@@ -415,7 +415,7 @@ describe('DialogRouter', () => {
                 expect.objectContaining({
                     form: expect.any(Object),
                 }),
-                expect.any(Object),
+                undefined,
             );
         });
     });

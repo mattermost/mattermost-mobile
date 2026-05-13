@@ -63,7 +63,11 @@ function PostDraft({
     useEffect(() => {
         setValue(message);
         setCursorPosition(message.length);
-    }, [channelId, message, rootId]);
+
+        // message is intentionally excluded — including it would reset the input on every parent re-render,
+        // overwriting what the user is currently typing. We only want to reset when switching channels/threads.
+        //eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [channelId, rootId]);
 
     const autocompletePosition = (postInputTop - bottom) + AUTOCOMPLETE_ADJUST;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);

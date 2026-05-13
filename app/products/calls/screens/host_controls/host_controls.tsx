@@ -11,6 +11,8 @@ import {removeFromCall} from '@calls/alerts';
 import {useHostMenus} from '@calls/hooks';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
+import {isEdgeToEdge} from '@constants/device';
+import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet} from '@screens/navigation';
@@ -91,9 +93,10 @@ export const HostControls = ({
 
     const snapPoints = useMemo(() => {
         const items = 3 + (session.muted ? 0 : 1) + (sharingScreen ? 1 : 0) + (session.raisedHand ? 1 : 0);
+        const snapBottom = isEdgeToEdge ? bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
         return [
             1,
-            bottomSheetSnapPoint(items, ITEM_HEIGHT) + TITLE_HEIGHT + SEPARATOR_HEIGHT + bottom,
+            bottomSheetSnapPoint(items, ITEM_HEIGHT) + TITLE_HEIGHT + SEPARATOR_HEIGHT + snapBottom,
         ];
     }, [session.muted, session.raisedHand, sharingScreen, bottom]);
 

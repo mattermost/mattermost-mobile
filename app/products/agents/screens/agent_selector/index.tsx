@@ -8,12 +8,12 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
+import {isEdgeToEdge} from '@constants/device';
+import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import useDidMount from '@hooks/did_mount';
 import BottomSheet, {type BottomSheetRef} from '@screens/bottom_sheet';
-import {navigateBack} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -50,7 +50,6 @@ const AgentSelector = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
-    const {enabled, panResponder} = useBottomSheetListsFix();
     const bottomSheetRef = useRef<BottomSheetRef>(null);
 
     useDidMount(() => {
@@ -62,7 +61,6 @@ const AgentSelector = ({
     const close = useCallback(async () => {
         bottomSheetRef.current?.close();
         await new Promise((resolve) => setTimeout(resolve, 250));
-        await navigateBack();
     }, []);
 
     useAndroidHardwareBackHandler(Screens.AGENTS_SELECTOR, close);
@@ -85,7 +83,8 @@ const AgentSelector = ({
 
         // Calculate height based on number of agents
         const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(agents.length, ITEM_HEIGHT);
-        const componentHeight = optionsHeight + paddingBottom + insets.bottom;
+        const bottom = isEdgeToEdge ? insets.bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
+        const componentHeight = optionsHeight + paddingBottom + bottom;
 
         const points: Array<string | number> = [1, componentHeight];
 
@@ -105,8 +104,6 @@ const AgentSelector = ({
                 keyExtractor={keyExtractor}
                 contentContainerStyle={styles.contentContainer}
                 testID='ai_agent_selector.flat_list'
-                scrollEnabled={enabled}
-                {...panResponder.panHandlers}
             />
         </View>
     );

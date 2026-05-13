@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type PropsWithChildren, type MutableRefObject} from 'react';
-import {findNodeHandle, type FlatList, Platform} from 'react-native';
+import React, {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type MutableRefObject, type PropsWithChildren} from 'react';
+import {DeviceEventEmitter, findNodeHandle, Platform} from 'react-native';
 import {useAnimatedKeyboard} from 'react-native-keyboard-controller';
-import {runOnJS, useAnimatedReaction, useAnimatedScrollHandler} from 'react-native-reanimated';
+import Animated, {useAnimatedReaction, useAnimatedRef, useAnimatedScrollHandler, type AnimatedRef} from 'react-native-reanimated';
+import {scheduleOnRN, scheduleOnUI} from 'react-native-worklets';
 
+import {Events} from '@constants';
 import {useIsTablet} from '@hooks/device';
 import {useKeyboardEvents} from '@hooks/use_keyboard_events';
 import {useKeyboardStateContext, type KeyboardStateContextReturn} from '@hooks/use_keyboard_state_context';
@@ -13,15 +15,15 @@ import {useKeyboardStateMachine} from '@hooks/use_keyboard_state_machine';
 import {InputContainerStateType} from '@keyboard';
 import {dismissKeyboard} from '@utils/keyboard';
 
-import type {PasteInputRef} from '@mattermost/react-native-paste-input';
+import type {PasteTextInputInstance} from '@mattermost/react-native-paste-input';
 import type PostModel from '@typings/database/models/servers/post';
 
 type KeyboardStateContextValue = {
     stateContext: KeyboardStateContextReturn;
 
     // Refs (kept separate from StateContext to avoid freezing by worklets)
-    listRef: MutableRefObject<FlatList<string | PostModel> | null>;
-    inputRef: MutableRefObject<PasteInputRef | null>;
+    listRef: AnimatedRef<Animated.FlatList<string | PostModel>>;
+    inputRef: MutableRefObject<PasteTextInputInstance | null>;
     stateMachine: {
         onUserFocusInput: (asHardwareKeyboard?: boolean) => void;
         onUserOpenEmoji: () => void;
@@ -50,6 +52,7 @@ type KeyboardStateContextValue = {
     registerPostInputCallbacks: (
         updateValueFn: React.Dispatch<React.SetStateAction<string>>,
         updateCursorPositionFn: React.Dispatch<React.SetStateAction<number>>,
+        initialValue?: string,
     ) => void;
 
     // Post input container height (synced from SharedValue)
@@ -57,7 +60,7 @@ type KeyboardStateContextValue = {
 
     // Keyboard dismiss helpers
     blurAndDismissKeyboard: () => Promise<void>;
-    closeInputAccessoryView: () => void;
+    closeInputAccessoryView: () => Promise<void>;
 };
 
 const KeyboardStateContext = createContext<KeyboardStateContextValue | undefined>(undefined);
@@ -69,8 +72,9 @@ type KeyboardStateProviderProps = PropsWithChildren<{
 
 export function KeyboardStateProvider({children, tabBarHeight, enabled = false}: KeyboardStateProviderProps) {
     // Create refs here (not in StateContext to avoid freezing by worklets)
-    const listRef = useRef<FlatList<string | PostModel> | null>(null);
-    const inputRef = useRef<PasteInputRef | null>(null);
+    const listRef = useAnimatedRef<Animated.FlatList<string | PostModel>>();
+    const inputRef = useRef<PasteTextInputInstance | null>(null);
+    const blurAndDismissKeyboardRef = useRef<() => Promise<void>>(async () => { /* initialized below */ });
 
     // Create state context with all SharedValues
     const stateContext = useKeyboardStateContext({tabBarHeight, enabled});
@@ -96,17 +100,42 @@ export function KeyboardStateProvider({children, tabBarHeight, enabled = false}:
     const [updateValueCallback, setUpdateValueCallback] = useState<React.Dispatch<React.SetStateAction<string>> | null>(null);
     const [updateCursorPositionCallback, setUpdateCursorPositionCallback] = useState<React.Dispatch<React.SetStateAction<number>> | null>(null);
 
-    // Sync enabled prop with context
+    // Sync enabled prop with context.
+    // When disabling: proactively call blurAndDismissKeyboard so the OS keyboard
+    // starts dismissing, then set isEnabled=false and force-reset the state machine.
+    // The force-reset is necessary on edge-to-edge Android where KEYBOARD_EVENT_END
+    // arrives after isEnabled is already false, leaving the machine stuck in KEYBOARD_OPEN.
     useEffect(() => {
-        const raf = setTimeout(() => {
-            stateContext.isEnabled.value = enabled;
-        }, 250); // Delay to allow screen transition to complete before processing keyboard events
+        let cancelled = false;
+        const run = async () => {
+            if (!enabled) {
+                await blurAndDismissKeyboardRef.current();
+            }
+            if (!cancelled) {
+                stateContext.isEnabled.value = enabled;
+                if (!enabled) {
+                    scheduleOnUI(stateContext.forceResetToIdle);
+                }
+            }
+        };
+        run();
+        return () => {
+            cancelled = true;
+        };
 
-        return () => clearTimeout(raf);
-
-        // ShareValues do not need to be memoized individually since they are stable references created by useSharedValue
+        // SharedValues are stable refs — no need in deps
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [enabled]);
+
+    // External event: callers outside the React tree (notifications, deep links, navigation
+    // utilities, bottom sheets) emit this to dismiss the keyboard/emoji picker.
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(
+            Events.BLUR_AND_DISMISS_KEYBOARD,
+            () => blurAndDismissKeyboardRef.current(),
+        );
+        return () => listener.remove();
+    }, []);
 
     useEffect(() => {
         if (inputRef.current) {
@@ -128,7 +157,7 @@ export function KeyboardStateProvider({children, tabBarHeight, enabled = false}:
         () => stateContext.currentState.value,
         (currentState) => {
             if (currentState !== InputContainerStateType.EMOJI_SEARCH_ACTIVE) {
-                runOnJS(blurEmojiSearchIfNeeded)();
+                scheduleOnRN(blurEmojiSearchIfNeeded);
             }
         },
         [],
@@ -139,7 +168,7 @@ export function KeyboardStateProvider({children, tabBarHeight, enabled = false}:
         () => stateContext.postInputContainerHeight.value,
         (height) => {
             // this is late, let's see if we can improve it later
-            runOnJS(setPostInputContainerHeight)(height);
+            scheduleOnRN(setPostInputContainerHeight, height);
         },
         [],
     );
@@ -183,7 +212,7 @@ export function KeyboardStateProvider({children, tabBarHeight, enabled = false}:
                 (current.state === InputContainerStateType.IDLE && current.targetHeight > 0)
             );
 
-            runOnJS(setShowInputAccessoryView)(shouldShow);
+            scheduleOnRN(setShowInputAccessoryView, shouldShow);
         },
         [],
     );
@@ -234,16 +263,17 @@ export function KeyboardStateProvider({children, tabBarHeight, enabled = false}:
     const registerPostInputCallbacks = useCallback((
         updateValueFn: React.Dispatch<React.SetStateAction<string>>,
         updateCursorPositionFn: React.Dispatch<React.SetStateAction<number>>,
+        initialValue?: string,
     ) => {
         setUpdateValueCallback((prev: typeof updateValueFn) => (prev === updateValueFn ? prev : updateValueFn));
         setUpdateCursorPositionCallback((prev: typeof updateCursorPositionFn) => (prev === updateCursorPositionFn ? prev : updateCursorPositionFn));
 
-        // Initialize cursor position with current value length
-        if (updateValueFn) {
-            updateValueFn((currentValue: string) => {
-                stateContext.cursorPosition.value = currentValue.length;
-                return currentValue;
-            });
+        // Initialize cursor position from the value passed at registration time.
+        // Previously this used updateValueFn((v) => { sharedValue.value = v.length; return v; })
+        // which mutates a SharedValue inside a React state-updater — Reanimated warns about that.
+        // The caller passes the current draft value directly instead.
+        if (initialValue !== undefined) {
+            stateContext.cursorPosition.value = initialValue.length;
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -261,7 +291,7 @@ export function KeyboardStateProvider({children, tabBarHeight, enabled = false}:
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const closeInputAccessoryView = useCallback(() => {
+    const closeInputAccessoryView = useCallback(async () => {
         // Dismiss keyboard if emoji search was focused
         if (isEmojiSearchFocused) {
             dismissKeyboard();
@@ -272,18 +302,24 @@ export function KeyboardStateProvider({children, tabBarHeight, enabled = false}:
 
         // Dispatch USER_CLOSE_EMOJI event to state machine
         stateMachine.onUserCloseEmoji();
+
+        // Wait for emoji picker close animation to complete before resolving
+        await new Promise<void>((resolve) => setTimeout(resolve, 250));
     }, [isEmojiSearchFocused, setIsEmojiSearchFocused, stateMachine]);
 
     const blurAndDismissKeyboard = useCallback(async () => {
-        // If emoji picker is showing, just close it instead of dismissing keyboard
+        // If emoji picker is showing, close it and wait for animation before returning
         if (showInputAccessoryView) {
-            closeInputAccessoryView();
+            await closeInputAccessoryView();
             return;
         }
 
-        inputRef.current?.blur();
         await dismissKeyboard();
+        inputRef.current?.blur();
     }, [showInputAccessoryView, closeInputAccessoryView, inputRef]);
+
+    // Keep ref in sync so the enabled effect and event listener always call the latest version
+    blurAndDismissKeyboardRef.current = blurAndDismissKeyboard;
 
     const value = useMemo(() => ({
         stateContext,
@@ -335,6 +371,7 @@ export function useKeyboardState() {
     const fallbackStateContext = useKeyboardStateContext({tabBarHeight: 0, enabled: false});
     const fallbackStateMachine = useKeyboardStateMachine(fallbackStateContext);
     const fallbackOnScroll = useAnimatedScrollHandler({});
+    const fallbackListRef = useAnimatedRef<Animated.FlatList<string | PostModel>>();
 
     if (context) {
         return context;
@@ -342,8 +379,8 @@ export function useKeyboardState() {
 
     return {
         stateContext: fallbackStateContext,
-        listRef: {current: null} as MutableRefObject<FlatList<string | PostModel> | null>,
-        inputRef: {current: null} as MutableRefObject<PasteInputRef | null>,
+        listRef: fallbackListRef,
+        inputRef: {current: null} as React.MutableRefObject<PasteTextInputInstance | null>,
         stateMachine: fallbackStateMachine,
         onScroll: fallbackOnScroll,
         showInputAccessoryView: false,
@@ -357,6 +394,6 @@ export function useKeyboardState() {
         setCursorPosition: () => { /* no-op */ },
         postInputContainerHeight: 0,
         blurAndDismissKeyboard: async () => { /* no-op */ },
-        closeInputAccessoryView: () => { /* no-op */ },
+        closeInputAccessoryView: async () => { /* no-op */ },
     };
 }

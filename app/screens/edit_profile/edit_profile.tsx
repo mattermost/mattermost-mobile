@@ -295,6 +295,7 @@ const EditProfile = ({
             scrollToOverflowEnabled={true}
             testID='edit_profile.scroll_view'
             bottomOffset={62}
+            mode='layout'
         >
             {updating && <Updating/>}
             {Boolean(error) && <ProfileError error={error}/>}

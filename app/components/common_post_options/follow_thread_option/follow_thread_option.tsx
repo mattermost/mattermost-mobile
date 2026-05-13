@@ -9,6 +9,7 @@ import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
 
+import type {CompassIconName} from '@components/compass_icon';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
 type FollowThreadOptionProps = {
@@ -36,7 +37,7 @@ const messages = defineMessages({
 });
 const FollowThreadOption = ({thread, teamId}: FollowThreadOptionProps) => {
     let message: MessageDescriptor;
-    let icon: string;
+    let icon: CompassIconName;
 
     if (thread.isFollowing) {
         icon = 'message-minus-outline';

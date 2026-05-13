@@ -16,14 +16,22 @@ import ShowMoreButton from './show_more_button';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
+jest.mock('@shopify/flash-list', () => {
+    const MockReact = require('react');
+    const {FlatList} = require('react-native');
+    return {
+        FlashList: MockReact.forwardRef((props: any, ref: any) => MockReact.createElement(FlatList, {...props, ref})),
+    };
+});
+
 jest.mock('./empty_state');
-jest.mocked(EmptyState).mockImplementation((props) => React.createElement('EmptyState', {...props, testID: 'empty-state'}));
+jest.mocked(EmptyState).mockImplementation((props: ComponentProps<typeof EmptyState>) => React.createElement('EmptyState', {...props, testID: 'empty-state'}));
 
 jest.mock('./playbook_card');
-jest.mocked(PlaybookCard).mockImplementation((props) => React.createElement('PlaybookCard', {...props, testID: 'playbook-card'}));
+jest.mocked(PlaybookCard).mockImplementation((props: ComponentProps<typeof PlaybookCard>) => React.createElement('PlaybookCard', {...props, testID: 'playbook-card'}));
 
 jest.mock('./show_more_button');
-jest.mocked(ShowMoreButton).mockImplementation((props) => React.createElement('ShowMoreButton', {...props, testID: 'show-more-button'}));
+jest.mocked(ShowMoreButton).mockImplementation((props: ComponentProps<typeof ShowMoreButton>) => React.createElement('ShowMoreButton', {...props, testID: 'show-more-button'}));
 
 jest.mock('@playbooks/screens/navigation', () => ({
     goToSelectPlaybook: jest.fn(),
@@ -259,7 +267,10 @@ describe('RunList', () => {
         props.showCachedWarning = true;
         const {getByText} = renderWithEverything(<RunList {...props}/>, {database});
 
-        expect(getByText('Cannot reach the server')).toBeTruthy();
+        await waitFor(() => {
+            expect(getByText('Cannot reach the server')).toBeTruthy();
+        });
+        await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
     it('hides cached warning when showCachedWarning is false', () => {

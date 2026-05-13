@@ -46,6 +46,7 @@ const Highlighter = ({code, language, textStyle, selectable = false}: SyntaxHigl
     [theme, selectable, style]);
     const maximumLineLength = useMemo(() => getMaximumLineLength(code), [code]);
     const languageToUse = maximumLineLength > MAXIMUM_CODE_LINE_LENGTH ? 'text' : language;
+    const showLineNumbers = useMemo(() => code.split('\n').length > 1, [code]);
 
     const nativeRenderer = useCallback(({rows, stylesheet}: rendererProps) => {
         const digits = rows.length.toString().length;
@@ -76,10 +77,11 @@ const Highlighter = ({code, language, textStyle, selectable = false}: SyntaxHigl
             style={style}
             language={languageToUse}
             horizontal={true}
-            showLineNumbers={true}
+            showLineNumbers={showLineNumbers}
             renderer={nativeRenderer}
             PreTag={preTag}
             CodeTag={View}
+            wrapLines={true}
         >
             {code}
         </SyntaxHighlighter>

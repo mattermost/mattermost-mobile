@@ -14,11 +14,11 @@ import Animated, {
     Extrapolation,
     FadeIn,
     interpolate,
-    runOnJS,
     useAnimatedStyle,
     useSharedValue,
     withTiming,
 } from 'react-native-reanimated';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import Toast, {TOAST_HEIGHT} from '@components/toast';
 import {Screens} from '@constants';
@@ -29,6 +29,7 @@ import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {CompassIconName} from '@components/compass_icon';
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {ShowSnackBarArgs} from '@utils/snack_bar';
 
@@ -43,7 +44,7 @@ const SNACK_BAR_BOTTOM_RATIO = 0.04;
 
 const caseScreens: AvailableScreens[] = [Screens.PERMALINK, Screens.MANAGE_CHANNEL_MEMBERS, Screens.MENTIONS, Screens.SAVED_MESSAGES, Screens.CODE];
 
-const DEFAULT_ICON = 'alert-outline';
+const DEFAULT_ICON: CompassIconName = 'alert-outline';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -105,7 +106,7 @@ const SnackBar = ({
     const {width: windowWidth, height: windowHeight} = useWindowDimensions();
     const offset = useSharedValue(0);
     const isPanned = useSharedValue(false);
-    const baseTimer = useRef<NodeJS.Timeout>();
+    const baseTimer = useRef<NodeJS.Timeout | undefined>(undefined);
     const mounted = useRef(false);
     const userHasUndo = useRef(false);
 
@@ -211,16 +212,16 @@ const SnackBar = ({
         activeOffsetY(20).
         onStart(() => {
             isPanned.value = true;
-            runOnJS(stopTimers)();
+            scheduleOnRN(stopTimers);
             offset.value = withTiming(100, {duration: 200});
         }).
         onEnd(() => {
-            runOnJS(hideSnackBar)();
+            scheduleOnRN(hideSnackBar);
         });
 
     const animateHiding = useCallback((forceHiding: boolean) => {
         const duration = forceHiding ? 0 : 200;
-        offset.value = withTiming(200, {duration}, () => runOnJS(hideSnackBar)());
+        offset.value = withTiming(200, {duration}, () => scheduleOnRN(hideSnackBar));
     }, [offset]);
 
     const onUndoPressHandler = () => {

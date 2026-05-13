@@ -26,7 +26,6 @@ import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useKeyboardHeight, useKeyboardOverlap} from '@hooks/device';
-import {useInputPropagation} from '@hooks/input';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -114,13 +113,10 @@ export default function ChannelInfoForm({
     const purposeInput = useRef<TextInput>(null);
     const headerInput = useRef<TextInput>(null);
 
-    const updateScrollTimeout = useRef<NodeJS.Timeout>();
+    const updateScrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
-    const mainView = useRef<View>(null);
     const [wrapperHeight, setWrapperHeight] = useState(0);
-    const keyboardOverlap = useKeyboardOverlap(mainView, wrapperHeight);
-
-    const [propagateValue, shouldProcessEvent] = useInputPropagation();
+    const keyboardOverlap = useKeyboardOverlap();
 
     const keyboardHeight = useKeyboardHeight();
     const [keyboardVisible, setKeyBoardVisible] = useState(false);
@@ -185,15 +181,11 @@ export default function ChannelInfoForm({
 
     const onHeaderAutocompleteChange = useCallback((value: string) => {
         onHeaderChange(value);
-        propagateValue(value);
-    }, [onHeaderChange, propagateValue]);
+    }, [onHeaderChange]);
 
     const onHeaderInputChange = useCallback((value: string) => {
-        if (!shouldProcessEvent(value)) {
-            return;
-        }
         onHeaderChange(value);
-    }, [onHeaderChange, shouldProcessEvent]);
+    }, [onHeaderChange]);
 
     const onLayoutError = useCallback((e: LayoutChangeEvent) => {
         setErrorHeight(e.nativeEvent.layout.height);
@@ -266,7 +258,6 @@ export default function ChannelInfoForm({
             style={styles.container}
             testID='create_or_edit_channel.screen'
             onLayout={onLayoutWrapper}
-            ref={mainView}
         >
             <KeyboardAwareScrollView
                 bounces={false}
@@ -276,6 +267,7 @@ export default function ChannelInfoForm({
                 contentContainerStyle={styles.scrollView}
                 scrollToOverflowEnabled={true}
                 onScroll={onScroll}
+                mode='layout'
             >
                 {displayError}
                 <TouchableWithoutFeedback

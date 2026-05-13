@@ -53,12 +53,9 @@ const ChannelContent = ({
                 <KeyboardAwarePostDraftContainer
                     textInputNativeID={CHANNEL_POST_INPUT_NATIVE_ID}
                     containerStyle={[styles.flex, {marginTop}]}
-                    renderList={({listRef, onTouchMove, onTouchEnd}) => (
+                    renderList={() => (
                         <ChannelPostList
                             channelId={channelId}
-                            listRef={listRef}
-                            onTouchMove={onTouchMove}
-                            onTouchEnd={onTouchEnd}
                         />
                     )}
                 >

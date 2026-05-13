@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, ScrollView, Text, View} from 'react-native';
+import {Platform, ScrollView, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import ErrorBoundary from '@components/markdown/error_boundary';
@@ -35,9 +35,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             minHeight: '100%',
         },
-        mathStyle: {
-            color: theme.centerChannelColor,
-        },
         scrollCode: {
             minHeight: '100%',
             flexDirection: 'column',
@@ -63,14 +60,6 @@ const Latex = ({content}: LatexScreenProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const lines = splitLatexCodeInLines(content);
-
-    const onErrorMessage = (errorMsg: Error) => {
-        return <Text style={style.errorText}>{'Error: ' + errorMsg.message}</Text>;
-    };
-
-    const onRenderErrorMessage = ({error}: {error: Error}) => {
-        return <Text style={style.errorText}>{'Render error: ' + error.message}</Text>;
-    };
 
     useAndroidHardwareBackHandler(Screens.LATEX, navigateBack);
 
@@ -99,11 +88,8 @@ const Latex = ({content}: LatexScreenProps) => {
                                     key={latexCode}
                                 >
                                     <MathView
-                                        math={latexCode}
-                                        onError={onErrorMessage}
-                                        renderError={onRenderErrorMessage}
-                                        resizeMode={'cover'}
-                                        style={style.mathStyle}
+                                        latexCode={latexCode}
+                                        errorStyle={style.errorText}
                                     />
                                 </View>
                             ))}

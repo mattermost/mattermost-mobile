@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, screen} from '@testing-library/react-native';
+import {act, fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 
 import {switchToThread} from '@actions/local/thread';
@@ -193,17 +193,19 @@ describe('DraftAndScheduledPost', () => {
         expect(switchToThread).not.toHaveBeenCalled();
     });
 
-    it('opens options on long press for draft', () => {
+    it('opens options on long press for draft', async () => {
         const mockOpenAsBottonSheet = jest.mocked(navigateToScreen);
         renderWithIntlAndTheme(<DraftAndScheduledPost {...baseProps}/>);
 
-        fireEvent(screen.getByTestId('draft_post'), 'longPress');
+        await act(async () => {
+            fireEvent(screen.getByTestId('draft_post'), 'longPress');
+        });
 
         expect(mockOpenAsBottonSheet).toHaveBeenCalled();
         expect(mockOpenAsBottonSheet.mock.calls[0][1]?.draftType).toBe(DRAFT_TYPE_DRAFT);
     });
 
-    it('opens options on long press for scheduled post', () => {
+    it('opens options on long press for scheduled post', async () => {
         const mockOpenAsBottonSheet = jest.mocked(navigateToScreen);
         const props = {
             ...baseProps,
@@ -218,7 +220,9 @@ describe('DraftAndScheduledPost', () => {
         };
         renderWithIntlAndTheme(<DraftAndScheduledPost {...props}/>);
 
-        fireEvent(screen.getByTestId('draft_post'), 'longPress');
+        await act(async () => {
+            fireEvent(screen.getByTestId('draft_post'), 'longPress');
+        });
 
         expect(mockOpenAsBottonSheet).toHaveBeenCalled();
         expect(mockOpenAsBottonSheet.mock.calls[0][1]?.draftType).toBe(DRAFT_TYPE_SCHEDULED);

@@ -7,9 +7,11 @@ import {Alert, Keyboard, TextInput, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useAgents, useRewrite} from '@agents/hooks';
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
+import {isEdgeToEdge} from '@constants/device';
+import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -89,7 +91,7 @@ type Props = {
 const CUSTOM_PROMPT_INPUT_HEIGHT = 64;
 const OPTIONS_PADDING = 8;
 
-const options: Array<{action: RewriteAction; message: typeof messages.shorten; icon: string}> = [
+const options: Array<{action: RewriteAction; message: typeof messages.shorten; icon: CompassIconName}> = [
     {action: 'shorten', message: messages.shorten, icon: 'text-short'},
     {action: 'elaborate', message: messages.elaborate, icon: 'text-long'},
     {action: 'improve_writing', message: messages.improveWriting, icon: 'auto-fix'},
@@ -265,7 +267,8 @@ const RewriteOptions = ({
 
         // Use the same height for both generation and editing modes
         const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(6, ITEM_HEIGHT);
-        const COMPONENT_HEIGHT = agentSelectorHeight + CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + insets.bottom;
+        const bottom = isEdgeToEdge ? insets.bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
+        const COMPONENT_HEIGHT = agentSelectorHeight + CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + bottom;
 
         return [1, COMPONENT_HEIGHT];
     }, [agents.length, insets.bottom]);
@@ -330,7 +333,6 @@ const RewriteOptions = ({
             screen={Screens.AGENTS_REWRITE_OPTIONS}
             initialSnapIndex={1}
             snapPoints={snapPoints}
-            scrollable={true}
             keyboardBehavior='fillParent'
             keyboardBlurBehavior='none'
             testID='ai_rewrite_options'

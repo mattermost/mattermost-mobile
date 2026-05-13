@@ -13,7 +13,6 @@ import Markdown from '@components/markdown';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {dismissBottomSheet} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -62,7 +61,6 @@ const ExpandedAnnouncementBanner = ({
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const insets = useSafeAreaInsets();
-    const {enabled, panResponder} = useBottomSheetListsFix();
 
     const dismissBanner = useCallback(() => {
         dismissAnnouncement(serverUrl, bannerText);
@@ -83,11 +81,7 @@ const ExpandedAnnouncementBanner = ({
             <Text style={style.title}>
                 {heading}
             </Text>
-            <BottomSheetScrollView
-                style={style.scrollContainer}
-                scrollEnabled={enabled}
-                {...panResponder.panHandlers}
-            >
+            <BottomSheetScrollView style={style.scrollContainer}>
                 <Markdown
                     baseTextStyle={style.baseTextStyle}
                     disableGallery={true}

@@ -11,6 +11,8 @@ import EmojiPicker from './emoji_picker';
 
 import CustomEmojiPicker from './index';
 
+import type {EmojiPickerProps} from './emoji_picker/emoji_picker';
+
 jest.mock('@context/keyboard_state', () => ({
     useKeyboardState: jest.fn(),
 }));
@@ -28,7 +30,7 @@ jest.mock('./emoji_picker', () => ({
 
 let mockOnEmojiPress: ((emoji: string) => void) | null = null;
 
-jest.mocked(EmojiPicker).mockImplementation((props) => {
+jest.mocked(EmojiPicker).mockImplementation((props: EmojiPickerProps) => {
     mockOnEmojiPress = props.onEmojiPress;
     return null;
 });

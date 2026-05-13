@@ -1,13 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
-import React, {useCallback, useRef} from 'react';
-import {type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent} from 'react-native';
-import {FlatList} from 'react-native-gesture-handler';
+import {useBottomSheetScrollableCreator} from '@gorhom/bottom-sheet';
+import React, {useCallback} from 'react';
+import {type ListRenderItemInfo, FlatList} from 'react-native';
 
 import UserItem from '@components/user_item';
-import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {dismissBottomSheet} from '@screens/navigation';
 import {openUserProfile} from '@utils/navigation';
 
@@ -17,7 +15,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     channelId?: string;
     location: AvailableScreens;
-    type?: BottomSheetList;
     users: UserModel[];
 };
 
@@ -45,16 +42,8 @@ const Item = ({channelId, location, user}: ItemProps) => {
     );
 };
 
-const UsersList = ({channelId, location, type = 'FlatList', users}: Props) => {
-    const listRef = useRef<FlatList>(null);
-    const {direction, enabled, panResponder, setEnabled} = useBottomSheetListsFix();
-
-    const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-        if (e.nativeEvent.contentOffset.y <= 0 && enabled && direction === 'down') {
-            setEnabled(false);
-            listRef.current?.scrollToOffset({animated: true, offset: 0});
-        }
-    }, [enabled, direction, setEnabled]);
+const UsersList = ({channelId, location, users}: Props) => {
+    const BottomSheetScrollableCreator = useBottomSheetScrollableCreator();
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<UserModel>) => (
         <Item
@@ -64,28 +53,12 @@ const UsersList = ({channelId, location, type = 'FlatList', users}: Props) => {
         />
     ), [channelId, location]);
 
-    if (type === 'BottomSheetFlatList') {
-        return (
-            <BottomSheetFlatList
-                data={users}
-                renderItem={renderItem}
-                overScrollMode={'always'}
-                scrollEnabled={enabled}
-                {...panResponder.panHandlers}
-            />
-        );
-    }
-
     return (
         <FlatList
             data={users}
-            ref={listRef}
             renderItem={renderItem}
-            onScroll={onScroll}
             overScrollMode={'always'}
-            scrollEnabled={enabled}
-            scrollEventThrottle={60}
-            {...panResponder.panHandlers}
+            renderScrollComponent={BottomSheetScrollableCreator}
         />
     );
 };

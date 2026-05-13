@@ -128,9 +128,9 @@ function InteractiveDialog({
                     delete submission[elem.name];
                 }
 
-                const newError = checkDialogElementForError(elem, secureGetFromRecord(submission, elem.name));
+                const newError = checkDialogElementForError(elem, secureGetFromRecord(submission, elem.name), intl);
                 if (newError) {
-                    newErrors[elem.name] = intl.formatMessage({id: newError.id, defaultMessage: newError.defaultMessage}, newError.values);
+                    newErrors[elem.name] = newError;
                     hasErrors = true;
                 }
             });
@@ -206,6 +206,7 @@ function InteractiveDialog({
                 scrollToOverflowEnabled={true}
                 keyboardDismissMode='interactive'
                 keyboardShouldPersistTaps='handled'
+                mode='layout'
             >
                 {Boolean(error) && (
                     <ErrorText

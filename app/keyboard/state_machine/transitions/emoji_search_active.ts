@@ -161,8 +161,16 @@ export const emojiSearchActiveTransitions: StateTransition[] = [
         from: InputContainerStateType.EMOJI_SEARCH_ACTIVE,
         event: StateMachineEventType.USER_FOCUS_INPUT,
         to: InputContainerStateType.EMOJI_TO_KEYBOARD,
-        guard: (snapshot: StateSnapshot): boolean => {
+        guard: (snapshot: StateSnapshot, event: StateEvent): boolean => {
             'worklet';
+
+            // If the event itself carries a real keyboard height, the software keyboard is
+            // already open — take this path regardless of the potentially-stale hasZeroKeyboardHeight.
+            // hasZeroKeyboardHeight may still be true from the previous keyboard dismiss cycle
+            // because the KEYBOARD_EVENT_START that resets it is queued after this USER_FOCUS_INPUT.
+            if (event.height !== undefined && event.height > 75) {
+                return true;
+            }
 
             return !snapshot.hasZeroKeyboardHeight;
         },
@@ -183,8 +191,14 @@ export const emojiSearchActiveTransitions: StateTransition[] = [
         from: InputContainerStateType.EMOJI_SEARCH_ACTIVE,
         event: StateMachineEventType.USER_FOCUS_INPUT,
         to: InputContainerStateType.IDLE,
-        guard: (snapshot: StateSnapshot): boolean => {
+        guard: (snapshot: StateSnapshot, event: StateEvent): boolean => {
             'worklet';
+
+            // Only go to IDLE if neither the event height nor hasZeroKeyboardHeight
+            // indicates a software keyboard is present.
+            if (event.height !== undefined && event.height > 75) {
+                return false;
+            }
 
             return snapshot.hasZeroKeyboardHeight;
         },

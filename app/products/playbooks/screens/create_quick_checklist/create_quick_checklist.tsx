@@ -6,7 +6,7 @@ import React, {useState, useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import NavigationButton from '@components/navigation_button';
@@ -29,6 +29,8 @@ export type PlaybookCreateQuickChecklistScreenProps = {
     currentUserId: string;
     currentTeamId: string;
 }
+
+const safeAreaEdges: Edge[] = ['bottom', 'left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -107,11 +109,15 @@ function CreateQuickChecklist({
     useAndroidHardwareBackHandler(Screens.PLAYBOOKS_CREATE_QUICK_CHECKLIST, close);
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView
+            edges={safeAreaEdges}
+            style={styles.container}
+        >
             <KeyboardAwareScrollView
                 style={styles.content}
                 contentContainerStyle={styles.contentContainer}
                 keyboardShouldPersistTaps='handled'
+                mode='layout'
             >
                 <FloatingTextInput
                     label={intl.formatMessage({

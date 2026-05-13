@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, ScrollView} from 'react-native';
+import {View, Text, ScrollView, Platform} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {savePreference} from '@actions/remote/preference';
 import Button from '@components/button';
@@ -42,7 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         flex: 1,
         backgroundColor: theme.centerChannelBg,
-        paddingVertical: 20,
+        paddingVertical: Platform.select({ios: 20, default: 0}),
         gap: 20,
     },
     body: {
@@ -66,6 +67,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         borderColor: changeOpacity(theme.centerChannelColor, 0.08),
         width: '100%',
         paddingTop: 20,
+        marginBottom: Platform.select({ios: 20, default: 0}),
     },
 }));
 
@@ -143,7 +145,7 @@ const ReportProblem = ({
     });
 
     return (
-        <View
+        <SafeAreaView
             style={styles.container}
             testID='report_problem.screen'
         >
@@ -203,7 +205,7 @@ const ReportProblem = ({
                     />
                 </View>
             )}
-        </View>
+        </SafeAreaView>
     );
 };
 

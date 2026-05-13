@@ -3,6 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
+import {enableFakeTimers, disableFakeTimers} from '@test/timer_helpers';
 
 import {subscribeMentionsByServer, subscribeServerUnreadAndMentions, subscribeUnreadAndMentionsByServer, getTotalMentionsForServer} from './unreads';
 
@@ -13,6 +14,7 @@ describe('subscribeMentionsByServer', () => {
     let operator: ServerDataOperator;
 
     beforeEach(async () => {
+        enableFakeTimers();
         await DatabaseManager.init([serverUrl]);
         const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         operator = serverDatabaseAndOperator.operator;
@@ -20,6 +22,7 @@ describe('subscribeMentionsByServer', () => {
 
     afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
+        disableFakeTimers();
     });
 
     it('should exclude muted channels from mentions count', async () => {

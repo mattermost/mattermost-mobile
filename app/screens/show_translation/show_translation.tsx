@@ -17,8 +17,10 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
+    currentUser: UserModel;
     post?: PostModel;
     appsEnabled: boolean;
     customEmojiNames: string[];
@@ -60,6 +62,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 function ShowTranslation({
+    currentUser,
     post,
     appsEnabled,
     customEmojiNames,
@@ -98,6 +101,7 @@ function ShowTranslation({
                     />
                 </View>
                 <Post
+                    currentUser={currentUser}
                     appsEnabled={appsEnabled}
                     customEmojiNames={customEmojiNames}
                     highlightPinnedOrSaved={false}

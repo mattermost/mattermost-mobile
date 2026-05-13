@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
 
+import useDidMount from './did_mount';
+
 export const useChannelSwitch = () => {
     const [loading, setLoading] = useState(false);
-    useEffect(() => {
+    useDidMount(() => {
         let time: NodeJS.Timeout | undefined;
         const l = DeviceEventEmitter.addListener(Events.CHANNEL_SWITCH, (switching: boolean) => {
             if (time) {
@@ -27,7 +29,7 @@ export const useChannelSwitch = () => {
                 clearTimeout(time);
             }
         };
-    }, []);
+    });
 
     return loading;
 };

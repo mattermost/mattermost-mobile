@@ -54,6 +54,7 @@ const ContentView = ({database, currentChannelId, currentUserId, theme}: Props) 
                 keyboardShouldPersistTaps='handled'
                 scrollToOverflowEnabled={true}
                 contentContainerStyle={styles.content}
+                mode='layout'
             >
                 {Boolean(linkPreviewUrl) &&
                 <LinkPreview

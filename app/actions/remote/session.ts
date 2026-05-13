@@ -397,9 +397,9 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
         // Step 4: Enroll in MAM if not already enrolled (if 412 was not triggered)
         if (result && !result.failed) {
             try {
-                const isManaged = await IntuneManager.isManagedServer(serverUrl);
+                const isManaged = IntuneManager.isManagedServer(serverUrl);
                 if (!isManaged) {
-                    await IntuneManager.enrollServer(serverUrl, identity);
+                    IntuneManager.enrollServer(serverUrl, identity);
                 }
             } catch (error) {
                 logWarning('Intune MAM enrollment failed, MAM protection may not be configured properly', error);

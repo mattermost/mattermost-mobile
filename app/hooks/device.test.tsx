@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook, act} from '@testing-library/react-hooks';
+import {renderHook, act} from '@testing-library/react-native';
 import React from 'react';
 import {AppState, Keyboard} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -15,7 +15,6 @@ import {
     useKeyboardHeightWithDuration,
     useKeyboardHeight,
     useSplitView,
-    useViewPosition,
     useKeyboardOverlap,
     testSetUtilsEmitter,
 } from './device';
@@ -174,51 +173,7 @@ describe('device hooks', () => {
         });
     });
 
-    describe('useViewPosition', () => {
-        const mockRef = {
-            current: {
-                measureInWindow: jest.fn((callback) => {
-                    callback(0, 100, 0, 0);
-                }),
-            },
-        } as any;
-
-        const wrapper = ({children, isTablet = false}: any) => (
-            <DeviceContext.Provider value={{isTablet, isSplit: false}}>
-                {children}
-            </DeviceContext.Provider>
-        );
-
-        beforeEach(() => {
-            jest.clearAllMocks();
-        });
-
-        it('should measure position for tablet', () => {
-            const {result} = renderHook(() => useViewPosition(mockRef), {
-                wrapper: ({children}) => wrapper({children, isTablet: true}),
-            });
-
-            expect(result.current).toBe(100);
-            expect(mockRef.current.measureInWindow).toHaveBeenCalled();
-        });
-
-        it('should not measure position for non-tablet', () => {
-            const {result} = renderHook(() => useViewPosition(mockRef), {
-                wrapper: ({children}) => wrapper({children, isTablet: false}),
-            });
-
-            expect(result.current).toBe(0);
-            expect(mockRef.current.measureInWindow).not.toHaveBeenCalled();
-        });
-    });
-
     describe('useKeyboardOverlap', () => {
-        const mockRef = {
-            current: {
-                measureInWindow: jest.fn((callback) => callback(0, 100)),
-            },
-        } as any;
-
         const wrapper = ({children, isTablet = false}: any) => (
             <SafeAreaProvider
                 initialMetrics={{
@@ -232,16 +187,8 @@ describe('device hooks', () => {
             </SafeAreaProvider>
         );
 
-        it('should calculate overlap for tablet', () => {
-            const {result} = renderHook(() => useKeyboardOverlap(mockRef, 400), {
-                wrapper: ({children}) => wrapper({children, isTablet: true}),
-            });
-
-            expect(result.current).toBe(0);
-        });
-
         it('should use inset bottom for phone', () => {
-            const {result} = renderHook(() => useKeyboardOverlap(mockRef, 400), {
+            const {result} = renderHook(() => useKeyboardOverlap(), {
                 wrapper: ({children}) => wrapper({children, isTablet: false}),
             });
 

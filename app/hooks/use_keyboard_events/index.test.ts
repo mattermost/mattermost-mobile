@@ -59,6 +59,7 @@ function makeContext(overrides: Partial<{
         isDraggingKeyboard: {value: overrides.isDraggingKeyboard ?? false},
         isReconcilerPaused: {value: overrides.isReconcilerPaused ?? false},
         currentState: {value: overrides.currentStateValue ?? InputContainerStateType.IDLE},
+        isEnabled: {value: true},
     };
     return context;
 }

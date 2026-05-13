@@ -164,7 +164,6 @@ describe('PlaybookRuns', () => {
             />,
         );
 
-        const runList = getByTestId('run-list');
         let resolvePromise: (() => void) | undefined;
         jest.mocked(fetchFinishedRunsForChannel).mockImplementation(() => {
             const promise = new Promise<{runs: PlaybookRun[]; has_more: boolean}>((resolve) => {
@@ -173,24 +172,30 @@ describe('PlaybookRuns', () => {
             return promise;
         });
 
+        const runList = getByTestId('run-list');
         act(() => {
             runList.props.fetchMoreRuns('finished');
         });
 
         await waitFor(() => {
-            expect(runList.props.fetching).toBe(true);
+            expect(getByTestId('run-list').props.fetching).toBe(true);
         });
         expect(fetchFinishedRunsForChannel).toHaveBeenCalledTimes(1);
         expect(fetchFinishedRunsForChannel).toHaveBeenCalledWith('server-url', 'channel-id-1', 0);
 
+        // Get the updated props after state change
+        const updatedRunList = getByTestId('run-list');
         act(() => {
-            runList.props.fetchMoreRuns('finished');
+            updatedRunList.props.fetchMoreRuns('finished');
         });
 
         await waitFor(() => {
             expect(fetchFinishedRunsForChannel).toHaveBeenCalledTimes(1);
         });
-        resolvePromise?.();
+
+        await act(async () => {
+            resolvePromise?.();
+        });
     });
 
     it('an error on fetch more runs hides the show more button', async () => {

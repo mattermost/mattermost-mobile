@@ -25,6 +25,25 @@ jest.mock('react-native-reanimated', () => {
     };
 });
 
+jest.mock('@gorhom/bottom-sheet', () => {
+    const {ScrollView} = require('react-native');
+    return {
+        BottomSheetScrollView: ScrollView,
+        useBottomSheetInternal: jest.fn().mockReturnValue({
+            animatedIndex: {value: 1},
+            animatedPosition: {value: 0},
+            shouldHandleKeyboardEvents: {value: false},
+        }),
+    };
+});
+
+jest.mock('@screens/bottom_sheet', () => {
+    const MockReact = require('react');
+    const {View} = require('react-native');
+    return ({renderContent, children, testID}: {renderContent?: () => React.ReactNode; children?: React.ReactNode; testID?: string}) =>
+        MockReact.createElement(View, {testID: testID || 'bottom-sheet'}, renderContent ? renderContent() : children);
+});
+
 describe('PostOptions', () => {
     let database: Database;
     let operator: ServerDataOperator;
@@ -33,10 +52,17 @@ describe('PostOptions', () => {
         const server = await TestHelper.setupServerDatabase(serverUrl);
         database = server.database;
         operator = server.operator;
+
+        jest.spyOn(console, 'warn').mockImplementation((msg: string) => {
+            if (!msg?.includes('scrollable node handle')) {
+                process.stdout.write(`${msg}\n`);
+            }
+        });
     });
 
     afterAll(() => {
         DatabaseManager.destroyServerDatabase(serverUrl);
+        jest.restoreAllMocks();
     });
 
     it('should show limited options for own BoR post', async () => {

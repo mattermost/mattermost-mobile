@@ -16,6 +16,7 @@ import PostResults from './post_results';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
+import type UserModel from '@typings/database/models/servers/user';
 
 const duration = 250;
 
@@ -39,6 +40,7 @@ const getStyles = (width: number) => {
 };
 
 type Props = {
+    currentUser: UserModel;
     appsEnabled: boolean;
     canDownloadFiles: boolean;
     currentTimezone: string;
@@ -58,6 +60,7 @@ type Props = {
 const Results = ({
     appsEnabled,
     canDownloadFiles,
+    currentUser,
     currentTimezone,
     customEmojiNames,
     enableSecureFilePreview,
@@ -105,6 +108,7 @@ const Results = ({
                 <View style={styles.result}>
                     <Freeze freeze={selectedTab !== TabTypes.MESSAGES}>
                         <PostResults
+                            currentUser={currentUser}
                             appsEnabled={appsEnabled}
                             currentTimezone={currentTimezone}
                             customEmojiNames={customEmojiNames}

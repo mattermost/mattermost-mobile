@@ -5,7 +5,6 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, View, TouchableOpacity} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
-import {Shadow} from 'react-native-shadow-2';
 
 import {Events, Navigation as NavigationConstants, Screens, View as ViewConstants} from '@constants';
 import {useWindowDimensions} from '@hooks/device';
@@ -26,6 +25,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         height: ViewConstants.BOTTOM_TAB_HEIGHT,
         justifyContent: 'center',
+    },
+    outerContainer: {
+        backgroundColor: theme.centerChannelBg,
+        boxShadow: '0px -4px 4px rgba(61, 60, 64, 0.08)',
     },
     item: {
         alignItems: 'center',
@@ -50,13 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         left: 10,
         alignItems: 'center',
     },
-    shadowBorder: {
-        borderRadius: 6,
-    },
 }));
-
-const shadowSides = {top: true, bottom: false, end: false, start: false};
-const shadowOffset: [x: number | string, y: number | string] = [0, -0.5];
 
 const TabComponents: Record<string, any> = {
     [Screens.ACCOUNT]: Account,
@@ -134,19 +131,8 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
 
     return (
         <SafeAreaView edges={['bottom']}>
-            <Animated.View style={{backgroundColor: theme.centerChannelBg}}>
+            <Animated.View style={style.outerContainer}>
                 <Animated.View style={[style.container, style.separator, animatedStyle]}>
-                    <Shadow
-                        startColor='rgba(61, 60, 64, 0.08)'
-                        distance={4}
-                        offset={shadowOffset}
-                        style={{
-                            position: 'absolute',
-                            borderRadius: 6,
-                            width,
-                        }}
-                        sides={shadowSides}
-                    />
                     <Animated.View
                         style={[
                             style.sliderContainer,

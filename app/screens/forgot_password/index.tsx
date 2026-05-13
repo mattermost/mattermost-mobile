@@ -178,6 +178,7 @@ const ForgotPassword = ({serverUrl, theme}: ForgotPasswordProps) => {
                 keyboardShouldPersistTaps='handled'
                 scrollToOverflowEnabled={true}
                 style={styles.flex}
+                mode='layout'
             >
                 <View
                     style={styles.centered}

@@ -3,14 +3,14 @@
 
 import React from 'react';
 import {View, useWindowDimensions, TouchableOpacity} from 'react-native';
-import Animated, {interpolate, useAnimatedStyle} from 'react-native-reanimated';
+import Animated, {interpolate, useAnimatedStyle, type SharedValue} from 'react-native-reanimated';
 
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     dataLength: number;
     theme: Theme;
-    scrollX: Animated.SharedValue<number>;
+    scrollX: SharedValue<number>;
     moveToSlide: (slideIndexToMove: number) => void;
 };
 
@@ -78,7 +78,7 @@ const Paginator = ({
 
 type DotProps = {
     index: number;
-    scrollX: Animated.SharedValue<number>;
+    scrollX: SharedValue<number>;
     theme: Theme;
     moveToSlide: (slideIndexToMove: number) => void;
 };

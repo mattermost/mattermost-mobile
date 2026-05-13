@@ -20,7 +20,7 @@ import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {prepareCommonSystemValues, type PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId, getConfig, getLicense} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser, queryUsersById} from '@queries/servers/user';
-import {dismissAllRoutesAndResetToRootRoute, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
+import {navigateToRoot, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
@@ -92,7 +92,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
 
                 if (isTabletDevice) {
                     if (NavigationStore.isScreenInStack(Screens.HOME)) {
-                        await dismissAllRoutesAndResetToRootRoute();
+                        await navigateToRoot();
                     }
                     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
                 } else {

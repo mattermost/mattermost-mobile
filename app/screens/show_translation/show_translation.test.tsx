@@ -35,6 +35,7 @@ jest.mocked(Post).mockImplementation((props) =>
 describe('ShowTranslation', () => {
     function getBaseProps(): ComponentProps<typeof ShowTranslation> {
         return {
+            currentUser: TestHelper.fakeUserModel(),
             post: undefined,
             appsEnabled: false,
             customEmojiNames: [],

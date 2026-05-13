@@ -10,7 +10,9 @@ import FormattedText from '@components/formatted_text';
 import {getItemHeightWithDescription} from '@components/option_item';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
+import {isEdgeToEdge} from '@constants/device';
 import {PostPriorityColors, PostPriorityType} from '@constants/post';
+import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import BottomSheet from '@screens/bottom_sheet';
@@ -37,6 +39,7 @@ const TITLE_HEIGHT = 30; // typography 600 line height
 const OPTIONS_PADDING = 12;
 const OPTIONS_SEPARATOR_HEIGHT = 1;
 const TOGGLE_OPTION_MARGIN_TOP = 16;
+const BUTTONS_SEPARATOR = 9;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -60,7 +63,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: '#fff',
         ...typography('Body', 25, 'SemiBold'),
     },
-
     optionsContainer: {
         paddingTop: OPTIONS_PADDING,
     },
@@ -104,16 +106,18 @@ const PostPriorityPicker = ({
 
     const snapPoints = useMemo(() => {
         const paddingBottom = 10;
-        let COMPONENT_HEIGHT = TITLE_HEIGHT + OPTIONS_PADDING + FOOTER_HEIGHT + bottomSheetSnapPoint(3, ITEM_HEIGHT) + paddingBottom;
+        let componentHeight = TITLE_HEIGHT + BUTTONS_SEPARATOR + (2 * OPTIONS_PADDING) + FOOTER_HEIGHT + bottomSheetSnapPoint(3, ITEM_HEIGHT) + paddingBottom;
 
         if (isPostAcknowledgementEnabled) {
-            COMPONENT_HEIGHT += OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + getItemHeightWithDescription(2);
+            componentHeight += OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + getItemHeightWithDescription(2) + bottom;
             if (displayPersistentNotifications) {
-                COMPONENT_HEIGHT += OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + getItemHeightWithDescription(2);
+                componentHeight += OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + getItemHeightWithDescription(2) + bottom;
             }
         }
 
-        return [1, COMPONENT_HEIGHT + bottom];
+        const snapBottom = isEdgeToEdge ? bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
+
+        return [1, componentHeight + snapBottom];
     }, [bottom, displayPersistentNotifications, isPostAcknowledgementEnabled]);
 
     const handleUpdatePriority = useCallback((priority: PostPriority['priority']) => {

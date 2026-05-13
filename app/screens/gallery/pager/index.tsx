@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {runOnJS, useDerivedValue, useSharedValue, withSpring} from 'react-native-reanimated';
+import {useDerivedValue, useSharedValue, withSpring} from 'react-native-reanimated';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import {pagerSpringVelocityConfig} from '../animation_config/spring';
 
@@ -80,7 +81,7 @@ const Pager = ({
     const onIndexChangeCb = useCallback((nextIndex: number) => {
         'worklet';
 
-        runOnJS(updateIndex)(nextIndex);
+        scheduleOnRN(updateIndex, nextIndex);
     }, [updateIndex]);
 
     const sharedValues: PagerSharedValues = useMemo(() => ({

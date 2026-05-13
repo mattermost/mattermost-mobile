@@ -27,7 +27,7 @@ type MarkdownCodeBlockProps = {
 
 const MAX_LINES = 4;
 
-let syntaxHighlighter: (props: SyntaxHiglightProps) => JSX.Element;
+let syntaxHighlighter: (props: SyntaxHiglightProps) => React.JSX.Element;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {

@@ -5,8 +5,8 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {SafeAreaView, View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
+import {View} from 'react-native';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
@@ -27,6 +27,8 @@ export interface CustomStatusClearAfterProps {
     currentUser?: UserModel;
     initialDuration: CustomStatusDuration;
 }
+
+const safeAreaEdges: Edge[] = ['bottom', 'left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -118,24 +120,23 @@ function CustomStatusClearAfter({currentUser, initialDuration}: CustomStatusClea
         <SafeAreaView
             style={styles.container}
             testID='custom_status_clear_after.screen'
+            edges={safeAreaEdges}
         >
-            <KeyboardAwareScrollView bounces={false}>
-                <View style={styles.mainView}>
-                    {clearAfterMenuComponent}
-                </View>
-                <View style={styles.block}>
-                    <ClearAfterMenuItem
-                        currentUser={currentUser}
-                        duration={'date_and_time'}
-                        expiryTime={expiresAt}
-                        handleItemClick={handleItemClick}
-                        isSelected={duration === 'date_and_time' && expiresAt === ''}
-                        separator={false}
-                        showDateTimePicker={duration === 'date_and_time'}
-                        showExpiryTime={showExpiryTime}
-                    />
-                </View>
-            </KeyboardAwareScrollView>
+            <View style={styles.mainView}>
+                {clearAfterMenuComponent}
+            </View>
+            <View style={styles.block}>
+                <ClearAfterMenuItem
+                    currentUser={currentUser}
+                    duration={'date_and_time'}
+                    expiryTime={expiresAt}
+                    handleItemClick={handleItemClick}
+                    isSelected={duration === 'date_and_time' && expiresAt === ''}
+                    separator={false}
+                    showDateTimePicker={duration === 'date_and_time'}
+                    showExpiryTime={showExpiryTime}
+                />
+            </View>
         </SafeAreaView>
     );
 }

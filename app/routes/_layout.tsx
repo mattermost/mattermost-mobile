@@ -17,6 +17,7 @@ import tinycolor from 'tinycolor2';
 import {Screens} from '@constants';
 import {isEdgeToEdge} from '@constants/device';
 import {useThemeByAppearanceWithDefault} from '@context/theme';
+import useDidMount from '@hooks/did_mount';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {cleanup, initialize} from '@init/app';
 import InAppNotificationContainer from '@screens/in_app_notification';
@@ -66,19 +67,20 @@ export default function RootLayout() {
         }
     }, [theme, appearanceTheme, currentScreen]);
 
-    useEffect(() => {
+    useDidMount(() => {
         const subscription = EphemeralStore.observeTheme().subscribe((newTheme) => {
             setTheme(newTheme);
         });
         return () => {
             subscription.unsubscribe();
         };
-    }, []);
+    });
 
-    useEffect(() => {
+    useDidMount(() => {
         async function initializeApp() {
             try {
                 await initialize();
+                RNUtils.lockPortrait();
 
                 setAppReady(true);
             } catch (error) {
@@ -92,7 +94,7 @@ export default function RootLayout() {
             // Cleanup on unmount
             cleanup();
         };
-    }, []);
+    });
 
     useEffect(() => {
         if (appReady) {
@@ -164,7 +166,6 @@ export default function RootLayout() {
         headerShown: false,
         animation: 'none',
         contentStyle: {backgroundColor: theme.centerChannelBg},
-        orientation: 'portrait',
         ...Platform.select({android: {statusBarBackgroundColor: theme.sidebarBg, statusBarTranslucent: isEdgeToEdge, statusBarStyle: tinycolor(theme.sidebarBg).isLight() ? 'dark' : 'light'}}),
     }), [theme.centerChannelBg, theme.sidebarBg]);
 

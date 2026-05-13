@@ -33,7 +33,7 @@ jest.mocked(CompassIcon).mockImplementation(
 
 jest.mock('./checklist_item');
 jest.mocked(ChecklistItem).mockImplementation(
-    (props) => React.createElement('ChecklistItem', {testID: 'checklist-item', ...props}),
+    (props: ComponentProps<typeof ChecklistItem>) => React.createElement('ChecklistItem', {testID: 'checklist-item', ...props}),
 );
 
 jest.mock('@playbooks/components/progress_bar');

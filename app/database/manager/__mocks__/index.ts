@@ -4,7 +4,7 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import logger from '@nozbe/watermelondb/utils/common/logger';
-import {deleteAsync} from 'expo-file-system';
+import {File} from 'expo-file-system';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
 import {AiBotModel, AiThreadModel} from '@agents/database/models';
@@ -309,19 +309,19 @@ class DatabaseManagerSingleton {
         const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
 
         try {
-            await deleteAsync(databaseFile);
+            new File(databaseFile).delete();
         } catch {
             // do nothing
         }
 
         try {
-            await deleteAsync(databaseJournal);
+            new File(databaseJournal).delete();
         } catch {
             // do nothing
         }
     };
 
-    factoryReset = async (shouldRemoveDirectory: boolean): Promise<boolean> => {
+    factoryReset = (shouldRemoveDirectory: boolean): boolean => {
         try {
         //On iOS, we'll delete the databases folder under the shared AppGroup folder
             if (Platform.OS === 'ios') {
@@ -331,7 +331,7 @@ class DatabaseManagerSingleton {
 
             // On Android, we'll remove the databases folder under the Document Directory
             const androidFilesDir = `${this.databaseDirectory}databases/`;
-            await deleteAsync(androidFilesDir);
+            new File(androidFilesDir).delete();
             return true;
         } catch (e) {
             return false;

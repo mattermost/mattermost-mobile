@@ -100,29 +100,18 @@ describe('KeyboardStateProvider', () => {
     });
 
     describe('enabled prop → stateContext.isEnabled', () => {
-        it('should sync the enabled prop to stateContext.isEnabled.value after a 250ms delay', () => {
+        it('should sync the enabled prop to stateContext.isEnabled.value on mount', () => {
             renderHook(() => useKeyboardState(), {wrapper: makeWrapper({enabled: true})});
-
-            // Before 250ms the value has not been set yet
-            expect(mockStateContext.isEnabled.value).toBe(false);
-
-            act(() => {
-                jest.advanceTimersByTime(250);
-            });
 
             expect(mockStateContext.isEnabled.value).toBe(true);
         });
 
-        it('should clear the timeout when unmounted before 250ms fires', () => {
-            const {unmount} = renderHook(() => useKeyboardState(), {wrapper: makeWrapper({enabled: true})});
+        it('should not update stateContext.isEnabled.value when unmounted before effect runs', () => {
+            // When enabled=false (default), isEnabled.value stays false after unmount
+            const {unmount} = renderHook(() => useKeyboardState(), {wrapper: makeWrapper({enabled: false})});
 
             unmount();
 
-            act(() => {
-                jest.advanceTimersByTime(300);
-            });
-
-            // Value should still be false — component unmounted before timer fired
             expect(mockStateContext.isEnabled.value).toBe(false);
         });
     });
@@ -266,8 +255,13 @@ describe('KeyboardStateProvider', () => {
             mockDismissKeyboard.mockClear();
             mockStateMachine.onUserCloseEmoji.mockClear();
 
+            // closeInputAccessoryView awaits a 250ms setTimeout internally — advance timers inside act
+            const promise = result.current.blurAndDismissKeyboard();
+            act(() => {
+                jest.advanceTimersByTime(300);
+            });
             await act(async () => {
-                await result.current.blurAndDismissKeyboard();
+                await promise;
             });
 
             // closeInputAccessoryView dispatches onUserCloseEmoji
@@ -292,7 +286,7 @@ describe('KeyboardStateProvider', () => {
         it('should make the updateValue callback available via context', () => {
             const {result} = renderHook(() => useKeyboardState(), {wrapper: makeWrapper()});
 
-            const updateValueFn = jest.fn((setter: (s: string) => string) => setter('hello'));
+            const updateValueFn = jest.fn();
             const updateCursorPositionFn = jest.fn();
 
             act(() => {
@@ -305,7 +299,7 @@ describe('KeyboardStateProvider', () => {
         it('should make the updateCursorPosition callback available via context', () => {
             const {result} = renderHook(() => useKeyboardState(), {wrapper: makeWrapper()});
 
-            const updateValueFn = jest.fn((setter: (s: string) => string) => setter(''));
+            const updateValueFn = jest.fn();
             const updateCursorPositionFn = jest.fn();
 
             act(() => {
@@ -319,12 +313,9 @@ describe('KeyboardStateProvider', () => {
             const {result} = renderHook(() => useKeyboardState(), {wrapper: makeWrapper()});
 
             const currentText = 'hello world'; // length = 11
-            const updateValueFn = jest.fn((setter: (s: string) => string) => {
-                setter(currentText);
-            });
 
             act(() => {
-                result.current.registerPostInputCallbacks(updateValueFn, jest.fn());
+                result.current.registerPostInputCallbacks(jest.fn(), jest.fn(), currentText);
             });
 
             expect(mockStateContext.cursorPosition.value).toBe(currentText.length);

@@ -9,10 +9,12 @@ import {StyleSheet, View} from 'react-native';
 import Button from '@components/button';
 import {Sso} from '@constants';
 
+import type {CompassIconName} from '@components/compass_icon';
+
 type SsoInfo = {
     text: string;
     imageSrc?: ImageSource;
-    compassIcon?: string;
+    compassIcon?: CompassIconName;
 };
 
 type Props = {

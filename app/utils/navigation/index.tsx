@@ -1,16 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert} from 'react-native';
+import {Alert, DeviceEventEmitter} from 'react-native';
 
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Screens, ServerErrors} from '@constants';
+import {Events, Screens, ServerErrors} from '@constants';
 import AttachmentOptions from '@screens/attachment_options';
 import {bottomSheet, navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import {isErrorWithMessage, isServerError} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {dismissKeyboard} from '@utils/keyboard';
 
 import type {UserProfileProps} from '@screens/user_profile';
 import type {GalleryItemType} from '@typings/screens/gallery';
@@ -99,6 +98,7 @@ export function alertTeamAddError(error: unknown, intl: IntlShape) {
 }
 
 export function previewPdf(item: FileInfo | GalleryItemType, path: string, theme: Theme, onDismiss?: () => void) {
+    DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
     CallbackStore.setCallback(onDismiss);
     navigateToScreen(Screens.PDF_VIEWER, {
         title: item.name,
@@ -108,11 +108,9 @@ export function previewPdf(item: FileInfo | GalleryItemType, path: string, theme
     });
 }
 
-export async function openUserProfile(props: UserProfileProps) {
-    const screen = Screens.USER_PROFILE;
-
-    await dismissKeyboard();
-    navigateToScreen(screen, props);
+export function openUserProfile(props: UserProfileProps) {
+    DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
+    navigateToScreen(Screens.USER_PROFILE, props);
 }
 
 export function openAttachmentOptions(
@@ -133,6 +131,7 @@ export function openAttachmentOptions(
 }
 
 export function openAppsForm(form: AppForm, context: AppContext) {
+    DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
     const props = {form, context};
     navigateToScreen(Screens.APPS_FORM, props);
 }

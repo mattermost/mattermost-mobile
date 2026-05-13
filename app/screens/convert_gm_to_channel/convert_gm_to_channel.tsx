@@ -88,7 +88,7 @@ const ConvertGMToChannel = ({
     const serverUrl = useServerUrl();
     const mounted = useRef(false);
 
-    const loadingAnimationTimeoutRef = useRef<NodeJS.Timeout>();
+    const loadingAnimationTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
     useDidMount(() => {
         loadingAnimationTimeoutRef.current = setTimeout(() => setLoadingAnimationTimeout(true), loadingIndicatorTimeout);

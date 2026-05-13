@@ -210,6 +210,7 @@ const MentionSettings = ({currentUser, isCRTEnabled}: Props) => {
             keyboardDismissMode='none'
             scrollToOverflowEnabled={true}
             contentContainerStyle={styles.flex}
+            mode='layout'
         >
             <SettingBlock
                 headerText={mentionHeaderText}
