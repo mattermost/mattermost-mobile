@@ -14,7 +14,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getConfigValue} from '@queries/servers/system';
 import {registerGroupName, removePropertyFieldById, updatePropertyField, updatePropertyValues} from '@store/system_property_store';
-import {logDebug} from '@utils/log';
+import {logError} from '@utils/log';
 
 export async function fetchClassificationBanner(serverUrl: string): Promise<{error?: unknown}> {
     try {
@@ -55,7 +55,7 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
 
         return {};
     } catch (error) {
-        logDebug('fetchClassificationBanner', 'Failed to fetch classification banner data', error);
+        logError('fetchClassificationBanner', 'Failed to fetch classification banner data', error);
         return {error};
     }
 }
@@ -69,7 +69,8 @@ export async function fetchChannelClassificationValue(serverUrl: string, channel
             updatePropertyValues(serverUrl, channelId, groupId, values);
         }
         return {};
-    } catch {
-        return {};
+    } catch (error) {
+        logError('fetchChannelClassificationValue', 'Failed to fetch channel classification value', {serverUrl, channelId}, error);
+        return {error};
     }
 }

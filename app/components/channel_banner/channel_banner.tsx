@@ -37,8 +37,6 @@ const getStyleSheet = (bannerTextColor: string) => ({
         borderTopRightRadius: 12,
     },
     baseTextStyle: {
-        borderWidth: 2,
-        borderColor: 'red',
         ...typography('Body', 100, 'Regular'),
         color: bannerTextColor,
     },
@@ -85,7 +83,7 @@ export function ChannelBanner({channelId, bannerInfo, isTopItem, skipHeaderOffse
     const handlePress = useCallback(() => {
         // set snap point based on text length, with a defined
         // minimum and maximum height for the text container
-        const length = effectiveBanner!.text!.length / 100;
+        const length = (effectiveBanner?.text?.length ?? 0) / 100;
         const snapPoint = SNAP_POINT + Math.min(Math.max(bottomSheetSnapPoint(length, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
 
         const expandedChannelBannerTitle = intl.formatMessage({
@@ -96,7 +94,7 @@ export function ChannelBanner({channelId, bannerInfo, isTopItem, skipHeaderOffse
         const renderContent = () => (
             <ExpandedAnnouncementBanner
                 allowDismissal={false}
-                bannerText={effectiveBanner!.text || ''}
+                bannerText={effectiveBanner?.text ?? ''}
                 headingText={expandedChannelBannerTitle}
             />
         );

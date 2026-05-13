@@ -64,7 +64,7 @@ export function useClassificationBannerState(serverUrl: string): ClassificationB
     const systemValue = linkedField ? values.find((v) => v.field_id === linkedField.id && v.delete_at === 0) : undefined;
 
     useEffect(() => {
-        if (!templateField || !linkedField || (linkedField && !systemValue)) {
+        if (!templateField || !linkedField || !systemValue) {
             fetchClassificationBanner(serverUrl);
         }
     }, [serverUrl, templateField, linkedField, systemValue]);

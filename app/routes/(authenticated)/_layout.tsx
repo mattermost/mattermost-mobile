@@ -3,7 +3,7 @@
 
 import {Stack, Redirect} from 'expo-router';
 import {useMemo} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 import {SafeAreaInsetsContext, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import GlobalBannerOverlay, {useGlobalBannerHeight} from '@components/global_banner_overlay';
@@ -42,6 +42,11 @@ function AuthenticatedLayout() {
         [realInsets, bannerHeight],
     );
 
+    const bannerOverlayStyle = useMemo(
+        () => [styles.bannerOverlay, {top: realInsets.top}],
+        [styles.bannerOverlay, realInsets.top],
+    );
+
     const stackScreenOptions = useMemo<NativeStackNavigationOptions>(() => ({
         headerShown: false,
         animation: 'default',
@@ -70,7 +75,7 @@ function AuthenticatedLayout() {
                     <Stack.Screen name='(home)'/>
                 </Stack>
             </SafeAreaInsetsContext.Provider>
-            <GlobalBannerOverlay style={[styles.bannerOverlay, {top: realInsets.top}]}/>
+            <GlobalBannerOverlay style={bannerOverlayStyle}/>
         </View>
     );
 }
