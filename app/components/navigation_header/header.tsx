@@ -23,6 +23,7 @@ type Props = {
     onBackPress?: () => void;
     onTitlePress?: () => void;
     rightButtons?: NavigationButtonProps[];
+    rightComponent?: React.ReactNode;
     scrollValue?: SharedValue<number>;
     showBackButton?: boolean;
     subtitle?: string;
@@ -130,6 +131,7 @@ const Header = ({
     onBackPress,
     onTitlePress,
     rightButtons,
+    rightComponent,
     scrollValue,
     showBackButton = true,
     subtitle,
@@ -240,6 +242,7 @@ const Header = ({
                 </TouchableWithFeedback>
             </Animated.View>
             <Animated.View style={styles.rightContainer}>
+                {rightComponent}
                 {Boolean(rightButtons?.length) &&
                 rightButtons?.map((r) => (
                     <NavigationButton

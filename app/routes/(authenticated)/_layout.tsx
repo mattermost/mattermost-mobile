@@ -16,19 +16,19 @@ import {typography} from '@utils/typography';
 import type {NativeStackNavigationOptions} from '@react-navigation/native-stack';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    card: {
+    safeAreaView: {
+        flex: 1,
         backgroundColor: theme.centerChannelBg,
     },
-}));
-
-const rootStyles = StyleSheet.create({
-    flex: {flex: 1},
     bannerOverlay: {
         position: 'absolute',
         left: 0,
         right: 0,
     },
-});
+    card: {
+        backgroundColor: theme.centerChannelBg,
+    },
+}));
 
 function AuthenticatedLayout() {
     const hasCredentials = useHasCredentials();
@@ -64,13 +64,13 @@ function AuthenticatedLayout() {
     }
 
     return (
-        <View style={rootStyles.flex}>
+        <View style={styles.safeAreaView}>
             <SafeAreaInsetsContext.Provider value={adjustedInsets}>
                 <Stack screenOptions={stackScreenOptions}>
                     <Stack.Screen name='(home)'/>
                 </Stack>
             </SafeAreaInsetsContext.Provider>
-            <GlobalBannerOverlay style={[rootStyles.bannerOverlay, {top: realInsets.top}]}/>
+            <GlobalBannerOverlay style={[styles.bannerOverlay, {top: realInsets.top}]}/>
         </View>
     );
 }
