@@ -102,11 +102,6 @@ class RNUtilsModule(context: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun setSoftKeyboardToAdjustResize() {
-        implementation.setSoftKeyboardToAdjustResize()
-    }
-
-    @ReactMethod
     fun setSoftKeyboardToAdjustNothing() {
         implementation.setSoftKeyboardToAdjustNothing()
     }

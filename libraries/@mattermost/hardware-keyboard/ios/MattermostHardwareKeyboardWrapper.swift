@@ -29,19 +29,15 @@ import Foundation
         let shiftEnter = UIKeyCommand(input: "\r", modifierFlags: .shift, action: shiftEnterPressed)
         let findChannels = UIKeyCommand(input: "k", modifierFlags: .command, action: findChannels)
         
-        if #available(iOS 13.0, *) {
-            enter.title = "Send message"
-            enter.discoverabilityTitle = "Send message"
-            shiftEnter.title = "Add new line"
-            shiftEnter.discoverabilityTitle = "Add new line"
-            findChannels.title = "Find channels"
-            findChannels.discoverabilityTitle = "Find channels"
-        }
-        if #available(iOS 15.0, *) {
-            enter.wantsPriorityOverSystemBehavior = true
-            shiftEnter.wantsPriorityOverSystemBehavior = true
-            findChannels.wantsPriorityOverSystemBehavior = true
-        }
+        enter.title = "Send message"
+        enter.discoverabilityTitle = "Send message"
+        shiftEnter.title = "Add new line"
+        shiftEnter.discoverabilityTitle = "Add new line"
+        findChannels.title = "Find channels"
+        findChannels.discoverabilityTitle = "Find channels"
+        enter.wantsPriorityOverSystemBehavior = true
+        shiftEnter.wantsPriorityOverSystemBehavior = true
+        findChannels.wantsPriorityOverSystemBehavior = true
         
         commands.add(enter)
         commands.add(shiftEnter)

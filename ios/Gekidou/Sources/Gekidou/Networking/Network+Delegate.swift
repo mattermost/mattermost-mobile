@@ -67,13 +67,7 @@ extension Network: URLSessionDelegate, URLSessionTaskDelegate {
     }
     
     private func getServerTrustCertificates(_ trust: SecTrust) -> [SecCertificate] {
-        if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, visionOS 1, *) {
-            return (SecTrustCopyCertificateChain(trust) as? [SecCertificate]) ?? []
-        } else {
-            return (0..<SecTrustGetCertificateCount(trust)).compactMap { index in
-                SecTrustGetCertificateAtIndex(trust, index)
-            }
-        }
+        return (SecTrustCopyCertificateChain(trust) as? [SecCertificate]) ?? []
     }
     
     private func performDefaultValidation(_ trust: SecTrust) throws {

@@ -28,7 +28,7 @@ android {
   namespace "com.mattermost.hardware.keyboard"
 
   defaultConfig {
-      minSdkVersion safeExtGet('minSdkVersion', 24)
+      minSdkVersion safeExtGet('minSdkVersion', 30)
       targetSdkVersion safeExtGet('targetSdkVersion', 34)
       buildConfigField("boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString())
   }

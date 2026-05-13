@@ -54,10 +54,6 @@ export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement
     const [isTextInputFocused, setIsTextInputFocused] = useState(false);
 
     const showExtraKeyboard = useCallback((newComponent: React.ReactElement|null) => {
-        // Do not use ExtraKeyboard on Android versions below 11
-        if (Platform.OS === 'android' && Platform.Version < 30) {
-            return;
-        }
         setExtraKeyboardVisible(true);
         setComponent(newComponent);
         if (Keyboard.isVisible()) {
@@ -66,10 +62,6 @@ export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement
     }, []);
 
     const hideExtraKeyboard = useCallback(() => {
-        // Do not use ExtraKeyboard on Android versions below 11
-        if (Platform.OS === 'android' && Platform.Version < 30) {
-            return;
-        }
         setExtraKeyboardVisible(false);
         setComponent(null);
         if (Keyboard.isVisible()) {
@@ -78,11 +70,6 @@ export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement
     }, []);
 
     const registerTextInputFocus = useCallback(() => {
-        // Do not use ExtraKeyboard on Android versions below 11
-        if (Platform.OS === 'android' && Platform.Version < 30) {
-            return;
-        }
-
         // If the extra keyboard is opened if we don't do this
         // we get a glitch in the UI that will animate the extra keyboard down
         // and immediately bring the keyboard, by doing this
@@ -94,21 +81,11 @@ export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement
     }, []);
 
     const registerTextInputBlur = useCallback(() => {
-        // Do not use ExtraKeyboard on Android versions below 11
-        if (Platform.OS === 'android' && Platform.Version < 30) {
-            return;
-        }
-
         setIsTextInputFocused(false);
     }, []);
 
     useEffect(() => {
         const keyboardHideListener = Keyboard.addListener('keyboardDidHide', () => {
-            // Do not use ExtraKeyboard on Android versions below 11
-            if (Platform.OS === 'android' && Platform.Version < 30) {
-                return;
-            }
-
             if (isTextInputFocused) {
                 setExtraKeyboardVisible(false);
             }
@@ -205,12 +182,7 @@ const ExtraKeyboardComponent = () => {
     );
 };
 
-// Do not use ExtraKeyboard on Android versions below 11
 export const ExtraKeyboard = () => {
-    if (Platform.OS === 'android' && Platform.Version < 30) {
-        return null;
-    }
-
     return (
         <ExtraKeyboardComponent/>
     );

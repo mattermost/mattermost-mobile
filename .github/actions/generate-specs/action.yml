@@ -16,7 +16,7 @@ inputs:
   device_os_version:
     description: The os of the device used for the tests
     required: false
-    default: "iOS 17.1"
+    default: "iOS 18.1"
 
 outputs:
   specs:

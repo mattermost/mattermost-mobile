@@ -71,7 +71,6 @@ export interface Spec extends TurboModule {
     removeThreadNotifications(serverUrl: string, threadId: string): void;
     removeServerNotifications(serverUrl: string): void;
 
-    setSoftKeyboardToAdjustResize(): void;
     setSoftKeyboardToAdjustNothing(): void;
 
     createZipFile: (paths: string[]) => Promise<string>;

@@ -297,37 +297,6 @@ describe('FilePickerUtil', () => {
             expect(result).toBe(false);
         });
 
-        test('should check and request write storage permission correctly on Android', async () => {
-            Platform.OS = 'android';
-            Platform.Version = 28;
-            const storagePermission = Permissions.PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE;
-            (Permissions.check as jest.Mock).mockResolvedValue(Permissions.RESULTS.DENIED);
-            (Permissions.request as jest.Mock).mockResolvedValue(Permissions.RESULTS.GRANTED);
-
-            // @ts-expect-error hasWriteStoragePermission is private
-            const result = await filePickerUtil.hasWriteStoragePermission();
-
-            expect(Permissions.check).toHaveBeenCalledWith(storagePermission);
-            expect(Permissions.request).toHaveBeenCalledWith(storagePermission);
-            expect(result).toBe(true);
-        });
-
-        test('should handle blocked write storage permission correctly on Android', async () => {
-            Platform.OS = 'android';
-            Platform.Version = 28;
-            const storagePermission = Permissions.PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE;
-            (Permissions.check as jest.Mock).mockResolvedValue(Permissions.RESULTS.BLOCKED);
-
-            const alertSpy = jest.spyOn(Alert, 'alert');
-
-            // @ts-expect-error hasWriteStoragePermission is private
-            const result = await filePickerUtil.hasWriteStoragePermission();
-
-            expect(Permissions.check).toHaveBeenCalledWith(storagePermission);
-            expect(alertSpy).toHaveBeenCalled();
-            expect(result).toBe(false);
-        });
-
         test('should build URI correctly on Android', async () => {
             Platform.OS = 'android';
             const doc = {uri: 'file://test', fileCopyUri: 'file://copy_test'} as DocumentPickerResponse;
@@ -427,60 +396,6 @@ describe('FilePickerUtil', () => {
             expect(mockUploadFiles).not.toHaveBeenCalled();
         });
 
-        test('should request write storage permission for Android API <= 28', async () => {
-            Platform.OS = 'android';
-            Platform.Version = 28;
-
-            (Permissions.check as jest.Mock).mockImplementation((permission) => {
-                if (permission === Permissions.PERMISSIONS.ANDROID.CAMERA) {
-                    return Permissions.RESULTS.GRANTED;
-                }
-                return Permissions.RESULTS.DENIED;
-            });
-
-            (Permissions.request as jest.Mock).mockResolvedValue(Permissions.RESULTS.GRANTED);
-
-            const mockExtractedFiles = [{fileName: 'photo.jpg', type: 'image/jpeg', uri: 'file://real_camera_photo.jpg'}];
-
-            (extractFileInfo as jest.Mock).mockResolvedValue(mockExtractedFiles);
-
-            const launchCameraMock = launchCamera as jest.Mock;
-            launchCameraMock.mockImplementation((options, callback) => {
-                callback({assets: [{uri: 'file://camera_photo.jpg', type: 'image/jpeg', fileName: 'photo.jpg'}]});
-            });
-
-            await filePickerUtil.attachFileFromCamera();
-
-            expect(Permissions.check).toHaveBeenCalledWith(Permissions.PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE);
-            expect(launchCameraMock).toHaveBeenCalled();
-            await TestHelper.wait(100);
-            expect(mockUploadFiles).toHaveBeenCalledWith([{
-                uri: 'file://real_camera_photo.jpg',
-                type: 'image/jpeg',
-                fileName: 'photo.jpg',
-            }]);
-        });
-
-        test('should not launch camera if write storage permission is denied on Android API <= 28', async () => {
-            Platform.OS = 'android';
-            Platform.Version = 28;
-
-            (Permissions.check as jest.Mock).mockImplementation((permission) => {
-                if (permission === Permissions.PERMISSIONS.ANDROID.CAMERA) {
-                    return Permissions.RESULTS.GRANTED;
-                }
-                return Permissions.RESULTS.DENIED;
-            });
-
-            (Permissions.request as jest.Mock).mockResolvedValue(Permissions.RESULTS.DENIED);
-
-            const launchCameraMock = launchCamera as jest.Mock;
-
-            await filePickerUtil.attachFileFromCamera();
-
-            expect(Permissions.check).toHaveBeenCalledWith(Permissions.PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE);
-            expect(launchCameraMock).not.toHaveBeenCalled();
-        });
     });
 
     describe('attachFileFromFiles', () => {

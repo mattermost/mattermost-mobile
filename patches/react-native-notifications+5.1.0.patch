@@ -136,7 +136,7 @@ new file mode 100644
 index 0000000..3b8818e
 --- /dev/null
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/helpers/ScheduleNotificationHelper.java
-@@ -0,0 +1,91 @@
+@@ -0,0 +1,89 @@
 +package com.wix.reactnativenotifications.core.helpers;
 +
 +import android.app.AlarmManager;
@@ -185,10 +185,8 @@ index 0000000..3b8818e
 +
 +        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 +            alarmManager.set(AlarmManager.RTC_WAKEUP, fireDate, intent);
-+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, fireDate, intent);
 +        } else {
-+            alarmManager.set(AlarmManager.RTC_WAKEUP, fireDate, intent);
++            alarmManager.setExact(AlarmManager.RTC_WAKEUP, fireDate, intent);
 +        }
 +    }
 +
