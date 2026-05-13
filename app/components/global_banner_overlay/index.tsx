@@ -37,7 +37,10 @@ export default function GlobalBannerOverlay({style}: Props) {
     }
 
     return (
-        <View style={style} pointerEvents='none'>
+        <View
+            style={style}
+            pointerEvents='none'
+        >
             <GlobalClassificationBanner
                 visible={visible}
                 levelName={levelName}

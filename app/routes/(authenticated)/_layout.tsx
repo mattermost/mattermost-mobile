@@ -58,6 +58,7 @@ function AuthenticatedLayout() {
         return null; // Loading
     }
 
+    // Redirect to unauthenticated if no credentials
     if (!hasCredentials) {
         return <Redirect href='/(unauthenticated)'/>;
     }

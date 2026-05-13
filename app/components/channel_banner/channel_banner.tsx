@@ -9,8 +9,8 @@ import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded
 import RemoveMarkdown from '@components/remove_markdown';
 import {CHANNEL_BANNER_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
-import {useChannelClassificationBanner} from '@hooks/use_channel_classification_banner';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {useChannelClassificationBanner} from '@hooks/use_channel_classification_banner';
 import {bottomSheet} from '@screens/navigation';
 import {getContrastingSimpleColor} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
