@@ -393,10 +393,12 @@ function AppsFormComponent({
 
     useEffect(() => {
         // Header Submit is the default submission affordance. When the form
-        // declares a custom submit_buttons field, the inline buttons rendered
-        // at the bottom of the form replace the header Submit so the user
-        // picks an explicit button value.
-        if (submitButtons) {
+        // declares a custom submit_buttons field with at least one option, the
+        // inline buttons rendered at the bottom of the form replace the header
+        // Submit so the user picks an explicit button value. If the field has
+        // no options (nothing renders inline), keep the header Submit so the
+        // form remains submittable.
+        if (submitButtons?.options?.length) {
             navigation.setOptions({headerRight: undefined});
             return;
         }
