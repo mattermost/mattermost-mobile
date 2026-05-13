@@ -12,7 +12,7 @@ export const PROFILE_PICTURE_SIZE = 32;
 export const PROFILE_PICTURE_EMOJI_SIZE = 28;
 
 export const TEAM_SIDEBAR_WIDTH = 72;
-export const TABLET_HEADER_HEIGHT = 44;
+export const TABLET_HEADER_HEIGHT = Platform.select({android: 10, default: 44});
 export const TABLET_SIDEBAR_WIDTH = 320;
 
 export const STATUS_BAR_HEIGHT = 20;
@@ -32,6 +32,8 @@ export const CALL_NOTIFICATION_BAR_HEIGHT = 40;
 export const ANNOUNCEMENT_BAR_HEIGHT = 40;
 export const BOOKMARKS_BAR_HEIGHT = 48;
 export const CHANNEL_BANNER_HEIGHT = 26;
+
+export const NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN = 24;
 
 export const HOME_PADDING = {
     paddingLeft: 18,

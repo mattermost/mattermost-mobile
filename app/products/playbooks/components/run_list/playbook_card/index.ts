@@ -8,7 +8,7 @@ import {observeParticipantsIdsFromPlaybookModel, observePlaybookRunProgress, que
 import {getProgressFromRun} from '@playbooks/utils/progress';
 import {observeUser, queryUsersById} from '@queries/servers/user';
 
-import PlaybookCard, {ITEM_HEIGHT} from './playbook_card';
+import PlaybookCard from './playbook_card';
 
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -37,5 +37,4 @@ const enhanced = withObservables(['run'], ({run, database}: OwnProps) => {
     };
 });
 
-export {ITEM_HEIGHT as CARD_HEIGHT};
 export default withDatabase(enhanced(PlaybookCard));

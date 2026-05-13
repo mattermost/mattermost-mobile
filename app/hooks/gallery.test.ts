@@ -1,18 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook, act} from '@testing-library/react-hooks';
+import {renderHook, act} from '@testing-library/react-native';
 import {useSharedValue} from 'react-native-reanimated';
 
 import {useGallery} from '@context/gallery';
 
 import {useGalleryControls, useGalleryItem, diff} from './gallery';
 
+import type {DefaultStyle} from 'react-native-reanimated/lib/typescript/hook/commonTypes';
+
 jest.mock('react-native-reanimated', () => ({
     Easing: {
         bezier: jest.fn(),
     },
-    runOnJS: jest.fn((fn) => fn),
     useAnimatedRef: jest.fn(() => ({})),
     useAnimatedStyle: jest.fn((fn) => fn()),
     useEvent: jest.fn(),
@@ -86,7 +87,7 @@ describe('gallery hooks', () => {
         expect(mockWithTiming).not.toHaveBeenCalled();
     });
 
-    test('useGalleryItem', () => {
+    test('useGalleryItem', async () => {
         const identifier = 'test';
         const index = 0;
         const onPress = jest.fn();
@@ -110,10 +111,11 @@ describe('gallery hooks', () => {
         });
 
         expect(gallery.sharedValues.activeIndex.value).toBe(index);
+        await Promise.resolve();
         expect(onPress).toHaveBeenCalledWith(identifier, index);
     });
 
-    test('useGalleryItem updates activeIndex when onGestureEvent is triggered', () => {
+    test('useGalleryItem updates activeIndex when onGestureEvent is triggered', async () => {
         const identifier = 'test';
         const index = 0;
         const onPress = jest.fn();
@@ -127,14 +129,16 @@ describe('gallery hooks', () => {
         (useGallery as jest.Mock).mockReturnValue(gallery);
 
         const {result} = renderHook(() => useGalleryItem(identifier, index, onPress));
+        const styles = result.current.styles as DefaultStyle;
 
-        expect(result.current.styles.opacity).toBe(1);
+        expect(styles.opacity).toBe(1);
 
         act(() => {
             result.current.onGestureEvent();
         });
 
         expect(gallery.sharedValues.activeIndex.value).toBe(index);
+        await Promise.resolve();
         expect(onPress).toHaveBeenCalledWith(identifier, index);
     });
 });

@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useAgentsConfig} from '@agents/store/agents_config';
 import React from 'react';
 import {View} from 'react-native';
 
+import {useAgentsConfig} from '@agents/store/agents_config';
 import ChannelActions from '@components/channel_actions';
 import AskAgentsOption from '@components/channel_actions/ask_agents_option';
 import CopyChannelLinkOption from '@components/channel_actions/copy_channel_link_option';
@@ -16,7 +16,7 @@ import PlaybookRunsOption from '@playbooks/components/channel_actions/playbook_r
 import {dismissBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-type Props = {
+export type ChannelQuickActionsProps = {
     channelId: string;
     callsEnabled: boolean;
     isDMorGM: boolean;
@@ -43,12 +43,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelQuickAction = ({
+const ChannelQuickActions = ({
     channelId,
     callsEnabled,
     isDMorGM,
     hasPlaybookRuns,
-}: Props) => {
+}: ChannelQuickActionsProps) => {
     const serverUrl = useServerUrl();
     const {pluginEnabled: agentsEnabled} = useAgentsConfig(serverUrl);
     const theme = useTheme();
@@ -97,4 +97,4 @@ const ChannelQuickAction = ({
     );
 };
 
-export default ChannelQuickAction;
+export default ChannelQuickActions;

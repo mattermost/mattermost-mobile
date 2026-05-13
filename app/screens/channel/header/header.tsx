@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useAgentsConfig} from '@agents/store/agents_config';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, Text, View} from 'react-native';
+import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
 
+import {useAgentsConfig} from '@agents/store/agents_config';
 import {getCallsConfig} from '@calls/state';
 import {CHANNEL_ACTIONS_OPTIONS_HEIGHT} from '@components/channel_actions/channel_actions';
 import ChannelBanner from '@components/channel_banner';
@@ -15,7 +15,7 @@ import NavigationHeader from '@components/navigation_header';
 import {ITEM_HEIGHT} from '@components/option_item';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {General, Screens} from '@constants';
+import {Events, General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -23,19 +23,16 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToCreateQuickChecklist, goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
-import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
-import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
+import {bottomSheet, navigateBack, navigateToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTypeDMorGM} from '@utils/channel';
-import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import ChannelHeaderBookmarks from './bookmarks';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 
-import type {HeaderRightButton} from '@components/navigation_header/header';
-import type {AvailableScreens} from '@typings/screens/navigation';
+import type {NavigationButtonProps} from '@components/navigation_button';
 
 type ChannelProps = {
     canAddBookmarks: boolean;
@@ -47,7 +44,6 @@ type ChannelProps = {
     isCustomStatusEnabled: boolean;
     isCustomStatusExpired: boolean;
     hasBookmarks: boolean;
-    componentId?: AvailableScreens;
     displayName: string;
     isOwnDirectMessage: boolean;
     memberCount?: number;
@@ -95,7 +91,6 @@ const ChannelHeader = ({
     canAddBookmarks,
     channelId,
     channelType,
-    componentId,
     currentUserId,
     customStatus,
     displayName,
@@ -148,9 +143,9 @@ const ChannelHeader = ({
     }, [isTablet, channelId, teamId]);
 
     const onBackPress = useCallback(() => {
-        Keyboard.dismiss();
-        popTopScreen(componentId);
-    }, [componentId]);
+        DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
+        navigateBack();
+    }, []);
 
     const onTitlePress = usePreventDoubleTap(useCallback((() => {
         let title;
@@ -166,27 +161,10 @@ const ChannelHeader = ({
                 break;
         }
 
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const closeButtonId = 'close-channel-info';
-
-        const options = {
-            topBar: {
-                leftButtons: [{
-                    id: closeButtonId,
-                    icon: closeButton,
-                    testID: 'close.channel_info.button',
-                }],
-            },
-        };
-        showModal(Screens.CHANNEL_INFO, title, {channelId, closeButtonId}, options);
-    }), [channelId, channelType, intl, theme]));
+        navigateToScreen(Screens.CHANNEL_INFO, {channelId, title, groupCallsAllowed});
+    }), [channelId, channelType, groupCallsAllowed, intl]));
 
     const onChannelQuickAction = useCallback(() => {
-        if (isTablet) {
-            onTitlePress();
-            return;
-        }
-
         // When calls is enabled, we need space to move the "Copy Link" from a button to an option
         let items = 2;
         if (callsAvailable && !isDMorGM) {
@@ -198,10 +176,7 @@ const ChannelHeader = ({
         if (agentsEnabled) {
             items += 1; // Ask Agents action (shown in all channel types)
         }
-        let height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + MARGIN + (items * ITEM_HEIGHT);
-        if (Platform.OS === 'android') {
-            height += BOTTOM_SHEET_ANDROID_OFFSET;
-        }
+        const height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + (MARGIN * 2) + (items * ITEM_HEIGHT);
 
         const renderContent = () => {
             return (
@@ -214,43 +189,35 @@ const ChannelHeader = ({
             );
         };
 
-        bottomSheet({
-            title: '',
-            renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(1, height)],
-            theme,
-            closeButtonId: 'close-channel-quick-actions',
-        });
-    }, [isTablet, callsAvailable, isDMorGM, hasPlaybookRuns, agentsEnabled, theme, onTitlePress, channelId]);
+        bottomSheet(renderContent, [1, height]);
+    }, [callsAvailable, isDMorGM, hasPlaybookRuns, agentsEnabled, channelId]);
 
     const openPlaybooksRuns = useCallback(() => {
         // If no active runs, create a new one instead
         if (playbooksActiveRuns === 0) {
             goToCreateQuickChecklist(
-                intl,
                 channelId,
                 displayName,
                 currentUserId,
                 teamId,
-                serverUrl,
             );
             return;
         }
 
         if (activeRunId) {
-            goToPlaybookRun(intl, activeRunId);
+            goToPlaybookRun(activeRunId);
             return;
         }
-        goToPlaybookRuns(intl, channelId, displayName);
-    }, [playbooksActiveRuns, activeRunId, channelId, displayName, intl, currentUserId, teamId, serverUrl]);
+
+        goToPlaybookRuns(channelId, displayName);
+    }, [playbooksActiveRuns, activeRunId, channelId, displayName, currentUserId, teamId]);
 
     const rightButtons = useMemo(() => {
-        const buttons: HeaderRightButton[] = [];
+        const buttons: NavigationButtonProps[] = [];
         if (isPlaybooksEnabled && !isDMorGM) {
             buttons.push({
                 iconName: 'product-playbooks',
                 onPress: openPlaybooksRuns,
-                buttonType: 'opacity',
                 count: playbooksActiveRuns || '+',
             });
         }
@@ -267,7 +234,6 @@ const ChannelHeader = ({
         buttons.push({
             iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
             onPress: onChannelQuickAction,
-            buttonType: 'opacity',
             testID: 'channel_header.channel_quick_actions.button',
         });
 

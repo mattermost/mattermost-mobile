@@ -11,6 +11,7 @@ import SummaryReport, {SummaryReportType} from './summary_report';
 import TextItem from './text_item';
 
 import type {SearchResult} from './types';
+import type {UserItemProps} from '@components/user_item/user_item';
 
 jest.mock('./text_item');
 jest.mocked(TextItem).mockImplementation(
@@ -22,7 +23,7 @@ jest.mock('@components/user_item', () => ({
     default: jest.fn(),
 }));
 jest.mocked(UserItem).mockImplementation(
-    (props) => React.createElement('UserItem', {...props}),
+    (props: UserItemProps) => React.createElement('UserItem', {...props}),
 );
 
 describe('SummaryReport', () => {

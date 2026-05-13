@@ -2,13 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
-import React, {useMemo} from 'react';
+import React from 'react';
 import {useIntl} from 'react-intl';
-import {ScrollView, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
-import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
-import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -33,9 +31,9 @@ const EMPTY_MESSAGE_HEIGHT = 2 * EMPTY_MESSAGE_LINE_HEIGHT;
 /**
  * Returns the height of AddWorkspaceSheetContent for the given layout.
  */
-export function getAddWorkspaceSheetContentHeight(isTablet: boolean, elementCount: number): number {
+export function getAddWorkspaceSheetContentHeight(elementCount: number): number {
     const listHeight = elementCount === 0 ? EMPTY_MESSAGE_HEIGHT : (Math.min(elementCount, MAX_OPTIONS_BEFORE_SCROLL) * OPTION_ROW_HEIGHT);
-    return (isTablet ? 0 : HEADER_HEIGHT) + BOTTOM_FIX + listHeight;
+    return HEADER_HEIGHT + BOTTOM_FIX + listHeight;
 }
 
 type Props = {
@@ -72,24 +70,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const AddWorkspaceSheetContent = ({available, onSelect}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const isTablet = useIsTablet();
-    const {enabled, panResponder} = useBottomSheetListsFix();
     const styles = getStyleSheet(theme);
-
-    const Scroll = useMemo(() => (isTablet ? ScrollView : BottomSheetScrollView), [isTablet]);
 
     return (
         <View style={styles.container}>
-            {!isTablet && (
-                <View style={styles.header}>
-                    <Text style={styles.titleText}>
-                        {intl.formatMessage(messages.addWorkspaceSheetTitle)}
-                    </Text>
-                    <Text style={styles.subtitleText}>
-                        {intl.formatMessage(messages.addWorkspaceSheetSubtitle)}
-                    </Text>
-                </View>
-            )}
+            <View style={styles.header}>
+                <Text style={styles.titleText}>
+                    {intl.formatMessage(messages.addWorkspaceSheetTitle)}
+                </Text>
+                <Text style={styles.subtitleText}>
+                    {intl.formatMessage(messages.addWorkspaceSheetSubtitle)}
+                </Text>
+            </View>
             {available.length === 0 ? (
                 <Text
                     style={styles.emptyMessage}
@@ -98,11 +90,9 @@ const AddWorkspaceSheetContent = ({available, onSelect}: Props) => {
                     {intl.formatMessage(messages.addWorkspaceSheetAllConnected)}
                 </Text>
             ) : (
-                <Scroll
+                <BottomSheetScrollView
                     style={styles.scrollContainer}
-                    scrollEnabled={enabled}
                     showsVerticalScrollIndicator={false}
-                    {...panResponder.panHandlers}
                 >
                     {available.map((r) => (
                         <WorkspaceOptionRow
@@ -111,7 +101,7 @@ const AddWorkspaceSheetContent = ({available, onSelect}: Props) => {
                             onSelect={onSelect}
                         />
                     ))}
-                </Scroll>
+                </BottomSheetScrollView>
             )}
         </View>
     );

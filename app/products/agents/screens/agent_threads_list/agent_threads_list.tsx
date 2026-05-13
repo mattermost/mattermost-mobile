@@ -1,10 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchAIBots} from '@agents/actions/remote/bots';
-import {fetchAIThreads} from '@agents/actions/remote/threads';
-import ThreadItem, {THREAD_ITEM_HEIGHT} from '@agents/screens/agent_threads_list/thread_item';
-import {goToAgentChat} from '@agents/screens/navigation';
 import {FlashList, type ListRenderItem} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
@@ -12,22 +8,24 @@ import {View, Text, Platform, Pressable, RefreshControl} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import {fetchAIBots} from '@agents/actions/remote/bots';
+import {fetchAIThreads} from '@agents/actions/remote/threads';
+import ThreadItem from '@agents/screens/agent_threads_list/thread_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type AiBotModel from '@agents/types/database/models/ai_bot';
 import type AiThreadModel from '@agents/types/database/models/ai_thread';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    componentId: AvailableScreens;
     threads: AiThreadModel[];
     bots: AiBotModel[];
 };
@@ -116,7 +114,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const AgentThreadsList = ({
-    componentId,
     threads,
     bots,
 }: Props) => {
@@ -187,18 +184,14 @@ const AgentThreadsList = ({
     }, []); // eslint-disable-line react-hooks/exhaustive-deps -- only run on mount
 
     const exit = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
+        navigateBack();
+    }, []);
 
-    useAndroidHardwareBackHandler(componentId, exit);
+    useAndroidHardwareBackHandler(Screens.AGENT_THREADS_LIST, exit);
 
     const handleRefresh = useCallback(() => {
         refreshData(true);
     }, [refreshData]);
-
-    const handleNewChat = useCallback(() => {
-        goToAgentChat(intl);
-    }, [intl]);
 
     const handleThreadPress = useCallback(async (thread: AiThreadModel) => {
         // Navigate to the thread
@@ -303,7 +296,7 @@ const AgentThreadsList = ({
                     {/* Right - New chat button */}
                     <View style={styles.headerRight}>
                         <Pressable
-                            onPress={handleNewChat}
+                            onPress={exit}
                             style={({pressed}) => [styles.headerIconButton, pressed && {opacity: 0.72}]}
                             testID='agent_threads_list.new_chat_button'
                         >
@@ -322,7 +315,6 @@ const AgentThreadsList = ({
                 <FlashList
                     data={threads}
                     renderItem={renderItem}
-                    estimatedItemSize={THREAD_ITEM_HEIGHT}
                     contentContainerStyle={styles.listContent}
                     ListEmptyComponent={renderEmptyState}
                     refreshControl={

@@ -102,7 +102,7 @@ export default function DraftHandler(props: Props) {
         }
 
         newUploadError(null);
-    }, [intl, newUploadError, maxFileSize, serverUrl, files?.length, channelId, rootId, canUploadFiles, maxFileCount, handleUploadError]);
+    }, [canUploadFiles, files?.length, maxFileCount, serverUrl, channelId, rootId, newUploadError, intl, maxFileSize, handleUploadError]);
 
     // This effect mainly handles keeping clean the uploadErrorHandlers, and
     // reinstantiate them on component mount and file retry.

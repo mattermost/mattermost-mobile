@@ -13,6 +13,7 @@ import {
     filterEmptyOptions,
     createCallContext,
     createCallRequest,
+    isAppBinding,
 } from './apps';
 
 describe('cleanBinding', () => {
@@ -761,6 +762,226 @@ describe('createCallRequest', () => {
             values: undefined,
             raw_command: undefined,
         });
+    });
+});
+
+describe('isAppBinding', () => {
+    it('should return false for null', () => {
+        expect(isAppBinding(null)).toBe(false);
+    });
+
+    it('should return false for non-object', () => {
+        expect(isAppBinding('string')).toBe(false);
+        expect(isAppBinding(42)).toBe(false);
+    });
+
+    it('should return true for empty object', () => {
+        expect(isAppBinding({})).toBe(true);
+    });
+
+    it('should return true for valid binding with string fields', () => {
+        expect(isAppBinding({
+            app_id: 'app1',
+            label: 'My Binding',
+            location: '/command',
+            icon: 'icon.png',
+            hint: 'hint text',
+            description: 'desc',
+            role_id: 'role1',
+        })).toBe(true);
+    });
+
+    it('should return false when app_id is not a string', () => {
+        expect(isAppBinding({app_id: 123})).toBe(false);
+    });
+
+    it('should return false when label is not a string', () => {
+        expect(isAppBinding({label: true})).toBe(false);
+    });
+
+    it('should return false when location is not a string', () => {
+        expect(isAppBinding({location: {}})).toBe(false);
+    });
+
+    it('should return false when depends_on_team is not a boolean', () => {
+        expect(isAppBinding({depends_on_team: 'yes'})).toBe(false);
+    });
+
+    it('should return false when depends_on_channel is not a boolean', () => {
+        expect(isAppBinding({depends_on_channel: 1})).toBe(false);
+    });
+
+    it('should return false when depends_on_user is not a boolean', () => {
+        expect(isAppBinding({depends_on_user: 'true'})).toBe(false);
+    });
+
+    it('should return false when depends_on_post is not a boolean', () => {
+        expect(isAppBinding({depends_on_post: 0})).toBe(false);
+    });
+
+    it('should return true for binding with valid nested bindings', () => {
+        expect(isAppBinding({
+            bindings: [{app_id: 'app1', label: 'sub', submit: {path: '/do'}}],
+        })).toBe(true);
+    });
+
+    it('should return false when bindings contains invalid entry', () => {
+        expect(isAppBinding({bindings: [{app_id: 123}]})).toBe(false);
+    });
+
+    it('should return true for binding with valid submit call', () => {
+        expect(isAppBinding({submit: {path: '/submit'}})).toBe(true);
+    });
+
+    it('should return false when submit has invalid expand', () => {
+        expect(isAppBinding({submit: {expand: {app: 123}}})).toBe(false);
+    });
+
+    it('should return false when submit.path is not a string', () => {
+        expect(isAppBinding({submit: {path: 42}})).toBe(false);
+    });
+
+    it('should return true for binding with valid form', () => {
+        expect(isAppBinding({
+            form: {
+                title: 'My Form',
+                submit: {path: '/submit'},
+                fields: [
+                    {name: 'field1', type: 'text', is_required: true, readonly: false},
+                ],
+            },
+        })).toBe(true);
+    });
+
+    it('should return false when form has invalid title type', () => {
+        expect(isAppBinding({form: {title: 123}})).toBe(false);
+    });
+
+    it('should return false when form has invalid header type', () => {
+        expect(isAppBinding({form: {header: false}})).toBe(false);
+    });
+
+    it('should return false when form has invalid footer type', () => {
+        expect(isAppBinding({form: {footer: []}})).toBe(false);
+    });
+
+    it('should return false when form has invalid icon type', () => {
+        expect(isAppBinding({form: {icon: 0}})).toBe(false);
+    });
+
+    it('should return false when form has invalid submit_buttons type', () => {
+        expect(isAppBinding({form: {submit_buttons: true}})).toBe(false);
+    });
+
+    it('should return false when form has invalid cancel_button type', () => {
+        expect(isAppBinding({form: {cancel_button: 'yes'}})).toBe(false);
+    });
+
+    it('should return false when form has invalid submit_on_cancel type', () => {
+        expect(isAppBinding({form: {submit_on_cancel: 1}})).toBe(false);
+    });
+
+    it('should return false when form.fields contains invalid field', () => {
+        expect(isAppBinding({form: {fields: [{name: 123}]}})).toBe(false);
+    });
+
+    it('should return false when form.source is invalid call', () => {
+        expect(isAppBinding({form: {source: {path: 99}}})).toBe(false);
+    });
+
+    it('should return false when form.submit is invalid call', () => {
+        expect(isAppBinding({form: {submit: {path: false}}})).toBe(false);
+    });
+
+    it('should return false when form.depends_on is not string array', () => {
+        expect(isAppBinding({form: {depends_on: [1, 2]}})).toBe(false);
+    });
+
+    it('should return false when field.is_required is not boolean', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', is_required: 'yes'}]}})).toBe(false);
+    });
+
+    it('should return false when field.readonly is not boolean', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', readonly: 1}]}})).toBe(false);
+    });
+
+    it('should return false when field.position is not number', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', position: 'first'}]}})).toBe(false);
+    });
+
+    it('should return false when field.modal_label is not string', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', modal_label: true}]}})).toBe(false);
+    });
+
+    it('should return false when field.refresh is not boolean', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', refresh: 'true'}]}})).toBe(false);
+    });
+
+    it('should return false when field.multiselect is not boolean', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', multiselect: 1}]}})).toBe(false);
+    });
+
+    it('should return false when field.subtype is not string', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', subtype: 5}]}})).toBe(false);
+    });
+
+    it('should return false when field.min_length is not number', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', min_length: '5'}]}})).toBe(false);
+    });
+
+    it('should return false when field.max_length is not number', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', max_length: true}]}})).toBe(false);
+    });
+
+    it('should return false when field.options contains invalid option', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', options: [{label: 123}]}]}})).toBe(false);
+    });
+
+    it('should return false when field.lookup is invalid call', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', lookup: {expand: {app: 99}}}]}})).toBe(false);
+    });
+
+    it('should return true for field with valid static select options', () => {
+        expect(isAppBinding({
+            form: {
+                fields: [{
+                    name: 'color',
+                    options: [{label: 'Red', value: 'red', icon_data: 'icon'}],
+                }],
+            },
+        })).toBe(true);
+    });
+
+    it('should return false when option.label is not string', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', options: [{label: 1, value: 'v'}]}]}})).toBe(false);
+    });
+
+    it('should return false when option.value is not string', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', options: [{value: true}]}]}})).toBe(false);
+    });
+
+    it('should return false when option.icon_data is not string', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', options: [{value: 'v', icon_data: 5}]}]}})).toBe(false);
+    });
+
+    it('should return true for field value as string', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', value: 'hello'}]}})).toBe(true);
+    });
+
+    it('should return true for field value as boolean', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', value: true}]}})).toBe(true);
+    });
+
+    it('should return true for field value as null', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', value: null}]}})).toBe(true);
+    });
+
+    it('should return true for field value as valid AppSelectOption', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', value: {label: 'opt', value: 'v'}}]}})).toBe(true);
+    });
+
+    it('should return false for field value as invalid object', () => {
+        expect(isAppBinding({form: {fields: [{name: 'f', value: {label: 123}}]}})).toBe(false);
     });
 });
 

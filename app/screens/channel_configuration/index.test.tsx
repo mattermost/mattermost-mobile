@@ -4,7 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {General, Permissions, Screens} from '@constants';
+import {General, Permissions} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
@@ -47,10 +47,7 @@ describe('ChannelConfiguration index (enhanced)', () => {
 
     it('renders ChannelConfiguration with default props when database has no data', async () => {
         const {getByTestId} = renderWithEverything(
-            <EnhancedChannelConfiguration
-                channelId={channelId}
-                componentId={Screens.CHANNEL_CONFIGURATION as 'ChannelConfiguration'}
-            />,
+            <EnhancedChannelConfiguration channelId={channelId}/>,
             {database, serverUrl},
         );
 
@@ -89,10 +86,7 @@ describe('ChannelConfiguration index (enhanced)', () => {
         });
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedChannelConfiguration
-                channelId={channelId}
-                componentId={Screens.CHANNEL_CONFIGURATION as 'ChannelConfiguration'}
-            />,
+            <EnhancedChannelConfiguration channelId={channelId}/>,
             {database, serverUrl},
         );
 
@@ -139,10 +133,7 @@ describe('ChannelConfiguration index (enhanced)', () => {
         });
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedChannelConfiguration
-                channelId={channelId}
-                componentId={Screens.CHANNEL_CONFIGURATION as 'ChannelConfiguration'}
-            />,
+            <EnhancedChannelConfiguration channelId={channelId}/>,
             {database, serverUrl},
         );
 
@@ -185,10 +176,7 @@ describe('ChannelConfiguration index (enhanced)', () => {
         });
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedChannelConfiguration
-                channelId={channelId}
-                componentId={Screens.CHANNEL_CONFIGURATION as 'ChannelConfiguration'}
-            />,
+            <EnhancedChannelConfiguration channelId={channelId}/>,
             {database, serverUrl},
         );
 
@@ -230,10 +218,7 @@ describe('ChannelConfiguration index (enhanced)', () => {
         });
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedChannelConfiguration
-                channelId={channelId}
-                componentId={Screens.CHANNEL_CONFIGURATION as 'ChannelConfiguration'}
-            />,
+            <EnhancedChannelConfiguration channelId={channelId}/>,
             {database, serverUrl},
         );
 

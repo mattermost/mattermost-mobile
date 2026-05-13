@@ -4,9 +4,10 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import logger from '@nozbe/watermelondb/utils/common/logger';
-import {deleteAsync} from 'expo-file-system';
+import {File} from 'expo-file-system';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
+import {AiBotModel, AiThreadModel} from '@agents/database/models';
 import {Events} from '@constants';
 import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
@@ -29,7 +30,7 @@ import {urlSafeBase64Encode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, Models, RegisterServerDatabaseArgs, ServerDatabase, ServerDatabases} from '@typings/database/database';
-import type ServerModel from '@typings/database/models/app/servers';
+import type {default as ServerModel, PersistenceFlag} from '@typings/database/models/app/servers';
 
 const {SERVERS} = MM_TABLES.APP;
 const APP_DATABASE = 'app';
@@ -56,6 +57,7 @@ class DatabaseManagerSingleton {
             ScheduledPostModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
             ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
             PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel,
+            AiBotModel, AiThreadModel,
         ];
         this.databaseDirectory = '';
     }
@@ -197,6 +199,18 @@ class DatabaseManagerSingleton {
         }
     };
 
+    public updatePersistenceFlag = async (serverUrl: string, persistenceFlag: PersistenceFlag) => {
+        const appDatabase = this.appDatabase?.database;
+        if (appDatabase) {
+            const server = await this.getServer(serverUrl);
+            await appDatabase.write(async () => {
+                await server?.update((record) => {
+                    record.persistenceFlag = persistenceFlag;
+                });
+            });
+        }
+    };
+
     private isServerPresent = async (serverUrl: string): Promise<boolean> => {
         const server = await this.getServer(serverUrl);
         return Boolean(server);
@@ -307,19 +321,19 @@ class DatabaseManagerSingleton {
         const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
 
         try {
-            await deleteAsync(databaseFile);
+            new File(databaseFile).delete();
         } catch {
             // do nothing
         }
 
         try {
-            await deleteAsync(databaseJournal);
+            new File(databaseJournal).delete();
         } catch {
             // do nothing
         }
     };
 
-    factoryReset = async (shouldRemoveDirectory: boolean): Promise<boolean> => {
+    factoryReset = (shouldRemoveDirectory: boolean): boolean => {
         try {
         //On iOS, we'll delete the databases folder under the shared AppGroup folder
             if (Platform.OS === 'ios') {
@@ -329,7 +343,7 @@ class DatabaseManagerSingleton {
 
             // On Android, we'll remove the databases folder under the Document Directory
             const androidFilesDir = `${this.databaseDirectory}databases/`;
-            await deleteAsync(androidFilesDir);
+            new File(androidFilesDir).delete();
             return true;
         } catch (e) {
             return false;

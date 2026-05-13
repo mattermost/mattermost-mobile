@@ -8,7 +8,7 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
-import {useKeyboardAnimationContext} from '@context/keyboard_animation';
+import {useKeyboardState} from '@context/keyboard_state';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -78,8 +78,7 @@ const ScrollToEndView = ({
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
-
-    const {keyboardTranslateY, postInputContainerHeight, inputAccessoryViewAnimatedHeight} = useKeyboardAnimationContext();
+    const {stateContext} = useKeyboardState();
 
     // On iOS we have to take account of the keyboard.
     // We cannot use `useKeyboardOverlap` here because of the positioning of the element.
@@ -89,19 +88,21 @@ const ScrollToEndView = ({
 
     const animatedStyle = useAnimatedStyle(
         () => {
-            const activeHeight = Math.max(keyboardTranslateY.value, inputAccessoryViewAnimatedHeight.value);
+            // postInputTranslateY is the keyboard/emoji picker height driving input position
+            // inputAccessoryHeight is the emoji picker height (when open)
+            const activeHeight = Math.max(stateContext.postInputTranslateY.value, stateContext.inputAccessoryHeight.value);
 
             return {
                 transform: [
                     {
-                        translateY: showScrollToEndBtn ? -postInputContainerHeight - activeHeight - SCROLL_TO_END_BOTTOM_OFFSET : -SCROLL_TO_END_BOTTOM_OFFSET,
+                        translateY: showScrollToEndBtn ? -stateContext.postInputContainerHeight.value - activeHeight - SCROLL_TO_END_BOTTOM_OFFSET : -SCROLL_TO_END_BOTTOM_OFFSET,
                     },
                 ],
                 maxWidth: withTiming(isNewMessage ? SCROLL_TO_END_BADGE_MAX_WIDTH : SCROLL_TO_END_BUTTON_WIDTH, {duration: 300}),
                 opacity: withTiming(showScrollToEndBtn ? 1 : 0),
             };
         },
-        [showScrollToEndBtn, isNewMessage, keyboardTranslateY, inputAccessoryViewAnimatedHeight, postInputContainerHeight],
+        [showScrollToEndBtn, isNewMessage],
     );
 
     const scrollButtonStyles = isNewMessage ? styles.scrollToEndBadge : styles.scrollToEndButton;

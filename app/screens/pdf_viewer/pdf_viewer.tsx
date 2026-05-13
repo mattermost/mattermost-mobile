@@ -9,20 +9,20 @@ import {
     type OnPasswordLimitReachedEvent,
     type OnPasswordRequiredEvent,
 } from '@mattermost/secure-pdf-viewer';
-import {deleteAsync} from 'expo-file-system';
+import {useNavigation} from 'expo-router';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert} from 'react-native';
-import {Navigation} from 'react-native-navigation';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {Alert, View} from 'react-native';
 
 import {setFileAsBlocked} from '@actions/local/file';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {dismissModal} from '@screens/navigation';
+import useDidMount from '@hooks/did_mount';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
+import {deleteFile} from '@utils/file';
 import {logError} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {openLink} from '@utils/url/links';
@@ -30,15 +30,10 @@ import {openLink} from '@utils/url/links';
 import PdfLoadError from './error';
 import PdfPassword, {type PasswordRef} from './password';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type Props = {
     allowPdfLinkNavigation: boolean;
-    componentId: AvailableScreens;
-    closeButtonId: string;
     fileId: string;
     filePath: string;
-    onDismiss?: () => void;
     siteURL: string;
 }
 
@@ -52,7 +47,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const PdfViewer = ({allowPdfLinkNavigation, closeButtonId, componentId, fileId, filePath, onDismiss, siteURL}: Props) => {
+const dismiss = () => {
+    const onDismiss = CallbackStore.getCallback<() => void>();
+    onDismiss?.();
+    CallbackStore.removeCallback();
+};
+
+const PdfViewer = ({allowPdfLinkNavigation, fileId, filePath, siteURL}: Props) => {
+    const navigation = useNavigation();
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const intl = useIntl();
@@ -63,19 +65,17 @@ const PdfViewer = ({allowPdfLinkNavigation, closeButtonId, componentId, fileId, 
     const [remainingAttempts, setRemainingAttempts] = useState<number | undefined>(undefined);
     const [navBarVisible, setNavBarVisible] = useState(true);
     const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
+    const [promptForPassword, setPromptForPassword] = useState(false);
 
     const toggleNavbar = useCallback((visible: boolean) => {
-        Navigation.mergeOptions(componentId, {
-            topBar: {
-                visible,
-                animate: true,
-            }});
-    }, [componentId]);
+        navigation.setOptions({
+            headerShown: visible,
+        });
+    }, [navigation]);
 
     const onClose = useCallback(() => {
-        onDismiss?.();
-        return dismissModal({componentId});
-    }, [componentId, onDismiss]);
+        return navigateBack();
+    }, []);
 
     const onLinkPressed = useCallback((event: OnLinkPressedEvent) => {
         openLink(event.nativeEvent.url, serverUrl, siteURL, intl);
@@ -97,7 +97,7 @@ const PdfViewer = ({allowPdfLinkNavigation, closeButtonId, componentId, fileId, 
     const onLoadError = useCallback((event: OnLoadErrorEvent) => {
         logError('Error loading PDF', event.nativeEvent.message);
         setErrorMessage(event.nativeEvent.message);
-        deleteAsync(filePath, {idempotent: true});
+        deleteFile(filePath);
     }, [filePath]);
 
     const onPasswordFailed = useCallback((event: OnPasswordFailedEvent) => {
@@ -126,16 +126,16 @@ const PdfViewer = ({allowPdfLinkNavigation, closeButtonId, componentId, fileId, 
         toggleNavbar(navBarVisible);
     }, [navBarVisible, toggleNavbar]);
 
-    useNavButtonPressed(closeButtonId, componentId, onClose, [onClose]);
-    useAndroidHardwareBackHandler(componentId, onClose);
+    useAndroidHardwareBackHandler(Screens.PDF_VIEWER, onClose);
 
-    const promptForPassword = (maxAttempts !== undefined && maxAttempts > 0);
+    useEffect(() => setPromptForPassword(maxAttempts !== undefined && maxAttempts > 0), [maxAttempts]);
+
+    useDidMount(() => {
+        return dismiss;
+    });
 
     return (
-        <SafeAreaView
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-            style={styles.flex}
-        >
+        <View style={styles.flex}>
             {Boolean(errorMessage) && <PdfLoadError message={errorMessage}/>}
             {promptForPassword &&
                 <PdfPassword
@@ -159,7 +159,7 @@ const PdfViewer = ({allowPdfLinkNavigation, closeButtonId, componentId, fileId, 
                 source={filePath}
                 style={styles.pdfView}
             />
-        </SafeAreaView>
+        </View>
     );
 };
 

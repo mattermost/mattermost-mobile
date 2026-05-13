@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 /* eslint-disable max-lines */
 
-import {renderHook, act} from '@testing-library/react-hooks';
+import {renderHook, act} from '@testing-library/react-native';
 import React from 'react';
 import {IntlProvider} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
@@ -298,6 +298,7 @@ describe('useHandleSendMessage', () => {
     it('should handle call command error', async () => {
         const mockHandleCallsSlashCommand = jest.mocked(handleCallsSlashCommand);
         mockHandleCallsSlashCommand.mockResolvedValueOnce({handled: false, error: 'Call error'});
+        jest.spyOn(DraftUtils, 'alertSlashCommandFailed');
 
         const props = {
             ...defaultProps,
@@ -397,7 +398,7 @@ describe('useHandleSendMessage', () => {
         expect(defaultProps.clearDraft).toHaveBeenCalled();
     });
 
-    it('should fetch and handle channel timezones', async () => {
+    it('should fetch and handle channel timezones', () => {
         jest.mocked(getChannelTimezones).mockResolvedValueOnce({
             channelTimezones: ['UTC', 'America/New_York'],
         });
@@ -439,6 +440,7 @@ describe('useHandleSendMessage', () => {
         expect(DraftUtils.alertChannelWideMention).toHaveBeenCalled();
         expect(createPost).not.toHaveBeenCalled();
     });
+
     it('should include post priority metadata', async () => {
         const props = {
             ...defaultProps,
@@ -553,6 +555,7 @@ describe('useHandleSendMessage', () => {
 
     describe('channel mentions handling', () => {
         it('should bypass mention confirmation when disabled', async () => {
+            jest.spyOn(DraftUtils, 'alertChannelWideMention');
             const props = {
                 ...defaultProps,
                 value: '@channel message',

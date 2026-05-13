@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, Pressable, Platform} from 'react-native';
+import {View, Text, Pressable} from 'react-native';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
 import {leaveCallConfirmation} from '@calls/actions/calls';
@@ -20,13 +20,12 @@ import {Calls, Screens} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {allOrientations, dismissAllModalsAndPopToScreen} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 import type {CallSession, CallsTheme, CurrentCall} from '@calls/types/calls';
-import type {Options} from 'react-native-navigation';
 
 type Props = {
     displayName: string;
@@ -34,7 +33,6 @@ type Props = {
     sessionsDict: Dictionary<CallSession>;
     teammateNameDisplay: string;
     micPermissionsGranted: boolean;
-    threadScreen?: boolean;
     otherParticipants: boolean;
     isAdmin: boolean;
     isHost: boolean;
@@ -142,7 +140,6 @@ const CurrentCallBar = ({
     sessionsDict,
     teammateNameDisplay,
     micPermissionsGranted,
-    threadScreen,
     otherParticipants,
     isAdmin,
     isHost,
@@ -157,22 +154,8 @@ const CurrentCallBar = ({
     usePermissionsChecker(micPermissionsGranted);
 
     const goToCallScreen = useCallback(async () => {
-        const options: Options = {
-            layout: {
-                backgroundColor: '#000',
-                componentBackgroundColor: '#000',
-                orientation: allOrientations,
-            },
-            topBar: {
-                background: {
-                    color: '#000',
-                },
-                visible: Platform.OS === 'android',
-            },
-        };
-        const title = formatMessage({id: 'mobile.calls_call_screen', defaultMessage: 'Call'});
-        await dismissAllModalsAndPopToScreen(Screens.CALL, title, {fromThreadScreen: threadScreen}, options);
-    }, [formatMessage, threadScreen]);
+        navigateToScreen(Screens.CALL);
+    }, []);
 
     const leaveCallHandler = useCallback(() => {
         leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId || '');

@@ -4,7 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import {General, Screens} from '@constants';
+import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -45,11 +45,7 @@ describe('ChannelShare index (enhanced)', () => {
 
     it('renders ChannelShare with empty displayName when channel does not exist', async () => {
         const {getByTestId} = renderWithEverything(
-            <EnhancedChannelShare
-                channelId={channelId}
-                componentId={Screens.CHANNEL_SHARE as 'ChannelShare'}
-                onSharedRemotesChanged={jest.fn()}
-            />,
+            <EnhancedChannelShare channelId={channelId}/>,
             {database, serverUrl},
         );
 
@@ -77,8 +73,6 @@ describe('ChannelShare index (enhanced)', () => {
         const {getByTestId} = renderWithEverything(
             <EnhancedChannelShare
                 channelId={channelId}
-                componentId={Screens.CHANNEL_SHARE as 'ChannelShare'}
-                onSharedRemotesChanged={jest.fn()}
             />,
             {database, serverUrl},
         );

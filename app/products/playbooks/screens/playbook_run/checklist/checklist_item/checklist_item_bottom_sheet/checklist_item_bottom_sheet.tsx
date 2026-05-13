@@ -9,12 +9,14 @@ import CompassIcon from '@components/compass_icon';
 import MenuDivider from '@components/menu_divider';
 import OptionBox from '@components/option_box';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {setAssignee, setChecklistItemCommand, setDueDate, deleteChecklistItem, updateChecklistItemTitleAndDescription} from '@playbooks/actions/remote/checklist';
 import {goToEditChecklistItem, goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
 import {getDueDateString} from '@playbooks/utils/time';
-import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -289,19 +291,18 @@ const ChecklistItemBottomSheet = ({
     );
 
     const onUserChipPress = useCallback((userId: string) => {
-        openUserProfileModal(intl, theme, {
+        openUserProfile({
             userId,
-            location: 'PlaybookRun',
+            location: Screens.PLAYBOOK_RUN,
         });
-    }, [intl, theme]);
-
+    }, []);
     const updateCommand = useCallback(async (command: string) => {
         await setChecklistItemCommand(serverUrl, runId, item.id, checklistNumber, itemNumber, command);
     }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
 
     const openEditCommandModal = useCallback(() => {
-        goToEditCommand(intl, theme, runName, item.command, channelId, updateCommand);
-    }, [intl, theme, runName, item.command, channelId, updateCommand]);
+        goToEditCommand(runName, item.command, channelId, updateCommand);
+    }, [runName, item.command, channelId, updateCommand]);
 
     const assigneeInfo: ComponentProps<typeof OptionItem>['info'] = useMemo(() => {
         if (!assignee) {
@@ -316,10 +317,10 @@ const ChecklistItemBottomSheet = ({
     }, [assignee, intl, onUserChipPress, teammateNameDisplay]);
 
     const openEditDateModal = useCallback(async () => {
-        goToSelectDate(intl, theme, runName, (date) => {
+        goToSelectDate(runName, (date) => {
             setDueDate(serverUrl, runId, item.id, checklistNumber, itemNumber, date);
         }, dueDate);
-    }, [intl, theme, runName, dueDate, serverUrl, runId, item.id, checklistNumber, itemNumber]);
+    }, [runName, dueDate, serverUrl, runId, item.id, checklistNumber, itemNumber]);
 
     const handleSelect = useCallback(async (selected: UserProfile) => {
         const res = await setAssignee(serverUrl, runId, item.id, checklistNumber, itemNumber, selected.id);
@@ -337,7 +338,6 @@ const ChecklistItemBottomSheet = ({
 
     const openUserSelector = useCallback(() => {
         goToSelectUser(
-            theme,
             runName,
             intl.formatMessage(messages.assignee),
             participantIds,
@@ -345,7 +345,7 @@ const ChecklistItemBottomSheet = ({
             handleSelect,
             handleRemove,
         );
-    }, [assignee?.id, handleRemove, handleSelect, intl, participantIds, runName, theme]);
+    }, [assignee?.id, handleRemove, handleSelect, intl, participantIds, runName]);
 
     const handleEditItem = useCallback(async (itemInput: ChecklistItemInput) => {
         const res = await updateChecklistItemTitleAndDescription(serverUrl, runId, item.id, checklistNumber, itemNumber, itemInput);
@@ -356,8 +356,8 @@ const ChecklistItemBottomSheet = ({
 
     const openEditItemModal = useCallback(() => {
         const itemDescription = ('description' in item && item.description) || undefined;
-        goToEditChecklistItem(intl, theme, runName, item.title, itemDescription, handleEditItem);
-    }, [intl, theme, runName, item, handleEditItem]);
+        goToEditChecklistItem(runName, item.title, itemDescription, handleEditItem);
+    }, [runName, item, handleEditItem]);
 
     const renderTaskDetails = () => (
         <View style={styles.taskDetailsContainer}>

@@ -16,7 +16,7 @@ describe('BaseOption', () => {
         renderWithIntlAndTheme(
             <BaseOption
                 message={{id: 'test.base_option.label', defaultMessage: 'Option label'}}
-                iconName='icon-name'
+                iconName='menu'
                 onPress={jest.fn()}
                 testID='base-option'
             />,

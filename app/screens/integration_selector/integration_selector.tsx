@@ -1,30 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
+import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
+import {getExistingUserProfilesByIdWithFallback} from '@actions/local/user';
 import {fetchChannels, searchChannels} from '@actions/remote/channel';
 import {fetchProfiles, searchProfiles} from '@actions/remote/user';
 import FormattedText from '@components/formatted_text';
+import NavigationButton from '@components/navigation_button';
 import SearchBar from '@components/search';
 import ServerUserList from '@components/server_user_list';
 import {General, Screens, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {useDebounce} from '@hooks/utils';
-import SecurityManager from '@managers/security_manager';
-import {
-    buildNavigationButton,
-    popTopScreen, setButtons,
-} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
+import SettingsStore from '@store/settings_store';
 import {filterChannelsMatchingTerm} from '@utils/channel';
 import {filterOptions} from '@utils/message_attachment';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
@@ -36,8 +33,6 @@ import CustomList from './custom_list';
 import OptionListRow from './option_list_row';
 import SelectedOptions from './selected_options';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type DataType = DialogOption | Channel | UserProfile;
 type DataTypeList = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DataType | DataTypeList;
@@ -47,11 +42,14 @@ const VALID_DATASOURCES = [
     ViewConstants.DATA_SOURCE_CHANNELS,
     ViewConstants.DATA_SOURCE_USERS,
     ViewConstants.DATA_SOURCE_DYNAMIC];
-const SUBMIT_BUTTON_ID = 'submit-integration-selector-multiselect';
 
 const close = () => {
-    popTopScreen();
+    SettingsStore.removeIntegrationsSelectCallback();
+    SettingsStore.removeIntegrationsDynamicOptionsCallback();
+    navigateBack();
 };
+
+const safeAreaEdges: Edge[] = ['bottom', 'left', 'right'];
 
 const extractItemKey = (dataSource: string, item: DataType): string => {
     switch (dataSource) {
@@ -114,22 +112,19 @@ const handleIdSelection = (dataSource: string, currentIds: {[id: string]: DataTy
 };
 
 export type Props = {
-    getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
     options?: PostActionOption[];
     currentTeamId: string;
     data?: DataTypeList;
     dataSource: string;
-    handleSelect: (opt: Selection) => void;
     isMultiselect?: boolean;
     selected: SelectedDialogValue;
-    theme: Theme;
-    componentId: AvailableScreens;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
+            marginHorizontal: 10,
         },
         searchBar: {
             marginVertical: 5,
@@ -177,9 +172,11 @@ const messages = defineMessages({
     },
 });
 
-function IntegrationSelector(
-    {dataSource, data, isMultiselect = false, selected, handleSelect,
-        currentTeamId, componentId, getDynamicOptions, options}: Props) {
+function IntegrationSelector({
+    dataSource, data, isMultiselect = false, selected,
+    currentTeamId, options,
+}: Props) {
+    const navigation = useNavigation();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
@@ -224,23 +221,10 @@ function IntegrationSelector(
         setSearchResults([]);
     }, []);
 
-    // This is the button to submit multiselect options
-    const rightButton = useMemo(() => {
-        const base = buildNavigationButton(
-            SUBMIT_BUTTON_ID,
-            'integration_selector.multiselect.submit.button',
-            undefined,
-            intl.formatMessage({id: 'integration_selector.multiselect.submit', defaultMessage: 'Done'}),
-        );
-        base.enabled = true;
-        base.showAsAction = 'always';
-        base.color = theme.sidebarHeaderTextColor;
-        return base;
-    }, [theme.sidebarHeaderTextColor, intl]);
-
     const handleSelectItem = useCallback((item: Selection) => {
         if (!isMultiselect) {
-            handleSelect(item);
+            const selectCallback = SettingsStore.getIntegrationsSelectCallback();
+            selectCallback?.(item);
             close();
             return;
         }
@@ -256,26 +240,25 @@ function IntegrationSelector(
                 setMultiselectSelected((current) => toggleFromMap(current, itemKey, item as DialogOption));
             }
         }
-    }, [isMultiselect, dataSource, handleSelect]);
+    }, [isMultiselect, dataSource]);
 
     const handleRemoveOption = useCallback((item: Channel | DialogOption | UserProfile) => {
         const itemKey = extractItemKey(dataSource, item);
 
-        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-            setSelectedIds((current) => {
-                const selectedIdItems = {...current};
-                delete selectedIdItems[itemKey];
-                return selectedIdItems;
-            });
-        } else {
-            setMultiselectSelected((current) => {
-                const multiselectSelectedItems = {...current};
-                if (secureGetFromRecord<any>(multiselectSelectedItems, itemKey) !== undefined) {
-                    delete multiselectSelectedItems[itemKey];
-                }
-                return multiselectSelectedItems;
-            });
-        }
+        setSelectedIds((current) => {
+            const selectedIdItems = {...current};
+            delete selectedIdItems[itemKey];
+            return selectedIdItems;
+        });
+
+        setMultiselectSelected((current) => {
+            const multiselectSelectedItems = {...current};
+            if (secureGetFromRecord<any>(multiselectSelectedItems, itemKey) !== undefined) {
+                delete multiselectSelectedItems[itemKey];
+            }
+            return multiselectSelectedItems;
+        });
+
     }, [dataSource]);
 
     const getChannels = useDebounce(useCallback(async () => {
@@ -297,7 +280,7 @@ function IntegrationSelector(
 
     const loadMore = useCallback(async () => {
         if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
-            await getChannels();
+            getChannels();
         }
 
         // dynamic options are not paged so are not reloaded on scroll
@@ -309,6 +292,7 @@ function IntegrationSelector(
             setIntegrationData(filteredOptions);
         }
 
+        const getDynamicOptions = SettingsStore.getIntegrationsDynamicOptionsCallback();
         if (!getDynamicOptions) {
             return;
         }
@@ -322,34 +306,37 @@ function IntegrationSelector(
         } else {
             setIntegrationData(searchData);
         }
-    }, [filteredOptions, getDynamicOptions, integrationData]);
+    }, [filteredOptions, integrationData]);
 
     const handleSelectProfile = useCallback((user: UserProfile): void => {
         if (!isMultiselect) {
-            handleSelect(user);
+            const selectCallback = SettingsStore.getIntegrationsSelectCallback();
+            selectCallback?.(user);
             close();
         }
 
         setSelectedIds((current) => handleIdSelection(dataSource, current, user));
-    }, [isMultiselect, handleSelect, dataSource]);
+    }, [isMultiselect, dataSource]);
 
     const onHandleMultiselectSubmit = useCallback(() => {
+        const selectCallback = SettingsStore.getIntegrationsSelectCallback();
+
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
             // New multiselect
-            handleSelect(Object.values(selectedIds) as UserProfile[]);
+            selectCallback?.(Object.values(selectedIds) as UserProfile[]);
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
             // For channels, combine both previously selected (selectedIds) and newly selected (multiselectSelected)
             const allSelected = [
                 ...Object.values(selectedIds) as Channel[],
                 ...Object.values(multiselectSelected) as Channel[],
             ];
-            handleSelect(allSelected);
+            selectCallback?.(allSelected);
         } else {
             // Legacy multiselect for regular options
-            handleSelect(Object.values(multiselectSelected));
+            selectCallback?.(Object.values(multiselectSelected));
         }
         close();
-    }, [dataSource, handleSelect, selectedIds, multiselectSelected]);
+    }, [dataSource, selectedIds, multiselectSelected]);
 
     const onSearch = useCallback((text: string) => {
         if (!text) {
@@ -388,8 +375,7 @@ function IntegrationSelector(
     }, [clearSearch, dataSource, integrationData, serverUrl, currentTeamId, searchDynamicOptions]);
 
     // Effects
-    useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleMultiselectSubmit, [onHandleMultiselectSubmit]);
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.INTEGRATION_SELECTOR, close);
 
     useEffect(() => {
         return () => {
@@ -431,10 +417,16 @@ function IntegrationSelector(
             return;
         }
 
-        setButtons(componentId, {
-            rightButtons: [rightButton],
+        navigation.setOptions({
+            headerRight: () => (
+                <NavigationButton
+                    onPress={onHandleMultiselectSubmit}
+                    testID='integration_selector.multiselect.submit.button'
+                    text={intl.formatMessage({id: 'integration_selector.multiselect.submit', defaultMessage: 'Done'})}
+                />
+            ),
         });
-    }, [rightButton, componentId, isMultiselect]);
+    }, [onHandleMultiselectSubmit, isMultiselect, navigation, intl]);
 
     useEffect(() => {
         const multiselectItems: MultiselectSelectedMap = {};
@@ -472,50 +464,10 @@ function IntegrationSelector(
                     hasInitialized.current = true;
                 }
             } else if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-                // For users, fetch the actual user data from the database in a single batch query
-                const database = secureGetFromRecord(DatabaseManager.serverDatabases, serverUrl)?.database;
-                if (database) {
-                    // Batch query for all selected user IDs at once
-                    database.get('User').query(Q.where('id', Q.oneOf(selected))).fetch().then((users) => {
-                        const initialSelectedIds: {[id: string]: DataType} = {};
-
-                        // Create a map of found users by ID
-                        const userMap = new Map<string, any>();
-                        for (const user of users) {
-                            userMap.set(user.id, user);
-                        }
-
-                        // For each selected ID, use the found user or create a minimal fallback
-                        for (const selectedId of selected) {
-                            const user = userMap.get(selectedId);
-                            if (user) {
-                                initialSelectedIds[selectedId] = user;
-                            } else {
-                                // Fallback for users not found in database
-                                initialSelectedIds[selectedId] = {id: selectedId, username: '', first_name: '', last_name: ''} as UserProfile;
-                            }
-                        }
-
-                        setSelectedIds(initialSelectedIds);
-                        hasInitialized.current = true;
-                    }).catch(() => {
-                        // Fallback if database query fails
-                        const initialSelectedIds: {[id: string]: DataType} = {};
-                        for (const selectedId of selected) {
-                            initialSelectedIds[selectedId] = {id: selectedId, username: '', first_name: '', last_name: ''} as UserProfile;
-                        }
-                        setSelectedIds(initialSelectedIds);
-                        hasInitialized.current = true;
-                    });
-                } else {
-                    // Fallback if no database available
-                    const initialSelectedIds: {[id: string]: DataType} = {};
-                    for (const selectedId of selected) {
-                        initialSelectedIds[selectedId] = {id: selectedId, username: '', first_name: '', last_name: ''} as UserProfile;
-                    }
+                getExistingUserProfilesByIdWithFallback(serverUrl, selected).then((initialSelectedIds) => {
                     setSelectedIds(initialSelectedIds);
                     hasInitialized.current = true;
-                }
+                });
             }
         }
     }, [isMultiselect, selected, dataSource, integrationData, serverUrl]);
@@ -546,7 +498,7 @@ function IntegrationSelector(
         );
     }, [style, dataSource, loading]);
 
-    const renderNoResults = useCallback((): JSX.Element | null => {
+    const renderNoResults = useCallback((): React.ReactNode => {
         if (loading || page.current === -1) {
             return null;
         }
@@ -591,7 +543,7 @@ function IntegrationSelector(
         );
     }, [multiselectSelected, theme, isMultiselect]);
 
-    const getRenderItem = (): (itemProps: any) => JSX.Element => {
+    const getRenderItem = (): (itemProps: any) => React.ReactNode => {
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_CHANNELS:
                 return renderChannelItem;
@@ -607,7 +559,9 @@ function IntegrationSelector(
             // New multiselect
             selectedItems = Object.values(selectedIds) as UserProfile[];
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
-            selectedItems = [...Object.values(multiselectSelected), ...Object.values(selectedIds)] as Channel[];
+            selectedItems = Array.from(
+                new Set([...Object.values(multiselectSelected), ...Object.values(selectedIds)]),
+            ) as Channel[];
         }
 
         if (!selectedItems.length) {
@@ -703,7 +657,7 @@ function IntegrationSelector(
 
     return (
         <SafeAreaView
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
+            edges={safeAreaEdges}
             style={style.container}
         >
             <View

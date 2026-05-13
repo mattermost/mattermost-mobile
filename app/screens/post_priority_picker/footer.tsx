@@ -3,11 +3,13 @@
 
 import {BottomSheetFooter, type BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import React from 'react';
-import {Platform, TouchableOpacity, View} from 'react-native';
+import {Pressable, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
+import usePressableOpacityStyle from '@hooks/use_pressable_opacity';
+import {useBottomSheetStyle} from '@screens/bottom_sheet/hooks';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -18,18 +20,14 @@ export type Props = BottomSheetFooterProps & {
 
 const TEXT_HEIGHT = 24; // typography 200 line height
 const BUTTON_PADDING = 15;
-const FOOTER_PADDING = 20;
-const FOOTER_PADDING_BOTTOM_TABLET_ADJUST = 20;
-export const FOOTER_HEIGHT = (FOOTER_PADDING * 2) + (BUTTON_PADDING * 2) + TEXT_HEIGHT;
+export const FOOTER_HEIGHT = (BUTTON_PADDING * 2) + TEXT_HEIGHT;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.centerChannelBg,
-        borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
-        borderTopWidth: 1,
-        paddingTop: FOOTER_PADDING,
+    },
+    buttons: {
         flexDirection: 'row',
-        paddingHorizontal: 20,
     },
     cancelButton: {
         alignItems: 'center',
@@ -37,6 +35,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderRadius: 4,
         flex: 1,
         paddingVertical: BUTTON_PADDING,
+        marginLeft: 12,
     },
     cancelButtonText: {
         color: theme.buttonBg,
@@ -47,55 +46,57 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.buttonBg,
         borderRadius: 4,
         flex: 1,
-        marginLeft: 8,
+        marginHorizontal: 12,
         paddingVertical: BUTTON_PADDING,
     },
     applyButtonText: {
         color: theme.buttonColor,
         ...typography('Body', 200, 'SemiBold'),
     },
+    separator: {
+        height: 1,
+        borderTopWidth: 3,
+        borderTopColor: changeOpacity(theme.centerChannelColor, 0.08),
+        marginVertical: 4,
+    },
 }));
 
 const PostPriorityPickerFooter = ({onCancel, onSubmit, ...props}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const isTablet = useIsTablet();
+    const {bottom} = useSafeAreaInsets();
 
-    const footer = (
-        <View
-            style={[style.container, {
-                paddingBottom: Platform.select({ios: (isTablet ? FOOTER_PADDING_BOTTOM_TABLET_ADJUST : 0), default: FOOTER_PADDING}),
-            }]}
-        >
-            <TouchableOpacity
-                onPress={onCancel}
-                style={style.cancelButton}
-            >
-                <FormattedText
-                    id='post_priority.picker.cancel'
-                    defaultMessage='Cancel'
-                    style={style.cancelButtonText}
-                />
-            </TouchableOpacity>
-            <TouchableOpacity
-                onPress={onSubmit}
-                style={style.applyButton}
-            >
-                <FormattedText
-                    id='post_priority.picker.apply'
-                    defaultMessage='Apply'
-                    style={style.applyButtonText}
-                />
-            </TouchableOpacity>
-        </View>
-    );
+    const cancelStyle = usePressableOpacityStyle(style.cancelButton);
+    const applyStyle = usePressableOpacityStyle(style.applyButton);
+    const containerStyle = useBottomSheetStyle();
 
-    if (isTablet) {
-        return footer;
-    }
     return (
         <BottomSheetFooter {...props}>
-            {footer}
+            <View style={style.separator}/>
+            <View style={[style.container, containerStyle, {paddingBottom: bottom}]}>
+                <View style={style.buttons}>
+                    <Pressable
+                        onPress={onCancel}
+                        style={cancelStyle}
+                    >
+                        <FormattedText
+                            id='post_priority.picker.cancel'
+                            defaultMessage='Cancel'
+                            style={style.cancelButtonText}
+                        />
+                    </Pressable>
+                    <Pressable
+                        onPress={onSubmit}
+                        style={applyStyle}
+                    >
+                        <FormattedText
+                            id='post_priority.picker.apply'
+                            defaultMessage='Apply'
+                            style={style.applyButtonText}
+                        />
+                    </Pressable>
+                </View>
+            </View>
         </BottomSheetFooter>
     );
 };

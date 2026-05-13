@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 /* eslint max-lines: off */
 
-import RNUtils from '@mattermost/rnutils';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -11,18 +10,17 @@ import {
     type LayoutRectangle,
     Platform,
     Pressable,
-    SafeAreaView,
     ScrollView,
     StatusBar,
     Text,
     useWindowDimensions,
     View,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {RTCView} from 'react-native-webrtc';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
-import {leaveCallConfirmation, startCallRecording, stopCallRecording} from '@calls/actions/calls';
+import {leaveCallConfirmation, startCallRecording, stopCallRecording, switchToCallThread} from '@calls/actions/calls';
 import {
     recordingAlert,
     recordingWillBePostedAlert,
@@ -54,31 +52,15 @@ import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Calls, Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useIsTablet} from '@hooks/device';
-import useDidMount from '@hooks/did_mount';
-import SecurityManager from '@managers/security_manager';
-import WebsocketManager from '@managers/websocket_manager';
-import {
-    allOrientations,
-    bottomSheet,
-    dismissAllModalsAndPopToScreen,
-    dismissBottomSheet,
-    goToScreen,
-    openAsBottomSheet,
-    popTopScreen,
-    setScreensOrientation,
-} from '@screens/navigation';
-import {freezeOtherScreens} from '@utils/gallery';
+import {bottomSheet, dismissBottomSheet, navigateBack, navigateToScreen} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {mergeNavigationOptions} from '@utils/navigation';
+import {dismissKeyboard} from '@utils/keyboard';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 import type {CallSession, CallsTheme, CurrentCall} from '@calls/types/calls';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 export const avatarL = 96;
 export const avatarM = 72;
@@ -86,12 +68,10 @@ export const usernameL = 110;
 export const usernameM = 92;
 
 export type Props = {
-    componentId: AvailableScreens;
     currentCall: CurrentCall | null;
     sessionsDict: Dictionary<CallSession>;
     micPermissionsGranted: boolean;
     teammateNameDisplay: string;
-    fromThreadScreen?: boolean;
     displayName?: string;
     isOwnDirectMessage: boolean;
     otherParticipants: boolean;
@@ -317,12 +297,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
 }));
 
 const CallScreen = ({
-    componentId,
     currentCall,
     sessionsDict,
     micPermissionsGranted,
     teammateNameDisplay,
-    fromThreadScreen,
     displayName,
     isOwnDirectMessage,
     otherParticipants,
@@ -332,12 +310,11 @@ const CallScreen = ({
     const intl = useIntl();
     const theme = useTheme();
     const {width, height} = useWindowDimensions();
-    const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
     const {EnableRecordings, EnableTranscriptions} = useCallsConfig(serverUrl);
     usePermissionsChecker(micPermissionsGranted);
     const incomingCalls = useIncomingCalls();
-    const {hostControlsAvailable, onPress, openUserProfile} = useHostMenus();
+    const {hostControlsAvailable, onPress, openProfile} = useHostMenus();
 
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
     const [showReactions, setShowReactions] = useState(false);
@@ -360,65 +337,12 @@ const CallScreen = ({
 
     const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
     const recordOptionTitle = intl.formatMessage({id: 'mobile.calls_record', defaultMessage: 'Record'});
-    const stopRecordingOptionTitle = intl.formatMessage({
-        id: 'mobile.calls_stop_recording',
-        defaultMessage: 'Stop Recording',
-    });
+    const stopRecordingOptionTitle = intl.formatMessage({id: 'mobile.calls_stop_recording', defaultMessage: 'Stop Recording'});
     const showCCTitle = intl.formatMessage({id: 'mobile.calls_show_cc', defaultMessage: 'Show live captions'});
     const hideCCTitle = intl.formatMessage({id: 'mobile.calls_hide_cc', defaultMessage: 'Hide live captions'});
 
-    useDidMount(() => {
-        const setOrientation = () => {
-            mergeNavigationOptions('Call', {
-                layout: {
-                    componentBackgroundColor: callsTheme.callsBg,
-                    orientation: allOrientations,
-                },
-                topBar: {
-                    visible: false,
-                },
-            });
-            if (Platform.OS === 'ios') {
-                RNUtils.unlockOrientation();
-            }
-        };
-
-        const unsetOrientation = () => {
-            setScreensOrientation(isTablet);
-            if (Platform.OS === 'ios' && !isTablet) {
-                // We need both the navigation & the module
-                RNUtils.lockPortrait();
-            }
-            freezeOtherScreens(false);
-        };
-
-        // Handle component disappearing (e.g. device is locked)
-        const didDismissListener = Navigation.events().registerComponentDidDisappearListener(async ({componentId: screen}) => {
-            if (componentId === screen) {
-                unsetOrientation();
-            }
-        });
-
-        // Handle component re-appearing (e.g. device is unlocked)
-        const didAppearListener = Navigation.events().registerComponentWillAppearListener(async ({componentId: screen}) => {
-            if (componentId === screen) {
-                setOrientation();
-            }
-        });
-
-        // Set orientation on component mount.
-        setOrientation();
-
-        return () => {
-            didDismissListener.remove();
-            didAppearListener.remove();
-
-            unsetOrientation();
-        };
-    });
-
     const leaveCallHandler = useCallback(() => {
-        leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId || '', popTopScreen);
+        leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId || '', navigateBack);
     }, [intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId]);
 
     const muteUnmuteHandler = useCallback(() => {
@@ -445,7 +369,10 @@ const CallScreen = ({
         }
 
         await startCallRecording(currentCall.serverUrl, currentCall.channelId);
-    }, [currentCall]);
+
+        // Only check if the channelId and serverUrl changed
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentCall?.channelId, currentCall?.serverUrl]);
 
     const stopRecording = useCallback(async () => {
         const stop = await stopRecordingConfirmationAlert(intl, EnableTranscriptions);
@@ -461,38 +388,29 @@ const CallScreen = ({
         }
 
         await stopCallRecording(currentCall.serverUrl, currentCall.channelId);
-    }, [intl, EnableTranscriptions, currentCall]);
+
+        // Only check if the channelId, serverUrl or EnableTranscriptions changed
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentCall?.channelId, currentCall?.serverUrl, EnableTranscriptions]);
 
     const toggleCC = useCallback(async () => {
-        Keyboard.dismiss();
+        await dismissKeyboard();
         await dismissBottomSheet();
 
         setShowCC((prev) => !prev);
     }, [setShowCC]);
 
     const switchToThread = useCallback(async () => {
-        Keyboard.dismiss();
+        await dismissKeyboard();
         await dismissBottomSheet();
         if (!currentCall) {
             return;
         }
+        switchToCallThread(currentCall.serverUrl, currentCall.threadId, callThreadOptionTitle);
 
-        const activeUrl = await DatabaseManager.getActiveServerUrl();
-        if (activeUrl === currentCall.serverUrl) {
-            await dismissAllModalsAndPopToScreen(Screens.THREAD, callThreadOptionTitle, {rootId: currentCall.threadId});
-            return;
-        }
-
-        // TODO: this is a temporary solution until we have a proper cross-team thread view.
-        //  https://mattermost.atlassian.net/browse/MM-45752
-        await popTopScreen(componentId);
-        if (fromThreadScreen) {
-            await popTopScreen(Screens.THREAD);
-        }
-        await DatabaseManager.setActiveServerDatabase(currentCall.serverUrl);
-        WebsocketManager.initializeClient(currentCall.serverUrl, 'Server Switch');
-        await goToScreen(Screens.THREAD, callThreadOptionTitle, {rootId: currentCall.threadId});
-    }, [currentCall, componentId, fromThreadScreen, callThreadOptionTitle]);
+        // Only check if the serverUrl, threadId or the callThreadOptionTitle changed
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentCall?.serverUrl, currentCall?.threadId, callThreadOptionTitle]);
 
     // The user should receive a recording alert if all of the following conditions apply:
     // - Recording has started, recording has not ended
@@ -520,13 +438,9 @@ const CallScreen = ({
     const ccAvailable = Boolean((currentCall?.capState?.start_at || 0) > (currentCall?.capState?.end_at || 0));
 
     const openParticipantsList = useCallback(async () => {
-        const screen = Screens.CALL_PARTICIPANTS;
-        const title = intl.formatMessage({id: 'mobile.calls_participants', defaultMessage: 'Participants'});
-        const closeButtonId = 'close-call-participants';
-
         Keyboard.dismiss();
-        openAsBottomSheet({screen, title, theme, closeButtonId});
-    }, [intl, theme]);
+        navigateToScreen(Screens.CALL_PARTICIPANTS);
+    }, []);
 
     const showOtherActions = useCallback(async () => {
         const renderContent = () => {
@@ -571,39 +485,10 @@ const CallScreen = ({
         if (ccAvailable) {
             items++;
         }
-        bottomSheet({
-            closeButtonId: 'close-other-actions',
-            renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT)],
-            title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
-            theme,
-        });
-    }, [
-        isHost,
-        EnableRecordings,
-        ccAvailable,
-        intl,
-        theme,
-        showStartRecording,
-        startRecording,
-        recordOptionTitle,
-        showStopRecording,
-        style,
-        stopRecording,
-        stopRecordingOptionTitle,
-        switchToThread,
-        callThreadOptionTitle,
-        toggleCC,
-        showCC,
-        hideCCTitle,
-        showCCTitle,
-    ]);
+        bottomSheet(renderContent, [1, bottomSheetSnapPoint(items, ITEM_HEIGHT)]);
+    }, [isHost, EnableRecordings, ccAvailable, showStartRecording, startRecording, recordOptionTitle, showStopRecording, style.denimDND, stopRecording, stopRecordingOptionTitle, switchToThread, callThreadOptionTitle, toggleCC, showCC, hideCCTitle, showCCTitle]);
 
-    const collapse = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-
-    useAndroidHardwareBackHandler(componentId, collapse);
+    useAndroidHardwareBackHandler(Screens.CALL, navigateBack);
 
     useEffect(() => {
         if (!layout || !layout.height || !layout.width) {
@@ -624,11 +509,7 @@ const CallScreen = ({
         } else {
             setCenterUsers(true);
         }
-
-    // We don't care about `avatarSize`, `screenShareOn`, and `smallerAvatar` changes as long as
-    // it is up to date when the effect runs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [layout, numSessions]);
+    }, [avatarSize, layout, numSessions, screenShareOn, smallerAvatar]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setLayout(e.nativeEvent.layout);
@@ -652,9 +533,9 @@ const CallScreen = ({
         if (hostControlsAvailable) {
             onPress(session)();
         } else {
-            openUserProfile(session);
+            openProfile(session);
         }
-    }, [hostControlsAvailable, onPress, openUserProfile]);
+    }, [hostControlsAvailable, onPress, openProfile]);
 
     if (!currentCall || !mySession) {
         return null;
@@ -757,7 +638,7 @@ const CallScreen = ({
                 isOwnDirectMessage={isOwnDirectMessage}
             />
             <Pressable
-                onPress={collapse}
+                onPress={navigateBack}
                 style={[style.headerRight, !(waitingForRecording || recording) && style.headerLeftRightRecOff]}
             >
                 <CompassIcon
@@ -770,10 +651,7 @@ const CallScreen = ({
     );
 
     return (
-        <SafeAreaView
-            style={style.wrapper}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-        >
+        <SafeAreaView style={style.wrapper} >
             <StatusBar barStyle={'light-content'}/>
             <View style={style.container}>
                 {!isLandscape && header}

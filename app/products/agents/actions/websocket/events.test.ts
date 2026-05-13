@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {AGENTS_PLUGIN_ID} from '@agents/constants/plugin';
-
 import {WebsocketEvents} from '@constants';
 
 import {handleAgentsEvents} from './events';

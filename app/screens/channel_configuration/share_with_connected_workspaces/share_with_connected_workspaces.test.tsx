@@ -5,7 +5,8 @@ import React from 'react';
 
 import {fetchChannelSharedRemotes} from '@actions/remote/channel';
 import {Screens} from '@constants';
-import {goToScreen} from '@screens/navigation';
+import {navigateToChannelInfoScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {fireEvent, renderWithIntlAndTheme, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -20,7 +21,7 @@ jest.mock('@actions/remote/channel', () => ({
     fetchChannelSharedRemotes: jest.fn(),
 }));
 jest.mock('@screens/navigation', () => ({
-    goToScreen: jest.fn(),
+    navigateToChannelInfoScreen: jest.fn(),
 }));
 jest.mock('@hooks/utils', () => ({
     usePreventDoubleTap: (fn: () => void) => fn,
@@ -155,11 +156,10 @@ describe('ShareWithConnectedWorkspaces', () => {
         });
         const option = getByTestId('channel_settings.share_with_connected_workspaces.option');
         fireEvent.press(option);
-        expect(goToScreen).toHaveBeenCalledWith(
+        expect(navigateToChannelInfoScreen).toHaveBeenCalledWith(
             Screens.CHANNEL_SHARE,
-            'Share with connected workspaces',
-            {channelId: 'channel1', onSharedRemotesChanged: expect.any(Function)},
-            {topBar: {subtitle: {color: 'rgba(255,255,255,0.72)', text: 'Channel 1'}}},
+            {channelId: 'channel1', subtitle: 'Channel 1'},
         );
+        expect(CallbackStore.getCallback).toBeDefined();
     });
 });

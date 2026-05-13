@@ -1,23 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {useCallback} from 'react';
-import {
-    FlatList, Keyboard, Platform, RefreshControl, View,
-} from 'react-native';
+import {FlatList, Platform, RefreshControl, View} from 'react-native';
+import {KeyboardAvoidingView} from 'react-native-keyboard-controller';
 
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 const INITIAL_BATCH_TO_RENDER = 15;
-
-const keyboardDismissProp = Platform.select({
-    android: {
-        onScrollBeginDrag: Keyboard.dismiss,
-    },
-    ios: {
-        keyboardDismissMode: 'on-drag' as const,
-    },
-});
 
 type DataType = DialogOption[] | Channel[];
 type ListItemProps = {
@@ -34,12 +24,12 @@ type Props = {
     canRefresh?: boolean;
     loading?: boolean;
     loadingComponent?: React.ReactElement<any, string> | null;
-    noResults: () => JSX.Element | null;
+    noResults: () => React.ReactNode;
     refreshing?: boolean;
     onRefresh?: () => void;
     onLoadMore: () => void;
     onRowPress: (item: Channel | DialogOption) => void;
-    renderItem: (props: ListItemProps) => JSX.Element;
+    renderItem: (props: ListItemProps) => React.ReactNode;
     selectable?: boolean;
     theme: Theme;
     shouldRenderSeparator?: boolean;
@@ -52,6 +42,7 @@ const keyExtractor = (item: any): string => {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
+        flex: {flex: 1},
         list: {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
@@ -65,46 +56,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 1,
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-        },
-        listView: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-            ...Platform.select({
-                android: {
-                    marginBottom: 20,
-                },
-            }),
-        },
-        loadingText: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-        },
-        searching: {
-            backgroundColor: theme.centerChannelBg,
-            height: '100%',
-            position: 'absolute',
-            width: '100%',
-        },
-        sectionContainer: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),
-            paddingLeft: 10,
-            paddingVertical: 2,
-        },
-        sectionWrapper: {
-            backgroundColor: theme.centerChannelBg,
-        },
-        sectionText: {
-            fontWeight: '600',
-            color: theme.centerChannelColor,
-        },
-        noResultContainer: {
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        noResultText: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            ...typography('Body', 600, 'Regular'),
         },
     };
 });
@@ -131,7 +82,7 @@ function CustomList({
         );
     }, [shouldRenderSeparator, style]);
 
-    const renderListItem = useCallback(({item}: any) => {
+    const renderListItem = useCallback(({item}: any): React.ReactElement | null => {
         const props: ListItemProps = {
             id: item.key,
             item,
@@ -145,7 +96,7 @@ function CustomList({
             props.enabled = !item.disableSelect;
         }
 
-        return renderItem(props);
+        return (renderItem(props) ?? null) as React.ReactElement | null;
     }, [onRowPress, selectable, renderItem]);
 
     const renderFooter = useCallback((): React.ReactElement<any, string> | null => {
@@ -165,24 +116,26 @@ function CustomList({
     }
 
     return (
-        <FlatList
-            data={data}
-            keyboardShouldPersistTaps='always'
-            {...keyboardDismissProp}
-            keyExtractor={keyExtractor}
-            initialNumToRender={INITIAL_BATCH_TO_RENDER}
-            ItemSeparatorComponent={renderSeparator}
-            ListEmptyComponent={renderEmptyList()}
-            ListFooterComponent={renderFooter}
-            maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
-            onEndReached={onLoadMore}
-            refreshControl={refreshControl}
-            removeClippedSubviews={true}
-            renderItem={renderListItem}
-            scrollEventThrottle={60}
-            style={style.list}
-            testID={testID}
-        />
+        <KeyboardAvoidingView style={style.flex}>
+            <FlatList
+                data={data}
+                keyboardShouldPersistTaps='always'
+                keyboardDismissMode='on-drag'
+                keyExtractor={keyExtractor}
+                initialNumToRender={INITIAL_BATCH_TO_RENDER}
+                ItemSeparatorComponent={renderSeparator}
+                ListEmptyComponent={renderEmptyList()}
+                ListFooterComponent={renderFooter}
+                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
+                onEndReached={onLoadMore}
+                refreshControl={refreshControl}
+                removeClippedSubviews={true}
+                renderItem={renderListItem}
+                scrollEventThrottle={60}
+                style={style.list}
+                testID={testID}
+            />
+        </KeyboardAvoidingView>
     );
 }
 

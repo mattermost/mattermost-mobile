@@ -12,6 +12,7 @@ import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 
+import type {CompassIconName} from '@components/compass_icon';
 import type {ManageOptionsTypes} from '@constants/members';
 
 const {MAKE_CHANNEL_ADMIN, MAKE_CHANNEL_MEMBER, REMOVE_USER} = Members.ManageOptions;
@@ -113,7 +114,7 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
     }, [manageOption, removeFromChannel, updateChannelMemberSchemeRole]);
 
     let actionText;
-    let icon;
+    let icon: CompassIconName | undefined;
     let isDestructive = false;
     switch (manageOption) {
         case REMOVE_USER:

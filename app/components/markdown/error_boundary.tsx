@@ -13,7 +13,7 @@ type State = {
 }
 
 type Props = {
-    children: JSX.Element;
+    children: React.ReactNode;
     error: string;
     theme: Theme;
 }

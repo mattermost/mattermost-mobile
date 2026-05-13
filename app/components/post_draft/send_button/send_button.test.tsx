@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act} from '@testing-library/react-hooks';
+import {act} from '@testing-library/react-native';
 import React from 'react';
-import {InteractionManager} from 'react-native';
 
 import SendButton from '@components/post_draft/send_button/send_button';
 import {fireEvent, renderWithIntl} from '@test/intl-test-helper';
@@ -67,10 +66,14 @@ describe('components/post_draft/send_button', () => {
         const button = getByTestId('test_id.send.button');
 
         // First tap
-        fireEvent.press(button);
+        act(() => {
+            fireEvent.press(button);
+        });
 
         // Second tap immediately after
-        fireEvent.press(button);
+        act(() => {
+            fireEvent.press(button);
+        });
 
         // Should only call once despite two taps
         expect(onPress).toHaveBeenCalledTimes(1);
@@ -121,7 +124,7 @@ describe('components/post_draft/send_button', () => {
     });
 
     it('should show the tooltip after when the tutorial has not been watched', async () => {
-        const handle = InteractionManager.createInteractionHandle();
+        jest.useFakeTimers({doNotFake: ['nextTick']});
         const props = {...baseProps, scheduledPostFeatureTooltipWatched: false};
         const {queryByText} = renderWithIntl(
             <SendButton
@@ -132,16 +135,16 @@ describe('components/post_draft/send_button', () => {
 
         expect(queryByText(text)).toBeNull();
 
-        InteractionManager.clearInteractionHandle(handle);
-        await new Promise((resolve) => setImmediate(resolve));
-
-        act(() => {
-            expect(queryByText(text)).toBeTruthy();
+        await act(async () => {
+            jest.runAllTimers();
         });
+
+        expect(queryByText(text)).toBeTruthy();
+        jest.useRealTimers();
     });
 
     it('should not show the tooltip if the scheduled post feature is disabled', async () => {
-        const handle = InteractionManager.createInteractionHandle();
+        jest.useFakeTimers({doNotFake: ['nextTick']});
         const props = {...baseProps, scheduledPostFeatureTooltipWatched: false, scheduledPostEnabled: false};
         const {queryByText} = renderWithIntl(
             <SendButton
@@ -150,11 +153,11 @@ describe('components/post_draft/send_button', () => {
         );
         const text = 'Type a message and long press the send button to schedule it for a later time.';
 
-        InteractionManager.clearInteractionHandle(handle);
-        await new Promise((resolve) => setImmediate(resolve));
-
-        act(() => {
-            expect(queryByText(text)).toBeFalsy();
+        await act(async () => {
+            jest.runAllTimers();
         });
+
+        expect(queryByText(text)).toBeFalsy();
+        jest.useRealTimers();
     });
 });

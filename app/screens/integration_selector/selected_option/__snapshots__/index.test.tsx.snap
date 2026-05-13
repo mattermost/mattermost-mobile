@@ -65,11 +65,27 @@ exports[`components/integration_selector/selected_option should match snapshot f
       }
     }
   >
-    <Icon
-      color="#3f4350"
-      name="close"
-      size={14}
-    />
+    <Text
+      allowFontScaling={false}
+      selectable={false}
+      style={
+        [
+          {
+            "color": "#3f4350",
+            "fontSize": 14,
+          },
+          undefined,
+          {
+            "fontFamily": "compass-icons",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          undefined,
+        ]
+      }
+    >
+      󰅖
+    </Text>
   </View>
 </View>
 `;
@@ -139,11 +155,27 @@ exports[`components/integration_selector/selected_option should match snapshot f
       }
     }
   >
-    <Icon
-      color="#3f4350"
-      name="close"
-      size={14}
-    />
+    <Text
+      allowFontScaling={false}
+      selectable={false}
+      style={
+        [
+          {
+            "color": "#3f4350",
+            "fontSize": 14,
+          },
+          undefined,
+          {
+            "fontFamily": "compass-icons",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          undefined,
+        ]
+      }
+    >
+      󰅖
+    </Text>
   </View>
 </View>
 `;
@@ -213,11 +245,27 @@ exports[`components/integration_selector/selected_option should match snapshot f
       }
     }
   >
-    <Icon
-      color="#3f4350"
-      name="close"
-      size={14}
-    />
+    <Text
+      allowFontScaling={false}
+      selectable={false}
+      style={
+        [
+          {
+            "color": "#3f4350",
+            "fontSize": 14,
+          },
+          undefined,
+          {
+            "fontFamily": "compass-icons",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          undefined,
+        ]
+      }
+    >
+      󰅖
+    </Text>
   </View>
 </View>
 `;

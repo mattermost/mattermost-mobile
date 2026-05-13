@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
+import React, {useCallback, useEffect, useState} from 'react';
+import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
+import {Alert, Pressable, Text, View} from 'react-native';
+
 import {fetchAgents} from '@agents/actions/remote/agents';
 import {requestChannelSummary} from '@agents/actions/remote/channel_summary';
 import {type Agent} from '@agents/client/rest';
 import {AGENT_ANALYSIS_SUMMARY} from '@agents/constants';
-import React, {useCallback, useEffect, useState} from 'react';
-import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
-import {Alert, Pressable, ScrollView, Text, View} from 'react-native';
-
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
@@ -297,7 +298,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
     const selectedAgentDisplayName = selectedAgent?.displayName || selectedAgent?.username || '';
 
     return (
-        <ScrollView>
+        <BottomSheetScrollView>
             {/* Header Section - Agent selector + Prompt input */}
             <View style={styles.headerSection}>
                 <Pressable
@@ -378,7 +379,7 @@ const ChannelSummarySheet = ({channelId}: Props) => {
                     <Loading color={theme.buttonBg}/>
                 </View>
             )}
-        </ScrollView>
+        </BottomSheetScrollView>
     );
 };
 

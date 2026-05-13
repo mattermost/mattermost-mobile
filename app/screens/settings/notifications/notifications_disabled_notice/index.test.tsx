@@ -50,7 +50,9 @@ describe('Notifications Disabled Notice', () => {
         );
         const button = queryByText('Enable notifications');
         expect(button).toBeVisible();
-        fireEvent.press(button);
+        if (button) {
+            fireEvent.press(button);
+        }
         expect(Permissions.openSettings).toHaveBeenCalledWith('notifications');
     });
 

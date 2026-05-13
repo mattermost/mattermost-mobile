@@ -3,7 +3,6 @@
 
 import {AGENT_POST_TYPES} from '@agents/constants';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
-
 import TestHelper from '@test/test_helper';
 
 import {isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, mergeToolCalls} from './utils';

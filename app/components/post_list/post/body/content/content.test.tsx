@@ -10,6 +10,7 @@ import TestHelper from '@test/test_helper';
 import Content from './content';
 import PermalinkPreview from './permalink_preview';
 
+import type {PermalinkPreviewProps} from './permalink_preview/permalink_preview';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 jest.mock('./permalink_preview', () => ({
@@ -42,7 +43,7 @@ jest.mock('./embedded_bindings', () => ({
     default: jest.fn(),
 }));
 
-jest.mocked(PermalinkPreview).mockImplementation((props) =>
+jest.mocked(PermalinkPreview).mockImplementation((props: PermalinkPreviewProps) =>
     React.createElement('div', {testID: 'permalink-preview', ...props}),
 );
 

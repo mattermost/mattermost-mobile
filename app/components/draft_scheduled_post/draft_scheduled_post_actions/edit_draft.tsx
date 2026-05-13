@@ -16,10 +16,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bottomSheetId: AvailableScreens;
     channel: ChannelModel;
     rootId: string;
 }
@@ -39,7 +37,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const EditDraft: React.FC<Props> = ({
-    bottomSheetId,
     channel,
     rootId,
 }) => {
@@ -48,7 +45,7 @@ const EditDraft: React.FC<Props> = ({
     const serverUrl = useServerUrl();
 
     const editHandler = async () => {
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         if (rootId) {
             switchToThread(serverUrl, rootId, false);
             return;

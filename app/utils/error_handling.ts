@@ -1,20 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {reloadAppAsync} from 'expo-modules-core';
 import {defineMessages} from 'react-intl';
 import {Alert} from 'react-native';
-import {setJSExceptionHandler} from 'react-native-exception-handler';
 
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
-import {dismissAllModals, dismissAllOverlays} from '@screens/navigation';
 import {isBetaApp} from '@utils/general';
 import {
-    captureException,
     captureJSException,
     initializeSentry,
 } from '@utils/sentry';
 
-import {logWarning} from './log';
+import {logError} from './log';
 
 const messages = defineMessages({
     title: {
@@ -34,45 +32,30 @@ const messages = defineMessages({
 class JavascriptAndNativeErrorHandlerSingleton {
     initializeErrorHandling = () => {
         initializeSentry();
-        setJSExceptionHandler(this.errorHandler, false);
-
-        // setNativeExceptionHandler(this.nativeErrorHandler, false);
-    };
-
-    nativeErrorHandler = (e: string) => {
-        logWarning('Handling native error ' + e);
-        captureException(e);
+        ErrorUtils.setGlobalHandler(this.errorHandler);
     };
 
     errorHandler = (e: unknown, isFatal: boolean) => {
-        if (__DEV__ && !e && !isFatal) {
-            // react-native-exception-handler redirects console.error to call this, and React calls
-            // console.error without an exception when prop type validation fails, so this ends up
-            // being called with no arguments when the error handler is enabled in dev mode.
-            return;
-        }
+        logError('Handling Javascript error', e, isFatal);
 
-        logWarning('Handling Javascript error', e, isFatal);
+        if (!__DEV__) {
+            if (isBetaApp || isFatal) {
+                captureJSException(e, isFatal);
+            }
 
-        if (isBetaApp || isFatal) {
-            captureJSException(e, isFatal);
-        }
+            if (isFatal && e instanceof Error) {
+                const translations = getTranslations(DEFAULT_LOCALE);
 
-        if (isFatal && e instanceof Error) {
-            const translations = getTranslations(DEFAULT_LOCALE);
-
-            Alert.alert(
-                translations[messages.title.id],
-                translations[messages.description.id] + `\n\n${e.message}\n\n${e.stack}`,
-                [{
-                    text: translations[messages.button.id],
-                    onPress: async () => {
-                        await dismissAllModals();
-                        await dismissAllOverlays();
-                    },
-                }],
-                {cancelable: false},
-            );
+                Alert.alert(
+                    translations[messages.title.id],
+                    translations[messages.description.id] + `\n\n${e.message}\n\n${e.stack}`,
+                    [{
+                        text: translations[messages.button.id],
+                        onPress: () => reloadAppAsync('Fatal error recovery'),
+                    }],
+                    {cancelable: false},
+                );
+            }
         }
     };
 }

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CookieManager, {type Cookie} from '@react-native-cookies/cookies';
+import CookieManager, {type Cookie} from '@preeternal/react-native-cookie-manager';
 import base64 from 'base-64';
 import {Platform} from 'react-native';
 

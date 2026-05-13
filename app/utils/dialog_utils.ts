@@ -42,22 +42,6 @@ export const DialogTextSubtypes = {
 } as const;
 
 /**
- * Dialog validation error message IDs
- */
-export const DialogErrorMessages = {
-    REQUIRED: 'interactive_dialog.error.required',
-    TOO_SHORT: 'interactive_dialog.error.too_short',
-    BAD_EMAIL: 'interactive_dialog.error.bad_email',
-    BAD_NUMBER: 'interactive_dialog.error.bad_number',
-    BAD_URL: 'interactive_dialog.error.bad_url',
-    INVALID_OPTION: 'interactive_dialog.error.invalid_option',
-    SUBMISSION_FAILED: 'interactive_dialog.submission_failed',
-    SUBMISSION_FAILED_NETWORK: 'interactive_dialog.submission_failed_network',
-    SUBMISSION_FAILED_VALIDATION: 'interactive_dialog.submission_failed_validation',
-    SUBMISSION_FAILED_WITH_DETAILS: 'interactive_dialog.submission_failed_with_details',
-} as const;
-
-/**
  * Maps legacy dialog element types to modern AppField types
  */
 export function mapDialogTypeToAppFieldType(dialogType: InteractiveDialogElementType, dataSource?: string): AppFieldType {

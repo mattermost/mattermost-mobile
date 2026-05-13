@@ -3,7 +3,7 @@
 
 import React, {useMemo, useState} from 'react';
 import {View, useWindowDimensions} from 'react-native';
-import Animated, {Extrapolate, interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {Extrapolate, interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming, type SharedValue} from 'react-native-reanimated';
 
 import useDidMount from '@hooks/did_mount';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -14,7 +14,7 @@ import type {OnboardingItem} from '@typings/screens/onboarding';
 type Props = {
     item: OnboardingItem;
     theme: Theme;
-    scrollX: Animated.SharedValue<number>;
+    scrollX: SharedValue<number>;
     index: number;
     lastSlideIndex: number;
 };

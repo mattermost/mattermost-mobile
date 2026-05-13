@@ -1,22 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, ScrollView, View} from 'react-native';
+import {Keyboard, View} from 'react-native';
+import {KeyboardAwareScrollView, type KeyboardAwareScrollViewRef} from 'react-native-keyboard-controller';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {handleGotoLocation} from '@actions/remote/command';
 import Button from '@components/button';
-import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
+import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
+import {navigateBack} from '@screens/navigation';
 import {filterEmptyOptions} from '@utils/apps';
 import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType} from '@utils/dialog_utils';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
@@ -25,12 +26,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
 import DialogIntroductionText from '../interactive_dialog/dialog_introduction_text';
-import {buildNavigationButton, dismissModal, setButtons} from '../navigation';
 
 import AppsFormField from './apps_form_field';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
-import type {ImageResource} from 'react-native-navigation';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -45,7 +42,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             fontWeight: 'bold',
         },
         scrollView: {
-            marginBottom: 20,
+            paddingBottom: 20,
             marginTop: 10,
         },
         errorLabel: {
@@ -89,16 +86,11 @@ function fieldsAsElements(fields?: AppField[]): DialogElement[] {
 
 const close = () => {
     Keyboard.dismiss();
-    dismissModal();
-};
-
-const makeCloseButton = (icon: ImageResource) => {
-    return buildNavigationButton(CLOSE_BUTTON_ID, 'close.more_direct_messages.button', icon);
+    navigateBack();
 };
 
 export type Props = {
     form: AppForm;
-    componentId: AvailableScreens;
     refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<FormResponseData>>;
     submit: (values: AppFormValues) => Promise<DoAppCallResult<FormResponseData>>;
     performLookupCall: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<AppLookupResponse>>;
@@ -140,19 +132,16 @@ function initValues(fields?: AppField[]) {
     return values;
 }
 
-const CLOSE_BUTTON_ID = 'close-app-form';
-const SUBMIT_BUTTON_ID = 'submit-app-form';
-
 function AppsFormComponent({
     form,
-    componentId,
     refreshOnSelect,
     submit,
     performLookupCall,
 }: Props) {
-    const scrollView = useRef<ScrollView>(null);
+    const scrollView = useRef<KeyboardAwareScrollViewRef>(null);
     const isMountedRef = useRef(true);
     const [submitting, setSubmitting] = useState(false);
+    const navigation = useNavigation();
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [error, setError] = useState('');
@@ -168,45 +157,6 @@ function AppsFormComponent({
     const submitButtons = useMemo(() => {
         return form.fields && form.fields.find((f) => f.name === form.submit_buttons);
     }, [form]);
-
-    const rightButton = useMemo(() => {
-        if (submitButtons) {
-            return undefined;
-        }
-        const submitLabel = form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'});
-        return {
-            ...buildNavigationButton(
-                SUBMIT_BUTTON_ID,
-                'interactive_dialog.submit.button',
-                undefined,
-                submitLabel,
-            ),
-            enabled: !submitting,
-            showAsAction: 'always' as const,
-            color: theme.sidebarHeaderTextColor,
-        };
-    }, [theme.sidebarHeaderTextColor, submitButtons, submitting, intl, form.submit_label]);
-
-    const rightButtons = useMemo(() => (rightButton ? [rightButton] : []), [rightButton]);
-
-    const leftButton = useMemo(() => {
-        const icon = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        return makeCloseButton(icon);
-    }, [theme.sidebarHeaderTextColor]);
-
-    const leftButtons = useMemo(() => [leftButton], [leftButton]);
-
-    useEffect(() => {
-        setButtons(componentId, {
-            rightButtons,
-        });
-    }, [componentId, rightButtons]);
-
-    useEffect(() => {
-        setButtons(componentId, {
-            leftButtons,
-        });
-    }, [componentId, leftButtons]);
 
     const updateErrors = useCallback((elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
         let hasErrors = false;
@@ -319,10 +269,11 @@ function AppsFormComponent({
             const newError = checkDialogElementForError(
                 element,
                 element.name === form.submit_buttons ? button : secureGetFromRecord(values, element.name),
+                intl,
             );
             if (newError) {
                 hasErrors = true;
-                fieldErrors[element.name] = intl.formatMessage({id: newError.id, defaultMessage: newError.defaultMessage}, newError.values);
+                fieldErrors[element.name] = newError;
             }
         });
 
@@ -440,8 +391,20 @@ function AppsFormComponent({
         }
     }, [form, values, performLookupCall, intl]);
 
-    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
-    useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, handleSubmit, [handleSubmit]);
+    useEffect(() => {
+        if (submitButtons) {
+            navigation.setOptions({
+                headerRight: () => (
+                    <NavigationButton
+                        onPress={handleSubmit}
+                        disabled={submitting}
+                        testID='interactive_dialog.submit.button'
+                        text={intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'})}
+                    />
+                ),
+            });
+        }
+    }, [handleSubmit, intl, navigation, submitButtons, submitting]);
 
     // Cleanup on unmount to prevent memory leaks
     useEffect(() => {
@@ -454,11 +417,13 @@ function AppsFormComponent({
         <SafeAreaView
             testID='interactive_dialog.screen'
             style={style.container}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            <ScrollView
+            <KeyboardAwareScrollView
                 ref={scrollView}
-                style={style.scrollView}
+                keyboardDismissMode='interactive'
+                keyboardShouldPersistTaps='handled'
+                contentContainerStyle={style.scrollView}
+                mode='layout'
             >
                 {error && (
                     <View style={style.errorContainer} >
@@ -510,7 +475,7 @@ function AppsFormComponent({
                         </View>
                     ))}
                 </View>
-            </ScrollView>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 }

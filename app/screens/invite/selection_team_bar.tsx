@@ -30,7 +30,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: '100%',
             paddingVertical: 16,
             paddingHorizontal: 20,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
         },
         iconContainer: {
             width: 40,

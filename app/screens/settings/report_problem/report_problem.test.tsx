@@ -6,16 +6,14 @@ import React from 'react';
 
 import {Screens} from '@constants';
 import {DEFAULT_REPORT_A_PROBLEM_EMAIL} from '@constants/report_a_problem';
-import {goToScreen} from '@screens/navigation';
+import {navigateToSettingsScreen} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {emailLogs, getDefaultReportAProblemLink} from '@utils/share_logs';
 import {tryOpenURL} from '@utils/url';
 
 import ReportProblem from './report_problem';
 
-jest.mock('@screens/navigation', () => ({
-    goToScreen: jest.fn(),
-}));
+jest.mock('@screens/navigation');
 
 jest.mock('@utils/share_logs', () => ({
     emailLogs: jest.fn(),
@@ -79,9 +77,9 @@ describe('screens/settings/report_problem/report_problem', () => {
 
         await act(async () => {
             fireEvent.press(getByTestId('settings.report_problem.option'));
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToSettingsScreen).toHaveBeenCalledWith(
                 Screens.REPORT_PROBLEM,
-                'Report a problem',
+                {title: 'Report a problem'},
             );
         });
     });
@@ -99,9 +97,9 @@ describe('screens/settings/report_problem/report_problem', () => {
 
         await act(async () => {
             fireEvent.press(getByTestId('settings.report_problem.option'));
-            expect(goToScreen).toHaveBeenCalledWith(
+            expect(navigateToSettingsScreen).toHaveBeenCalledWith(
                 Screens.REPORT_PROBLEM,
-                'Report a problem',
+                {title: 'Report a problem'},
             );
         });
     });
@@ -127,7 +125,7 @@ describe('screens/settings/report_problem/report_problem', () => {
                 props.reportAProblemMail,
                 true,
             );
-            expect(goToScreen).not.toHaveBeenCalled();
+            expect(navigateToSettingsScreen).not.toHaveBeenCalled();
         });
     });
 
@@ -146,7 +144,7 @@ describe('screens/settings/report_problem/report_problem', () => {
             fireEvent.press(getByTestId('settings.report_problem.option'));
             expect(getDefaultReportAProblemLink).toHaveBeenCalledWith(false);
             expect(tryOpenURL).toHaveBeenCalledWith('default-forum-link');
-            expect(goToScreen).not.toHaveBeenCalled();
+            expect(navigateToSettingsScreen).not.toHaveBeenCalled();
         });
     });
 
@@ -171,7 +169,7 @@ describe('screens/settings/report_problem/report_problem', () => {
                 DEFAULT_REPORT_A_PROBLEM_EMAIL,
                 true,
             );
-            expect(goToScreen).not.toHaveBeenCalled();
+            expect(navigateToSettingsScreen).not.toHaveBeenCalled();
         });
     });
 
@@ -191,7 +189,10 @@ describe('screens/settings/report_problem/report_problem', () => {
 
         await act(async () => {
             fireEvent.press(getByTestId('settings.report_problem.option'));
-            expect(goToScreen).toHaveBeenCalledWith(Screens.REPORT_PROBLEM, 'Report a problem');
+            expect(navigateToSettingsScreen).toHaveBeenCalledWith(
+                Screens.REPORT_PROBLEM,
+                {title: 'Report a problem'},
+            );
             expect(emailLogs).not.toHaveBeenCalled();
             expect(tryOpenURL).not.toHaveBeenCalled();
         });
@@ -212,7 +213,10 @@ describe('screens/settings/report_problem/report_problem', () => {
 
         await act(async () => {
             fireEvent.press(getByTestId('settings.report_problem.option'));
-            expect(goToScreen).toHaveBeenCalledWith(Screens.REPORT_PROBLEM, 'Report a problem');
+            expect(navigateToSettingsScreen).toHaveBeenCalledWith(
+                Screens.REPORT_PROBLEM,
+                {title: 'Report a problem'},
+            );
             expect(emailLogs).not.toHaveBeenCalled();
             expect(tryOpenURL).not.toHaveBeenCalled();
         });

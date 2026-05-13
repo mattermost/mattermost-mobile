@@ -2,15 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Navigation} from 'react-native-navigation';
 
 import {Screens} from '@constants';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import SnackBar from './index';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
+import SnackBar from './snack_bar';
 
 jest.mock('@utils/theme', () => ({
     makeStyleSheetFromTheme: jest.fn().mockReturnValue(() => ({})),
@@ -29,38 +26,14 @@ jest.mock('react-native-reanimated', () => {
     };
 });
 
-jest.mock('react-native-navigation', () => ({
-    Navigation: {
-        events: jest.fn().mockReturnValue({
-            registerComponentWillAppearListener: jest.fn(),
-            registerComponentDidDisappearListener: jest.fn(),
-        }),
-        dismissOverlay: jest.fn(),
-        setDefaultOptions: jest.fn(),
-    },
-}));
-
 describe('SnackBar', () => {
-    let unsubscribeMock: jest.Mock;
-
     const baseProps = {
-        componentId: 'component-id' as AvailableScreens,
         sourceScreen: Screens.CHANNEL,
         barType: SNACK_BAR_TYPE.CODE_COPIED,
         messageValues: {},
         onAction: jest.fn(),
+        onDismiss: jest.fn(),
     };
-
-    beforeEach(() => {
-        unsubscribeMock = jest.fn();
-
-        (Navigation.events().registerComponentWillAppearListener as jest.Mock).mockReturnValue({
-            remove: unsubscribeMock,
-        });
-        (Navigation.events().registerComponentDidDisappearListener as jest.Mock).mockReturnValue({
-            remove: unsubscribeMock,
-        });
-    });
 
     afterEach(() => {
         jest.clearAllMocks();

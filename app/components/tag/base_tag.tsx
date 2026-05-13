@@ -4,7 +4,7 @@
 import React, {useMemo} from 'react';
 import {Text, View} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -14,7 +14,7 @@ import type {MessageDescriptor} from 'react-intl';
 
 type TagProps = {
     message: MessageDescriptor | string;
-    icon?: string;
+    icon?: CompassIconName;
     type?: 'general' | 'info' | 'danger' | 'dangerDim' | 'success' | 'warning' | 'infoDim';
     size?: 'xs' | 's' | 'm';
     uppercase?: boolean;

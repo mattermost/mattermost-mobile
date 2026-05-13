@@ -45,7 +45,6 @@ jest.mocked(AppLogs).mockImplementation(() => <View testID='app-logs'/>);
 
 describe('screens/report_a_problem/report_problem', () => {
     const baseProps: ComponentProps<typeof ReportProblem> = {
-        componentId: Screens.REPORT_PROBLEM,
         allowDownloadLogs: true,
         attachLogsEnabled: false,
         currentUserId: 'user1',

@@ -37,9 +37,11 @@ describe('components/button', () => {
         props.iconName = 'close';
         const {getByTestId} = render(<Button {...props}/>);
 
+        // CompassIcon renders as a Text node with the unicode glyph as children;
+        // name is consumed internally and does not appear on the rendered props.
         const icon = getByTestId('test-button-icon');
         expect(icon).toBeTruthy();
-        expect(icon.props.name).toBe('close');
+        expect(icon.props.children).toContain(String.fromCodePoint(0xf0156));
     });
 
     it('should render disabled button', () => {
@@ -61,13 +63,13 @@ describe('components/button', () => {
         const container = getByTestId('test-button-text-container');
 
         // When icon is on the left, it should be the first child
-        expect(within(container.children[0]).getByTestId('test-button-icon')).toBeVisible();
+        expect(within(container.children[0] as any).getByTestId('test-button-icon')).toBeVisible();
 
         props.isIconOnTheRight = true;
         rerender(<Button {...props}/>);
 
         // When icon is on the right, it should be the last child
-        expect(within(container.children[1]).getByTestId('test-button-icon')).toBeVisible();
+        expect(within(container.children[1] as any).getByTestId('test-button-icon')).toBeVisible();
     });
 
     it('should render custom icon component', () => {

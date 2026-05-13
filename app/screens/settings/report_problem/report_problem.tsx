@@ -7,7 +7,7 @@ import {defineMessages, useIntl} from 'react-intl';
 import SettingItem from '@components/settings/item';
 import {Screens} from '@constants';
 import {DEFAULT_REPORT_A_PROBLEM_EMAIL} from '@constants/report_a_problem';
-import {goToScreen} from '@screens/navigation';
+import {navigateToSettingsScreen} from '@screens/navigation';
 import {emailLogs, getDefaultReportAProblemLink} from '@utils/share_logs';
 import {tryOpenURL} from '@utils/url';
 
@@ -54,7 +54,7 @@ const ReportProblem = ({
         }
         const message = onlyAllowLogs ? messages.downloadLogs : messages.reportProblem;
         const title = intl.formatMessage(message);
-        goToScreen(Screens.REPORT_PROBLEM, title);
+        navigateToSettingsScreen(Screens.REPORT_PROBLEM, {title});
     }, [allowDownloadLogs, intl, isFreeEdition, metadata, onlyAllowLogs, reportAProblemMail, reportAProblemType, siteName, skipReportAProblemScreen]);
 
     if (onlyAllowLogs) {

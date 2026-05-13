@@ -78,7 +78,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const searchRef = useRef<TextInput>(null);
+    const searchRef = useRef<TextInput | null>(null);
     const [value, setValue] = useState(props.defaultValue || props.value || '');
     const searchClearButtonTestID = `${props.testID}.search.clear.button`;
     const searchCancelButtonTestID = `${props.testID}.search.cancel.button`;
@@ -148,7 +148,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
             searchRef.current?.blur();
         },
         cancel: () => {
-            // @ts-expect-error cancel is not part of TextInput does exist in SearchBar
+            // @ts-expect-error cancel not in TextInput type but exists at runtime
             searchRef.current?.cancel();
         },
         clear: () => {
