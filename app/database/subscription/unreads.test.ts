@@ -3,8 +3,9 @@
 
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
+import {enableFakeTimers, disableFakeTimers} from '@test/timer_helpers';
 
-import {subscribeMentionsByServer} from './unreads';
+import {subscribeMentionsByServer, subscribeServerUnreadAndMentions, subscribeUnreadAndMentionsByServer, getTotalMentionsForServer} from './unreads';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -13,6 +14,7 @@ describe('subscribeMentionsByServer', () => {
     let operator: ServerDataOperator;
 
     beforeEach(async () => {
+        enableFakeTimers();
         await DatabaseManager.init([serverUrl]);
         const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         operator = serverDatabaseAndOperator.operator;
@@ -20,6 +22,7 @@ describe('subscribeMentionsByServer', () => {
 
     afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
+        disableFakeTimers();
     });
 
     it('should exclude muted channels from mentions count', async () => {
@@ -197,5 +200,107 @@ describe('subscribeMentionsByServer', () => {
                 reject(new Error('Subscription did not emit data within timeout'));
             }, 1000);
         });
+    });
+});
+
+describe('subscribeServerUnreadAndMentions', () => {
+    const serverUrl = 'test-server-unread';
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should return undefined when server does not exist', () => {
+        const sub = subscribeServerUnreadAndMentions('http://nonexistent.com', jest.fn());
+        expect(sub).toBeUndefined();
+    });
+
+    it('should return a subscription and emit data for the existing server', async () => {
+        const observer = jest.fn();
+        const sub = subscribeServerUnreadAndMentions(serverUrl, observer);
+
+        expect(sub).toBeDefined();
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        expect(observer).toHaveBeenCalled();
+        const args = observer.mock.calls[0][0];
+        expect(args).toHaveProperty('myChannels');
+        expect(args).toHaveProperty('threadMentionCount');
+
+        sub?.unsubscribe();
+    });
+});
+
+describe('subscribeUnreadAndMentionsByServer', () => {
+    const serverUrl = 'test-server-unread-by-server';
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should return undefined when server does not exist', () => {
+        const sub = subscribeUnreadAndMentionsByServer('http://nonexistent.com', jest.fn());
+        expect(sub).toBeUndefined();
+    });
+
+    it('should bind serverUrl as first argument to observer', async () => {
+        const observer = jest.fn();
+        const sub = subscribeUnreadAndMentionsByServer(serverUrl, observer);
+
+        expect(sub).toBeDefined();
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        expect(observer).toHaveBeenCalledWith(serverUrl, expect.any(Object));
+
+        sub?.unsubscribe();
+    });
+});
+
+describe('getTotalMentionsForServer', () => {
+    const serverUrl = 'test-server-mentions';
+    let operator: ServerDataOperator;
+
+    beforeEach(async () => {
+        await TestHelper.setupServerDatabase(serverUrl);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should return 0 when server does not exist', async () => {
+        const count = await getTotalMentionsForServer('http://nonexistent.com');
+        expect(count).toBe(0);
+    });
+
+    it('should return 0 when no channels have mentions', async () => {
+        const count = await getTotalMentionsForServer(serverUrl);
+        expect(count).toBe(0);
+    });
+
+    it('should sum mentions_count from channels', async () => {
+        const {basicTeam} = TestHelper;
+        const ch1 = TestHelper.fakeChannelWithId(basicTeam!.id);
+        const ch2 = TestHelper.fakeChannelWithId(basicTeam!.id);
+
+        await operator.handleChannel({channels: [ch1, ch2], prepareRecordsOnly: false});
+        await operator.handleMyChannel({
+            channels: [ch1, ch2],
+            myChannels: [
+                TestHelper.fakeMyChannel({channel_id: ch1.id, mention_count: 3}),
+                TestHelper.fakeMyChannel({channel_id: ch2.id, mention_count: 2}),
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        const count = await getTotalMentionsForServer(serverUrl);
+        expect(count).toBe(5);
     });
 });

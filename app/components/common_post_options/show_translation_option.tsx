@@ -2,16 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {defineMessages, useIntl} from 'react-intl';
+import {defineMessages} from 'react-intl';
 
 import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
-import {dismissBottomSheet, goToScreen} from '@screens/navigation';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
+import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 
 type Props = {
-    bottomSheetId: AvailableScreens;
     postId: string;
 }
 
@@ -22,12 +19,11 @@ const messages = defineMessages({
     },
 });
 
-const ShowTranslationOption = ({bottomSheetId, postId}: Props) => {
-    const intl = useIntl();
+const ShowTranslationOption = ({postId}: Props) => {
     const onHandlePress = useCallback(async () => {
-        await dismissBottomSheet(bottomSheetId);
-        goToScreen(Screens.SHOW_TRANSLATION, intl.formatMessage(messages.showTranslation), {postId});
-    }, [bottomSheetId, intl, postId]);
+        await dismissBottomSheet();
+        navigateToScreen(Screens.SHOW_TRANSLATION, {postId});
+    }, [postId]);
 
     return (
         <BaseOption

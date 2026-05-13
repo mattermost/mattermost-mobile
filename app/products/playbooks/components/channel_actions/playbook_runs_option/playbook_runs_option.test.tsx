@@ -19,6 +19,7 @@ jest.mock('@components/slide_up_panel_item');
 jest.mocked(SlideUpPanelItem).mockImplementation((props) => React.createElement('SlideUpPanelItem', {testID: 'slide-up-panel-item', ...props}));
 
 jest.mock('@playbooks/screens/navigation');
+jest.mock('@screens/navigation');
 
 describe('PlaybookRunsOption', () => {
     function getBaseProps(): ComponentProps<typeof PlaybookRunsOption> {
@@ -77,7 +78,7 @@ describe('PlaybookRunsOption', () => {
 
         await waitFor(() => {
             expect(dismissBottomSheet).toHaveBeenCalled();
-            expect(goToPlaybookRuns).toHaveBeenCalledWith(expect.anything(), 'channel-id', 'channel-name');
+            expect(goToPlaybookRuns).toHaveBeenCalledWith('channel-id', 'channel-name', true);
         });
     });
 });

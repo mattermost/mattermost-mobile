@@ -4,13 +4,13 @@
 import React, {type ReactElement, type ReactNode} from 'react';
 import {type StyleProp, View, type ViewStyle} from 'react-native';
 
+import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export type MarkdownTableRowProps = {
     isFirstRow: boolean;
     isLastRow: boolean;
     children: ReactNode;
-    theme: Theme;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -29,7 +29,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const MarkdownTableRow = ({isFirstRow, isLastRow, children, theme}: MarkdownTableRowProps) => {
+const MarkdownTableRow = ({isFirstRow, isLastRow, children}: MarkdownTableRowProps) => {
+    const theme = useTheme();
     const style = getStyleSheet(theme);
 
     const rowStyle: StyleProp<ViewStyle> = [style.row];
@@ -43,7 +44,7 @@ const MarkdownTableRow = ({isFirstRow, isLastRow, children, theme}: MarkdownTabl
 
     // Add an extra prop to the last cell so that it knows not to render a right border since the container
     // will handle that
-    const renderChildren = React.Children.toArray(children) as ReactElement[];
+    const renderChildren = React.Children.toArray(children) as Array<ReactElement<any>>;
     if (renderChildren.length > 0) {
         renderChildren[renderChildren.length - 1] = React.cloneElement(renderChildren[renderChildren.length - 1], {
             isLastCell: true,

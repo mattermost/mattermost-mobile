@@ -11,7 +11,7 @@ import {PostModel} from '@database/models/server';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import {showBoRPostErrorSnackbar} from '@utils/snack_bar';
 
-import UnrevealedBurnOnReadPost from '.';
+import UnrevealedBurnOnReadPost from './index';
 
 jest.mock('@actions/remote/post', () => ({
     revealBoRPost: jest.fn(),

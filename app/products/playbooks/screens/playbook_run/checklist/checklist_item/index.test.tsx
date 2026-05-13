@@ -15,10 +15,11 @@ import ChecklistItem from './';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 
 jest.mock('./checklist_item');
 jest.mocked(ChecklistItemComponent).mockImplementation(
-    (props) => React.createElement('ChecklistItem', {testID: 'checklist-item', ...props}),
+    (props: ComponentProps<typeof ChecklistItemComponent>) => React.createElement('ChecklistItem', {testID: 'checklist-item', ...props}),
 );
 
 const serverUrl = 'server-url';
@@ -226,7 +227,7 @@ describe('ChecklistItem', () => {
 
             database.write(async () => {
                 if ('update' in props.item) { // check to comply with typescript
-                    props.item.update((item) => {
+                    props.item.update((item: PlaybookChecklistItemModel) => {
                         item.assigneeId = assigneeId;
                     });
                 }
@@ -246,7 +247,7 @@ describe('ChecklistItem', () => {
             const props = await getBaseProps();
             database.write(async () => {
                 if ('update' in props.item) { // check to comply with typescript
-                    props.item.update((item) => {
+                    props.item.update((item: PlaybookChecklistItemModel) => {
                         item.assigneeId = '';
                     });
                 }

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook, act} from '@testing-library/react-hooks';
+import {renderHook, act, waitFor} from '@testing-library/react-native';
 
 import * as ChannelAccessControlAttributesActions from '@actions/remote/channel_access_control_attributes';
 import {useServerUrl} from '@context/server';
@@ -73,14 +73,14 @@ describe('useAccessControlAttributes', () => {
             attributes: mockAttributes,
         });
 
-        const {result, waitForNextUpdate} = renderHook(() => useAccessControlAttributes('channel', mockEntityId, true));
+        const {result} = renderHook(() => useAccessControlAttributes('channel', mockEntityId, true));
 
         // Initial state might be false if the hook sets loading after the first render
         // expect(result.current.loading).toBe(true);
         expect(result.current.attributeTags).toEqual([]);
 
         // Wait for the fetch to complete
-        await waitForNextUpdate();
+        await waitFor(() => expect(result.current.loading).toBe(false));
 
         // Check that the fetch was called with the correct parameters
         expect(ChannelAccessControlAttributesActions.fetchChannelAccessControlAttributes).toHaveBeenCalledWith(

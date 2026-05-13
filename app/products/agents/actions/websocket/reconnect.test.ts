@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {updateAgentsVersion} from '@agents/actions/remote/version';
-
 import DatabaseManager from '@database/manager';
 import {logDebug} from '@utils/log';
 

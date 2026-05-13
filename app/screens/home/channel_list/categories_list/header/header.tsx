@@ -133,10 +133,7 @@ const ChannelListHeader = ({
     const serverUrl = useServerUrl();
     useEffect(() => {
         marginLeft.value = iconPad ? 50 : 0;
-
-    // We only want to update the shared value when `iconPad` changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [iconPad]);
+    }, [iconPad, marginLeft]);
 
     const hasTeamMenuItems = canJoinOtherTeams || hasMoreThanOneTeam;
 
@@ -151,7 +148,6 @@ const ChannelListHeader = ({
             );
         };
 
-        const closeButtonId = 'close-plus-menu';
         let items = 1;
         let separators = 0;
 
@@ -168,14 +164,8 @@ const ChannelListHeader = ({
             separators += 1;
         }
 
-        bottomSheet({
-            closeButtonId,
-            renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT) + (separators * SEPARATOR_HEIGHT)],
-            theme,
-            title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
-        });
-    }, [intl, theme, canCreateChannels, canInvitePeople, canJoinChannels]));
+        bottomSheet(renderContent, [1, bottomSheetSnapPoint(items, ITEM_HEIGHT) + (separators * SEPARATOR_HEIGHT)]);
+    }, [canCreateChannels, canInvitePeople, canJoinChannels]));
 
     const onTeamPress = usePreventDoubleTap(useCallback(() => {
         const rowCount = (canJoinOtherTeams ? 1 : 0) + (hasMoreThanOneTeam ? 1 : 0);
@@ -189,14 +179,11 @@ const ChannelListHeader = ({
             />
         );
 
-        bottomSheet({
-            closeButtonId: 'close-team-menu',
+        bottomSheet(
             renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(rowCount, ITEM_HEIGHT)],
-            theme,
-            title: intl.formatMessage({id: 'mobile.team_menu.title', defaultMessage: 'Team menu'}),
-        });
-    }, [intl, theme, canJoinOtherTeams, hasMoreThanOneTeam, currentTeamId, displayName]));
+            [1, bottomSheetSnapPoint(rowCount, ITEM_HEIGHT)],
+        );
+    }, [canJoinOtherTeams, hasMoreThanOneTeam, currentTeamId, displayName]));
 
     const onPushAlertPress = useCallback(() => {
         if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {

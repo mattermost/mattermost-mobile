@@ -118,7 +118,7 @@ describe('DeletePostOption', () => {
             const deleteButtonConfig = alertCalls[0][2]?.find((button: any) => button.text === 'Delete');
             await deleteButtonConfig?.onPress!();
 
-            expect(mockDismissBottomSheet).toHaveBeenCalledWith('PostOptions');
+            expect(mockDismissBottomSheet).toHaveBeenCalled();
             expect(mockDeletePost).toHaveBeenCalledWith(expect.any(String), mockPost);
         });
 
@@ -220,7 +220,7 @@ describe('DeletePostOption', () => {
             const deleteButtonConfig = alertCalls[0][2]?.find((button: any) => button.text === 'Delete');
             await deleteButtonConfig?.onPress!();
 
-            expect(mockDismissBottomSheet).toHaveBeenCalledWith('PostOptions');
+            expect(mockDismissBottomSheet).toHaveBeenCalled();
             expect(mockBurnPostNow).toHaveBeenCalledWith(expect.any(String), mockPost);
         });
 

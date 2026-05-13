@@ -2,17 +2,18 @@
 // See LICENSE.txt for license information.
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, ScrollView} from 'react-native';
+import {View, Text, ScrollView, Platform} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {savePreference} from '@actions/remote/preference';
 import Button from '@components/button';
 import MenuDivider from '@components/menu_divider';
 import SettingOption from '@components/settings/option';
-import {Preferences} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 import {emailLogs, getDefaultReportAProblemLink, shareLogs} from '@utils/share_logs';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -23,11 +24,9 @@ import AppLogs from './app_logs';
 import CopyMetadata from './copy_metadata';
 import {getCommonStyleSheet} from './styles';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
 import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
 
 type Props = {
-    componentId: AvailableScreens;
     reportAProblemMail?: string;
     reportAProblemLink?: string;
     siteName?: string;
@@ -44,7 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         flex: 1,
         backgroundColor: theme.centerChannelBg,
-        paddingVertical: 20,
+        paddingVertical: Platform.select({ios: 20, default: 0}),
         gap: 20,
     },
     body: {
@@ -68,11 +67,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         borderColor: changeOpacity(theme.centerChannelColor, 0.08),
         width: '100%',
         paddingTop: 20,
+        marginBottom: Platform.select({ios: 20, default: 0}),
     },
 }));
 
 const ReportProblem = ({
-    componentId,
     reportAProblemMail,
     reportAProblemLink,
     siteName,
@@ -135,10 +134,7 @@ const ReportProblem = ({
         tryOpenURL(reportAProblemLink);
     }, [reportAProblemType, reportAProblemLink, reportAProblemMail, metadata, siteName, allowDownloadLogs, isLicensed]);
 
-    const close = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.REPORT_PROBLEM, navigateBack);
 
     const descriptionText = allowDownloadLogs ? intl.formatMessage({
         id: 'screen.report_problem.details.description',
@@ -149,7 +145,7 @@ const ReportProblem = ({
     });
 
     return (
-        <View
+        <SafeAreaView
             style={styles.container}
             testID='report_problem.screen'
         >
@@ -169,7 +165,7 @@ const ReportProblem = ({
                     <MenuDivider/>
                     <CopyMetadata
                         metadata={metadata}
-                        componentId={componentId}
+                        componentId={Screens.REPORT_PROBLEM}
                     />
                     {allowDownloadLogs && (
                         <>
@@ -209,7 +205,7 @@ const ReportProblem = ({
                     />
                 </View>
             )}
-        </View>
+        </SafeAreaView>
     );
 };
 

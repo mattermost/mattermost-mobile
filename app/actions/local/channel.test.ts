@@ -12,7 +12,7 @@ import {getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCommonSystemValues, getTeamHistory} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
-import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
+import {navigateToRoot, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -44,10 +44,17 @@ jest.mock('@screens/navigation', () => {
     const original = jest.requireActual('@screens/navigation');
     return {
         ...original,
-        dismissAllModalsAndPopToScreen: jest.fn(),
-        dismissAllModalsAndPopToRoot: jest.fn(),
+        dismissAllRoutesAndPopToScreen: jest.fn(),
+        navigateToRoot: jest.fn(),
     };
 });
+
+jest.mock('@store/navigation_store', () => ({
+    NavigationStore: {
+        waitUntilScreenHasLoaded: jest.fn().mockResolvedValue(true),
+        isScreenInStack: jest.fn().mockReturnValue(true),
+    },
+}));
 
 jest.mock('@utils/helpers', () => {
     const original = jest.requireActual('@utils/helpers');
@@ -102,8 +109,8 @@ describe('switchToChannel', () => {
         listener.remove();
 
         expect(error).toBeTruthy();
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(0);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -124,8 +131,8 @@ describe('switchToChannel', () => {
         expect(teamHistory.length).toBe(0);
         expect(channelHistory.length).toBe(0);
         expect(member?.lastViewedAt).toBe(undefined);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(0);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -149,8 +156,8 @@ describe('switchToChannel', () => {
         expect(teamHistory.length).toBe(0);
         expect(channelHistory.length).toBe(0);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -175,8 +182,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -202,8 +209,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -230,8 +237,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -258,8 +265,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -285,8 +292,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -311,8 +318,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -338,8 +345,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -365,8 +372,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -393,8 +400,8 @@ describe('switchToChannel', () => {
         expect(teamHistory.length).toBe(0);
         expect(channelHistory.length).toBe(0);
         expect(member?.lastViewedAt).toBe(0);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(0);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -423,8 +430,8 @@ describe('switchToChannel', () => {
         expect(teamHistory.length).toBe(0);
         expect(channelHistory.length).toBe(0);
         expect(member?.lastViewedAt).toBe(0);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -452,8 +459,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(0);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(1);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(1);
         expect(listenerCallback).toHaveBeenCalledTimes(1);
     });
 });

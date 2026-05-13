@@ -5,7 +5,7 @@ import React from 'react';
 
 import {ALL_TEAMS_ID} from '@constants/team';
 import {bottomSheet} from '@screens/navigation';
-import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {fireEvent, renderWithIntlAndTheme, waitFor} from '@test/intl-test-helper';
 
 import TeamPicker from './team_picker';
 
@@ -24,7 +24,7 @@ describe('TeamPicker', () => {
     {id: 'team2', displayName: 'Team 2'} as TeamModel,
     ];
 
-    it('should render the selected team name', () => {
+    it('should render the selected team name', async () => {
         const {getByText} = renderWithIntlAndTheme(
             <TeamPicker
                 setTeamId={jest.fn()}
@@ -33,10 +33,12 @@ describe('TeamPicker', () => {
                 crossTeamSearchEnabled={true}
             />,
         );
-        expect(getByText('Team 1')).toBeTruthy();
+        await waitFor(() => {
+            expect(getByText('Team 1')).toBeTruthy();
+        });
     });
 
-    it('should render "All teams" when teamId is ALL_TEAMS_ID', () => {
+    it('should render "All teams" when teamId is ALL_TEAMS_ID', async () => {
         const {getByText} = renderWithIntlAndTheme(
             <TeamPicker
                 setTeamId={jest.fn()}
@@ -45,10 +47,12 @@ describe('TeamPicker', () => {
                 crossTeamSearchEnabled={true}
             />,
         );
-        expect(getByText('All teams')).toBeTruthy();
+        await waitFor(() => {
+            expect(getByText('All teams')).toBeTruthy();
+        });
     });
 
-    it('should call bottomSheet when the team picker is pressed', () => {
+    it('should call bottomSheet when the team picker is pressed', async () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <TeamPicker
                 setTeamId={jest.fn()}
@@ -57,6 +61,9 @@ describe('TeamPicker', () => {
                 crossTeamSearchEnabled={true}
             />,
         );
+        await waitFor(() => {
+            expect(getByTestId('team_picker.button')).toBeTruthy();
+        });
         fireEvent.press(getByTestId('team_picker.button'));
         expect(bottomSheet).toHaveBeenCalled();
     });

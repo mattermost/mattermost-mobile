@@ -6,7 +6,7 @@ import React, {type ComponentProps} from 'react';
 import {View} from 'react-native';
 
 import {savePreference} from '@actions/remote/preference';
-import {Preferences, Screens} from '@constants';
+import {Preferences} from '@constants';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {logDebug} from '@utils/log';
 import {emailLogs, getDefaultReportAProblemLink, shareLogs} from '@utils/share_logs';
@@ -44,7 +44,6 @@ jest.mocked(AppLogs).mockImplementation(() => <View testID='app-logs'/>);
 
 describe('screens/report_a_problem/report_problem', () => {
     const baseProps: ComponentProps<typeof ReportProblem> = {
-        componentId: Screens.REPORT_PROBLEM,
         allowDownloadLogs: true,
         attachLogsEnabled: false,
         currentUserId: 'user1',

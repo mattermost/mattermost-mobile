@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useRewrite} from '@agents/hooks';
 import React, {useEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
 import Animated, {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
+import {useRewrite} from '@agents/hooks';
 import FormattedText from '@components/formatted_text';
 import StatusIndicator from '@components/post_draft/status_indicator';
 import {useTheme} from '@context/theme';

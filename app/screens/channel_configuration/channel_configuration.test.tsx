@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {type ComponentProps} from 'react';
 import {View} from 'react-native';
 
-import {Screens} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ChannelAutotranslation from './channel_autotranslation';
@@ -12,39 +11,25 @@ import ChannelConfiguration from './channel_configuration';
 import ShareWithConnectedWorkspaces from './share_with_connected_workspaces';
 
 jest.mock('@screens/navigation', () => ({
-    mergeNavigationOptions: jest.fn(),
-    popTopScreen: jest.fn(),
-}));
-jest.mock('react-native-navigation', () => ({
-    Navigation: {
-        events: () => ({
-            registerComponentListener: () => ({remove: jest.fn()}),
-        }),
-    },
-}));
-jest.mock('@utils/navigation', () => ({
-    mergeNavigationOptions: jest.fn(),
+    navigateBack: jest.fn(),
 }));
 jest.mock('@hooks/android_back_handler', () => ({
     __esModule: true,
     default: jest.fn(),
-}));
-jest.mock('@managers/security_manager', () => ({
-    getShieldScreenId: jest.fn(() => 'shield-screen-id'),
 }));
 jest.mock('./channel_autotranslation', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
 jest.mocked(ChannelAutotranslation).mockImplementation(
-    (props) => React.createElement(View, {testID: 'channel_configuration.autotranslation', ...props}),
+    (props: ComponentProps<typeof ChannelAutotranslation>) => React.createElement(View, {testID: 'channel_configuration.autotranslation', ...props}),
 );
 jest.mock('./share_with_connected_workspaces', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
 jest.mocked(ShareWithConnectedWorkspaces).mockImplementation(
-    (props) => React.createElement(View, {testID: 'channel_configuration.share_workspaces', ...props}),
+    (props: ComponentProps<typeof ShareWithConnectedWorkspaces>) => React.createElement(View, {testID: 'channel_configuration.share_workspaces', ...props}),
 );
 
 describe('ChannelConfiguration', () => {
@@ -52,7 +37,6 @@ describe('ChannelConfiguration', () => {
         canManageAutotranslations: false,
         canManageSharedChannel: false,
         channelId: 'channel1',
-        componentId: Screens.CHANNEL_CONFIGURATION as 'ChannelConfiguration',
         displayName: 'Test Channel',
         isChannelShared: false,
     };

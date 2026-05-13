@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {rewriteMessage} from '@agents/actions/remote/agents';
-import {rewriteStore, type RewriteState} from '@agents/store';
 import {useCallback, useEffect, useRef, useState} from 'react';
 
+import {rewriteMessage} from '@agents/actions/remote/agents';
+import {rewriteStore, type RewriteState} from '@agents/store';
 import {logWarning} from '@utils/log';
 
 import type {RewriteAction} from '@agents/types';

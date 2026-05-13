@@ -19,7 +19,8 @@ import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getChannelById} from '@queries/servers/channel';
 import {getUserById, observeTeammateNameDisplay} from '@queries/servers/user';
-import {goToScreen} from '@screens/navigation';
+import {navigateToScreen, navigateToSettingsScreen} from '@screens/navigation';
+import SettingsStore from '@store/settings_store';
 import {logDebug} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
@@ -28,7 +29,7 @@ import {displayUsername} from '@utils/user';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
+export type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
 
 type AutoCompleteSelectorProps = {
     dataSource?: string;
@@ -43,7 +44,6 @@ type AutoCompleteSelectorProps = {
     placeholder?: string;
     roundedBorders?: boolean;
     selected?: SelectedDialogValue;
-    showRequiredAsterisk?: boolean;
     teammateNameDisplay: string;
     isMultiselect?: boolean;
     testID: string;
@@ -200,9 +200,15 @@ function AutoCompleteSelector({
     }, [teammateNameDisplay, intl, dataSource, onSelected]);
 
     const goToSelectorScreen = usePreventDoubleTap(useCallback((() => {
-        const screen = Screens.INTEGRATION_SELECTOR;
-        goToScreen(screen, title, {dataSource, handleSelect, options, getDynamicOptions, selected, isMultiselect});
-    }), [title, dataSource, handleSelect, options, getDynamicOptions, selected, isMultiselect]));
+        SettingsStore.setIntegrationsSelectCallback(handleSelect);
+        SettingsStore.setIntegrationsDynamicOptionsCallback(getDynamicOptions);
+        const passProps = {dataSource, options, selected, title, isMultiselect};
+        if (location === Screens.COMPONENT_LIBRARY) {
+            navigateToSettingsScreen(Screens.INTEGRATION_SELECTOR, passProps);
+            return;
+        }
+        navigateToScreen(Screens.INTEGRATION_SELECTOR, passProps);
+    }), [handleSelect, getDynamicOptions, dataSource, options, selected, title, isMultiselect, location]));
 
     // Handle the text for the default value.
     useEffect(() => {

@@ -22,6 +22,7 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
 
     return {
+        currentUser,
         appsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
         mentions: observeRecentMentions(database).pipe(
             switchMap((recentMentions) => {

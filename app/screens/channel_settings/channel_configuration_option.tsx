@@ -7,10 +7,8 @@ import {Platform} from 'react-native';
 
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {goToScreen} from '@screens/navigation';
-import {changeOpacity} from '@utils/theme';
+import {navigateToChannelInfoScreen} from '@screens/navigation';
 
 type Props = {
     channelId: string;
@@ -19,18 +17,10 @@ type Props = {
 
 const ChannelConfigurationOption = ({channelId, channelDisplayName}: Props) => {
     const {formatMessage} = useIntl();
-    const theme = useTheme();
 
     const goToConfiguration = usePreventDoubleTap(useCallback(() => {
-        const title = formatMessage({
-            id: 'channel_settings.configuration',
-            defaultMessage: 'Configuration',
-        });
-        goToScreen(Screens.CHANNEL_CONFIGURATION, title, {channelId}, {topBar: {subtitle: {
-            text: channelDisplayName,
-            color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
-        }}});
-    }, [channelId, channelDisplayName, formatMessage, theme.sidebarHeaderTextColor]));
+        navigateToChannelInfoScreen(Screens.CHANNEL_CONFIGURATION, {channelId, subtitle: channelDisplayName});
+    }, [channelId, channelDisplayName]));
 
     return (
         <OptionItem

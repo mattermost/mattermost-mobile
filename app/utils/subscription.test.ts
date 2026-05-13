@@ -14,9 +14,9 @@ describe('getSkuDisplayName', () => {
         expect(getSkuDisplayName(SKU_SHORT_NAME.Entry, false)).toBe('Entry');
     });
 
-    it('should return Enterprise Advanced for empty and unknown SKUs', () => {
-        expect(getSkuDisplayName('', false)).toBe('Enterprise Advanced');
-        expect(getSkuDisplayName('unknown', false)).toBe('Enterprise Advanced');
+    it('should return empty for empty and unknown SKUs', () => {
+        expect(getSkuDisplayName('', false)).toBe('');
+        expect(getSkuDisplayName('unknown', false)).toBe('');
     });
 
     it('should map legacy and standard SKUs like web', () => {
@@ -30,6 +30,6 @@ describe('getSkuDisplayName', () => {
     it('should append Gov when isGovSku is true', () => {
         expect(getSkuDisplayName(SKU_SHORT_NAME.Enterprise, true)).toBe('Enterprise Gov');
         expect(getSkuDisplayName(SKU_SHORT_NAME.Entry, true)).toBe('Entry Gov');
-        expect(getSkuDisplayName('', true)).toBe('Enterprise Advanced Gov');
+        expect(getSkuDisplayName('', true)).toBe(' Gov');
     });
 });

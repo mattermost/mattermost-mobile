@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import AgentsHandler, {type AgentsHandlerMix} from '@agents/database/operators/handlers';
-
 import ServerDataOperatorBase from '@database/operator/server_data_operator/handlers';
 import CategoryHandler, {type CategoryHandlerMix} from '@database/operator/server_data_operator/handlers/category';
 import ChannelHandler, {type ChannelHandlerMix} from '@database/operator/server_data_operator/handlers/channel';

@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {observeIsAgentsEnabled} from '@agents/queries/agents';
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
 
+import {observeIsAgentsEnabled} from '@agents/queries/agents';
 import {Preferences} from '@constants';
 import {withServerUrl} from '@context/server';
 import {observeIsBoREnabled, observeIsPostPriorityEnabled} from '@queries/servers/post';

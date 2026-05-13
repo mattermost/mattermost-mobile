@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AgentPost from '@agents/components/agent_post';
-import {isAgentPost} from '@agents/utils';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight, type LayoutChangeEvent} from 'react-native';
@@ -11,20 +9,23 @@ import {KeyboardController} from 'react-native-keyboard-controller';
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import AgentPost from '@agents/components/agent_post';
+import {isAgentPost} from '@agents/utils';
 import CallsCustomMessage from '@calls/components/calls_custom_message';
 import {isCallsCustomMessage} from '@calls/utils';
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
+import {Screens} from '@constants';
 import {POST_TIME_TO_FAIL} from '@constants/post';
-import * as Screens from '@constants/screens';
-import {useKeyboardAnimationContext} from '@context/keyboard_animation';
+import {useKeyboardState} from '@context/keyboard_state';
+import {usePostConfig} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
+import {usePreventDoubleTap} from '@hooks/utils';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
-import {openAsBottomSheet} from '@screens/navigation';
+import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
@@ -48,11 +49,12 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type PostProps = {
     appsEnabled: boolean;
+    author?: UserModel;
     canDelete: boolean;
+    commentCount: number;
     currentUser?: UserModel;
     customEmojiNames: string[];
-    differentThreadSequence: boolean;
-    hasFiles: boolean;
+    filesInfo: FileInfo[];
     hasReplies: boolean;
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
@@ -65,10 +67,10 @@ type PostProps = {
     isSaved?: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
-    isPostPriorityEnabled: boolean;
     location: AvailableScreens;
     post: PostModel;
     rootId?: string;
+    rootPostAuthor?: UserModel | null;
     previousPost?: PostModel;
     isLastPost: boolean;
     hasReactions: boolean;
@@ -122,11 +124,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Post = ({
     appsEnabled,
+    author,
     canDelete,
+    commentCount,
     currentUser,
     customEmojiNames,
-    differentThreadSequence,
-    hasFiles,
+    filesInfo,
     hasReplies,
     highlight,
     highlightPinnedOrSaved = true,
@@ -139,10 +142,10 @@ const Post = ({
     isLastReply,
     isPostAcknowledgementEnabled,
     isPostAddChannelMember,
-    isPostPriorityEnabled,
     location,
     post,
     rootId,
+    rootPostAuthor,
     hasReactions,
     searchPatterns,
     shouldRenderReplyButton,
@@ -157,12 +160,12 @@ const Post = ({
     isChannelAutotranslated,
 }: PostProps) => {
     const pressDetected = useRef(false);
-    const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const isTablet = useIsTablet();
-    const {blurAndDismissKeyboard, closeInputAccessoryView, showInputAccessoryView} = useKeyboardAnimationContext();
+    const intl = useIntl();
+    const {blurAndDismissKeyboard} = useKeyboardState();
     const styles = getStyleSheet(theme);
+    const postConfig = usePostConfig();
     const isAutoResponder = fromAutoResponder(post);
     const isPendingOrFailed = isPostPendingOrFailed(post);
     const isFailed = isPostFailed(post);
@@ -195,7 +198,7 @@ const Post = ({
     }, [customEmojiNames, post.message]);
 
     const handlePostPress = useCallback(async () => {
-        if ([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {
+        if (([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES] as AvailableScreens[]).includes(location)) {
             showPermalink(serverUrl, '', post.id);
             return;
         }
@@ -205,8 +208,11 @@ const Post = ({
             removePost(serverUrl, post);
         } else if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
             // BoR posts cannot have replies, so don't open threads screen for them
-            if (!borPost && [Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
+            if (!borPost && ([Screens.CHANNEL, Screens.PERMALINK] as AvailableScreens[]).includes(location)) {
                 await blurAndDismissKeyboard();
+                if (location === Screens.PERMALINK) {
+                    await navigateBack();
+                }
                 const postRootId = post.rootId || post.id;
                 fetchAndSwitchToThread(serverUrl, postRootId);
             }
@@ -217,7 +223,7 @@ const Post = ({
         }, 300);
     }, [location, isAutoResponder, isSystemPost, isEphemeral, hasBeenDeleted, isPendingOrFailed, serverUrl, post, borPost, blurAndDismissKeyboard]);
 
-    const handlePress = useCallback(() => {
+    const handlePress = usePreventDoubleTap(useCallback(() => {
         if (isBoRPost(post)) {
             return;
         }
@@ -229,7 +235,7 @@ const Post = ({
         if (post) {
             setTimeout(handlePostPress, 300);
         }
-    }, [handlePostPress, post]);
+    }, [handlePostPress, post]));
 
     const showPostOptions = useCallback(async () => {
         if (!post) {
@@ -244,22 +250,10 @@ const Post = ({
             return;
         }
 
-        if (showInputAccessoryView) {
-            closeInputAccessoryView();
-        }
-
         await blurAndDismissKeyboard();
-        const passProps = {sourceScreen: location, post, showAddReaction, serverUrl};
-        const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
-
-        openAsBottomSheet({
-            closeButtonId: 'close-post-options',
-            screen: Screens.POST_OPTIONS,
-            theme,
-            title,
-            props: passProps,
-        });
-    }, [post, isSystemPost, canDelete, hasBeenDeleted, isPendingOrFailed, isEphemeral, blurAndDismissKeyboard, closeInputAccessoryView, showInputAccessoryView, location, showAddReaction, serverUrl, isTablet, intl, theme]);
+        const passProps = {sourceScreen: location, postId: post.id, showAddReaction};
+        navigateToScreen(Screens.POST_OPTIONS, passProps);
+    }, [post, isSystemPost, canDelete, hasBeenDeleted, isPendingOrFailed, isEphemeral, blurAndDismissKeyboard, location, showAddReaction]);
 
     const [, rerender] = useState(false);
     useEffect(() => {
@@ -283,11 +277,11 @@ const Post = ({
             return;
         }
 
-        if (location !== 'Channel' && location !== 'Thread') {
+        if (location !== Screens.CHANNEL && location !== Screens.THREAD) {
             return;
         }
 
-        PerformanceMetricsManager.finishLoad(location === 'Thread' ? 'THREAD' : 'CHANNEL', serverUrl);
+        PerformanceMetricsManager.finishLoad(location === Screens.THREAD ? 'THREAD' : 'CHANNEL', serverUrl);
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
     });
 
@@ -315,7 +309,7 @@ const Post = ({
     // If the post is a priority post:
     // 1. Show the priority label in channel screen
     // 2. Show the priority label in thread screen for the root post
-    const showPostPriority = Boolean(isPostPriorityEnabled && post.metadata?.priority?.priority) && (location !== Screens.THREAD || !post.rootId);
+    const showPostPriority = Boolean(postConfig.isPostPriorityEnabled && post.metadata?.priority?.priority) && (location !== Screens.THREAD || !post.rootId);
 
     const sameSequence = hasReplies ? (hasReplies && post.rootId) : !post.rootId;
     if (!showPostPriority && hasSameRoot && isConsecutivePost && sameSequence) {
@@ -347,8 +341,9 @@ const Post = ({
         } else {
             header = (
                 <Header
+                    author={author}
+                    commentCount={commentCount}
                     currentUser={currentUser}
-                    differentThreadSequence={differentThreadSequence}
                     isAutoResponse={isAutoResponder}
                     isCRTEnabled={isCRTEnabled}
                     isEphemeral={isEphemeral}
@@ -357,6 +352,7 @@ const Post = ({
                     isWebHook={isWebHook}
                     location={location}
                     post={post}
+                    rootPostAuthor={rootPostAuthor}
                     showPostPriority={showPostPriority}
                     shouldRenderReplyButton={shouldRenderReplyButton}
                     isChannelAutotranslated={isChannelAutotranslated}
@@ -402,7 +398,7 @@ const Post = ({
         body = (
             <Body
                 appsEnabled={appsEnabled}
-                hasFiles={hasFiles}
+                filesInfo={filesInfo}
                 hasReactions={hasReactions}
                 highlight={Boolean(highlightedStyle)}
                 highlightReplyBar={highlightReplyBar}
@@ -457,7 +453,7 @@ const Post = ({
                 underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                 style={styles.postContent}
             >
-                <>
+                <View>
                     <PreHeader
                         isConsecutivePost={isConsecutivePost}
                         isSaved={isSaved}
@@ -474,7 +470,7 @@ const Post = ({
                         </View>
                         {unreadDot}
                     </View>
-                </>
+                </View>
             </TouchableHighlight>
             <ShimmerAnimation {...shimmerAnimationProps}/>
         </View>

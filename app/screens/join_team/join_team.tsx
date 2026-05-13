@@ -10,24 +10,19 @@ import FormattedText from '@components/formatted_text';
 import Empty from '@components/illustrations/no_team';
 import Loading from '@components/loading';
 import TeamList from '@components/team_list';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {dismissModal} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 import {alertTeamAddError} from '@utils/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type Props = {
     joinedIds: Set<string>;
-    componentId: AvailableScreens;
-    closeButtonId: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -61,8 +56,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 export default function JoinTeam({
     joinedIds,
-    componentId,
-    closeButtonId,
 }: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -102,9 +95,9 @@ export default function JoinTeam({
             setJoining(false);
         } else {
             handleTeamChange(serverUrl, teamId);
-            dismissModal({componentId});
+            navigateBack();
         }
-    }, [serverUrl, componentId, intl]);
+    }, [serverUrl, intl]);
 
     useDidMount(() => {
         loadTeams();
@@ -114,11 +107,10 @@ export default function JoinTeam({
     });
 
     const onClosePressed = useCallback(() => {
-        return dismissModal({componentId});
-    }, [componentId]);
+        navigateBack();
+    }, []);
 
-    useNavButtonPressed(closeButtonId, componentId, onClosePressed, []);
-    useAndroidHardwareBackHandler(componentId, onClosePressed);
+    useAndroidHardwareBackHandler(Screens.JOIN_TEAM, onClosePressed);
 
     const hasOtherTeams = Boolean(otherTeams.length);
 
@@ -156,10 +148,7 @@ export default function JoinTeam({
     }
 
     return (
-        <View
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-            style={styles.container}
-        >
+        <View style={styles.container}>
             {body}
         </View>
     );

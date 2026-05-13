@@ -4,7 +4,6 @@
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Freeze} from 'react-freeze';
 import {defineMessage, useIntl} from 'react-intl';
 import {FlatList, type LayoutChangeEvent, Platform, type ViewStyle, KeyboardAvoidingView, Keyboard, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming, type AnimatedStyle} from 'react-native-reanimated';
@@ -18,6 +17,7 @@ import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
+import {SCREENS_AS_BOTTOM_SHEET} from '@constants/screens';
 import {ALL_TEAMS_ID} from '@constants/team';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
@@ -26,7 +26,7 @@ import {useKeyboardHeight} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useCollapsibleHeader} from '@hooks/header';
 import useTabs from '@hooks/use_tabs';
-import NavigationStore from '@store/navigation_store';
+import {useCurrentScreen} from '@store/navigation_store';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes} from '@utils/search';
 
@@ -38,8 +38,7 @@ import type {SearchRef} from '@components/search';
 import type PostModel from '@typings/database/models/servers/post';
 import type TeamModel from '@typings/database/models/servers/team';
 
-const EDGES: Edge[] = ['bottom', 'left', 'right'];
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+const EDGES: Edge[] = ['left', 'right'];
 
 const emptyFileResults: FileInfo[] = [];
 const emptyPosts: PostModel[] = [];
@@ -104,6 +103,11 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const keyboardHeight = useKeyboardHeight();
+    const currentScreen = useCurrentScreen();
+    const isBottomSheetOpen = currentScreen && SCREENS_AS_BOTTOM_SHEET.has(currentScreen);
+
+    const isPemalinkScreen = currentScreen === Screens.PERMALINK;
+    const isGalleryScreen = currentScreen === Screens.GALLERY;
 
     const stateIndex = nav.getState()?.index;
     const serverUrl = useServerUrl();
@@ -321,6 +325,10 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     ]);
 
     const animated = useAnimatedStyle(() => {
+        if (isBottomSheetOpen || isPemalinkScreen || isGalleryScreen) {
+            return {};
+        }
+
         if (isFocused) {
             return {
                 opacity: withTiming(1, {duration: 150}),
@@ -334,7 +342,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
             flex: 1,
             transform: [{translateX: withTiming((stateIndex || 0) < searchScreenIndex ? 25 : -25, {duration: 150})}],
         };
-    }, [isFocused, stateIndex]);
+    }, [isFocused, isBottomSheetOpen, isPemalinkScreen, isGalleryScreen, stateIndex]);
 
     const headerTopStyle = useAnimatedStyle(() => ({
         top: lockValue || headerHeight.value,
@@ -416,18 +424,17 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     }, [isFocused]);
 
     const handleEnterPressed = useCallback(() => {
-        const topScreen = NavigationStore.getVisibleScreen();
-        if (topScreen === Screens.HOME && isFocused) {
+        if (isFocused && searchValue.trim().length > 0) {
             searchRef.current?.blur();
             onSubmit();
         }
-    }, [isFocused, onSubmit]);
+    }, [isFocused, onSubmit, searchValue]);
 
     const events = useMemo(() => ({onEnterPressed: handleEnterPressed}), [handleEnterPressed]);
     useHardwareKeyboardEvents(events);
 
     return (
-        <Freeze freeze={!isFocused}>
+        <>
             <SafeAreaView
                 style={styles.flex}
                 edges={EDGES}
@@ -474,7 +481,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                             }
                         </Animated.View>
                         {!showResults &&
-                        <AnimatedFlatList
+                        <Animated.FlatList
                             onLayout={onFlatLayout}
                             data={dummyData}
                             contentContainerStyle={initialContainerStyle}
@@ -520,7 +527,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                 teamId={searchTeamId}
             />
             }
-        </Freeze>
+        </>
     );
 };
 

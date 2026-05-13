@@ -6,7 +6,7 @@ import {defineMessages, useIntl} from 'react-intl';
 
 import SettingItem from '@components/settings/item';
 import {Screens} from '@constants';
-import {goToScreen} from '@screens/navigation';
+import {navigateToSettingsScreen} from '@screens/navigation';
 import {emailLogs} from '@utils/share_logs';
 
 import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
@@ -41,7 +41,7 @@ const ReportProblem = ({
         } else {
             const message = onlyAllowLogs ? messages.downloadLogs : messages.reportProblem;
             const title = intl.formatMessage(message);
-            goToScreen(Screens.REPORT_PROBLEM, title);
+            navigateToSettingsScreen(Screens.REPORT_PROBLEM, {title});
         }
     }, [intl, metadata, onlyAllowLogs, reportAProblemMail, siteName, skipReportAProblemScreen]);
 

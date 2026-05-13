@@ -9,10 +9,9 @@ import {fetchChannelSharedRemotes} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {goToScreen} from '@screens/navigation';
-import {changeOpacity} from '@utils/theme';
+import {navigateToChannelInfoScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 
 const messages = defineMessages({
     loading: {
@@ -38,8 +37,6 @@ const ShareWithConnectedWorkspaces = ({channelId, isChannelShared, channelDispla
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState(false);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-    const theme = useTheme();
 
     const onSharedRemotesChanged = useCallback(() => {
         setRefreshTrigger((n) => n + 1);
@@ -69,18 +66,9 @@ const ShareWithConnectedWorkspaces = ({channelId, isChannelShared, channelDispla
     }, [channelId, serverUrl, refreshTrigger]);
 
     const goToShareScreen = usePreventDoubleTap(useCallback(() => {
-        const title = formatMessage({
-            id: 'channel_settings.share_with_connected_workspaces',
-            defaultMessage: 'Share with connected workspaces',
-        });
-        goToScreen(Screens.CHANNEL_SHARE, title, {
-            channelId,
-            onSharedRemotesChanged,
-        }, {topBar: {subtitle: {
-            text: channelDisplayName,
-            color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
-        }}});
-    }, [channelDisplayName, channelId, formatMessage, onSharedRemotesChanged, theme.sidebarHeaderTextColor]));
+        CallbackStore.setCallback(onSharedRemotesChanged);
+        navigateToChannelInfoScreen(Screens.CHANNEL_SHARE, {channelId, subtitle: channelDisplayName});
+    }, [channelDisplayName, channelId, onSharedRemotesChanged]));
 
     let description: string | undefined;
     if (loading) {

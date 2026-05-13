@@ -27,7 +27,7 @@ export function getSkuDisplayName(skuShortName: string, isGovSku: boolean): stri
         case SKU_SHORT_NAME.Entry:
             skuName = 'Entry';
             break;
-        default:
+        case SKU_SHORT_NAME.EnterpriseAdvanced:
             skuName = 'Enterprise Advanced';
             break;
     }

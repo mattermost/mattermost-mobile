@@ -5,7 +5,7 @@
 
 import assert from 'assert';
 
-import {act, renderHook} from '@testing-library/react-hooks'; // Use instead of react-native version due to different behavior. Consider migrating
+import {act, renderHook} from '@testing-library/react-native';
 import {AppState} from 'react-native';
 
 import {needsRecordingAlert} from '@calls/alerts';
@@ -108,15 +108,6 @@ jest.mock('@queries/servers/user', () => ({
 
 const user5 = TestHelper.fakeUserModel({username: 'user-5'});
 jest.mocked(getUserById).mockResolvedValue(user5);
-
-jest.mock('react-native-navigation', () => ({
-    Navigation: {
-        pop: jest.fn(() => Promise.resolve({
-            catch: jest.fn(),
-        })),
-        setDefaultOptions: jest.fn(),
-    },
-}));
 
 const call1: Call = {
     id: 'call1',
@@ -490,7 +481,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[0].calls, {'channel-1': call1});
         assert.deepEqual(result.current[1], {'channel-1': true});
         assert.deepEqual(result.current[2], initialCurrentCallState);
-        expect(updateThreadFollowing).toBeCalled();
+        expect(updateThreadFollowing).toHaveBeenCalled();
     });
 
     it('callEnded', () => {
@@ -1289,7 +1280,7 @@ describe('useCallsState', () => {
         assert.deepEqual((result.current[0]).calls['channel-2'], {...call2, recState});
         assert.deepEqual((result.current[1]), expectedCurrentCallState);
         act(() => setRecordingState('server1', 'channel-1', {...recState, start_at: recState.start_at + 1}));
-        expect(needsRecordingAlert).toBeCalled();
+        expect(needsRecordingAlert).toHaveBeenCalled();
     });
 
     it('setHost', () => {
@@ -1342,7 +1333,7 @@ describe('useCallsState', () => {
         assert.deepEqual((result.current[0]).calls['channel-2'], {...call2, hostId: 'user-1923'});
         assert.deepEqual((result.current[1]), expectedCurrentCallState);
         act(() => setHost('server1', 'channel-1', 'myUserId'));
-        expect(needsRecordingAlert).toBeCalled();
+        expect(needsRecordingAlert).toHaveBeenCalled();
     });
 
     it('incoming calls', async () => {

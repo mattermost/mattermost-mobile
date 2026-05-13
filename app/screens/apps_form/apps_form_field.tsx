@@ -278,7 +278,6 @@ const AppsFormFieldComponent = React.memo(({
                     helpText={field.description}
                     errorText={errorText}
                     placeholder={placeholder}
-                    showRequiredAsterisk={true}
                     selected={selectedValue}
                     roundedBorders={false}
                     disabled={field.readonly}

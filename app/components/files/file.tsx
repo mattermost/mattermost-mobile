@@ -110,7 +110,7 @@ const File = ({
         onOptionsPress?.(file);
     }, [file, onOptionsPress]);
 
-    const renderCardWithImage = (fileIcon: JSX.Element) => {
+    const renderCardWithImage = (fileIcon: React.ReactNode) => {
         const fileInfo = (
             <FileInfo
                 disabled={isPressDisabled}
@@ -258,4 +258,4 @@ const File = ({
     return fileComponent;
 };
 
-export default File;
+export default React.memo(File);

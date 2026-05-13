@@ -4,6 +4,7 @@
 import React from 'react';
 
 import UserAvatarsStack from '@components/user_avatars_stack';
+import {Screens} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -31,7 +32,7 @@ describe('Footer', () => {
 
     const defaultProps = {
         channelId: 'channel-123',
-        location: 'Channel' as const,
+        location: Screens.CHANNEL,
         participants: mockParticipants,
         teamId: 'team-123',
         thread: mockThread,

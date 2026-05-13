@@ -5,7 +5,8 @@ import React, {type ReactNode, useState, useMemo, useCallback} from 'react';
 import {Freeze} from 'react-freeze';
 import {defineMessage} from 'react-intl';
 import {StyleSheet, View, type LayoutChangeEvent} from 'react-native';
-import Animated, {runOnJS, useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS, type DraftScreenTab} from '@constants/draft';
 import useTabs from '@hooks/use_tabs';
@@ -74,7 +75,7 @@ export default function TabbedContents({draftsCount, scheduledPostCount, initial
     const firstTabStyle = useAnimatedStyle(() => ({
         transform: [{translateX: withTiming(selectedTab === DRAFT_SCREEN_TAB_DRAFTS ? 0 : -width, {duration}, (finished) => {
             if (finished && selectedTab === DRAFT_SCREEN_TAB_DRAFTS && !freezeScheduledPosts) {
-                runOnJS(setFreezeScheduledPosts)(true);
+                scheduleOnRN(setFreezeScheduledPosts, true);
             }
         })}],
         zIndex: 1,
@@ -83,7 +84,7 @@ export default function TabbedContents({draftsCount, scheduledPostCount, initial
     const secondTabStyle = useAnimatedStyle(() => ({
         transform: [{translateX: withTiming(selectedTab === DRAFT_SCREEN_TAB_SCHEDULED_POSTS ? 0 : width, {duration}, (finished) => {
             if (finished && selectedTab === DRAFT_SCREEN_TAB_SCHEDULED_POSTS && !freezeDraft) {
-                runOnJS(setFreezeDraft)(true);
+                scheduleOnRN(setFreezeDraft, true);
             }
         })}],
         zIndex: 0,

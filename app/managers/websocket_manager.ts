@@ -3,7 +3,7 @@
 
 import NetInfo, {NetInfoStateType, type NetInfoState, type NetInfoSubscription} from '@react-native-community/netinfo';
 import {AppState, type AppStateStatus, type NativeEventSubscription} from 'react-native';
-import BackgroundTimer from 'react-native-background-timer';
+import {BackgroundTimer} from 'react-native-nitro-bg-timer-plus';
 import {BehaviorSubject} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
 
@@ -33,7 +33,7 @@ class WebsocketManagerSingleton {
     private netType: NetInfoStateType = NetInfoStateType.none;
     private previousActiveState: boolean;
     private statusUpdatesIntervalIDs: Record<string, NodeJS.Timeout> = {};
-    private backgroundIntervalId: number | undefined;
+    private backgroundTimerId: ReturnType<typeof BackgroundTimer.setTimeout> | undefined;
     private firstConnectionSynced: Record<string, boolean> = {};
 
     private appStateSubscription: NativeEventSubscription | undefined;
@@ -286,7 +286,7 @@ class WebsocketManagerSingleton {
 
         if (currentIsActive) {
             if (this.isBackgroundTimerRunning) {
-                BackgroundTimer.clearInterval(this.backgroundIntervalId!);
+                BackgroundTimer.clearTimeout(this.backgroundTimerId!);
             }
             this.isBackgroundTimerRunning = false;
             if (this.netConnected) {
@@ -298,9 +298,8 @@ class WebsocketManagerSingleton {
 
         if (wentBackground && !this.isBackgroundTimerRunning) {
             this.isBackgroundTimerRunning = true;
-            this.backgroundIntervalId = BackgroundTimer.setInterval(() => {
+            this.backgroundTimerId = BackgroundTimer.setTimeout(() => {
                 this.closeAll();
-                BackgroundTimer.clearInterval(this.backgroundIntervalId!);
                 this.isBackgroundTimerRunning = false;
             }, WAIT_TO_CLOSE);
         }

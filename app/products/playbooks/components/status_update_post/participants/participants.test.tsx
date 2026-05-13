@@ -33,6 +33,7 @@ jest.mocked(UsersList).mockImplementation((props) => React.createElement('UsersL
 jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn(),
 }));
+jest.mock('@screens/navigation');
 
 describe('Participants', () => {
     const location = 'Channel' as AvailableScreens;
@@ -103,14 +104,7 @@ describe('Participants', () => {
         });
 
         await waitFor(() => {
-            expect(bottomSheet).toHaveBeenCalledWith(expect.objectContaining({
-                closeButtonId: 'close-set-user-status',
-                renderContent: expect.any(Function),
-                initialSnapIndex: 1,
-                snapPoints: expect.any(Array),
-                title: 'Participants',
-                theme: expect.any(Object),
-            }));
+            expect(bottomSheet).toHaveBeenCalledWith(expect.any(Function), expect.any(Array));
         });
     });
 
@@ -123,8 +117,8 @@ describe('Participants', () => {
         });
 
         await waitFor(() => {
-            const args = jest.mocked(bottomSheet).mock.calls[0][0];
-            const Content = args.renderContent;
+            const args = jest.mocked(bottomSheet).mock.calls[0];
+            const Content = args[0];
             const {getByTestId} = renderWithEverything(<Content/>, {database, serverUrl});
             const usersList = getByTestId('users-list');
             expect(usersList).toBeTruthy();
@@ -143,14 +137,14 @@ describe('Participants', () => {
         });
 
         await waitFor(() => {
-            const args = jest.mocked(bottomSheet).mock.calls[0][0];
-            const Content = args.renderContent;
+            const args = jest.mocked(bottomSheet).mock.calls[0];
+            const Content = args[0];
             const {getByText} = renderWithEverything(<Content/>, {database, serverUrl});
             expect(getByText('Participants')).toBeTruthy();
         });
     });
 
-    it('hides list header on tablet devices', async () => {
+    it('shows list header on tablet devices', async () => {
         jest.mocked(useIsTablet).mockReturnValue(true);
         const props = getBaseProps();
         const {root} = renderWithEverything(<Participants {...props}/>, {database, serverUrl});
@@ -160,10 +154,10 @@ describe('Participants', () => {
         });
 
         await waitFor(() => {
-            const args = jest.mocked(bottomSheet).mock.calls[0][0];
-            const Content = args.renderContent;
+            const args = jest.mocked(bottomSheet).mock.calls[0];
+            const Content = args[0];
             const {queryByText} = renderWithEverything(<Content/>, {database, serverUrl});
-            expect(queryByText('Participants')).toBeNull();
+            expect(queryByText('Participants')).toBeTruthy();
         });
     });
 
@@ -178,9 +172,9 @@ describe('Participants', () => {
         });
 
         await waitFor(() => {
-            const args = jest.mocked(bottomSheet).mock.calls[0][0];
-            expect(args.snapPoints).toHaveLength(2);
-            expect(args.snapPoints[0]).toBe(1);
+            const args = jest.mocked(bottomSheet).mock.calls[0];
+            expect(args[1]).toHaveLength(2);
+            expect(args[1][0]).toBe(1);
         });
     });
 
@@ -196,9 +190,9 @@ describe('Participants', () => {
         });
 
         await waitFor(() => {
-            const args = jest.mocked(bottomSheet).mock.calls[0][0];
-            expect(args.snapPoints).toHaveLength(3);
-            expect(args.snapPoints[2]).toBe('80%');
+            const args = jest.mocked(bottomSheet).mock.calls[0];
+            expect(args[1]).toHaveLength(3);
+            expect(args[1][2]).toBe('80%');
         });
     });
 
@@ -212,8 +206,8 @@ describe('Participants', () => {
         });
 
         await waitFor(() => {
-            const args = jest.mocked(bottomSheet).mock.calls[0][0];
-            expect(args.snapPoints).toEqual([1, 158]);
+            const args = jest.mocked(bottomSheet).mock.calls[0];
+            expect(args[1]).toEqual([1, 146]);
         });
     });
 
@@ -227,8 +221,8 @@ describe('Participants', () => {
         });
 
         await waitFor(() => {
-            const args = jest.mocked(bottomSheet).mock.calls[0][0];
-            expect(args.snapPoints).toEqual([1, 146]);
+            const args = jest.mocked(bottomSheet).mock.calls[0];
+            expect(args[1]).toEqual([1, 146]);
         });
     });
 

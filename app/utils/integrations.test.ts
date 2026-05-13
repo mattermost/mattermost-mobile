@@ -3,8 +3,25 @@
 
 import {checkDialogElementForError, checkIfErrorsMatchElements, selectKeyboardType} from './integrations';
 
+import type {IntlShape, MessageDescriptor} from 'react-intl';
+
+function makeIntl(): IntlShape {
+    return {
+        formatMessage: jest.fn((descriptor: MessageDescriptor, values?: Record<string, unknown>) => {
+            if (values && Object.keys(values).length > 0) {
+                let msg = descriptor.defaultMessage as string;
+                for (const [k, v] of Object.entries(values)) {
+                    msg = msg.replace(`{${k}}`, String(v));
+                }
+                return msg;
+            }
+            return descriptor.defaultMessage as string;
+        }),
+    } as unknown as IntlShape;
+}
+
 describe('checkDialogElementForError', () => {
-    test('returns required error for empty required field', () => {
+    it('should return required error for empty required field', () => {
         const elem: DialogElement = {
             name: 'field1',
             type: 'text',
@@ -19,14 +36,10 @@ describe('checkDialogElementForError', () => {
             data_source: '',
             options: [],
         };
-        const result = checkDialogElementForError(elem, '');
-        expect(result).toEqual({
-            id: 'interactive_dialog.error.required',
-            defaultMessage: 'This field is required.',
-        });
+        expect(checkDialogElementForError(elem, '', makeIntl())).toBe('This field is required.');
     });
 
-    test('returns too short error for text shorter than min_length', () => {
+    it('should return too short error for text shorter than min_length', () => {
         const elem: DialogElement = {
             name: 'field1',
             type: 'text',
@@ -41,15 +54,10 @@ describe('checkDialogElementForError', () => {
             data_source: '',
             options: [],
         };
-        const result = checkDialogElementForError(elem, '123');
-        expect(result).toEqual({
-            id: 'interactive_dialog.error.too_short',
-            defaultMessage: 'Minimum input length is {minLength}.',
-            values: {minLength: 5},
-        });
+        expect(checkDialogElementForError(elem, '123', makeIntl())).toBe('Minimum input length is 5.');
     });
 
-    test('returns bad email error for invalid email', () => {
+    it('should return bad email error for invalid email', () => {
         const elem: DialogElement = {
             name: 'field1',
             type: 'text',
@@ -64,14 +72,10 @@ describe('checkDialogElementForError', () => {
             data_source: '',
             options: [],
         };
-        const result = checkDialogElementForError(elem, 'invalidemail');
-        expect(result).toEqual({
-            id: 'interactive_dialog.error.bad_email',
-            defaultMessage: 'Must be a valid email address.',
-        });
+        expect(checkDialogElementForError(elem, 'invalidemail', makeIntl())).toBe('Must be a valid email address.');
     });
 
-    test('returns bad number error for invalid number', () => {
+    it('should return bad number error for invalid number', () => {
         const elem: DialogElement = {
             name: 'field1',
             type: 'text',
@@ -86,14 +90,10 @@ describe('checkDialogElementForError', () => {
             data_source: '',
             options: [],
         };
-        const result = checkDialogElementForError(elem, 'notanumber');
-        expect(result).toEqual({
-            id: 'interactive_dialog.error.bad_number',
-            defaultMessage: 'Must be a number.',
-        });
+        expect(checkDialogElementForError(elem, 'notanumber', makeIntl())).toBe('Must be a number.');
     });
 
-    test('returns bad URL error for invalid URL', () => {
+    it('should return bad URL error for invalid URL', () => {
         const elem: DialogElement = {
             name: 'field1',
             type: 'text',
@@ -108,24 +108,14 @@ describe('checkDialogElementForError', () => {
             data_source: '',
             options: [],
         };
-        const result = checkDialogElementForError(elem, 'invalidurl');
-        expect(result).toEqual({
-            id: 'interactive_dialog.error.bad_url',
-            defaultMessage: 'URL must include http:// or https://.',
-        });
+        expect(checkDialogElementForError(elem, 'invalidurl', makeIntl())).toBe('URL must include http:// or https://.');
     });
 
-    test('returns invalid option error for invalid radio option', () => {
+    it('should return invalid option error for invalid radio option', () => {
         const elem: DialogElement = {
             name: 'field1',
             type: 'radio',
-            options: [{
-                value: 'option1',
-                text: '',
-            }, {
-                value: 'option2',
-                text: '',
-            }],
+            options: [{value: 'option1', text: ''}, {value: 'option2', text: ''}],
             display_name: '',
             subtype: 'number',
             default: '',
@@ -136,14 +126,10 @@ describe('checkDialogElementForError', () => {
             max_length: 0,
             data_source: '',
         };
-        const result = checkDialogElementForError(elem, 'invalidoption');
-        expect(result).toEqual({
-            id: 'interactive_dialog.error.invalid_option',
-            defaultMessage: 'Must be a valid option',
-        });
+        expect(checkDialogElementForError(elem, 'invalidoption', makeIntl())).toBe('Must be a valid option');
     });
 
-    test('returns null for valid inputs', () => {
+    it('should return null for valid inputs', () => {
         const elemText: DialogElement = {
             name: 'field1',
             type: 'text',
@@ -203,13 +189,7 @@ describe('checkDialogElementForError', () => {
         const elemRadio: DialogElement = {
             name: 'field5',
             type: 'radio',
-            options: [{
-                value: 'option1',
-                text: '',
-            }, {
-                value: 'option2',
-                text: '',
-            }],
+            options: [{value: 'option1', text: ''}, {value: 'option2', text: ''}],
             display_name: '',
             subtype: 'number',
             default: '',
@@ -220,12 +200,12 @@ describe('checkDialogElementForError', () => {
             max_length: 0,
             data_source: '',
         };
-
-        expect(checkDialogElementForError(elemText, 'valid')).toBeNull();
-        expect(checkDialogElementForError(elemEmail, 'email@example.com')).toBeNull();
-        expect(checkDialogElementForError(elemNumber, '123')).toBeNull();
-        expect(checkDialogElementForError(elemURL, 'http://example.com')).toBeNull();
-        expect(checkDialogElementForError(elemRadio, 'option1')).toBeNull();
+        const intl = makeIntl();
+        expect(checkDialogElementForError(elemText, 'valid', intl)).toBeNull();
+        expect(checkDialogElementForError(elemEmail, 'email@example.com', intl)).toBeNull();
+        expect(checkDialogElementForError(elemNumber, '123', intl)).toBeNull();
+        expect(checkDialogElementForError(elemURL, 'http://example.com', intl)).toBeNull();
+        expect(checkDialogElementForError(elemRadio, 'option1', intl)).toBeNull();
     });
 
     describe('multiselect SELECT validation', () => {
@@ -248,56 +228,44 @@ describe('checkDialogElementForError', () => {
             data_source: '',
         };
 
-        test('should validate multiselect values correctly', () => {
-            // Valid multiselect array should pass
-            expect(checkDialogElementForError(multiselectElement, ['optA', 'optC'])).toBeNull();
+        it('should validate multiselect values correctly', () => {
+            expect(checkDialogElementForError(multiselectElement, ['optA', 'optC'], makeIntl())).toBeNull();
         });
 
-        test('should require at least one selection for required multiselect', () => {
-            // Empty array for required field should fail
-            expect(checkDialogElementForError(multiselectElement, [])).toEqual({
-                id: 'interactive_dialog.error.required',
-                defaultMessage: 'This field is required.',
-            });
+        it('should require at least one selection for required multiselect', () => {
+            expect(checkDialogElementForError(multiselectElement, [], makeIntl())).toBe('This field is required.');
         });
 
-        test('should reject invalid options in multiselect array', () => {
-            // Invalid option in array should fail
-            expect(checkDialogElementForError(multiselectElement, ['optA', 'invalidOption'])).toEqual({
-                id: 'interactive_dialog.error.invalid_option',
-                defaultMessage: 'Must be a valid option',
-            });
+        it('should reject invalid options in multiselect array', () => {
+            expect(checkDialogElementForError(multiselectElement, ['optA', 'invalidOption'], makeIntl())).toBe('Must be a valid option');
         });
 
-        test('should allow empty arrays for optional multiselect', () => {
-            // Optional multiselect can be empty
+        it('should allow empty arrays for optional multiselect', () => {
             const optionalElement = {...multiselectElement, optional: true};
-            expect(checkDialogElementForError(optionalElement, [])).toBeNull();
+            expect(checkDialogElementForError(optionalElement, [], makeIntl())).toBeNull();
         });
 
-        test('should handle single valid option in multiselect', () => {
-            // Single valid option should pass
-            expect(checkDialogElementForError(multiselectElement, ['optB'])).toBeNull();
+        it('should handle single valid option in multiselect', () => {
+            expect(checkDialogElementForError(multiselectElement, ['optB'], makeIntl())).toBeNull();
         });
 
-        test('should handle all options selected', () => {
-            // All options selected should pass
-            expect(checkDialogElementForError(multiselectElement, ['optA', 'optB', 'optC'])).toBeNull();
+        it('should handle all options selected', () => {
+            expect(checkDialogElementForError(multiselectElement, ['optA', 'optB', 'optC'], makeIntl())).toBeNull();
         });
     });
 });
 
 describe('checkIfErrorsMatchElements', () => {
-    test('returns false if no dialog elements', () => {
+    it('should return false if no dialog elements', () => {
         const errors = {field1: 'error'};
         expect(checkIfErrorsMatchElements(errors)).toBe(false);
     });
 
-    test('returns false if no dialog errprs', () => {
+    it('should return false if no dialog errors', () => {
         expect(checkIfErrorsMatchElements()).toBe(false);
     });
 
-    test('returns true if errors match elements', () => {
+    it('should return true if errors match elements', () => {
         const elements: DialogElement[] = [{
             name: 'field1',
             type: 'text',
@@ -316,7 +284,7 @@ describe('checkIfErrorsMatchElements', () => {
         expect(checkIfErrorsMatchElements(errors, elements)).toBe(true);
     });
 
-    test('returns false if errors do not match elements', () => {
+    it('should return false if errors do not match elements', () => {
         const elements: DialogElement[] = [{
             name: 'field1',
             type: 'text',
@@ -335,33 +303,33 @@ describe('checkIfErrorsMatchElements', () => {
         expect(checkIfErrorsMatchElements(errors, elements)).toBe(false);
     });
 
-    test('returns false if errors and elements are empty', () => {
+    it('should return false if errors and elements are empty', () => {
         expect(checkIfErrorsMatchElements({}, [])).toBe(false);
     });
 });
 
 describe('selectKeyboardType', () => {
-    test('returns email-address for email subtype', () => {
+    it('should return email-address for email subtype', () => {
         expect(selectKeyboardType('email')).toBe('email-address');
     });
 
-    test('returns numeric for number subtype', () => {
+    it('should return numeric for number subtype', () => {
         expect(selectKeyboardType('number')).toBe('numeric');
     });
 
-    test('returns phone-pad for tel subtype', () => {
+    it('should return phone-pad for tel subtype', () => {
         expect(selectKeyboardType('tel')).toBe('phone-pad');
     });
 
-    test('returns url for url subtype', () => {
+    it('should return url for url subtype', () => {
         expect(selectKeyboardType('url')).toBe('url');
     });
 
-    test('returns default for undefined subtype', () => {
+    it('should return default for undefined subtype', () => {
         expect(selectKeyboardType()).toBe('default');
     });
 
-    test('returns default for unrecognized subtype', () => {
+    it('should return default for unrecognized subtype', () => {
         expect(selectKeyboardType('unrecognized')).toBe('default');
     });
 });

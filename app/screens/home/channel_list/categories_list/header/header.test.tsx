@@ -66,9 +66,6 @@ describe('components/channel_list/header', () => {
 
             fireEvent.press(wrapper.getByTestId('channel_list_header.team.button'));
             expect(bottomSheet).toHaveBeenCalledTimes(1);
-            const args = (bottomSheet as jest.Mock).mock.calls[0][0];
-            expect(args.closeButtonId).toBe('close-team-menu');
-            expect(args.title).toBe('Team menu');
         });
 
         it('shows the chevron and opens a sheet when hasMoreThanOneTeam is true', () => {

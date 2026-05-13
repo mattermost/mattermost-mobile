@@ -61,7 +61,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 const keyExtractor = (item: string) => item;
 
-type Props = {
+export type EmojiSuggestionProps = {
     cursorPosition: number;
     customEmojis: CustomEmojiModel[];
     updateValue: (v: string) => void;
@@ -84,7 +84,7 @@ const EmojiSuggestion = ({
     skinTone,
     shouldDirectlyReact = false,
     listStyle,
-}: Props) => {
+}: EmojiSuggestionProps) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);

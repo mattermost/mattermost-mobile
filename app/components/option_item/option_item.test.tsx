@@ -99,13 +99,13 @@ describe('OptionItem', () => {
 
     it('renders with icon when provided', () => {
         const props = getBaseProps();
-        props.icon = 'test-icon';
+        props.icon = 'play';
         props.iconColor = '#ff0000';
 
         const {getByTestId, rerender} = renderWithIntlAndTheme(<OptionItem {...props}/>);
 
         let optionItem = getByTestId('option-item.icon.mock');
-        expect(optionItem.props.icon).toBe('test-icon');
+        expect(optionItem.props.icon).toBe('play');
         expect(optionItem.props.iconColor).toBe('#ff0000');
         expect(optionItem.props.destructive).toBeFalsy();
 
@@ -233,7 +233,7 @@ describe('OptionItem', () => {
 
         const {getByTestId, rerender, queryByTestId} = renderWithIntlAndTheme(<OptionItem {...props}/>);
 
-        let selectedIcon = getByTestId('option-item.selected');
+        let selectedIcon: any | null = getByTestId('option-item.selected');
         expect(selectedIcon).toBeTruthy();
 
         props.selected = false;
@@ -251,26 +251,26 @@ describe('OptionItem', () => {
 
         const {getByTestId, rerender, queryByTestId} = renderWithIntlAndTheme(<OptionItem {...props}/>);
 
-        let radioItem = getByTestId('option-item.selected');
+        let radioItem: any | null = getByTestId('option-item.selected');
         expect(radioItem).toBeTruthy();
-        expect(radioItem.props.checkedBody).toBe(true);
-        expect(radioItem.props.selected).toBe(true);
+        expect(radioItem?.props.checkedBody).toBe(true);
+        expect(radioItem?.props.selected).toBe(true);
 
         props.selected = false;
         rerender(<OptionItem {...props}/>);
 
         radioItem = queryByTestId('option-item.not_selected');
         expect(radioItem).toBeTruthy();
-        expect(radioItem.props.checkedBody).toBe(true);
-        expect(radioItem.props.selected).toBe(false);
+        expect(radioItem?.props.checkedBody).toBe(true);
+        expect(radioItem?.props.selected).toBe(false);
 
         props.isRadioCheckmark = false;
         rerender(<OptionItem {...props}/>);
 
         radioItem = queryByTestId('option-item.not_selected');
         expect(radioItem).toBeTruthy();
-        expect(radioItem.props.checkedBody).toBe(false);
-        expect(radioItem.props.selected).toBe(false);
+        expect(radioItem?.props.checkedBody).toBe(false);
+        expect(radioItem?.props.selected).toBe(false);
     });
 
     it('shows toggle type correctly', () => {

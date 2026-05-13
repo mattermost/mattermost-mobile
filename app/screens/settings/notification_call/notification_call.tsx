@@ -10,21 +10,18 @@ import SettingBlock from '@components/settings/block';
 import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
-import {Calls} from '@constants';
+import {Calls, Screens} from '@constants';
 import {Ringtone} from '@constants/calls';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
 import useNotificationProps from '@hooks/notification_props';
-import {popTopScreen} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    componentId: AvailableScreens;
     currentUser?: UserModel;
 };
 
@@ -35,7 +32,7 @@ const {footerText} = defineMessages({
     },
 });
 
-const NotificationCall = ({componentId, currentUser}: Props) => {
+const NotificationCall = ({currentUser}: Props) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const theme = useTheme();
@@ -51,11 +48,6 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
         return initialSound;
     });
     const [playingRingtone, setPlayingRingtone] = useState(false);
-
-    const close = useCallback(() => {
-        InCallManager.stopRingtone();
-        popTopScreen(componentId);
-    }, [componentId]);
 
     const selectOption = useCallback(async (value: string) => {
         const tone = 'calls_' + value.toLowerCase();
@@ -103,12 +95,12 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
             };
             updateMe(serverUrl, {notify_props});
         }
-        close();
-    }, [serverUrl, canSaveSettings, close, notifyProps, callsMobileSound, callsMobileNotificationSound]);
+        InCallManager.stopRingtone();
+    }, [serverUrl, canSaveSettings, notifyProps, callsMobileSound, callsMobileNotificationSound]);
 
     useBackNavigation(saveNotificationSettings);
 
-    useAndroidHardwareBackHandler(componentId, saveNotificationSettings);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_CALL, saveNotificationSettings);
 
     return (
         <SettingContainer testID='call_notification_settings'>

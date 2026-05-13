@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AGENTS_TABLES} from '@agents/constants/database';
 import {field, json} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
+import {AGENTS_TABLES} from '@agents/constants/database';
 import {safeParseJSONStringArray} from '@utils/helpers';
 
 import type {ChannelAccessLevel, UserAccessLevel} from '@agents/types';

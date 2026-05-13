@@ -25,7 +25,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     channelId: string;
@@ -41,7 +40,6 @@ type Props = {
     useChannelMentions: boolean;
     userIsOutOfOffice: boolean;
     customEmojis: CustomEmojiModel[];
-    bottomSheetId?: AvailableScreens;
     value: string;
     files: FileInfo[];
     postPriority: PostPriority;
@@ -80,7 +78,6 @@ const SendDraft: React.FC<Props> = ({
     draftType,
     postId,
     channelType,
-    bottomSheetId,
     currentUserId,
     enableConfirmNotificationsToChannel,
     maxMessageLength,
@@ -162,7 +159,7 @@ const SendDraft: React.FC<Props> = ({
     });
 
     const draftSendHandler = async () => {
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         if (persistentNotificationsEnabled) {
             persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, handleSendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType);
         } else {

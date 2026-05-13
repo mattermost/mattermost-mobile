@@ -24,7 +24,7 @@ export function deleteScheduledPostConfirmation({
     intl: IntlShape;
     serverUrl: string;
     scheduledPostId: string;
-    swipeable?: React.RefObject<SwipeableMethods>;
+    swipeable?: React.RefObject<SwipeableMethods | null>;
 }) {
     const deleteScheduledPostOnConfirm = async () => {
         const res = await deleteScheduledPost(serverUrl, scheduledPostId);

@@ -361,7 +361,7 @@
   "extension.no_memberships.title": "まだどのチームにも所属していません",
   "extension.no_servers.description": "コンテンツを共有するには、Mattermostサーバーにログインする必要があります。",
   "extension.no_servers.title": "どのサーバーにも接続していません",
-  "file_upload.fileAbove": "ファイルは {max}MB 以下でなくてはなりません",
+  "file_upload.fileAbove": "ファイルは {max} 以下でなくてはなりません",
   "find_channels.directory": "ディレクトリ",
   "find_channels.new_channel": "新しいチャンネル",
   "find_channels.open_dm": "DMを開く",

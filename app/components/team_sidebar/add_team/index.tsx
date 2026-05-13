@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -37,11 +36,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 export default function AddTeam() {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const intl = useIntl();
 
     const onPress = usePreventDoubleTap(useCallback(() => {
-        openJoinTeamModal(intl, theme);
-    }, [intl, theme]));
+        openJoinTeamModal();
+    }, []));
 
     return (
         <View style={styles.container}>

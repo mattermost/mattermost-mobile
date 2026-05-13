@@ -5,7 +5,7 @@ import {LinearGradient, type LinearGradientProps} from 'expo-linear-gradient';
 import React from 'react';
 import {TouchableOpacity, View} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type ShowMoreButtonProps = {
@@ -69,7 +69,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const ShowMoreButton = ({highlight, onPress, showMore = true, theme}: ShowMoreButtonProps) => {
     const style = getStyleSheet(theme);
 
-    let iconName = 'chevron-down';
+    let iconName: CompassIconName = 'chevron-down';
     if (!showMore) {
         iconName = 'chevron-up';
     }

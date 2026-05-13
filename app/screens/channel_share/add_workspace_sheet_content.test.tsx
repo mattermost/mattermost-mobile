@@ -11,12 +11,6 @@ import AddWorkspaceSheetContent, {getAddWorkspaceSheetContentHeight} from './add
 jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn(() => false),
 }));
-jest.mock('@hooks/bottom_sheet_lists_fix', () => ({
-    useBottomSheetListsFix: jest.fn(() => ({
-        enabled: true,
-        panResponder: {panHandlers: {}},
-    })),
-}));
 jest.mock('@gorhom/bottom-sheet', () => ({
     BottomSheetScrollView: require('react-native').ScrollView,
 }));
@@ -55,27 +49,21 @@ describe('AddWorkspaceSheetContent', () => {
 
 describe('getAddWorkspaceSheetContentHeight', () => {
     it('returns height including header when not tablet and empty list', () => {
-        const height = getAddWorkspaceSheetContentHeight(false, 0);
+        const height = getAddWorkspaceSheetContentHeight(0);
         expect(height).toBeGreaterThan(0);
         expect(typeof height).toBe('number');
     });
 
     it('returns greater height for more elements when not tablet', () => {
-        const heightEmpty = getAddWorkspaceSheetContentHeight(false, 0);
-        const heightTwo = getAddWorkspaceSheetContentHeight(false, 2);
+        const heightEmpty = getAddWorkspaceSheetContentHeight(0);
+        const heightTwo = getAddWorkspaceSheetContentHeight(2);
         expect(heightTwo).toBeGreaterThan(heightEmpty);
     });
 
-    it('returns smaller height when tablet (no header) for same element count', () => {
-        const heightPhone = getAddWorkspaceSheetContentHeight(false, 0);
-        const heightTablet = getAddWorkspaceSheetContentHeight(true, 0);
-        expect(heightTablet).toBeLessThan(heightPhone);
-    });
-
     it('returns same height for high element counts (capped for scroll)', () => {
-        const heightFive = getAddWorkspaceSheetContentHeight(false, 5);
-        const heightTen = getAddWorkspaceSheetContentHeight(false, 10);
-        const heightHundred = getAddWorkspaceSheetContentHeight(false, 100);
+        const heightFive = getAddWorkspaceSheetContentHeight(5);
+        const heightTen = getAddWorkspaceSheetContentHeight(10);
+        const heightHundred = getAddWorkspaceSheetContentHeight(100);
         expect(heightTen).toBe(heightFive);
         expect(heightHundred).toBe(heightFive);
     });

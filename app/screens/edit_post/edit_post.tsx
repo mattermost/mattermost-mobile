@@ -1,40 +1,46 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, type LayoutChangeEvent, Platform, View, StyleSheet} from 'react-native';
-import {KeyboardProvider} from 'react-native-keyboard-controller';
+import {Alert, type LayoutChangeEvent, View, StyleSheet} from 'react-native';
+import {KeyboardAvoidingView} from 'react-native-keyboard-controller';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
+import NavigationButton from '@components/navigation_button';
 import {QUICK_ACTIONS_HEIGHT} from '@components/post_draft/quick_actions/quick_actions';
+import {Screens} from '@constants';
 import {EditPostProvider} from '@context/edit_post';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useKeyboardOverlap} from '@hooks/device';
-import useDidMount from '@hooks/did_mount';
-import useDidUpdate from '@hooks/did_update';
-import {useInputPropagation} from '@hooks/input';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
-import SecurityManager from '@managers/security_manager';
 import PostError from '@screens/edit_post/post_error';
-import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {fileMaxWarning, fileSizeWarning, getUploadErrorMessage, uploadDisabledWarning} from '@utils/file';
-import {changeOpacity} from '@utils/theme';
+import {dismissKeyboard} from '@utils/keyboard';
 
 import EditPostInput from './edit_post_input';
 
-import type {PasteInputRef} from '@mattermost/react-native-paste-input';
+import type {PasteTextInputInstance} from '@mattermost/react-native-paste-input';
 import type {ErrorHandlers} from '@typings/components/upload_error_handlers';
 import type PostModel from '@typings/database/models/servers/post';
-import type {AvailableScreens} from '@typings/screens/navigation';
+
+type EditPostProps = {
+    post: PostModel;
+    maxPostSize: number;
+    canDelete: boolean;
+    files?: FileInfo[];
+    maxFileCount: number;
+    maxFileSize: number;
+    canUploadFiles: boolean;
+}
 
 const AUTOCOMPLETE_SEPARATION = 8;
 
@@ -55,28 +61,11 @@ const styles = StyleSheet.create({
     },
 });
 
-const RIGHT_BUTTON = buildNavigationButton('edit-post', 'edit_post.save.button');
-
-// Exclude bottom edge from SafeAreaView to prevent gap between attachments and keyboard.
-const safeAreaEdges: Edge[] = ['top', 'left', 'right'];
-
-type EditPostProps = {
-    componentId: AvailableScreens;
-    closeButtonId: string;
-    post: PostModel;
-    maxPostSize: number;
-    canDelete: boolean;
-    files?: FileInfo[];
-    maxFileCount: number;
-    maxFileSize: number;
-    canUploadFiles: boolean;
-}
+const safeAreaEdges: Edge[] = ['left', 'right', 'bottom'];
 
 const EditPost = ({
-    componentId,
     maxPostSize,
     post,
-    closeButtonId,
     canDelete,
     files,
     maxFileCount,
@@ -84,19 +73,20 @@ const EditPost = ({
     canUploadFiles,
 }: EditPostProps) => {
     const editingMessage = post.messageSource || post.message;
+    const navigation = useNavigation();
     const [postMessage, setPostMessage] = useState(editingMessage);
     const [cursorPosition, setCursorPosition] = useState(editingMessage.length);
     const [errorLine, setErrorLine] = useState<string | undefined>();
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [isUpdating, setIsUpdating] = useState(false);
     const [containerHeight, setContainerHeight] = useState(0);
-    const [propagateValue, shouldProcessEvent] = useInputPropagation();
     const [postFiles, setPostFiles] = useState<FileInfo[]>(files || []);
+    const [canSave, setCanSave] = useState(false);
 
     const mainView = useRef<View>(null);
     const uploadErrorHandlers = useRef<ErrorHandlers>({});
 
-    const postInputRef = useRef<PasteInputRef | undefined>(undefined);
+    const postInputRef = useRef<PasteTextInputInstance | null>(null);
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -123,10 +113,6 @@ const EditPost = ({
         return !hasUploadingFiles && !tooLong && (messageChanged || filesChanged);
     }, [postMessage, postFiles, editingMessage, maxPostSize, files]);
 
-    useDidMount(() => {
-        toggleSaveButton(false);
-    });
-
     useEffect(() => {
         const t = setTimeout(() => {
             postInputRef.current?.focus();
@@ -137,33 +123,14 @@ const EditPost = ({
         };
     }, []);
 
-    useDidUpdate(() => {
-        // Workaround to avoid iOS emdash autocorrect in Code Blocks
-        if (Platform.OS === 'ios') {
-            onTextSelectionChange();
-        }
-    }, [postMessage]);
-
     const onClose = useCallback(() => {
-        Keyboard.dismiss();
-        dismissModal({componentId});
-    }, [componentId]);
+        dismissKeyboard();
+        navigateBack();
+    }, []);
 
     const onTextSelectionChange = useCallback((curPos: number = cursorPosition) => {
         setCursorPosition(curPos);
     }, [cursorPosition]);
-
-    const toggleSaveButton = useCallback((enabled = true) => {
-        setButtons(componentId, {
-            rightButtons: [{
-                ...RIGHT_BUTTON,
-                color: theme.sidebarHeaderTextColor,
-                disabledColor: changeOpacity(theme.sidebarHeaderTextColor, 0.32),
-                text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
-                enabled,
-            }],
-        });
-    }, [componentId, intl, theme]);
 
     const updateFileInPostFiles = useCallback((updatedFile: FileInfo) => {
         const hasSameClientId = (file: FileInfo) => {
@@ -231,7 +198,6 @@ const EditPost = ({
     }, [canUploadFiles, postFiles?.length, maxFileCount, setErrorLine, intl, maxFileSize, serverUrl, post.channelId, post.rootId, updateFileInPostFiles, postMessage, maxPostSize, handleUploadError]);
 
     const handleFileRemoval = useCallback((id: string) => {
-
         const fileToRemove = postFiles?.find((file) => {
             if (file.id && id) {
                 return file.id === id;
@@ -315,7 +281,7 @@ const EditPost = ({
             loadingFiles = postFiles.filter((v) => v.clientId && DraftEditPostUploadManager.isUploading(v.clientId));
         }
 
-        toggleSaveButton(shouldEnableSaveButton());
+        setCanSave(shouldEnableSaveButton());
 
         for (const key of Object.keys(uploadErrorHandlers.current)) {
             if (!loadingFiles.find((v) => v.clientId === key)) {
@@ -329,7 +295,7 @@ const EditPost = ({
                 uploadErrorHandlers.current[file.clientId] = DraftEditPostUploadManager.registerErrorHandler(file.clientId, handleUploadError);
             }
         }
-    }, [postFiles, postMessage, handleUploadError, shouldEnableSaveButton, toggleSaveButton]);
+    }, [handleUploadError, postFiles, postMessage, setErrorLine, shouldEnableSaveButton]);
 
     const onChangeTextCommon = useCallback((message: string) => {
         const tooLong = message.length > maxPostSize;
@@ -348,17 +314,13 @@ const EditPost = ({
 
     const onAutocompleteChangeText = useCallback((message: string) => {
         setPostMessage(message);
-        propagateValue(message);
         onChangeTextCommon(message);
-    }, [onChangeTextCommon, propagateValue]);
+    }, [onChangeTextCommon]);
 
     const onInputChangeText = useCallback((message: string) => {
-        if (!shouldProcessEvent(message)) {
-            return;
-        }
         setPostMessage(message);
         onChangeTextCommon(message);
-    }, [onChangeTextCommon, shouldProcessEvent]);
+    }, [onChangeTextCommon]);
 
     const handleUIUpdates = useCallback((res: {error?: unknown}) => {
         if (res.error) {
@@ -384,7 +346,7 @@ const EditPost = ({
                 style: 'cancel',
                 onPress: () => {
                     setIsUpdating(false);
-                    toggleSaveButton();
+                    setCanSave(false);
                     setPostMessage(editingMessage);
                 },
             }, {
@@ -396,13 +358,13 @@ const EditPost = ({
                 },
             }],
         );
-    }, [intl, toggleSaveButton, editingMessage, serverUrl, post, handleUIUpdates]);
+    }, [intl, editingMessage, serverUrl, post, handleUIUpdates]);
 
     const onSavePostMessage = useCallback(async () => {
         setIsUpdating(true);
         setErrorLine(undefined);
         setErrorExtra(undefined);
-        toggleSaveButton(false);
+        setCanSave(false);
         if (shouldDeleteOnSave) {
             handleDeletePost();
             return;
@@ -416,17 +378,28 @@ const EditPost = ({
 
         const res = await editPost(serverUrl, post.id, postMessage, currentFileIds, removedFileIds);
         handleUIUpdates(res);
-    }, [toggleSaveButton, shouldDeleteOnSave, post.metadata?.files, post.id, serverUrl, postMessage, handleUIUpdates, handleDeletePost, postFiles]);
+    }, [shouldDeleteOnSave, post.metadata?.files, post.id, serverUrl, postMessage, handleUIUpdates, handleDeletePost, postFiles]);
+
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <NavigationButton
+                    onPress={onSavePostMessage}
+                    disabled={!canSave}
+                    testID={'edit_post.save.button'}
+                    text={intl.formatMessage({id: 'mobile.edit_post.save', defaultMessage: 'Save'})}
+                />
+            ),
+        });
+    }, [navigation, onSavePostMessage, theme.sidebarHeaderTextColor, canSave, intl]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    useNavButtonPressed(RIGHT_BUTTON.id, componentId, onSavePostMessage, [postMessage, postFiles]);
-    useNavButtonPressed(closeButtonId, componentId, onClose, []);
-    useAndroidHardwareBackHandler(componentId, onClose);
+    useAndroidHardwareBackHandler(Screens.EDIT_POST, onClose);
 
-    const overlap = useKeyboardOverlap(mainView, containerHeight);
+    const overlap = useKeyboardOverlap();
     const autocompletePosition = overlap + AUTOCOMPLETE_SEPARATION + QUICK_ACTIONS_HEIGHT;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition;
 
@@ -434,10 +407,7 @@ const EditPost = ({
 
     if (isUpdating) {
         return (
-            <View
-                style={styles.loader}
-                nativeID={SecurityManager.getShieldScreenId(componentId)}
-            >
+            <View style={styles.loader}>
                 <Loading color={theme.buttonBg}/>
             </View>
         );
@@ -454,90 +424,51 @@ const EditPost = ({
                 style={styles.container}
                 edges={safeAreaEdges}
                 onLayout={onLayout}
-                nativeID={SecurityManager.getShieldScreenId(componentId)}
             >
-                {Platform.OS === 'ios' ? (
-                    <KeyboardProvider>
-                        <ExtraKeyboardProvider>
-                            <View
-                                style={styles.body}
-                                ref={mainView}
-                            >
-                                {Boolean((errorLine || errorExtra)) &&
-                                    <PostError
-                                        errorExtra={errorExtra}
-                                        errorLine={errorLine}
-                                    />
-                                }
-                                <View style={styles.inputContainer}>
-                                    <EditPostInput
-                                        hasError={Boolean(errorLine || errorExtra)}
-                                        message={postMessage}
-                                        onChangeText={onInputChangeText}
-                                        onTextSelectionChange={onTextSelectionChange}
-                                        inputRef={postInputRef}
-                                        post={post}
-                                        postFiles={postFiles}
-                                        addFiles={addFiles}
-                                    />
-                                </View>
-                            </View>
-                        </ExtraKeyboardProvider>
-                        <Autocomplete
-                            channelId={post.channelId}
-                            shouldDirectlyReact={false}
-                            nestedScrollEnabled={true}
-                            rootId={post.rootId}
-                            updateValue={onAutocompleteChangeText}
-                            value={postMessage}
-                            cursorPosition={cursorPosition}
-                            position={animatedAutocompletePosition}
-                            availableSpace={animatedAutocompleteAvailableSpace}
-                            serverUrl={serverUrl}
-                        />
-                    </KeyboardProvider>
-                ) : (
-                    <>
-                        <ExtraKeyboardProvider>
-                            <View
-                                style={styles.body}
-                                ref={mainView}
-                            >
-                                {Boolean((errorLine || errorExtra)) &&
-                                    <PostError
-                                        errorExtra={errorExtra}
-                                        errorLine={errorLine}
-                                    />
-                                }
-                                <View style={styles.inputContainer}>
-                                    <EditPostInput
-                                        hasError={Boolean(errorLine || errorExtra)}
-                                        message={postMessage}
-                                        onChangeText={onInputChangeText}
-                                        onTextSelectionChange={onTextSelectionChange}
-                                        inputRef={postInputRef}
-                                        post={post}
-                                        postFiles={postFiles}
-                                        addFiles={addFiles}
-                                    />
-                                </View>
-                            </View>
-                        </ExtraKeyboardProvider>
-                        <Autocomplete
-                            channelId={post.channelId}
-                            shouldDirectlyReact={false}
-                            nestedScrollEnabled={true}
-                            rootId={post.rootId}
-                            updateValue={onAutocompleteChangeText}
-                            value={postMessage}
-                            cursorPosition={cursorPosition}
-                            position={animatedAutocompletePosition}
-                            availableSpace={animatedAutocompleteAvailableSpace}
-                            serverUrl={serverUrl}
-                        />
-                    </>
-                )}
+                <KeyboardAvoidingView
+                    behavior={'padding'}
+                    automaticOffset={true}
+                    style={styles.inputContainer}
+                >
+                    <View
+                        style={styles.body}
+                        ref={mainView}
+                    >
+                        {Boolean((errorLine || errorExtra)) &&
+                            <PostError
+                                errorExtra={errorExtra}
+                                errorLine={errorLine}
+                            />
+                        }
+                        <View style={styles.inputContainer}>
+                            <EditPostInput
+                                hasError={Boolean(errorLine || errorExtra)}
+                                message={postMessage}
+                                onChangeText={onInputChangeText}
+                                onTextSelectionChange={onTextSelectionChange}
+                                updateCursorPosition={setCursorPosition}
+                                updateValue={setPostMessage}
+                                inputRef={postInputRef}
+                                post={post}
+                                postFiles={postFiles}
+                                addFiles={addFiles}
+                            />
+                        </View>
+                    </View>
+                </KeyboardAvoidingView>
             </SafeAreaView>
+            <Autocomplete
+                channelId={post.channelId}
+                shouldDirectlyReact={false}
+                nestedScrollEnabled={true}
+                rootId={post.rootId}
+                updateValue={onAutocompleteChangeText}
+                value={postMessage}
+                cursorPosition={cursorPosition}
+                position={animatedAutocompletePosition}
+                availableSpace={animatedAutocompleteAvailableSpace}
+                serverUrl={serverUrl}
+            />
         </EditPostProvider>
     );
 };

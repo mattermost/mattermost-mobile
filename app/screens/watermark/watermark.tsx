@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Portal} from '@gorhom/portal';
 import React, {useState} from 'react';
 import {StyleSheet, Text, useWindowDimensions, View} from 'react-native';
+import {FullWindowOverlay} from 'react-native-screens';
 
 import {useServerUrl} from '@context/server';
 import useDidMount from '@hooks/did_mount';
@@ -12,6 +14,7 @@ import {typography} from '@utils/typography';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
+    enabled: boolean;
     currentUser: UserModel | undefined;
 };
 
@@ -55,7 +58,7 @@ function formatTime(date: Date): string {
     }).format(date);
 }
 
-const WatermarkScreen = ({currentUser}: Props) => {
+const WatermarkScreen = ({currentUser, enabled}: Props) => {
     const serverUrl = useServerUrl();
     const {width, height} = useWindowDimensions();
     const [now, setNow] = useState(() => new Date());
@@ -64,6 +67,10 @@ const WatermarkScreen = ({currentUser}: Props) => {
         const interval = setInterval(() => setNow(new Date()), toMilliseconds({minutes: 1}));
         return () => clearInterval(interval);
     });
+
+    if (!enabled) {
+        return null;
+    }
 
     const username = currentUser?.username ?? '';
     const watermarkText = `${username}  ${serverUrl}  ${formatDate(now)}  ${formatTime(now)}`;
@@ -108,16 +115,20 @@ const WatermarkScreen = ({currentUser}: Props) => {
     };
 
     return (
-        <View
-            style={styles.container}
-            pointerEvents='none'
-            accessibilityElementsHidden={true}
-            importantForAccessibility='no-hide-descendants'
-        >
-            <View style={[styles.diagonalLayer, layerStyle]}>
-                {renderGrid()}
-            </View>
-        </View>
+        <Portal hostName='watermark'>
+            <FullWindowOverlay>
+                <View
+                    style={styles.container}
+                    pointerEvents='none'
+                    accessibilityElementsHidden={true}
+                    importantForAccessibility='no-hide-descendants'
+                >
+                    <View style={[styles.diagonalLayer, layerStyle]}>
+                        {renderGrid()}
+                    </View>
+                </View>
+            </FullWindowOverlay>
+        </Portal>
     );
 };
 

@@ -60,7 +60,7 @@ class SplitView {
         fun getWindowDimensions(): WritableMap? {
             if (context?.currentActivity != null) {
                 val map = Arguments.createMap()
-                val bounds = FoldableObserver.getInstance()?.getWindowDimensions()
+                val bounds = FoldableObserver.getInstance()?.getCurrentWindowDimensions()
                 if (bounds != null) {
                     map.putInt("width", bounds.width())
                     map.putInt("height", bounds.height())

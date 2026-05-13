@@ -3,7 +3,7 @@
 
 import TurboLogger from '@mattermost/react-native-turbo-log';
 import RNUtils from '@mattermost/rnutils';
-import {fireEvent, waitFor, waitForElementToBeRemoved} from '@testing-library/react-native';
+import {act, fireEvent, waitFor, waitForElementToBeRemoved} from '@testing-library/react-native';
 import React from 'react';
 import {Platform} from 'react-native';
 import Share from 'react-native-share';
@@ -32,23 +32,10 @@ describe('screens/report_a_problem/app_logs', () => {
         jest.clearAllMocks();
         jest.mocked(TurboLogger.getLogPaths).mockResolvedValue(logPaths);
         jest.mocked(RNUtils.createZipFile).mockResolvedValue(zipPath);
-
-        // React TouchableOpacity seems to be causing warnings about state
-        // changes outside of an act. This is a workaround to silence the warnings.
-        // We keep nextTick as it is needed for the tests to work.
-        jest.useFakeTimers({
-            doNotFake: [
-                'nextTick',
-            ],
-        });
-    });
-
-    afterEach(() => {
-        Platform.OS = 'ios';
-        jest.useRealTimers();
     });
 
     it('renders loading state initially', async () => {
+        jest.useFakeTimers({doNotFake: ['nextTick']});
         const {getByTestId, getByText} = renderWithIntl(
             <AppLogs/>,
         );
@@ -56,8 +43,8 @@ describe('screens/report_a_problem/app_logs', () => {
         expect(getByTestId('logs-loading')).toBeTruthy();
         expect(getByText('Download App Logs')).toBeDisabled();
 
-        // This removes a jest warning
         await waitForElementToBeRemoved(() => getByTestId('logs-loading'));
+        jest.useRealTimers();
     });
 
     it('renders log files after loading', async () => {
@@ -73,85 +60,79 @@ describe('screens/report_a_problem/app_logs', () => {
 
     it('handles download on iOS', async () => {
         Platform.OS = 'ios';
-        const {getByText} = renderWithIntl(
+        const {getByTestId, getByText} = renderWithIntl(
             <AppLogs/>,
         );
 
-        await waitFor(() => {
-            expect(TurboLogger.getLogPaths).toHaveBeenCalled();
+        await waitForElementToBeRemoved(() => getByTestId('logs-loading'));
+        await waitFor(() => expect(getByText('Download App Logs')).toBeEnabled());
+
+        await act(async () => {
+            fireEvent.press(getByTestId('app_logs_download_button'));
         });
 
-        const downloadButton = getByText('Download App Logs');
-        fireEvent.press(downloadButton);
-
-        await waitFor(() => {
-            expect(RNUtils.createZipFile).toHaveBeenCalledWith(logPaths);
-            expect(Share.open).toHaveBeenCalledWith({
-                url: 'file://' + zipPath,
-                saveToFiles: true,
-            });
-            expect(deleteFile).toHaveBeenCalledWith(zipPath);
+        expect(RNUtils.createZipFile).toHaveBeenCalledWith(logPaths);
+        expect(Share.open).toHaveBeenCalledWith({
+            url: 'file://' + zipPath,
+            saveToFiles: true,
         });
+        expect(deleteFile).toHaveBeenCalledWith(zipPath);
     });
 
     it('handles download on Android', async () => {
         Platform.OS = 'android';
-        const {getByText} = renderWithIntl(
+        const {getByTestId, getByText} = renderWithIntl(
             <AppLogs/>,
         );
 
-        await waitFor(() => {
-            expect(TurboLogger.getLogPaths).toHaveBeenCalled();
+        await waitForElementToBeRemoved(() => getByTestId('logs-loading'));
+        await waitFor(() => expect(getByText('Download App Logs')).toBeEnabled());
+
+        await act(async () => {
+            fireEvent.press(getByTestId('app_logs_download_button'));
         });
 
-        const downloadButton = getByText('Download App Logs');
-        fireEvent.press(downloadButton);
-
-        await waitFor(() => {
-            expect(RNUtils.createZipFile).toHaveBeenCalledWith(logPaths);
-            expect(RNUtils.saveFile).toHaveBeenCalledWith(zipPath);
-            expect(deleteFile).toHaveBeenCalledWith(zipPath);
-        });
+        expect(RNUtils.createZipFile).toHaveBeenCalledWith(logPaths);
+        expect(RNUtils.saveFile).toHaveBeenCalledWith(zipPath);
+        expect(deleteFile).toHaveBeenCalledWith(zipPath);
     });
 
     it('handles errors during zip creation', async () => {
         jest.mocked(RNUtils.createZipFile).mockRejectedValue(new Error('Zip failed'));
-        const {getByText} = renderWithIntl(
+        const {getByTestId, getByText} = renderWithIntl(
             <AppLogs/>,
         );
 
-        await waitFor(() => {
-            expect(TurboLogger.getLogPaths).toHaveBeenCalled();
+        await waitForElementToBeRemoved(() => getByTestId('logs-loading'));
+        await waitFor(() => expect(getByText('Download App Logs')).toBeEnabled());
+
+        await act(async () => {
+            fireEvent.press(getByTestId('app_logs_download_button'));
         });
 
-        const downloadButton = getByText('Download App Logs');
-        fireEvent.press(downloadButton);
-
-        await waitFor(() => {
-            expect(RNUtils.createZipFile).toHaveBeenCalled();
-            expect(logDebug).toHaveBeenCalledWith('Failed to create save file', new Error('Zip failed'));
-            expect(deleteFile).not.toHaveBeenCalled();
-        });
+        expect(RNUtils.createZipFile).toHaveBeenCalled();
+        expect(logDebug).toHaveBeenCalledWith('Failed to create save file', new Error('Zip failed'));
+        expect(deleteFile).not.toHaveBeenCalled();
     });
 
     it('handles errors during file deletion', async () => {
-        jest.mocked(deleteFile).mockRejectedValue(new Error('Delete failed'));
-        const {getByText} = renderWithIntl(
+        jest.mocked(deleteFile).mockImplementation(() => {
+            throw new Error('Delete failed');
+        });
+        const {getByTestId, getByText} = renderWithIntl(
             <AppLogs/>,
         );
 
-        await waitFor(() => {
-            expect(TurboLogger.getLogPaths).toHaveBeenCalled();
+        await waitForElementToBeRemoved(() => getByTestId('logs-loading'));
+        await waitFor(() => expect(getByText('Download App Logs')).toBeEnabled());
+
+        await act(async () => {
+            fireEvent.press(getByTestId('app_logs_download_button'));
         });
 
-        const downloadButton = getByText('Download App Logs');
-        fireEvent.press(downloadButton);
-
-        await waitFor(() => {
-            expect(RNUtils.createZipFile).toHaveBeenCalled();
-            expect(deleteFile).toHaveBeenCalled();
-            expect(logDebug).toHaveBeenCalledWith('Failed to delete zip file', new Error('Delete failed'));
-        });
+        expect(RNUtils.createZipFile).toHaveBeenCalled();
+        expect(deleteFile).toHaveBeenCalled();
+        expect(logDebug).toHaveBeenCalledWith('Failed to delete zip file', new Error('Delete failed'));
     });
 
     it('handles empty log paths', async () => {
