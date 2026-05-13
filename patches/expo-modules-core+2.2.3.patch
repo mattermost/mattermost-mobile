@@ -1,4 +1,34 @@
-Binary files /dev/null and b/node_modules/expo-modules-core/android/build/tmp/kotlin-classes/debug/expo/modules/rncompatibility/ReactNativeFeatureFlags.class differ
+diff --git a/node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle b/node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle
+index 4ec4514..66fe700 100644
+--- a/node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle
++++ b/node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle
+@@ -89,15 +89,18 @@ ext.useExpoPublishing = {
+   }
+ 
+   project.afterEvaluate {
+-    publishing {
+-      publications {
+-        release(MavenPublication) {
+-          from components.release
++    def releaseComponent = components.find { it.name == 'release' }
++    if (releaseComponent) {
++      publishing {
++        publications {
++          release(MavenPublication) {
++            from releaseComponent
++          }
+         }
+-      }
+-      repositories {
+-        maven {
+-          url = mavenLocal().url
++        repositories {
++          maven {
++            url = mavenLocal().url
++          }
+         }
+       }
+     }
 diff --git a/node_modules/expo-modules-core/src/web/index.web.ts b/node_modules/expo-modules-core/src/web/index.web.ts
 index 611564a..d9b46db 100644
 --- a/node_modules/expo-modules-core/src/web/index.web.ts

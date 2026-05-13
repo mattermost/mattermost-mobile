@@ -7,6 +7,7 @@ import {
     cacheDirectory, deleteAsync, documentDirectory, getInfoAsync,
     type FileInfo as ExpoFileInfo,
 } from 'expo-file-system';
+import {manipulateAsync, SaveFormat} from 'expo-image-manipulator';
 import mimeDB from 'mime-db';
 import {Alert, Linking, Platform} from 'react-native';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
@@ -477,6 +478,13 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
             outFile.mime_type = lookupMimeType(outFile.name);
         }
 
+        if ('width' in file && file.width) {
+            outFile.width = file.width;
+        }
+        if ('height' in file && file.height) {
+            outFile.height = file.height;
+        }
+
         out.push(outFile);
     }));
 
@@ -641,4 +649,54 @@ export const filesLocalPathValidation = async (files: FileModel[], authorId: str
     }
 
     return filesInfo;
+};
+
+export const resizeImageIfNeeded = async (file: FileInfo, maxDimension: number): Promise<FileInfo> => {
+    if (!isImage(file) || isGif(file)) {
+        return file;
+    }
+
+    const normalizedMime = (file.mime_type ?? '').trim().toLowerCase().split(';')[0].trim();
+    const isJpeg = normalizedMime === 'image/jpeg' || normalizedMime === 'image/jpg';
+    const isPng = normalizedMime === 'image/png';
+    if (!isJpeg && !isPng) {
+        return file;
+    }
+
+    const {width = 0, height = 0} = file;
+    if (!width || !height || !file.localPath) {
+        return file;
+    }
+
+    if (width <= maxDimension && height <= maxDimension) {
+        return file;
+    }
+
+    try {
+        const scale = maxDimension / Math.max(width, height);
+        const newWidth = Math.round(width * scale);
+        const newHeight = Math.round(height * scale);
+
+        const format = isJpeg ? SaveFormat.JPEG : SaveFormat.PNG;
+
+        const result = await manipulateAsync(
+            file.localPath,
+            [{resize: {width: newWidth, height: newHeight}}],
+            {compress: isJpeg ? 0.85 : 1, format},
+        );
+
+        const info = await getInfoAsync(result.uri, {size: true});
+        const newSize = (info.exists && info.size) ? info.size : file.size;
+
+        return {
+            ...file,
+            localPath: result.uri,
+            width: result.width,
+            height: result.height,
+            size: newSize,
+        };
+    } catch (e) {
+        logError('resizeImageIfNeeded', e);
+        return file;
+    }
 };

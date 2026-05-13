@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {getInfoAsync, deleteAsync} from 'expo-file-system';
+import {manipulateAsync} from 'expo-image-manipulator';
 import {Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
@@ -33,10 +34,15 @@ import {
     isVideo,
     lookupMimeType,
     pathWithPrefix,
+    resizeImageIfNeeded,
     uploadDisabledWarning,
 } from '.';
 
 jest.mock('expo-file-system');
+jest.mock('expo-image-manipulator', () => ({
+    manipulateAsync: jest.fn(),
+    SaveFormat: {JPEG: 'jpeg', PNG: 'png'},
+}));
 jest.mock('react-native', () => {
     const RN = jest.requireActual('react-native');
     return {
@@ -250,6 +256,22 @@ describe('Image utils', () => {
             result = await extractFileInfo([{uri: 'file://somefile', size: 12345, fileName: 'file.png', type: 'image/png'}]);
             expect(result).toEqual(expect.any(Array));
         });
+
+        it('should copy width and height from image assets', async () => {
+            const file = {uri: 'file://somefile', fileSize: 12345, fileName: 'photo.jpg', type: 'image/jpeg', width: 3024, height: 4032};
+            const result = await extractFileInfo([file]);
+            expect(result).toHaveLength(1);
+            expect(result[0].width).toBe(3024);
+            expect(result[0].height).toBe(4032);
+        });
+
+        it('should not set width or height when asset has none', async () => {
+            const file = {uri: 'file://somefile', fileSize: 12345, fileName: 'doc.pdf', type: 'application/pdf'};
+            const result = await extractFileInfo([file]);
+            expect(result).toHaveLength(1);
+            expect(result[0].width).toBeUndefined();
+            expect(result[0].height).toBeUndefined();
+        });
     });
 
     describe('fileSizeWarning', () => {
@@ -321,6 +343,159 @@ describe('Image utils', () => {
             expect(pathWithPrefix('file://', 'file://something')).toEqual('file://something');
             expect(pathWithPrefix('file://', 'something')).toEqual('file://something');
         });
+    });
+});
+
+describe('resizeImageIfNeeded', () => {
+    const mockManipulateAsync = jest.mocked(manipulateAsync);
+    const mockGetInfoAsync = jest.mocked(getInfoAsync);
+
+    const jpegFile = {
+        id: 'id-1',
+        clientId: 'client-1',
+        name: 'photo.jpg',
+        extension: 'jpg',
+        mime_type: 'image/jpeg',
+        size: 500000,
+        localPath: 'file:///photo.jpg',
+        width: 3000,
+        height: 2000,
+    } as FileInfo;
+
+    const pngFile = {
+        ...jpegFile,
+        name: 'image.png',
+        extension: 'png',
+        mime_type: 'image/png',
+        localPath: 'file:///image.png',
+    } as FileInfo;
+
+    const gifFile = {
+        ...jpegFile,
+        name: 'animation.gif',
+        extension: 'gif',
+        mime_type: 'image/gif',
+        localPath: 'file:///animation.gif',
+    } as FileInfo;
+
+    const pdfFile = {
+        name: 'document.pdf',
+        extension: 'pdf',
+        mime_type: 'application/pdf',
+        size: 100000,
+        localPath: 'file:///document.pdf',
+        width: 0,
+        height: 0,
+    } as unknown as FileInfo;
+
+    beforeEach(() => {
+        mockManipulateAsync.mockReset();
+        mockGetInfoAsync.mockReset();
+    });
+
+    it('should return the file unchanged when it is not an image', async () => {
+        const result = await resizeImageIfNeeded(pdfFile, 2048);
+        expect(result).toBe(pdfFile);
+        expect(mockManipulateAsync).not.toHaveBeenCalled();
+    });
+
+    it('should return the file unchanged when it is a GIF', async () => {
+        const result = await resizeImageIfNeeded(gifFile, 2048);
+        expect(result).toBe(gifFile);
+        expect(mockManipulateAsync).not.toHaveBeenCalled();
+    });
+
+    it('should return the file unchanged for non-JPEG/PNG image types like BMP', async () => {
+        const bmpFile = {...jpegFile, name: 'image.bmp', extension: 'bmp', mime_type: 'image/bmp'} as FileInfo;
+        const result = await resizeImageIfNeeded(bmpFile, 100);
+        expect(result).toBe(bmpFile);
+        expect(mockManipulateAsync).not.toHaveBeenCalled();
+    });
+
+    it('should return the file unchanged when both dimensions are within the limit', async () => {
+        const smallFile = {...jpegFile, width: 1000, height: 800};
+        const result = await resizeImageIfNeeded(smallFile, 2048);
+        expect(result).toBe(smallFile);
+        expect(mockManipulateAsync).not.toHaveBeenCalled();
+    });
+
+    it('should return the file unchanged when dimensions are missing', async () => {
+        const noSizeFile = {...jpegFile, width: 0, height: 0};
+        const result = await resizeImageIfNeeded(noSizeFile, 2048);
+        expect(result).toBe(noSizeFile);
+        expect(mockManipulateAsync).not.toHaveBeenCalled();
+    });
+
+    it('should return the file unchanged when localPath is missing', async () => {
+        const noPathFile = {...jpegFile, localPath: undefined};
+        const result = await resizeImageIfNeeded(noPathFile, 2048);
+        expect(result).toBe(noPathFile);
+        expect(mockManipulateAsync).not.toHaveBeenCalled();
+    });
+
+    it('should resize a JPEG when width exceeds maxDimension', async () => {
+        // width=3000, height=2000, maxDim=2048 → scale=2048/3000
+        // newWidth=Math.round(3000*(2048/3000))=2048, newHeight=Math.round(2000*(2048/3000))=1365
+        mockManipulateAsync.mockResolvedValue({
+            uri: 'file:///resized.jpg',
+            width: 2048,
+            height: 1365,
+        } as any);
+        mockGetInfoAsync.mockResolvedValue({
+            exists: true,
+            uri: 'file:///resized.jpg',
+            size: 200000,
+            isDirectory: false,
+            modificationTime: 0,
+        });
+
+        const result = await resizeImageIfNeeded(jpegFile, 2048);
+
+        expect(mockManipulateAsync).toHaveBeenCalledWith(
+            'file:///photo.jpg',
+            [{resize: {width: 2048, height: 1365}}],
+            {compress: 1, format: 'jpeg'},
+        );
+        expect(result.localPath).toBe('file:///resized.jpg');
+        expect(result.width).toBe(2048);
+        expect(result.height).toBe(1365);
+        expect(result.size).toBe(200000);
+    });
+
+    it('should resize a PNG when height exceeds maxDimension and use PNG format', async () => {
+        // width=1000, height=3000, maxDim=2048 → scale=2048/3000
+        // newWidth=Math.round(1000*(2048/3000))=683, newHeight=Math.round(3000*(2048/3000))=2048
+        const tallPng = {...pngFile, width: 1000, height: 3000};
+        mockManipulateAsync.mockResolvedValue({
+            uri: 'file:///resized.png',
+            width: 683,
+            height: 2048,
+        } as any);
+        mockGetInfoAsync.mockResolvedValue({
+            exists: true,
+            uri: 'file:///resized.png',
+            size: 150000,
+            isDirectory: false,
+            modificationTime: 0,
+        });
+
+        const result = await resizeImageIfNeeded(tallPng, 2048);
+
+        expect(mockManipulateAsync).toHaveBeenCalledWith(
+            'file:///image.png',
+            [{resize: {width: 683, height: 2048}}],
+            {compress: 1, format: 'png'},
+        );
+        expect(result.localPath).toBe('file:///resized.png');
+        expect(result.width).toBe(683);
+        expect(result.height).toBe(2048);
+    });
+
+    it('should return original file if manipulateAsync throws', async () => {
+        mockManipulateAsync.mockRejectedValue(new Error('resize failed'));
+
+        const result = await resizeImageIfNeeded(jpegFile, 2048);
+        expect(result).toBe(jpegFile);
     });
 });
 

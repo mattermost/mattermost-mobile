@@ -9,6 +9,7 @@ import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import {deleteFileCache, getAllFilesInCachesDirectory} from '@utils/file';
+import {storeResizeImages, storeResizeImagesMaxDimension} from '@actions/app/global';
 
 import AdvancedSettings from './advanced';
 
@@ -27,15 +28,30 @@ jest.mock('@hooks/utils', () => ({
     usePreventDoubleTap: jest.fn((callback) => callback),
 }));
 
+jest.mock('@components/settings/text_setting', () => {
+    const {TextInput} = require('react-native');
+    return ({onBlur, onChange, testID, value}: {onBlur?: () => void; onChange: (v: string) => void; testID: string; value: string}) => (
+        <TextInput
+            testID={`${testID}.input`}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+        />
+    );
+});
+
 const mockGetAllFilesInCachesDirectory = getAllFilesInCachesDirectory as jest.Mock;
 const mockDeleteFileCache = deleteFileCache as jest.Mock;
 const mockGoToScreen = goToScreen as jest.Mock;
+const mockStoreResizeImages = storeResizeImages as jest.Mock;
+const mockStoreResizeImagesMaxDimension = storeResizeImagesMaxDimension as jest.Mock;
 
 describe('AdvancedSettings', () => {
     const defaultProps = {
         componentId: 'SettingsAdvanced' as const,
         isDevMode: false,
-        lowConnectivityMonitorEnabled: false,
+        resizeImages: false,
+        resizeImagesMaxDimension: 2048,
     };
 
     const mockFiles: FileInfo[] = [
@@ -299,6 +315,81 @@ describe('AdvancedSettings', () => {
             await waitFor(() => {
                 expect(mockGetAllFilesInCachesDirectory).toHaveBeenCalledTimes(2);
             });
+        });
+    });
+
+    describe('resize images settings', () => {
+        it('should render the resize images toggle', async () => {
+            renderWithIntlAndTheme(<AdvancedSettings {...defaultProps}/>);
+            await waitFor(() => {
+                expect(screen.getByTestId('advanced_settings.resize_images.option')).toBeTruthy();
+            });
+        });
+
+        it('should call storeResizeImages when the toggle is pressed', async () => {
+            renderWithIntlAndTheme(<AdvancedSettings {...defaultProps}/>);
+            await waitFor(() => {
+                expect(screen.getByTestId('advanced_settings.resize_images.option')).toBeTruthy();
+            });
+            fireEvent(screen.getByTestId('advanced_settings.resize_images.option'), 'action', true);
+            expect(mockStoreResizeImages).toHaveBeenCalledWith(true);
+        });
+
+        it('should not render dimension input when resizeImages is false', async () => {
+            renderWithIntlAndTheme(<AdvancedSettings {...defaultProps} resizeImages={false}/>);
+            await waitFor(() => {
+                expect(screen.queryByTestId('advanced_settings.resize_max_dimension')).toBeNull();
+            });
+        });
+
+        it('should render dimension input when resizeImages is true', async () => {
+            renderWithIntlAndTheme(<AdvancedSettings {...defaultProps} resizeImages={true}/>);
+            await waitFor(() => {
+                expect(screen.getByTestId('advanced_settings.resize_max_dimension.input')).toBeTruthy();
+            });
+        });
+
+        const renderDimensionInput = async () => {
+            renderWithIntlAndTheme(<AdvancedSettings {...defaultProps} resizeImages={true}/>);
+            await waitFor(() => {
+                expect(screen.getByTestId('advanced_settings.resize_max_dimension.input')).toBeTruthy();
+            });
+            return screen.getByTestId('advanced_settings.resize_max_dimension.input');
+        };
+
+        it('should persist dimension at minimum boundary on blur', async () => {
+            const input = await renderDimensionInput();
+            fireEvent.changeText(input, '100');
+            fireEvent(input, 'blur');
+            expect(mockStoreResizeImagesMaxDimension).toHaveBeenCalledWith(100);
+        });
+
+        it('should persist dimension at maximum boundary on blur', async () => {
+            const input = await renderDimensionInput();
+            fireEvent.changeText(input, '9999');
+            fireEvent(input, 'blur');
+            expect(mockStoreResizeImagesMaxDimension).toHaveBeenCalledWith(9999);
+        });
+
+        it('should not persist when dimension is below minimum on blur', async () => {
+            const input = await renderDimensionInput();
+            fireEvent.changeText(input, '99');
+            fireEvent(input, 'blur');
+            expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalled();
+        });
+
+        it('should not persist when dimension is above maximum on blur', async () => {
+            const input = await renderDimensionInput();
+            fireEvent.changeText(input, '10000');
+            fireEvent(input, 'blur');
+            expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalled();
+        });
+
+        it('should not persist when dimension contains non-numeric characters on blur', async () => {
+            const input = await renderDimensionInput();
+            fireEvent.changeText(input, '300abc');
+            fireEvent(input, 'blur');
+            expect(mockStoreResizeImagesMaxDimension).not.toHaveBeenCalled();
         });
     });
 

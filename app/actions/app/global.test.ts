@@ -12,6 +12,8 @@ import {
     getLastViewedChannelIdAndServer,
     getLastViewedThreadIdAndServer,
     getPushDisabledInServerAcknowledged,
+    getResizeImages,
+    getResizeImagesMaxDimension,
     queryGlobalValue,
 } from '@queries/app/global';
 
@@ -33,6 +35,8 @@ import {
     removePushDisabledInServerAcknowledged,
     storeScheduledPostTutorial,
     storeScheduledPostsListTutorial,
+    storeResizeImages,
+    storeResizeImagesMaxDimension,
 } from './global';
 
 const serverUrl = 'server.test.com';
@@ -202,5 +206,31 @@ describe('/app/actions/app/global', () => {
         await storeScheduledPostsListTutorial();
         records = await queryGlobalValue(Tutorial.SCHEDULED_POSTS_LIST)?.fetch();
         expect(records?.[0]?.value).toBe(true);
+    });
+
+    it('should store and retrieve the resize images setting', async () => {
+        let value = await getResizeImages();
+        expect(value).toBe(false);
+
+        await storeResizeImages(true);
+        value = await getResizeImages();
+        expect(value).toBe(true);
+
+        await storeResizeImages(false);
+        value = await getResizeImages();
+        expect(value).toBe(false);
+    });
+
+    it('should store and retrieve the resize images max dimension setting', async () => {
+        let value = await getResizeImagesMaxDimension();
+        expect(value).toBe(2048);
+
+        await storeResizeImagesMaxDimension(1024);
+        value = await getResizeImagesMaxDimension();
+        expect(value).toBe(1024);
+
+        await storeResizeImagesMaxDimension(512);
+        value = await getResizeImagesMaxDimension();
+        expect(value).toBe(512);
     });
 });
