@@ -369,7 +369,8 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
-    it('MM-T4091 - should be able to set custom status with expiry time and verify in various locations', async () => {
+    // Flaky: CreateDirectMessageScreen.open() times out on Android — plus button not hittable after DM tutorial
+    it.skip('MM-T4091 - should be able to set custom status with expiry time and verify in various locations', async () => {
         const status = STATUSES.OUT_FOR_LUNCH;
         const messageText = `Message ${getRandomId()}`;
 

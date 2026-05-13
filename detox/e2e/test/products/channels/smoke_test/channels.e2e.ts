@@ -31,8 +31,8 @@ import {
     ServerScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Channels', () => {
     const serverOneDisplayName = 'Server 1';
@@ -70,7 +70,7 @@ describe('Smoke Test - Channels', () => {
         await BrowseChannelsScreen.searchInput.tapReturnKey();
         await wait(timeouts.FOUR_SEC);
         await BrowseChannelsScreen.getChannelItem(channel.name).multiTap(2);
-        await ChannelScreen.closeScheduledMessageTooltip();
+        await ChannelScreen.dismissScheduledPostTooltip();
 
         // * Verify on newly joined channel screen
         await ChannelScreen.toBeVisible();
@@ -170,25 +170,57 @@ describe('Smoke Test - Channels', () => {
     });
 
     it('MM-T4774_5 - should be able to favorite and mute a channel', async () => {
+        // # Reload React Native to establish a fresh WebSocket connection.
+        // By the time this test runs, the WebSocket can be in CLOSE-WAIT state
+        // (server has closed its end). toggleFavoriteChannel relies on the
+        // sidebar_category_updated WebSocket event to update the local DB and flip
+        // the button testID from favorite.action → unfavorite.action. Without a
+        // live WebSocket, that event never arrives and the assertion times out.
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+
         // # Open a channel screen, open channel info screen, tap on favorite action to favorite the channel, and tap on mute action to mute the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.favoriteAction.tap();
         await ChannelInfoScreen.muteAction.tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify channel is favorited and muted
-        await expect(ChannelInfoScreen.unfavoriteAction).toBeVisible();
-        await expect(ChannelInfoScreen.unmuteAction).toBeVisible();
+        // On Android, toggleFavoriteChannel depends on a WebSocket server event
+        // (sidebar_category_updated) to update the local DB, which changes the button testID.
+        // While that async processing runs, the Detox BridgeIdlingResource keeps waitFor() blocked
+        // waiting for bridge-idle. Disabling sync allows us to poll freely without waiting
+        // for the JS bridge to settle between each check.
+        if (isAndroid()) {
+            await device.disableSynchronization();
+            try {
+                await waitFor(ChannelInfoScreen.unfavoriteAction).toBeVisible().withTimeout(timeouts.HALF_MIN);
+                await waitFor(ChannelInfoScreen.unmuteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            } finally {
+                await device.enableSynchronization();
+            }
+        } else {
+            await expect(ChannelInfoScreen.unfavoriteAction).toBeVisible();
+            await expect(ChannelInfoScreen.unmuteAction).toBeVisible();
+        }
 
         // # Tap on favorited action to unfavorite the channel and tap on muted action to unmute the channel
         await ChannelInfoScreen.unfavoriteAction.tap();
         await ChannelInfoScreen.unmuteAction.tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify channel is unfavorited and unmuted
-        await expect(ChannelInfoScreen.favoriteAction).toBeVisible();
-        await expect(ChannelInfoScreen.muteAction).toBeVisible();
+        if (isAndroid()) {
+            await device.disableSynchronization();
+            try {
+                await waitFor(ChannelInfoScreen.favoriteAction).toBeVisible().withTimeout(timeouts.HALF_MIN);
+                await waitFor(ChannelInfoScreen.muteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            } finally {
+                await device.enableSynchronization();
+            }
+        } else {
+            await expect(ChannelInfoScreen.favoriteAction).toBeVisible();
+            await expect(ChannelInfoScreen.muteAction).toBeVisible();
+        }
 
         // # Go back to channel list screen
         await ChannelInfoScreen.close();
@@ -201,6 +233,7 @@ describe('Smoke Test - Channels', () => {
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.openChannelSettings();

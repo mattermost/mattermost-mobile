@@ -30,12 +30,20 @@ class EmojiPickerScreen {
         return this.emojiPickerScreen;
     };
 
-    open = async (closeToolTip = false) => {
+    open = async () => {
         // # Open emoji picker screen
         await PostOptionsScreen.pickReactionButton.tap();
-        if (closeToolTip) {
-            await wait(timeouts.ONE_SEC);
+
+        // Skin tone tooltip appears on the FIRST emoji picker open in a session (Android).
+        // Always try to dismiss it: if present the X is tapped, if absent the catch is a no-op.
+        // Defaulting closeToolTip=false previously caused failures when a test runs in
+        // isolation (no prior test had already dismissed the tooltip), leaving the Modal in
+        // the foreground and blocking Espresso from finding emoji_picker.screen.
+        try {
+            await waitFor(this.toolTipCloseButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
             await this.toolTipCloseButton.tap();
+        } catch {
+            // Tooltip did not appear — continue normally
         }
 
         return this.toBeVisible();
@@ -45,7 +53,16 @@ class EmojiPickerScreen {
         if (isIos()) {
             await this.emojiPickerScreen.swipe('down');
         } else {
+            // First pressBack may dismiss the soft keyboard if it is still open
+            // (e.g. after search interactions). A second pressBack is then needed
+            // to actually close the emoji picker modal.
             await device.pressBack();
+            try {
+                await waitFor(this.emojiPickerScreen).not.toExist().withTimeout(timeouts.ONE_SEC);
+            } catch {
+                // Picker is still visible — keyboard was dismissed first; close the picker now
+                await device.pressBack();
+            }
         }
         await wait(timeouts.ONE_SEC);
         await expect(this.emojiPickerScreen).not.toBeVisible();

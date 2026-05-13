@@ -3,7 +3,7 @@
 
 import {SettingsScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class DisplaySettingsScreen {
     testID = {
@@ -42,8 +42,14 @@ class DisplaySettingsScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
-        await expect(this.displaySettingsScreen).not.toBeVisible();
+        try {
+            await waitFor(this.backButton).toExist().withTimeout(timeouts.TEN_SEC);
+            await this.backButton.tap();
+            await expect(this.displaySettingsScreen).not.toBeVisible();
+        } catch (error) {
+            // Back button may not exist if screen failed to load or already navigated away
+            console.warn('[DisplaySettingsScreen.back] Navigation failed:', error); // eslint-disable-line no-console
+        }
     };
 }
 

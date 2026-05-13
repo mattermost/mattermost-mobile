@@ -1,0 +1,138 @@
+# MM-T4833: Leave a call — call screen dismisses and channel bar disappears
+#
+# Verifies two leave paths:
+#   1. Leave from the full call screen via the Leave button
+#   2. Leave from the minimized CurrentCallBar shown when navigating away
+#
+# PRE-CONDITION: Run the calls seed script:
+#   tsx maestro/fixtures/calls_seed.ts
+#   source .maestro-test-env.sh
+#
+# Required env vars:
+#   SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#   MAESTRO_APP_ID
+tags:
+  - MM-T4833
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# ── Path 1: Leave from the full call screen ──────────────────────────────────
+
+# Wait for the WS-driven Calls config to propagate before opening quick actions.
+- waitForAnimationToEnd:
+    timeout: 25000
+
+# Open the channel quick actions sheet via the three-dots (⋮) button.
+- tapOn:
+    id: "channel_header.channel_quick_actions.button"
+
+# Wait for the Start/Join Call action (60s: WS config propagation on first login).
+- extendedWaitUntil:
+    visible:
+      id: "channel_info.channel_actions.join_start_call.action"
+    timeout: 60000
+- tapOn:
+    id: "channel_info.channel_actions.join_start_call.action"
+
+# Grant permissions
+- tapOn:
+    text: "Allow"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# Starting the call dismisses the bottom sheet and returns to the channel view.
+# Wait for the minimized CurrentCallBar to appear (confirms WebRTC is connected).
+- extendedWaitUntil:
+    visible:
+      id: "calls.current_call_bar"
+    timeout: 20000
+
+# Tap the CurrentCallBar to navigate to the full call screen.
+- tapOn:
+    id: "calls.current_call_bar"
+
+# Verify call screen is up
+- extendedWaitUntil:
+    visible:
+      id: "mute-unmute"
+    timeout: 30000
+- takeScreenshot: calls-leave-full-screen-before-leave
+
+# Tap Leave on the full call screen; confirm the dialog that appears.
+- tapOn:
+    id: "leave"
+- tapOn:
+    text: "Leave call"
+    optional: true
+
+# Verify the call screen and mute button are gone → channel is normal
+- extendedWaitUntil:
+    notVisible:
+      id: "mute-unmute"
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
+      id: "channel.post_draft.post.input"
+    timeout: 10000
+- takeScreenshot: calls-leave-full-screen-after-leave
+
+# ── Path 2: Leave from the minimized CurrentCallBar ─────────────────────────
+
+# Start a second call — Calls config already propagated, use shorter timeout.
+- tapOn:
+    id: "channel_header.channel_quick_actions.button"
+- extendedWaitUntil:
+    visible:
+      id: "channel_info.channel_actions.join_start_call.action"
+    timeout: 30000
+- tapOn:
+    id: "channel_info.channel_actions.join_start_call.action"
+- tapOn:
+    text: "Allow"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# Wait for CurrentCallBar then navigate to full call screen.
+- extendedWaitUntil:
+    visible:
+      id: "calls.current_call_bar"
+    timeout: 20000
+- tapOn:
+    id: "calls.current_call_bar"
+- extendedWaitUntil:
+    visible:
+      id: "mute-unmute"
+    timeout: 30000
+
+# Navigate back to the channel view — call continues minimized as CurrentCallBar.
+- tapOn:
+    id: "navigation.header.back"
+    optional: true
+- back
+
+# The CurrentCallBar should be visible in the channel view
+- extendedWaitUntil:
+    visible:
+      id: "calls.current_call_bar"
+    timeout: 10000
+- takeScreenshot: calls-leave-current-call-bar-visible
+
+# Leave via the CurrentCallBar's leave (hangup) button; confirm the dialog.
+- tapOn:
+    id: "calls.current_call_bar.leave"
+- tapOn:
+    text: "Leave call"
+    optional: true
+
+# Verify the CurrentCallBar disappears
+- extendedWaitUntil:
+    notVisible:
+      id: "calls.current_call_bar"
+    timeout: 10000
+- takeScreenshot: calls-leave-current-call-bar-after-leave

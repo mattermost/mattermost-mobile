@@ -17,6 +17,7 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
+import {Alert} from '@support/ui/component';
 import {
     ChannelScreen,
     ChannelListScreen,
@@ -46,6 +47,11 @@ describe('Channels - Find Channels', () => {
     });
 
     beforeEach(async () => {
+        // Dismiss any lingering "Removed from channel" or "Archived channel"
+        // dialogs that may appear asynchronously via WebSocket events from
+        // the previous test's channel archival (e.g. MM-T4907_5).
+        await Alert.dismissChannelRemoveOrArchiveAlert();
+
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
     });

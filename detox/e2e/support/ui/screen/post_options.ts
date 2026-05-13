@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class PostOptionsScreen {
@@ -47,7 +47,8 @@ class PostOptionsScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.postOptionsScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+        await waitFor(this.postOptionsScreen).toExist().withTimeout(timeout);
 
         return postOptionsScreen;
     };
@@ -76,24 +77,24 @@ class PostOptionsScreen {
         await expect(deleteButton).toBeVisible();
         if (confirm) {
             await deleteButton.tap();
-            await wait(timeouts.ONE_SEC);
+            await wait(timeouts.TWO_SEC);
             await expect(this.postOptionsScreen).not.toExist();
         } else {
             await cancelButton.tap();
-            await wait(timeouts.ONE_SEC);
+            await wait(timeouts.TWO_SEC);
             await expect(this.postOptionsScreen).toExist();
             await this.close();
         }
     };
 
     openPostOptionsForPinedPosts = async (postId: string) => {
-        await waitFor(this.pinnedPostListItem(postId)).toExist().withTimeout(timeouts.TWO_SEC);
-        await this.pinnedPostListItem(postId).longPress(timeouts.TWO_SEC);
+        await waitFor(this.pinnedPostListItem(postId)).toExist().withTimeout(timeouts.TEN_SEC);
+        await longPressWithRetry(this.pinnedPostListItem(postId), this.postOptionsScreen);
     };
 
     openPostOptionsForSearchedPosts = async (postId: string) => {
-        await waitFor(this.searchedPostListItem(postId)).toExist().withTimeout(timeouts.TWO_SEC);
-        await this.searchedPostListItem(postId).longPress(timeouts.TWO_SEC);
+        await waitFor(this.searchedPostListItem(postId)).toExist().withTimeout(timeouts.TEN_SEC);
+        await longPressWithRetry(this.searchedPostListItem(postId), this.postOptionsScreen);
     };
 }
 

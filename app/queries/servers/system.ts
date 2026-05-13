@@ -169,6 +169,11 @@ export const getConfigValue = async (database: Database, key: keyof ClientConfig
     return list.length ? list[0].value : undefined;
 };
 
+export const getConfigBooleanValue = async (database: Database, key: keyof ClientConfig, defaultValue = false) => {
+    const v = await getConfigValue(database, key);
+    return v ? v === 'true' : defaultValue;
+};
+
 export const getLastGlobalDataRetentionRun = async (database: Database) => {
     try {
         const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_DATA_RETENTION_RUN);

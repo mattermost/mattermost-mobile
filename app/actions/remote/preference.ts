@@ -90,15 +90,19 @@ export const savePreference = async (serverUrl: string, preferences: PreferenceT
             return {preferences: []};
         }
 
+        preferences.forEach((preference) => {
+            if (preference.category === Preferences.CATEGORIES.SAVED_POST && preference.value === 'true') {
+                EphemeralStore.clearRecentlyUnsavedSavedPost(serverUrl, preference.name);
+            }
+        });
+
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const userId = await getCurrentUserId(database);
         const chunkSize = 100;
         const chunks = chunk(preferences, chunkSize);
-        chunks.forEach((c: PreferenceType[]) => {
-            client.savePreferences(userId, c, groupLabel);
-        });
+        await Promise.all(chunks.map((c: PreferenceType[]) => client.savePreferences(userId, c, groupLabel)));
         const preferenceModels = await operator.handlePreferences({
             preferences,
             prepareRecordsOnly,
@@ -127,7 +131,8 @@ export const deleteSavedPost = async (serverUrl: string, postId: string) => {
         };
 
         if (postPreferenceRecord) {
-            client.deletePreferences(userId, [pref]);
+            await client.deletePreferences(userId, [pref]);
+            EphemeralStore.addRecentlyUnsavedSavedPost(serverUrl, postId);
             await postPreferenceRecord.destroyPermanently();
         }
 

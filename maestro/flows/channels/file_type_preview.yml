@@ -1,0 +1,200 @@
+# MM-T3244: Preview different file types
+#
+# Verifies that each Mattermost attachment category renders correctly and that the
+# in-app preview opens for the types that have one:
+#
+#   IMAGE  (image/png)       → gallery viewer opens on tap (gallery.header.close.button)
+#   VIDEO  (video/mp4)       → gallery video player opens on tap (same gallery header)
+#   AUDIO  (audio/mpeg)      → inline AudioFile player renders (no tap needed)
+#   PDF    (application/pdf) → DocumentFile card visible; tap opens system/in-app viewer
+#   ZIP    (application/zip) → generic file card renders (no preview — not a known doc type)
+#
+# PRE-CONDITION: Run the seed script to create test data and write env vars:
+#
+#   node maestro/fixtures/seed_file_preview.js
+#   source .maestro-test-env.sh
+#
+# Then run this flow with all required --env flags (see seed script output for the
+# exact command).
+#
+# Required env vars:
+#   SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#   IMAGE_FILE_ID, VIDEO_FILE_ID, AUDIO_FILE_ID, PDF_FILE_ID, ZIP_FILE_ID
+#   MAESTRO_APP_ID (defaults to com.mattermost.rnbeta if not set)
+tags:
+  - MM-T3244
+appId: ${MAESTRO_APP_ID}
+---
+# ── Setup: login and navigate to the test channel ─────────────────────────
+- runFlow: ../../utils/login.yml
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# Jump to the latest message so all file posts are in view at the bottom.
+# The "scroll-to-end-view" button appears when the channel opens away from the
+# newest messages (e.g. first visit to a channel that has messages).
+- tapOn:
+    id: "scroll-to-end-view"
+    optional: true
+
+# ── 1. IMAGE — opens in the in-app gallery viewer ─────────────────────────
+# The channel opens at the intro/top. All file posts are BELOW the current
+# viewport (below the channel intro and system messages). Scroll DOWN to reveal them.
+# IMAGE is the first (oldest) file post so it appears just above the others.
+- scrollUntilVisible:
+    element:
+      id: "${IMAGE_FILE_ID}-file-container"
+    direction: DOWN
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: "${IMAGE_FILE_ID}-file-container"
+    timeout: 10000
+- takeScreenshot: file-preview-image-thumbnail
+
+# Tap the image thumbnail to open the gallery
+- tapOn:
+    id: "${IMAGE_FILE_ID}-file-container"
+
+# The gallery header mounts after the Reanimated open animation completes
+- extendedWaitUntil:
+    visible:
+      id: "gallery.header.close.button"
+    timeout: 15000
+- takeScreenshot: file-preview-image-gallery-open
+
+# Close the gallery (platform-specific: iOS uses the close button; Android uses Back)
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "gallery.header.close.button"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - back
+
+# Wait for gallery to fully unmount before proceeding
+- extendedWaitUntil:
+    notVisible:
+      id: "gallery.header.close.button"
+    timeout: 10000
+
+# ── 2. VIDEO — opens in the gallery video player ──────────────────────────
+# After IMAGE gallery closes we're near the top; VIDEO is the next post below
+# IMAGE (newer = lower in the list) → scroll DOWN to find it.
+- scrollUntilVisible:
+    element:
+      id: "${VIDEO_FILE_ID}-file-container"
+    direction: DOWN
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: "${VIDEO_FILE_ID}-file-container"
+    timeout: 10000
+- takeScreenshot: file-preview-video-thumbnail
+
+# Tap the video thumbnail to open the gallery
+- tapOn:
+    id: "${VIDEO_FILE_ID}-file-container"
+
+# Gallery opens with the video player; same header close button as for images
+- extendedWaitUntil:
+    visible:
+      id: "gallery.header.close.button"
+    timeout: 15000
+- takeScreenshot: file-preview-video-gallery-open
+
+# Close the gallery
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "gallery.header.close.button"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - back
+
+- extendedWaitUntil:
+    notVisible:
+      id: "gallery.header.close.button"
+    timeout: 10000
+
+# ── 3. AUDIO — inline AudioFile player (no navigation) ───────────────────
+# The AudioFile component renders an inline play/pause player directly in the
+# post body. No tap is needed to "open" it — the player is always visible.
+- scrollUntilVisible:
+    element:
+      id: "${AUDIO_FILE_ID}-file-container"
+    direction: DOWN
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: "${AUDIO_FILE_ID}-file-container"
+    timeout: 10000
+- takeScreenshot: file-preview-audio-inline-player
+
+# ── 4. PDF — DocumentFile card; tap initiates download + system viewer ────
+# The DocumentFile component renders a card with the file name and type icon.
+# Tapping it downloads the file and hands it to the OS document viewer.
+# We tap to verify the download/open flow starts, then navigate back.
+- scrollUntilVisible:
+    element:
+      id: "${PDF_FILE_ID}-file-container"
+    direction: DOWN
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: "${PDF_FILE_ID}-file-container"
+    timeout: 10000
+- takeScreenshot: file-preview-pdf-file-card
+
+- tapOn:
+    id: "${PDF_FILE_ID}-file-container"
+
+# Allow the system viewer to open (or the in-app download to begin)
+- extendedWaitUntil:
+    notVisible:
+      id: "channel.post_draft.post.input"
+    timeout: 10000
+    optional: true
+- takeScreenshot: file-preview-pdf-viewer-open
+
+# Navigate back to the channel (handles both system viewer and in-app viewer)
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      # Quick Look / UIDocumentInteractionController shows a "Done" bar button
+      - tapOn:
+          text: "Done"
+          optional: true
+      # In-app navigation back (fallback)
+      - tapOn:
+          id: "navigation.header.back"
+          optional: true
+- back
+
+# Confirm we are back in the channel
+- extendedWaitUntil:
+    visible:
+      id: "channel.post_draft.post.input"
+    timeout: 15000
+
+# ── 5. ZIP — generic file card (no in-app preview) ───────────────────────
+# application/zip is not in SUPPORTED_DOCS_FORMAT so the app renders the
+# fallback generic file card (icon + file name row). No tap action needed.
+- scrollUntilVisible:
+    element:
+      id: "${ZIP_FILE_ID}-file-container"
+    direction: DOWN
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: "${ZIP_FILE_ID}-file-container"
+    timeout: 10000
+- takeScreenshot: file-preview-zip-generic-card

@@ -27,13 +27,14 @@ import {
     ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
+    ChannelSettingsScreen,
     CreateOrEditChannelScreen,
     LoginScreen,
     HomeScreen,
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Channels', () => {
     const serverOneDisplayName = 'Server 1';
@@ -60,6 +61,9 @@ describe('Channels', () => {
             header: 'This is test header',
             purpose: 'Test purpose for copying',
         });
+        if (!metadataChannel?.id) {
+            throw new Error('[beforeAll] Failed to create channel with metadata');
+        }
         channelWithMetadata = metadataChannel;
 
         await wait(timeouts.THREE_SEC);
@@ -78,6 +82,7 @@ describe('Channels', () => {
         const channelPurpose = 'This is a test purpose for the channel';
         const channelHeader = ':taco:';
 
+        await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.headerPlusButton.tap();
         await ChannelListScreen.createNewChannelItem.tap();
 
@@ -113,6 +118,7 @@ describe('Channels', () => {
         const channelPurpose = 'This is a private test channel purpose';
         const channelHeader = 'Private channel header';
 
+        await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.headerPlusButton.tap();
         await ChannelListScreen.createNewChannelItem.tap();
 
@@ -168,7 +174,12 @@ describe('Channels', () => {
 
         await CreateOrEditChannelScreen.saveButton.tap();
 
+        // After saving, app pops back to ChannelSettings (not ChannelInfo directly).
+        // Close ChannelSettings first, then verify the channel info was updated.
         await wait(timeouts.TWO_SEC);
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.close();
+
         await ChannelInfoScreen.toBeVisible();
         await expect(ChannelInfoScreen.publicPrivateTitleDisplayName).toHaveText(updatedDisplayName);
         await expect(ChannelInfoScreen.publicPrivateTitlePurpose).toHaveText(purposeText);
@@ -202,7 +213,12 @@ describe('Channels', () => {
 
         await CreateOrEditChannelScreen.saveButton.tap();
 
+        // After saving, app pops back to ChannelSettings (not ChannelInfo directly).
+        // Close ChannelSettings first, then verify the channel info was updated.
         await wait(timeouts.TWO_SEC);
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.close();
+
         await ChannelInfoScreen.toBeVisible();
         await expect(ChannelInfoScreen.publicPrivateTitleDisplayName).toHaveText(updatedDisplayName);
         await expect(ChannelInfoScreen.publicPrivateTitlePurpose).toHaveText(purposeText);
@@ -212,6 +228,8 @@ describe('Channels', () => {
     });
 
     it('MM-T854 - RN apps Channel can be created using 2 non-latin characters', async () => {
+        await ChannelListScreen.toBeVisible();
+        await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.headerPlusButton.tap();
         await ChannelListScreen.createNewChannelItem.tap();
 

@@ -1,0 +1,114 @@
+{
+  "testRunner": {
+    "$0": "jest",
+    "args": {
+      "config": "e2e/config.js"
+    }
+  },
+  "apps": {
+    "ios.debug": {
+      "type": "ios.app",
+      "binaryPath": "../mobile-artifacts/Mattermost.app"
+    },
+    "ios.release": {
+      "type": "ios.app",
+      "binaryPath": "../ios/Build/Products/Release-iphonesimulator/Mattermost.app",
+      "build": "cd .. && npm run build:ios-sim && cd detox"
+    },
+    "android.debug": {
+      "type": "android.apk",
+      "binaryPath": "../android/app/build/outputs/apk/debug/app-debug.apk",
+      "build": "./scripts/run_android_gradle_build.sh debug"
+    },
+    "android.release": {
+      "type": "android.apk",
+      "binaryPath": "../android/app/build/outputs/apk/release/app-release.apk",
+      "build": "./scripts/run_android_gradle_build.sh release"
+    }
+  },
+  "devices": {
+    "ios.simulator": {
+      "type": "ios.simulator",
+      "device": {
+        "type": "iPhone 17 Pro",
+        "os": "iOS 26.2"
+      },
+      "environment": {
+        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
+      }
+    },
+    "ios.ipad": {
+      "type": "ios.simulator",
+      "device": {
+        "type": "iPad Pro 13-inch (M5)",
+        "os": "iOS 26.2"
+      },
+      "environment": {
+        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
+      }
+    },
+    "android.emulator": {
+      "type": "android.emulator",
+      "device": {
+        "avdName": "detox_pixel_8_api_34"
+      },
+      "environment": {
+        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
+      }
+    }
+  },
+  "configurations": {
+    "ios.sim.debug": {
+      "device": "ios.simulator",
+      "app": "ios.debug"
+    },
+    "ios.sim.release": {
+      "device": "ios.simulator",
+      "app": "ios.release"
+    },
+    "ios.ipad.debug": {
+      "device": "ios.ipad",
+      "app": "ios.debug"
+    },
+    "ios.ipad.release": {
+      "device": "ios.ipad",
+      "app": "ios.release"
+    },
+    "android.emu.debug": {
+      "device": "android.emulator",
+      "app": "android.debug"
+    },
+    "android.emu.release": {
+      "device": "android.emulator",
+      "app": "android.release"
+    }
+  },
+  "artifacts": {
+    "pathBuilder": "./e2e/path_builder.js",
+    "plugins": {
+      "screenshot": {
+        "shouldTakeAutomaticSnapshots": true,
+        "keepOnlyFailedTestsArtifacts": true
+      },
+      "video": {
+        "enabled": false
+      },
+      "log": {
+        "enabled": true
+      }
+    }
+  },
+  "behavior": {
+    "init": {
+      "reinstallApp": false,
+      "launchApp": false
+    },
+    "cleanup": {
+      "shutdownDevice": false
+    }
+  },
+  "session": {
+    "debugSynchronization": 20000,
+    "autoStart": true
+  }
+}

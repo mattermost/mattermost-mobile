@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {ProfilePicture} from '@support/ui/component';
-import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class AddMembersScreen {
     testID = {
@@ -38,7 +38,7 @@ class AddMembersScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.addMembersScreen).toExist().withTimeout(timeouts.TEN_SEC);
         return this.addMembersScreen;
     };
 
@@ -67,7 +67,16 @@ class AddMembersScreen {
         await userItem.tap();
         await wait(timeouts.ONE_SEC);
 
-        await waitFor(this.addChannelMembersButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        // On iOS, the keyboard stays open after search + user selection, covering
+        // the "Add Members" button at the bottom. Dismiss it before tapping.
+        if (isIos()) {
+            try {
+                await this.searchInput.tapReturnKey();
+            } catch { /* keyboard may already be dismissed */ }
+            await wait(timeouts.HALF_SEC);
+        }
+
+        await waitFor(this.addChannelMembersButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
         await this.addChannelMembersButton.tap();
         await wait(timeouts.TWO_SEC);
     };

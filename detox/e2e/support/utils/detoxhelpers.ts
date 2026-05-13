@@ -33,13 +33,15 @@ export async function waitForLoadingSpinner(testID: string, timeout = 10000): Pr
  */
 export async function waitForVisibilityWithRetry(
     elementToCheck: Detox.NativeElement,
-    timeout = 10000,
+    timeout?: number,
     maxAttempts = 3,
 ): Promise<void> {
+    const effectiveTimeout = timeout ?? (device.getPlatform() === 'android' ? 20000 : 10000);
+
     /* eslint-disable no-await-in-loop, no-console */
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-            await waitFor(elementToCheck).toBeVisible().withTimeout(timeout);
+            await waitFor(elementToCheck).toBeVisible().withTimeout(effectiveTimeout);
             return;
         } catch (error) {
             if (attempt === maxAttempts) {
@@ -48,7 +50,7 @@ export async function waitForVisibilityWithRetry(
 
             console.warn(`[waitForVisibilityWithRetry] Attempt ${attempt}/${maxAttempts} failed, retrying...`);
 
-            // Exponential backoff: 1s, 2s, 4s
+            // Linear backoff: 1s, 2s, 3s
             await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
         }
     }

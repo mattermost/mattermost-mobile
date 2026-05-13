@@ -19,7 +19,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos} from '@support/utils';
+import {getRandomId, isIos, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - Edit Profile', () => {
@@ -90,7 +90,7 @@ describe('Account - Edit Profile', () => {
         await waitFor(EditProfileScreen.nicknameInput).toBeVisible().whileElement(by.id(EditProfileScreen.testID.scrollView)).scroll(50, 'down');
         await EditProfileScreen.nicknameInput.replaceText(`${testUser.nickname}${suffix}`);
         await EditProfileScreen.scrollView.tap({x: 1, y: 1});
-        await waitFor(EditProfileScreen.positionInput).toBeVisible().whileElement(by.id(EditProfileScreen.testID.scrollView)).scroll(50, 'down');
+        await EditProfileScreen.scrollView.scrollTo('bottom');
         await EditProfileScreen.positionInput.replaceText(`${testUser.position}${suffix}`);
         await EditProfileScreen.saveButton.tap();
 
@@ -122,5 +122,19 @@ describe('Account - Edit Profile', () => {
 
         // # Go back to account screen
         await EditProfileScreen.close();
+    });
+
+    it('MM-T3250 - should update and display edited profile information on account screen', async () => {
+        // # Open edit profile screen, update first name
+        const newFirstName = `First${getRandomId(3)}`;
+        await EditProfileScreen.open();
+        await EditProfileScreen.firstNameInput.replaceText(newFirstName);
+        await EditProfileScreen.saveButton.tap();
+
+        // * Verify on account screen and updated first name is shown in display name
+        await AccountScreen.toBeVisible();
+        const {userInfoUserDisplayName} = AccountScreen.getUserInfo(testUser.id);
+        await waitFor(userInfoUserDisplayName).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await expect(userInfoUserDisplayName).toBeVisible();
     });
 });

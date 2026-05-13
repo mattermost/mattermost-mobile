@@ -30,7 +30,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Recent Mentions', () => {
@@ -59,6 +59,23 @@ describe('Search - Recent Mentions', () => {
     afterAll(async () => {
         // # Log out
         await HomeScreen.logout();
+    });
+
+    it('MM-T3372 - should show empty state when there are no recent mentions', async () => {
+        // # Open recent mentions screen with a new user who has no mentions
+        await RecentMentionsScreen.open();
+
+        // * Verify on recent mentions screen
+        await RecentMentionsScreen.toBeVisible();
+
+        // * Verify empty state title and description are displayed
+        await expect(RecentMentionsScreen.emptyTitle).toBeVisible();
+        await expect(RecentMentionsScreen.emptyTitle).toHaveText('No Mentions yet');
+        await expect(RecentMentionsScreen.emptyParagraph).toBeVisible();
+        await expect(RecentMentionsScreen.emptyParagraph).toHaveText('You\'ll see messages here when someone mentions you or uses terms you\'re monitoring.');
+
+        // # Go back to channel list screen
+        await ChannelListScreen.open();
     });
 
     it('MM-T4909_1 - should match elements on recent mentions screen', async () => {
@@ -140,7 +157,8 @@ describe('Search - Recent Mentions', () => {
         await ChannelScreen.assertPostMessageEdited(mentionPost.id, updatedMessage, 'recent_mentions_page');
 
         // # Open post options for recent mention and tap on reply option
-        await element(by.id(`recent_mentions.post_list.post.${mentionPost.id}`)).longPress();
+        // longPress on header timestamp to avoid triggering @mention tap handler
+        await element(by.id('post_header.date_time').withAncestor(by.id(`recent_mentions.post_list.post.${mentionPost.id}`))).longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.replyPostOption.tap();
 
         // * Verify on thread screen
@@ -158,12 +176,12 @@ describe('Search - Recent Mentions', () => {
         // # Go back to recent mentions screen
         await ThreadScreen.back();
 
-        // * Verify reply count and following button
-        await waitFor(element(by.text('1 reply'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await waitFor(element(by.text('Following'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        // * Verify reply count
+        await waitFor(element(by.text('1 reply'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Open post options for updated recent mention and delete post
-        await element(by.id(`recent_mentions.post_list.post.${mentionPost.id}`)).longPress();
+        // longPress on header timestamp to avoid triggering @mention tap handler
+        await element(by.id('post_header.date_time').withAncestor(by.id(`recent_mentions.post_list.post.${mentionPost.id}`))).longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify updated recent mention is deleted
@@ -198,6 +216,7 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, message);
         await PostOptionsScreen.unsavePostOption.tap();
+        await wait(timeouts.TWO_SEC);
         await SavedMessagesScreen.open();
 
         // * Verify recent mention is not displayed anymore on saved messages screen

@@ -1,0 +1,119 @@
+# MM-T4832: Mute and unmute microphone during a call
+#
+# Verifies that a user can toggle their microphone mute state during an active
+# call and that the button label updates to reflect the new state.
+#
+# PRE-CONDITION: Run the calls seed script to create test data:
+#   tsx maestro/fixtures/calls_seed.ts
+#   source .maestro-test-env.sh
+#
+# Required env vars:
+#   SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#   MAESTRO_APP_ID
+#
+# NOTE: The Calls plugin (com.mattermost.calls) must be installed and enabled.
+tags:
+  - MM-T4832
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# Wait for the WS-driven Calls config to propagate before opening quick actions.
+- waitForAnimationToEnd:
+    timeout: 25000
+
+# Open the channel quick actions sheet via the three-dots (⋮) button.
+- tapOn:
+    id: "channel_header.channel_quick_actions.button"
+
+# Wait for the Start/Join Call action (60s: WS config propagation on first login).
+- extendedWaitUntil:
+    visible:
+      id: "channel_info.channel_actions.join_start_call.action"
+    timeout: 60000
+- tapOn:
+    id: "channel_info.channel_actions.join_start_call.action"
+
+# Grant microphone permission (first-time prompt)
+- tapOn:
+    text: "Allow"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# Starting the call dismisses the bottom sheet and returns to the channel view.
+# Wait for the minimized CurrentCallBar to appear (confirms WebRTC is connected).
+- extendedWaitUntil:
+    visible:
+      id: "calls.current_call_bar"
+    timeout: 20000
+
+# Tap the CurrentCallBar to navigate to the full call screen.
+- tapOn:
+    id: "calls.current_call_bar"
+
+# Wait for the full call screen
+- extendedWaitUntil:
+    visible:
+      id: "mute-unmute"
+    timeout: 30000
+
+# The user may join the call already muted (emulator: no physical mic).
+# Establish a known unmuted state before the test: if the button shows
+# "Unmute" (muted), tap once to unmute, then wait for "Mute" to appear.
+- runFlow:
+    when:
+      visible:
+        text: "Unmute"
+    commands:
+      - tapOn:
+          id: "mute-unmute"
+      - extendedWaitUntil:
+          visible:
+            text: "Mute"
+          timeout: 10000
+
+# Confirm the unmuted baseline (button shows "Mute")
+- extendedWaitUntil:
+    visible:
+      text: "Mute"
+    timeout: 5000
+- takeScreenshot: calls-mute-initial-state
+
+# ── Mute: tap the mute-unmute button ────────────────────────────────────────
+# Button shows "Mute" (unmuted) → tap → should show "Unmute" (muted)
+- tapOn:
+    id: "mute-unmute"
+
+# Verify the button now shows "Unmute" (confirms muted state)
+- extendedWaitUntil:
+    visible:
+      text: "Unmute"
+    timeout: 10000
+- takeScreenshot: calls-muted-state
+
+# ── Unmute: tap again to restore audio ───────────────────────────────────────
+- tapOn:
+    id: "mute-unmute"
+
+# Verify the button now shows "Mute" (confirms unmuted state)
+- extendedWaitUntil:
+    visible:
+      text: "Mute"
+    timeout: 10000
+- takeScreenshot: calls-unmuted-state
+
+# Clean up: leave the call.
+# Tapping Leave shows a confirmation dialog; confirm with "Leave call".
+- tapOn:
+    id: "leave"
+- tapOn:
+    text: "Leave call"
+    optional: true
+- extendedWaitUntil:
+    notVisible:
+      id: "mute-unmute"
+    timeout: 10000
+- takeScreenshot: calls-mute-test-ended

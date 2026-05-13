@@ -14,15 +14,16 @@ import {
 } from '@support/test_config';
 import {
     ChannelInfoScreen,
+    ChannelListScreen,
     ChannelScreen,
+    HomeScreen,
     LoginScreen,
     ServerScreen,
-    HomeScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-describe('Channels', () => {
+describe('Channel Settings - Channel Notifications', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testUser: any;
@@ -37,28 +38,39 @@ describe('Channels', () => {
         await LoginScreen.login(testUser);
     });
 
+    beforeEach(async () => {
+        // * Verify on channel list screen
+        await ChannelListScreen.toBeVisible();
+    });
+
     afterAll(async () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T3198 - Channel notifications Mobile Push', async () => {
+    it('MM-T3119 - should be able to set channel-specific mobile push notification preferences', async () => {
+        // # Open a channel screen and open channel info screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
-
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
 
+        // * Verify notification preference option is visible
         await expect(ChannelInfoScreen.notificationPreferenceOption).toBeVisible();
+
+        // # Tap on notification preference option
         await ChannelInfoScreen.notificationPreferenceOption.tap();
         await wait(timeouts.TWO_SEC);
 
+        // * Verify push notification settings screen is displayed
         const notificationSettingsScreen = element(by.id('push_notification_settings.screen'));
         await expect(notificationSettingsScreen).toBeVisible();
 
+        // # Navigate back to channel info screen and close
         const backButton = element(by.id('screen.back.button'));
         await backButton.tap();
         await wait(timeouts.ONE_SEC);
-
         await ChannelInfoScreen.close();
+
+        // # Go back to channel list screen
         await ChannelScreen.back();
     });
 });

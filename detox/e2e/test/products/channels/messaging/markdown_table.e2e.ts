@@ -192,6 +192,45 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
+    it('MM-T1442 - should display markdown table with multiple row heights correctly', async () => {
+        // # Open a channel screen and post a markdown table with multiple row heights
+        const markdownTable =
+            '| Header | Header | Header |\n' +
+            '| :-- | :-: | --: |\n' +
+            '| Left | Center | Right |\n' +
+            '| Left | Center | Right |\n' +
+            '| This is a super looooooooooooooooooooong string | Center | Right |\n' +
+            '| Left | Center | Right |\n' +
+            '| Left | Center | Right |\n' +
+            '| Left | Center | Right |\n';
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: markdownTable,
+        });
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+
+        // * Verify markdown table is displayed
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItemTable, postListPostItemTableExpandButton} = ChannelScreen.getPostListPostItem(post.id);
+        await expect(postListPostItemTable).toBeVisible();
+
+        // * Verify the long-string row content is visible (it drives row height)
+        await expect(element(by.text('This is a super looooooooooooooooooooong string'))).toBeVisible();
+
+        // # Expand to full view
+        await waitFor(postListPostItemTableExpandButton).toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(50, 'down');
+        await postListPostItemTableExpandButton.tap();
+
+        // * Verify on table screen
+        await TableScreen.toBeVisible();
+        await expect(element(by.text('Header')).atIndex(0)).toBeVisible();
+        await expect(element(by.text('This is a super looooooooooooooooooooong string'))).toBeVisible();
+
+        // # Go back to channel list screen
+        await TableScreen.back();
+        await ChannelScreen.back();
+    });
+
     it('MM-T4899_5 - should be able to open markdown table in full view and allow both horizontal and vertical scrolls', async () => {
         // # Open a channel screen and post a markdown table with more columns and rows past horizontal and vertical views
         const markdownTable =

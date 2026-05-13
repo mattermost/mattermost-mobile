@@ -99,4 +99,51 @@ describe('Autocomplete - Channel Post Draft', () => {
         // * Verify slash suggestion list is displayed
         await expect(Autocomplete.flatSlashSuggestionList).toExist();
     });
+
+    // MM-T3392_1-4 cover the same autocomplete behaviors as MM-T4882_1-4 but are tracked
+    // under a separate Zephyr/Jira test cycle for historical regression coverage.
+    it('MM-T3392_1 - should render emoji suggestion component when typing : in post input', async () => {
+        // * Verify emoji suggestion list is not displayed
+        await expect(Autocomplete.flatEmojiSuggestionList).not.toExist();
+
+        // # Type ":" in post input to activate emoji suggestion autocomplete
+        await ChannelScreen.postInput.typeText(':sm');
+
+        // * Verify emoji suggestion autocomplete list is displayed
+        await expect(Autocomplete.flatEmojiSuggestionList).toExist();
+    });
+
+    it('MM-T3392_2 - should render at-mention component when typing @ in post input', async () => {
+        // * Verify at-mention list is not displayed
+        await expect(Autocomplete.sectionAtMentionList).not.toExist();
+
+        // # Type "@" in post input to activate at-mention autocomplete
+        await ChannelScreen.postInput.typeText('@');
+
+        // * Verify at-mention autocomplete list is displayed
+        await expect(Autocomplete.sectionAtMentionList).toExist();
+    });
+
+    it('MM-T3392_3 - should render channel mention component when typing ~ in post input', async () => {
+        // * Verify channel mention list is not displayed
+        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
+
+        // # Type "~" in post input to activate channel mention autocomplete
+        await ChannelScreen.postInput.typeText('~');
+
+        // * Verify channel mention autocomplete list is displayed
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
+    });
+
+    it('MM-T3392_4 - should render slash suggestion component when typing / in post input', async () => {
+        // * Verify slash suggestion list is not displayed
+        await expect(Autocomplete.flatSlashSuggestionList).not.toExist();
+
+        // # Type "/" in post input to activate slash suggestion autocomplete
+        await ChannelScreen.postInput.typeText('/');
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify slash suggestion autocomplete list is displayed
+        await expect(Autocomplete.flatSlashSuggestionList).toExist();
+    });
 });

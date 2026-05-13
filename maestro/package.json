@@ -1,0 +1,21 @@
+{
+  "name": "mattermost-mobile-maestro",
+  "version": "1.0.0",
+  "description": "Maestro system-level E2E tests for Mattermost Mobile",
+  "scripts": {
+    "test": "maestro test flows/",
+    "dry-run": "maestro test --dry-run flows/",
+    "test:share": "maestro test flows/share_extension/",
+    "test:multi-device": "maestro test flows/multi_device/",
+    "test:keyboard": "maestro test flows/keyboard/",
+    "test:calls": "maestro test flows/calls/"
+  },
+  "maestro": {
+    "version": "1.38.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "axios": "^1.6.0",
+    "tsx": "^4.0.0"
+  }
+}

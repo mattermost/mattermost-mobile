@@ -167,6 +167,7 @@ const JoinCallBanner = ({
     return (
         <View style={style.outerContainer}>
             <Pressable
+                testID='calls.join_call_banner.join'
                 style={[style.innerContainer, isLimitRestricted && style.innerContainerRestricted]}
                 onPress={joinHandler}
             >
@@ -207,7 +208,10 @@ const JoinCallBanner = ({
                     overflowTextStyle={style.overflowText}
                     bottomSheetTitle={callParticipantsMessage}
                 />
-                <Pressable onPress={onDismissPress}>
+                <Pressable
+                    testID='calls.join_call_banner.dismiss'
+                    onPress={onDismissPress}
+                >
                     <View style={style.dismissContainer}>
                         <CompassIcon
                             name='close'

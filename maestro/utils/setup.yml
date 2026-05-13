@@ -1,0 +1,6 @@
+# Sub-flow: Seed test data
+# Usage: - runFlow: ../utils/setup.yml
+# Requires: SITE_1_URL, ADMIN_EMAIL, ADMIN_PASSWORD env vars
+# Effect: Runs seed.js which writes .maestro-test-env.sh with test credentials
+---
+- runScript: ../fixtures/seed.js

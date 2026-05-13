@@ -1,0 +1,69 @@
+# MM-T1325: App displays times using the correct timezone
+# Strategy: set simulator timezone via simctl before running this flow, then verify
+#   the timezone display settings screen reflects it.
+# NOTE: Uses launchApp with stopApp=true (full native restart picks up new timezone).
+#
+# PRE-REQUISITE: Set the simulator timezone BEFORE running this flow:
+#   xcrun simctl spawn booted launchctl setenv TZ America/New_York
+# TEARDOWN: Reset after the flow:
+#   xcrun simctl spawn booted launchctl unsetenv TZ
+#
+# In CI (e2e-maestro-template.yml) the pre/post steps handle this.
+# Locally, run maestro/scripts/run_timezone_test.sh which wraps this flow.
+tags:
+  - MM-T1325
+appId: ${MAESTRO_APP_ID}
+env:
+  SIMULATOR_TIMEZONE: America/New_York
+---
+# Step 1: Launch app fresh so native timezone is registered at startup
+# (Simulator timezone must be set externally before this step — see PRE-REQUISITE above)
+- launchApp:
+    clearState: false
+    stopApp: true
+
+# Step 2: Login and navigate to timezone display settings
+- runFlow: ../../utils/login.yml
+
+# Step 3: Open Account settings
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.screen"
+    timeout: 10000
+
+# Step 4: Open Settings
+- tapOn:
+    id: "account.settings.option"
+- extendedWaitUntil:
+    visible:
+      id: "settings.display.option"
+    timeout: 10000
+
+# Step 5: Open Display settings
+# Note: SettingContainer appends ".screen" to all testIDs (see app/components/settings/container.tsx)
+- tapOn:
+    id: "settings.display.option"
+- extendedWaitUntil:
+    visible:
+      id: "display_settings.screen"
+    timeout: 10000
+
+# Step 6: Open Timezone settings
+- tapOn:
+    id: "display_settings.timezone.option"
+- extendedWaitUntil:
+    visible:
+      id: "timezone_display_settings.screen"
+    timeout: 10000
+
+# Step 7: Verify the timezone controls are present and show the correct timezone.
+# autoUpdateTimezone fires on home screen load and WebSocket connect (before we navigate here),
+# so the description under "Set automatically" reflects the simulator's current timezone.
+# getTimezoneRegion('America/New_York') → 'New York'
+- assertVisible:
+    id: "timezone_display_settings.automatic.option"
+- assertVisible:
+    text: "New York"
+- takeScreenshot: timezone-settings-visible

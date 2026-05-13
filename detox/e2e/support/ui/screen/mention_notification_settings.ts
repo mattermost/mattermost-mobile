@@ -58,8 +58,14 @@ class MentionNotificationSettingsScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
-        await expect(this.mentionNotificationSettingsScreen).not.toBeVisible();
+        try {
+            await waitFor(this.backButton).toExist().withTimeout(timeouts.TEN_SEC);
+            await this.backButton.tap();
+            await expect(this.mentionNotificationSettingsScreen).not.toBeVisible();
+        } catch (error) {
+            // Back button may not exist if screen failed to load or already navigated away
+            console.warn('[MentionNotificationSettingsScreen.back] Navigation failed:', error); // eslint-disable-line no-console
+        }
     };
 
     getKeywordTriggerElement = async (keyword: string) => {

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 class ServerListScreen {
@@ -53,8 +53,22 @@ class ServerListScreen {
     };
 
     toBeVisible = async () => {
-        if (isIos()) {
-            await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        // On Android, the server list bottom sheet uses @gorhom/bottom-sheet which
+        // keeps the mqt_js bridge thread busy during animation. waitFor().toExist()
+        // uses bridge-idle sync and blocks until the JS thread is idle, which never
+        // resolves on Android CI, causing a 30s+ timeout even when the screen IS open.
+        //
+        // Additionally the tutorial overlay ("Swipe left…") can cover the screen,
+        // causing toBeVisible() to fail the 50% threshold even when the element exists.
+        //
+        // waitForElementToExist() polls expect().toExist() directly, bypassing both
+        // the bridge-sync blockage and the visibility-threshold issue.
+        //
+        // iOS uses the standard bridge-sync waitFor() path.
+        if (isAndroid()) {
+            await waitForElementToExist(this.serverListScreen, timeouts.HALF_MIN);
+        } else {
+            await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.HALF_MIN);
         }
 
         return this.serverListScreen;
@@ -63,6 +77,17 @@ class ServerListScreen {
     open = async () => {
         // # Open server list screen
         await ChannelListScreen.serverIcon.tap();
+
+        // On Android, the tutorial ("Swipe left on a server…") is a <Modal> that
+        // renders inside the server list bottom sheet. When the Modal is visible,
+        // Android's accessibility tree exposes only the Modal's contents, hiding
+        // all other elements including server_list.screen from Detox. We must
+        // dismiss the tutorial first (via pressBack on Android) before server_list.screen
+        // becomes findable. The tutorial is safe to dismiss here because closeTutorial()
+        // wraps in a try/catch and is a no-op if the tutorial is not showing.
+        if (isAndroid()) {
+            await this.closeTutorial();
+        }
 
         return this.toBeVisible();
     };
@@ -79,14 +104,21 @@ class ServerListScreen {
     };
 
     closeTutorial = async () => {
-        if (isIos()) {
-            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
-            await this.tutorialSwipeLeft.tap();
-            await expect(this.tutorialHighlight).not.toExist();
-        } else {
-            await wait(timeouts.ONE_SEC);
-            await device.pressBack();
-            await wait(timeouts.ONE_SEC);
+        try {
+            if (isIos()) {
+                await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
+                await this.tutorialSwipeLeft.tap();
+            } else {
+                // On Android, the tutorial is a <Modal> (testID=tutorial_highlight on the
+                // Modal element). Android's accessibility tree exposes the Modal's inner
+                // content, and tutorialSwipeLeft (testID=tutorial_swipe_left) appears as
+                // a resource-id in the hierarchy. Use that to detect the tutorial.
+                await waitForElementToExist(this.tutorialSwipeLeft, timeouts.TEN_SEC);
+                await device.pressBack();
+            }
+            await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            // Tutorial may not appear if already dismissed in a previous run
         }
     };
 }

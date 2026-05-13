@@ -6,7 +6,7 @@ import {
     ChannelListScreen,
     ThreadOptionsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, longPressWithRetry, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class GlobalThreadsScreen {
@@ -61,7 +61,8 @@ class GlobalThreadsScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.globalThreadsScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+        await waitFor(this.globalThreadsScreen).toExist().withTimeout(timeout);
 
         return this.globalThreadsScreen;
     };
@@ -82,9 +83,8 @@ class GlobalThreadsScreen {
         const threadItem = this.getThreadItem(postId);
         await expect(threadItem).toBeVisible();
 
-        // # Open thread options
-        await threadItem.longPress(timeouts.FOUR_SEC);
-        await ThreadOptionsScreen.toBeVisible();
+        // # Open thread options (with retry — longPress can fail on Android during animations)
+        await longPressWithRetry(threadItem, ThreadOptionsScreen.threadOptionsScreen);
         await wait(timeouts.TWO_SEC);
     };
 }

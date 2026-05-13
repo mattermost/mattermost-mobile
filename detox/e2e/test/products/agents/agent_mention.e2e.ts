@@ -123,8 +123,13 @@ describe('Autocomplete - Agent Mention', () => {
         pluginActive = await isAgentsPluginActive(siteOneUrl);
 
         // # Create a regular bot (not an agent) for comparison testing
-        const {bot} = await Bot.apiCreateBot(siteOneUrl, {prefix: 'regularbot'});
-        regularBot = bot;
+        const botResult = await Bot.apiCreateBot(siteOneUrl, {prefix: 'regularbot'});
+        if (!botResult.bot) {
+            throw new Error(
+                `[beforeAll] Failed to create regular bot: ${JSON.stringify(botResult.error ?? 'unknown error')}`,
+            );
+        }
+        regularBot = botResult.bot;
 
         // # Add bot to team and channel
         await Team.apiAddUserToTeam(siteOneUrl, regularBot.user_id, testTeam.id);

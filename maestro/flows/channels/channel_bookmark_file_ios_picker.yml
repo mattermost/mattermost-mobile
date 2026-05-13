@@ -1,0 +1,32 @@
+appId: ${MAESTRO_APP_ID}
+---
+# iOS document picker navigation: Recents -> Browse -> On My iPhone -> file
+# The file must be placed in the local file provider storage before the test:
+#   LOCAL_STORAGE=$(find ~/Library/Developer/CoreSimulator/Devices/$UDID/data/Containers/Shared/AppGroup \
+#     -name ".com.apple.mobile_container_manager.metadata.plist" \
+#     -exec grep -l "FileProvider.LocalStorage" {} \; | xargs -I{} dirname {} | head -1)
+#   cp detox/e2e/support/fixtures/image.png "$LOCAL_STORAGE/File Provider Storage/test_bookmark.png"
+- extendedWaitUntil:
+    visible:
+      text: "Recents"
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      text: "Browse"
+    timeout: 10000
+- tapOn:
+    text: "Browse"
+- extendedWaitUntil:
+    visible:
+      text: "On My iPhone"
+    timeout: 10000
+- tapOn:
+    text: "On My iPhone"
+# Tap by resource-id (iOS file picker assigns resource-id="<filename>, <ext>").
+# Using text: "test_bookmark" only matches the label sub-element and does NOT trigger selection.
+- extendedWaitUntil:
+    visible:
+      id: "test_bookmark, png"
+    timeout: 10000
+- tapOn:
+    id: "test_bookmark, png"

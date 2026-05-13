@@ -11,8 +11,8 @@ import {
     SendButton,
 } from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {by, element, expect, waitFor} from 'detox';
 
 class ThreadScreen {
     testID = {
@@ -21,12 +21,17 @@ class ThreadScreen {
         backButton: 'screen.back.button',
         followButton: 'thread.follow_thread.button',
         followingButton: 'thread.following_thread.button',
+        scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',
+        scheduledPostTooltipCloseButtonAdminAccount: 'scheduled_post_tutorial_tooltip.close',
+        scheduledPostOptionsBottomSheet: 'scheduled_post_options_bottom_sheet',
     };
 
     threadScreen = element(by.id(this.testID.threadScreen));
     backButton = element(by.id(this.testID.backButton));
     followButton = element(by.id(this.testID.followButton));
     followingButton = element(by.id(this.testID.followingButton));
+    scheduledPostTooltipCloseButton = element(by.id(this.testID.scheduledPostTooltipCloseButton));
+    scheduledPostTooltipCloseButtonAdminAccount = element(by.id(this.testID.scheduledPostTooltipCloseButtonAdminAccount));
 
     // convenience props
     atInputQuickAction = InputQuickAction.getAtInputQuickAction(this.testID.threadScreenPrefix);
@@ -84,8 +89,27 @@ class ThreadScreen {
         return this.postList.getPostMessageAtIndex(index);
     };
 
+    dismissScheduledPostTooltip = async () => {
+        // Try to close scheduled post tooltip if it exists (try both regular and admin account versions)
+        try {
+            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+            await this.scheduledPostTooltipCloseButton.tap();
+            await waitFor(this.scheduledPostTooltipCloseButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            // Try admin account version
+            try {
+                await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+                await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
+                await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).not.toExist().withTimeout(timeouts.FIVE_SEC);
+            } catch {
+                // Tooltip not visible, continue
+            }
+        }
+    };
+
     toBeVisible = async () => {
-        await waitFor(this.threadScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
+        await waitFor(this.threadScreen).toExist().withTimeout(timeout);
 
         return this.threadScreen;
     };
@@ -104,14 +128,47 @@ class ThreadScreen {
         // Poll for the post to become visible without waiting for idle bridge
         await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
-        // Dismiss keyboard by tapping on the post list (needed after posting a message)
-        const flatList = this.postList.getFlatList();
-        await flatList.scroll(100, 'down');
-        await wait(timeouts.ONE_SEC);
+        // On Android, dismiss the keyboard before long-pressing. The soft keyboard
+        // stays open after postMessage() and intercepts the long-press gesture on
+        // API 35 — the post options bottom sheet never appears because Android's
+        // gesture system routes the touch to the keyboard's window instead of the
+        // post list. A swipe gesture on the post list triggers keyboardDismissMode
+        // 'on-drag' which reliably dismisses the keyboard. Detox's scroll() API
+        // may use programmatic scrolling that doesn't trigger on-drag dismissal,
+        // whereas swipe() performs a real touch gesture.
+        if (isAndroid()) {
+            try {
+                await this.postList.getFlatList().swipe('up', 'fast', 0.3);
+            } catch { /* ignore — list may be too short */ }
+            await wait(timeouts.TWO_SEC);
+        }
 
-        // # Open post options
-        await postListPostItem.longPress(timeouts.TWO_SEC);
-        await PostOptionsScreen.toBeVisible();
+        // Scroll to the top of the thread list to ensure the target post is in the
+        // fully-hittable viewport area (100% visibility threshold required by long-press).
+        //
+        // Background: longPressWithScrollRetry scrolls DOWN on each retry attempt,
+        // which moves a post at the top of the list progressively further off-screen
+        // behind the PostDraft overlay — the opposite of what is needed. Pre-positioning
+        // at the top of the list means the target post's center is always well above the
+        // PostDraft overlay. For short threads (e.g. parent + 1 reply) both posts remain
+        // simultaneously visible after scrollTo('top'), so replies at the bottom are
+        // unaffected.
+        try {
+            await this.postList.getFlatList().scrollTo('top');
+            await wait(timeouts.ONE_SEC);
+        } catch { /* ignore — list may be too short to scroll */ }
+
+        // On Android, long-press on the inner text element — more reliable than the
+        // compound-matched post container, which can silently swallow the gesture.
+        const longPressTarget = isAndroid()
+            ? element(by.text(text).withAncestor(by.id(`${this.testID.threadScreenPrefix}post_list.post.${postId}`)))
+            : postListPostItem;
+
+        await longPressWithScrollRetry(
+            longPressTarget,
+            this.postList.getFlatList(),
+            PostOptionsScreen.postOptionsScreen,
+        );
         await wait(timeouts.TWO_SEC);
     };
 
@@ -132,8 +189,48 @@ class ThreadScreen {
     };
 
     longPressSendButton = async () => {
-        // # Long press send button
-        await this.sendButton.longPress();
+        // # Dismiss the scheduled-post tooltip before long-pressing the send button.
+        // On Android the tooltip overlay intercepts the long-press gesture, preventing
+        // the scheduling sheet from opening. Dismissing it first ensures the press lands
+        // on the actual send button element.
+        await this.dismissScheduledPostTooltip();
+
+        // # Wait for the send button to be visible before attempting the long press.
+        // enterMessageToSchedule calls replaceText() which may not have triggered the
+        // React state update that renders the send button by the time we get here.
+        // Use polling (waitForElementToBeVisible) instead of waitFor().toBeVisible()
+        // so the wait does not depend on bridge-idle sync, which is permanently busy
+        // on both iOS 26.x (main run loop) and Android API 35 (JS bridge after input).
+        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
+
+        // # On Android, the soft keyboard stays open after replaceText(). Swipe the
+        // post list to trigger keyboardDismissMode='on-drag' and dismiss the keyboard
+        // BEFORE disabling sync. With sync disabled the gesture system is unrestricted,
+        // so the long-press must land on the actual send button — the keyboard must be
+        // gone by then or it will intercept the press.
+        if (isAndroid()) {
+            try {
+                await this.postList.getFlatList().swipe('up', 'fast', 0.3);
+            } catch { /* ignore — post list may be too short to scroll */ }
+            await wait(timeouts.ONE_SEC);
+        }
+
+        // # Disable Detox synchronization before the long press. On iOS 26 the main
+        // run loop never fully idles, and on Android the JS bridge stays busy after
+        // text input. This causes longPress() to hang waiting for idle-sync. Disabling
+        // sync lets the gesture dispatch immediately; we then poll for the bottom sheet.
+        await device.disableSynchronization();
+        try {
+            await this.sendButton.longPress();
+
+            // Wait for the schedule picker bottom sheet using polling (no sync dependency).
+            await waitForElementToExist(
+                element(by.id(this.testID.scheduledPostOptionsBottomSheet)),
+                timeouts.HALF_MIN,
+            );
+        } finally {
+            await device.enableSynchronization();
+        }
     };
 
     tapSendButton = async () => {

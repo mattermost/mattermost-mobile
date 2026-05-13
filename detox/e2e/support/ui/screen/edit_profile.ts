@@ -33,6 +33,7 @@ class EditProfileScreen {
     closeButton = element(by.id(this.testID.closeButton));
     saveButton = element(by.id(this.testID.saveButton));
     scrollView = element(by.id(this.testID.scrollView));
+
     firstNameInput = element(by.id(this.testID.firstNameInput));
     firstNameInputDisabled = element(by.id(this.testID.firstNameInputDisabled));
     lastNameInput = element(by.id(this.testID.lastNameInput));

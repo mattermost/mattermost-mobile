@@ -42,8 +42,14 @@ describe('Channels - Edit Channel', () => {
         testChannel = channel;
 
         ({user: testOtherUser1} = await User.apiCreateUser(siteOneUrl, {prefix: 'a'}));
+        if (!testOtherUser1?.id) {
+            throw new Error('[beforeAll] Failed to create testOtherUser1');
+        }
         await Team.apiAddUserToTeam(siteOneUrl, testOtherUser1.id, team.id);
         ({user: testOtherUser2} = await User.apiCreateUser(siteOneUrl, {prefix: 'b'}));
+        if (!testOtherUser2?.id) {
+            throw new Error('[beforeAll] Failed to create testOtherUser2');
+        }
         await Team.apiAddUserToTeam(siteOneUrl, testOtherUser2.id, team.id);
 
         // # Log in to server

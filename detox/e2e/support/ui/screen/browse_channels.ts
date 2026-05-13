@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class BrowseChannelsScreen {
     testID = {
@@ -44,14 +44,51 @@ class BrowseChannelsScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.browseChannelsScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+        await waitFor(this.browseChannelsScreen).toExist().withTimeout(timeout);
 
         return this.browseChannelsScreen;
     };
 
     open = async () => {
-        // # Open browse channels screen
-        await ChannelListScreen.headerPlusButton.tap();
+        // If Browse Channels is already open (e.g. a previous test failed mid-navigation
+        // and left the modal on screen), close it first so we start from the channel list.
+        try {
+            await waitFor(this.browseChannelsScreen).toExist().withTimeout(2000);
+            await this.closeButton.tap();
+            await waitFor(this.browseChannelsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            // Browse Channels is not open — proceed normally
+        }
+
+        // # Open browse channels screen from the channel list header plus button.
+        // Wait for the plus button to exist (not just be visible) with a long timeout.
+        // The plus button only renders when the team displayName is loaded — after a
+        // recovery relaunch (launchApp({newInstance:true})) the app has to re-hydrate
+        // team data from WatermelonDB, which can take >10 s on slow CI machines.
+        // Using toExist() (not toBeVisible()) also handles the case where a previous
+        // test left an alert dimming overlay on top.
+        await waitFor(ChannelListScreen.headerPlusButton).toExist().withTimeout(timeouts.HALF_MIN);
+
+        // On iOS, a UITransitionView (navigation animation overlay) can still be running
+        // when the element exists but is not yet hittable. Retry the tap up to 3 times
+        // with a short delay to let the transition complete.
+        let tapError: unknown;
+        /* eslint-disable no-await-in-loop -- sequential retry: each tap must complete before retrying */
+        for (let i = 0; i < 3; i++) {
+            try {
+                await ChannelListScreen.headerPlusButton.tap();
+                tapError = undefined;
+                break;
+            } catch (err) {
+                tapError = err;
+                await wait(timeouts.ONE_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        if (tapError) {
+            throw tapError;
+        }
         await wait(timeouts.ONE_SEC);
         await ChannelListScreen.browseChannelsItem.tap();
 

@@ -1,0 +1,40 @@
+# Sub-flow: Connect to Mattermost server (server form step only).
+# Called by login.yml when the server form is visible (no server registered yet).
+# Usage: - runFlow: ../utils/connect_server.yml
+# Requires: SITE_1_URL env var
+appId: ${MAESTRO_APP_ID}
+---
+- tapOn:
+    id: "server_form.server_url.input"
+- eraseText: 200
+- inputText: ${SITE_1_URL}
+- tapOn:
+    id: "server_form.server_display_name.input"
+- eraseText: 200
+- inputText: "Server 1"
+- tapOn:
+    id: "server_form.connect.button"
+# Wait for the connection to complete before dismissing any optional dialogs.
+# Without this, optional taps fire immediately and may land on stale UI elements
+# before the server-validation dialog has appeared.
+- waitForAnimationToEnd:
+    timeout: 5000
+# iOS: dismiss system-level "Allow notifications?" or network-access permission
+# dialogs that may block navigation after tapping Connect.
+- tapOn:
+    text: "Allow"
+    optional: true
+# App-level "Notifications cannot be received" alert (non-blocking info).
+# Dismiss if present; safe to skip if absent.
+- tapOn:
+    text: "Okay"
+    optional: true
+- tapOn:
+    text: "OKAY"
+    optional: true
+# Wait for the server form to navigate away (login form or home screen).
+# 60s covers slower cloud connections and iOS first-connect overhead.
+- extendedWaitUntil:
+    notVisible:
+      id: "server_form.server_url.input"
+    timeout: 60000

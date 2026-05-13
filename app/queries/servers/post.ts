@@ -3,10 +3,12 @@
 
 import {Database, Model, Q, Query} from '@nozbe/watermelondb';
 import {of as of$, combineLatestWith, combineLatest} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
 import {SKU_SHORT_NAME} from '@constants/license';
+import DatabaseManager from '@database/manager';
+import EphemeralStore from '@store/ephemeral_store';
 import {logDebug, logWarning} from '@utils/log';
 import {updatePermalinkMetadata} from '@utils/permalink_sync';
 
@@ -91,13 +93,46 @@ export const observePostAuthor = (database: Database, post: PostModel) => {
     return observeUser(database, post.userId);
 };
 
-export const observePostSaved = (database: Database, postId: string) => {
-    return querySavedPostsPreferences(database, postId).
+const getServerUrlForDatabase = (database: Database) => {
+    // Primary match: direct object-identity comparison (works in all normal call paths).
+    // Secondary match: compare internal WatermelonDB adapter `dbName` as a fallback for
+    // cases where the Database instance is re-wrapped. `dbName` is not part of the public
+    // WatermelonDB API — if the library changes its internals this fallback silently returns
+    // undefined and callers fall back to the non-server-aware observable (no crash, no data
+    // loss — the 2-minute TTL on unsaved posts still self-heals).
+    const databaseName = (database.adapter as {dbName?: string}).dbName;
+
+    return Object.entries(DatabaseManager.serverDatabases).find(([, serverDatabase]) => {
+        if (!serverDatabase) {
+            return false;
+        }
+
+        if (serverDatabase.database === database) {
+            return true;
+        }
+
+        return (serverDatabase.database.adapter as {dbName?: string}).dbName === databaseName;
+    })?.[0];
+};
+
+export const observePostSaved = (database: Database, postId: string, serverUrl?: string) => {
+    const savedPreference$ = querySavedPostsPreferences(database, postId).
         observeWithColumns(['value']).pipe(
             switchMap(
                 (pref) => of$(Boolean(pref[0]?.value === 'true')),
             ),
+            distinctUntilChanged(),
         );
+
+    const resolvedServerUrl = serverUrl || getServerUrlForDatabase(database);
+    if (!resolvedServerUrl) {
+        return savedPreference$;
+    }
+
+    return combineLatest([savedPreference$, EphemeralStore.observeRecentlyUnsavedSavedPost(resolvedServerUrl, postId)]).pipe(
+        map(([isSaved, isRecentlyUnsaved]) => (isRecentlyUnsaved ? false : isSaved)),
+        distinctUntilChanged(),
+    );
 };
 
 export const queryPostsInChannel = (database: Database, channelId: string) => {
@@ -228,7 +263,7 @@ export const queryPinnedPostsInChannel = (database: Database, channelId: string)
             Q.where('channel_id', channelId),
             Q.where('is_pinned', Q.eq(true)),
         ),
-        Q.sortBy('create_at', Q.asc),
+        Q.sortBy('create_at', Q.desc),
     );
 };
 
@@ -236,11 +271,22 @@ export const observePinnedPostsInChannel = (database: Database, channelId: strin
     return queryPinnedPostsInChannel(database, channelId).observe();
 };
 
-export const observeSavedPostsByIds = (database: Database, postIds: string[]) => {
-    return querySavedPostsPreferences(database).extend(
+export const observeSavedPostsByIds = (database: Database, postIds: string[], serverUrl?: string) => {
+    const savedPostIds = querySavedPostsPreferences(database).extend(
         Q.where('name', Q.oneOf(postIds)),
     ).observeWithColumns(['name']).pipe(
         switchMap((prefs) => of$(new Set(prefs.map((p) => p.name)))),
+    );
+
+    const resolvedServerUrl = serverUrl || getServerUrlForDatabase(database);
+    if (!resolvedServerUrl) {
+        return savedPostIds;
+    }
+
+    return combineLatest([savedPostIds, EphemeralStore.observeRecentlyUnsavedSavedPosts(resolvedServerUrl)]).pipe(
+        map(([currentSavedPostIds, recentlyUnsavedSavedPosts]) => {
+            return new Set([...currentSavedPostIds].filter((postId) => !recentlyUnsavedSavedPosts.has(postId)));
+        }),
     );
 };
 

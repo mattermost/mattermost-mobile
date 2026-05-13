@@ -124,13 +124,30 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
 // 2. Else add the post as a thread
 export async function createThreadFromNewPost(serverUrl: string, post: Post, prepareRecordsOnly = false) {
     try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const models: Model[] = [];
         if (post.root_id) {
-            // Update the thread data: `reply_count`
-            const {model: threadModel} = await updateThread(serverUrl, post.root_id, {reply_count: post.reply_count}, true);
-            if (threadModel) {
-                models.push(threadModel);
+            const existingThread = await getThreadById(database, post.root_id);
+
+            if (existingThread) {
+                // Update the thread data: `reply_count` and auto-follow (replying auto-follows the thread)
+                const {model: threadModel} = await updateThread(serverUrl, post.root_id, {
+                    reply_count: post.reply_count,
+                    is_following: true,
+                }, true);
+                if (threadModel) {
+                    models.push(threadModel);
+                }
+            } else {
+                const rootPost = await getPostById(database, post.root_id);
+                if (rootPost) {
+                    const threadModels = await prepareThreadsFromReceivedPosts(operator, [{
+                        ...await rootPost.toApi(),
+                        reply_count: post.reply_count,
+                        is_following: true,
+                    }], false);
+                    models.push(...threadModels);
+                }
             }
 
             // Add user as a participant to the thread
@@ -175,13 +192,17 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
         // Extract posts & users from the received threads
         for (let i = 0; i < threads.length; i++) {
             const {participants, post} = threads[i];
-            posts.push(post);
-            participants.forEach((participant) => {
-                if (currentUserId !== participant.id) {
-                    users.push(participant);
-                }
-            });
-            threadsToHandle.push({...threads[i], lastFetchedAt: post.create_at});
+            if (post) {
+                posts.push(post);
+            }
+            if (participants) {
+                participants.forEach((participant) => {
+                    if (currentUserId !== participant.id) {
+                        users.push(participant);
+                    }
+                });
+            }
+            threadsToHandle.push({...threads[i], lastFetchedAt: post?.create_at ?? 0});
         }
 
         const postModels = await operator.handlePosts({

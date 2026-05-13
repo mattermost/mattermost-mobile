@@ -34,6 +34,7 @@ describe('WebSocket Preferences Actions', () => {
         jest.spyOn(operator, 'handlePreferences').mockResolvedValue([]);
 
         jest.mocked(EphemeralStore.isEnablingCRT).mockReturnValue(false);
+        jest.mocked(EphemeralStore.isRecentlyUnsavedSavedPost).mockReturnValue(false);
     });
 
     afterEach(async () => {
@@ -153,6 +154,21 @@ describe('WebSocket Preferences Actions', () => {
                 preferences: mockPreferences,
             });
             expect(fetchPostById).toHaveBeenCalledWith(serverUrl, 'post1', false);
+        });
+
+        it('should ignore stale saved post preferences after a local unsave', async () => {
+            const msg = {
+                data: {
+                    preferences: JSON.stringify(mockPreferences),
+                },
+            } as WebSocketMessage;
+
+            jest.mocked(EphemeralStore.isRecentlyUnsavedSavedPost).mockReturnValue(true);
+
+            await handlePreferencesChangedEvent(serverUrl, msg);
+
+            expect(operator.handlePreferences).not.toHaveBeenCalled();
+            expect(fetchPostById).not.toHaveBeenCalled();
         });
 
         it('should handle name format changes in bulk', async () => {

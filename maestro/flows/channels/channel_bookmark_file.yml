@@ -1,0 +1,132 @@
+# MM-T5603: Add a file bookmark via channel info
+#
+# Covers the "Attach a file" path in the channel bookmark flow, which opens the
+# native iOS document picker (Files app). Detox cannot automate system pickers;
+# Maestro can because it drives automation at the OS accessibility layer.
+#
+# PRE-CONDITION: A test file must be placed in the app's Documents folder:
+# For Android emulator:
+#   adb push detox/e2e/support/fixtures/image.png /sdcard/Download/test_bookmark.png
+# For iOS simulator (places file in the local file provider — no UIFileSharingEnabled needed):
+#   UDID=$(xcrun simctl list devices booted -j | python3 -c "import sys,json; d=json.load(sys.stdin); print(list(d['devices'].values())[-1][0]['udid'])")
+#   LOCAL_STORAGE=$(find ~/Library/Developer/CoreSimulator/Devices/$UDID/data/Containers/Shared/AppGroup \
+#     -name ".com.apple.mobile_container_manager.metadata.plist" \
+#     -exec grep -l "FileProvider.LocalStorage" {} \; | xargs -I{} dirname {} | head -1)
+#   cp detox/e2e/support/fixtures/image.png "$LOCAL_STORAGE/File Provider Storage/test_bookmark.png"
+#
+# This places the file directly in "On My iPhone" in the document picker.
+# The iOS document picker opens to "Recents". We navigate Browse > On My iPhone
+# to find the file placed in the local file provider storage.
+#
+# Requires env vars: SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+# Set MAESTRO_APP_ID to com.mattermost.rnbeta (default) or your app bundle ID.
+tags:
+  - MM-T5603
+appId: ${MAESTRO_APP_ID}
+---
+# --- Setup: login and navigate to the test channel ---
+- runFlow: ../../utils/login.yml
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# --- Open channel info ---
+# navigation.header.title has opacity:0 in iOS 26 when the channel is not scrolled
+# (the Animated.Text opacity is driven by scroll position and starts at 0).
+# Use the intro "Info" action instead — visible when the channel has no posts yet.
+- tapOn:
+    id: "channel_post_list.intro_options.channel_info.action"
+- extendedWaitUntil:
+    visible:
+      id: "channel_info.screen"
+    timeout: 10000
+
+# --- Tap "Add a bookmark" to open the bookmark type picker ---
+- tapOn:
+    id: "channel_info.add_bookmark.button"
+# Wait for the bottom sheet to appear (animated in) and its accessibility tree to register.
+# accessibilityViewIsModal={true} on the content container ensures the gorhom BottomSheet
+# content is exposed to iOS XCUITest accessibility (required for Maestro testID matching).
+- extendedWaitUntil:
+    visible:
+      id: "channel_bookmark.type.file"
+    timeout: 10000
+# --- Tap "Attach a file" ---
+- tapOn:
+    id: "channel_bookmark.type.file"
+
+# --- Navigate the document picker and select the file ---
+# iOS: Recents -> Browse -> On My iPhone -> file (via ios_picker sub-flow)
+# Android: Recent -> search by name -> file (via android_picker sub-flow)
+- runFlow:
+    when:
+      platform: iOS
+    file: channel_bookmark_file_ios_picker.yml
+- runFlow:
+    when:
+      platform: Android
+    file: channel_bookmark_file_android_picker.yml
+
+# --- After selection the picker closes; back on channel_bookmark.screen.
+#     The app uploads the file — wait for the upload to finish (save button appears
+#     enabled with "Save" text — the button is disabled/loading during upload).
+- extendedWaitUntil:
+    visible:
+      id: "channel_bookmark.screen"
+    timeout: 15000
+# Wait for the file metadata to appear (upload complete indicator):
+# "PNG" or "KB" size text appears in the attachment once the file is processed.
+# This is a more reliable upload-complete signal than the filename alone,
+# because the filename pre-fills the title input immediately on file selection
+# (before upload finishes), while the file-size label appears after processing.
+- extendedWaitUntil:
+    visible:
+      text: "test_bookmark.png"
+    timeout: 30000
+# Wait for upload complete: the fileInfoContainer gets testID="channel_bookmark.file.upload_complete"
+# only when file.id is set (i.e., the server has accepted the upload and returned a file_id).
+# This is a stable React Native View — unlike the RNN UIBarButtonItem (save button), it does NOT
+# get recreated by enableSaveButton(true), so it never causes kAXErrorInvalidUIElement.
+- extendedWaitUntil:
+    visible:
+      id: "channel_bookmark.file.upload_complete"
+    timeout: 30000
+# --- Tap Save to create the bookmark ---
+# iOS: RNN UIBarButtonItem exposes testID in accessibility tree.
+# Android: RNN top-bar button shows text "SAVE" (uppercased) but no testID.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "channel_bookmark.edit.save_button"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          text: "SAVE"
+
+# --- Verify the file bookmark was created: modal closes, bookmark visible in channel info ---
+# Allow up to 30s — if upload was still completing when Save was tapped, the server
+# may take a moment to respond and pop the navigation stack.
+- extendedWaitUntil:
+    notVisible:
+      id: "channel_bookmark.screen"
+    timeout: 30000
+# iOS: FlatList container exposes its testID; individual item testIDs are not in the tree.
+# Android: FlatList container testID is not exposed; individual item testIDs are.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "channel_info.bookmarks.list"
+          timeout: 20000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "channel_bookmark\\..+\\.title"
+          timeout: 20000

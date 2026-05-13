@@ -11,6 +11,7 @@ import {
     Channel,
     Post,
     Setup,
+    System,
     Team,
     User,
 } from '@support/server_api';
@@ -28,7 +29,7 @@ import {
     DraftScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Scheduled Draft,', () => {
@@ -46,8 +47,16 @@ describe('Scheduled Draft,', () => {
         testUser = user;
 
         ({user: testOtherUser} = await User.apiCreateUser(siteOneUrl));
+        if (!testOtherUser?.id) {
+            throw new Error('[beforeAll] Failed to create testOtherUser');
+        }
         await Team.apiAddUserToTeam(siteOneUrl, testOtherUser.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, testOtherUser.id, testChannel.id);
+
+        // # Ensure the ScheduledPosts feature is enabled on the server so that
+        // long-pressing the send button opens the schedule picker instead of
+        // sending the message immediately.
+        await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {ScheduledPosts: true}});
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -90,6 +99,19 @@ describe('Scheduled Draft,', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.postMessage(parentMessage);
+
+        // # On Android the keyboard stays open after postMessage when the post list is
+        // short (only a system message + this post), so scroll(50, 'down') in
+        // longPressWithScrollRetry silently fails and never dismisses the keyboard.
+        // Swipe the post list to fire a touch event that dismisses it before long-press.
+        if (isAndroid()) {
+            try {
+                await ChannelScreen.postList.getFlatList().swipe('down', 'slow', 0.1);
+            } catch {
+                // swipe failed — longPressWithScrollRetry retries will handle it
+            }
+            await wait(timeouts.ONE_SEC);
+        }
 
         // # Open reply thread
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -219,14 +241,14 @@ describe('Scheduled Draft,', () => {
     }
 
     async function chooseScheduleMessageDate() {
-        // # The bottom sheet info will not show `Tomorrow` if today is Friday or Saturday. Always schedule for Monday.
-        const today = new Date().getDay();
-        if (today === 1) { // 1 represents Monday
-            await ChannelScreen.scheduleMessageForNextMonday();
-        } else {
-            await ChannelScreen.scheduleMessageForMonday();
-        }
-
+        // # Pick whichever schedule option is available for today's day of week.
+        // The picker shows different options per day:
+        //   Sunday  (0): Tomorrow only
+        //   Monday  (1): Tomorrow + Next Monday
+        //   Tue–Thu (2–4): Tomorrow + Monday
+        //   Friday  (5): Monday only
+        //   Saturday(6): Monday only
+        await ChannelScreen.scheduleMessageForAvailableOption();
         await ChannelScreen.clickOnScheduledMessage();
     }
 });

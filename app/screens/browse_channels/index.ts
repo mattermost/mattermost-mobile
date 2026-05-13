@@ -18,7 +18,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const sharedChannelsEnabled = observeConfigBooleanValue(database, 'ExperimentalSharedChannels');
-    const canShowArchivedChannels = observeConfigBooleanValue(database, 'ExperimentalViewArchivedChannels');
+    const canShowArchivedChannels = observeConfigBooleanValue(database, 'ExperimentalViewArchivedChannels', true);
 
     const currentTeam = observeCurrentTeam(database);
     const currentUser = observeCurrentUser(database);

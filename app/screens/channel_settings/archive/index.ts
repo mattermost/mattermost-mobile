@@ -18,7 +18,7 @@ type Props = WithDatabaseArgs & {
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
     const channel = observeChannel(database, channelId);
-    const canViewArchivedChannels = observeConfigBooleanValue(database, 'ExperimentalViewArchivedChannels');
+    const canViewArchivedChannels = observeConfigBooleanValue(database, 'ExperimentalViewArchivedChannels', true);
 
     return {
         canViewArchivedChannels,

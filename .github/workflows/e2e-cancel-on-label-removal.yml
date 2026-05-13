@@ -1,0 +1,71 @@
+# Cancel in-progress E2E workflow runs when the E2E/Run label is removed from a PR.
+# When the label is removed, Matterwick tears down the provisioned test servers,
+# so there is no point in letting the E2E jobs continue — they will fail mid-way.
+name: Cancel E2E on label removal
+
+on:
+  pull_request:
+    types:
+      - unlabeled
+
+jobs:
+  cancel-e2e-runs:
+    if: >-
+      github.event.label.name == 'E2E/Run'
+      || github.event.label.name == 'E2E/Run-iOS'
+      || github.event.label.name == 'E2E/Run-Android'
+    runs-on: ubuntu-22.04
+    permissions:
+      actions: write
+    steps:
+      - name: Cancel in-progress E2E workflow runs
+        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const headBranch = context.payload.pull_request.head.ref;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const removedLabel = context.payload.label.name;
+
+            core.info(`Label "${removedLabel}" removed from PR #${prNumber} (branch: ${headBranch})`);
+
+            // Find the E2E workflow by name
+            const workflows = await github.rest.actions.listRepoWorkflows({ owner, repo });
+            const e2eWorkflow = workflows.data.workflows.find(w => w.name === 'E2E');
+            if (!e2eWorkflow) {
+              core.info('No E2E workflow found in repository');
+              return;
+            }
+
+            core.info(`Found E2E workflow (id: ${e2eWorkflow.id})`);
+
+            // Find in-progress or queued runs on the same branch
+            const statuses = ['in_progress', 'queued', 'waiting'];
+            let cancelled = 0;
+
+            for (const status of statuses) {
+              const runs = await github.rest.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id: e2eWorkflow.id,
+                status,
+                branch: headBranch,
+              });
+
+              for (const run of runs.data.workflow_runs) {
+                core.info(`Cancelling run ${run.id} (status: ${run.status}, branch: ${run.head_branch})`);
+                try {
+                  await github.rest.actions.cancelWorkflowRun({
+                    owner,
+                    repo,
+                    run_id: run.id,
+                  });
+                  cancelled++;
+                } catch (err) {
+                  core.warning(`Failed to cancel run ${run.id}: ${err.message}`);
+                }
+              }
+            }
+
+            core.info(`Cancelled ${cancelled} E2E workflow run(s) for PR #${prNumber}`);

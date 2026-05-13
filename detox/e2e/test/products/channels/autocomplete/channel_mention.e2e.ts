@@ -43,6 +43,9 @@ describe('Autocomplete - Channel Mention', () => {
         ({channelMentionItem: channelMentionAutocomplete} = Autocomplete.getChannelMentionItem(testChannel.name));
 
         ({channel: testOtherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id}));
+        if (!testOtherChannel?.id) {
+            throw new Error('[beforeAll] Failed to create testOtherChannel');
+        }
         await Channel.apiAddUserToChannel(siteOneUrl, user.id, testOtherChannel.id);
         ({channelMentionItem: otherChannelMentionAutocomplete} = Autocomplete.getChannelMentionItem(testOtherChannel.name));
 

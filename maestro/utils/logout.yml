@@ -1,0 +1,63 @@
+# Sub-flow: Logout from Mattermost (called by login.yml when app is already logged in).
+# Usage: - runFlow: ../utils/logout.yml
+# Requires: MAESTRO_APP_ID env var
+appId: ${MAESTRO_APP_ID}
+---
+# Dismiss the scheduled-post tooltip if it's blocking the account tab
+- tapOn:
+    id: "scheduled_post.tooltip.close.button"
+    optional: true
+- tapOn:
+    id: "scheduled_post_tutorial_tooltip.close"
+    optional: true
+# Navigate to Account screen
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.screen"
+    timeout: 10000
+# Tap logout
+- tapOn:
+    id: "account.logout.option"
+# The app shows a confirmation dialog "Are you sure you want to log out of Server 1?"
+# with a "Log out" button.
+#
+# WHY point: instead of text/id — Maestro YAML uses fuzzy (substring) text matching by
+# default, so text: "Log out" matches many background elements in the account screen
+# (containers with accessibilityText containing "Log out"). With so many matches,
+# index: 1 does NOT reliably target the UIAlertController button.
+#
+# UIAlertController is a system-level overlay (no app testID). Using point: is
+# acceptable for system overlays per project conventions (CLAUDE.md).
+#
+# Wait for "Cancel" first — it ONLY exists in the alert dialog (not the account screen),
+# which confirms the dialog is fully rendered and the button bounds are stable.
+# Log out button is consistently at ~67%,57% on this device (center of [201,480][336,524]
+# on a 402x874 pt screen). Cancel is at ~33%,57%.
+- extendedWaitUntil:
+    visible:
+      text: "Cancel"
+    timeout: 10000
+# iOS: UIAlertController is a system overlay not in the app view hierarchy.
+# Point-based tap is acceptable for system overlays (CLAUDE.md).
+# Log out button is at ~67%,57% on this device.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          point: "67%,57%"
+# Android: AlertDialog IS in the app hierarchy. Tap positive button by resource-id.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "android:id/button1"
+# Wait until the account screen is gone (logout complete).
+# On fresh installs with server data to clear, logout can take >10s.
+- extendedWaitUntil:
+    notVisible:
+      id: "account.screen"
+    timeout: 20000

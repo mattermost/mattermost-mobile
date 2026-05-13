@@ -26,7 +26,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Threads - Reply to Thread', () => {
     const serverOneDisplayName = 'Server 1';
@@ -40,6 +40,9 @@ describe('Threads - Reply to Thread', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(user);
+
+        // Ensure the channel has propagated to the sidebar before any test body runs.
+        await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(testChannel.name);
     });
 
     beforeEach(async () => {
@@ -70,7 +73,9 @@ describe('Threads - Reply to Thread', () => {
         await GlobalThreadsScreen.open();
 
         // * Verify thread is displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        // Use waitFor to handle iOS CI where the thread item may take a moment to appear
+        // in the global threads list after the initial thread creation.
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Open thread options for thread and tap on reply option
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
@@ -110,7 +115,9 @@ describe('Threads - Reply to Thread', () => {
         await GlobalThreadsScreen.open();
 
         // * Verify thread is displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        // Use waitFor to handle iOS CI where the thread item may take a moment to appear
+        // in the global threads list after the initial thread creation.
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Tap on the thread
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();

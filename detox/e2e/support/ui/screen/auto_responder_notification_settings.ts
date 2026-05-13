@@ -39,7 +39,7 @@ class AutoResponderNotificationSettingsScreen {
 
     back = async () => {
         try {
-            await waitFor(this.backButton).toExist().withTimeout(timeouts.TWO_SEC);
+            await waitFor(this.backButton).toExist().withTimeout(timeouts.TEN_SEC);
             await this.backButton.tap();
             await expect(this.autoResponderNotificationSettingsScreen).not.toBeVisible();
         } catch (error) {

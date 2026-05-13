@@ -25,7 +25,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Edit', () => {
@@ -63,8 +63,8 @@ describe('Messaging - Message Edit', () => {
         const {postListPostItem: originalPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(originalPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
-        // # Scroll to post to dismiss keyboard and ensure post is visible
-        await originalPostListPostItem.scrollTo('top');
+        // # Scroll the post list (not the post item) to dismiss the keyboard and ensure post is tappable
+        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -79,6 +79,12 @@ describe('Messaging - Message Edit', () => {
         await EditPostScreen.saveButton.tap();
 
         await expect(EditPostScreen.editPostScreen).not.toBeVisible();
+
+        // # Scroll the post list to dismiss keyboard and ensure the edited post is fully visible.
+        // On iOS the keyboard + channel intro header can push the post below the 75% visibility
+        // threshold, causing toBeVisible() to fail.
+        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        await wait(timeouts.ONE_SEC);
 
         const {postListPostItem: updatedPostListPostItem} = ChannelScreen.getPostListPostItem(post.id);
         await expect(updatedPostListPostItem).toBeVisible();
@@ -100,8 +106,8 @@ describe('Messaging - Message Edit', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
-        // # Scroll to post to dismiss keyboard and ensure post is visible
-        await postListPostItem.scrollTo('top');
+        // # Scroll the post list (not the post item) to dismiss the keyboard and ensure post is tappable
+        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -114,6 +120,12 @@ describe('Messaging - Message Edit', () => {
         const updatedMessage = `${message} edit`;
         await EditPostScreen.messageInput.replaceText(updatedMessage);
         await EditPostScreen.closeButton.tap();
+
+        // # Scroll the post list to dismiss keyboard and ensure the post is fully visible.
+        // On iOS the keyboard + channel intro header can push the post below the 75% visibility
+        // threshold, causing toBeVisible() to fail.
+        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        await wait(timeouts.ONE_SEC);
 
         // * Verify post message is not updated
         await expect(postListPostItem).toBeVisible();
@@ -130,8 +142,9 @@ describe('Messaging - Message Edit', () => {
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);
 
-        // # Scroll to post to dismiss keyboard before tapping
-        await parentPostListPostItem.scrollTo('top');
+        // # Scroll the post list (not the post item) to dismiss the keyboard before tapping
+        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        await wait(timeouts.ONE_SEC);
         await parentPostListPostItem.tap();
 
         // * Verify on thread screen
@@ -141,10 +154,9 @@ describe('Messaging - Message Edit', () => {
         const replyMessage = `${message} reply`;
         await ThreadScreen.postMessage(replyMessage);
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
 
-        // # Scroll to reply post to dismiss keyboard before long press
-        await replyPostListPostItem.scrollTo('top');
+        // # Scroll the thread post list (not the post item) to dismiss keyboard before long press
+        await ThreadScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
         await ThreadScreen.openPostOptionsFor(replyPost.id, replyMessage);
         await PostOptionsScreen.editPostOption.tap();
 
@@ -157,6 +169,12 @@ describe('Messaging - Message Edit', () => {
         await EditPostScreen.saveButton.tap();
 
         await expect(EditPostScreen.editPostScreen).not.toBeVisible();
+
+        // # Scroll the thread post list to dismiss keyboard and ensure the edited reply is fully visible.
+        // On iOS the keyboard can push the reply post below the visibility threshold or make it
+        // not hittable at its visible point.
+        await ThreadScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        await wait(timeouts.ONE_SEC);
 
         // * Verify reply post message is updated and displays edited indicator '(edited)'
         const {postListPostItem: updatedReplyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id);

@@ -284,6 +284,53 @@ describe('thread remote actions', () => {
             expect(result.error).toBeUndefined();
         });
 
+        it('markThreadAsUnread - uses unread_replies and unread_mentions from API response', async () => {
+            (mockClient.markThreadAsUnread as jest.Mock).mockResolvedValueOnce({
+                unread_replies: 5,
+                unread_mentions: 2,
+            });
+
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+            await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: team.id});
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [post1.id],
+                posts: [post1],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await markThreadAsUnread(serverUrl, '', thread1.id, post1.id);
+            expect(result.error).toBeUndefined();
+
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const {getThreadById} = require('@queries/servers/thread');
+            const savedThread = await getThreadById(database, thread1.id);
+            expect(savedThread?.unreadReplies).toBe(5);
+            expect(savedThread?.unreadMentions).toBe(2);
+        });
+
+        it('markThreadAsUnread - falls back to defaults when API response has no unread counts', async () => {
+            (mockClient.markThreadAsUnread as jest.Mock).mockResolvedValueOnce(undefined);
+
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+            await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: team.id});
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [post1.id],
+                posts: [post1],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await markThreadAsUnread(serverUrl, '', thread1.id, post1.id);
+            expect(result.error).toBeUndefined();
+
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const {getThreadById} = require('@queries/servers/thread');
+            const savedThread = await getThreadById(database, thread1.id);
+            expect(savedThread?.unreadReplies).toBe(1);
+            expect(savedThread?.unreadMentions).toBe(0);
+        });
+
         it('updateThreadFollowing - handle error', async () => {
             const result = await updateThreadFollowing('foo', '', '', false, false);
             expect(result).toBeDefined();

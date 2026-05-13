@@ -1,0 +1,133 @@
+# MM-T2874: Share a link to a Mattermost channel via the share extension
+tags:
+  - MM-T2874
+appId: com.mattermost.rnbeta
+---
+- runFlow: ../../utils/login.yml
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# --- iOS: use Notes app (avoids Safari "Open In Mattermost" conflict for text/URLs) ---
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      # Notes app shares text/URL content; Mattermost share extension appears without "Open In" conflict
+      - stopApp:
+          appId: "com.apple.mobilenotes"
+      - launchApp:
+          appId: "com.apple.mobilenotes"
+      - extendedWaitUntil:
+          visible:
+            text: "Notes"
+          timeout: 15000
+      # Create a new note with a URL to share
+      - tapOn:
+          text: "New Note"
+      - inputText: "https://example.com"
+      # Open the note's overflow menu to access Share Note
+      - tapOn:
+          text: "···"
+          optional: true
+      - tapOn:
+          id: "more"
+          optional: true
+      # Tap Share Note option (visible once overflow menu opens)
+      - extendedWaitUntil:
+          visible:
+            text: "Share Note..."
+          timeout: 5000
+      - tapOn:
+          text: "Share Note..."
+      # Share sheet appears with Mattermost Beta as the share extension only (no "Open In" conflict)
+      - extendedWaitUntil:
+          visible:
+            text: "Mattermost Beta"
+          timeout: 15000
+      - tapOn:
+          text: "Mattermost Beta"
+      - extendedWaitUntil:
+          visible:
+            id: "share_extension.channel.option"
+          timeout: 40000
+
+# --- Android: use Chrome ---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - stopApp:
+          appId: "com.android.chrome"
+      - launchApp:
+          appId: "com.android.chrome"
+      - tapOn:
+          text: "Use without an account"
+          optional: true
+      - tapOn:
+          text: "No thanks"
+          optional: true
+      # Handle new tab page (search_box_text) vs. returning to last page (url_bar)
+      - tapOn:
+          id: "com.android.chrome:id/search_box_text"
+          optional: true
+      - tapOn:
+          id: "com.android.chrome:id/url_bar"
+          optional: true
+      - inputText: "https://example.com"
+      - pressKey: Enter
+      - extendedWaitUntil:
+          visible:
+            text: "Example Domain"
+          timeout: 30000
+      # Open Chrome overflow menu and tap Share
+      - tapOn:
+          id: "com.android.chrome:id/menu_button"
+      - extendedWaitUntil:
+          visible:
+            id: "com.android.chrome:id/share_menu_id"
+          timeout: 5000
+      - tapOn:
+          id: "com.android.chrome:id/share_menu_id"
+      # Android share sheet: tap More to see all apps
+      - extendedWaitUntil:
+          visible:
+            text: "More"
+          timeout: 10000
+      - tapOn:
+          text: "More"
+      # Tap Mattermost Beta to open the share extension
+      - extendedWaitUntil:
+          visible:
+            text: "Mattermost Beta"
+          timeout: 10000
+      - tapOn:
+          text: "Mattermost Beta"
+
+# Share extension opens: tap Channel option to open channel picker
+- extendedWaitUntil:
+    visible:
+      id: "share_extension.channel.option"
+    timeout: 15000
+- tapOn:
+    id: "share_extension.channel.option"
+
+# Select the test channel from the channel list
+- extendedWaitUntil:
+    visible:
+      id: "channel_item.${TEST_CHANNEL_NAME}"
+    timeout: 10000
+- tapOn:
+    id: "channel_item.${TEST_CHANNEL_NAME}"
+
+# Post the shared content
+- tapOn:
+    id: "share_extension.post.button"
+
+# Return to Mattermost and verify the link post appeared in the channel
+- launchApp:
+    appId: "com.mattermost.rnbeta"
+- extendedWaitUntil:
+    visible:
+      id: "channel.post_list.post"
+    timeout: 15000
+- assertVisible:
+    id: "channel.post_list.post"

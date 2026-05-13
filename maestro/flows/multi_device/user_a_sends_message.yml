@@ -1,0 +1,23 @@
+# MM-T3055 (Device A): User A sends a message; Device B should receive it
+# Run with: maestro --device $DEVICE_A_UDID test this file
+# Requires: TEST_USER_EMAIL, TEST_USER_PASSWORD, SITE_1_URL, SYNC_TOKEN, CHANNEL_NAME
+tags:
+  - MM-T3055
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# Type and send a message containing SYNC_TOKEN so Device B can detect it via API
+- tapOn:
+    id: "channel.post_draft.post.input"
+- inputText: "MM-T3055 sync test message ${SYNC_TOKEN}"
+- tapOn:
+    id: "channel.post_draft.post.input.send_action.send.button"
+
+# Verify the message appeared in the channel on this device
+- extendedWaitUntil:
+    visible:
+      text: "MM-T3055 sync test message ${SYNC_TOKEN}"
+    timeout: 10000
+- takeScreenshot: user-a-sent-message

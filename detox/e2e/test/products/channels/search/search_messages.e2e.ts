@@ -288,6 +288,7 @@ describe('Search - Search Messages', () => {
         const {channel: testChannelTwo} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeamTwo.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, testChannelTwo.id);
         await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
 
         // * Verify on first team
         await expect(ChannelListScreen.headerTeamDisplayName).toHaveText(testTeam.display_name);

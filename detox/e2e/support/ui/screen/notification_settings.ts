@@ -29,7 +29,7 @@ class NotificationSettingsScreen {
     automaticRepliesOptionInfo = element(by.id(this.testID.automaticRepliesOptionInfo));
 
     toBeVisible = async () => {
-        await waitFor(this.notificationSettingsScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.notificationSettingsScreen).toExist().withTimeout(timeouts.HALF_MIN);
 
         return this.notificationSettingsScreen;
     };
@@ -43,7 +43,7 @@ class NotificationSettingsScreen {
 
     back = async () => {
         try {
-            await waitFor(this.backButton).toExist().withTimeout(timeouts.TWO_SEC);
+            await waitFor(this.backButton).toExist().withTimeout(timeouts.TEN_SEC);
             await this.backButton.tap();
             await expect(this.notificationSettingsScreen).not.toBeVisible();
         } catch (error) {

@@ -6,8 +6,8 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {HomeScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class AccountScreen {
     testID = {
@@ -74,12 +74,55 @@ class AccountScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.accountScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+        await waitFor(this.accountScreen).toExist().withTimeout(timeout);
 
         return this.accountScreen;
     };
 
     open = async () => {
+        // Dismiss any lingering "Logout not complete" dialog left over from a
+        // previous test's logout. This can happen on both platforms when the
+        // server was unreachable and the handler in logout() didn't dismiss it.
+        try {
+            await waitFor(Alert.logoutNotCompleteTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            console.log('[debug:2a0143] AccountScreen.open dismissed lingering "Logout not complete" dialog'); // eslint-disable-line no-console
+            await Alert.continueAnywayButton.tap();
+            await wait(timeouts.HALF_SEC);
+        } catch { /* not present */ }
+
+        // Dismiss iOS native dialogs whose backdrop UIView covers the full screen and
+        // blocks all hit-tests — these appear after login on iOS 26+ (iPad and iPhone).
+        if (device.getPlatform() === 'ios') {
+            // "Save Password?" sheet (iOS Password manager autofill offer after login).
+            // Tap "Not Now" directly — if the native sheet is present it will be dismissed;
+            // if not present Detox throws "element not found" which we catch safely.
+            try {
+                await element(by.label('Not Now')).tap();
+                await wait(timeouts.HALF_SEC);
+            } catch { /* not present */ }
+            // "Notifications cannot be received from this server" alert.
+            try {
+                await element(by.label('Okay')).tap();
+                await wait(timeouts.HALF_SEC);
+            } catch { /* not present */ }
+        }
+
+        // Dismiss the "Scheduled Posts" tutorial tooltip before tapping the account tab.
+        // On iPad the channel is always co-visible with the sidebar, so this tooltip appears
+        // after every fresh login and sits directly over the account tab (bottom-right corner).
+        // Wait up to TWO_SEC for the tooltip to finish animating in before dismissing.
+        try {
+            await waitFor(element(by.id('scheduled_post.tooltip.close.button'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await element(by.id('scheduled_post.tooltip.close.button')).tap();
+            await waitFor(element(by.id('scheduled_post.tooltip.close.button'))).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch { /* no tooltip */ }
+        try {
+            await waitFor(element(by.id('scheduled_post_tutorial_tooltip.close'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await element(by.id('scheduled_post_tutorial_tooltip.close')).tap();
+            await waitFor(element(by.id('scheduled_post_tutorial_tooltip.close'))).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch { /* no admin-variant tooltip */ }
+
         try {
             await waitFor(HomeScreen.accountTab).toExist().withTimeout(timeouts.TEN_SEC);
             await HomeScreen.accountTab.tap();
@@ -103,6 +146,19 @@ class AccountScreen {
             await expect(Alert.logoutTitle(serverDisplayName)).toBeVisible();
         }
         await Alert.logoutButton.tap();
+
+        // Handle "Logout not complete" dialog that appears when the server is
+        // unreachable (offline, slow network). Tap "Continue Anyway" to force
+        // the logout to complete instead of leaving the app in a stuck state.
+        // Use TEN_SEC because CI environments can be slow to show this dialog.
+        try {
+            await waitFor(Alert.logoutNotCompleteTitle).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            console.log('[debug:2a0143] AccountScreen.logout dismissed "Logout not complete" dialog'); // eslint-disable-line no-console
+            await Alert.continueAnywayButton.tap();
+        } catch {
+            // Dialog didn't appear — normal logout completed successfully
+        }
+
         await waitFor(this.accountScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
