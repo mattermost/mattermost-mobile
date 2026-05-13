@@ -135,4 +135,17 @@ node_modules/@mattermost/intune
 # Claude Code
 .claude/settings.local.json
 .codex/
-.cursor/
+
+# Cursor: ignore everything by default, then selectively un-ignore the
+# Cloud Agent environment files. The materialized .cursor/AGENTS.md is
+# generated at boot from .cursor/cursor.md and stays gitignored.
+.cursor/*
+!.cursor/README.md
+!.cursor/cursor.md
+!.cursor/Dockerfile
+!.cursor/environment.json
+!.cursor/scripts/
+.cursor/scripts/*
+!.cursor/scripts/cloud-agent-install.sh
+!.cursor/scripts/cloud-agent-start.sh
+!.cursor/scripts/cloud-agent-emulator.sh

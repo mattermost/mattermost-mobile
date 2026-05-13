@@ -1,0 +1,28 @@
+{
+  "name": "Mattermost Mobile Cloud Agent",
+  "user": "ubuntu",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "install": "bash .cursor/scripts/cloud-agent-install.sh",
+  "start": "bash .cursor/scripts/cloud-agent-start.sh",
+  "terminals": [
+    {
+      "name": "emulator",
+      "command": "bash .cursor/scripts/cloud-agent-emulator.sh",
+      "description": "Android emulator (API 34) used by Mobile MCP. Boots headless with software rendering. Use 'adb devices' to confirm it's online. Restart this pane if the emulator becomes unresponsive."
+    },
+    {
+      "name": "metro",
+      "command": "bash -lc 'cd \"$(git rev-parse --show-toplevel)\" && npm start -- --reset-cache'",
+      "description": "React Native Metro bundler on :8081. Required for the app to load JS on the emulator. Hot reload works for JS/TS changes; native code changes require a rebuild via 'npm run android'."
+    }
+  ],
+  "ports": [
+    { "name": "Metro bundler", "port": 8081 },
+    { "name": "ADB server", "port": 5037 },
+    { "name": "Emulator console", "port": 5554 },
+    { "name": "Emulator ADB", "port": 5555 }
+  ]
+}
