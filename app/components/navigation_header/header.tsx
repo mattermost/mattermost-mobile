@@ -176,11 +176,11 @@ const Header = ({
         return {
             marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),
             paddingHorizontal: Platform.select({
-                ios: rightButtons?.length === 2 ? 90 : 60,
+                ios: rightButtons?.length === 2 || rightComponent ? 90 : 60,
                 android: 8,
             }),
         };
-    }, [leftComponent, showBackButton, rightButtons]);
+    }, [leftComponent, showBackButton, rightButtons, rightComponent]);
 
     return (
         <Animated.View style={containerStyle}>
