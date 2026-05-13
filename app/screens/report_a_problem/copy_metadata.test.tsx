@@ -5,6 +5,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
+import {Screens} from '@constants';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {metadataToString} from '@utils/share_logs';
@@ -28,7 +29,7 @@ describe('screens/report_a_problem/copy_metadata', () => {
         appVersion: '2.0.0',
         appPlatform: 'ios',
     };
-    const componentId = 'ReportProblem';
+    const componentId = Screens.REPORT_PROBLEM;
 
     beforeEach(() => {
         jest.clearAllMocks();

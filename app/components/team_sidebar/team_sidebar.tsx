@@ -37,8 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 export default function TeamSidebar({iconPad, canJoinOtherTeams, hasMoreThanOneTeam}: Props) {
-    const shouldShowSidebar = hasMoreThanOneTeam || canJoinOtherTeams;
-    const initialWidth = shouldShowSidebar ? TEAM_SIDEBAR_WIDTH : 0;
+    const initialWidth = hasMoreThanOneTeam ? TEAM_SIDEBAR_WIDTH : 0;
     const width = useSharedValue(initialWidth);
     const marginTop = useSharedValue(iconPad ? 44 : 0);
     const theme = useTheme();
@@ -56,17 +55,14 @@ export default function TeamSidebar({iconPad, canJoinOtherTeams, hasMoreThanOneT
 
     useEffect(() => {
         marginTop.value = iconPad ? 44 : 0;
-
-    // Update the shared value only when the iconPad changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [iconPad]);
+    }, [iconPad, marginTop]);
 
     useEffect(() => {
-        width.value = shouldShowSidebar ? TEAM_SIDEBAR_WIDTH : 0;
+        width.value = hasMoreThanOneTeam ? TEAM_SIDEBAR_WIDTH : 0;
 
-    // width is a stable reanimated shared value ref
+    // Update the shared value only when the hasMoreThanOneTeam changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [shouldShowSidebar]);
+    }, [hasMoreThanOneTeam]);
 
     return (
         <Animated.View style={[styles.container, transform]}>

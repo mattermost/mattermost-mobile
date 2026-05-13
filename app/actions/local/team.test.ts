@@ -2,10 +2,15 @@
 // See LICENSE.txt for license information.
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
-import {getMyTeamById, getTeamById, getTeamSearchHistoryById, prepareDeleteTeam, removeTeamFromTeamHistory} from '@queries/servers/team';
+import {
+    getMyTeamById,
+    getTeamById,
+    getTeamSearchHistoryById,
+    prepareDeleteTeam,
+    queryTeamSearchHistoryByTeamId,
+    removeTeamFromTeamHistory,
+} from '@queries/servers/team';
 import {logError} from '@utils/log';
-
-import {queryTeamSearchHistoryByTeamId} from '../../queries/servers/team';
 
 import {addSearchToTeamSearchHistory, removeSearchFromTeamSearchHistory, removeUserFromTeam, MAX_TEAM_SEARCHES} from './team';
 

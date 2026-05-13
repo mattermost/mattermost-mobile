@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import {useNavigation} from 'expo-router';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {type IntlShape, useIntl} from 'react-intl';
-import {Navigation} from 'react-native-navigation';
 
 import {submitInteractiveDialog, lookupInteractiveDialog} from '@actions/remote/integrations';
 import {AppCallResponseTypes} from '@constants/apps';
@@ -15,11 +15,8 @@ import {getFullErrorMessage} from '@utils/errors';
 import {InteractiveDialogAdapter} from '@utils/interactive_dialog_adapter';
 import {logDebug} from '@utils/log';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 export type DialogRouterProps = {
     config: InteractiveDialogConfig;
-    componentId: AvailableScreens;
     isAppsFormEnabled: boolean;
 };
 
@@ -67,10 +64,9 @@ function getSubmissionErrorMessage(error: unknown, intl: IntlShape): string {
 
 export const DialogRouter = React.memo<DialogRouterProps>(({
     config,
-    componentId,
     isAppsFormEnabled,
 }) => {
-
+    const navigation = useNavigation();
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
@@ -111,17 +107,13 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
     }, []);
 
     // Update modal title when dialog config changes
-    React.useEffect(() => {
+    useEffect(() => {
         if (currentConfig?.dialog?.title) {
-            Navigation.mergeOptions(componentId, {
-                topBar: {
-                    title: {
-                        text: currentConfig.dialog.title,
-                    },
-                },
+            navigation.setOptions({
+                title: currentConfig.dialog.title,
             });
         }
-    }, [currentConfig?.dialog?.title, componentId]);
+    }, [currentConfig?.dialog?.title, navigation]);
 
     // Create submit handler that converts AppForm values back to legacy format
     const handleSubmit = useCallback(async (values: AppFormValues): Promise<DoAppCallResult<FormResponseData>> => {
@@ -376,7 +368,6 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
         return (
             <AppsFormComponent
                 form={formWithValues}
-                componentId={componentId}
                 submit={handleSubmit}
                 performLookupCall={performLookupCall}
                 refreshOnSelect={refreshOnSelect}
@@ -385,12 +376,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
     }
 
     // Feature flag disabled or AppsForm failed - use legacy InteractiveDialog
-    return (
-        <InteractiveDialog
-            config={currentConfig}
-            componentId={componentId}
-        />
-    );
+    return (<InteractiveDialog config={currentConfig}/>);
 });
 
 DialogRouter.displayName = 'DialogRouter';

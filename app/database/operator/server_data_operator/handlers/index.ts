@@ -12,10 +12,10 @@ import {
     transformSystemRecord,
 } from '@database/operator/server_data_operator/transformers/general';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {sanitizeReactions} from '@database/operator/utils/reaction';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
 import {logWarning} from '@utils/log';
 
-import {sanitizeReactions} from '../../utils/reaction';
 import {transformReactionRecord} from '../transformers/reaction';
 
 import type {Model} from '@nozbe/watermelondb';

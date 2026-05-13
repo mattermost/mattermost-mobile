@@ -44,11 +44,27 @@ exports[`Server Icon Server Icon Component should match snapshot 1`] = `
       }
     }
   >
-    <Icon
-      color="rgba(255,255,255,0.56)"
-      name="server-variant"
-      size={24}
-    />
+    <Text
+      allowFontScaling={false}
+      selectable={false}
+      style={
+        [
+          {
+            "color": "rgba(255,255,255,0.56)",
+            "fontSize": 24,
+          },
+          undefined,
+          {
+            "fontFamily": "compass-icons",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          undefined,
+        ]
+      }
+    >
+      
+    </Text>
   </View>
 </View>
 `;
@@ -98,11 +114,27 @@ exports[`Server Icon Server Icon Component should match snapshot with mentions 1
     }
     testID="server_icon"
   >
-    <Icon
-      color="rgba(255,255,255,0.56)"
-      name="server-variant"
-      size={24}
-    />
+    <Text
+      allowFontScaling={false}
+      selectable={false}
+      style={
+        [
+          {
+            "color": "rgba(255,255,255,0.56)",
+            "fontSize": 24,
+          },
+          undefined,
+          {
+            "fontFamily": "compass-icons",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          undefined,
+        ]
+      }
+    >
+      
+    </Text>
     <Text
       collapsable={false}
       numberOfLines={1}
@@ -186,11 +218,27 @@ exports[`Server Icon Server Icon Component should match snapshot with unreads 1`
     }
     testID="server_icon"
   >
-    <Icon
-      color="rgba(255,255,255,0.56)"
-      name="server-variant"
-      size={24}
-    />
+    <Text
+      allowFontScaling={false}
+      selectable={false}
+      style={
+        [
+          {
+            "color": "rgba(255,255,255,0.56)",
+            "fontSize": 24,
+          },
+          undefined,
+          {
+            "fontFamily": "compass-icons",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          undefined,
+        ]
+      }
+    >
+      
+    </Text>
     <Text
       collapsable={false}
       numberOfLines={1}

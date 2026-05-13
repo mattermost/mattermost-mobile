@@ -70,11 +70,27 @@ exports[`components/integration_selector/custom_list_row should match snapshot 1
       }
       testID="1"
     >
-      <Icon
-        color="#fff"
-        name="check"
-        size={24}
-      />
+      <Text
+        allowFontScaling={false}
+        selectable={false}
+        style={
+          [
+            {
+              "color": "#fff",
+              "fontSize": 24,
+            },
+            undefined,
+            {
+              "fontFamily": "compass-icons",
+              "fontStyle": "normal",
+              "fontWeight": "normal",
+            },
+            undefined,
+          ]
+        }
+      >
+        󰄬
+      </Text>
     </View>
   </View>
   <View
@@ -88,9 +104,27 @@ exports[`components/integration_selector/custom_list_row should match snapshot 1
   >
     <View>
       <View>
-        <Icon
-          name="globe"
-        />
+        <Text
+          allowFontScaling={false}
+          selectable={false}
+          style={
+            [
+              {
+                "color": "black",
+                "fontSize": 12,
+              },
+              undefined,
+              {
+                "fontFamily": "compass-icons",
+                "fontStyle": "normal",
+                "fontWeight": "normal",
+              },
+              undefined,
+            ]
+          }
+        >
+          
+        </Text>
         <Text>
           My channel
         </Text>

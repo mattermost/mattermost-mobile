@@ -7,6 +7,7 @@ import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {type ReactElement, useCallback, useMemo, useRef} from 'react';
 import {Dimensions, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
+import performance from 'react-native-performance';
 
 import CompassIcon from '@components/compass_icon';
 import EditedIndicator from '@components/edited_indicator';
@@ -15,6 +16,7 @@ import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {logError} from '@utils/log';
 import {computeTextStyle, getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import PostListPerformance from '@utils/performance/post_list_performance';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -43,7 +45,7 @@ import type {
 } from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-type MarkdownProps = {
+export type MarkdownProps = {
     baseTextStyle: StyleProp<TextStyle>;
     baseParagraphStyle?: StyleProp<TextStyle>;
     channelId?: string;
@@ -316,10 +318,12 @@ const Markdown = ({
         const content = props.literal.replace(/\n$/, '');
 
         if (enableLatex && !isUnsafeLinksPost && props.language === 'latex') {
+            const baseFontSize = StyleSheet.flatten(baseTextStyle)?.fontSize;
             return (
                 <MarkdownLatexCodeBlock
                     content={content}
                     theme={theme}
+                    baseFontSize={baseFontSize}
                 />
             );
         }
@@ -332,7 +336,7 @@ const Markdown = ({
                 theme={theme}
             />
         );
-    }, [disableCodeBlock, enableLatex, isUnsafeLinksPost, textStyles.codeBlock, theme]);
+    }, [disableCodeBlock, enableLatex, isUnsafeLinksPost, baseTextStyle, textStyles.codeBlock, theme]);
 
     const renderCodeSpan = useCallback(({context, literal}: MarkdownBaseRenderer) => {
         const {code} = textStyles;
@@ -471,16 +475,18 @@ const Markdown = ({
             return renderText({context, literal: `$${latexCode}$`});
         }
 
+        const baseFontSize = StyleSheet.flatten(baseTextStyle)?.fontSize;
         return (
             <Text>
                 <MarkdownLatexInline
                     content={latexCode}
                     maxMathWidth={Dimensions.get('window').width * 0.75}
                     theme={theme}
+                    baseFontSize={baseFontSize}
                 />
             </Text>
         );
-    }, [enableInlineLatex, isUnsafeLinksPost, renderText, theme]);
+    }, [baseTextStyle, enableInlineLatex, isUnsafeLinksPost, renderText, theme]);
 
     const renderLink = useCallback(({children, href}: {children: ReactElement; href: string}) => {
         if (isUnsafeLinksPost) {
@@ -491,12 +497,11 @@ const Markdown = ({
             <MarkdownLink
                 href={href}
                 onLinkLongPress={onLinkLongPress}
-                theme={theme}
             >
                 {children}
             </MarkdownLink>
         );
-    }, [isUnsafeLinksPost, onLinkLongPress, renderText, theme]);
+    }, [isUnsafeLinksPost, onLinkLongPress, renderText]);
 
     const renderList = useCallback(({children, start, tight, type}: any) => {
         return (
@@ -551,32 +556,23 @@ const Markdown = ({
             return null;
         }
         return (
-            <MarkdownTable
-                numColumns={numColumns}
-                theme={theme}
-            >
+            <MarkdownTable numColumns={numColumns}>
                 {children}
             </MarkdownTable>
         );
-    }, [disableTables, theme]);
+    }, [disableTables]);
 
     const renderTableCell = useCallback((args: MarkdownTableCellProps) => {
         return (
-            <MarkdownTableCell
-                {...args}
-                theme={theme}
-            />
+            <MarkdownTableCell {...args}/>
         );
-    }, [theme]);
+    }, []);
 
     const renderTableRow = useCallback((args: MarkdownTableRowProps) => {
         return (
-            <MarkdownTableRow
-                {...args}
-                theme={theme}
-            />
+            <MarkdownTableRow {...args}/>
         );
-    }, [theme]);
+    }, []);
 
     const renderThematicBreak = useCallback(() => {
         return (
@@ -692,6 +688,7 @@ const Markdown = ({
     const errorLogged = useRef(false);
 
     const output = useMemo(() => {
+        const startTime = performance.now();
         let ast;
         try {
             ast = parser.parse(value.toString());
@@ -740,6 +737,13 @@ const Markdown = ({
 
         try {
             const generatedOutput = renderer.render(ast);
+            const duration = performance.now() - startTime;
+
+            // Track markdown parsing performance
+            if (channelId && postId && value) {
+                PostListPerformance.trackMarkdownParse(channelId, undefined, postId, value.length, duration);
+            }
+
             return generatedOutput;
         } catch (e) {
             if (!errorLogged.current) {
@@ -756,7 +760,7 @@ const Markdown = ({
                 />
             );
         }
-    }, [highlightKeys, isEdited, mentionKeys, parser, renderer, searchPatterns, serverUrl, style.errorMessage, value]);
+    }, [channelId, highlightKeys, isEdited, mentionKeys, parser, postId, renderer, searchPatterns, serverUrl, style.errorMessage, value]);
 
     return output;
 };

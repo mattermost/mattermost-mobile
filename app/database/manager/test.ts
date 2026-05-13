@@ -17,10 +17,16 @@ const {SERVERS} = MM_TABLES.APP;
 
 describe('*** Database Manager tests ***', () => {
     const serverUrls = ['https://appv1.mattermost.com', 'https://appv2.mattermost.com'];
+
     beforeAll(async () => {
         await DatabaseManager.init(serverUrls);
-        await DatabaseManager.updateServerIdentifier(serverUrls[0], 'appv1');
-        await DatabaseManager.updateServerIdentifier(serverUrls[1], 'appv2');
+    });
+
+    afterAll(async () => {
+        const servers = Object.keys(DatabaseManager.serverDatabases);
+        for await (const server of servers) {
+            await DatabaseManager.destroyServerDatabase(server);
+        }
     });
 
     it('=> should return a default database', async () => {
@@ -52,6 +58,9 @@ describe('*** Database Manager tests ***', () => {
 
     it('=> should switch between active servers', async () => {
         expect.assertions(4);
+
+        await DatabaseManager.updateServerIdentifier(serverUrls[0], 'appv1');
+        await DatabaseManager.updateServerIdentifier(serverUrls[1], 'appv2');
 
         let activeServerUrl = await DatabaseManager.getActiveServerUrl();
         const serverA = await DatabaseManager.getActiveServerDatabase();
@@ -93,5 +102,24 @@ describe('*** Database Manager tests ***', () => {
 
         const serverUrl = await DatabaseManager.getServerUrlFromIdentifier('appv3');
         expect(serverUrl).toBe('https://appv3.mattermost.com');
+    });
+
+    it('=> updatePersistenceFlag persists the flag on the matching server record', async () => {
+        expect.assertions(2);
+
+        const targetUrl = 'https://appv3.mattermost.com';
+        const fetchServer = async () => {
+            const servers = await DatabaseManager.appDatabase?.database.collections.
+                get<ServersModel>(SERVERS).query(Q.where('url', targetUrl)).fetch();
+            return servers?.[0];
+        };
+
+        const before = await fetchServer();
+        expect(before?.persistenceFlag).toBe('');
+
+        await DatabaseManager.updatePersistenceFlag(targetUrl, 'wiped');
+
+        const after = await fetchServer();
+        expect(after?.persistenceFlag).toBe('wiped');
     });
 });

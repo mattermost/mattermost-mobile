@@ -6,6 +6,7 @@ import {Platform} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 
 import NetworkManager from '@managers/network_manager';
+import {enableFakeTimers, disableFakeTimers} from '@test/timer_helpers';
 
 import {newConnection} from './connection';
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
@@ -124,6 +125,11 @@ describe('newConnection', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        enableFakeTimers();
+    });
+
+    afterEach(() => {
+        disableFakeTimers();
     });
 
     it('join', async () => {
@@ -497,10 +503,15 @@ describe('newConnection', () => {
         expect(peerDestroy).toHaveBeenCalled();
     });
 
-    it('collectICEStats', (done) => {
+    it('collectICEStats', async () => {
         Platform.OS = 'web';
 
         const wsSend = jest.fn();
+        let resolveJoin: () => void;
+        const joinPromise = new Promise<void>((resolve) => {
+            resolveJoin = resolve;
+        });
+
         const joinHandler = jest.fn(async (event: string, cb: () => void) => {
             if (event === 'join') {
                 await cb();
@@ -520,7 +531,7 @@ describe('newConnection', () => {
                     }),
                 },
                 );
-                done();
+                resolveJoin();
             }
         });
 
@@ -538,11 +549,10 @@ describe('newConnection', () => {
         // @ts-ignore
         parseRTCStats.mockImplementation(() => mockRTCStats);
 
-        newConnection('http://localhost:8065', 'channelID', () => {}, () => {}, false).
-            then((connection) => {
-                expect(connection).toBeDefined();
-                expect(joinHandler).toHaveBeenCalled();
-            });
+        const connection = await newConnection('http://localhost:8065', 'channelID', () => {}, () => {}, false);
+        expect(connection).toBeDefined();
+        expect(joinHandler).toHaveBeenCalled();
+        await joinPromise;
     });
 
     it('waitForPeerConnection', async () => {
@@ -556,8 +566,6 @@ describe('newConnection', () => {
         expect(connection).toBeDefined();
 
         await Promise.resolve();
-
-        jest.useFakeTimers();
 
         let res = connection.waitForPeerConnection();
 
@@ -602,6 +610,5 @@ describe('newConnection', () => {
         res = connection.waitForPeerConnection();
         jest.runAllTimers();
         await expect(res).resolves.toBe('sessionID');
-        jest.useRealTimers();
     });
 });

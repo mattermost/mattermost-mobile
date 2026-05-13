@@ -205,9 +205,11 @@ lane :link_sentry do |options|
     if os_type == 'ios'
       project_dir = 'ios/'
       sentry_project = ENV['SENTRY_PROJECT_IOS']
+      sentry_dsn = ENV['SENTRY_DSN_IOS'].to_s
     elsif os_type == 'android'
       project_dir = 'android/'
       sentry_project = ENV['SENTRY_PROJECT_ANDROID']
+      sentry_dsn = ENV['SENTRY_DSN_ANDROID'].to_s
     end
     url = ENV['SENTRY_URL'] || 'https://sentry.io'
     File.open("../#{project_dir}sentry.properties", 'w+') do |f|
@@ -219,6 +221,23 @@ lane :link_sentry do |options|
         "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}\n"
       )
     end
+
+    # Write sentry.options.json for RNSentrySDK native init (Sentry 8.x)
+    # iOS reads from the app bundle root; Android reads from app assets
+    sentry_options = {
+      'dsn' => sentry_dsn,
+      'debug' => false,
+      'enableAppHangTracking' => false,
+      'enableCaptureFailedRequests' => false,
+      'enableAutoSessionTracking' => true
+    }
+    sentry_options_content = JSON.pretty_generate(sentry_options) + "\n"
+    if os_type == 'ios'
+      File.write('../sentry.options.json', sentry_options_content)
+    elsif os_type == 'android'
+      File.write('../android/app/src/main/assets/sentry.options.json', sentry_options_content)
+    end
+    UI.message("Created sentry.options.json for #{os_type} native Sentry init")
   else
     UI.message('Not creating sentry.properties because Sentry is disabled')
   end

@@ -11,7 +11,8 @@ import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import ExpiryTimer from '@components/post_list/post/header/expiry_timer';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
-import {CHANNEL, THREAD} from '@constants/screens';
+import {Screens} from '@constants';
+import {usePostConfig} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
@@ -38,27 +39,22 @@ import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type HeaderProps = {
-  author?: UserModel;
-  commentCount: number;
-  currentUser?: UserModel;
-  enablePostUsernameOverride: boolean;
-  isAutoResponse: boolean;
-  isCRTEnabled?: boolean;
-  isCustomStatusEnabled: boolean;
-  isEphemeral: boolean;
-  isMilitaryTime: boolean;
-  isPendingOrFailed: boolean;
-  isSystemPost: boolean;
-  isWebHook: boolean;
-  location: AvailableScreens;
-  post: PostModel;
-  rootPostAuthor?: UserModel;
-  showPostPriority: boolean;
-  shouldRenderReplyButton?: boolean;
-  teammateNameDisplay: string;
-  hideGuestTags: boolean;
-  isChannelAutotranslated: boolean;
-};
+    author?: UserModel;
+    commentCount: number;
+    currentUser?: UserModel;
+    isAutoResponse: boolean;
+    isChannelAutotranslated: boolean;
+    isCRTEnabled?: boolean;
+    isEphemeral: boolean;
+    isPendingOrFailed: boolean;
+    isSystemPost: boolean;
+    isWebHook: boolean;
+    location: AvailableScreens;
+    post: PostModel;
+    rootPostAuthor?: UserModel | null;
+    showPostPriority: boolean;
+    shouldRenderReplyButton?: boolean;
+}
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -88,58 +84,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Header = ({
-    commentCount,
-    enablePostUsernameOverride,
-    hideGuestTags,
-    isAutoResponse,
-    isChannelAutotranslated,
-    isCustomStatusEnabled,
-    isEphemeral,
-    isMilitaryTime,
-    isPendingOrFailed,
-    isSystemPost,
-    isWebHook,
-    location,
-    post,
-    showPostPriority,
-    teammateNameDisplay,
-    author,
-    currentUser,
-    isCRTEnabled,
-    rootPostAuthor,
-    shouldRenderReplyButton,
-}: HeaderProps) => {
+const Header = (props: HeaderProps) => {
+    const {
+        author, commentCount = 0, currentUser, isAutoResponse, isChannelAutotranslated, isCRTEnabled,
+        isEphemeral, isPendingOrFailed, isSystemPost, isWebHook,
+        location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton,
+    } = props;
+    const postConfig = usePostConfig();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const pendingPostStyle = isPendingOrFailed ? style.pendingPost : undefined;
     const isReplyPost = Boolean(post.rootId && !isEphemeral);
-    const showReply =
-    !isReplyPost &&
-    location !== THREAD &&
-    shouldRenderReplyButton &&
-    !rootPostAuthor &&
-    commentCount > 0;
-    const displayName = postUserDisplayName(
-        post,
-        author,
-        teammateNameDisplay,
-        enablePostUsernameOverride,
-    );
-    const rootAuthorDisplayName = rootPostAuthor
-        ? displayUsername(
-            rootPostAuthor,
-            currentUser?.locale,
-            teammateNameDisplay,
-            true,
-        )
-        : undefined;
+    const showReply = !isReplyPost && (location !== Screens.THREAD) && (shouldRenderReplyButton && (!rootPostAuthor && commentCount > 0));
+    const displayName = postUserDisplayName(post, author, postConfig.teammateNameDisplay, postConfig.enablePostUsernameOverride);
+    const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser?.locale, postConfig.teammateNameDisplay, true) : undefined;
     const customStatus = getUserCustomStatus(author);
-    const showCustomStatusEmoji =
-    Boolean(
-        isCustomStatusEnabled &&
-        displayName &&
-        customStatus &&
+    const showCustomStatusEmoji = Boolean(
+        postConfig.isCustomStatusEnabled && displayName && customStatus &&
         !(isSystemPost || author?.isBot || isAutoResponse || isWebHook),
     ) &&
     !isCustomStatusExpired(author) &&
@@ -180,16 +141,16 @@ const Header = ({
                         showCustomStatusEmoji={showCustomStatusEmoji}
                         customStatus={customStatus!}
                     />
-                    {(!isSystemPost || isAutoResponse) && (
-                        <HeaderTag
-                            isAutoResponder={isAutoResponse}
-                            isAutomation={isWebHook || author?.isBot}
-                            showGuestTag={author?.isGuest && !hideGuestTags}
-                        />
-                    )}
+                    {(!isSystemPost || isAutoResponse) &&
+                    <HeaderTag
+                        isAutoResponder={isAutoResponse}
+                        isAutomation={isWebHook || author?.isBot}
+                        showGuestTag={author?.isGuest && !postConfig.hideGuestTags}
+                    />
+                    }
                     <FormattedTime
                         timezone={getUserTimezone(currentUser)}
-                        isMilitaryTime={isMilitaryTime}
+                        isMilitaryTime={postConfig.isMilitaryTime}
                         value={post.createAt}
                         style={style.time}
                         testID='post_header.date_time'
@@ -231,7 +192,7 @@ const Header = ({
                     )}
                 </View>
             </View>
-            {Boolean(rootAuthorDisplayName) && location === CHANNEL && (
+            {Boolean(rootAuthorDisplayName) && location === Screens.CHANNEL && (
                 <HeaderCommentedOn
                     locale={currentUser?.locale || DEFAULT_LOCALE}
                     name={rootAuthorDisplayName!}

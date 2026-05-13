@@ -3,7 +3,7 @@
 
 import React, {useEffect} from 'react';
 import {View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 
 import {setShareExtensionUserAndChannelIds, useShareExtensionState} from '@share/state';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -50,13 +50,11 @@ const ContentView = ({database, currentChannelId, currentUserId, theme}: Props) 
         <View style={styles.container}>
             <KeyboardAwareScrollView
                 bounces={false}
-                enableAutomaticScroll={true}
-                enableOnAndroid={false}
-                enableResetScrollToCoords={true}
                 keyboardDismissMode='on-drag'
                 keyboardShouldPersistTaps='handled'
                 scrollToOverflowEnabled={true}
                 contentContainerStyle={styles.content}
+                mode='layout'
             >
                 {Boolean(linkPreviewUrl) &&
                 <LinkPreview

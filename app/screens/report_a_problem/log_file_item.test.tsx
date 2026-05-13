@@ -42,7 +42,10 @@ describe('screens/report_a_problem/log_file_item', () => {
 
         await waitFor(() => {
             const icon = getByTestId('log-file-icon');
-            expect(icon.props.name).toBe('file-zip-outline-large');
+
+            // CompassIcon renders as a Text node with the unicode glyph as children;
+            // name ('file-zip-outline-large') is consumed internally and does not appear on the rendered props.
+            expect(icon.props.children).toContain(String.fromCodePoint(59658));
         });
     });
 });

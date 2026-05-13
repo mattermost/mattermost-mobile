@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Animated, {useSharedValue, type SharedValue} from 'react-native-reanimated';
+import {useSharedValue, type SharedValue} from 'react-native-reanimated';
 
 type SharedValueType = number;
 
@@ -21,8 +21,8 @@ export type Vector<T extends SharedValueType> = {
 };
 
 export type SharedVector<T extends SharedValueType> = {
-    x: Animated.SharedValue<T>;
-    y: Animated.SharedValue<T>;
+    x: SharedValue<T>;
+    y: SharedValue<T>;
 };
 
 const isVector = (value: any): value is Vector<any> => {
@@ -33,7 +33,7 @@ const isVector = (value: any): value is Vector<any> => {
 
 const isSharedValue = (
     value: any,
-): value is Animated.SharedValue<any> => {
+): value is SharedValue<any> => {
     'worklet';
 
     return typeof value.value !== 'undefined';

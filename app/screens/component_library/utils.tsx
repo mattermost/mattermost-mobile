@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text} from 'react-native';
+import {Text, View} from 'react-native';
 
 function buildPropsLists(inputPossibilities: {[x: string]: any[]}): Array<{[x: string]: any}> {
     const keys = Object.keys(inputPossibilities);
@@ -66,15 +66,16 @@ export function buildComponent(
     });
     propsVariations.forEach((v) => {
         const propString = buildPropString(v);
+        const key = JSON.stringify(v);
         res.push(
-            <>
-                {Boolean(propString) && <Text key={`text.${propString}`}>{propString}</Text>}
+            <View key={`view.${key}`}>
+                {Boolean(propString) && <Text key={`text.${key}`}>{propString}</Text>}
                 <Component
-                    key={propString}
+                    key={`component.${key}`}
                     {...builtSetProps}
                     {...v}
                 />
-            </>,
+            </View>,
         );
     });
     return res;

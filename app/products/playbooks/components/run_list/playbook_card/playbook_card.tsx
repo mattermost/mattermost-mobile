@@ -15,7 +15,7 @@ import ProgressBar from '@playbooks/components/progress_bar';
 import PlaybookScreens from '@playbooks/constants/screens';
 import {goToPlaybookRun, goToPlaybookRunWithChannelSwitch} from '@playbooks/screens/navigation';
 import {isRunFinished} from '@playbooks/utils/run';
-import {openUserProfileModal} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -101,17 +101,17 @@ const PlaybookCard = ({
         if (location === PlaybookScreens.PARTICIPANT_PLAYBOOKS) {
             goToPlaybookRunWithChannelSwitch(intl, serverUrl, run as PlaybookRun);
         } else {
-            goToPlaybookRun(intl, run.id, 'observe' in run ? undefined : run);
+            goToPlaybookRun(run.id, 'observe' in run ? undefined : run);
         }
     }, [intl, serverUrl, run, location]);
 
     const onUserChipPress = useCallback((userId: string) => {
-        openUserProfileModal(intl, theme, {
+        openUserProfile({
             userId,
             channelId,
             location,
         });
-    }, [channelId, intl, theme, location]);
+    }, [channelId, location]);
 
     return (
         <TouchableOpacity

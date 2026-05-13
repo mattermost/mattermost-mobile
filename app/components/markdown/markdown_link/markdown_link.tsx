@@ -21,7 +21,6 @@ type MarkdownLinkProps = {
     href: string;
     siteURL: string;
     onLinkLongPress?: (url?: string) => void;
-    theme: Theme;
 }
 
 const messages = defineMessages({
@@ -54,7 +53,7 @@ const parseLinkLiteral = (literal: string) => {
     return parsed.href;
 };
 
-const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL, onLinkLongPress, theme}: MarkdownLinkProps) => {
+const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL, onLinkLongPress}: MarkdownLinkProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const serverUrl = useServerUrl();
@@ -101,22 +100,17 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                 );
             };
 
-            bottomSheet({
-                closeButtonId: 'close-mardown-link',
-                renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
-                title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
-                theme,
-            });
+            bottomSheet(renderContent, [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)]);
         }
-    }, [managedConfig?.copyAndPasteProtection, onLinkLongPress, intl, theme, href]);
+    }, [managedConfig?.copyAndPasteProtection, onLinkLongPress, href, intl]);
 
     const renderedChildren = useMemo(() => {
         if (!experimentalNormalizeMarkdownLinks) {
             return children;
         }
 
-        return Children.map(children, (child: ReactElement) => {
+        return Children.map(children, (c) => {
+            const child = c as ReactElement<any>;
             if (!child.props.literal || typeof child.props.literal !== 'string' || (child.props.context && child.props.context.length && !child.props.context.includes('link'))) {
                 return child;
             }

@@ -1,39 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See LICENSE.txt for license information.
-
-import React, {useCallback} from 'react';
+import React from 'react';
 import {
-    Platform,
     Pressable,
     type PressableAndroidRippleConfig,
-    type PressableStateCallbackType,
     type StyleProp,
     StyleSheet,
     type ViewStyle,
 } from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
+import usePressableOpacityStyle from '@hooks/use_pressable_opacity';
 import {changeOpacity} from '@utils/theme';
 
 type Props = {
     disabled: boolean;
-    iconName: string;
+    iconName: CompassIconName;
     onPress: () => void;
     style?: StyleProp<ViewStyle>;
     testID?: string;
 }
-
-const pressedStyle = ({pressed}: PressableStateCallbackType) => {
-    let opacity = 1;
-    if (Platform.OS === 'ios' && pressed) {
-        opacity = 0.5;
-    }
-
-    return [{opacity}];
-};
 
 const baseStyle = StyleSheet.create({
     container: {
@@ -47,11 +34,7 @@ const baseStyle = StyleSheet.create({
 const androidRippleConfig: PressableAndroidRippleConfig = {borderless: true, radius: 24, color: '#FFF'};
 
 const Action = ({disabled, iconName, onPress, style, testID}: Props) => {
-    const pressableStyle = useCallback((pressed: PressableStateCallbackType) => ([
-        pressedStyle(pressed),
-        baseStyle.container,
-        style,
-    ]), [style]);
+    const pressableStyle = usePressableOpacityStyle([baseStyle.container, style]);
 
     return (
         <Pressable

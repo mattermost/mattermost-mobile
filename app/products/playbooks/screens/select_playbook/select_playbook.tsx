@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, SectionList, Text, View, type DefaultSectionT, type ListRenderItemInfo, type SectionListData} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import FormattedText from '@components/formatted_text';
@@ -15,13 +14,9 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
-import SecurityManager from '@managers/security_manager';
 import {fetchPlaybooks} from '@playbooks/actions/remote/playbooks';
 import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
-import {
-    popTo,
-    popTopScreen,
-} from '@screens/navigation';
+import {navigateToRoot, navigateBack} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -29,16 +24,9 @@ import {goToPlaybookRun, goToStartARun} from '../navigation';
 
 import PlaybookRow from './playbook_row';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
-const close = () => {
-    popTopScreen();
-};
-
 export type Props = {
     currentTeamId: string;
     currentUserId: string;
-    componentId: AvailableScreens;
     playbooksUsedInChannel: Set<string>;
     channelId?: string;
 }
@@ -100,7 +88,6 @@ const EMPTY_DATA: Playbook[] = [];
 function SelectPlaybook({
     currentTeamId,
     currentUserId,
-    componentId,
     playbooksUsedInChannel,
     channelId,
 }: Props) {
@@ -175,7 +162,7 @@ function SelectPlaybook({
         }, General.SEARCH_TIMEOUT_MILLISECONDS);
     }, [clearSearch, serverUrl, currentTeamId]);
 
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.PLAYBOOKS_SELECT_PLAYBOOK, navigateBack);
 
     useEffect(() => {
         return () => {
@@ -190,7 +177,7 @@ function SelectPlaybook({
         loadMore();
     });
 
-    const renderNoResults = useCallback((): JSX.Element | null => {
+    const renderNoResults = useCallback((): React.ReactNode => {
         if (loading && page.current === -1) {
             // Already handled by the loading component
             return null;
@@ -218,15 +205,15 @@ function SelectPlaybook({
     }, [loading, searching, style.loadingContainer, style.noResultContainer, style.noResultText, theme.buttonBg]);
 
     const onRunCreated = useCallback(async (run: PlaybookRun) => {
-        await popTo(Screens.HOME);
+        await navigateToRoot();
         await fetchPlaybookRunsForChannel(serverUrl, run.channel_id);
         await switchToChannelById(serverUrl, run.channel_id);
-        await goToPlaybookRun(intl, run.id);
-    }, [intl, serverUrl]);
+        await goToPlaybookRun(run.id);
+    }, [serverUrl]);
 
     const onPress = useCallback((playbook: Playbook) => {
-        goToStartARun(intl, theme, playbook, onRunCreated, channelId);
-    }, [intl, onRunCreated, theme, channelId]);
+        goToStartARun(playbook, onRunCreated, channelId);
+    }, [onRunCreated, channelId]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<Playbook>) => {
         return (
@@ -307,13 +294,8 @@ function SelectPlaybook({
     }
 
     return (
-        <SafeAreaView
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-            style={style.container}
-        >
-            <View
-                style={style.searchBar}
-            >
+        <View style={style.container}>
+            <View style={style.searchBar}>
                 <SearchBar
                     testID='selector.search_bar'
                     placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
@@ -346,7 +328,7 @@ function SelectPlaybook({
                     testID='selector.section_list'
                 />
             )}
-        </SafeAreaView>
+        </View>
     );
 }
 

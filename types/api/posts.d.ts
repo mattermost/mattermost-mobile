@@ -27,6 +27,7 @@ type PostType = PostTypesUserCreatable
     | 'system_leave_team'
     | 'system_remove_from_team'
     | 'system_combined_user_activity'
+    | 'system_shared_chan_state'
     | 'add_bot_teams_channels'
     | 'system_auto_responder'
     | 'custom_calls'

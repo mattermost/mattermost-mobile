@@ -9,11 +9,13 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {CompassIconName} from '@components/compass_icon';
+
 export interface EmojiSection {
     type: 'section';
     id: string;
     defaultMessage?: string;
-    icon: string;
+    icon: CompassIconName;
     key: string;
 }
 

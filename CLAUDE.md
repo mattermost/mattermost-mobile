@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-React Native 0.76.9 with **New Architecture disabled** (RCT_NEW_ARCH_ENABLED=0).
+React Native 0.83.9 with **New Architecture enabled** (RCT_NEW_ARCH_ENABLED=1).
 
 ## Important Development Notes
 - Always run the checks before committing code
@@ -100,9 +100,13 @@ npm run clean                 # Clean build artifacts
 - **Ephemeral Stores** (`app/store/`): In-memory transient UI state
 
 ### Navigation
-- Uses **`react-native-navigation`** v7 (not react-navigation)
-- Each screen is a separate registered component
-- Every independently shown/hidden component must be registered as a screen for proper lifecycle management
+- Uses **`expo-router`** for file-based routing
+- Routes are defined in `app/routes/` directory following expo-router conventions:
+  - `(authenticated)/_layout.tsx`: Authenticated routes stack
+  - `(modals)/`: Modal presentations
+  - `(bottom_sheet)/`: Bottom sheet presentations
+- Navigation uses `router.push()`, `router.replace()`, `router.back()` from `expo-router`
+- Deep linking handled through expo-router's built-in URL routing
 
 ### Products Architecture
 Modular features in `app/products/` with their own database models:
@@ -148,7 +152,7 @@ Located at `libraries/@mattermost/`:
 **Separate bundle** at `share_extension/` for Android system share. Shares code with main app but runs independently.
 * iOS has its own native implementation for the Share Extension with Swift and SwiftUI
 
-**Important:** Share extension on Android uses **React Navigation** (not react-native-navigation like main app).
+**Important:** Share extension on Android uses **React Navigation** (not expo-router like main app).
 
 ## Testing
 

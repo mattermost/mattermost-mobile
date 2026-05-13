@@ -12,7 +12,3 @@ export const SCROLL_POSITION_CONFIG = {
     // auto scroll show the new message
     autoscrollToTopThreshold: 60,
 };
-export const VIEWABILITY_CONFIG = {
-    itemVisiblePercentThreshold: 50,
-    minimumViewTime: 500,
-};

@@ -22,7 +22,9 @@ exports[`Thread item in the channel list Threads Component should match snapshot
   accessible={true}
   collapsable={false}
   focusable={true}
+  onBlur={[Function]}
   onClick={[Function]}
+  onFocus={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -30,9 +32,9 @@ exports[`Thread item in the channel list Threads Component should match snapshot
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    {
-      "opacity": 1,
-    }
+    [
+      false,
+    ]
   }
   testID="channel_list.threads.button"
 >
@@ -52,20 +54,35 @@ exports[`Thread item in the channel list Threads Component should match snapshot
       ]
     }
   >
-    <Icon
-      name="message-text-outline"
+    <Text
+      allowFontScaling={false}
+      selectable={false}
       style={
         [
           {
-            "color": "rgba(255,255,255,0.5)",
-            "fontSize": 24,
-            "marginRight": 12,
+            "color": "black",
+            "fontSize": 12,
           },
-          false,
+          [
+            {
+              "color": "rgba(255,255,255,0.5)",
+              "fontSize": 24,
+              "marginRight": 12,
+            },
+            false,
+            undefined,
+          ],
+          {
+            "fontFamily": "compass-icons",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
           undefined,
         ]
       }
-    />
+    >
+      󰍪
+    </Text>
     <Text
       style={
         [
@@ -115,7 +132,9 @@ exports[`Thread item in the channel list Threads Component should match snapshot
   accessible={true}
   collapsable={false}
   focusable={true}
+  onBlur={[Function]}
   onClick={[Function]}
+  onFocus={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -123,9 +142,9 @@ exports[`Thread item in the channel list Threads Component should match snapshot
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    {
-      "opacity": 1,
-    }
+    [
+      false,
+    ]
   }
   testID="channel_list.threads.button"
 >
@@ -145,22 +164,37 @@ exports[`Thread item in the channel list Threads Component should match snapshot
       ]
     }
   >
-    <Icon
-      name="message-text-outline"
+    <Text
+      allowFontScaling={false}
+      selectable={false}
       style={
         [
           {
-            "color": "rgba(255,255,255,0.5)",
-            "fontSize": 24,
-            "marginRight": 12,
+            "color": "black",
+            "fontSize": 12,
           },
-          false,
+          [
+            {
+              "color": "rgba(255,255,255,0.5)",
+              "fontSize": 24,
+              "marginRight": 12,
+            },
+            false,
+            {
+              "color": "rgba(63,67,80,0.72)",
+            },
+          ],
           {
-            "color": "rgba(63,67,80,0.72)",
+            "fontFamily": "compass-icons",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
           },
+          undefined,
         ]
       }
-    />
+    >
+      󰍪
+    </Text>
     <Text
       style={
         [

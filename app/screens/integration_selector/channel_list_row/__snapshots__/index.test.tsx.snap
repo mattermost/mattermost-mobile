@@ -76,18 +76,33 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             }
           }
         >
-          <Icon
-            name="archive-outline"
+          <Text
+            allowFontScaling={false}
+            selectable={false}
             style={
-              {
-                "color": "#3f4350",
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
+              [
+                {
+                  "color": "black",
+                  "fontSize": 12,
+                },
+                {
+                  "color": "#3f4350",
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                },
+                {
+                  "fontFamily": "compass-icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                undefined,
+              ]
             }
-          />
+          >
+            󱈎
+          </Text>
           <Text
             style={
               {
@@ -186,18 +201,33 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             }
           }
         >
-          <Icon
-            name="circle-multiple-outline"
+          <Text
+            allowFontScaling={false}
+            selectable={false}
             style={
-              {
-                "color": "#3f4350",
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
+              [
+                {
+                  "color": "black",
+                  "fontSize": 12,
+                },
+                {
+                  "color": "#3f4350",
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                },
+                {
+                  "fontFamily": "compass-icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                undefined,
+              ]
             }
-          />
+          >
+            󰚕
+          </Text>
           <Text
             style={
               {
@@ -296,18 +326,33 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             }
           }
         >
-          <Icon
-            name="circle-multiple-outline"
+          <Text
+            allowFontScaling={false}
+            selectable={false}
             style={
-              {
-                "color": "#3f4350",
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
+              [
+                {
+                  "color": "black",
+                  "fontSize": 12,
+                },
+                {
+                  "color": "#3f4350",
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                },
+                {
+                  "fontFamily": "compass-icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                undefined,
+              ]
             }
-          />
+          >
+            󰚕
+          </Text>
           <Text
             style={
               {
@@ -406,18 +451,33 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             }
           }
         >
-          <Icon
-            name="circle-multiple-outline"
+          <Text
+            allowFontScaling={false}
+            selectable={false}
             style={
-              {
-                "color": "#3f4350",
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
+              [
+                {
+                  "color": "black",
+                  "fontSize": 12,
+                },
+                {
+                  "color": "#3f4350",
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                },
+                {
+                  "fontFamily": "compass-icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                undefined,
+              ]
             }
-          />
+          >
+            󰚕
+          </Text>
           <Text
             style={
               {
@@ -532,18 +592,33 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             }
           }
         >
-          <Icon
-            name="circle-multiple-outline"
+          <Text
+            allowFontScaling={false}
+            selectable={false}
             style={
-              {
-                "color": "#3f4350",
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
+              [
+                {
+                  "color": "black",
+                  "fontSize": 12,
+                },
+                {
+                  "color": "#3f4350",
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                },
+                {
+                  "fontFamily": "compass-icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                undefined,
+              ]
             }
-          />
+          >
+            󰚕
+          </Text>
           <Text
             style={
               {

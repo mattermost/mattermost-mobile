@@ -1,25 +1,150 @@
 diff --git a/node_modules/react-native-walkthrough-tooltip/src/tooltip.js b/node_modules/react-native-walkthrough-tooltip/src/tooltip.js
-index 3098692..a966dfb 100644
+index 3098692..f4189aa 100644
 --- a/node_modules/react-native-walkthrough-tooltip/src/tooltip.js
 +++ b/node_modules/react-native-walkthrough-tooltip/src/tooltip.js
-@@ -216,7 +216,7 @@ class Tooltip extends Component {
-     this.setState(
-       {
-         windowDims: dims.window,
--        contentSize: new Size(0, 0),
-+        // contentSize: new Size(0, 0),
-         adjustedContentSize: new Size(0, 0),
-         anchorPoint: new Point(0, 0),
-         tooltipOrigin: new Point(0, 0),
-@@ -272,9 +272,9 @@ class Tooltip extends Component {
-           this.childWrapper.current &&
-           typeof this.childWrapper.current.measure === 'function'
+@@ -4,6 +4,8 @@ import {
+   Dimensions,
+   InteractionManager,
+   Modal,
++  Platform,
++  StatusBar,
+   TouchableWithoutFeedback,
+   View,
+ } from 'react-native';
+@@ -274,7 +276,9 @@ class Tooltip extends Component {
          ) {
--          this.childWrapper.current.measure(
-+          this.childWrapper.current.measureInWindow(
+           this.childWrapper.current.measure(
              (x, y, width, height, pageX, pageY) => {
 -              const childRect = new Rect(pageX, pageY, width, height);
-+              const childRect = new Rect(x, y, width, height);
++              const notEdgeToEdge = Platform.OS === 'android' && Platform.Version < 30;
++              const offset = notEdgeToEdge ? StatusBar.currentHeight : 0;
++              const childRect = new Rect(pageX, pageY + (offset ?? 0), width, height);
                if (
                  Object.values(childRect).every(value => value !== undefined)
                ) {
+@@ -397,6 +401,35 @@ class Tooltip extends Component {
+     );
+   };
+ 
++  renderBackgroundWithHole = () => {
++    const { x, y, width, height } = this.state.childRect;
++    const backgroundColor = this.props.backgroundColor;
++
++    const onPress = () => {
++      if (this.props.closeOnBackgroundInteraction) {
++        this.props.onClose();
++      }
++    };
++
++    // Four rectangles surrounding the child rect, leaving it exposed
++    const rects = [
++      // top
++      { top: 0, left: 0, right: 0, height: y },
++      // bottom
++      { top: y + height, left: 0, right: 0, bottom: 0 },
++      // left
++      { top: y, left: 0, width: x, height },
++      // right
++      { top: y, left: x + width, right: 0, height },
++    ];
++
++    return rects.map((rect, i) => (
++      <TouchableWithoutFeedback key={i} onPress={onPress}>
++        <View style={[{ position: 'absolute', backgroundColor }, rect]} />
++      </TouchableWithoutFeedback>
++    ));
++  };
++
+   renderContentForTooltip = () => {
+     const generatedStyles = styleGenerator({
+       adjustedContentSize: this.state.adjustedContentSize,
+@@ -412,12 +445,6 @@ class Tooltip extends Component {
+ 
+     const hasChildren = React.Children.count(this.props.children) > 0;
+ 
+-    const onPressBackground = () => {
+-      if (this.props.closeOnBackgroundInteraction) {
+-        this.props.onClose();
+-      }
+-    };
+-
+     const onPressContent = () => {
+       if (this.props.closeOnContentInteraction) {
+         this.props.onClose();
+@@ -425,32 +452,36 @@ class Tooltip extends Component {
+     };
+ 
+     return (
+-      <TouchableWithoutFeedback
+-        onPress={onPressBackground}
+-        accessible={this.props.accessible}
+-      >
+-        <View style={generatedStyles.containerStyle}>
+-          <View style={[generatedStyles.backgroundStyle]}>
+-            <View style={generatedStyles.tooltipStyle}>
+-              {hasChildren ? <View style={generatedStyles.arrowStyle} /> : null}
+-              <View
+-                onLayout={this.measureContent}
+-                style={generatedStyles.contentStyle}
+-              >
+-                <TouchableWithoutFeedback
+-                  onPress={onPressContent}
+-                  accessible={this.props.accessible}
+-                >
+-                  {this.props.content}
+-                </TouchableWithoutFeedback>
+-              </View>
+-            </View>
++      <View style={generatedStyles.containerStyle}>
++        {hasChildren && this.state.childRect.width > 0
++          ? this.renderBackgroundWithHole()
++          : (
++            <TouchableWithoutFeedback
++              onPress={() => this.props.closeOnBackgroundInteraction && this.props.onClose()}
++              accessible={this.props.accessible}
++            >
++              <View style={generatedStyles.backgroundStyle} />
++            </TouchableWithoutFeedback>
++          )
++        }
++        <View style={generatedStyles.tooltipStyle}>
++          {hasChildren ? <View style={generatedStyles.arrowStyle} /> : null}
++          <View
++            onLayout={this.measureContent}
++            style={generatedStyles.contentStyle}
++          >
++            <TouchableWithoutFeedback
++              onPress={onPressContent}
++              accessible={this.props.accessible}
++            >
++              {this.props.content}
++            </TouchableWithoutFeedback>
+           </View>
+-          {hasChildren && this.props.showChildInTooltip
+-            ? this.renderChildInTooltip()
+-            : null}
+         </View>
+-      </TouchableWithoutFeedback>
++        {hasChildren && this.props.showChildInTooltip
++          ? this.renderChildInTooltip()
++          : null}
++      </View>
+     );
+   };
+ 
+@@ -474,6 +505,7 @@ class Tooltip extends Component {
+             visible={showTooltip}
+             onRequestClose={this.props.onClose}
+             supportedOrientations={this.props.supportedOrientations}
++            statusBarTranslucent={true}
+           >
+             {this.renderContentForTooltip()}
+           </ModalComponent>
+@@ -483,6 +515,7 @@ class Tooltip extends Component {
+         {hasChildren ? (
+           <View
+             ref={this.childWrapper}
++            collapsable={false}
+             onLayout={this.measureChildRect}
+             style={this.props.parentWrapperStyle}
+           >

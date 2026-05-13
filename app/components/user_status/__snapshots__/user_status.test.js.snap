@@ -1,53 +1,113 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UserStatus should match snapshot, away status 1`] = `
-<Icon
-  name="clock"
+<Text
+  allowFontScaling={false}
+  selectable={false}
   style={
-    {
-      "color": "#ffbc1f",
-      "fontSize": 32,
-    }
+    [
+      {
+        "color": "black",
+        "fontSize": 12,
+      },
+      {
+        "color": "#ffbc1f",
+        "fontSize": 32,
+      },
+      {
+        "fontFamily": "compass-icons",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      undefined,
+    ]
   }
   testID="user_status.indicator.away"
-/>
+>
+  󰥔
+</Text>
 `;
 
 exports[`UserStatus should match snapshot, dnd status 1`] = `
-<Icon
-  name="minus-circle"
+<Text
+  allowFontScaling={false}
+  selectable={false}
   style={
-    {
-      "color": "#d24b4e",
-      "fontSize": 32,
-    }
+    [
+      {
+        "color": "black",
+        "fontSize": 12,
+      },
+      {
+        "color": "#d24b4e",
+        "fontSize": 32,
+      },
+      {
+        "fontFamily": "compass-icons",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      undefined,
+    ]
   }
   testID="user_status.indicator.dnd"
-/>
+>
+  󰍶
+</Text>
 `;
 
 exports[`UserStatus should match snapshot, online status 1`] = `
-<Icon
-  name="check-circle"
+<Text
+  allowFontScaling={false}
+  selectable={false}
   style={
-    {
-      "color": "#3db887",
-      "fontSize": 32,
-    }
+    [
+      {
+        "color": "black",
+        "fontSize": 12,
+      },
+      {
+        "color": "#3db887",
+        "fontSize": 32,
+      },
+      {
+        "fontFamily": "compass-icons",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      undefined,
+    ]
   }
   testID="user_status.indicator.online"
-/>
+>
+  󰗠
+</Text>
 `;
 
 exports[`UserStatus should match snapshot, should default to offline status 1`] = `
-<Icon
-  name="circle-outline"
+<Text
+  allowFontScaling={false}
+  selectable={false}
   style={
-    {
-      "color": "rgba(184,184,184,0.64)",
-      "fontSize": 32,
-    }
+    [
+      {
+        "color": "black",
+        "fontSize": 12,
+      },
+      {
+        "color": "rgba(184,184,184,0.64)",
+        "fontSize": 32,
+      },
+      {
+        "fontFamily": "compass-icons",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      undefined,
+    ]
   }
   testID="user_status.indicator.offline"
-/>
+>
+  󰝦
+</Text>
 `;

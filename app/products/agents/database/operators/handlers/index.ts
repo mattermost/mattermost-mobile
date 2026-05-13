@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AGENTS_TABLES} from '@agents/constants/database';
 import {type Model} from '@nozbe/watermelondb';
 
+import {AGENTS_TABLES} from '@agents/constants/database';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {logDebug} from '@utils/log';
 
