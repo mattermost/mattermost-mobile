@@ -9,6 +9,7 @@ import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephem
 import {clearEphemeralModeState, setDisconnectedSince, setLastSeenTime, setOfflineSince} from '@actions/local/systems';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
+import PushNotifications from '@init/push_notifications';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';
@@ -365,10 +366,13 @@ class OfflinePersistenceManagerSingleton {
         }, remainingMs);
     };
 
-    private wipeServerArtifacts = (serverUrl: string) => Promise.all([
-        wipeServerDatabaseWithRetry(serverUrl),
-        wipeServerFiles(serverUrl),
-    ]);
+    private wipeServerArtifacts = (serverUrl: string) => {
+        PushNotifications.removeServerNotifications(serverUrl);
+        return Promise.all([
+            wipeServerDatabaseWithRetry(serverUrl),
+            wipeServerFiles(serverUrl),
+        ]);
+    };
 
     private runWipe = async (serverUrl: string) => {
         if (this.wipeInProgress.has(serverUrl)) {
