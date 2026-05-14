@@ -36,6 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgbm1 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libsecret-1-0 libx11-xcb1 \
     libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 libxrandr2 libxshmfence1 \
     libpulse0 libvirglrenderer1 libgl1 libegl1 libxcb-cursor0 libxcb-shape0 \
+    libxkbfile1 libxcursor1 libnsl2 libtinfo6 libfontconfig1 \
     qemu-utils \
     && locale-gen en_US.UTF-8 \
     && git lfs install --system \
@@ -123,14 +124,19 @@ RUN ARCH="$(dpkg --print-architecture)" && \
     unzip -q /tmp/cmdline-tools.zip -d "${ANDROID_HOME}/cmdline-tools" && \
     mv "${ANDROID_HOME}/cmdline-tools/cmdline-tools" "${ANDROID_HOME}/cmdline-tools/latest" && \
     rm /tmp/cmdline-tools.zip && \
-    yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null && \
+    ( yes || true ) | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null && \
     "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --install \
       "platform-tools" \
       "platforms;android-${ANDROID_PLATFORM_VERSION}" \
       "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
-      "ndk;${ANDROID_NDK_VERSION}" \
-      "emulator" \
-      "system-images;android-${ANDROID_PLATFORM_VERSION};google_apis;${ANDROID_SYSIMG_ABI}" && \
+      "ndk;${ANDROID_NDK_VERSION}" && \
+    if [ "$ARCH" = "amd64" ]; then \
+      "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --install \
+        "emulator" \
+        "system-images;android-${ANDROID_PLATFORM_VERSION};google_apis;${ANDROID_SYSIMG_ABI}"; \
+    else \
+      echo "WARN: Android emulator + system-image are amd64-only via sdkmanager; skipping on $ARCH (image is for amd64 Cursor cloud)" >&2; \
+    fi && \
     chown -R ubuntu:ubuntu "${ANDROID_HOME}"
 
 ENV ANDROID_NDK_HOME=/opt/android-sdk/ndk/${ANDROID_NDK_VERSION}
