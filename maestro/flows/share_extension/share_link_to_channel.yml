@@ -6,43 +6,51 @@ appId: com.mattermost.rnbeta
 - runFlow: ../../utils/login.yml
 - runFlow: ../../utils/navigate_to_channel.yml
 
-# --- iOS: use Notes app (avoids Safari "Open In Mattermost" conflict for text/URLs) ---
+# --- iOS: use Safari (Notes app not available on all simulators) ---
 - runFlow:
     when:
       platform: iOS
     commands:
-      # Notes app shares text/URL content; Mattermost share extension appears without "Open In" conflict
       - stopApp:
-          appId: "com.apple.mobilenotes"
+          appId: "com.apple.mobilesafari"
       - launchApp:
-          appId: "com.apple.mobilenotes"
-      - extendedWaitUntil:
-          visible:
-            text: "Notes"
-          timeout: 15000
-      # Create a new note with a URL to share
-      - tapOn:
-          text: "New Note"
-      - inputText: "https://example.com"
-      # Open the note's overflow menu to access Share Note
-      - tapOn:
-          text: "···"
-          optional: true
-      - tapOn:
-          id: "more"
-          optional: true
-      # Tap Share Note option (visible once overflow menu opens)
-      - extendedWaitUntil:
-          visible:
-            text: "Share Note..."
+          appId: "com.apple.mobilesafari"
+      - waitForAnimationToEnd:
           timeout: 5000
       - tapOn:
-          text: "Share Note..."
-      # Share sheet appears with Mattermost Beta as the share extension only (no "Open In" conflict)
+          id: "TabBarItemTitle"
+      - inputText: "https://example.com"
+      - pressKey: Enter
+      - extendedWaitUntil:
+          visible:
+            text: "Example Domain"
+          timeout: 30000
+      - tapOn:
+          text: "Continue"
+          optional: true
+      # Tap the Safari Share button in the toolbar
+      - tapOn:
+          id: "Share"
+          optional: true
+      # Fallback: long-press approach if Share button not found
+      - extendedWaitUntil:
+          visible:
+            text: "Example Domain"
+          timeout: 10000
+      - longPressOn:
+          text: "Example"
+      - runFlow:
+          when:
+            visible:
+              text: "Share..."
+          commands:
+            - tapOn:
+                text: "Share..."
+      # Tap "Mattermost Beta" in the share sheet
       - extendedWaitUntil:
           visible:
             text: "Mattermost Beta"
-          timeout: 15000
+          timeout: 30000
       - tapOn:
           text: "Mattermost Beta"
       - extendedWaitUntil:
