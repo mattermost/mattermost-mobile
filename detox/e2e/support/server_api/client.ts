@@ -100,6 +100,37 @@ baseClient.interceptors.response.use(
     },
 );
 
+// Add response interceptor to retry on 'cloud/inaccessible' HTML redirects.
+// Matterwick test workspaces occasionally return HTTP 200 with an HTML body
+// containing `<meta http-equiv="refresh" content="0; url=...cloud/inaccessible">`
+// when the workspace pod is restarting or cold-starting. This is not a 4xx/5xx,
+// so the standard retry path above doesn't catch it. Linear backoff: 3s, 6s, 9s.
+baseClient.interceptors.response.use(
+    async (response) => {
+        const data = response.data;
+        const isInaccessible = typeof data === 'string' && data.includes('cloud/inaccessible');
+
+        if (!isInaccessible) {
+            return response;
+        }
+
+        const config = response.config as typeof response.config & {_cloudInaccessibleRetries?: number};
+        const attempts = (config._cloudInaccessibleRetries ?? 0) + 1;
+
+        if (attempts > 3) {
+            // Out of retries — surface a real error to the caller instead of returning HTML.
+            return Promise.reject(new Error(`Server returned cloud/inaccessible HTML after 3 retries for ${config.url}`));
+        }
+
+        config._cloudInaccessibleRetries = attempts;
+        const delay = attempts * 3000;
+        console.warn(`[client] cloud/inaccessible HTML from server — retry ${attempts}/3 in ${delay}ms for ${config.url}`); // eslint-disable-line no-console
+        await new Promise((r) => setTimeout(r, delay));
+        return baseClient(config);
+    },
+    (error) => Promise.reject(error),
+);
+
 /**
  * Remove all cookies from the jar.
  * Call before login to prevent stale session/CSRF tokens from interfering.
