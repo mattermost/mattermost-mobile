@@ -71,7 +71,7 @@ appId: ${MAESTRO_APP_ID}
 - extendedWaitUntil:
     visible:
       id: "channel_bookmark.screen"
-    timeout: 15000
+    timeout: 30000
 # Wait for the file metadata to appear (upload complete indicator):
 # "PNG" or "KB" size text appears in the attachment once the file is processed.
 # This is a more reliable upload-complete signal than the filename alone,

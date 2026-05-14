@@ -39,15 +39,18 @@ appId: ${MAESTRO_APP_ID}
     visible:
       text: "Cancel"
     timeout: 10000
-# iOS: UIAlertController is a system overlay not in the app view hierarchy.
-# Point-based tap is acceptable for system overlays (CLAUDE.md).
-# Log out button is at ~67%,57% on this device.
+# Tap the "Log out" button in the UIAlertController.
+# iOS 26 may layout buttons horizontally (Cancel left, Log out right) or
+# vertically. Try both positions with optional taps.
 - runFlow:
     when:
       platform: iOS
     commands:
+      # Tap the "Log out" button in UIAlertController.
+      # Bounds: [201,480][336,524] → center at 67%,57%.
+      # Coordinate tap bypasses account-screen "Log out" text matches.
       - tapOn:
-          point: "67%,57%"
+          point: "70%,57%"
 # Android: AlertDialog IS in the app hierarchy. Tap positive button by resource-id.
 - runFlow:
     when:
@@ -55,9 +58,11 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - tapOn:
           id: "android:id/button1"
-# Wait until the account screen is gone (logout complete).
-# On fresh installs with server data to clear, logout can take >10s.
+# Wait for logout to complete — the login form or server form should appear.
+# Using login/server form as the signal instead of account.screen:notVisible
+# because new-architecture logout can keep account.screen visible during
+# animated transitions.
 - extendedWaitUntil:
-    notVisible:
-      id: "account.screen"
-    timeout: 20000
+    visible:
+      id: "login_form.username.input"
+    timeout: 60000

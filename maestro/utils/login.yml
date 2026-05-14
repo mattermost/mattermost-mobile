@@ -98,10 +98,10 @@ appId: ${MAESTRO_APP_ID}
       visible:
         id: "tab_bar.home.tab"
     file: logout.yml
-# Only press back if we are NOT already on the login form AND NOT on the server
-# connect form. If the app starts on the server connect screen (fresh install /
-# DB wipe with no server registered), back presses exit the app entirely rather
-# than navigating within it, which prevents connect_server.yml from running.
+# Only press back if we are NOT already on the login form, NOT on the server
+# connect form, AND NOT on the home screen. If we're on the home screen, the
+# logout block below will handle it. Without this home-screen check, back
+# presses fire on the home screen and navigate away from the app entirely.
 - runFlow:
     when:
       notVisible:
@@ -112,9 +112,14 @@ appId: ${MAESTRO_APP_ID}
             notVisible:
               id: "server_form.server_url.input"
           commands:
-            - back
-            - back
-            - back
+            - runFlow:
+                when:
+                  notVisible:
+                    id: "tab_bar.home.tab"
+                commands:
+                  - back
+                  - back
+                  - back
 # If back presses returned us to the home screen, logout to reach login form.
 - runFlow:
     when:
