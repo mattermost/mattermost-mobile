@@ -181,8 +181,8 @@ jobs:
               exit 1
             fi
 
-            # Extract hostname and validate against allowed domains
-            hostname=$(echo "$url" | sed -E 's|^https://([^/:]+).*|\1|' | tr '[:upper:]' '[:lower:]')
+            # Extract hostname safely using Python URL parser to prevent SSRF bypass via userinfo
+            hostname=$(python3 -c "from urllib.parse import urlparse; print(urlparse('$url').hostname or '')" | tr '[:upper:]' '[:lower:]')
 
             # Block private/internal IPs
             if echo "$hostname" | grep -qE '^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost)'; then
