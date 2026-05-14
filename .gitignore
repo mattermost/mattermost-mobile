@@ -158,6 +158,13 @@ node_modules/@mattermost/intune
 
 # Build/cache outputs
 graphify-out/
+tsconfig.tsbuildinfo
+
+# Ruby bundler local install path (fastlane / cocoapods)
+vendor/bundle/
+
+# Planning / scratchpad markdown (per CLAUDE.md — never commit planning docs)
+progress.md
 
 # Local worktrees
 .claude/worktrees/
