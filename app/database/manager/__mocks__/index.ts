@@ -289,7 +289,7 @@ class DatabaseManagerSingleton {
         }
     };
 
-    public deleteServerDatabase = async (serverUrl: string): Promise<boolean> => {
+    public deleteServerDatabase = async (serverUrl: string): Promise<void> => {
         const database = this.appDatabase?.database;
         if (database) {
             const server = await this.getServer(serverUrl);
@@ -303,11 +303,8 @@ class DatabaseManagerSingleton {
 
                 delete this.serverDatabases[serverUrl];
                 await this.deleteServerDatabaseFiles(serverUrl);
-                return true;
             }
         }
-
-        return false;
     };
 
     public destroyServerDatabase = async (serverUrl: string): Promise<void> => {

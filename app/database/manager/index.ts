@@ -379,27 +379,24 @@ class DatabaseManagerSingleton {
         if (!server) {
             return;
         }
-
-        const success = await this.deleteServerDatabase(serverUrl);
-        if (success) {
-            await this.createServerDatabase({
-                config: {
-                    dbName: serverUrl,
-                    displayName: server.displayName,
-                    identifier: '',
-                    serverUrl,
-                },
-            });
-        }
+        delete this.serverDatabases[serverUrl];
+        await this.deleteServerDatabaseFiles(serverUrl);
+        await this.createServerDatabase({
+            config: {
+                dbName: serverUrl,
+                displayName: server.displayName,
+                serverUrl,
+            },
+        });
     };
 
     /**
     * deleteServerDatabase: Removes the *.db file from the App-Group directory for iOS or the files directory on Android.
     * Also, it sets the last_active_at to '0' entry in the 'servers' table from the APP database
     * @param  {string} serverUrl
-    * @returns {Promise<boolean>}
+    * @returns {Promise<void>}
     */
-    public deleteServerDatabase = async (serverUrl: string): Promise<boolean> => {
+    public deleteServerDatabase = async (serverUrl: string): Promise<void> => {
         const database = this.appDatabase?.database;
         if (database) {
             const server = await getServer(serverUrl);
@@ -413,11 +410,8 @@ class DatabaseManagerSingleton {
 
                 delete this.serverDatabases[serverUrl];
                 await this.deleteServerDatabaseFiles(serverUrl);
-                return true;
             }
         }
-
-        return false;
     };
 
     /**
