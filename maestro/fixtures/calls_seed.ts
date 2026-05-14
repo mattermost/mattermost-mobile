@@ -30,7 +30,6 @@ import {Setup} from '../../detox/e2e/support/server_api/setup';
 import {Team} from '../../detox/e2e/support/server_api/team';
 import {User} from '../../detox/e2e/support/server_api/user';
 import {siteOneUrl} from '../../detox/e2e/support/test_config';
-
 import {MAESTRO_ENV_FILE} from '../utils/env';
 
 const TWO_USERS = process.argv.includes('--two-users');
