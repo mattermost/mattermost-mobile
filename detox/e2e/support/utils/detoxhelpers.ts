@@ -25,7 +25,7 @@ export async function waitForLoadingSpinner(testID: string, timeout = 10000): Pr
 }
 
 /**
- * Retry an element visibility check with exponential backoff
+ * Retry an element visibility check with linear backoff
  * Helps handle race conditions during navigation and UI transitions
  * @param elementToCheck - Detox element to check visibility
  * @param timeout - Timeout for each attempt in milliseconds

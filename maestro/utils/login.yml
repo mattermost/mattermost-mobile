@@ -37,6 +37,8 @@ appId: ${MAESTRO_APP_ID}
       - launchApp:
           stopApp: false
           clearState: true
+          permissions:
+            notifications: allow
       # After clearState the app has no server registered and always shows the server
       # connect form. Wait up to 15s for it to appear. Without this explicit wait the
       # shared waitForAnimationToEnd below (6s) is not enough for a fresh JS-bundle boot

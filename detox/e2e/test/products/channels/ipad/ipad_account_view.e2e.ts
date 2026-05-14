@@ -11,7 +11,7 @@ import {Setup} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {AccountScreen, ChannelListScreen, HomeScreen, LoginScreen, ServerScreen, SettingsScreen} from '@support/ui/screen';
 import {isIpad, timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('iPad - Account View', () => {
     const serverOneDisplayName = 'Server 1';

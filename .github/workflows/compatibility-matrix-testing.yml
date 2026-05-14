@@ -224,6 +224,20 @@ jobs:
       - maestro-ios-e2e
       - maestro-android-e2e
     steps:
+      - name: Determine overall status
+        id: status
+        run: |
+          # Check if all jobs passed
+          if [[ "${{ needs.detox-e2e.result }}" == "success" && \
+                "${{ needs.detox-android-e2e.result }}" == "success" && \
+                "${{ needs.detox-ipad-e2e.result }}" == "success" && \
+                "${{ needs.maestro-ios-e2e.result }}" == "success" && \
+                "${{ needs.maestro-android-e2e.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -232,7 +246,7 @@ jobs:
           commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
           context: e2e/compatibility-matrix-testing
           description: Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version
-          status: ${{ needs.detox-e2e.outputs.STATUS }}
+          status: ${{ steps.status.outputs.status }}
           target_url: ${{ needs.detox-e2e.outputs.TARGET_URL }}
 
       - name: cmt/cleanup-instances

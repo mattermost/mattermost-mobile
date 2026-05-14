@@ -65,27 +65,4 @@ describe('Autocomplete - Search', () => {
         await SearchMessagesScreen.searchClearButton.tap();
         await ChannelListScreen.open();
     });
-
-    it.skip('MM-T3393_3 - should render date suggestion autocomplete when tapping before: modifier on search screen', async () => {
-        // # Open search messages screen
-        await SearchMessagesScreen.open();
-
-        // * Verify date suggestion autocomplete list is not displayed on initial search screen
-        await wait(timeouts.ONE_SEC);
-        await expect(Autocomplete.dateSuggestionList).not.toExist();
-
-        // # Tap the before: modifier to trigger date suggestion autocomplete
-        await SearchMessagesScreen.searchModifierBefore.tap();
-
-        // * Verify date suggestion autocomplete list is displayed
-        // NOTE: DateSuggestion component is currently commented out in
-        // app/components/autocomplete/autocomplete.tsx. This test will fail
-        // until the feature is re-enabled (enableDateSuggestion prop + DateSuggestion render).
-        await waitFor(Autocomplete.dateSuggestionList).toExist().withTimeout(timeouts.TEN_SEC);
-        await expect(Autocomplete.dateSuggestionList).toExist();
-
-        // # Clear search and go back to channel list screen
-        await SearchMessagesScreen.searchClearButton.tap();
-        await ChannelListScreen.open();
-    });
 });

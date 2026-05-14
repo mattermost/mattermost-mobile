@@ -449,7 +449,7 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
         const currentChannel = await getCurrentChannel(database);
         const config = await getConfig(database);
 
-        if (config?.ExperimentalViewArchivedChannels === 'false') {
+        if (config?.ExperimentalViewArchivedChannels !== 'true') {
             if (currentChannel && currentChannel.id === channelId) {
                 await handleKickFromChannel(serverUrl, channelId, Events.CHANNEL_ARCHIVED);
             }
