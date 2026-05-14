@@ -24,11 +24,12 @@ jobs:
           script: |
             const prNumber = context.payload.pull_request.number;
             const headBranch = context.payload.pull_request.head.ref;
+            const headSha = context.payload.pull_request.head.sha;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const removedLabel = context.payload.label.name;
 
-            core.info(`Label "${removedLabel}" removed from PR #${prNumber} (branch: ${headBranch})`);
+            core.info(`Label "${removedLabel}" removed from PR #${prNumber} (branch: ${headBranch}, sha: ${headSha})`);
 
             // Find the E2E workflow by name
             const workflows = await github.rest.actions.listRepoWorkflows({ owner, repo });
@@ -54,7 +55,23 @@ jobs:
               });
 
               for (const run of runs.data.workflow_runs) {
-                core.info(`Cancelling run ${run.id} (status: ${run.status}, branch: ${run.head_branch})`);
+                // Verify run belongs to same PR and commit before cancelling
+                // This prevents cancelling unrelated runs with matching branch names
+                if (run.head_sha !== headSha) {
+                  core.info(`Skipping run ${run.id}: different commit (${run.head_sha} vs ${headSha})`);
+                  continue;
+                }
+
+                // Additional check: verify pull_request reference if available
+                if (run.pull_requests && run.pull_requests.length > 0) {
+                  const isCurrentPr = run.pull_requests.some(pr => pr.number === prNumber);
+                  if (!isCurrentPr) {
+                    core.info(`Skipping run ${run.id}: not associated with PR #${prNumber}`);
+                    continue;
+                  }
+                }
+
+                core.info(`Cancelling run ${run.id} (status: ${run.status}, branch: ${run.head_branch}, sha: ${run.head_sha})`);
                 try {
                   await github.rest.actions.cancelWorkflowRun({
                     owner,
