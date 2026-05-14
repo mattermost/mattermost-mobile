@@ -6,11 +6,11 @@ appId: ${MAESTRO_APP_ID}
 ---
 - tapOn:
     id: "server_form.server_url.input"
-- eraseText: 200
+- eraseText: 50
 - inputText: ${SITE_1_URL}
 - tapOn:
     id: "server_form.server_display_name.input"
-- eraseText: 200
+- eraseText: 50
 - inputText: "Server 1"
 - tapOn:
     id: "server_form.connect.button"

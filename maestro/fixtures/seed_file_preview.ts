@@ -280,7 +280,7 @@ async function main(): Promise<void> {
     const testUser = await request('POST', '/api/v4/users', {
         email: `fp_${prefix}@example.com`,
         username: `fp_${prefix}`,
-        password: 'Test1234!',
+        password: process.env.TEST_USER_PASSWORD || 'Test1234567890!',
         first_name: 'File',
         last_name: 'Preview',
     }, adminToken);
@@ -312,7 +312,7 @@ async function main(): Promise<void> {
         TEST_TEAM_NAME: team.name,
         TEST_CHANNEL_NAME: channel.name,
         TEST_USER_EMAIL: testUser.email,
-        TEST_USER_PASSWORD: 'Test1234!',
+        TEST_USER_PASSWORD: process.env.TEST_USER_PASSWORD || 'Test1234567890!',
         IMAGE_FILE_ID: fileIds.IMAGE,
         VIDEO_FILE_ID: fileIds.VIDEO,
         AUDIO_FILE_ID: fileIds.AUDIO,

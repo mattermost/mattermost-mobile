@@ -123,7 +123,7 @@ async function createUser(adminToken: string, prefix: string, index: string | nu
     const suffix = index ? `_${index}` : '';
     const email = `maestro_${prefix}${suffix}@example.com`;
     const username = `maestro_${prefix}${suffix}`;
-    const password = 'Test1234567890!';
+    const password = process.env.TEST_USER_PASSWORD || 'Test1234567890!';
 
     const user = await request('POST', '/api/v4/users', {
         email,
