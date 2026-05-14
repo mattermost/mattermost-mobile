@@ -9,7 +9,6 @@ import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephem
 import {clearEphemeralModeState, setDisconnectedSince, setLastSeenTime, setOfflineSince} from '@actions/local/systems';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import PushNotifications from '@init/push_notifications';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';

@@ -20,7 +20,7 @@ import type ServersModel from '@typings/database/models/app/servers';
 
 jest.mock('@actions/local/ephemeral_mode/wipe', () => ({
     wipeServerDatabaseWithRetry: jest.fn().mockResolvedValue({success: true}),
-    wipeServerFiles: jest.fn().mockResolvedValue({success: true}),
+    wipeServerFiles: jest.fn().mockReturnValue({success: true}),
 }));
 jest.mock('@init/push_notifications', () => ({
     __esModule: true,
@@ -640,24 +640,17 @@ describe('OfflinePersistenceManager', () => {
             expect(pushOrder).toBeLessThan(wipeFilesOrder);
         });
 
-        it('wipes database and files in parallel, then re-attaches the server after both complete', async () => {
+        it('re-attaches the server only after the database wipe completes', async () => {
             let resolveDb!: (v: {success: boolean}) => void;
-            let resolveFiles!: (v: {success: boolean}) => void;
 
             jest.mocked(wipeServerDatabaseWithRetry).mockReturnValueOnce(
                 new Promise<{success: boolean}>((res) => {
                     resolveDb = res;
                 }),
             );
-            jest.mocked(wipeServerFiles).mockReturnValueOnce(
-                new Promise<{success: boolean}>((res) => {
-                    resolveFiles = res;
-                }),
-            );
 
             await triggerWipeForServerA();
 
-            // Both started before either resolved (Promise.all parallel semantics)
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
             expect(wipeServerFiles).toHaveBeenCalledWith(serverA);
 
@@ -665,10 +658,8 @@ describe('OfflinePersistenceManager', () => {
             expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledTimes(1);
 
             resolveDb({success: true});
-            resolveFiles({success: true});
             await advanceTimers(0);
 
-            // After both resolved, addServer ran and re-subscribed the WS observer
             expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledTimes(2);
         });
     });

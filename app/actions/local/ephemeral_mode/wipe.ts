@@ -31,19 +31,23 @@ export const wipeServerDatabaseWithRetry = async (serverUrl: string): Promise<{s
     return {success: false};
 };
 
-export const wipeServerFiles = async (serverUrl: string): Promise<{success: boolean}> => {
-    const results = await Promise.allSettled([
-        deleteFileCache(serverUrl),
-        deleteFileCacheByDir('mmPasteInput'),
-        deleteFileCacheByDir('thumbnails'),
-    ]);
-    const failures = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
-    if (failures.length) {
-        for (const f of failures) {
-            logWarning('wipeServerFiles', getFullErrorMessage(f.reason));
+export const wipeServerFiles = (serverUrl: string): {success: boolean} => {
+    let success = true;
+    const operations: Array<() => void> = [
+        () => deleteFileCache(serverUrl),
+        () => deleteFileCacheByDir('mmPasteInput'),
+        () => deleteFileCacheByDir('thumbnails'),
+    ];
+    for (const op of operations) {
+        try {
+            op();
+        } catch (error) {
+            logWarning('wipeServerFiles', getFullErrorMessage(error));
+            success = false;
         }
-        return {success: false};
     }
-    logInfo('wipeServerFiles complete', serverUrl);
-    return {success: true};
+    if (success) {
+        logInfo('wipeServerFiles complete', serverUrl);
+    }
+    return {success};
 };

@@ -69,12 +69,12 @@ describe('wipeServerFiles', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.mocked(deleteFileCache).mockResolvedValue(true);
-        jest.mocked(deleteFileCacheByDir).mockResolvedValue(true);
+        jest.mocked(deleteFileCache).mockReturnValue(true);
+        jest.mocked(deleteFileCacheByDir).mockReturnValue(true);
     });
 
-    it('calls all three deletions and returns success when all resolve', async () => {
-        const result = await wipeServerFiles(serverUrl);
+    it('calls all three deletions and returns success when all succeed', () => {
+        const result = wipeServerFiles(serverUrl);
 
         expect(result).toEqual({success: true});
         expect(deleteFileCache).toHaveBeenCalledWith(serverUrl);
@@ -84,12 +84,14 @@ describe('wipeServerFiles', () => {
         expect(logWarning).not.toHaveBeenCalled();
     });
 
-    it('returns failure and logs a warning when one deletion rejects, but the others still run', async () => {
+    it('returns failure and logs a warning when one deletion throws, but the others still run', () => {
         jest.mocked(deleteFileCacheByDir).
-            mockResolvedValueOnce(true).
-            mockRejectedValueOnce(new Error('io error'));
+            mockReturnValueOnce(true).
+            mockImplementationOnce(() => {
+                throw new Error('io error');
+            });
 
-        const result = await wipeServerFiles(serverUrl);
+        const result = wipeServerFiles(serverUrl);
 
         expect(result).toEqual({success: false});
         expect(deleteFileCache).toHaveBeenCalledWith(serverUrl);
