@@ -68,10 +68,23 @@ appId: ${MAESTRO_APP_ID}
 # --- After selection the picker closes; back on channel_bookmark.screen.
 #     The app uploads the file — wait for the upload to finish (save button appears
 #     enabled with "Save" text — the button is disabled/loading during upload).
-- extendedWaitUntil:
-    visible:
-      id: "channel_bookmark.screen"
-    timeout: 30000
+#     iOS new-architecture can take 30-60s to navigate back from the document picker.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "channel_bookmark.screen"
+          timeout: 60000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "channel_bookmark.screen"
+          timeout: 15000
 # Wait for the file metadata to appear (upload complete indicator):
 # "PNG" or "KB" size text appears in the attachment once the file is processed.
 # This is a more reliable upload-complete signal than the filename alone,
