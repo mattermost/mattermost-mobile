@@ -2,28 +2,33 @@
 // See LICENSE.txt for license information.
 import TurboLogger from '@mattermost/react-native-turbo-log';
 import {defineMessages} from 'react-intl';
-import {Alert, Platform} from 'react-native';
+import {Alert} from 'react-native';
 import Share from 'react-native-share';
 
 import {pathWithPrefix} from '@utils/file';
 
-import {tryOpenURL} from './url';
-
 import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
+
+const buildEmailBody = (metadata: ReportAProblemMetadata) => [
+    'Please share a description of the problem with reproduction steps:',
+    '',
+    '',
+    'You may also attach the mobile logs and any relevant screen captures.',
+    '',
+    'App metadata',
+    metadataToString(metadata),
+].join('\n');
 
 export const shareLogs = async (metadata: ReportAProblemMetadata, siteName: string | undefined, reportAProblemMail: string | undefined, excludeLogs: boolean = false) => {
     try {
         const logPaths = await TurboLogger.getLogPaths();
         const attachments = excludeLogs ? [] : logPaths.map((path) => pathWithPrefix('file://', path));
         await Share.open({
-            subject: `Problem with ${siteName} React Native app`,
+            subject: `Problem with ${siteName || 'Mattermost'} mobile app`,
             email: reportAProblemMail,
             failOnCancel: false,
             urls: attachments.length ? attachments : undefined,
-            message: [
-                'Please share a description of the problem:\n\n',
-                metadataToString(metadata),
-            ].join('\n'),
+            message: buildEmailBody(metadata),
         });
     } catch (e: unknown) {
         Alert.alert('Error', `${e}`);
@@ -32,26 +37,14 @@ export const shareLogs = async (metadata: ReportAProblemMetadata, siteName: stri
 
 export const emailLogs = async (metadata: ReportAProblemMetadata, siteName: string | undefined, reportAProblemMail: string | undefined, excludeLogs: boolean = false) => {
     try {
-        if (Platform.OS === 'ios') {
-            // iOS does not support sharing with different mail apps, so we use a mailto link
-
-            const subject = `Problem with ${siteName || 'Mattermost'} React Native app`;
-            const body = metadataToString(metadata);
-            const url = `mailto:${reportAProblemMail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            tryOpenURL(url);
-            return;
-        }
         const logPaths = await TurboLogger.getLogPaths();
         const attachments = excludeLogs ? [] : logPaths.map((path) => pathWithPrefix('file://', path));
         await Share.shareSingle({
             social: Share.Social.EMAIL as any, // The type is not correct in the library
-            subject: `Problem with ${siteName} React Native app`,
+            subject: `Problem with ${siteName || 'Mattermost'} mobile app`,
             email: reportAProblemMail,
             urls: attachments.length ? attachments : undefined,
-            message: [
-                'Please share a description of the problem:\n\n',
-                metadataToString(metadata),
-            ].join('\n'),
+            message: buildEmailBody(metadata),
         });
     } catch (e: unknown) {
         Alert.alert('Error', `${e}`);
@@ -88,5 +81,9 @@ export const reportAProblemMessages = defineMessages({
     appPlatform: {
         id: 'report_a_problem.metadata.appPlatform',
         defaultMessage: 'App Platform',
+    },
+    deviceModel: {
+        id: 'report_a_problem.metadata.deviceModel',
+        defaultMessage: 'Device Model',
     },
 });
