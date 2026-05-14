@@ -168,15 +168,21 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
-      # Quick Look / UIDocumentInteractionController shows a "Done" bar button
       - tapOn:
           text: "Done"
           optional: true
-      # In-app navigation back (fallback)
+      - tapOn:
+          text: "Close"
+          optional: true
       - tapOn:
           id: "navigation.header.back"
           optional: true
-- back
+      - back
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - back
 
 # Confirm we are back in the channel
 - extendedWaitUntil:
