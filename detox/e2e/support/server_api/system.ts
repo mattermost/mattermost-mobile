@@ -374,29 +374,31 @@ export const apiUploadLicense = async (baseUrl: string): Promise<any> => {
     return apiUploadFile('license', absFilePath, {url: `${baseUrl}/api/v4/license`, method: 'POST'});
 };
 
-/**
- * Request a trial Enterprise license from the Mattermost license server.
- * See https://api.mattermost.com/#operation/RequestTrialLicense
- * @param {string} baseUrl - the base server URL
- * @return {Object} returns response on success or {error, status} on error
- */
-export const apiRequestTrialLicense = async (baseUrl: string): Promise<any> => {
-    try {
-        const response = await client.post(`${baseUrl}/api/v4/trial-license`, {
-            users: 1000,
-            terms_accepted: true,
-            receive_emails_accepted: true,
-            contact_name: 'E2E Test',
-            contact_email: 'admin@example.mattermost.com',
-            company_name: 'Mattermost E2E',
-            company_country: 'US',
-            company_size: 'ONE_TO_50',
-        });
-        return {data: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
+// DISABLED: Do not request trial license in tests — tests should run with Free edition only.
+// Keeping code commented out as reference; remove this function if trial licensing is never needed.
+// /**
+//  * Request a trial Enterprise license from the Mattermost license server.
+//  * See https://api.mattermost.com/#operation/RequestTrialLicense
+//  * @param {string} baseUrl - the base server URL
+//  * @return {Object} returns response on success or {error, status} on error
+//  */
+// export const apiRequestTrialLicense = async (baseUrl: string): Promise<any> => {
+//     try {
+//         const response = await client.post(`${baseUrl}/api/v4/trial-license`, {
+//             users: 1000,
+//             terms_accepted: true,
+//             receive_emails_accepted: true,
+//             contact_name: 'E2E Test',
+//             contact_email: 'admin@example.mattermost.com',
+//             company_name: 'Mattermost E2E',
+//             company_country: 'US',
+//             company_size: 'ONE_TO_50',
+//         });
+//         return {data: response.data};
+//     } catch (err) {
+//         return getResponseFromError(err);
+//     }
+// };
 
 /**
  * Get client license.
@@ -440,7 +442,7 @@ export const System = {
     apiGetRemoteClusters,
     apiPatchConfig,
     apiPingServerStatus,
-    apiRequestTrialLicense,
+    // apiRequestTrialLicense, // DISABLED: Do not request trial license in tests
     apiRequireLicense,
     apiRequireLicenseForFeature,
     apiRequireSMTPServer,
