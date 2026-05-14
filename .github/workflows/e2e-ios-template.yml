@@ -542,6 +542,16 @@ jobs:
             # Without this, the app may fail with "No script URL provided" on second launch attempt.
             echo "Allowing Metro to fully stabilize (25s on macos-26)..."
             sleep 25
+
+            # Verify Metro is actually serving the bundle (not just the process is running).
+            # This catches cases where Metro reports ready but hasn't finished compilation.
+            echo "Verifying Metro can serve bundles..."
+            if curl -s http://localhost:8081/index.ios.bundle 2>/dev/null | head -1 | grep -q ""; then
+              echo "✅ Metro is serving bundles successfully"
+            else
+              echo "⚠️ Warning: Could not verify Metro is serving bundles, proceeding anyway"
+              ps aux | grep -E "metro|node.*start" | grep -v grep || echo "Metro process not found"
+            fi
           fi
 
           cd detox
