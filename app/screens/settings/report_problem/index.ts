@@ -3,12 +3,13 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
-import {observeConfigBooleanValue, observeConfigValue, observeReportAProblemMetadata} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeConfigValue, observeIsFreeEdition, observeReportAProblemMetadata} from '@queries/servers/system';
 
 import ReportProblem from './report_problem';
 
 const enhanced = withObservables([], ({database}) => ({
     allowDownloadLogs: observeConfigBooleanValue(database, 'AllowDownloadLogs', true),
+    isFreeEdition: observeIsFreeEdition(database),
     reportAProblemMail: observeConfigValue(database, 'ReportAProblemMail'),
     reportAProblemType: observeConfigValue(database, 'ReportAProblemType'),
     siteName: observeConfigValue(database, 'SiteName'),

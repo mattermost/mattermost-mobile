@@ -10,6 +10,7 @@ import Button from '@components/button';
 import MenuDivider from '@components/menu_divider';
 import SettingOption from '@components/settings/option';
 import {Preferences, Screens} from '@constants';
+import {DEFAULT_REPORT_A_PROBLEM_EMAIL} from '@constants/report_a_problem';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -34,7 +35,7 @@ type Props = {
     attachLogsEnabled: boolean;
     currentUserId: string;
     reportAProblemType?: string;
-    isLicensed: boolean;
+    isFreeEdition: boolean;
     metadata: ReportAProblemMetadata;
 }
 
@@ -79,7 +80,7 @@ const ReportProblem = ({
     attachLogsEnabled,
     currentUserId,
     reportAProblemType,
-    isLicensed,
+    isFreeEdition,
     metadata,
 }: Props) => {
     const theme = useTheme();
@@ -114,15 +115,21 @@ const ReportProblem = ({
                 let linkToUse = reportAProblemLink;
                 if (!linkToUse) {
                     logDebug('Report a problem link is not set');
-                    linkToUse = getDefaultReportAProblemLink(isLicensed);
+                    linkToUse = getDefaultReportAProblemLink(!isFreeEdition);
                 }
                 tryOpenURL(linkToUse);
                 return;
             }
             case 'default': {
-                tryOpenURL(getDefaultReportAProblemLink(isLicensed));
+                if (isFreeEdition) {
+                    tryOpenURL(getDefaultReportAProblemLink(false));
+                } else {
+                    await emailLogs(metadata, siteName, DEFAULT_REPORT_A_PROBLEM_EMAIL, !allowDownloadLogs);
+                }
                 return;
             }
+            case 'hidden':
+                return;
         }
 
         // Old servers where reportAProblemType is not defined
@@ -132,7 +139,7 @@ const ReportProblem = ({
         }
 
         tryOpenURL(reportAProblemLink);
-    }, [reportAProblemType, reportAProblemLink, reportAProblemMail, metadata, siteName, allowDownloadLogs, isLicensed]);
+    }, [reportAProblemType, reportAProblemLink, reportAProblemMail, metadata, siteName, allowDownloadLogs, isFreeEdition]);
 
     useAndroidHardwareBackHandler(Screens.REPORT_PROBLEM, navigateBack);
 
