@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {updateDmGmDisplayName} from '@actions/local/channel';
+import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
 import {storeConfig} from '@actions/local/systems';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -12,6 +13,7 @@ import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('@actions/local/channel');
+jest.mock('@actions/local/ephemeral_mode/wipe');
 jest.mock('@actions/local/systems');
 jest.mock('@database/manager');
 jest.mock('@queries/servers/system');
@@ -152,6 +154,24 @@ describe('WebSocket System Actions', () => {
 
             expect(storeConfig).toHaveBeenCalledWith(serverUrl, mockConfig);
             expect(updateDmGmDisplayName).toHaveBeenCalledWith(serverUrl);
+        });
+
+        it('reconciles the persistence flag against the new config so a live MEM-cleanup change clears zero-persistence', async () => {
+            const mockConfig = {
+                MobileEphemeralModeEnabled: 'true',
+                MobileEphemeralModeAutoCacheCleanupDays: '5',
+            };
+
+            jest.mocked(getConfig).mockResolvedValue({
+                MobileEphemeralModeEnabled: 'true',
+                MobileEphemeralModeAutoCacheCleanupDays: '0',
+            } as ClientConfig);
+
+            const msg = {data: {config: mockConfig}} as WebSocketMessage;
+
+            await handleConfigChangedEvent(serverUrl, msg);
+
+            expect(reconcilePersistenceFlag).toHaveBeenCalledWith(serverUrl, mockConfig);
         });
     });
 });

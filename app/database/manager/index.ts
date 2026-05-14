@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
 import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
@@ -147,30 +146,23 @@ class DatabaseManagerSingleton {
                 const server = await getServer(serverUrl);
                 const zpm = server?.persistenceFlag === 'zero-persistence';
 
-                let adapter;
                 if (zpm) {
                     try {
                         await this.deleteServerDatabaseFiles(serverUrl);
                     } catch {
                         logDebug('createServerDatabase: no stale SQLite file to delete', serverUrl);
                     }
-                    adapter = new LokiJSAdapter({
-                        dbName: serverUrl,
-                        migrations,
-                        schema,
-                        useWebWorker: false,
-                        useIncrementalIndexedDB: true,
-                        extraLokiOptions: {autosave: false},
-                    });
-                } else {
-                    adapter = new SQLiteAdapter({
-                        dbName: databaseFilePath,
-                        migrationEvents: this.buildMigrationCallbacks(databaseName),
-                        migrations,
-                        jsi: true,
-                        schema,
-                    });
                 }
+
+                // WatermelonDB's own in-memory form; bare `:memory:` doesn't survive its reset/VACUUM path.
+                const memoryDbName = `file:zpm_${databaseName}?mode=memory&cache=shared`;
+                const adapter = new SQLiteAdapter({
+                    dbName: zpm ? memoryDbName : databaseFilePath,
+                    migrationEvents: this.buildMigrationCallbacks(databaseName),
+                    migrations,
+                    jsi: true,
+                    schema,
+                });
 
                 // Registers the new server connection into the DEFAULT database
                 await this.addServerToAppDatabase({

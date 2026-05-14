@@ -10,7 +10,6 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostTypes, BOR_POST_CLEANUP_MIN_RUN_INTERVAL} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
-import {getServer} from '@queries/app/servers';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {queryPostsByType} from '@queries/servers/post';
 import {
@@ -28,6 +27,7 @@ import {isExpiredBoRPost} from '@utils/bor';
 import {logError} from '@utils/log';
 
 import {deletePostsForChannelsWithAutotranslation} from './channel';
+import {reconcilePersistenceFlag} from './ephemeral_mode/wipe';
 import {deletePosts} from './post';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
@@ -128,14 +128,7 @@ export async function storeConfigAndLicense(serverUrl: string, config: ClientCon
 
             const result = await storeConfig(serverUrl, config);
 
-            const server = await getServer(serverUrl);
-            if (server) {
-                // update flag based on config values for Mobile Ephemeral Mode settings
-                const nextFlag = config.MobileEphemeralModeEnabled === 'true' && config.MobileEphemeralModeAutoCacheCleanupDays === '0' ? 'zero-persistence' : '';
-                if (server.persistenceFlag !== nextFlag) {
-                    await DatabaseManager.updatePersistenceFlag(serverUrl, nextFlag);
-                }
-            }
+            await reconcilePersistenceFlag(serverUrl, config);
 
             return result;
         }

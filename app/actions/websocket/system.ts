@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {updateDmGmDisplayName} from '@actions/local/channel';
+import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
 import {storeConfig} from '@actions/local/systems';
 import {fetchCategories} from '@actions/remote/category';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -45,6 +46,10 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
                 await fetchCategories(serverUrl, currentTeamId, true);
             }
         }
+
+        // Run last: a flag transition can wipe and recreate the server DB, invalidating
+        // the `database` reference captured above.
+        await reconcilePersistenceFlag(serverUrl, config);
     } catch {
         // do nothing
     }
