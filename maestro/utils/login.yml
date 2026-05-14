@@ -7,8 +7,9 @@
 # which triggers the native "Allow Notifications?" system dialog. That dialog
 # appears after the server form loads and interferes with the connection flow,
 # leaving the app stuck on the server connect screen.
-# Android: clearState:true is safe — it clears persisted sessions so a stale
-# login from a previous seed run cannot cause the login flow to skip steps.
+# Android: clearState:true wipes app data (including granted permissions) so a
+# stale session can't interfere, but it re-triggers the notification permission
+# dialog. The flow handles this with a timed wait + optional Allow tap.
 appId: ${MAESTRO_APP_ID}
 ---
 # iOS: stopApp:true force-kills the app before relaunch. This clears any stuck
@@ -37,16 +38,19 @@ appId: ${MAESTRO_APP_ID}
       - launchApp:
           stopApp: false
           clearState: true
-          permissions:
-            notifications: allow
+      # After clearState, the Android notification permission dialog appears
+      # shortly after launch. Give it time to render, then dismiss if present.
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - tapOn:
+          text: "Allow"
+          optional: true
       # After clearState the app has no server registered and always shows the server
-      # connect form. Wait up to 15s for it to appear. Without this explicit wait the
-      # shared waitForAnimationToEnd below (6s) is not enough for a fresh JS-bundle boot
-      # and the back-press block fires before the server form is visible, exiting the app.
+      # connect form. Wait up to 90s for the JS bundle to load on slow emulators.
       - extendedWaitUntil:
           visible:
             id: "server_form.server_url.input"
-          timeout: 30000
+          timeout: 90000
 # iOS notification permission dialog may appear on first launch after a device
 # wipe or new test session. Dismiss with Allow so push can work; optional so it
 # is silently skipped when the dialog is absent.
