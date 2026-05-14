@@ -29,4 +29,5 @@ if [[ "${CI:-false}" != "true" ]]; then
 fi
 
 cd "${android_dir}"
-./gradlew "${gradle_args[@]}" "${assemble_task}" assembleAndroidTest "-DtestBuildType=${build_type}"
+# Build app APK and its test APK (but not test APKs for library dependencies like expo-image)
+./gradlew "${gradle_args[@]}" "${assemble_task}" "app:assembleAndroidTest" "-DtestBuildType=${build_type}"
