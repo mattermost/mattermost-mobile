@@ -546,7 +546,7 @@ jobs:
             # Verify Metro is actually serving the bundle (not just the process is running).
             # This catches cases where Metro reports ready but hasn't finished compilation.
             echo "Verifying Metro can serve bundles..."
-            if curl -s http://localhost:8081/index.ios.bundle 2>/dev/null | head -1 | grep -q ""; then
+            if curl -s http://localhost:8081/index.ios.bundle 2>/dev/null | grep -q "__d("; then
               echo "✅ Metro is serving bundles successfully"
             else
               echo "⚠️ Warning: Could not verify Metro is serving bundles, proceeding anyway"

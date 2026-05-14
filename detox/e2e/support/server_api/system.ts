@@ -12,6 +12,8 @@ import {apiUploadFile, getResponseFromError} from './common';
 // System
 // See https://api.mattermost.com/#tag/system
 //
+
+/* eslint-disable no-console */
 // Exported API function should have the following:
 // - documented using JSDoc
 // - meaningful description
@@ -19,8 +21,6 @@ import {apiUploadFile, getResponseFromError} from './common';
 // - parameter/s defined by `@param`
 // - return value defined by `@return`
 // ****************************************************************
-
-/* eslint-disable no-console */
 
 /**
  * Check system health.
@@ -408,8 +408,13 @@ export const apiUploadLicense = async (baseUrl: string): Promise<any> => {
  * @return {Object} returns {license} on success or the unlicensed state
  */
 export const getClientLicense = async (baseUrl: string): Promise<any> => {
-    const {license} = await apiGetClientLicense(baseUrl);
-    if (license.IsLicensed === 'true') {
+    const licenseResponse = await apiGetClientLicense(baseUrl);
+    if (licenseResponse.error) {
+        return licenseResponse;
+    }
+
+    const {license} = licenseResponse;
+    if (license?.IsLicensed === 'true') {
         return {license};
     }
 
@@ -418,13 +423,11 @@ export const getClientLicense = async (baseUrl: string): Promise<any> => {
     if (!uploadResponse.error) {
         const out = await apiGetClientLicense(baseUrl);
         if (out.license?.IsLicensed === 'true') {
-            console.log('Enterprise license loaded from file.');
             return {license: out.license};
         }
     }
 
     // Do not request trial license — tests should work with Free edition only
-    console.log('Server has no license. Running with Free edition features.');
     return {license};
 };
 
@@ -442,6 +445,7 @@ export const System = {
     apiGetRemoteClusters,
     apiPatchConfig,
     apiPingServerStatus,
+
     // apiRequestTrialLicense, // DISABLED: Do not request trial license in tests
     apiRequireLicense,
     apiRequireLicenseForFeature,
