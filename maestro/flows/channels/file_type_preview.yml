@@ -40,10 +40,11 @@ appId: ${MAESTRO_APP_ID}
 # The channel opens at the intro/top. All file posts are BELOW the current
 # viewport (below the channel intro and system messages). Scroll DOWN to reveal them.
 # IMAGE is the first (oldest) file post so it appears just above the others.
+# On iOS the channel opens scrolled below the file posts; scroll UP to find them.
 - scrollUntilVisible:
     element:
       id: "${IMAGE_FILE_ID}-file-container"
-    direction: DOWN
+    direction: UP
     timeout: 15000
 - extendedWaitUntil:
     visible:
@@ -75,10 +76,9 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - back
 
-# Wait for gallery to fully unmount before proceeding
-- extendedWaitUntil:
-    notVisible:
-      id: "gallery.header.close.button"
+# Wait for gallery close animation. On iOS new-architecture the gallery
+# may remain in the accessibility tree after closing.
+- waitForAnimationToEnd:
     timeout: 10000
 
 # ── 2. VIDEO — opens in the gallery video player ──────────────────────────
@@ -119,9 +119,8 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - back
 
-- extendedWaitUntil:
-    notVisible:
-      id: "gallery.header.close.button"
+# Wait for gallery close animation
+- waitForAnimationToEnd:
     timeout: 10000
 
 # ── 3. AUDIO — inline AudioFile player (no navigation) ───────────────────
