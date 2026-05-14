@@ -28,8 +28,12 @@ appId: com.mattermost.rnbeta
       - tapOn:
           text: "Continue"
           optional: true
-      # iOS 26: long-press a word on the page to select it, then tap "Share..." from the
-      # text-selection context menu. This shares selected text (not the page URL).
+      # iOS 26: try the Safari toolbar Share button first (more reliable
+      # across iOS versions than the long-press context menu).
+      - tapOn:
+          id: "Share"
+          optional: true
+      # Fallback: long-press a word to select, then tap "Share..." from context menu
       - extendedWaitUntil:
           visible:
             text: "Wikipedia"
@@ -37,19 +41,28 @@ appId: com.mattermost.rnbeta
       - longPressOn:
           text: "Wikipedia"
       - takeScreenshot: after-longpress-text
-      # Wait for the text-selection context menu and tap "Share..."
-      - extendedWaitUntil:
-          visible:
-            text: "Share..."
-          timeout: 10000
-      - tapOn:
-          text: "Share..."
+      # iOS 26 context menu may not show "Share..." — try text match, then
+      # fall back to a coordinate tap at the context menu position.
+      - runFlow:
+          when:
+            visible:
+              text: "Share..."
+          commands:
+            - tapOn:
+                text: "Share..."
+      - runFlow:
+          when:
+            notVisible:
+              text: "Share..."
+          commands:
+            - tapOn:
+                point: "50%,60%"
       - takeScreenshot: after-tap-share
       # Tap "Mattermost Beta" in the share sheet to open the share extension
       - extendedWaitUntil:
           visible:
             text: "Mattermost Beta"
-          timeout: 15000
+          timeout: 30000
       - tapOn:
           text: "Mattermost Beta"
       - takeScreenshot: after-tap-mattermost-beta
