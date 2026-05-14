@@ -171,7 +171,15 @@ async function ensureTrialLicense(token) {
     console.log('[provision] Trial Enterprise license activated.');
 }
 
-async function enablePluginUploads(token) {
+async function configureTestServer(token) {
+    // Fetch current config, then update plugin + rate-limit settings in a single PUT.
+    //
+    // Rate limiting is disabled on test servers because Mattermost's default
+    // RateLimitSettings (Enable=true, PerSec=10, MaxBurst=100, VaryByRemoteAddr=true)
+    // throttles burst traffic that E2E shards generate during apiInit (login,
+    // team/channel/user creation, plugin enable, WebSocket connect). Verified
+    // empirically: 100 concurrent login requests from one IP get 71x HTTP 429.
+    // Disabling on ephemeral test workspaces removes a load-related variable.
     const configRes = await request('GET', '/api/v4/config', null, token);
     if (configRes.status >= 400) {
         console.warn('[provision] Could not read server config.');
@@ -179,16 +187,16 @@ async function enablePluginUploads(token) {
     }
 
     const config = configRes.data;
-    if (config.PluginSettings?.EnableUploads && config.PluginSettings?.EnableMarketplace) {
-        return;
-    }
 
-    console.log('[provision] Enabling plugin uploads and Marketplace...');
     config.PluginSettings = config.PluginSettings || {};
     config.PluginSettings.EnableUploads = true;
     config.PluginSettings.EnableMarketplace = true;
     config.PluginSettings.EnableRemoteMarketplace = true;
 
+    config.RateLimitSettings = config.RateLimitSettings || {};
+    config.RateLimitSettings.Enable = false;
+
+    console.log('[provision] Updating plugin uploads, Marketplace, and disabling rate limiting...');
     const updateRes = await request('PUT', '/api/v4/config', config, token);
     if (updateRes.status >= 400) {
         console.warn(`[provision] Config update failed (HTTP ${updateRes.status}): ${updateRes.data.message || JSON.stringify(updateRes.data)}`);
@@ -260,7 +268,7 @@ async function installPlugin(token, {id: pluginId, url: pluginUrl}) {
 async function main() {
     const token = await login();
     await ensureTrialLicense(token);
-    await enablePluginUploads(token);
+    await configureTestServer(token);
 
     for (const plugin of REQUIRED_PLUGINS) {
         await installPlugin(token, plugin); // eslint-disable-line no-await-in-loop
