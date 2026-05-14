@@ -3,7 +3,7 @@
 
 import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {AppState, Dimensions, View} from 'react-native';
+import {AppState, Dimensions, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {reconnectErasedServer} from '@actions/local/ephemeral_mode/reconnect';
@@ -46,6 +46,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginHorizontal: 24,
         maxWidth: 600,
         alignSelf: 'center',
+    },
+    boldText: {
+        ...typography('Body', 100, 'SemiBold'),
+        lineHeight: 20,
     },
     icon: {
         alignItems: 'center',
@@ -198,7 +202,7 @@ const DataErased = ({serverUrl, displayName}: DataErasedProps) => {
             const maxScreenHeight = Math.ceil(0.6 * Dimensions.get('window').height);
             const maxSnapPoint = Math.min(
                 maxScreenHeight,
-                bottomSheetSnapPoint(registeredServers.current.length, SERVER_ITEM_HEIGHT) + TITLE_HEIGHT + BUTTON_HEIGHT +
+                bottomSheetSnapPoint(registeredServers.current.length, SERVER_ITEM_HEIGHT) + TITLE_HEIGHT + BUTTON_HEIGHT + insets.bottom +
                     (registeredServers.current.filter((s: ServersModel) => s.lastActiveAt).length * PUSH_ALERT_TEXT_HEIGHT),
             );
 
@@ -212,25 +216,28 @@ const DataErased = ({serverUrl, displayName}: DataErasedProps) => {
 
             bottomSheet(renderContent, snapPoints, isTablet ? undefined : AddServerButton);
         }
-    }, [isTablet]);
+    }, [insets.bottom, isTablet]);
 
     const buttonTestID = isReconnecting ? 'data_erased.reconnect.button.disabled' : 'data_erased.reconnect.button';
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, {paddingBottom: insets.bottom}]}>
             <View style={styles.alertContainer}>
                 <View style={styles.iconWrapper}>
                     <Alert/>
                 </View>
                 <FormattedText
                     id='mobile.ephemeralMode.dataErased.title'
-                    defaultMessage='Data has been erased'
+                    defaultMessage='Cached data cleared'
                     style={styles.title}
                 />
                 <FormattedText
                     id='mobile.ephemeralMode.dataErased.body'
-                    defaultMessage="Your organization's security policy removed cached data for {displayName} after a prolonged offline period. Reconnect to restore your data."
-                    values={{displayName}}
+                    defaultMessage="Your organization's security policy cleared cached data for the server <b>{displayName}</b> after an extended time offline. Reconnect to restore your data."
+                    values={{
+                        b: (text: string) => <Text style={styles.boldText}>{text}</Text>,
+                        displayName,
+                    }}
                     style={styles.description}
                 />
                 <View style={styles.buttonContainer}>

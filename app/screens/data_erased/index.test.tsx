@@ -34,6 +34,11 @@ describe('DataErased', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+
+        // Calling mockRestore() on a jest.fn (rather than a real function spy) wipes
+        // the implementation, leaving subsequent tests with undefined. Re-establish it
+        // here so every test gets a valid subscription object.
+        (AppState.addEventListener as jest.Mock).mockReturnValue({remove: jest.fn()});
     });
 
     it('renders title, body, and reconnect button', () => {
@@ -44,7 +49,7 @@ describe('DataErased', () => {
             />,
         );
 
-        expect(getByText('Data has been erased')).toBeTruthy();
+        expect(getByText('Cached data cleared')).toBeTruthy();
         expect(getByText(/My Server/)).toBeTruthy(); // body interpolates {displayName}
         expect(getByTestId('data_erased.reconnect.button')).toBeTruthy();
     });
@@ -108,6 +113,10 @@ describe('DataErased', () => {
         expect(queryByText(/Couldn't reach the server/)).toBeNull();
 
         addListenerSpy.mockRestore();
+
+        // Re-establish the default implementation that mockRestore() wipes when
+        // used on an existing jest.fn (as opposed to a real function).
+        (AppState.addEventListener as jest.Mock).mockReturnValue({remove: jest.fn()});
     });
 
     it('shows inline error text when reconnectErasedServer returns {error}', async () => {
