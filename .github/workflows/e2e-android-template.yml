@@ -280,6 +280,17 @@ jobs:
           SITE_3_URL: ${{ env.SITE_3_URL }}
         continue-on-error: true # We want to run all the tests
 
+      - name: Stage Detox artifacts for upload
+        if: always()
+        run: |
+          # Jest reporters write to detox/e2e/artifacts; save_report expects
+          # detox/artifacts/android-results-*/android-junit*.xml (per shard).
+          staging="detox/artifacts/android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}"
+          mkdir -p "$staging"
+          if [ -d detox/e2e/artifacts ]; then
+            cp -R detox/e2e/artifacts/. "$staging/" || true
+          fi
+
       - name: Upload Android Test Report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

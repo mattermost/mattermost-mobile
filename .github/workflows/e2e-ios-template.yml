@@ -614,6 +614,17 @@ jobs:
             /Users/runner/work/mattermost-mobile/mattermost-mobile/flow-output.csv
             /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log
 
+      - name: Stage Detox artifacts for upload
+        if: always()
+        run: |
+          # Jest reporters write to detox/e2e/artifacts; save_report expects
+          # detox/artifacts/ios-results-*/ios-junit*.xml (per shard).
+          staging="detox/artifacts/ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}"
+          mkdir -p "$staging"
+          if [ -d detox/e2e/artifacts ]; then
+            cp -R detox/e2e/artifacts/. "$staging/" || true
+          fi
+
       - name: Upload iOS Test Report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

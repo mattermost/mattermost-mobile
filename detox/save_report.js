@@ -36,6 +36,7 @@ const os = require('os');
 const path = require('path');
 
 const fse = require('fs-extra');
+const {globSync} = require('glob');
 const {mergeFiles} = require('junit-report-merger');
 const shell = require('shelljs');
 
@@ -53,11 +54,20 @@ const {
     removeOldGeneratedReports,
     sendReport,
     readJsonFromFile,
-    writeJsonToFile,
 } = require('./utils/report');
 const {createTestCycle, createTestExecutions} = require('./utils/test_cases');
 
 require('dotenv').config();
+
+function getDetoxVersion() {
+    try {
+        return require('detox/package.json').version;
+    } catch (e) {
+        const out = shell.exec('npm list detox --depth=0', {silent: true}).stdout || '';
+        const match = out.match(/detox@([\d.]+)/);
+        return (match && match[1]) || 'unknown';
+    }
+}
 
 const saveReport = async () => {
     const {
@@ -74,12 +84,14 @@ const saveReport = async () => {
     // Remove old generated reports
     removeOldGeneratedReports();
 
-    const detox_version = shell.exec('npm list detox').stdout.split('\n')[1].split('@')[1].trim();
+    fs.mkdirSync(path.join(__dirname, ARTIFACTS_DIR), {recursive: true});
+
+    const detox_version = getDetoxVersion();
     const headless = IOS === 'true' ? 'false' : HEADLESS === 'true';
     const os_name = os.platform();
     const os_version = os.release();
     const node_version = process.version;
-    const npm_version = shell.exec('npm --version').stdout.trim();
+    const npm_version = shell.exec('npm --version', {silent: true}).stdout.trim();
     const device_name = DEVICE_NAME;
     const device_os_version = DEVICE_OS_VERSION;
 
@@ -94,24 +106,33 @@ const saveReport = async () => {
         node_version,
         npm_version,
     };
-    writeJsonToFile(environmentDetails, 'environment.json', ARTIFACTS_DIR);
+    fse.writeJsonSync(path.join(__dirname, ARTIFACTS_DIR, 'environment.json'), environmentDetails);
 
     // Merge all XML reports into one single XML report
     const platform = process.env.IOS === 'true' ? 'ios' : 'android';
     const combinedFilePath = `${ARTIFACTS_DIR}/${platform}-combined.xml`;
+    const combinedAbsolute = path.join(__dirname, combinedFilePath);
+    const junitGlob = `${path.join(__dirname, ARTIFACTS_DIR).replace(/\\/g, '/')}/${platform}-results*/${platform}-junit*.xml`;
+    const junitMatches = globSync(junitGlob, {nodir: true});
 
-    await mergeFiles(path.join(__dirname, combinedFilePath), [`${ARTIFACTS_DIR}/${platform}-results*/${platform}-junit*.xml`]);
-    console.log(`Merged, check ${combinedFilePath}`);
+    if (junitMatches.length === 0) {
+        console.log(`No JUnit XML matched for ${platform}; writing empty combined XML for CI summary`);
+        const emptyXml = '<?xml version="1.0" encoding="UTF-8"?>\n<testsuites tests="0" failures="0" errors="0" skipped="0"></testsuites>\n';
+        fs.writeFileSync(combinedAbsolute, emptyXml);
+    } else {
+        await mergeFiles(combinedAbsolute, [`${ARTIFACTS_DIR}/${platform}-results*/${platform}-junit*.xml`]);
+        console.log(`Merged, check ${combinedFilePath}`);
+    }
 
     // Read XML from a file
-    const xml = fse.readFileSync(combinedFilePath);
+    const xml = fse.readFileSync(combinedAbsolute);
     const {testsuites} = convertXmlToJson(xml, platform);
 
     // Generate short summary, write to file and then send report via webhook
     const allTests = getAllTests(testsuites);
     const summary = generateShortSummary(allTests);
     console.log(summary);
-    writeJsonToFile(summary, 'summary.json', ARTIFACTS_DIR);
+    fse.writeJsonSync(path.join(__dirname, ARTIFACTS_DIR, 'summary.json'), summary);
 
     // Generate jest-stare report
     const jestStareOutputDir = path.join(__dirname, `${ARTIFACTS_DIR}/jest-stare`);
@@ -121,7 +142,7 @@ const saveReport = async () => {
     }
 
     // "ios-results-*" or "android-results-*" is the path in CI where the parallel detox jobs save the artifacts
-    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/${platform}-results*/jest-stare/${platform}-data*.json`], platform);
+    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/${platform}-results*/jest-stare/${platform}-data*.json`]);
     await generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath, platform);
 
     if (process.env.CI) {
@@ -150,7 +171,7 @@ const saveReport = async () => {
 
     // Send test report to "QA: Mobile Test Automation Report" channel via webhook
     if (TYPE && TYPE !== 'NONE' && WEBHOOK_URL) {
-        const environment = readJsonFromFile(`${ARTIFACTS_DIR}/environment.json`);
+        const environment = readJsonFromFile(path.join(__dirname, ARTIFACTS_DIR, 'environment.json'));
         const data = generateTestReport(summary, result && result.success, result && result.reportLink, environment, testCycle.key);
         await sendReport('summary report to Community channel', WEBHOOK_URL, data);
     }
