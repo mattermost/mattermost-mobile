@@ -155,3 +155,9 @@ node_modules/@mattermost/intune
 .pi/
 .codex/
 .cursor/
+
+# Build/cache outputs
+graphify-out/
+
+# Local worktrees
+.claude/worktrees/
