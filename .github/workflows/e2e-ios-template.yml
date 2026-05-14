@@ -155,10 +155,11 @@ jobs:
 
   e2e-ios:
     name: machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
+    # Temporarily reverted to macos-15 due to Metro stabilization issues on macos-26.
     # macos-26 ships the iOS 26.2 runtime pre-installed, avoiding a ~10min
-    # LaunchServicesMigrator + runtime install on every shard. Revert to
-    # macos-15 if macos-26 tooling instability causes regressions.
-    runs-on: macos-26
+    # LaunchServicesMigrator + runtime install on every shard, but has timing issues.
+    # TODO: Investigate macos-26 Metro/Detox compatibility and re-enable if resolved.
+    runs-on: macos-15
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
     env:
@@ -536,12 +537,11 @@ jobs:
             tail -30 metro.log
           else
             echo "Metro is serving on http://localhost:8081"
-            # Give Metro extra time to fully initialize for iOS 26.2 (React Native bridge needs more time).
-            # On macOS-26 (macos-15 alternative), Metro may take longer to compile all transforms.
-            # Increased from 15s to 25s to ensure full stabilization before app launch.
-            # Without this, the app may fail with "No script URL provided" on second launch attempt.
-            echo "Allowing Metro to fully stabilize (25s on macos-26)..."
-            sleep 25
+            # Give Metro time to fully initialize for iOS 26.2 (React Native bridge needs stabilization).
+            # 20s should be sufficient for macos-15 to ensure full Metro compilation.
+            # Without adequate wait, the app may fail with "No script URL provided" on launch.
+            echo "Allowing Metro to fully stabilize (20s on macos-15)..."
+            sleep 20
 
             # Verify Metro is actually serving the bundle (not just the process is running).
             # This catches cases where Metro reports ready but hasn't finished compilation.
