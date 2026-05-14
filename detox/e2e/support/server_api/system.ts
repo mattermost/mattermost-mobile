@@ -400,7 +400,8 @@ export const apiRequestTrialLicense = async (baseUrl: string): Promise<any> => {
 
 /**
  * Get client license.
- * If no license, try to upload a license file first, then request a trial license.
+ * If no license, try to upload a license file first.
+ * Does NOT request trial license — tests run with Free edition features only.
  * @param {string} baseUrl - the base server URL
  * @return {Object} returns {license} on success or the unlicensed state
  */
@@ -420,18 +421,9 @@ export const getClientLicense = async (baseUrl: string): Promise<any> => {
         }
     }
 
-    // Fall back to requesting a trial license from the license server
-    console.log('No license file available, requesting trial license...');
-    const trialResponse = await apiRequestTrialLicense(baseUrl);
-    if (trialResponse.error) {
-        console.warn('Failed to request trial license:', trialResponse.error.message || trialResponse.error);
-        return {license};
-    }
-    console.log('Trial Enterprise license activated.');
-
-    // Get the updated license
-    const updated = await apiGetClientLicense(baseUrl);
-    return {license: updated.license};
+    // Do not request trial license — tests should work with Free edition only
+    console.log('Server has no license. Running with Free edition features.');
+    return {license};
 };
 
 export const System = {
