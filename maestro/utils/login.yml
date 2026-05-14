@@ -25,12 +25,16 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - launchApp:
           stopApp: true
-      # Wait for the app to render an initial screen. On a fresh simulator the
-      # JS bundle takes 10-20s to load. Without this explicit wait the conditional
-      # checks below fire while the screen is still blank and the back-presses
-      # exit the app to the launcher.
+      # On a fresh install the JS bundle can take 30-60s to load from Metro.
+      # Without this explicit wait the conditional checks below fire while
+      # the screen is still blank and back-presses exit the app to the launcher.
       - waitForAnimationToEnd:
-          timeout: 15000
+          timeout: 60000
+      # Notification permission dialog may appear on first launch.
+      # Dismiss if present (granted via simctl privacy, but dialog can still fire).
+      - tapOn:
+          text: "Allow"
+          optional: true
 - runFlow:
     when:
       platform: Android
