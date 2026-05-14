@@ -272,7 +272,7 @@ jobs:
         run: |
           cd detox
           chmod +x ./create_android_emulator.sh
-          CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" "$MATRIX_SPECS"
+          CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
         env:
           MATRIX_SPECS: ${{ matrix.specs }}
           SITE_1_URL: ${{ env.SITE_1_URL }}

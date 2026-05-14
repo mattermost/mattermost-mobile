@@ -537,11 +537,11 @@ jobs:
           else
             echo "Metro is serving on http://localhost:8081"
             # Give Metro extra time to fully initialize for iOS 26.2 (React Native bridge needs more time).
-            # On 3-core macOS-15 runners, Metro can take 15+ seconds to finish loading all
-            # transforms after reporting "ready". Without this, the first app launch may
-            # see a red screen / stale bundle.
-            echo "Allowing Metro to fully stabilize..."
-            sleep 15
+            # On macOS-26 (macos-15 alternative), Metro may take longer to compile all transforms.
+            # Increased from 15s to 25s to ensure full stabilization before app launch.
+            # Without this, the app may fail with "No script URL provided" on second launch attempt.
+            echo "Allowing Metro to fully stabilize (25s on macos-26)..."
+            sleep 25
           fi
 
           cd detox
