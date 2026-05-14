@@ -87,14 +87,17 @@ appId: com.mattermost.rnbeta
           timeout: 5000
       - tapOn:
           id: "com.android.chrome:id/share_menu_id"
-      # Android share sheet: tap More to see all apps
-      - extendedWaitUntil:
-          visible:
-            text: "More"
-          timeout: 10000
-      - tapOn:
-          text: "More"
-      # Tap Mattermost Beta to open the share extension
+      # On older Android the share sheet shows a truncated list and requires
+      # tapping "More" to see all targets. On API 34+ all targets are shown
+      # directly. Try "More" first, and if it's absent tap Mattermost Beta
+      # directly instead.
+      - runFlow:
+          when:
+            visible:
+              text: "More"
+          commands:
+            - tapOn:
+                text: "More"
       - extendedWaitUntil:
           visible:
             text: "Mattermost Beta"
