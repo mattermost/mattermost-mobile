@@ -289,12 +289,12 @@ class DatabaseManagerSingleton {
         }
     };
 
-    public deleteServerDatabase = async (serverUrl: string): Promise<void> => {
+    public deleteServerDatabase = async (serverUrl: string): Promise<boolean> => {
         const database = this.appDatabase?.database;
         if (database) {
             const server = await this.getServer(serverUrl);
             if (server) {
-                database.write(async () => {
+                await database.write(async () => {
                     await server.update((record) => {
                         record.lastActiveAt = 0;
                         record.identifier = '';
@@ -302,9 +302,12 @@ class DatabaseManagerSingleton {
                 });
 
                 delete this.serverDatabases[serverUrl];
-                this.deleteServerDatabaseFiles(serverUrl);
+                await this.deleteServerDatabaseFiles(serverUrl);
+                return true;
             }
         }
+
+        return false;
     };
 
     public destroyServerDatabase = async (serverUrl: string): Promise<void> => {

@@ -27,7 +27,7 @@ export type DatabaseManager = {
 
     setActiveServerDatabase: (serverUrl: string) => Promise<void>;
 
-    deleteServerDatabase: (serverUrl: string) => Promise<void>;
+    deleteServerDatabase: (serverUrl: string) => Promise<boolean>;
 
     destroyServerDatabase: (serverUrl: string) => Promise<void>;
 

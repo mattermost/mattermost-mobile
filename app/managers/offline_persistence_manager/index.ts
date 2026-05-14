@@ -376,7 +376,7 @@ class OfflinePersistenceManagerSingleton {
             const displayName = (await getServerDisplayName(serverUrl)) || serverUrl;
 
             if (serverUrl === activeUrl) {
-                await navigateToScreen(Screens.DATA_ERASED, {serverUrl, displayName}, true);
+                navigateToScreen(Screens.DATA_ERASED, {serverUrl, displayName}, true);
             }
 
             await DatabaseManager.updatePersistenceFlag(serverUrl, 'wiped');

@@ -379,16 +379,18 @@ class DatabaseManagerSingleton {
         if (!server) {
             return;
         }
-        delete this.serverDatabases[serverUrl];
-        await this.deleteServerDatabaseFiles(serverUrl);
-        await this.createServerDatabase({
-            config: {
-                dbName: serverUrl,
-                displayName: server.displayName,
-                identifier: '',
-                serverUrl,
-            },
-        });
+
+        const success = await this.deleteServerDatabase(serverUrl);
+        if (success) {
+            await this.createServerDatabase({
+                config: {
+                    dbName: serverUrl,
+                    displayName: server.displayName,
+                    identifier: '',
+                    serverUrl,
+                },
+            });
+        }
     };
 
     /**
@@ -397,12 +399,12 @@ class DatabaseManagerSingleton {
     * @param  {string} serverUrl
     * @returns {Promise<boolean>}
     */
-    public deleteServerDatabase = async (serverUrl: string): Promise<void> => {
+    public deleteServerDatabase = async (serverUrl: string): Promise<boolean> => {
         const database = this.appDatabase?.database;
         if (database) {
             const server = await getServer(serverUrl);
             if (server) {
-                database.write(async () => {
+                await database.write(async () => {
                     await server.update((record) => {
                         record.lastActiveAt = 0;
                         record.identifier = '';
@@ -410,16 +412,19 @@ class DatabaseManagerSingleton {
                 });
 
                 delete this.serverDatabases[serverUrl];
-                this.deleteServerDatabaseFiles(serverUrl);
+                await this.deleteServerDatabaseFiles(serverUrl);
+                return true;
             }
         }
+
+        return false;
     };
 
     /**
     * destroyServerDatabase: Removes the *.db file from the App-Group directory for iOS or the files directory on Android.
     * Also, removes the entry in the 'servers' table from the APP database
     * @param  {string} serverUrl
-    * @returns {Promise<boolean>}
+    * @returns {Promise<void>}
     */
     public destroyServerDatabase = async (serverUrl: string): Promise<void> => {
         const database = this.appDatabase?.database;
