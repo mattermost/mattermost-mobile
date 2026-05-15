@@ -172,6 +172,19 @@ describe('useChannelClassificationBanner', () => {
         expect(result.current.classificationBanner?.background_color).toBe('#FF0000');
     });
 
+    it('should return no classification when property value is soft-deleted', () => {
+        seedStore();
+        const deletedValue = {...channelPropertyValue, delete_at: 9999};
+        store.updatePropertyValues(serverUrl, channelId, groupId, [deletedValue]);
+
+        const {result} = renderHook(() =>
+            useChannelClassificationBanner(serverUrl, channelId),
+        );
+
+        expect(result.current.hasClassification).toBe(false);
+        expect(result.current.classificationBanner).toBeUndefined();
+    });
+
     it('should return no classification when level id does not match any option', () => {
         seedStore();
         const unknownValue = {...channelPropertyValue, value: 'nonexistent-level'};

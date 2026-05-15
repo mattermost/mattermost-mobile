@@ -82,7 +82,7 @@ export function useChannelClassificationBanner(
     }, [serverUrl, channelId, channelField, propertyValue]);
 
     return useMemo((): ChannelClassificationBannerState => {
-        if (!propertyValue?.value || !templateField || !channelField) {
+        if (!propertyValue?.value || propertyValue.delete_at !== 0 || !templateField || !channelField) {
             return noClassification;
         }
 

@@ -67,7 +67,7 @@ function AuthenticatedLayout() {
                 </Stack>
             </SafeAreaInsetsContext.Provider>
             <PortalHost name={GLOBAL_BANNER_PORTAL_HOST}/>
-            <GlobalBannerContainer/>
+            {bannerHeight > 0 && <GlobalBannerContainer/>}
         </View>
     );
 }
