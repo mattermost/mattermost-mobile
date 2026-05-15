@@ -215,7 +215,16 @@ async function serverSetup() {
     // 3. Patch server config for CI (long session, high rate limits)
     try {
         await axios.put(`${SITE_URL}/api/v4/config/patch`, {
-            ServiceSettings: {SessionLengthWebInHours: 4320},
+            ServiceSettings: {
+                SessionLengthWebInHours: 4320,
+
+                // Set MaximumActiveUsers to 0 (unlimited) so parallel test shards never
+                // hit "user_limits_exceeded" / ERROR_SAFETY_LIMITS_EXCEEDED. Each
+                // test file calls apiInit() → apiCreateUser(), and with 20 shards ×
+                // ~6 test files per run (~120 users/run), accumulated users from
+                // repeated CI runs exhaust the default trial-license limit (1000).
+                MaximumActiveUsers: 999999,
+            },
             RateLimitSettings: {PerSec: 10000, MaxBurst: 999999},
 
             // Enable ExperimentalEnableAutomaticReplies globally so the Auto-Responder

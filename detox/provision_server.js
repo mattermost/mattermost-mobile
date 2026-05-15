@@ -196,7 +196,17 @@ async function configureTestServer(token) {
     config.RateLimitSettings = config.RateLimitSettings || {};
     config.RateLimitSettings.Enable = false;
 
-    console.log('[provision] Updating plugin uploads, Marketplace, and disabling rate limiting...');
+    // Bump the maximum active users limit so parallel test shards never hit
+    // "user_limits_exceeded" / ERROR_SAFETY_LIMITS_EXCEEDED. Each test file
+    // calls apiInit() → apiCreateUser(), and with 20 shards × ~6 test files
+    // per run (~120 users/run), accumulated users from repeated CI runs on
+    // the same provisioned server can exhaust the default trial-license limit.
+    config.ServiceSettings = config.ServiceSettings || {};
+    config.ServiceSettings.MaximumActiveUsers = 999999; // effectively unlimited
+    config.TeamSettings = config.TeamSettings || {};
+    config.TeamSettings.MaxUsersPerTeam = 999999;
+
+    console.log('[provision] Updating plugin uploads, Marketplace, disabling rate limiting, and removing user caps...');
     const updateRes = await request('PUT', '/api/v4/config', config, token);
     if (updateRes.status >= 400) {
         console.warn(`[provision] Config update failed (HTTP ${updateRes.status}): ${updateRes.data.message || JSON.stringify(updateRes.data)}`);
