@@ -45,7 +45,7 @@ export function handlePropertyValuesUpdated(serverUrl: string, msg: WebSocketMes
         return;
     }
 
-    const byKey: Record<string, {targetId: string; groupId: string; values: Array<PropertyValue<string>>}> = {};
+    const byKey: Record<string, {targetId: string; groupId: string; values: Array<PropertyValue<string>>}> = Object.create(null) as Record<string, {targetId: string; groupId: string; values: Array<PropertyValue<string>>}>;
     for (const v of values) {
         const key = `${v.target_id}\0${v.group_id}`;
         if (!byKey[key]) {

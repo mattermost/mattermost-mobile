@@ -15,27 +15,27 @@ type ValueStore = Record<string, Record<string, Record<string, PropertyValue<str
 
 type GroupNameIndex = Record<string, Record<string, string>>;
 
-const fieldStore: FieldStore = {};
-const valueStore: ValueStore = {};
+const fieldStore: FieldStore = Object.create(null) as FieldStore;
+const valueStore: ValueStore = Object.create(null) as ValueStore;
 const listeners = new Set<PropertyStoreListener>();
-const groupNameToId: GroupNameIndex = {};
+const groupNameToId: GroupNameIndex = Object.create(null) as GroupNameIndex;
 
 function getFieldMap(serverUrl: string, groupId: string): Record<string, PropertyField> {
     if (!fieldStore[serverUrl]) {
-        fieldStore[serverUrl] = {};
+        fieldStore[serverUrl] = Object.create(null) as Record<string, Record<string, PropertyField>>;
     }
     if (!fieldStore[serverUrl][groupId]) {
-        fieldStore[serverUrl][groupId] = {};
+        fieldStore[serverUrl][groupId] = Object.create(null) as Record<string, PropertyField>;
     }
     return fieldStore[serverUrl][groupId];
 }
 
 function getValueMap(serverUrl: string, targetId: string): Record<string, PropertyValue<string>> {
     if (!valueStore[serverUrl]) {
-        valueStore[serverUrl] = {};
+        valueStore[serverUrl] = Object.create(null) as Record<string, Record<string, PropertyValue<string>>>;
     }
     if (!valueStore[serverUrl][targetId]) {
-        valueStore[serverUrl][targetId] = {};
+        valueStore[serverUrl][targetId] = Object.create(null) as Record<string, PropertyValue<string>>;
     }
     return valueStore[serverUrl][targetId];
 }
@@ -48,7 +48,7 @@ function notify(serverUrl: string, groupId: string) {
 
 export function registerGroupName(serverUrl: string, groupName: string, groupId: string): void {
     if (!groupNameToId[serverUrl]) {
-        groupNameToId[serverUrl] = {};
+        groupNameToId[serverUrl] = Object.create(null) as Record<string, string>;
     }
     groupNameToId[serverUrl][groupName] = groupId;
 }
@@ -61,9 +61,9 @@ export function getGroupIdByName(serverUrl: string, groupName: string): string |
 
 export function setPropertyFields(serverUrl: string, groupId: string, fields: PropertyField[]): void {
     if (!fieldStore[serverUrl]) {
-        fieldStore[serverUrl] = {};
+        fieldStore[serverUrl] = Object.create(null) as Record<string, Record<string, PropertyField>>;
     }
-    const map: Record<string, PropertyField> = {};
+    const map: Record<string, PropertyField> = Object.create(null) as Record<string, PropertyField>;
     for (const f of fields) {
         map[f.id] = f;
     }
@@ -111,9 +111,9 @@ export function getPropertyFields(serverUrl: string, groupId: string): PropertyF
 
 export function setPropertyValues(serverUrl: string, targetId: string, groupId: string, values: Array<PropertyValue<string>>): void {
     if (!valueStore[serverUrl]) {
-        valueStore[serverUrl] = {};
+        valueStore[serverUrl] = Object.create(null) as Record<string, Record<string, PropertyValue<string>>>;
     }
-    const map: Record<string, PropertyValue<string>> = {};
+    const map: Record<string, PropertyValue<string>> = Object.create(null) as Record<string, PropertyValue<string>>;
     for (const v of values) {
         map[v.field_id] = v;
     }
