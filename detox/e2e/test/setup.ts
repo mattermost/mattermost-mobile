@@ -248,105 +248,81 @@ beforeAll(async () => {
     }
 
     async function launchAndVerify(): Promise<void> {
-        // Disable Detox synchronization across the entire launch + recovery sequence.
-        //
-        // The Mattermost app legitimately keeps the UI busy for ~30s during cold
-        // boot (server DB CREATE with 39 tables, post-login 26-model batch insert,
-        // cascading channel-list re-renders driven by combineLatest of 9+ DB
-        // observables). On Android, Detox's FabricUIManagerIdlingResources fires its
-        // 60s idle timeout during this window, crashing the test with
-        // IdlingResourceTimeoutException. On iOS 26.x EarlGrey's main-queue wait
-        // similarly hangs on a persistent pending work item.
-        //
-        // We rely on the explicit `waitFor(serverScreenEl).toExist().withTimeout()`
-        // below for readiness — that polling does not depend on Detox idle resources.
-        // Subsequent test code (beforeAll/it blocks) is unaffected because
-        // synchronization is re-enabled in the finally block before this returns.
-        //
-        // Detox-documented pattern: https://wix.github.io/Detox/docs/api/device/#devicedisablesynchronization
-        await device.disableSynchronization();
+        await device.launchApp({
+            newInstance: true,
+
+            // On iOS CI (SIMULATOR_ID is set by the workflow), pass `notifications: 'YES'` so
+            // Detox uses `applesimutils --restartSB --setPermissions notifications=YES`. The
+            // `--restartSB` restarts iOS SpringBoard (~20–30s), flushing all stale system state
+            // from the previous app session. Without this restart, iOS 26.x CI runners leave a
+            // persistent work item on the main queue that blocks Detox's internal `waitForActive`
+            // handshake indefinitely, causing every beforeAll to time out at 90s.
+            //
+            // Gated on SIMULATOR_ID (CI-only env var) because on iOS 26.3.x local simulators
+            // --restartSB unregisters the app binary, breaking subsequent simctl launch calls.
+            // Local machines have sufficient resources that waitForActive completes without help.
+            //
+            // camera/medialibrary/photos omitted — their deny counterparts corrupt the TCC
+            // database on iOS 26.x (see commit 0d08de97c).
+            ...(device.getPlatform() === 'ios' && process.env.SIMULATOR_ID? {permissions: {notifications: 'YES'}}: {}),
+            launchArgs,
+        });
+        grantAndroidNotificationPermission();
+
+        // Wait for server.screen (clean state). Use waitFor().withTimeout() which
+        // has Detox-enforced timeout — unlike expect().toExist() which blocks
+        // indefinitely when EarlGrey waits for main queue idle (iOS 26.x has a
+        // persistent pending work item that prevents idle).
+        const serverScreenEl = element(by.id('server.screen'));
+
         try {
-            await device.launchApp({
-                newInstance: true,
-
-                // On iOS CI (SIMULATOR_ID is set by the workflow), pass `notifications: 'YES'` so
-                // Detox uses `applesimutils --restartSB --setPermissions notifications=YES`. The
-                // `--restartSB` restarts iOS SpringBoard (~20–30s), flushing all stale system state
-                // from the previous app session. Without this restart, iOS 26.x CI runners leave a
-                // persistent work item on the main queue that blocks Detox's internal `waitForActive`
-                // handshake indefinitely, causing every beforeAll to time out at 90s.
-                //
-                // Gated on SIMULATOR_ID (CI-only env var) because on iOS 26.3.x local simulators
-                // --restartSB unregisters the app binary, breaking subsequent simctl launch calls.
-                // Local machines have sufficient resources that waitForActive completes without help.
-                //
-                // camera/medialibrary/photos omitted — their deny counterparts corrupt the TCC
-                // database on iOS 26.x (see commit 0d08de97c).
-                ...(device.getPlatform() === 'ios' && process.env.SIMULATOR_ID? {permissions: {notifications: 'YES'}}: {}),
-                launchArgs,
-            });
-            grantAndroidNotificationPermission();
-
-            // Wait for server.screen (clean state). Use waitFor().withTimeout() which
-            // has Detox-enforced timeout — unlike expect().toExist() which blocks
-            // indefinitely when EarlGrey waits for main queue idle (iOS 26.x has a
-            // persistent pending work item that prevents idle).
-            const serverScreenEl = element(by.id('server.screen'));
-
-            try {
-                await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
-            } catch {
-                // On Android, pm clear can silently fail, leaving the app in a logged-in
-                // state (channel_list visible instead of server.screen). Detect and recover.
-                if (device.getPlatform() === 'android') {
-                    const channelListEl = element(by.id('channel_list.screen'));
-                    try {
-                        await waitFor(channelListEl).toExist().withTimeout(5_000);
-                        console.warn(
-                            '[launchAndVerify] App launched in logged-in state (channel_list visible). ' +
-                            'pm clear did not take effect. Retrying with force-stop + pm clear.',
-                        );
-                        await forceAndroidDataClear();
-                        await device.launchApp({newInstance: true, launchArgs});
-                        grantAndroidNotificationPermission();
-                        await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
-                    } catch {
-                        throw new Error(
-                            `[launchAndVerify] Neither server.screen nor channel_list.screen appeared within ${APP_READY_TIMEOUT / 1000}s`,
-                        );
-                    }
-                } else {
-                    // On iOS, clearIOSAppData() can race with SQLite WAL file locks:
-                    // the database files survive partially, causing the app to launch
-                    // with stale server entries but no valid auth token. The app shows
-                    // "Couldn't load" (channel_list.screen exists but channels don't
-                    // load) instead of server.screen. Detect this and retry the wipe.
-                    const channelListEl = element(by.id('channel_list.screen'));
-                    try {
-                        await waitFor(channelListEl).toExist().withTimeout(5_000);
-                        console.warn(
-                            '[launchAndVerify] iOS app launched with stale state (channel_list visible). ' +
-                            'clearIOSAppData wipe incomplete. Re-clearing and relaunching.',
-                        );
-                        clearIOSAppData();
-                        await device.launchApp({
-                            newInstance: true,
-                            ...(process.env.SIMULATOR_ID ? {permissions: {notifications: 'YES'}} : {}),
-                            launchArgs,
-                        });
-                        await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
-                    } catch {
-                        throw new Error(
-                            `[launchAndVerify] server.screen did not appear within ${APP_READY_TIMEOUT / 1000}s`,
-                        );
-                    }
+            await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
+        } catch {
+            // On Android, pm clear can silently fail, leaving the app in a logged-in
+            // state (channel_list visible instead of server.screen). Detect and recover.
+            if (device.getPlatform() === 'android') {
+                const channelListEl = element(by.id('channel_list.screen'));
+                try {
+                    await waitFor(channelListEl).toExist().withTimeout(5_000);
+                    console.warn(
+                        '[launchAndVerify] App launched in logged-in state (channel_list visible). ' +
+                        'pm clear did not take effect. Retrying with force-stop + pm clear.',
+                    );
+                    await forceAndroidDataClear();
+                    await device.launchApp({newInstance: true, launchArgs});
+                    grantAndroidNotificationPermission();
+                    await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
+                } catch {
+                    throw new Error(
+                        `[launchAndVerify] Neither server.screen nor channel_list.screen appeared within ${APP_READY_TIMEOUT / 1000}s`,
+                    );
+                }
+            } else {
+                // On iOS, clearIOSAppData() can race with SQLite WAL file locks:
+                // the database files survive partially, causing the app to launch
+                // with stale server entries but no valid auth token. The app shows
+                // "Couldn't load" (channel_list.screen exists but channels don't
+                // load) instead of server.screen. Detect this and retry the wipe.
+                const channelListEl = element(by.id('channel_list.screen'));
+                try {
+                    await waitFor(channelListEl).toExist().withTimeout(5_000);
+                    console.warn(
+                        '[launchAndVerify] iOS app launched with stale state (channel_list visible). ' +
+                        'clearIOSAppData wipe incomplete. Re-clearing and relaunching.',
+                    );
+                    clearIOSAppData();
+                    await device.launchApp({
+                        newInstance: true,
+                        ...(process.env.SIMULATOR_ID ? {permissions: {notifications: 'YES'}} : {}),
+                        launchArgs,
+                    });
+                    await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
+                } catch {
+                    throw new Error(
+                        `[launchAndVerify] server.screen did not appear within ${APP_READY_TIMEOUT / 1000}s`,
+                    );
                 }
             }
-        } finally {
-            // Re-enable synchronization so subsequent tap/typeText/etc. operations
-            // wait for idle as normal. This runs even if any launch attempt above
-            // threw — we never want to leave a test with sync disabled.
-            await device.enableSynchronization();
         }
     }
 
