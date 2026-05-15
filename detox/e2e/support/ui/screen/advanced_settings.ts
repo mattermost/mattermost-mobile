@@ -8,7 +8,7 @@ import {expect} from 'detox';
 class AdvancedSettingsScreen {
     testID = {
         advancedSettingsScreen: 'advanced_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'advanced_settings.scroll_view',
         deleteDataOption: 'advanced_settings.delete_data.option',
     };

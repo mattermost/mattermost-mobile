@@ -54,10 +54,10 @@ describe('Share with connected workspaces', () => {
     };
 
     // Tap the RNN back button N times to unwind from nested screens (Configuration, Share, etc.).
-    // The Channel Info screen uses a close button (close.channel_info.button), not screen.back.button.
+    // The Channel Info screen uses a close button (close.channel_info.button), not navigation.header.back.
     // When unwinding all the way to the channel, pass channelInfoCloseButtonId so the last tap uses it.
     const tapBackButton = async (times: number, lastButtonId?: string) => {
-        const backButton = element(by.id('screen.back.button'));
+        const backButton = element(by.id('navigation.header.back'));
         const backTaps = lastButtonId ? times - 1 : times;
         await Array.from({length: backTaps}).reduce(
             (p: Promise<void>) => p.then(() => backButton.tap()).then(() => wait(timeouts.ONE_SEC)),

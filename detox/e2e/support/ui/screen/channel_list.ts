@@ -80,6 +80,20 @@ class ChannelListScreen {
         const deadline = Date.now() + timeout;
         const categories = ['channels', 'unreads', 'favorites'] as const;
 
+        // Before polling individual channels, ensure the sidebar has finished syncing
+        // data from the server. On slow CI runners (macos-15, Fabric, detoxDisableSync),
+        // login completes and the channel_list.screen container appears before categories
+        // and channel items have rendered. The "channels" category header display_name is
+        // always present once data has loaded — use it as a reliable ready-flag.
+        try {
+            const channelsHeader = this.getCategoryHeaderDisplayName('channels');
+            const headerTimeout = Math.min(timeouts.TEN_SEC, timeout);
+            await waitForElementToExist(channelsHeader, headerTimeout);
+        } catch {
+            // Category header still not visible — continue with the polling loop anyway
+            // in case it appears during iteration (e.g. custom categories, DM-only server).
+        }
+
         /* eslint-disable no-await-in-loop */
         while (Date.now() < deadline) {
             // Check if the "Couldn't load" error screen has appeared due to WebSocket

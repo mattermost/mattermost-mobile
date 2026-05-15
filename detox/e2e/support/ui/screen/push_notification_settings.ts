@@ -8,7 +8,7 @@ import {expect} from 'detox';
 class PushNotificationSettingsScreen {
     testID = {
         pushNotificationSettingsScreen: 'push_notification_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'push_notification_settings.scroll_view',
         allNewMessagesOption: 'push_notification_settings.all_new_messages.option',
         allNewMessagesOptionSelected: 'push_notification_settings.all_new_messages.option.selected',

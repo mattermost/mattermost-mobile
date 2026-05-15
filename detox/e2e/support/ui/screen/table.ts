@@ -8,7 +8,7 @@ class TableScreen {
     testID = {
         tableScreen: 'table.screen',
         tableScrollView: 'table.scroll_view',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
     };
 
     tableScreen = element(by.id(this.testID.tableScreen));

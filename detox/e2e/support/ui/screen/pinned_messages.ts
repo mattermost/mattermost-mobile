@@ -13,7 +13,7 @@ class PinnedMessagesScreen {
     testID = {
         pinnedMessagesScreenPrefix: 'pinned_messages.',
         pinnedMessagesScreen: 'pinned_messages.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         emptyTitle: 'pinned_messages.empty.title',
         emptyParagraph: 'pinned_messages.empty.paragraph',
     };

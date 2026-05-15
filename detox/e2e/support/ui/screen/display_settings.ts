@@ -8,7 +8,7 @@ import {expect, waitFor} from 'detox';
 class DisplaySettingsScreen {
     testID = {
         displaySettingsScreen: 'display_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'display_settings.scroll_view',
         themeOption: 'display_settings.theme.option',
         themeOptionInfo: 'display_settings.theme.option.info',

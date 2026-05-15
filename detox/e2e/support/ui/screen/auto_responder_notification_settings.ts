@@ -8,7 +8,7 @@ import {expect} from 'detox';
 class AutoResponderNotificationSettingsScreen {
     testID = {
         autoResponderNotificationSettingsScreen: 'auto_responder_notification_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'auto_responder_notification_settings.scroll_view',
         enableAutomaticRepliesOptionToggledOff: 'auto_responder_notification_settings.enable_automatic_replies.option.toggled.false.button',
         enableAutomaticRepliesOptionToggledOn: 'auto_responder_notification_settings.enable_automatic_replies.option.toggled.true.button',

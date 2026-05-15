@@ -8,7 +8,7 @@ import {expect} from 'detox';
 class NotificationSettingsScreen {
     testID = {
         notificationSettingsScreen: 'notification_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'notification_settings.scroll_view',
         mentionsOption: 'notification_settings.mentions.option',
         pushNotificationsOption: 'notification_settings.push_notifications.option',

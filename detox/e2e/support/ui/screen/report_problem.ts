@@ -7,7 +7,7 @@ import {timeouts} from '@support/utils';
 class ReportProblemScreen {
     testID = {
         reportProblemScreen: 'report_problem.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         enableLogAttachmentsToggleOff: 'report_problem.enable_log_attachments.toggled.false.button',
         enableLogAttachmentsToggleOn: 'report_problem.enable_log_attachments.toggled.true.button',
     };

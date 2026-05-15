@@ -8,7 +8,7 @@ import {expect} from 'detox';
 class TimezoneDisplaySettingsScreen {
     testID = {
         timezoneDisplaySettingsScreen: 'timezone_display_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'timezone_display_settings.scroll_view',
         automaticOptionToggledOff: 'timezone_display_settings.automatic.option.toggled.false.button',
         automaticOptionToggledOn: 'timezone_display_settings.automatic.option.toggled.true.button',

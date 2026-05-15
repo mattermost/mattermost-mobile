@@ -14,7 +14,7 @@ class CreateOrEditChannelScreen {
     testID = {
         createOrEditChannelScreen: 'create_or_edit_channel.screen',
         closeButton: 'close.create_or_edit_channel.button',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         createButton: 'create_or_edit_channel.create.button',
         saveButton: 'create_or_edit_channel.save.button',
         scrollView: 'create_or_edit_channel.scroll_view',

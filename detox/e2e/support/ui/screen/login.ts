@@ -9,7 +9,7 @@ import {expect, waitFor} from 'detox';
 class LoginScreen {
     testID = {
         loginScreen: 'login.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         titleLoginToAccount: 'login_options.title.login_to_account',
         titleCantLogin: 'login_options.title.cant_login',
         descriptionEnterCredentials: 'login_options.description.enter_credentials',

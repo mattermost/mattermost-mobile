@@ -13,7 +13,7 @@ class AddMembersScreen {
         userItemPrefix: 'add_members.user_list.user_item.',
         addButton: 'add_members.add.button',
         addChannelMembersButton: 'add_members.selected.start.button',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         tutorialTooltip: 'tutorial_highlight',
     };
 

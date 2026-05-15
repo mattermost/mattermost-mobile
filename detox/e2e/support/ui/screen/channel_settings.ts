@@ -10,7 +10,7 @@ import {expect, waitFor} from 'detox';
 class ChannelSettingsScreen {
     testID = {
         channelSettingsScreen: 'channel_settings.screen',
-        closeButton: 'screen.back.button',
+        closeButton: 'navigation.header.back',
         scrollView: 'channel_settings.scroll_view',
         channelInfoOption: 'channel_settings.channel_info.option',
         configurationOption: 'channel_settings.configuration.option',

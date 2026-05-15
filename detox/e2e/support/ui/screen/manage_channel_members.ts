@@ -8,7 +8,7 @@ import {expect, waitFor} from 'detox';
 
 class ManageChannelMembersScreen {
     testID = {
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         manageMembersScreen: 'manage_members.screen',
         channelMembersScreen: 'channel_members.screen',
         manageDoneButton: 'manage_members.button', // Same button, text changes between "Manage" and "Done"

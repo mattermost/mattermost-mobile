@@ -8,7 +8,7 @@ import {expect} from 'detox';
 class ClockDisplaySettingsScreen {
     testID = {
         clockDisplaySettingsScreen: 'clock_display_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'clock_display_settings.scroll_view',
         twelveHourOption: 'clock_display_settings.twelve_hour.option',
         twelveHourOptionSelected: 'clock_display_settings.twelve_hour.option.selected',

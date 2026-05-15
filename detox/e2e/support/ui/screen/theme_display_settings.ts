@@ -8,7 +8,7 @@ import {expect} from 'detox';
 class ThemeDisplaySettingsScreen {
     testID = {
         themeDisplaySettingsScreen: 'theme_display_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'theme_display_settings.scroll_view',
         denimOption: 'theme_display_settings.denim.option',
         denimOptionSelected: 'theme_display_settings.denim.option.selected',

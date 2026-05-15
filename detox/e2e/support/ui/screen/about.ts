@@ -8,7 +8,7 @@ import {expect} from 'detox';
 class AboutScreen {
     testID = {
         aboutScreen: 'about.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'about.scroll_view',
         logo: 'about.logo',
         title: 'about.title',

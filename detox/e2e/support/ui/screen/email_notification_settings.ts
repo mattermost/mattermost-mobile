@@ -8,7 +8,7 @@ import {expect} from 'detox';
 class EmailNotificationSettingsScreen {
     testID = {
         emailNotificationSettingsScreen: 'email_notification_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'email_notification_settings.scroll_view',
         immediatelyOption: 'email_notification_settings.immediately.option',
         immediatelyOptionSelected: 'email_notification_settings.immediately.option.selected',

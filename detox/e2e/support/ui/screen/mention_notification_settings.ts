@@ -8,7 +8,7 @@ import {expect} from 'detox';
 class MentionNotificationSettingsScreen {
     testID = {
         mentionNotificationSettingsScreen: 'mention_notification_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'mention_notification_settings.scroll_view',
         caseSensitiveFirstNameOptionToggledOff: 'mention_notification_settings.case_sensitive_first_name.option.toggled.false.button',
         caseSensitiveFirstNameOptionToggledOn: 'mention_notification_settings.case_sensitive_first_name.option.toggled.true.button',

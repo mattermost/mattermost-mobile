@@ -18,7 +18,7 @@ class ThreadScreen {
     testID = {
         threadScreenPrefix: 'thread.',
         threadScreen: 'thread.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         followButton: 'thread.follow_thread.button',
         followingButton: 'thread.following_thread.button',
         scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',

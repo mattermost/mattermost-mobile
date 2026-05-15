@@ -65,7 +65,7 @@ describe('Channel Settings - Channel Notifications', () => {
         await expect(notificationSettingsScreen).toBeVisible();
 
         // # Navigate back to channel info screen and close
-        const backButton = element(by.id('screen.back.button'));
+        const backButton = element(by.id('navigation.header.back'));
         await backButton.tap();
         await wait(timeouts.ONE_SEC);
         await ChannelInfoScreen.close();
