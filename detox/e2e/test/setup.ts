@@ -269,6 +269,27 @@ beforeAll(async () => {
         });
         grantAndroidNotificationPermission();
 
+        // Detox synchronization is now disabled AFTER launchApp() has returned (so the
+        // Detox-to-app instrumentation channel is alive and can process the command).
+        //
+        // On Android (RN 0.83.9 New Architecture): FabricUIManagerIdlingResources
+        // monitors the MountItemDispatcher queues. During cold boot the app performs
+        // heavy work (server DB CREATE with 39 tables ~15s, batchRecords of 26 models,
+        // cascading channel-list re-renders driven by combineLatest of 9+ DB observables)
+        // that keeps Fabric's mount queues non-empty. Detox's idleResourceTimeoutSec
+        // (now 180s in DetoxTest.java) would otherwise fire during this legitimate
+        // startup window.
+        //
+        // On iOS 26.x (EarlGrey): a persistent pending work item on the main queue
+        // prevents EarlGrey's main-queue idle check from ever resolving. Disabling
+        // sync bypasses both issues; we rely on the explicit waitFor(serverScreenEl)
+        // with our own timeout for readiness.
+        //
+        // Pattern: call disableSynchronization *after* launchApp (connection exists),
+        // never before. This is the documented Detox pattern:
+        // https://wix.github.io/Detox/docs/api/device/#devicedisablesynchronization
+        await device.disableSynchronization();
+
         // Wait for server.screen (clean state). Use waitFor().withTimeout() which
         // has Detox-enforced timeout — unlike expect().toExist() which blocks
         // indefinitely when EarlGrey waits for main queue idle (iOS 26.x has a
@@ -323,6 +344,10 @@ beforeAll(async () => {
                     );
                 }
             }
+        } finally {
+            // Always re-enable synchronization so subsequent test operations
+            // (tap, typeText, expect) re-enter the normal synchronized path.
+            await device.enableSynchronization();
         }
     }
 
