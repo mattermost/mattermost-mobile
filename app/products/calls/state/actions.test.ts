@@ -1361,6 +1361,25 @@ describe('useCallsState', () => {
         const dismissedCalls = {
             'channel-dm': {...callDM, dismissed: {myId: true}},
         };
+        const liveCallState = {
+            ...callDM,
+            id: 'liveCallState',
+            channelId: 'channel-live',
+            dismissed: {},
+        };
+        const expectedLiveIncomingCalls: IncomingCalls = {
+            ...DefaultIncomingCalls,
+            incomingCalls: [{
+                callID: 'liveCallState',
+                callerID: 'user-5',
+                callerModel: user5,
+                channelID: 'channel-live',
+                myUserId: 'myId',
+                serverUrl: 'server1',
+                startAt: 123,
+                type: 0,
+            }],
+        };
         const callIStarted: Call = {
             id: 'callIStartedid',
             sessions: {
@@ -1419,6 +1438,12 @@ describe('useCallsState', () => {
         act(() => removeIncomingCall('server1', 'callDM'));
         assert.deepEqual(result.current[0], afterLoadCallsState);
         assert.deepEqual(result.current[1], initialCurrentCallState);
+        assert.deepEqual(result.current[2], DefaultIncomingCalls);
+
+        // test live call state updates, e.g. from websocket call_state events
+        await act(async () => setCallForChannel('server1', liveCallState.channelId, liveCallState));
+        assert.deepEqual(result.current[2], expectedLiveIncomingCalls);
+        act(() => removeIncomingCall('server1', 'liveCallState', liveCallState.channelId));
         assert.deepEqual(result.current[2], DefaultIncomingCalls);
 
         // test load call, but call has been dismissed

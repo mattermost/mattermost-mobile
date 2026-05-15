@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {mosThreshold} from '@mattermost/calls/lib/rtc_monitor';
-import {AppState, type AppStateStatus} from 'react-native';
+import {AppState, type AppStateStatus, NativeModules, Platform} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
@@ -47,6 +47,18 @@ import {isMainActivity} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 
 import type {CallJobState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
+
+type IncomingCallsBridgeNative = {
+    endIncomingCallKit?: (callId: string) => void;
+};
+
+function dismissIosCallKitForCallId(callId: string) {
+    if (Platform.OS !== 'ios' || !callId) {
+        return;
+    }
+    const bridge = NativeModules.MattermostIncomingCallsBridge as IncomingCallsBridgeNative | undefined;
+    bridge?.endIncomingCallKit?.(callId);
+}
 
 export const setCalls = async (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(
@@ -132,6 +144,8 @@ export const processIncomingCalls = async (serverUrl: string, calls: Call[], kee
         });
     }
 
+    const callToRing = newIncoming[0];
+
     if (newIncoming.length === 0 && keepExisting) {
         return;
     }
@@ -150,6 +164,10 @@ export const processIncomingCalls = async (serverUrl: string, calls: Call[], kee
     newIncoming.sort((a, b) => a.startAt - b.startAt);
 
     setIncomingCalls({...getIncomingCalls(), incomingCalls: newIncoming});
+
+    if (callToRing) {
+        void playIncomingCallsRinging(callToRing.serverUrl, callToRing.callID);
+    }
 };
 
 const getChannelIdFromCallId = (serverUrl: string, callId: string) => {
@@ -163,6 +181,8 @@ const getChannelIdFromCallId = (serverUrl: string, callId: string) => {
 };
 
 export const removeIncomingCall = (serverUrl: string, callId: string, channelId?: string) => {
+    dismissIosCallKitForCallId(callId);
+
     if (!getCallsConfig(serverUrl).EnableRinging) {
         return;
     }
@@ -234,7 +254,7 @@ const getRingtoneOrNone = async (serverUrl: string) => {
     }
 };
 
-const shouldRing = (callId: string, userStatus: string) => {
+const shouldRing = (callId: string, userStatus?: string) => {
     // Do not ring if we are in the background
     if (AppState.currentState !== 'active' || userStatus === General.DND || userStatus === General.OUT_OF_OFFICE) {
         return false;
@@ -251,20 +271,40 @@ const shouldRing = (callId: string, userStatus: string) => {
     return !currentCall;
 };
 
-export const playIncomingCallsRinging = async (serverUrl: string, callId: string, userStatus: string) => {
-    if (!shouldRing(callId, userStatus)) {
+export const playIncomingCallsRinging = async (serverUrl: string, callId: string, userStatus?: string) => {
+    let status = userStatus;
+    if (typeof status === 'undefined') {
+        try {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            status = (await getCurrentUser(database))?.status || '';
+        } catch (error) {
+            logError('failed to get current user status in playIncomingCallsRinging', error);
+        }
+    }
+
+    if (!shouldRing(callId, status)) {
         return;
     }
+
+    let incomingCalls = getIncomingCalls();
+    setIncomingCalls({
+        ...incomingCalls,
+        callIdHasRung: {...incomingCalls.callIdHasRung, [callId]: true},
+    });
 
     const ringTone = await getRingtoneOrNone(serverUrl);
     if (ringTone === 'none') {
         return;
     }
-    const incomingCalls = getIncomingCalls();
+
+    incomingCalls = getIncomingCalls();
+    if (!incomingCalls.incomingCalls.some((incomingCall) => incomingCall.callID === callId)) {
+        return;
+    }
+
     setIncomingCalls({
         ...incomingCalls,
         currentRingingCallId: callId,
-        callIdHasRung: {...incomingCalls.callIdHasRung, [callId]: true},
     });
     InCallManager.startRingtone(ringTone, Calls.RINGTONE_VIBRATE_PATTERN);
 
@@ -287,7 +327,7 @@ const stopIncomingCallsRinging = () => {
     setIncomingCalls({...incomingCalls, currentRingingCallId: undefined});
 };
 
-export const setCallForChannel = (serverUrl: string, channelId: string, call?: Call, enabled?: boolean) => {
+export const setCallForChannel = async (serverUrl: string, channelId: string, call?: Call, enabled?: boolean) => {
     const callsState = getCallsState(serverUrl);
     let nextEnabled = callsState.enabled;
     if (typeof enabled !== 'undefined') {
@@ -295,6 +335,7 @@ export const setCallForChannel = (serverUrl: string, channelId: string, call?: C
     }
 
     let nextCalls = callsState.calls;
+    const previousCallId = callsState.calls[channelId]?.id;
     if (call) {
         nextCalls = {...callsState.calls};
         nextCalls[channelId] = call;
@@ -308,6 +349,7 @@ export const setCallForChannel = (serverUrl: string, channelId: string, call?: C
             });
         }
     } else {
+        nextCalls = {...callsState.calls};
         delete nextCalls[channelId];
     }
 
@@ -322,6 +364,16 @@ export const setCallForChannel = (serverUrl: string, channelId: string, call?: C
         const nextChannelsWithCalls = {...channelsWithCalls};
         delete nextChannelsWithCalls[channelId];
         setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
+    }
+
+    if (call) {
+        try {
+            await processIncomingCalls(serverUrl, [call]);
+        } catch (error) {
+            logError('error on setCallForChannel processIncomingCalls', error);
+        }
+    } else if (previousCallId) {
+        removeIncomingCall(serverUrl, previousCallId, channelId);
     }
 };
 

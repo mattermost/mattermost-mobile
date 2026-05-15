@@ -454,6 +454,33 @@ describe('ClientUsers', () => {
             },
         };
 
+        await client.setExtraSessionProps(deviceId, deviceNotificationDisabled, version, undefined, 'apple_voip_rn-v2:abcd');
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, {
+            method: 'put',
+            body: {
+                device_id: deviceId,
+                device_notification_disabled: 'true',
+                mobile_version: version,
+                voip_device_id: 'apple_voip_rn-v2:abcd',
+            },
+        });
+    });
+
+    test('setExtraSessionProps without voip id', async () => {
+        const deviceId = 'device1';
+        const deviceNotificationDisabled = true;
+        const version = '1.0.0';
+        const expectedUrl = `${client.getUsersRoute()}/sessions/device`;
+        const expectedOptions = {
+            method: 'put',
+            body: {
+                device_id: deviceId,
+                device_notification_disabled: 'true',
+                mobile_version: version,
+            },
+        };
+
         await client.setExtraSessionProps(deviceId, deviceNotificationDisabled, version);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);

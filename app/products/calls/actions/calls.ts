@@ -140,7 +140,7 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
         fetchUsersByIds(serverUrl, Array.from(ids));
     }
 
-    setCallForChannel(serverUrl, channelId, call, resp.enabled);
+    await setCallForChannel(serverUrl, channelId, call, resp.enabled);
 
     return {data: {call, enabled: resp.enabled}};
 };

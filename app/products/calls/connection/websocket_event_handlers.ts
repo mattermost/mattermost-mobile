@@ -199,7 +199,7 @@ export const handleCallState = (serverUrl: string, msg: WebSocketMessage<CallSta
     const callState: CallState = JSON.parse(msg.data.call);
     const call = createCallAndAddToIds(msg.data.channel_id, callState);
 
-    setCallForChannel(serverUrl, msg.data.channel_id, call);
+    void setCallForChannel(serverUrl, msg.data.channel_id, call);
 
     if (callState.recording) {
         setRecordingState(serverUrl, msg.data.channel_id, callState.recording);
@@ -209,4 +209,3 @@ export const handleCallState = (serverUrl: string, msg: WebSocketMessage<CallSta
         setCaptioningState(serverUrl, msg.data.channel_id, callState.live_captions);
     }
 };
-

@@ -4,9 +4,10 @@
 import {createIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
-import {joinIfNeededAndSwitchToChannel, makeDirectChannel} from '@actions/remote/channel';
+import {joinIfNeededAndSwitchToChannel, makeDirectChannel, switchToChannelById} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchUsersByUsernames} from '@actions/remote/user';
+import {leaveAndJoinWithAlert} from '@calls/alerts';
 import {DeepLink, Launch, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -71,6 +72,11 @@ jest.mock('@utils/server', () => ({
 jest.mock('@actions/remote/channel', () => ({
     makeDirectChannel: jest.fn(),
     joinIfNeededAndSwitchToChannel: jest.fn(),
+    switchToChannelById: jest.fn(),
+}));
+
+jest.mock('@calls/alerts', () => ({
+    leaveAndJoinWithAlert: jest.fn(),
 }));
 
 jest.mock('@utils/draft', () => ({
@@ -161,6 +167,17 @@ describe('parseAndHandleDeepLink', () => {
         jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://existingserver.com');
         const result = await parseAndHandleDeepLink('https://existingserver.com/team/channels/town-square', intl);
         expect(joinIfNeededAndSwitchToChannel).toHaveBeenCalledWith('https://existingserver.com', {name: 'town-square'}, {name: 'team'}, errorBadChannel, intl);
+        expect(result).toEqual({error: false});
+    });
+
+    it('should switch to channel for incoming call deep link', async () => {
+        jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://existingserver.com');
+        jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://existingserver.com');
+
+        const result = await parseAndHandleDeepLink('mattermostdev://incoming-call?server_url=https%3A%2F%2Fexistingserver.com&channel_id=channel-id', intl);
+
+        expect(switchToChannelById).toHaveBeenCalledWith('https://existingserver.com', 'channel-id');
+        expect(leaveAndJoinWithAlert).toHaveBeenCalledWith(intl, 'https://existingserver.com', 'channel-id');
         expect(result).toEqual({error: false});
     });
 
@@ -336,6 +353,23 @@ describe('getLaunchPropsFromDeepLink', () => {
             launchType: Launch.DeepLink,
             coldStart: true,
             extra: extraData,
+        });
+    });
+
+    it('should return launch props for incoming call deep links using the configured app scheme', () => {
+        const result = getLaunchPropsFromDeepLink('mattermostdev://incoming-call?server_url=https%3A%2F%2Fexistingserver.com&channel_id=channel-id', true);
+
+        expect(result).toEqual({
+            launchType: Launch.DeepLink,
+            coldStart: true,
+            extra: {
+                type: DeepLink.CallsIncoming,
+                url: 'mattermostdev://incoming-call?server_url=https%3A%2F%2Fexistingserver.com&channel_id=channel-id',
+                data: {
+                    serverUrl: 'https://existingserver.com',
+                    channelId: 'channel-id',
+                },
+            },
         });
     });
 });

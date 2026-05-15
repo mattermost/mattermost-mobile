@@ -7,6 +7,8 @@ using namespace facebook::react;
 using namespace JS::NativeRNUtils;
 #endif
 
+static NSString *const MattermostVoIPTokenDefaultsKey = @"MattermostVoIPToken";
+
 #if __has_include("mattermost_rnutils-Swift.h")
 #import <mattermost_rnutils-Swift.h>
 #else
@@ -26,8 +28,20 @@ using namespace JS::NativeRNUtils;
         wrapper = [RNUtilsWrapper new];
         wrapper.delegate = self;
         [wrapper captureEvents];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onVoIPTokenUpdated:) name:@"MattermostVoIPTokenUpdated" object:nil];
     }
     return self;
+}
+
+-(void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+-(void)onVoIPTokenUpdated:(NSNotification *)notification {
+    NSString *token = notification.userInfo[@"token"];
+    if (token != nil) {
+        [self sendEventWithName:@"MattermostVoIPToken" body:@{@"token": token}];
+    }
 }
 
 #pragma protocol
@@ -78,6 +92,10 @@ RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(getWindowDimensions, NSDictionary*, window
 
 RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(getHasRegisteredLoad, NSDictionary*, getLoad) {
     return [wrapper getHasRegisteredLoad];
+}
+
+RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(getVoipToken, NSString*, voipToken) {
+    return [self getVoipToken];
 }
 
 RCT_REMAP_METHOD(setHasRegisteredLoad, setLoad) {
@@ -190,6 +208,11 @@ RCT_EXPORT_METHOD(createZipFile:(NSArray<NSString *> *)paths
 
 - (NSDictionary *)getHasRegisteredLoad {
     return [wrapper getHasRegisteredLoad];
+}
+
+- (NSString *)getVoipToken {
+    NSString *token = [[NSUserDefaults standardUserDefaults] stringForKey:MattermostVoIPTokenDefaultsKey];
+    return token ?: @"";
 }
 
 - (void)setHasRegisteredLoad {

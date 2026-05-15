@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>AppGroupIdentifier</key>
-	<string>group.com.mattermost.rnbeta</string>
+	<string>group.com.thesmallsquare.mattermost.dev</string>
 	<key>BundleEntryFilename</key>
 	<string>index.js</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Mattermost Beta</string>
+	<string>Mattermost Dev</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.mattermost.rnbeta</string>
+	<string>com.thesmallsquare.mattermost.dev</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -31,8 +31,8 @@
 			<string>com.mattermost</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>mattermost</string>
-				<string>mmauthbeta</string>
+				<string>mattermostdev</string>
+				<string>mmauthdev</string>
 			</array>
 		</dict>
 	</array>

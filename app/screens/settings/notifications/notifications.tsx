@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Notifications as RNNotifications} from 'react-native-notifications';
 
-import {getCallsConfig} from '@calls/state';
+import {useCallsConfig} from '@calls/state';
 import SettingContainer from '@components/settings/container';
 import SettingItem from '@components/settings/item';
 import {General, Screens} from '@constants';
@@ -63,7 +63,8 @@ const Notifications = ({
     const serverUrl = useServerUrl();
 
     const notifyProps = useNotificationProps(currentUser);
-    const callsRingingEnabled = useMemo(() => getCallsConfig(serverUrl).EnableRinging, [serverUrl]);
+    const callsConfig = useCallsConfig(serverUrl);
+    const callsRingingEnabled = callsConfig.EnableRinging;
     const [isRegistered, setIsRegistered] = useState(true);
 
     const appState = useAppState();
@@ -134,7 +135,7 @@ const Notifications = ({
             <SettingItem
                 onPress={goToNotificationSettingsMentions}
                 optionName='mentions'
-                label={intl.formatMessage(isCRTEnabled ? mentionTexts.callsOn : mentionTexts.callsOff)}
+                label={intl.formatMessage(isCRTEnabled ? mentionTexts.crtOn : mentionTexts.crtOff)}
                 testID='notification_settings.mentions.option'
             />
             <SettingItem

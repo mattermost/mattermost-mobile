@@ -101,6 +101,8 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
 
         RNNotifications.startMonitorNotifications()
 
+        MattermostIncomingCalls.shared.start()
+
         let delegate = ReactNativeDelegate()
         let factory = ExpoReactNativeFactory(delegate: delegate)
         delegate.dependencyProvider = RCTAppDependencyProvider()
@@ -235,6 +237,15 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
         return false
     }
 
+    /// Same as `application(_:open:options:)` Linking path, for use when the app must handle a URL
+    /// without `UIApplication.open` (opening the same app’s URL often does not trigger `openURL`).
+    func dispatchDeepLinkToReactNative(_ url: URL) -> Bool {
+        if handleMSALURL(url) {
+            return true
+        }
+        return RCTLinkingManager.application(UIApplication.shared, open: url, options: [:])
+    }
+
     override func application(
         _ application: UIApplication,
         continue userActivity: NSUserActivity,
@@ -303,6 +314,26 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
 class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
     override func bundleURL() -> URL? {
         #if DEBUG
+        // Physical devices: default logic uses "localhost" or ip.txt; both often fail on real hardware.
+        // Set Xcode Scheme → Run → Environment: RCT_METRO_HOST = <Mac LAN IP> (optional RCT_METRO_PORT).
+        if let metroHost = ProcessInfo.processInfo.environment["RCT_METRO_HOST"], !metroHost.isEmpty {
+            let port = ProcessInfo.processInfo.environment["RCT_METRO_PORT"] ?? ""
+            let hostPort: String
+            if metroHost.contains(":") {
+                hostPort = metroHost
+            } else if !port.isEmpty {
+                hostPort = "\(metroHost):\(port)"
+            } else {
+                hostPort = metroHost
+            }
+            return RCTBundleURLProvider.jsBundleURL(
+                forBundleRoot: "index",
+                packagerHost: hostPort,
+                enableDev: true,
+                enableMinification: false,
+                inlineSourceMap: false
+            )
+        }
         return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
         #else
         return Bundle.main.url(forResource: "main", withExtension: "jsbundle")

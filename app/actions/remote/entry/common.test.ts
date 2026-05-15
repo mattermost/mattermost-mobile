@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {nativeApplicationVersion} from 'expo-application';
+import {Platform} from 'react-native';
 import {RESULTS} from 'react-native-permissions';
 
 import {handleKickFromChannel, fetchMyChannelsForTeam} from '@actions/remote/channel';
@@ -14,7 +15,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getDeviceToken} from '@queries/app/global';
+import {getDeviceToken, getVoipDeviceToken} from '@queries/app/global';
 import {prepareEntryModels} from '@queries/servers/entry';
 import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {NavigationStore} from '@store/navigation_store';
@@ -31,7 +32,11 @@ jest.mock('@actions/remote/user');
 jest.mock('@actions/remote/post');
 jest.mock('@actions/remote/groups');
 jest.mock('@actions/remote/thread');
-jest.mock('@queries/app/global');
+jest.mock('@queries/app/global', () => ({
+    ...jest.requireActual('@queries/app/global'),
+    getDeviceToken: jest.fn(),
+    getVoipDeviceToken: jest.fn(),
+}));
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/entry');
 jest.mock('@queries/servers/system', () => {
@@ -195,6 +200,10 @@ describe('actions/remote/entry/common', () => {
     });
 
     describe('setExtraSessionProps', () => {
+        beforeEach(() => {
+            jest.mocked(getVoipDeviceToken).mockResolvedValue('');
+        });
+
         it('should set extra session properties when notifications are granted', async () => {
             (RESULTS as any).GRANTED = 'granted';
             const mockCheckNotifications = jest.fn().mockResolvedValue({status: RESULTS.GRANTED});
@@ -208,6 +217,7 @@ describe('actions/remote/entry/common', () => {
                 expect.any(String),
                 false,
                 nativeApplicationVersion,
+                undefined,
                 undefined,
             );
         });
@@ -226,7 +236,32 @@ describe('actions/remote/entry/common', () => {
                 false,
                 nativeApplicationVersion,
                 undefined,
+                undefined,
             );
+        });
+
+        it('should send the iOS VoIP device token with extra session properties', async () => {
+            const originalOS = Platform.OS;
+            Platform.OS = 'ios';
+            try {
+                const mockCheckNotifications = jest.fn().mockResolvedValue({status: RESULTS.GRANTED});
+                require('react-native-permissions').checkNotifications = mockCheckNotifications;
+                jest.mocked(getDeviceToken).mockResolvedValueOnce('deviceToken');
+                jest.mocked(getVoipDeviceToken).mockResolvedValueOnce('apple_voip_rn-v2:abcd');
+
+                const result = await setExtraSessionProps(serverUrl);
+
+                expect(result).toEqual({});
+                expect(mockClient.setExtraSessionProps).toHaveBeenCalledWith(
+                    'deviceToken',
+                    false,
+                    nativeApplicationVersion,
+                    undefined,
+                    'apple_voip_rn-v2:abcd',
+                );
+            } finally {
+                Platform.OS = originalOS;
+            }
         });
 
         it('should handle errors gracefully', async () => {

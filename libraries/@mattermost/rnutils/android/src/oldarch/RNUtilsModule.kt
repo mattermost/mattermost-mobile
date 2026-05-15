@@ -56,6 +56,9 @@ class RNUtilsModule(context: ReactApplicationContext) :
         return implementation.getHasRegisteredLoad()
     }
 
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun getVoipToken(): String = ""
+
     @ReactMethod
     fun unlockOrientation() {
         implementation.unlockOrientation()

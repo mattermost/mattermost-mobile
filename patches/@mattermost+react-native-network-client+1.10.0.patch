@@ -1,0 +1,20 @@
+diff --git a/node_modules/@mattermost/react-native-network-client/react-native-network-client.podspec b/node_modules/@mattermost/react-native-network-client/react-native-network-client.podspec
+index 6a405ce..f91102d 100644
+--- a/node_modules/@mattermost/react-native-network-client/react-native-network-client.podspec
++++ b/node_modules/@mattermost/react-native-network-client/react-native-network-client.podspec
+@@ -1,4 +1,5 @@
+ require "json"
++require "rbconfig"
+ 
+ package = JSON.parse(File.read(File.join(__dir__, "package.json")))
+ 
+@@ -15,7 +16,8 @@ Pod::Spec.new do |s|
+ 
+   
+   s.source_files = "ios/**/*.{h,m,mm,swift}"
+-  s.prepare_command = 'ruby ios/patches/apply_patches.rb'
++  # Use the same Ruby as CocoaPods (system `ruby` may be too old / lack the cocoapods gem).
++  s.prepare_command = "#{RbConfig.ruby} ios/patches/apply_patches.rb"
+   
+   fabric_enabled = ENV["RCT_NEW_ARCH_ENABLED"] == "1"
+ 

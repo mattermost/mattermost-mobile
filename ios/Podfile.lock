@@ -4430,7 +4430,7 @@ SPEC CHECKSUMS:
   fmt: 530618a01105dae0fa3a2f27c81ae11fa8f67eac
   Gekidou: 94199ed8d31b900f2caeb9d5739c19bed9defc4a
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
-  hermes-engine: 28814c9c9296d16aef26cb514de5378d18885e44
+  hermes-engine: 36bfc76c163b0831998b994def9b607d6353338d
   JitsiWebRTC: b47805ab5668be38e7ee60e2258f49badfe8e1d0
   KituraContracts: e845e60dc8627ad0a76fa55ef20a45451d8f830b
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
@@ -4487,7 +4487,7 @@ SPEC CHECKSUMS:
   react-native-image-picker: 6051cfd030121b880a58f1cc0e5e33e9887804e4
   react-native-keyboard-controller: c610d1f839ad9cd41f4420db14beaa1cf64263f6
   react-native-netinfo: 9fad4eedfec9840a10e73ac4591ea1158523309b
-  react-native-network-client: e8848cbc7f4890ebdb5724fcd9fbedce0f2f9482
+  react-native-network-client: e070fa5760b6fd01950ee0594d82661bf30e362a
   react-native-notifications: e2d3c022d6077de7e420ba5c01b4bd9464f3941d
   react-native-paste-input: 4b1423c882afacf39d7e2617e6c94835dcefaf39
   react-native-performance: a7a65d0b0f3055c5db33e1433e4345143ef6a100
@@ -4558,4 +4558,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: ebd4ca8ecaf68d41df3c7f8c0da4d615f7a76f9c
 
-COCOAPODS: 1.16.1
+COCOAPODS: 1.16.2

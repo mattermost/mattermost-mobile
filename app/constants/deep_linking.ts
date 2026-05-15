@@ -3,6 +3,7 @@
 
 const DeepLinkType = {
     Channel: 'channel',
+    CallsIncoming: 'calls_incoming',
     DirectMessage: 'dm',
     GroupMessage: 'gm',
     Invalid: 'invalid',

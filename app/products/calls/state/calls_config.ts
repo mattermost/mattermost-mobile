@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useState} from 'react';
+import {useRef, useState} from 'react';
 import {BehaviorSubject} from 'rxjs';
 
 import {type CallsConfigState, DefaultCallsConfig} from '@calls/types/calls';
@@ -30,12 +30,17 @@ export const observeCallsConfig = (serverUrl: string) => {
 };
 
 export const useCallsConfig = (serverUrl: string) => {
-    const [state, setState] = useState(DefaultCallsConfig);
-
     const callsConfigSubject = getCallsConfigSubject(serverUrl);
+    const [state, setState] = useState(() => callsConfigSubject.value);
+    const stateRef = useRef(state);
 
     useDidMount(() => {
         const subscription = callsConfigSubject.subscribe((callsConfig) => {
+            if (stateRef.current === callsConfig) {
+                return;
+            }
+
+            stateRef.current = callsConfig;
             setState(callsConfig);
         });
 

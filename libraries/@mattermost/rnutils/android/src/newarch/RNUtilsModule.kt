@@ -32,6 +32,7 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
 
     override fun setHasRegisteredLoad() = implementation.setHasRegisteredLoad()
     override fun getHasRegisteredLoad(): WritableMap = implementation.getHasRegisteredLoad()
+    override fun getVoipToken(): String = ""
 
     override fun unlockOrientation() {
         implementation.unlockOrientation()

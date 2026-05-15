@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {nativeApplicationVersion} from 'expo-application';
+import {Platform} from 'react-native';
 import {RESULTS, checkNotifications} from 'react-native-permissions';
 
 import {deletePostsForChannel, deletePostsForChannelsWithAutotranslation} from '@actions/local/channel';
@@ -18,7 +19,7 @@ import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@managers/network_manager';
-import {getDeviceToken} from '@queries/app/global';
+import {getDeviceToken, getVoipDeviceToken} from '@queries/app/global';
 import {getChannelById, queryChannelsById, queryMyChannelsByChannelIds} from '@queries/servers/channel';
 import {prepareEntryModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
@@ -296,6 +297,7 @@ export const setExtraSessionProps = async (serverUrl: string, groupLabel?: Reque
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const serverVersion = await getConfigValue(database, 'Version');
         const deviceToken = await getDeviceToken();
+        const voipDeviceId = Platform.OS === 'ios' ? (await getVoipDeviceToken()) : '';
 
         // For new servers, we want to send all the information.
         // For old servers, we only want to send the information when there
@@ -305,7 +307,13 @@ export const setExtraSessionProps = async (serverUrl: string, groupLabel?: Reque
             const res = await checkNotifications();
             const granted = res.status === RESULTS.GRANTED || res.status === RESULTS.LIMITED;
             const client = NetworkManager.getClient(serverUrl);
-            client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion, groupLabel);
+            await client.setExtraSessionProps(
+                deviceToken,
+                !granted,
+                nativeApplicationVersion,
+                groupLabel,
+                voipDeviceId ? voipDeviceId : undefined,
+            );
         }
         return {};
     } catch (error) {

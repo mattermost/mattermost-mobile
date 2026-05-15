@@ -6,10 +6,11 @@ import {defineMessage, type IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 import urlParse from 'url-parse';
 
-import {joinIfNeededAndSwitchToChannel, makeDirectChannel} from '@actions/remote/channel';
+import {joinIfNeededAndSwitchToChannel, makeDirectChannel, switchToChannelById} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
 import {magicLinkLogin} from '@actions/remote/session';
 import {fetchUsersByUsernames} from '@actions/remote/user';
+import {leaveAndJoinWithAlert} from '@calls/alerts';
 import {DeepLink, Launch, Screens} from '@constants';
 import DeepLinkType from '@constants/deep_linking';
 import {getDefaultThemeByAppearance} from '@context/theme';
@@ -38,7 +39,7 @@ import {
     TOKEN_PATH_PATTERN,
 } from '@utils/url/path';
 
-import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkPlaybookRuns, DeepLinkWithData, LaunchProps} from '@typings/launch';
+import type {DeepLinkChannel, DeepLinkCallsIncoming, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkPlaybookRuns, DeepLinkWithData, LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const deepLinkScreens: AvailableScreens[] = [Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD];
@@ -85,6 +86,12 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
         const intl = intlShape || getIntlShape(locale);
 
         switch (deepLink.type) {
+            case DeepLink.CallsIncoming: {
+                const data = deepLink.data as DeepLinkCallsIncoming;
+                await switchToChannelById(existingServerUrl, data.channelId);
+                await leaveAndJoinWithAlert(intl, existingServerUrl, data.channelId);
+                break;
+            }
             case DeepLink.Channel: {
                 const deepLinkData = deepLink.data as DeepLinkChannel;
                 joinIfNeededAndSwitchToChannel(existingServerUrl, {name: deepLinkData.channelName}, {name: deepLinkData.teamName}, errorBadChannel, intl);
@@ -251,6 +258,7 @@ type ServerPathParams = {
 
 export const matchServerDeepLink = match<ServerPathParams>(':serverUrl/{:path}{/*subpath}', {decode: decodeURIComponent});
 const reservedWords = ['login', 'signup', 'admin_console'];
+const MATTERMOST_APP_SCHEME = /^mattermost[a-z0-9-]*:$/i;
 
 export function extractServerUrl(url: string) {
     const deepLinkUrl = decodeURIComponent(url).replace(/\.{2,}/g, '').replace(/\/+/g, '/');
@@ -326,6 +334,23 @@ function isValidToken(token?: string): boolean {
 export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWithData {
     try {
         const parsedUrl = urlParse(deepLinkUrl, true);
+        if (MATTERMOST_APP_SCHEME.test(parsedUrl.protocol) && parsedUrl.hostname === 'incoming-call') {
+            const q = parsedUrl.query as Record<string, string | undefined>;
+            const serverUrl = q.server_url;
+            const channelId = q.channel_id;
+            if (typeof serverUrl === 'string' && serverUrl.length > 0 && typeof channelId === 'string' && channelId.length > 0) {
+                return {
+                    type: DeepLink.CallsIncoming,
+                    url: deepLinkUrl,
+                    data: {
+                        serverUrl: decodeURIComponent(serverUrl),
+                        channelId,
+                    },
+                };
+            }
+            return {type: DeepLink.Invalid, url: deepLinkUrl};
+        }
+
         const urlWithoutQuery = stripTrailingSlashes(parsedUrl.protocol + '//' + parsedUrl.host + parsedUrl.pathname);
         const url = removeProtocol(urlWithoutQuery);
 

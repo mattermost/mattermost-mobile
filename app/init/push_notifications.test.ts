@@ -1,14 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils/src';
 import {AppState, DeviceEventEmitter, Platform} from 'react-native';
 
-import {storeDeviceToken} from '@actions/app/global';
+import {storeDeviceToken, storeVoipDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {updateThread} from '@actions/local/thread';
+import {setExtraSessionProps} from '@actions/remote/entry/common';
 import {openNotification} from '@actions/remote/notifications';
 import {Device, Events, PushNotification, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
+import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
@@ -61,7 +64,14 @@ jest.mock('react-native-notifications', () => ({
 jest.mock('@actions/app/global');
 jest.mock('@actions/local/channel');
 jest.mock('@actions/local/thread');
+jest.mock('@actions/remote/entry/common', () => ({
+    setExtraSessionProps: jest.fn(),
+}));
 jest.mock('@actions/remote/notifications');
+jest.mock('@queries/app/servers', () => ({
+    getActiveServerUrl: jest.fn(),
+    getServerDisplayName: jest.fn(),
+}));
 jest.mock('@utils/general', () => ({
     ...jest.requireActual('@utils/general'),
     isBetaApp: jest.fn(),
@@ -92,6 +102,8 @@ describe('PushNotifications', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.mocked(RNUtils.getVoipToken).mockReturnValue('');
+        jest.mocked(getActiveServerUrl).mockResolvedValue('');
         pushNotifications = require('./push_notifications').default;
     });
 
@@ -114,6 +126,36 @@ describe('PushNotifications', () => {
                 expect(mockNotifications.registerRemoteNotifications).toHaveBeenCalled();
                 done();
             }, 0);
+        });
+
+        it('should store cached iOS VoIP token and update active session props', async () => {
+            Platform.OS = 'ios';
+            const voipToken = 'test-voip-token';
+            const serverUrl = 'http://test.com';
+            jest.mocked(RNUtils.getVoipToken).mockReturnValue(voipToken);
+            jest.mocked(getActiveServerUrl).mockResolvedValue(serverUrl);
+
+            pushNotifications.init(false);
+            await new Promise((resolve) => setImmediate(resolve));
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(storeVoipDeviceToken).toHaveBeenCalledWith(`${Device.PUSH_NOTIFY_APPLE_VOIP_RN}beta-v2:${voipToken}`);
+            expect(setExtraSessionProps).toHaveBeenCalledWith(serverUrl);
+        });
+
+        it('should store emitted iOS VoIP token and update active session props', async () => {
+            Platform.OS = 'ios';
+            const voipToken = 'test-voip-token';
+            const serverUrl = 'http://test.com';
+            jest.mocked(getActiveServerUrl).mockResolvedValue(serverUrl);
+
+            pushNotifications.init(false);
+            DeviceEventEmitter.emit('MattermostVoIPToken', {token: voipToken});
+            await new Promise((resolve) => setImmediate(resolve));
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(storeVoipDeviceToken).toHaveBeenCalledWith(`${Device.PUSH_NOTIFY_APPLE_VOIP_RN}beta-v2:${voipToken}`);
+            expect(setExtraSessionProps).toHaveBeenCalledWith(serverUrl);
         });
     });
 

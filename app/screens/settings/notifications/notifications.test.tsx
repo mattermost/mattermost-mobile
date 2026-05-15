@@ -3,9 +3,11 @@
 
 import React, {type ComponentProps} from 'react';
 
+import {setCallsConfig} from '@calls/state';
+import {DefaultCallsConfig} from '@calls/types/calls';
 import DatabaseManager from '@database/manager';
 import * as DeviceHooks from '@hooks/device';
-import {renderWithEverything, waitFor} from '@test/intl-test-helper';
+import {act, renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import Notifications from './notifications';
@@ -35,6 +37,10 @@ describe('Notifications disabled banner', () => {
         const server = await TestHelper.setupServerDatabase(serverUrl);
         database = server.database;
         jest.clearAllMocks();
+    });
+
+    beforeEach(() => {
+        setCallsConfig(serverUrl, DefaultCallsConfig);
     });
 
     it('should be visible if notifications are disabled', async () => {
@@ -98,5 +104,29 @@ describe('Notifications disabled banner', () => {
         resolvePromise(false);
 
         await new Promise((r) => setTimeout(r, 10));
+    });
+
+    it('should show the call notifications option when ringing is enabled', async () => {
+        const wrapper = renderWithEverything(<Notifications {...getBaseProps()}/>, {database, serverUrl});
+
+        expect(wrapper.queryByTestId('notification_settings.call_notifications.option')).toBeNull();
+
+        act(() => {
+            setCallsConfig(serverUrl, {...DefaultCallsConfig, EnableRinging: true});
+        });
+
+        await waitFor(() => {
+            expect(wrapper.queryByTestId('notification_settings.call_notifications.option')).toBeVisible();
+        });
+    });
+
+    it('should label mention settings from CRT state', () => {
+        const wrapper = renderWithEverything(<Notifications {...getBaseProps()}/>, {database, serverUrl});
+
+        expect(wrapper.getByText('Mentions and Replies')).toBeVisible();
+
+        wrapper.rerender(<Notifications {...getBaseProps()} isCRTEnabled={true}/>);
+
+        expect(wrapper.getByText('Mentions')).toBeVisible();
     });
 });

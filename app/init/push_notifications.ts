@@ -3,7 +3,7 @@
 
 import RNUtils from '@mattermost/rnutils/src';
 import {defineMessages} from 'react-intl';
-import {AppState, DeviceEventEmitter, Platform, type EmitterSubscription} from 'react-native';
+import {AppState, DeviceEventEmitter, NativeEventEmitter, Platform, type EmitterSubscription} from 'react-native';
 import {
     Notification,
     NotificationAction,
@@ -17,7 +17,7 @@ import {
 } from 'react-native-notifications';
 import {requestNotifications} from 'react-native-permissions';
 
-import {storeDeviceToken} from '@actions/app/global';
+import {storeDeviceToken, storeVoipDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {updateThread} from '@actions/local/thread';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
@@ -25,7 +25,7 @@ import {isCallsStartedMessage} from '@calls/utils';
 import {Device, Events, PushNotification, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage} from '@i18n';
-import {getServerDisplayName} from '@queries/app/servers';
+import {getActiveServerUrl, getServerDisplayName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
@@ -57,7 +57,7 @@ class PushNotificationsSingleton {
 
     init(register: boolean) {
         this.subscriptions?.forEach((v) => v.remove());
-        this.subscriptions = [
+        const subs: EmitterSubscription[] = [
             Notifications.events().registerNotificationOpened(this.onNotificationOpened),
             Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered),
             Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground),
@@ -65,6 +65,18 @@ class PushNotificationsSingleton {
             Notifications.events().registerRemoteNotificationsRegistrationFailed(this.NotificationsRegistrationFailed),
             Notifications.events().registerRemoteNotificationsRegistrationDenied(this.onRemoteNotificationsRegistrationDenied),
         ];
+
+        if (Platform.OS === 'ios') {
+            const voipEmitter = new NativeEventEmitter(RNUtils);
+            void this.handleVoipToken(RNUtils.getVoipToken());
+            subs.push(
+                voipEmitter.addListener('MattermostVoIPToken', (ev: {token: string}) => {
+                    void this.handleVoipToken(ev.token);
+                }),
+            );
+        }
+
+        this.subscriptions = subs;
 
         if (register) {
             this.registerIfNeeded();
@@ -83,6 +95,21 @@ class PushNotificationsSingleton {
         }
         Notifications.registerRemoteNotifications();
     }
+
+    handleVoipToken = async (rawToken: string) => {
+        if (!rawToken) {
+            return;
+        }
+
+        const prefix = `${Device.PUSH_NOTIFY_APPLE_VOIP_RN}${isBetaApp ? 'beta' : ''}`;
+        await storeVoipDeviceToken(`${prefix}-v2:${rawToken}`);
+
+        const active = await getActiveServerUrl();
+        if (active) {
+            const {setExtraSessionProps} = await import('@actions/remote/entry/common');
+            await setExtraSessionProps(active);
+        }
+    };
 
     createReplyCategory = () => {
         const replyTitle = getLocalizedMessage(DEFAULT_LOCALE, messages.replyTitle.id);

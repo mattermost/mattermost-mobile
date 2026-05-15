@@ -262,6 +262,7 @@ jest.doMock('react-native', () => {
             setHasRegisteredLoad: jest.fn(),
 
             getDeliveredNotifications: jest.fn().mockResolvedValue([]),
+            getVoipToken: jest.fn().mockReturnValue(''),
             removeChannelNotifications: jest.fn().mockImplementation(),
             removeThreadNotifications: jest.fn().mockImplementation(),
             removeServerNotifications: jest.fn().mockImplementation(),
@@ -273,6 +274,9 @@ jest.doMock('react-native', () => {
             getWindowDimensions: jest.fn().mockReturnValue({width: 426, height: 952}),
 
             deleteDatabaseDirectory: jest.fn(),
+        },
+        MattermostIncomingCallsBridge: {
+            endIncomingCallKit: jest.fn(),
         },
         APIClient: {
             getConstants: () => ({

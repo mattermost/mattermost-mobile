@@ -61,6 +61,7 @@ export interface Spec extends TurboModule {
 
     getHasRegisteredLoad: () => HasRegisteredLoadResponse;
     setHasRegisteredLoad: () => void;
+    getVoipToken: () => string;
 
     deleteDatabaseDirectory: (databaseName: string, shouldRemoveDirectory: boolean) => DatabaseOperationResult;
     renameDatabase: (databaseName: string, newDatabaseName: string) => DatabaseOperationResult;
