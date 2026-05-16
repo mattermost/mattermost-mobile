@@ -279,6 +279,47 @@ class ChannelScreen {
 
     postMessage = async (message: string) => {
         // # Post message
+        //
+        // Precondition: the channel screen must actually be the topmost screen
+        // before we touch postInput. Empirical analysis of CI run 25947506060
+        // showed many "View is not hittable" failures at this exact site were
+        // actually state-contamination from a prior test that left a modal open
+        // (e.g. Edit Channel Header). The postInput element is still discoverable
+        // by testID because the channel screen stays mounted underneath, but
+        // every interaction fails because the modal intercepts touches. We
+        // dismiss any known leftover modal once before falling through to the
+        // normal post flow. Cheap on the common (no-modal) path: a single
+        // 600 ms exists-probe per close button id, short-circuited at the first
+        // hit.
+        try {
+            const knownCloseIds = [
+                'close.create_or_edit_channel.button',
+                'close.channel_info.button',
+                'close.channel_add_members.button',
+                'close.channel_bookmark.button',
+                'close.edit_post.button',
+                'close.edit_profile.button',
+                'close.find_channels.button',
+                'close.browse_channels.button',
+                'close.settings.button',
+                'close.create_direct_message.button',
+                'close.custom_status.button',
+            ];
+            /* eslint-disable no-await-in-loop -- short-circuit at first match */
+            for (const closeId of knownCloseIds) {
+                const btn = element(by.id(closeId));
+                try {
+                    await waitFor(btn).toExist().withTimeout(timeouts.HALF_SEC);
+                    await btn.tap();
+                    await wait(timeouts.ONE_SEC);
+                    break;
+                } catch { /* not this modal */ }
+            }
+            /* eslint-enable no-await-in-loop */
+        } catch {
+            // Best-effort recovery. Fall through.
+        }
+
         // On iOS the PasteInputTextView can fail Detox's 100% visibility threshold
         // when the channel intro header pushes the input below the visible area or
         // a tooltip overlay partially covers it. Dismiss any tooltip overlay first,

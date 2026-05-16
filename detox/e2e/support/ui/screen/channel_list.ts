@@ -7,8 +7,44 @@ import {
     TeamSidebar,
 } from '@support/ui/component';
 import {HomeScreen} from '@support/ui/screen';
-import {timeouts, wait, waitForElementToExist} from '@support/utils';
+import {tapNativeBackButton, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {waitFor} from 'detox';
+
+// Every expo-router modal in app/routes/(modals)/ wraps `getModalHeaderOptions`
+// with a close-button testID of the form `close.<screen-name>.button`.
+// When a prior test fails partway through and leaves one of these modals open,
+// the next test's `beforeEach: ChannelListScreen.toBeVisible()` would silently
+// succeed (channel_list.screen still exists in the hierarchy, just behind the
+// modal) and the test would then fail with "View is not hittable" on the
+// post_input / tab_bar / sidebar element it tries to touch next.
+//
+// The list is enumerated explicitly (rather than a regex match) because:
+//   1. Detox `by.id` doesn't accept regex on all platforms uniformly.
+//   2. Tapping the wrong close button can disrupt a screen that legitimately
+//      contains a "close.something.button" testID — only canonical modal-header
+//      close buttons should be tapped during recovery.
+// Source: grep -rn "getModalHeaderOptions(...,.*'close\\..*\\.button')" app/routes
+const KNOWN_MODAL_CLOSE_BUTTON_IDS: readonly string[] = Object.freeze([
+    'close.create_or_edit_channel.button',
+    'close.channel_info.button',
+    'close.channel_add_members.button',
+    'close.channel_bookmark.button',
+    'close.channel_files.button',
+    'close.channel_configuration.button',
+    'close.create_direct_message.button',
+    'close.find_channels.button',
+    'close.browse_channels.button',
+    'close.edit_post.button',
+    'close.edit_profile.button',
+    'close.edit_server.button',
+    'close.invite.button',
+    'close.join_team.button',
+    'close.reschedule_draft.button',
+    'close.settings.button',
+    'close.custom_status.button',
+    'close.apps_form.button',
+    'close.interactive_dialog.button',
+] as const);
 
 class ChannelListScreen {
     testID = {
@@ -208,6 +244,91 @@ class ChannelListScreen {
         return element(by.id(`${this.testID.teamItemPrefix}${teamId}.team_icon.display_name_abbreviation`));
     };
 
+    /**
+     * Dismiss any expo-router modal that may be left open from a prior test's
+     * partial failure. Each modal in app/routes/(modals)/ uses
+     * `getModalHeaderOptions(..., 'close.<screen>.button')`, so a single
+     * targeted tap on any present close button pops the topmost modal.
+     *
+     * Loops up to 5 times so we handle stacked-modal scenarios (e.g. user is
+     * 3 levels deep — channel_info → channel_settings → configuration). Each
+     * close button is given a tight 600 ms exists-probe so the overall recovery
+     * stays under ~3 s when no modals are open (the common case).
+     */
+    private dismissAnyOpenModals = async (): Promise<void> => {
+        /* eslint-disable no-await-in-loop -- sequential modal dismissals */
+        for (let depth = 0; depth < 5; depth++) {
+            let dismissedOne = false;
+            for (const closeId of KNOWN_MODAL_CLOSE_BUTTON_IDS) {
+                const btn = element(by.id(closeId));
+                try {
+                    await waitFor(btn).toExist().withTimeout(timeouts.HALF_SEC);
+                    await btn.tap();
+                    await wait(timeouts.ONE_SEC);
+                    dismissedOne = true;
+                    break;
+                } catch {
+                    // Not this modal — try the next id.
+                }
+            }
+            if (!dismissedOne) {
+                return;
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+    };
+
+    /**
+     * Pop the navigation stack back toward the channel list. Used in recovery
+     * when a prior test left the app pushed into a settings / thread / channel-
+     * detail screen and no modal close button is present. The app uses two
+     * different back-button mechanisms:
+     *
+     *   - Channel screen: custom `<NavigationHeader>` component with testID
+     *     `navigation.header.back` (handled via `NavigationHeader.backButton`).
+     *   - Settings / Thread / etc. (expo-router native stack screens): the
+     *     platform's system back chevron, which has no testID — tapped via
+     *     `tapNativeBackButton()` (`device.pressBack()` on Android,
+     *     `by.label('Back')` on iOS).
+     *
+     * We try BOTH on each iteration so the recovery handles either kind of
+     * pushed screen. Up to 3 levels deep, bounded at ~9 s worst case when
+     * neither button is present.
+     */
+    private popBackUntilChannelList = async (): Promise<void> => {
+        /* eslint-disable no-await-in-loop -- sequential back navigation */
+        for (let i = 0; i < 3; i++) {
+            try {
+                await waitForElementToExist(this.channelListScreen, timeouts.ONE_SEC);
+                return;
+            } catch {
+                // Not on channel list yet.
+            }
+            let popped = false;
+            try {
+                await waitFor(NavigationHeader.backButton).toExist().withTimeout(timeouts.TWO_SEC);
+                await NavigationHeader.backButton.tap();
+                await wait(timeouts.ONE_SEC);
+                popped = true;
+            } catch {
+                // No custom NavigationHeader back — fall through to native back.
+            }
+            if (!popped) {
+                try {
+                    await tapNativeBackButton(timeouts.TWO_SEC);
+                    await wait(timeouts.ONE_SEC);
+                    popped = true;
+                } catch {
+                    // Neither back button available — bail.
+                }
+            }
+            if (!popped) {
+                return;
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+    };
+
     toBeVisible = async (timeout = timeouts.HALF_MIN) => {
         // iOS 26.x on macos-15 CI runners takes longer than 10s to settle the channel
         // list screen after login navigation (React Native bridge + Metro warm-up).
@@ -217,6 +338,31 @@ class ChannelListScreen {
         // threshold, which cascades into every subsequent test in the suite.
         // Callers that need a longer wait (e.g. post-archive navigation on API 35)
         // can pass an explicit timeout.
+
+        // ─── Active recovery preflight ───────────────────────────────────────
+        // The channel_list.screen view is rendered on app startup and stays
+        // mounted underneath every pushed/modal screen. So plain
+        // `waitForElementToExist(this.channelListScreen)` succeeds even when a
+        // modal is sitting on top — the next call to interact with the channel
+        // list then fails with "View is not hittable" because the modal
+        // intercepts touches. Empirical analysis of CI run 25947506060 found
+        // ~45 of 74 iOS "not hittable" failures and ~50 Android sidebar-missing
+        // failures were exactly this state-contamination pattern.
+        //
+        // Preflight strategy:
+        //   1. Dismiss any known expo-router modal still open from a prior
+        //      test's partial failure (looks for close.*.button by testID).
+        //   2. Pop the native expo-router stack back if a settings/thread/etc
+        //      screen is on top (uses the platform native back chevron).
+        // Both steps are bounded (~3 s when nothing is open) so passing tests
+        // pay near-zero overhead. Errors are swallowed — recovery is
+        // best-effort; the subsequent waitForElementToExist is the real gate.
+        try {
+            await this.dismissAnyOpenModals();
+            await this.popBackUntilChannelList();
+        } catch {
+            // Recovery is best-effort. Always fall through to the assertion.
+        }
         try {
             // Use polling waitForElementToExist instead of waitFor().toExist() — on iOS 26.x
             // simulators the main run loop keeps 2 persistent work items pending, which stalls
