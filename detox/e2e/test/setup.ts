@@ -33,6 +33,27 @@ function getSimulatorId(): string {
     }
 }
 
+// Resolved-once container paths — `xcrun simctl get_app_container` runs an
+// IPC into the booted simulator's launchd, which serializes badly when 20
+// parallel iOS shards each call it ~6× per shard. Under load it sometimes
+// returns an empty string (no error code) and we silently skip the wipe,
+// leaving stale App Group databases that cause the "Couldn't load <team>"
+// cascade on the next launch. Resolve each path once per process and reuse.
+let cachedDataContainer: string | undefined;
+let cachedAppGroupContainer: string | undefined;
+
+function resolveContainerPath(simId: string, kind: string): string | undefined {
+    try {
+        const path = execSync(
+            `xcrun simctl get_app_container "${simId}" ${BUNDLE_ID} ${kind} 2>/dev/null`,
+            {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']},
+        ).trim();
+        return path || undefined;
+    } catch {
+        return undefined;
+    }
+}
+
 function clearIOSAppData(): void {
     const simId = getSimulatorId();
     if (!simId) {
@@ -67,19 +88,19 @@ function clearIOSAppData(): void {
     // 2. Find the app's data container and delete its contents.
     //    This wipes caches, preferences — but NOT the database (which lives in
     //    the App Group container, cleared separately in step 2b).
-    try {
-        const dataContainer = execSync(
-            `xcrun simctl get_app_container "${simId}" ${BUNDLE_ID} data 2>/dev/null`,
-            {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']},
-        ).trim();
-
-        if (dataContainer) {
+    if (!cachedDataContainer) {
+        cachedDataContainer = resolveContainerPath(simId, 'data');
+    }
+    if (cachedDataContainer) {
+        try {
             // Remove all contents of Documents, Library, tmp (but keep the container dir)
-            execSync(`find "${dataContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
-            console.info(`[clearIOSAppData] Cleared data container: ${dataContainer}`);
+            execSync(`find "${cachedDataContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
+            console.info(`[clearIOSAppData] Cleared data container: ${cachedDataContainer}`);
+        } catch {
+            console.warn('[clearIOSAppData] data-container wipe failed');
         }
-    } catch {
-        console.warn('[clearIOSAppData] Could not clear data container (app may not be installed yet)');
+    } else {
+        console.warn('[clearIOSAppData] Could not resolve data container (app may not be installed yet)');
     }
 
     // 2b. Clear the App Group container.
@@ -89,18 +110,18 @@ function clearIOSAppData(): void {
     //     relaunches with server entries from the previous test but no valid auth
     //     token (keychain was cleared in step 3), causing fetchMyChannelsForTeam
     //     to fail and the "Couldn't load" error screen to appear.
-    try {
-        const appGroupContainer = execSync(
-            `xcrun simctl get_app_container "${simId}" ${BUNDLE_ID} group.com.mattermost.rnbeta 2>/dev/null`,
-            {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']},
-        ).trim();
-
-        if (appGroupContainer) {
-            execSync(`find "${appGroupContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
-            console.info(`[clearIOSAppData] Cleared App Group container: ${appGroupContainer}`);
+    if (!cachedAppGroupContainer) {
+        cachedAppGroupContainer = resolveContainerPath(simId, 'group.com.mattermost.rnbeta');
+    }
+    if (cachedAppGroupContainer) {
+        try {
+            execSync(`find "${cachedAppGroupContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
+            console.info(`[clearIOSAppData] Cleared App Group container: ${cachedAppGroupContainer}`);
+        } catch {
+            console.warn('[clearIOSAppData] App-Group-container wipe failed');
         }
-    } catch {
-        console.warn('[clearIOSAppData] Could not clear App Group container');
+    } else {
+        console.warn('[clearIOSAppData] Could not resolve App Group container');
     }
 
     // 3. Clear the keychain (removes stored auth tokens, certificates)
@@ -384,4 +405,13 @@ beforeAll(async () => {
     // Admin login — populates the cookie jar for this file's apiInit() calls.
     // Server config + plugin cleanup already done once in global_setup.js.
     await loginAdmin();
-});
+}, /* timeout */ 360_000);
+// Why 360s instead of relying on testTimeout=240s for this hook:
+// The global beforeAll worst case is launchApp (up to ~90s on Android cold
+// boot under Detox WS-handshake latency) + waitFor server.screen (60s) +
+// fallback retry (~95s) + admin login (10s) = ~255s. That exceeds the 240s
+// Jest hook ceiling, causing setup.ts to fire "Exceeded timeout of 240000 ms
+// for a hook" on slow Android shards (40 occurrences in CI run 25947506060).
+// 360s gives ~105s headroom for the actual recovery path to complete instead
+// of being killed mid-launch. Per-hook timeout is scoped to this beforeAll
+// only; test cases keep using the 240s testTimeout from config.js.
