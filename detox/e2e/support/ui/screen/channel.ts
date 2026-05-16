@@ -309,14 +309,44 @@ class ChannelScreen {
             // Input not hittable (intro header covering it on iOS) — replaceText
             // will still work and focus the field.
         }
-        try {
-            await this.postInput.replaceText(message);
-        } catch {
-            // Hittability failure from a transient UITransitionView (RNN navigation
-            // overlay) briefly covering the input. Wait for it to clear and retry once.
-            await wait(timeouts.ONE_SEC);
-            await this.postInput.replaceText(message);
+
+        // Poll for hittability on the post input.
+        //
+        // On iOS the PasteInputTextView gets briefly occluded by the channel-intro
+        // header, the scheduled-post tooltip, an in-flight UITransitionView from
+        // the RNN-style navigation transition, or a keyboard inset that hasn't
+        // settled yet. The previous "single retry after a 1 s wait" was racing all
+        // of these on the slow macos-15 / iOS 26 CI runners (35 failures/run at
+        // this exact site). A bounded polling loop with a hittability probe per
+        // iteration lets the transient overlays clear without giving up too soon.
+        //
+        // Total budget is timeouts.TEN_SEC. Each iteration calls replaceText() and
+        // returns immediately on success; a hittability rejection is caught,
+        // a short wait amortises one frame + transition, and we retry. Any other
+        // failure (e.g. element not found) is re-thrown immediately so we don't
+        // mask real regressions.
+        const replaceDeadline = Date.now() + timeouts.TEN_SEC;
+        let lastError: unknown;
+        /* eslint-disable no-await-in-loop -- sequential retry on transient occlusion */
+        while (Date.now() < replaceDeadline) {
+            try {
+                await this.postInput.replaceText(message);
+                lastError = undefined;
+                break;
+            } catch (e) {
+                const msg = String(e);
+                if (!msg.includes('hittable') && !msg.includes('not visible')) {
+                    throw e;
+                }
+                lastError = e;
+                await wait(timeouts.HALF_SEC);
+            }
         }
+        /* eslint-enable no-await-in-loop */
+        if (lastError) {
+            throw lastError;
+        }
+
         await this.tapSendButton();
         await wait(timeouts.TWO_SEC);
     };
