@@ -25,6 +25,37 @@ export async function waitForLoadingSpinner(testID: string, timeout = 10000): Pr
 }
 
 /**
+ * Tap the native stack header's back button on screens that use the expo-router /
+ * `@react-navigation/native-stack` native header (Thread, ThemeDisplaySettings,
+ * PinnedMessages, Table, etc.).
+ *
+ * History: before the RNN→expo-router migration (commit b6fc85385), the app set
+ * `topBar.backButton.testID = 'screen.back.button'` on RNN's native top bar, so
+ * Detox could find it by id. After the migration, the native-stack header in
+ * `@react-navigation/native-stack` v7 / `react-native-screens` v4.24 exposes NO
+ * testID API for the back chevron. The custom `<NavigationHeader>` testID
+ * `navigation.header.back` only exists on screens that render that component
+ * (e.g. ChannelScreen). On native-stack screens it doesn't exist at all, which
+ * was the root cause of ~33 Detox failures referencing the back chevron.
+ *
+ * Cross-platform approach without touching production:
+ *   - Android: `device.pressBack()` invokes the platform back gesture, which the
+ *     native stack interprets identically to a chevron tap (also covers Espresso
+ *     hardware back).
+ *   - iOS: the iOS native stack chevron exposes `accessibilityLabel = "Back"`
+ *     even with `headerBackButtonDisplayMode: 'minimal'`. Tap it by label.
+ */
+export async function tapNativeBackButton(timeout = 10_000): Promise<void> {
+    if (device.getPlatform() === 'android') {
+        await device.pressBack();
+        return;
+    }
+    const backButton = element(by.label('Back')).atIndex(0);
+    await waitFor(backButton).toBeVisible().withTimeout(timeout);
+    await backButton.tap();
+}
+
+/**
  * Retry an element visibility check with linear backoff
  * Helps handle race conditions during navigation and UI transitions
  * @param elementToCheck - Detox element to check visibility

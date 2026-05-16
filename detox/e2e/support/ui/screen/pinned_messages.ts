@@ -6,7 +6,7 @@ import {
     ChannelInfoScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, longPressWithRetry, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 class PinnedMessagesScreen {
@@ -64,7 +64,8 @@ class PinnedMessagesScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
+        // Native expo-router stack header — no testID on the back chevron.
+        await tapNativeBackButton();
         await expect(this.pinnedMessagesScreen).not.toBeVisible();
     };
 

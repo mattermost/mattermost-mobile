@@ -11,7 +11,7 @@ import {
     SendButton,
 } from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isAndroid, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, longPressWithScrollRetry, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 class ThreadScreen {
@@ -115,7 +115,10 @@ class ThreadScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
+        // ThreadScreen uses the native expo-router stack header which does not
+        // expose a testID on the back chevron — `tapNativeBackButton` queries it
+        // platform-natively (Android `pressBack`, iOS `by.label('Back')`).
+        await tapNativeBackButton();
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Wait for the previous screen to be fully loaded and rendered
