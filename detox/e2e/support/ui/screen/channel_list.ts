@@ -129,7 +129,40 @@ class ChannelListScreen {
             }
         }
         /* eslint-enable no-await-in-loop */
-        throw new Error('Sidebar channel display name not visible');
+
+        // Diagnostics on failure: which state ARE we actually in? This logging
+        // is the only way to distinguish "channel record never reached the local
+        // DB" (server-side propagation lag) from "channel record is in the DB
+        // but the sidebar component never re-rendered" (app-side observable
+        // race). Fires only on the failure path so adds no overhead in passing
+        // runs. Note: Detox doesn't expose the view hierarchy text directly, so
+        // we probe a handful of well-known testIDs to fingerprint the screen.
+        const probes: Array<{name: string; el: Detox.NativeElement}> = [
+            {name: 'channel_list.screen', el: this.channelListScreen},
+            {name: 'channel_list_header.team_display_name', el: this.headerTeamDisplayName},
+            {name: 'category_header.channels.display_name', el: this.getCategoryHeaderDisplayName('channels')},
+            {name: 'category_header.favorites.display_name', el: this.getCategoryHeaderDisplayName('favorites')},
+            {name: 'category_header.direct_messages.display_name', el: this.getCategoryHeaderDisplayName('direct_messages')},
+            {name: 'load_channels_error Retry button', el: element(by.text('Retry'))},
+        ];
+        const probeResults: string[] = [];
+        /* eslint-disable no-await-in-loop, no-console */
+        for (const probe of probes) {
+            try {
+                await waitForElementToExist(probe.el, timeouts.HALF_SEC);
+                probeResults.push(`${probe.name}=present`);
+            } catch {
+                probeResults.push(`${probe.name}=absent`);
+            }
+        }
+        /* eslint-enable no-await-in-loop, no-console */
+        // eslint-disable-next-line no-console
+        console.warn(
+            `[waitForSidebarPublicChannelDisplayNameVisible] FAIL channelName=${channelName} ` +
+            `categoriesProbed=[${categories.join(',')}] state={${probeResults.join('; ')}}`,
+        );
+
+        throw new Error(`Sidebar channel display name not visible (channel="${channelName}")`);
     };
 
     tapSidebarPublicChannelDisplayName = async (channelName: string, timeout = timeouts.ONE_MIN) => {
