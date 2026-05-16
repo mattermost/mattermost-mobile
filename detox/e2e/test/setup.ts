@@ -10,28 +10,6 @@ import {siteOneUrl} from '@support/test_config';
 
 const BUNDLE_ID = 'com.mattermost.rnbeta';
 
-// Cap how long a single device.launchApp() + waitFor(server.screen) attempt can
-// take. Without this, a hung launch eats the entire 240s Jest beforeAll timeout
-// and retries never get a chance.
-function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-        const timer = setTimeout(
-            () => reject(new Error(`[${label}] timed out after ${ms / 1000}s`)),
-            ms,
-        );
-        promise.then(
-            (v) => {
-                clearTimeout(timer);
-                resolve(v);
-            },
-            (e) => {
-                clearTimeout(timer);
-                reject(e);
-            },
-        );
-    });
-}
-
 // ─── iOS app state reset ─────────────────────────────────────────────────────
 // On iOS, `device.launchApp({ delete: true })` triggers a full uninstall +
 // reinstall cycle. This is notoriously fragile on CI — Detox frequently loses
@@ -203,22 +181,6 @@ beforeAll(async () => {
     const isFirstFile = !process.env.DETOX_SETUP_DONE;
     const launchArgs = {detoxDisableSynchronization: 'YES'};
 
-    // Each launch-and-verify cycle is bounded so a hung device.launchApp() or
-    // waitFor(server.screen) can't eat the entire 240s Jest hook timeout.
-    //
-    // Why 120s (iPhone): `notifications: 'YES'` triggers applesimutils --restartSB
-    // which restarts SpringBoard (~20–30s) before simctl launch. Adding SpringBoard
-    // restart (30s) + simctl launch (26s) + WebSocket connect (8s) = 64s worst-case.
-    // 120s gives 56s headroom above the observed worst case.
-    //
-    // Why 120s (iPad): same restartSB overhead. iPad Pro 13-inch (M5) simctl launch
-    // takes up to 90s on CI — restartSB adds 30s on top. Total worst-case ~120s per
-    // attempt. With 2 attempts: 240s + 3s pause = 243s > 240s Jest limit. Keep
-    // MAX_LAUNCH_ATTEMPTS=2 but use 110s for iPad (110s × 2 = 220s < 240s).
-    // DEVICE_NAME is injected from the CI workflow input (inputs.ios_device_name).
-    const isIpadDevice = process.env.DEVICE_NAME?.toLowerCase().includes('ipad') ?? false;
-    const PER_ATTEMPT_MS = isIpadDevice ? 110_000 : 120_000;
-
     // Android CI emulators cold-start more slowly than iOS simulators, especially
     // after adb shell pm clear wipes the data directory. Use a longer ready-timeout
     // on Android to avoid spurious launch failures that cause the cascade described
@@ -367,22 +329,24 @@ beforeAll(async () => {
         clearIOSAppData();
     }
 
-    // Retry loop with per-attempt timeout. On iOS CI, device.launchApp({newInstance:true})
-    // can hang when Detox's internal terminateApp() stalls on iOS 26.x. The timeout
-    // ensures we abort quickly enough for the next attempt to fit within 240s.
+    // Retry loop without a Promise.race timeout wrapper.
     //
-    // MAX_LAUNCH_ATTEMPTS=2 (not 3): each attempt is capped at PER_ATTEMPT_MS=90s.
-    // 3 × 90s = 270s > 240s Jest beforeAll limit, which caused iPad simulator
-    // launch failures where the 3rd attempt started but beforeAll timed out mid-run.
-    // 2 × 90s = 180s comfortably fits within 240s while still giving a full retry.
+    // The earlier `withTimeout(launchAndVerify(), PER_ATTEMPT_MS)` pattern caused
+    // "Detox has detected multiple interactions taking place simultaneously"
+    // failures: when the outer setTimeout rejected at 120 s, the inner waitFor()
+    // invoke was still pending in Detox's command queue. The retry's next
+    // waitFor() then fired on top of the orphan, and Detox aborted both. ~30
+    // Android beforeAll hooks were dying to this race per CI run.
+    //
+    // Linear `await launchAndVerify()` lets each Detox call complete or throw
+    // on its own internal `withTimeout(...)` (which DOES properly cancel its
+    // invoke). Between attempts the app process is force-killed, which closes
+    // Detox's WebSocket and drains any still-in-flight invokes before the next
+    // attempt is allowed to start.
     const MAX_LAUNCH_ATTEMPTS = 2;
     for (let attempt = 1; attempt <= MAX_LAUNCH_ATTEMPTS; attempt++) {
         try {
-            await withTimeout(
-                launchAndVerify(),
-                PER_ATTEMPT_MS,
-                `launch attempt ${attempt}`,
-            );
+            await launchAndVerify();
             break;
         } catch (launchError) {
             console.warn(
@@ -394,9 +358,13 @@ beforeAll(async () => {
             }
 
             // Between attempts: kill the app process directly (not via
-            // device.terminateApp() which can hang on iOS 26.x).
+            // device.terminateApp() which can hang on iOS 26.x). Killing the
+            // PID also forces Detox's WS to disconnect, which is what cleans
+            // up any residual JS-side pending invokes from the failed attempt.
             if (device.getPlatform() === 'ios') {
                 clearIOSAppData();
+            } else if (device.getPlatform() === 'android') {
+                await forceAndroidDataClear();
             }
             await new Promise((resolve) => setTimeout(resolve, 3000));
         }
