@@ -203,8 +203,47 @@ async function configureTestServer(token) {
     // the same provisioned server can exhaust the default trial-license limit.
     config.ServiceSettings = config.ServiceSettings || {};
     config.ServiceSettings.MaximumActiveUsers = 999999; // effectively unlimited
+
+    // Raise the failed-login lockout threshold. Default is 10 attempts; on parallel
+    // CI runs with 20 shards retrying logins, the admin user can get locked out
+    // mid-suite, surfacing as the "Your account is locked because of too many failed
+    // password attempts" screen — every subsequent test then fails on adminLogin.
+    config.ServiceSettings.MaximumLoginAttempts = 999999;
+
+    // Ensure the password-policy minimum matches what our test helpers generate.
+    // generateRandomUser produces 17-char passwords, so 8 (default) is fine, but
+    // we set it explicitly here so a server with FIPS mode on (min 14) doesn't
+    // reject creates differently than a normal server.
+    config.PasswordSettings = config.PasswordSettings || {};
+    config.PasswordSettings.MinimumLength = 8;
     config.TeamSettings = config.TeamSettings || {};
     config.TeamSettings.MaxUsersPerTeam = 999999;
+
+    // Enable bot account creation. Default is false in mattermost server's
+    // SetDefaults (server/public/model/config.go), and trial-licensed cloud
+    // test servers ship with it off, so `POST /api/v4/bots` returns 403 with
+    // an HTML error page from the edge proxy. The Detox setup that runs in
+    // `beforeAll` for ~7 test files calls `Bot.apiCreateBot` and fails the
+    // JSON parse on the HTML response. Reference: bot.go createBot guard
+    // `if !*c.App.Config().ServiceSettings.EnableBotAccountCreation`.
+    config.ServiceSettings.EnableBotAccountCreation = true;
+
+    // Enable shared channels + remote cluster service so MM-T5780 /
+    // share_with_connected_workspaces tests can call
+    // `Channel.apiEnsureSingleRemoteCluster`. Default in SetDefaults
+    // (server/public/model/config.go) is false; without this toggle the
+    // remote cluster service is not registered and the test bails with
+    // "remote cluster service is not enabled".
+    //
+    // The flags moved from ExperimentalSettings to ConnectedWorkspacesSettings
+    // on master (old paths are marked Deprecated). Set both so this provisioner
+    // works against either server version.
+    config.ConnectedWorkspacesSettings = config.ConnectedWorkspacesSettings || {};
+    config.ConnectedWorkspacesSettings.EnableSharedChannels = true;
+    config.ConnectedWorkspacesSettings.EnableRemoteClusterService = true;
+    config.ExperimentalSettings = config.ExperimentalSettings || {};
+    config.ExperimentalSettings.EnableSharedChannels = true;
+    config.ExperimentalSettings.EnableRemoteClusterService = true;
 
     console.log('[provision] Updating plugin uploads, Marketplace, disabling rate limiting, and removing user caps...');
     const updateRes = await request('PUT', '/api/v4/config', config, token);
