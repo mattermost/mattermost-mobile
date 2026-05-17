@@ -58,12 +58,24 @@ describe('Account - Custom Status', () => {
     });
 
     beforeEach(async () => {
-        // * Verify on channel list screen or account screen depending on test
+        // * Verify on channel list OR account screen depending on the prior
+        // test's exit state. Probe each testID directly with a short
+        // `toExist()` instead of calling the page objects'
+        // `toBeVisible()` helpers — those helpers (especially
+        // `ChannelListScreen.toBeVisible`) invoke a defensive
+        // `device.launchApp({newInstance: true})` recovery on miss, which
+        // resets the iOS session and dumps the user back on Server
+        // Connect for the rest of the file (verified locally via
+        // `[ChannelListScreen.toBeVisible] Channel list not found —
+        // attempting recovery relaunch` log entries between MM-T4990_1
+        // PASS and MM-T4990_2 FAIL on iPhone 17 Pro / iOS 26.3).
+        const channelList = element(by.id('channel_list.screen'));
+        const accountScreen = element(by.id('account.screen'));
         try {
-            await ChannelListScreen.toBeVisible();
-        } catch (e) {
-            await AccountScreen.toBeVisible();
-        }
+            await waitFor(channelList).toExist().withTimeout(timeouts.TWO_SEC);
+            return;
+        } catch { /* not on channel list */ }
+        await waitFor(accountScreen).toExist().withTimeout(timeouts.TWO_SEC);
     });
 
     afterAll(async () => {
@@ -487,6 +499,7 @@ const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: stri
     await AccountScreen.toBeVisible();
     const {accountCustomStatusEmoji, accountCustomStatusText, accountCustomStatusExpiry} =
         AccountScreen.getCustomStatus(status.emoji, status.duration);
+
     // The emoji testID lives on a non-touchable wrapper <View> whose Detox
     // `visible` flag reports false on iOS 26 (see custom_status.suggestions
     // diagnostic). The testID itself encodes the emoji name

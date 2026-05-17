@@ -43,23 +43,31 @@ class CustomStatusScreen {
     };
 
     getCustomStatusSuggestion = (_blockMatcher: Detox.NativeMatcher, emojiName: string, text: string, duration: string) => {
-        // The `_blockMatcher` argument used to be chained as
-        // `.withAncestor(blockMatcher)` to disambiguate the same item
-        // appearing in both the suggestions wrapper and the recents wrapper.
-        // It is no longer used because:
-        //   1. On iOS 26, Detox's `withAncestor` traversal cannot resolve
-        //      ancestors that are non-touchable container `<View>`s — the
-        //      `custom_status.suggestions` / `custom_status.recents`
-        //      wrappers report `hittable: false, visible: false` from
-        //      `getAttributes()` and break the matcher chain. Verified
-        //      locally via a one-shot diagnostic.
-        //   2. The source filters items already in recents out of the
-        //      suggestions block (see
-        //      `app/screens/custom_status/components/custom_status_suggestions.tsx`),
-        //      so the same `custom_status.custom_status_suggestion.<text>`
-        //      testID never exists in both wrappers simultaneously — the
-        //      ancestor constraint is structurally redundant. Argument
-        //      kept for call-site compatibility; rename signalled with `_`.
+        // The original page object chained `.withAncestor(blockMatcher)` to
+        // disambiguate the same item appearing in the recents block vs the
+        // suggestions block (both wrappers' children carry the same
+        // `custom_status.custom_status_suggestion.<text>` testID).
+        // On iOS 26 that traversal is broken: Detox cannot resolve an
+        // ancestor that is a non-touchable container View — the
+        // `custom_status.suggestions` / `custom_status.recents` wrappers
+        // report `hittable: false, visible: false` from
+        // `getAttributes()` and the matcher returns "No elements found"
+        // even for items that are demonstrably in the tree. Verified
+        // locally: with `withAncestor` restored, MM-T4990_1's
+        // `verifyAllSuggestedStatuses` (per-item assertions) fails;
+        // without it, MM-T4990_1 passes but MM-T4990_2's
+        // `expect(suggestion).not.toExist()` matches the recent.
+        //
+        // TODO: pick one of these to close the trade-off properly —
+        //   (a) source change in
+        //       `app/screens/custom_status/components/custom_status_suggestion/custom_status_suggestion.tsx`
+        //       to accept an optional `testIdPrefix` so suggestions and
+        //       recents render distinct testIDs, then drop the ancestor
+        //       constraint here completely; or
+        //   (b) refactor the per-item matchers to combine the outer item
+        //       ID with the recents' `clear.button` testID
+        //       (recents-only) for disambiguation.
+        // Argument kept with `_` prefix for call-site compatibility.
         const customStatusSuggestionTestId = `${this.testID.customStatusSuggestionPrefix}${text}`;
         const customStatusSuggestionMatcher = by.id(customStatusSuggestionTestId);
         const customStatusEmojiMatcher = by.id(`${customStatusSuggestionTestId}.custom_status_emoji.${emojiName}`);
