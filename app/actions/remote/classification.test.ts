@@ -5,7 +5,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getConfigValue} from '@queries/servers/system';
 
-import {fetchClassificationBanner} from './classification';
+import {fetchClassificationBanner, fetchChannelClassificationValue} from './classification';
 
 jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
@@ -18,9 +18,8 @@ jest.mock('@queries/servers/system', () => ({
 
 jest.mock('@store/system_property_store', () => ({
     registerGroupName: jest.fn(),
-    updatePropertyField: jest.fn(),
+    setPropertyFields: jest.fn(),
     updatePropertyValues: jest.fn(),
-    removePropertyFieldById: jest.fn(),
     getPropertyFields: jest.fn(() => []),
     getPropertyValuesForTarget: jest.fn(() => []),
     subscribe: jest.fn(() => jest.fn()),
@@ -28,32 +27,13 @@ jest.mock('@store/system_property_store', () => ({
     getGroupIdByName: jest.fn(),
 }));
 
-const {registerGroupName, updatePropertyField, updatePropertyValues, removePropertyFieldById} = require('@store/system_property_store');
+const {registerGroupName, setPropertyFields, updatePropertyValues} = require('@store/system_property_store');
 const mockedGetConfigValue = jest.mocked(getConfigValue);
 
 const serverUrl = 'classification.test.com';
 
-const templateField: PropertyField = {
-    id: 'template-field-id',
-    group_id: 'classification_markings',
-    name: 'classification',
-    type: 'select',
-    object_type: 'template',
-    target_type: 'system',
-    target_id: '',
-    delete_at: 0,
-    create_at: 1000,
-    update_at: 1000,
-    attrs: {
-        options: [
-            {id: 'opt-top-secret', name: 'TOP SECRET', color: '#FCE83A'},
-            {id: 'opt-secret', name: 'SECRET', color: '#FF0000'},
-        ],
-    },
-};
-
-const linkedField: PropertyField = {
-    id: 'linked-field-id',
+const systemField: PropertyField = {
+    id: 'system-field-id',
     group_id: 'classification_markings',
     name: 'system_classification',
     type: 'select',
@@ -73,12 +53,32 @@ const linkedField: PropertyField = {
     },
 };
 
+const channelField: PropertyField = {
+    id: 'channel-field-id',
+    group_id: 'classification_markings',
+    name: 'channel_classification',
+    type: 'select',
+    object_type: 'channel',
+    target_type: 'system',
+    target_id: '',
+    linked_field_id: 'template-field-id',
+    delete_at: 0,
+    create_at: 1000,
+    update_at: 1000,
+    attrs: {
+        options: [
+            {id: 'opt-top-secret', name: 'TOP SECRET', color: '#FCE83A'},
+            {id: 'opt-secret', name: 'SECRET', color: '#FF0000'},
+        ],
+    },
+};
+
 const systemValue: PropertyValue<string> = {
     id: 'val-1',
     target_id: 'system',
     target_type: 'system',
     group_id: 'classification_markings',
-    field_id: 'linked-field-id',
+    field_id: 'system-field-id',
     value: 'opt-top-secret',
     create_at: 1000,
     update_at: 1000,
@@ -88,6 +88,7 @@ const systemValue: PropertyValue<string> = {
 const mockClient = {
     getPropertyFields: jest.fn(),
     getSystemPropertyValues: jest.fn(),
+    getPropertyValues: jest.fn(),
 };
 
 beforeAll(() => {
@@ -111,15 +112,14 @@ describe('fetchClassificationBanner', () => {
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({});
-        expect(updatePropertyField).not.toHaveBeenCalled();
+        expect(setPropertyFields).not.toHaveBeenCalled();
         expect(updatePropertyValues).not.toHaveBeenCalled();
         expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
     });
 
-    it('should merge only linked field into store when template is missing', async () => {
+    it('should store system field when channel field is missing', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
-        mockClient.getPropertyFields.mockResolvedValueOnce([]);
-        mockClient.getPropertyFields.mockResolvedValueOnce([linkedField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
 
@@ -127,7 +127,7 @@ describe('fetchClassificationBanner', () => {
 
         expect(result).toEqual({});
         expect(registerGroupName).toHaveBeenCalledWith(serverUrl, 'classification_markings', 'classification_markings');
-        expect(updatePropertyField).toHaveBeenCalledWith(serverUrl, linkedField);
+        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', [systemField]);
         expect(updatePropertyValues).toHaveBeenCalledWith(serverUrl, 'system', 'classification_markings', [systemValue]);
     });
 
@@ -135,61 +135,72 @@ describe('fetchClassificationBanner', () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
-        mockClient.getPropertyFields.mockResolvedValueOnce([]);
 
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({});
         expect(registerGroupName).not.toHaveBeenCalled();
-        expect(updatePropertyField).not.toHaveBeenCalled();
+        expect(setPropertyFields).not.toHaveBeenCalled();
         expect(updatePropertyValues).not.toHaveBeenCalled();
     });
 
-    it('should merge only template field into store when linked is missing', async () => {
+    it('should store channel field when system field is missing', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
-        mockClient.getPropertyFields.mockResolvedValueOnce([templateField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
-        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([]);
 
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({});
         expect(registerGroupName).toHaveBeenCalledWith(serverUrl, 'classification_markings', 'classification_markings');
-        expect(updatePropertyField).toHaveBeenCalledWith(serverUrl, templateField);
+        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', [channelField]);
         expect(updatePropertyValues).not.toHaveBeenCalled();
     });
 
-    it('should merge both fields and values into store on happy path', async () => {
+    it('should store all active fields and values on happy path', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
-        mockClient.getPropertyFields.mockResolvedValueOnce([templateField]);
-        mockClient.getPropertyFields.mockResolvedValueOnce([linkedField]);
-        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
 
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({});
         expect(registerGroupName).toHaveBeenCalledWith(serverUrl, 'classification_markings', 'classification_markings');
-        expect(updatePropertyField).toHaveBeenCalledWith(serverUrl, templateField);
-        expect(updatePropertyField).toHaveBeenCalledWith(serverUrl, linkedField);
+        expect(setPropertyFields).toHaveBeenCalledWith(
+            serverUrl,
+            'classification_markings',
+            expect.arrayContaining([systemField, channelField]),
+        );
+        expect(setPropertyFields.mock.calls[0][2]).toHaveLength(2);
         expect(updatePropertyValues).toHaveBeenCalledWith(serverUrl, 'system', 'classification_markings', [systemValue]);
     });
 
-    it('should remove soft-deleted fields from store', async () => {
+    it('should exclude soft-deleted fields from the stored set', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
-        const deletedTemplate = {...templateField, delete_at: 5000};
-        mockClient.getPropertyFields.mockResolvedValueOnce([deletedTemplate]);
-        mockClient.getPropertyFields.mockResolvedValueOnce([linkedField]);
-        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        const deletedSystem = {...systemField, delete_at: 5000};
+        mockClient.getPropertyFields.mockResolvedValueOnce([deletedSystem]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([]);
 
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({});
-        expect(removePropertyFieldById).toHaveBeenCalledWith(serverUrl, deletedTemplate.id);
-        expect(updatePropertyField).toHaveBeenCalledWith(serverUrl, linkedField);
-        expect(updatePropertyField).not.toHaveBeenCalledWith(serverUrl, deletedTemplate);
+        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', [channelField]);
+    });
+
+    it('should return early when fields have mismatched group_ids', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        const differentGroupField = {...channelField, group_id: 'other_group'};
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([differentGroupField]);
+
+        const result = await fetchClassificationBanner(serverUrl);
+
+        expect(result).toEqual({});
+        expect(setPropertyFields).not.toHaveBeenCalled();
+        expect(updatePropertyValues).not.toHaveBeenCalled();
     });
 
     it('should return error without modifying store when network client throws', async () => {
@@ -200,7 +211,75 @@ describe('fetchClassificationBanner', () => {
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({error: networkError});
-        expect(updatePropertyField).not.toHaveBeenCalled();
+        expect(setPropertyFields).not.toHaveBeenCalled();
+        expect(updatePropertyValues).not.toHaveBeenCalled();
+    });
+});
+
+describe('fetchChannelClassificationValue', () => {
+    const channelId = 'channel-123';
+
+    const channelValue: PropertyValue<string> = {
+        id: 'cv-1',
+        target_id: channelId,
+        target_type: 'channel',
+        group_id: 'classification_markings',
+        field_id: 'channel-field-id',
+        value: 'opt-secret',
+        create_at: 1000,
+        update_at: 1000,
+        delete_at: 0,
+    };
+
+    it('should do nothing when feature flag is not true', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('false');
+
+        const result = await fetchChannelClassificationValue(serverUrl, channelId);
+
+        expect(result).toEqual({});
+        expect(mockClient.getPropertyValues).not.toHaveBeenCalled();
+        expect(updatePropertyValues).not.toHaveBeenCalled();
+    });
+
+    it('should store channel values on happy path', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]);
+
+        const result = await fetchChannelClassificationValue(serverUrl, channelId);
+
+        expect(result).toEqual({});
+        expect(updatePropertyValues).toHaveBeenCalledWith(serverUrl, channelId, 'classification_markings', [channelValue]);
+    });
+
+    it('should return early when API returns no values', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyValues.mockResolvedValueOnce([]);
+
+        const result = await fetchChannelClassificationValue(serverUrl, channelId);
+
+        expect(result).toEqual({});
+        expect(updatePropertyValues).not.toHaveBeenCalled();
+    });
+
+    it('should return early when group_id is empty', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        const noGroupValue = {...channelValue, group_id: ''};
+        mockClient.getPropertyValues.mockResolvedValueOnce([noGroupValue]);
+
+        const result = await fetchChannelClassificationValue(serverUrl, channelId);
+
+        expect(result).toEqual({});
+        expect(updatePropertyValues).not.toHaveBeenCalled();
+    });
+
+    it('should return error when network client throws', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        const networkError = new Error('network failure');
+        mockClient.getPropertyValues.mockRejectedValueOnce(networkError);
+
+        const result = await fetchChannelClassificationValue(serverUrl, channelId);
+
+        expect(result).toEqual({error: networkError});
         expect(updatePropertyValues).not.toHaveBeenCalled();
     });
 });

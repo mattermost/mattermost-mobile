@@ -15,27 +15,8 @@ jest.mock('@actions/remote/classification', () => ({
 const serverUrl = 'hook-classification.test.com';
 const GROUP = 'classification_markings';
 
-const templateField: PropertyField = {
-    id: 'tmpl-1',
-    group_id: GROUP,
-    name: 'classification',
-    type: 'select',
-    object_type: 'template',
-    target_type: 'system',
-    target_id: '',
-    delete_at: 0,
-    create_at: 1000,
-    update_at: 1000,
-    attrs: {
-        options: [
-            {id: 'opt-ts', name: 'TOP SECRET', color: '#FCE83A'},
-            {id: 'opt-s', name: 'SECRET', color: '#FF0000'},
-        ],
-    },
-};
-
-const linkedField: PropertyField = {
-    id: 'linked-1',
+const systemField: PropertyField = {
+    id: 'sys-1',
     group_id: GROUP,
     name: 'system_classification',
     type: 'select',
@@ -60,7 +41,7 @@ const systemValue: PropertyValue<string> = {
     target_id: 'system',
     target_type: 'system',
     group_id: GROUP,
-    field_id: 'linked-1',
+    field_id: 'sys-1',
     value: 'opt-ts',
     create_at: 1000,
     update_at: 1000,
@@ -87,27 +68,9 @@ describe('useClassificationBannerState', () => {
         expect(result.current).toEqual({visible: false, levelName: '', color: ''});
     });
 
-    it('should return default state when template field is missing', () => {
-        setPropertyFields(serverUrl, GROUP, [linkedField]);
-        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
-
-        const {result} = renderHook(() => useClassificationBannerState(serverUrl));
-
-        expect(result.current).toEqual({visible: false, levelName: '', color: ''});
-    });
-
-    it('should return default state when linked field is missing', () => {
-        setPropertyFields(serverUrl, GROUP, [templateField]);
-        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
-
-        const {result} = renderHook(() => useClassificationBannerState(serverUrl));
-
-        expect(result.current).toEqual({visible: false, levelName: '', color: ''});
-    });
-
     it('should return default state when DISPLAY_BANNER_TOP action is missing', () => {
-        const noActionLinked = {...linkedField, attrs: {...linkedField.attrs, actions: []}} as PropertyField;
-        setPropertyFields(serverUrl, GROUP, [templateField, noActionLinked]);
+        const noActionField = {...systemField, attrs: {...systemField.attrs, actions: []}} as PropertyField;
+        setPropertyFields(serverUrl, GROUP, [noActionField]);
         setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
@@ -116,7 +79,7 @@ describe('useClassificationBannerState', () => {
     });
 
     it('should return default state when no system value is set', () => {
-        setPropertyFields(serverUrl, GROUP, [templateField, linkedField]);
+        setPropertyFields(serverUrl, GROUP, [systemField]);
         setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, []);
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
@@ -125,7 +88,7 @@ describe('useClassificationBannerState', () => {
     });
 
     it('should return visible state with correct level on happy path', () => {
-        setPropertyFields(serverUrl, GROUP, [templateField, linkedField]);
+        setPropertyFields(serverUrl, GROUP, [systemField]);
         setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
@@ -138,7 +101,7 @@ describe('useClassificationBannerState', () => {
     });
 
     it('should re-derive when store values change', () => {
-        setPropertyFields(serverUrl, GROUP, [templateField, linkedField]);
+        setPropertyFields(serverUrl, GROUP, [systemField]);
         setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
@@ -163,7 +126,7 @@ describe('useClassificationBannerState', () => {
         expect(result.current.visible).toBe(false);
 
         act(() => {
-            setPropertyFields(serverUrl, GROUP, [templateField, linkedField]);
+            setPropertyFields(serverUrl, GROUP, [systemField]);
         });
 
         expect(result.current).toEqual({
@@ -175,7 +138,7 @@ describe('useClassificationBannerState', () => {
 
     it('should return default state when option_id does not match any option', () => {
         const badValue = {...systemValue, value: 'non-existent-opt'};
-        setPropertyFields(serverUrl, GROUP, [templateField, linkedField]);
+        setPropertyFields(serverUrl, GROUP, [systemField]);
         setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [badValue]);
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
@@ -186,15 +149,14 @@ describe('useClassificationBannerState', () => {
     it('should auto-register group name and re-render when field arrives for unregistered group', () => {
         const unregisteredServer = 'unregistered.test.com';
         const groupUuid = 'uuid-new-group';
-        const field = {...templateField, group_id: groupUuid};
-        const linked = {...linkedField, group_id: groupUuid};
+        const field = {...systemField, group_id: groupUuid};
         const value = {...systemValue, group_id: groupUuid};
 
         const {result} = renderHook(() => useClassificationBannerState(unregisteredServer));
         expect(result.current).toEqual({visible: false, levelName: '', color: ''});
 
         act(() => {
-            setPropertyFields(unregisteredServer, groupUuid, [field, linked]);
+            setPropertyFields(unregisteredServer, groupUuid, [field]);
             setPropertyValues(unregisteredServer, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, groupUuid, [value]);
         });
 
@@ -216,7 +178,7 @@ describe('useClassificationBannerState', () => {
 
     it('should not bootstrap fetch when all data is present', () => {
         const {fetchClassificationBanner} = require('@actions/remote/classification');
-        setPropertyFields(serverUrl, GROUP, [templateField, linkedField]);
+        setPropertyFields(serverUrl, GROUP, [systemField]);
         setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
         fetchClassificationBanner.mockClear();
 

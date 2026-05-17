@@ -16,25 +16,6 @@ const serverUrl = 'https://channel-class-hook.test.com';
 const channelId = 'channel-123';
 const groupId = 'grp-abc';
 
-const templateField: PropertyField = {
-    id: 'tf-1',
-    group_id: groupId,
-    name: 'classification',
-    type: 'select',
-    object_type: 'template',
-    target_type: 'system',
-    target_id: '',
-    attrs: {
-        options: [
-            {id: 'level-secret', name: 'Secret', color: '#FF0000'},
-            {id: 'level-public', name: 'Public', color: '#00FF00'},
-        ],
-    },
-    create_at: 1000,
-    update_at: 1000,
-    delete_at: 0,
-};
-
 const channelField: PropertyField = {
     id: 'cf-1',
     group_id: groupId,
@@ -43,8 +24,13 @@ const channelField: PropertyField = {
     object_type: 'channel',
     target_type: 'system',
     target_id: '',
-    linked_field_id: templateField.id,
-    attrs: {},
+    linked_field_id: 'tmpl-1',
+    attrs: {
+        options: [
+            {id: 'level-secret', name: 'Secret', color: '#FF0000'},
+            {id: 'level-public', name: 'Public', color: '#00FF00'},
+        ],
+    },
     create_at: 1000,
     update_at: 1000,
     delete_at: 0,
@@ -64,7 +50,7 @@ const channelPropertyValue: PropertyValue<string> = {
 
 function seedStore() {
     store.registerGroupName(serverUrl, 'classification_markings', groupId);
-    store.setPropertyFields(serverUrl, groupId, [templateField, channelField]);
+    store.setPropertyFields(serverUrl, groupId, [channelField]);
 }
 
 function clearStore() {
@@ -89,7 +75,7 @@ describe('useChannelClassificationBanner', () => {
 
     it('should return no classification when channel field is missing', () => {
         store.registerGroupName(serverUrl, 'classification_markings', groupId);
-        store.setPropertyFields(serverUrl, groupId, [templateField]);
+        store.setPropertyFields(serverUrl, groupId, []);
 
         const {result} = renderHook(() =>
             useChannelClassificationBanner(serverUrl, channelId),
