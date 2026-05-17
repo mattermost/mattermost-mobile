@@ -29,7 +29,13 @@ import {
 import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
-describe('Account - Attach App Logs', () => {
+// Skipped in Detox because "Report a Problem" intentionally opens an external
+// browser/email client on a free-edition server (see
+// `app/screens/settings/report_problem/report_problem.tsx#skipReportAProblemScreen`).
+// Forcing the in-app screen by overriding ReportAProblemType is server-config
+// gymnastics that doesn't reflect how users actually exercise the feature.
+// Coverage lives in Maestro: `maestro/flows/account/attach_logs.yml`.
+describe.skip('Account - Attach App Logs', () => {
     const serverOneDisplayName = 'Server 1';
     let testUser: any;
     let testChannel: any;
