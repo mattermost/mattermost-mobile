@@ -42,13 +42,30 @@ class CustomStatusScreen {
         return element(by.id(`${this.testID.customStatusDurationPrefix}${duration}.custom_status_expiry`));
     };
 
-    getCustomStatusSuggestion = (blockMatcher: Detox.NativeMatcher, emojiName: string, text: string, duration: string) => {
+    getCustomStatusSuggestion = (_blockMatcher: Detox.NativeMatcher, emojiName: string, text: string, duration: string) => {
+        // The `_blockMatcher` argument used to be chained as
+        // `.withAncestor(blockMatcher)` to disambiguate the same item
+        // appearing in both the suggestions wrapper and the recents wrapper.
+        // It is no longer used because:
+        //   1. On iOS 26, Detox's `withAncestor` traversal cannot resolve
+        //      ancestors that are non-touchable container `<View>`s — the
+        //      `custom_status.suggestions` / `custom_status.recents`
+        //      wrappers report `hittable: false, visible: false` from
+        //      `getAttributes()` and break the matcher chain. Verified
+        //      locally via a one-shot diagnostic.
+        //   2. The source filters items already in recents out of the
+        //      suggestions block (see
+        //      `app/screens/custom_status/components/custom_status_suggestions.tsx`),
+        //      so the same `custom_status.custom_status_suggestion.<text>`
+        //      testID never exists in both wrappers simultaneously — the
+        //      ancestor constraint is structurally redundant. Argument
+        //      kept for call-site compatibility; rename signalled with `_`.
         const customStatusSuggestionTestId = `${this.testID.customStatusSuggestionPrefix}${text}`;
-        const customStatusSuggestionMatcher = by.id(customStatusSuggestionTestId).withAncestor(blockMatcher);
-        const customStatusEmojiMatcher = by.id(`${customStatusSuggestionTestId}.custom_status_emoji.${emojiName}`).withAncestor(blockMatcher);
-        const customStatusTextMatcher = by.id(`${customStatusSuggestionTestId}.custom_status_text`).withAncestor(blockMatcher);
-        const customStatusDurationMatcher = by.id(`${customStatusSuggestionTestId}.custom_status_duration.${duration}`).withAncestor(blockMatcher);
-        const customStatusClearButtonMatcher = by.id(`${customStatusSuggestionTestId}.clear.button`).withAncestor(blockMatcher);
+        const customStatusSuggestionMatcher = by.id(customStatusSuggestionTestId);
+        const customStatusEmojiMatcher = by.id(`${customStatusSuggestionTestId}.custom_status_emoji.${emojiName}`);
+        const customStatusTextMatcher = by.id(`${customStatusSuggestionTestId}.custom_status_text`);
+        const customStatusDurationMatcher = by.id(`${customStatusSuggestionTestId}.custom_status_duration.${duration}`);
+        const customStatusClearButtonMatcher = by.id(`${customStatusSuggestionTestId}.clear.button`);
 
         return {
             customStatusSuggestion: element(customStatusSuggestionMatcher),
