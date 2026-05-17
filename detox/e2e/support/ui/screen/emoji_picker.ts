@@ -25,9 +25,19 @@ class EmojiPickerScreen {
     clearButton = SearchBar.getClearButton(this.testID.emojiPickerScreenPrefix);
 
     toBeVisible = async () => {
-        await waitFor(this.emojiPickerScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        // The emoji picker bottom sheet does NOT carry an `emoji_picker.screen`
+        // testID — that testID was never wired into the source. The picker's
+        // root render is a fragment (see app/screens/emoji_picker/picker/picker.tsx)
+        // and the wrapping BottomSheet uses the generic 'post_options' testID,
+        // shared with other bottom sheets. The picker's `emoji_picker.search_bar`
+        // (rendered by PickerHeader the moment the sheet mounts) is unique and
+        // a reliable readiness signal — observed in
+        // android-results-cjyc1rgm4y-2's MM-T4990_3 testFnFailure.png where
+        // the picker was fully rendered (emoji grid + search bar visible) but
+        // the old `emoji_picker.screen` wait timed out at 10s.
+        await waitFor(this.searchBar).toExist().withTimeout(timeouts.TEN_SEC);
 
-        return this.emojiPickerScreen;
+        return this.searchBar;
     };
 
     open = async () => {
@@ -51,21 +61,25 @@ class EmojiPickerScreen {
 
     close = async () => {
         if (isIos()) {
-            await this.emojiPickerScreen.swipe('down');
+            // The legacy `emoji_picker.screen` testID is absent (see
+            // `toBeVisible` comment), so swipe down on the search bar itself —
+            // it sits at the very top of the bottom-sheet content and works
+            // identically to swiping the sheet container.
+            await this.searchBar.swipe('down');
         } else {
             // First pressBack may dismiss the soft keyboard if it is still open
             // (e.g. after search interactions). A second pressBack is then needed
             // to actually close the emoji picker modal.
             await device.pressBack();
             try {
-                await waitFor(this.emojiPickerScreen).not.toExist().withTimeout(timeouts.ONE_SEC);
+                await waitFor(this.searchBar).not.toExist().withTimeout(timeouts.ONE_SEC);
             } catch {
                 // Picker is still visible — keyboard was dismissed first; close the picker now
                 await device.pressBack();
             }
         }
         await wait(timeouts.ONE_SEC);
-        await expect(this.emojiPickerScreen).not.toBeVisible();
+        await expect(this.searchBar).not.toBeVisible();
         await wait(timeouts.ONE_SEC);
     };
 }
