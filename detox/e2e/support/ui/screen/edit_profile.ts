@@ -3,7 +3,7 @@
 
 import {ProfilePicture} from '@support/ui/component';
 import {AccountScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class EditProfileScreen {
@@ -55,6 +55,14 @@ class EditProfileScreen {
 
     toBeVisible = async () => {
         await waitFor(this.editProfileScreen).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // Allow the modal slide-in animation to settle. Without this, the
+        // immediately-following `expect(profilePicture).toBeVisible()` in
+        // MM-T288_1 / MM-T289_1 / MM-T290_1 fails because the profile picture
+        // view's bounds are still in their pre-animation position when Detox
+        // calculates visibility — the bounds (137, 32, 128x128) overlap with
+        // the iOS status bar / dynamic island, dropping visibility under 75%.
+        await wait(timeouts.ONE_SEC);
 
         return this.editProfileScreen;
     };

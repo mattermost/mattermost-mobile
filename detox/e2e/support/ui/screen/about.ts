@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {SettingsScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 class AboutScreen {
@@ -41,7 +41,20 @@ class AboutScreen {
     };
 
     aboutScreen = element(by.id(this.testID.aboutScreen));
-    backButton = element(by.id(this.testID.backButton));
+
+    // About is an expo-router stack screen (app/routes/(modals)/(settings)/about.tsx
+    // uses `getHeaderOptions(theme)` via useNavigationHeader). On iOS the native
+    // back chevron rendered by @react-navigation/native-stack does NOT expose a
+    // testID — only `accessibilityLabel="Back"`. On Android the testID is still
+    // present, so `by.id(this.testID.backButton)` works as before. A platform
+    // getter keeps the existing test assertion `expect(backButton).toBeVisible()`
+    // working on both platforms.
+    get backButton(): Detox.NativeElement {
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.id(this.testID.backButton));
+    }
+
     scrollView = element(by.id(this.testID.scrollView));
     logo = element(by.id(this.testID.logo));
     title = element(by.id(this.testID.title));
@@ -86,7 +99,10 @@ class AboutScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
+        // Use platform-native back chevron: Android via device.pressBack(),
+        // iOS via by.label('Back'). The custom NavigationHeader's testID
+        // does not exist on this screen (expo-router native stack).
+        await tapNativeBackButton();
         await expect(this.aboutScreen).not.toBeVisible();
     };
 }

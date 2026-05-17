@@ -77,6 +77,17 @@ class AccountScreen {
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
         await waitFor(this.accountScreen).toExist().withTimeout(timeout);
 
+        // Allow the iOS Account drawer slide-up animation to fully settle
+        // before returning. Detox's `toExist()` only confirms the view is in
+        // the hierarchy — on iOS 26 the drawer's slide-up animation can still
+        // be in progress at that moment, which causes immediately-following
+        // `expect(child).toBeVisible()` assertions (e.g. the user-info profile
+        // picture in MM-T4988_1) to fail the 75% visibility threshold because
+        // the child's bounds are partially clipped by the in-flight transform.
+        // 800 ms covers the typical iOS modal slide animation (300–500 ms)
+        // with headroom for slow CI runners.
+        await wait(timeouts.ONE_SEC);
+
         return this.accountScreen;
     };
 
