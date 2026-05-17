@@ -77,16 +77,17 @@ class AccountScreen {
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
         await waitFor(this.accountScreen).toExist().withTimeout(timeout);
 
-        // Allow the iOS Account drawer slide-up animation to fully settle
-        // before returning. Detox's `toExist()` only confirms the view is in
-        // the hierarchy — on iOS 26 the drawer's slide-up animation can still
-        // be in progress at that moment, which causes immediately-following
+        // Detox's `toExist()` only confirms the account drawer view is in the
+        // hierarchy — on iOS 26 the slide-up animation can still be in progress
+        // at that moment, so the immediately-following
         // `expect(child).toBeVisible()` assertions (e.g. the user-info profile
-        // picture in MM-T4988_1) to fail the 75% visibility threshold because
-        // the child's bounds are partially clipped by the in-flight transform.
-        // 800 ms covers the typical iOS modal slide animation (300–500 ms)
-        // with headroom for slow CI runners.
-        await wait(timeouts.ONE_SEC);
+        // picture in MM-T4988_1) fail the 75% visibility threshold because the
+        // child's bounds are still being transformed. Wait for a known
+        // always-rendered row (the Log out option) to pass the visibility
+        // threshold instead of sleeping a fixed duration: this is the actual
+        // condition callers depend on, completes as soon as the modal lands,
+        // and fails fast if the drawer never settles.
+        await waitFor(this.logoutOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
 
         return this.accountScreen;
     };
@@ -118,6 +119,23 @@ class AccountScreen {
                 await wait(timeouts.HALF_SEC);
             } catch { /* not present */ }
         }
+
+        // Dismiss the "Removed from team" alert if a stale WebSocket team-
+        // membership-change event from a previous test file's teardown reaches
+        // this session — observed in ios-results-rz4222ls8c-2's MM-T4990_2
+        // testFnFailure.png where a "Removed from team / You have been removed
+        // from team ." dialog overlay sat on top of the channel list and
+        // blocked every hit-test on `tab_bar.account.tab`. The dialog is a
+        // native Alert (see `app/utils/navigation/index.tsx#alertTeamRemove`),
+        // so we first confirm the title is present (avoids tapping an
+        // unrelated OK button) and then dismiss via `Alert.okButton`, whose
+        // platform-aware locator handles iOS (`by.label('OK').atIndex(1)`) and
+        // Android (`by.text('OK')`) correctly.
+        try {
+            await waitFor(Alert.removedFromTeamTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await Alert.okButton.tap();
+            await wait(timeouts.HALF_SEC);
+        } catch { /* no team-removed alert */ }
 
         // Dismiss the "Scheduled Posts" tutorial tooltip before tapping the account tab.
         // On iPad the channel is always co-visible with the sidebar, so this tooltip appears
