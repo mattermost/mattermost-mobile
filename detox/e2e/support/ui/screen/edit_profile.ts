@@ -3,7 +3,7 @@
 
 import {ProfilePicture} from '@support/ui/component';
 import {AccountScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 class EditProfileScreen {
@@ -56,13 +56,18 @@ class EditProfileScreen {
     toBeVisible = async () => {
         await waitFor(this.editProfileScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // Allow the modal slide-in animation to settle. Without this, the
-        // immediately-following `expect(profilePicture).toBeVisible()` in
-        // MM-T288_1 / MM-T289_1 / MM-T290_1 fails because the profile picture
-        // view's bounds are still in their pre-animation position when Detox
-        // calculates visibility — the bounds (137, 32, 128x128) overlap with
-        // the iOS status bar / dynamic island, dropping visibility under 75%.
-        await wait(timeouts.ONE_SEC);
+        // Wait for `firstNameInput` to pass iOS' 75% / Android's 50% visibility
+        // threshold instead of using an arbitrary sleep. The first name input
+        // sits inside the modal's scrollable content area: once Detox confirms
+        // it is visible, the modal slide-in animation is finished and its
+        // bounds have settled — which is the actual condition the failing
+        // tests need. Earlier MM-T288_1 / MM-T289_1 / MM-T290_1 / MM-T4989_1
+        // failures stemmed from asserting the profile picture's visibility
+        // while the modal was still mid-transform (bounds overlapping the
+        // status bar / dynamic island, dropping visibility below threshold).
+        // Polling `firstNameInput` removes the guessed sleep duration and
+        // fails fast if the modal genuinely fails to open.
+        await waitFor(this.firstNameInput).toBeVisible().withTimeout(timeouts.FIVE_SEC);
 
         return this.editProfileScreen;
     };

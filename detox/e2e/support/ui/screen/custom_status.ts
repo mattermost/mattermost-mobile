@@ -72,6 +72,20 @@ class CustomStatusScreen {
     toBeVisible = async () => {
         await waitFor(this.customStatusScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
+        // Wait for the modal's `Done` button to pass the visibility threshold
+        // as a deterministic signal that the slide-up animation has landed and
+        // the header is interactive. We deliberately do NOT anchor on
+        // `suggestions` here: locally on iPhone 17 Pro / iOS 26 the
+        // `custom_status.suggestions` wrapper View is fully drawn on screen
+        // but still trips Detox's 75% visibility check (reproducible — even a
+        // 10s wait on the same matcher returns the same error). That looks
+        // like an iOS-26 Detox quirk on this specific wrapper, orthogonal to
+        // the settle wait; MM-T4990_1's `expect(suggestions).toBeVisible()`
+        // assertion needs a separate investigation. Anchoring on `suggestions`
+        // would also make `toBeVisible()` time out whenever the user has used
+        // every default status (the component returns null in that case).
+        await waitFor(this.doneButton).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+
         return this.customStatusScreen;
     };
 
