@@ -21,13 +21,25 @@ public class DetoxTest {
     @Test
     public void runDetoxTests() {
         DetoxConfig detoxConfig = new DetoxConfig();
-        // Increased from 90/60 to accommodate Fabric startup during cold boot.
-        // RN 0.83.9 New Architecture keeps Fabric's MountItemDispatcher busy for ~30s
-        // during server DB creation (39 tables) + batch model inserts + channel-list
-        // re-renders. Detox's FabricUIManagerIdlingResources fires the idle timeout
-        // during this window, crashing the test with IdlingResourceTimeoutException.
-        detoxConfig.idlePolicyConfig.masterTimeoutSec = 240;
-        detoxConfig.idlePolicyConfig.idleResourceTimeoutSec = 180;
+        // Bumped from 240/180 to 360/300 after CI run 25951064506 (Android shard
+        // 1, account_profile_picture + advanced_settings) showed
+        // FabricUIManagerIdlingResources reporting "not idle" for 3:06
+        // continuously while the app was sitting on the server screen. The 180s
+        // idleResourceTimeoutSec fired and Detox crashed the app with
+        // IdlingResourceTimeoutException; the global beforeAll's retry then
+        // also ran out of Jest hook budget. Empirically, even on slow Android
+        // CI shards the Fabric mount queue typically drains within ~30s; the
+        // worst-observed legitimate startup is ~180s, but tail-end shards
+        // (heavy parallel load) need more headroom. 300s covers the observed
+        // tail with a safety margin.
+        //
+        // TODO: investigate why FabricUIManagerIdlingResources stays non-idle
+        // on the server screen — likely a perpetually-restarting Reanimated
+        // animation (see app/hooks/screen_transition_animation.ts and
+        // app/screens/server/form.tsx withTiming usage) or a continuous timer
+        // emitter. A fix at the source would let us lower these back down.
+        detoxConfig.idlePolicyConfig.masterTimeoutSec = 360;
+        detoxConfig.idlePolicyConfig.idleResourceTimeoutSec = 300;
         detoxConfig.rnContextLoadTimeoutSec = (BuildConfig.DEBUG ? 180 : 60);
 
         Detox.runTests(mActivityRule, detoxConfig);
