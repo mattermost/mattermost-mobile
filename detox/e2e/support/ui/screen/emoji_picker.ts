@@ -4,7 +4,6 @@
 import {SearchBar} from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
 import {isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
 
 class EmojiPickerScreen {
     testID = {
@@ -26,18 +25,19 @@ class EmojiPickerScreen {
 
     toBeVisible = async () => {
         // The emoji picker bottom sheet does NOT carry an `emoji_picker.screen`
-        // testID — that testID was never wired into the source. The picker's
-        // root render is a fragment (see app/screens/emoji_picker/picker/picker.tsx)
-        // and the wrapping BottomSheet uses the generic 'post_options' testID,
-        // shared with other bottom sheets. The picker's `emoji_picker.search_bar`
-        // (rendered by PickerHeader the moment the sheet mounts) is unique and
-        // a reliable readiness signal — observed in
-        // android-results-cjyc1rgm4y-2's MM-T4990_3 testFnFailure.png where
-        // the picker was fully rendered (emoji grid + search bar visible) but
-        // the old `emoji_picker.screen` wait timed out at 10s.
-        await waitFor(this.searchBar).toExist().withTimeout(timeouts.TEN_SEC);
+        // testID — that ID was never wired into the source. The picker's root
+        // render is a fragment (see app/screens/emoji_picker/picker/picker.tsx)
+        // and the wrapping BottomSheet uses the generic 'post_options' testID
+        // shared with other bottom sheets. Verified locally on iOS 26 that
+        // `emoji_picker.search_bar` ALSO isn't a real testID — react-native-elements'
+        // SearchBar component receives `testID='emoji_picker.search_bar'` as a
+        // prefix and only emits the leaf IDs `.search.input`, `.search.cancel.button`,
+        // `.search.clear.button`. Wait on the `.search.input` (a leaf
+        // TextInput, always rendered the moment the sheet mounts) — this
+        // matches what's actually in the view hierarchy.
+        await waitFor(this.searchInput).toExist().withTimeout(timeouts.TEN_SEC);
 
-        return this.searchBar;
+        return this.searchInput;
     };
 
     open = async () => {
@@ -61,25 +61,24 @@ class EmojiPickerScreen {
 
     close = async () => {
         if (isIos()) {
-            // The legacy `emoji_picker.screen` testID is absent (see
-            // `toBeVisible` comment), so swipe down on the search bar itself —
-            // it sits at the very top of the bottom-sheet content and works
-            // identically to swiping the sheet container.
-            await this.searchBar.swipe('down');
+            // Swipe down on the search input — it's at the top of the sheet
+            // content, and dragging it down dismisses the bottom-sheet
+            // identically to dragging the sheet container.
+            await this.searchInput.swipe('down');
         } else {
             // First pressBack may dismiss the soft keyboard if it is still open
             // (e.g. after search interactions). A second pressBack is then needed
             // to actually close the emoji picker modal.
             await device.pressBack();
             try {
-                await waitFor(this.searchBar).not.toExist().withTimeout(timeouts.ONE_SEC);
+                await waitFor(this.searchInput).not.toExist().withTimeout(timeouts.ONE_SEC);
             } catch {
                 // Picker is still visible — keyboard was dismissed first; close the picker now
                 await device.pressBack();
             }
         }
         await wait(timeouts.ONE_SEC);
-        await expect(this.searchBar).not.toBeVisible();
+        await waitFor(this.searchInput).not.toExist().withTimeout(timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
     };
 }
