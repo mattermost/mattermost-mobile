@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {DisplaySettingsScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
 
 class ClockDisplaySettingsScreen {
     testID = {
@@ -17,7 +16,17 @@ class ClockDisplaySettingsScreen {
     };
 
     clockDisplaySettingsScreen = element(by.id(this.testID.clockDisplaySettingsScreen));
-    backButton = element(by.id(this.testID.backButton));
+
+    // expo-router native stack screen — the custom NavigationHeader's
+    // 'navigation.header.back' testID is not rendered here. iOS uses
+    // `accessibilityLabel="Back"`, Android uses the Toolbar's default
+    // navigation-icon contentDescription "Navigate up".
+    get backButton(): Detox.NativeElement {
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.label('Navigate up')).atIndex(0);
+    }
+
     scrollView = element(by.id(this.testID.scrollView));
     twelveHourOption = element(by.id(this.testID.twelveHourOption));
     twelveHourOptionSelected = element(by.id(this.testID.twelveHourOptionSelected));
@@ -38,14 +47,11 @@ class ClockDisplaySettingsScreen {
     };
 
     back = async () => {
-        try {
-            await waitFor(this.backButton).toExist().withTimeout(timeouts.TWO_SEC);
-            await this.backButton.tap();
-            await expect(this.clockDisplaySettingsScreen).not.toBeVisible();
-        } catch (error) {
-            // Back button may not exist if screen failed to load or already navigated away
-            console.warn('[ClockDisplaySettingsScreen.back] Navigation failed:', error); // eslint-disable-line no-console
-        }
+        // Use platform-native back chevron: Android via device.pressBack(),
+        // iOS via by.label('Back'). The custom NavigationHeader's testID
+        // does not exist on this screen (expo-router native stack).
+        await tapNativeBackButton();
+        await waitFor(this.clockDisplaySettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 

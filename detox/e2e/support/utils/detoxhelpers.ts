@@ -39,18 +39,20 @@ export async function waitForLoadingSpinner(testID: string, timeout = 10000): Pr
  * was the root cause of ~33 Detox failures referencing the back chevron.
  *
  * Cross-platform approach without touching production:
- *   - Android: `device.pressBack()` invokes the platform back gesture, which the
- *     native stack interprets identically to a chevron tap (also covers Espresso
- *     hardware back).
+ *   - Android: tap the AppCompat Toolbar's navigation icon by its default
+ *     accessibility content description "Navigate up". We do NOT use
+ *     `device.pressBack()` here because some screens
+ *     (e.g. notification_settings family — verified locally on
+ *     detox_pixel_8_api_35) register `useAndroidHardwareBackHandler` to
+ *     handle save-on-back, which swallows the hardware back press without
+ *     popping the screen. Tapping the chevron exercises the same code path
+ *     a real user takes.
  *   - iOS: the iOS native stack chevron exposes `accessibilityLabel = "Back"`
  *     even with `headerBackButtonDisplayMode: 'minimal'`. Tap it by label.
  */
 export async function tapNativeBackButton(timeout = 10_000): Promise<void> {
-    if (device.getPlatform() === 'android') {
-        await device.pressBack();
-        return;
-    }
-    const backButton = element(by.label('Back')).atIndex(0);
+    const label = device.getPlatform() === 'ios' ? 'Back' : 'Navigate up';
+    const backButton = element(by.label(label)).atIndex(0);
     await waitFor(backButton).toBeVisible().withTimeout(timeout);
     await backButton.tap();
 }

@@ -3,7 +3,6 @@
 
 import {SettingsScreen} from '@support/ui/screen';
 import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
-import {expect} from 'detox';
 
 class AboutScreen {
     testID = {
@@ -43,16 +42,20 @@ class AboutScreen {
     aboutScreen = element(by.id(this.testID.aboutScreen));
 
     // About is an expo-router stack screen (app/routes/(modals)/(settings)/about.tsx
-    // uses `getHeaderOptions(theme)` via useNavigationHeader). On iOS the native
-    // back chevron rendered by @react-navigation/native-stack does NOT expose a
-    // testID — only `accessibilityLabel="Back"`. On Android the testID is still
-    // present, so `by.id(this.testID.backButton)` works as before. A platform
-    // getter keeps the existing test assertion `expect(backButton).toBeVisible()`
-    // working on both platforms.
+    // uses `getHeaderOptions(theme)` via useNavigationHeader). The custom
+    // NavigationHeader's `navigation.header.back` testID is NOT rendered here on
+    // either platform — verified by grep: that testID only appears in
+    // `app/components/navigation_header/header.tsx`, which neither About nor any
+    // expo-router native-stack screen uses. The chevron is owned by
+    // @react-navigation/native-stack: iOS surfaces it via
+    // `accessibilityLabel="Back"`, Android via the AppCompat Toolbar's default
+    // navigation-icon contentDescription `Navigate up` (react-native-screens
+    // doesn't override it — confirmed by searching ScreenStackHeaderConfig.kt
+    // for setNavigationContentDescription).
     get backButton(): Detox.NativeElement {
         return isIos()
             ? element(by.label('Back')).atIndex(0)
-            : element(by.id(this.testID.backButton));
+            : element(by.label('Navigate up')).atIndex(0);
     }
 
     scrollView = element(by.id(this.testID.scrollView));
@@ -103,7 +106,7 @@ class AboutScreen {
         // iOS via by.label('Back'). The custom NavigationHeader's testID
         // does not exist on this screen (expo-router native stack).
         await tapNativeBackButton();
-        await expect(this.aboutScreen).not.toBeVisible();
+        await waitFor(this.aboutScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 

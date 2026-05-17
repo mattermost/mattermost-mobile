@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {SettingsScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
 
 class NotificationSettingsScreen {
     testID = {
@@ -19,7 +18,18 @@ class NotificationSettingsScreen {
     };
 
     notificationSettingsScreen = element(by.id(this.testID.notificationSettingsScreen));
-    backButton = element(by.id(this.testID.backButton));
+
+    // expo-router native stack screen — the custom NavigationHeader's
+    // 'navigation.header.back' testID is not rendered here. The chevron is
+    // owned by @react-navigation/native-stack: iOS surfaces it via
+    // `accessibilityLabel="Back"`, Android via the Toolbar's default
+    // navigation-icon contentDescription "Navigate up".
+    get backButton(): Detox.NativeElement {
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.label('Navigate up')).atIndex(0);
+    }
+
     scrollView = element(by.id(this.testID.scrollView));
     mentionsOption = element(by.id(this.testID.mentionsOption));
     pushNotificationsOption = element(by.id(this.testID.pushNotificationsOption));
@@ -42,14 +52,11 @@ class NotificationSettingsScreen {
     };
 
     back = async () => {
-        try {
-            await waitFor(this.backButton).toExist().withTimeout(timeouts.TEN_SEC);
-            await this.backButton.tap();
-            await expect(this.notificationSettingsScreen).not.toBeVisible();
-        } catch (error) {
-            // Back button may not exist if screen failed to load or already navigated away
-            console.warn('[NotificationSettingsScreen.back] Navigation failed:', error); // eslint-disable-line no-console
-        }
+        // Use platform-native back chevron: Android via device.pressBack(),
+        // iOS via by.label('Back'). The custom NavigationHeader's testID
+        // does not exist on this screen (expo-router native stack).
+        await tapNativeBackButton();
+        await waitFor(this.notificationSettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 

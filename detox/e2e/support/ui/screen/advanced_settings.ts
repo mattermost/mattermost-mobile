@@ -3,7 +3,6 @@
 
 import {SettingsScreen} from '@support/ui/screen';
 import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
-import {expect} from 'detox';
 
 class AdvancedSettingsScreen {
     testID = {
@@ -15,14 +14,15 @@ class AdvancedSettingsScreen {
 
     advancedSettingsScreen = element(by.id(this.testID.advancedSettingsScreen));
 
-    // expo-router native stack screen — the iOS back chevron has no testID,
-    // only `accessibilityLabel="Back"`. Android still exposes the testID via
-    // react-native-screens. Platform-aware getter keeps the existing test
-    // assertion `expect(backButton).toBeVisible()` working on both platforms.
+    // expo-router native stack screen — the custom NavigationHeader's
+    // `navigation.header.back` testID is NOT rendered on either platform.
+    // iOS surfaces the chevron via `accessibilityLabel="Back"`; Android via
+    // the AppCompat Toolbar's default navigation-icon contentDescription
+    // `Navigate up` (react-native-screens does not override it).
     get backButton(): Detox.NativeElement {
         return isIos()
             ? element(by.label('Back')).atIndex(0)
-            : element(by.id(this.testID.backButton));
+            : element(by.label('Navigate up')).atIndex(0);
     }
 
     scrollView = element(by.id(this.testID.scrollView));
@@ -46,7 +46,7 @@ class AdvancedSettingsScreen {
         // iOS via by.label('Back'). The custom NavigationHeader's testID
         // does not exist on this screen (expo-router native stack).
         await tapNativeBackButton();
-        await expect(this.advancedSettingsScreen).not.toBeVisible();
+        await waitFor(this.advancedSettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 
