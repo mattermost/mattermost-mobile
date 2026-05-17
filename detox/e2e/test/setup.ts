@@ -231,6 +231,19 @@ beforeAll(async () => {
     }
 
     async function launchAndVerify(): Promise<void> {
+        // Grant POST_NOTIFICATIONS BEFORE the app boots. `pm clear` above wiped
+        // the previously-granted permission, so on the next launch the app's
+        // `requestNotifications()` call (app/init/push_notifications.ts:82)
+        // would trigger Android's system permission dialog the moment Hermes
+        // finishes running the bundle. That dialog is its own activity: it
+        // moves MainActivity into PAUSED, blocks all hit-tests on server.screen,
+        // and — because the mount queue keeps draining against the paused
+        // activity — FabricUIManagerIdlingResources never goes idle. Detox's
+        // beforeAll then dies at the 180 s idle-resource timeout. Granting via
+        // `pm grant` before launch makes `isRegisteredForRemoteNotifications()`
+        // return true on the JS side so the prompt is never shown.
+        grantAndroidNotificationPermission();
+
         await device.launchApp({
             newInstance: true,
 
@@ -250,7 +263,6 @@ beforeAll(async () => {
             ...(device.getPlatform() === 'ios' && process.env.SIMULATOR_ID? {permissions: {notifications: 'YES'}}: {}),
             launchArgs,
         });
-        grantAndroidNotificationPermission();
 
         // Detox synchronization is now disabled AFTER launchApp() has returned (so the
         // Detox-to-app instrumentation channel is alive and can process the command).
@@ -293,8 +305,11 @@ beforeAll(async () => {
                         'pm clear did not take effect. Retrying with force-stop + pm clear.',
                     );
                     await forceAndroidDataClear();
-                    await device.launchApp({newInstance: true, launchArgs});
+
+                    // Re-grant POST_NOTIFICATIONS before relaunch (same reason
+                    // as above: forceAndroidDataClear's `pm clear` wiped it).
                     grantAndroidNotificationPermission();
+                    await device.launchApp({newInstance: true, launchArgs});
                     await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
                 } catch {
                     throw new Error(
