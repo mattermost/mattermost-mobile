@@ -14,6 +14,7 @@ class AccountScreen {
         userInfoPrefix: 'account.user_info.',
         customStatusPrefix: 'account.custom_status.',
         accountScreen: 'account.screen',
+        accountScrollView: 'account.scroll_view',
         userPresenceOption: 'account.user_presence.option',
         setStatusOption: 'account.custom_status.option',
         yourProfileOption: 'account.your_profile.option',
@@ -28,6 +29,7 @@ class AccountScreen {
     };
 
     accountScreen = element(by.id(this.testID.accountScreen));
+    accountScrollView = element(by.id(this.testID.accountScrollView));
     userPresenceOption = element(by.id(this.testID.userPresenceOption));
     setStatusOption = element(by.id(this.testID.setStatusOption));
     yourProfileOption = element(by.id(this.testID.yourProfileOption));

@@ -6,13 +6,14 @@ import {
     EmojiPickerScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class CustomStatusScreen {
     testID = {
         customStatusEmojiPrefix: 'custom_status.custom_status_emoji.',
         customStatusDurationPrefix: 'custom_status.clear_after.custom_status_duration.',
         customStatusSuggestionPrefix: 'custom_status.custom_status_suggestion.',
+        recentCustomStatusSuggestionPrefix: 'custom_status.recent_custom_status_suggestion.',
         customStatusScreen: 'custom_status.screen',
         doneButton: 'custom_status.done.button',
         scrollView: 'custom_status.scroll_view',
@@ -42,33 +43,14 @@ class CustomStatusScreen {
         return element(by.id(`${this.testID.customStatusDurationPrefix}${duration}.custom_status_expiry`));
     };
 
-    getCustomStatusSuggestion = (_blockMatcher: Detox.NativeMatcher, emojiName: string, text: string, duration: string) => {
-        // The original page object chained `.withAncestor(blockMatcher)` to
-        // disambiguate the same item appearing in the recents block vs the
-        // suggestions block (both wrappers' children carry the same
-        // `custom_status.custom_status_suggestion.<text>` testID).
-        // On iOS 26 that traversal is broken: Detox cannot resolve an
-        // ancestor that is a non-touchable container View — the
-        // `custom_status.suggestions` / `custom_status.recents` wrappers
-        // report `hittable: false, visible: false` from
-        // `getAttributes()` and the matcher returns "No elements found"
-        // even for items that are demonstrably in the tree. Verified
-        // locally: with `withAncestor` restored, MM-T4990_1's
-        // `verifyAllSuggestedStatuses` (per-item assertions) fails;
-        // without it, MM-T4990_1 passes but MM-T4990_2's
-        // `expect(suggestion).not.toExist()` matches the recent.
-        //
-        // TODO: pick one of these to close the trade-off properly —
-        //   (a) source change in
-        //       `app/screens/custom_status/components/custom_status_suggestion/custom_status_suggestion.tsx`
-        //       to accept an optional `testIdPrefix` so suggestions and
-        //       recents render distinct testIDs, then drop the ancestor
-        //       constraint here completely; or
-        //   (b) refactor the per-item matchers to combine the outer item
-        //       ID with the recents' `clear.button` testID
-        //       (recents-only) for disambiguation.
-        // Argument kept with `_` prefix for call-site compatibility.
-        const customStatusSuggestionTestId = `${this.testID.customStatusSuggestionPrefix}${text}`;
+    getCustomStatusSuggestion = (_blockMatcher: Detox.NativeMatcher, prefix: string, emojiName: string, text: string, duration: string) => {
+        // `prefix` disambiguates suggestions vs recents (they share the same
+        // component but render with distinct testIdPrefix values — see
+        // `app/screens/custom_status/components/custom_status_suggestion/custom_status_suggestion.tsx`).
+        // This removes the need for `.withAncestor(blockMatcher)` which is
+        // broken on iOS 26 where Detox cannot traverse to non-touchable
+        // ancestor Views.
+        const customStatusSuggestionTestId = `${prefix}${text}`;
         const customStatusSuggestionMatcher = by.id(customStatusSuggestionTestId);
         const customStatusEmojiMatcher = by.id(`${customStatusSuggestionTestId}.custom_status_emoji.${emojiName}`);
         const customStatusTextMatcher = by.id(`${customStatusSuggestionTestId}.custom_status_text`);
@@ -85,13 +67,23 @@ class CustomStatusScreen {
     };
 
     getRecentCustomStatus = (emojiName: string, text: string, duration: string) => {
-        const recentsMatcher = by.id(this.testID.recents);
-        return this.getCustomStatusSuggestion(recentsMatcher, emojiName, text, duration);
+        return this.getCustomStatusSuggestion(
+            by.id(this.testID.recents),
+            this.testID.recentCustomStatusSuggestionPrefix,
+            emojiName,
+            text,
+            duration,
+        );
     };
 
     getSuggestedCustomStatus = (emojiName: string, text: string, duration: string) => {
-        const suggestedMatcher = by.id(this.testID.suggestions);
-        return this.getCustomStatusSuggestion(suggestedMatcher, emojiName, text, duration);
+        return this.getCustomStatusSuggestion(
+            by.id(this.testID.suggestions),
+            this.testID.customStatusSuggestionPrefix,
+            emojiName,
+            text,
+            duration,
+        );
     };
 
     toBeVisible = async () => {
@@ -116,6 +108,12 @@ class CustomStatusScreen {
 
     open = async () => {
         // # Open custom status screen
+        // The account drawer rows may be partially clipped by the iOS 26
+        // dynamic-island area. Use whileElement to scroll the drawer's
+        // ScrollView until the setStatusOption is fully visible, then tap.
+        // This handles both fresh drawer state (top of ScrollView) and
+        // scrolled state from prior tests (MM-T3892).
+        await waitFor(AccountScreen.setStatusOption).toBeVisible().whileElement(by.id('account.scroll_view')).scroll(150, 'down');
         await AccountScreen.setStatusOption.tap();
 
         return this.toBeVisible();
