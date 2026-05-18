@@ -244,6 +244,7 @@ const EditProfile = ({
         if (!isTablet) {
             navigation.setOptions({
                 headerRight: () => (
+
                     // Wrapper View with the testID constrains the hit area so
                     // Detox doesn't report the full header width as the
                     // Pressable's bounds (MM-T4989_2 / MM-T3250). On iOS,
