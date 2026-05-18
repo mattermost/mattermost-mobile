@@ -337,7 +337,20 @@ class ChannelScreen {
         if (isIos()) {
             try {
                 await waitFor(this.postList.getFlatList()).toExist().withTimeout(timeouts.ONE_SEC);
-                await this.postList.getFlatList().tap();
+
+                // Use a fixed top-corner coordinate instead of the default center
+                // tap. On a freshly opened channel with no posts, the FlatList's
+                // center sits exactly on the IntroOptions row (Set Header / Add
+                // Members / Favorite — see
+                // app/screens/channel/channel_post_list/intro/options/index.tsx).
+                // A default `.tap()` lands on `SetHeaderBox`, opens the Edit
+                // Channel Header modal, and the subsequent `postInput.tap()`
+                // then fails its 100% visibility check because the modal is
+                // sitting on top — symptom: PasteInput "not visible" with
+                // bounds 400x32. Tapping at (5,5) keeps us in the FlatList's
+                // top padding (channel-intro illustration / banner area) which
+                // has no touchables to accidentally trigger.
+                await this.postList.getFlatList().tap({x: 5, y: 5});
                 await wait(timeouts.HALF_SEC);
             } catch {
                 // FlatList not present (channel intro) — no keyboard to dismiss.
