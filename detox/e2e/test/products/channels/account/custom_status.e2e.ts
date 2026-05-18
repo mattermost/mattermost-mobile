@@ -205,6 +205,7 @@ describe('Account - Custom Status', () => {
         const status = STATUSES.IN_MEETING;
 
         await AccountScreen.open();
+
         // `account.custom_status.option` is partially clipped by the iOS 26
         // dynamic-island area and doesn't pass Detox's 75% visibility threshold.
         // The element IS present and interactive (tap handled with y-offset in
@@ -292,6 +293,7 @@ describe('Account - Custom Status', () => {
 
         // # Reopen and verify status in recent section
         await CustomStatusScreen.open();
+
         // `custom_status.recents` is a non-touchable wrapper View that doesn't
         // pass Detox's 75% visibility threshold on iOS 26 (same pattern as
         // commit a7faec2e2). Use `.toExist()` instead.
@@ -496,6 +498,7 @@ const verifySuggestedCustomStatus = async (emojiName: string, text: string, dura
 
 const verifyAllSuggestedStatuses = async () => {
     await expect(CustomStatusScreen.suggestions).toExist();
+
     // Verify each suggestion exists on screen (either in suggestions or recents).
     // On fresh runs, suggestions land in the suggestions block; when state leaks
     // from a prior run, some may already be in recents — the item is still visible.
