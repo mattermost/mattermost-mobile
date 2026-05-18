@@ -54,10 +54,10 @@ describe('Account - Profile Picture', () => {
         await EditProfileScreen.toBeVisible();
 
         // * Verify the profile picture element is visible and tappable
-        await expect(EditProfileScreen.getEditProfilePicture(testUser.id)).toBeVisible();
+        await expect(EditProfileScreen.getEditProfilePicture(testUser.id)).toExist();
 
         // # Tap the profile picture to open the image picker bottom sheet
-        await EditProfileScreen.getEditProfilePicture(testUser.id).tap();
+        await EditProfileScreen.getEditProfilePicturePicker(testUser.id).tap();
 
         // * Verify the Browse Files option is available in the bottom sheet
         // testID: 'attachment.browseFiles' (from panel_item.tsx)
@@ -101,10 +101,10 @@ describe('Account - Profile Picture', () => {
         await EditProfileScreen.toBeVisible();
 
         // * Verify the profile picture element is visible
-        await expect(EditProfileScreen.getEditProfilePicture(testUser.id)).toBeVisible();
+        await expect(EditProfileScreen.getEditProfilePicture(testUser.id)).toExist();
 
         // # Tap the profile picture to open the image picker bottom sheet
-        await EditProfileScreen.getEditProfilePicture(testUser.id).tap();
+        await EditProfileScreen.getEditProfilePicturePicker(testUser.id).tap();
 
         // * Verify the bottom sheet options are visible
         await waitFor(element(by.id('attachment.browseFiles'))).toBeVisible().withTimeout(timeouts.TWO_SEC);

@@ -4,7 +4,6 @@
 import {ProfilePicture} from '@support/ui/component';
 import {AccountScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
-import {expect} from 'detox';
 
 class EditProfileScreen {
     testID = {
@@ -53,6 +52,17 @@ class EditProfileScreen {
         return element(ProfilePicture.getProfilePictureItemMatcher(this.testID.editProfileScreenPrefix, userId));
     };
 
+    // Tap target for opening the image-picker bottom sheet. The visible
+    // profile-picture wrapper (`edit_profile.<userId>.profile_picture`) is
+    // a plain `<View>` and Detox iOS 26 reports it as `hittable: false`, so
+    // `.tap()` on it fails the visibility-around-point check. The actual
+    // touchable is a `<TouchableOpacity>` inside (the camera-icon badge),
+    // tagged with `.picker` — see
+    // `app/screens/edit_profile/components/profile_image_picker.tsx`.
+    getEditProfilePicturePicker = (userId: string) => {
+        return element(by.id(`${this.testID.editProfileScreenPrefix}${userId}.profile_picture.picker`));
+    };
+
     toBeVisible = async () => {
         await waitFor(this.editProfileScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
@@ -81,7 +91,18 @@ class EditProfileScreen {
 
     close = async () => {
         await this.closeButton.tap();
-        await expect(this.editProfileScreen).not.toBeVisible();
+
+        // `edit_profile.screen` is on a SafeAreaView wrapper. When the modal
+        // pops, the SafeAreaView unmounts and the testID leaves the
+        // hierarchy. `waitFor(...).not.toExist().withTimeout()` is both more
+        // strict (the view must actually be gone, not just hidden) and more
+        // robust against iOS-26 Detox's inconsistent visibility computation
+        // on non-touchable wrappers — observed locally in MM-T290_1 where
+        // the same wrapper reported `visible: true` immediately after the
+        // close tap, failing the previous synchronous
+        // `expect(...).not.toBeVisible()` assertion while the modal was
+        // still mid-dismiss animation.
+        await waitFor(this.editProfileScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
     };
 }
 
