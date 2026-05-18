@@ -329,6 +329,51 @@ class ChannelListScreen {
         /* eslint-enable no-await-in-loop */
     };
 
+    /**
+     * After login, the app sometimes renders a "Couldn't load <server>" /
+     * "Couldn't load <team>" / "Couldn't load categories for <server>" error
+     * screen with a Retry button (see app/components/loading_error/index.tsx)
+     * instead of the populated sidebar. This screen still renders the
+     * `channel_list.screen` container, so `waitForElementToExist` succeeds and
+     * subsequent assertions against `channel_list_header.team_display_name` or
+     * `channel_list.threads.button` fail with a misleading "no elements
+     * found" — the elements are gone because the load aborted, not because
+     * the testID is wrong.
+     *
+     * Detection: probe `by.text('Retry')` — the LoadingError component has no
+     * testID, but the button text is stable and uniquely identifies the error
+     * state (the loaded sidebar has no Retry button). Tap it up to 3 times,
+     * waiting between each, to give the team/channel data a chance to load.
+     *
+     * Bounded to ~6 s in the no-error case (single 1 s probe + early return)
+     * so passing tests pay near-zero overhead.
+     */
+    private dismissAnyLoadError = async (): Promise<void> => {
+        const retryButton = element(by.text('Retry'));
+        /* eslint-disable no-await-in-loop -- sequential retry probes */
+        for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+                await waitFor(retryButton).toExist().withTimeout(timeouts.ONE_SEC);
+            } catch {
+                // No Retry button — sidebar loaded successfully (or no error
+                // ever appeared). Done.
+                return;
+            }
+            // eslint-disable-next-line no-console
+            console.warn(`[ChannelListScreen.dismissAnyLoadError] "Retry" present — tapping (attempt ${attempt + 1}/3)`);
+            try {
+                await retryButton.tap();
+            } catch {
+                // Tap failed (probably mid-animation) — wait and try the loop again.
+            }
+
+            // Give the retry-triggered fetch time to complete before we decide
+            // whether to loop again.
+            await wait(timeouts.FOUR_SEC);
+        }
+        /* eslint-enable no-await-in-loop */
+    };
+
     toBeVisible = async (timeout = timeouts.HALF_MIN) => {
         // iOS 26.x on macos-15 CI runners takes longer than 10s to settle the channel
         // list screen after login navigation (React Native bridge + Metro warm-up).
@@ -369,6 +414,12 @@ class ChannelListScreen {
             // Detox's app-idle synchronisation and makes waitFor().toExist() time out even when
             // the screen is rendered.
             await waitForElementToExist(this.channelListScreen, timeout);
+
+            // The channel_list.screen container exists even when the load-error UI
+            // is rendered on top (LoadTeamsError / LoadChannelsError / categories
+            // error). Detect that state and tap Retry so the sidebar actually
+            // populates before the caller asserts against testIDs inside it.
+            await this.dismissAnyLoadError();
         } catch (firstError) {
             // A previous test may have left the app mid-navigation (e.g. DM screen open,
             // bottom sheet animating). Recovery: relaunch the app with a new instance so
