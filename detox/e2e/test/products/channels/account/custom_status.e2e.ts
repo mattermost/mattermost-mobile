@@ -58,24 +58,60 @@ describe('Account - Custom Status', () => {
     });
 
     beforeEach(async () => {
-        // * Verify on channel list OR account screen depending on the prior
-        // test's exit state. Probe each testID directly with a short
-        // `toExist()` instead of calling the page objects'
-        // `toBeVisible()` helpers — those helpers (especially
-        // `ChannelListScreen.toBeVisible`) invoke a defensive
+        // * Verify we landed on channel list OR account screen. Probe each
+        // testID directly instead of calling the page objects' `toBeVisible()`
+        // helpers — `ChannelListScreen.toBeVisible` invokes a defensive
         // `device.launchApp({newInstance: true})` recovery on miss, which
-        // resets the iOS session and dumps the user back on Server
-        // Connect for the rest of the file (verified locally via
+        // resets the iOS session and dumps the user back on Server Connect
+        // for the rest of the file (verified locally via
         // `[ChannelListScreen.toBeVisible] Channel list not found —
-        // attempting recovery relaunch` log entries between MM-T4990_1
-        // PASS and MM-T4990_2 FAIL on iPhone 17 Pro / iOS 26.3).
+        // attempting recovery relaunch` log entries between MM-T4990_1 PASS
+        // and MM-T4990_2 FAIL on iPhone 17 Pro / iOS 26.3).
+        //
+        // When neither testID is visible (e.g. a previous `it()` failed
+        // mid-test and left the custom-status modal / emoji picker open),
+        // attempt a gentle recovery: tap the custom-status close X if
+        // present (iOS) or press hardware back (Android) up to three times.
+        // We do NOT relaunch the app. If recovery doesn't surface a known
+        // screen, throw with context so the cascading failure points at the
+        // real prior test instead of a misleading 2s timeout.
         const channelList = element(by.id('channel_list.screen'));
         const accountScreen = element(by.id('account.screen'));
-        try {
-            await waitFor(channelList).toExist().withTimeout(timeouts.TWO_SEC);
+        const probe = async () => {
+            try {
+                await waitFor(channelList).toExist().withTimeout(timeouts.TWO_SEC);
+                return true;
+            } catch { /* not on channel list */ }
+            try {
+                await waitFor(accountScreen).toExist().withTimeout(timeouts.TWO_SEC);
+                return true;
+            } catch { /* not on account either */ }
+            return false;
+        };
+
+        if (await probe()) {
             return;
-        } catch { /* not on channel list */ }
-        await waitFor(accountScreen).toExist().withTimeout(timeouts.TWO_SEC);
+        }
+
+        // Gentle recovery: dismiss whatever modal is on top.
+        /* eslint-disable no-await-in-loop */
+        for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+                if (isIos()) {
+                    // Custom-status modal X (only present if the modal is open).
+                    await element(by.id('close.custom_status.button')).tap();
+                } else {
+                    await device.pressBack();
+                }
+                await wait(timeouts.ONE_SEC);
+            } catch { /* nothing to dismiss */ }
+            if (await probe()) {
+                return;
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        throw new Error('beforeEach: expected channel_list.screen or account.screen, neither was visible after recovery attempts');
     });
 
     afterAll(async () => {
