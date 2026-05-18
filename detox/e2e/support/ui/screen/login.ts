@@ -3,8 +3,8 @@
 
 import {serverOneUrl} from '@support/test_config';
 import {ChannelListScreen, ServerScreen} from '@support/ui/screen';
-import {isAndroid, retryWithReload, timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {isAndroid, isIos, retryWithReload, tapNativeBackButton, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {waitFor} from 'detox';
 
 class LoginScreen {
     testID = {
@@ -27,7 +27,19 @@ class LoginScreen {
 
     loginFormInfoText = element(by.id(this.testID.loginFormInfoText));
     loginScreen = element(by.id(this.testID.loginScreen));
-    backButton = element(by.id(this.testID.backButton));
+
+    // expo-router native-stack screen (login.tsx uses
+    // `getLoginFlowHeaderOptions` from `@hooks/navigation_header` when not
+    // root). The custom NavigationHeader's `navigation.header.back` testID
+    // is NOT rendered here. iOS surfaces the chevron via
+    // `accessibilityLabel="Back"`, Android via the AppCompat Toolbar's
+    // default navigation-icon contentDescription "Navigate up".
+    get backButton(): Detox.NativeElement {
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.label('Navigate up')).atIndex(0);
+    }
+
     titleLoginToAccount = element(by.id(this.testID.titleLoginToAccount));
     titleCantLogin = element(by.id(this.testID.titleCantLogin));
     descriptionEnterCredentials = element(by.id(this.testID.descriptionEnterCredentials));
@@ -67,8 +79,11 @@ class LoginScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
-        await expect(this.loginScreen).not.toBeVisible();
+        // Use platform-native back chevron: Android via device.pressBack-style
+        // tap on the toolbar nav icon, iOS via by.label('Back'). The custom
+        // NavigationHeader's testID does not exist on this screen.
+        await tapNativeBackButton();
+        await waitFor(this.loginScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
     };
 
     loginWithRetryIfStuck = async (user: any = {}) => {
