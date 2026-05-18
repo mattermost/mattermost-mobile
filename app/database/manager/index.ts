@@ -381,13 +381,16 @@ class DatabaseManagerSingleton {
         }
         delete this.serverDatabases[serverUrl];
         await this.deleteServerDatabaseFiles(serverUrl);
-        await this.createServerDatabase({
+        const db = await this.createServerDatabase({
             config: {
                 dbName: serverUrl,
                 displayName: server.displayName,
                 serverUrl,
             },
         });
+        if (!db) {
+            throw new Error(`wipeServerData: failed to re-create database for ${serverUrl}`);
+        }
     };
 
     /**

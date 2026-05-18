@@ -193,17 +193,18 @@ const DataErased = ({serverUrl, displayName}: DataErasedProps) => {
     }, [serverUrl]));
 
     const onPress = useCallback(() => {
-        if (registeredServers.current?.length) {
+        const servers = registeredServers.current;
+        if (servers?.length) {
             const renderContent = () => {
                 return (
-                    <ServerList servers={registeredServers.current!}/>
+                    <ServerList servers={servers}/>
                 );
             };
             const maxScreenHeight = Math.ceil(0.6 * Dimensions.get('window').height);
             const maxSnapPoint = Math.min(
                 maxScreenHeight,
-                bottomSheetSnapPoint(registeredServers.current.length, SERVER_ITEM_HEIGHT) + TITLE_HEIGHT + BUTTON_HEIGHT + insets.bottom +
-                    (registeredServers.current.filter((s: ServersModel) => s.lastActiveAt).length * PUSH_ALERT_TEXT_HEIGHT),
+                bottomSheetSnapPoint(servers.length, SERVER_ITEM_HEIGHT) + TITLE_HEIGHT + BUTTON_HEIGHT + insets.bottom +
+                    (servers.filter((s: ServersModel) => s.lastActiveAt).length * PUSH_ALERT_TEXT_HEIGHT),
             );
 
             const snapPoints: Array<string | number> = [

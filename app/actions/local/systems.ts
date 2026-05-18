@@ -116,6 +116,7 @@ export async function clearEphemeralModeState(serverUrl: string): Promise<void> 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const records = await database.get<SystemModel>(SYSTEM).query(
             Q.where('id', Q.oneOf([
+                SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE,
                 SYSTEM_IDENTIFIERS.OFFLINE_SINCE,
                 SYSTEM_IDENTIFIERS.LAST_SEEN_TIME,
             ])),

@@ -391,7 +391,10 @@ class OfflinePersistenceManagerSingleton {
             await DatabaseManager.updatePersistenceFlag(serverUrl, 'wiped');
 
             this.pauseSubscriptions(serverUrl);
-            await this.wipeServerArtifacts(serverUrl);
+            const [{success}] = await this.wipeServerArtifacts(serverUrl);
+            if (!success) {
+                logError('OfflinePersistenceManager.runWipe: wipe failed after retries, server re-added with stale data', serverUrl);
+            }
             this.addServer(serverUrl);
         } catch (error) {
             logError('OfflinePersistenceManager.runWipe', error);
