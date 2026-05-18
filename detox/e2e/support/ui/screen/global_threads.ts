@@ -75,6 +75,18 @@ class GlobalThreadsScreen {
     };
 
     back = async () => {
+        // Permalink → "Jump to recent messages" runs `navigateBack()` followed
+        // by `switchToChannelById()` (app/screens/permalink/permalink.tsx),
+        // which pops the global-threads route off the navigation stack before
+        // pushing the destination channel. After the test calls
+        // `ChannelScreen.back()` we land directly on the channel list — there
+        // is no global-threads screen left to pop. Probe first so the test
+        // teardown is idempotent.
+        try {
+            await waitFor(this.globalThreadsScreen).toExist().withTimeout(timeouts.ONE_SEC);
+        } catch {
+            return;
+        }
         await this.backButton.tap();
         await waitFor(this.globalThreadsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
