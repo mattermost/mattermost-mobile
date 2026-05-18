@@ -185,14 +185,12 @@ describe('Search - Cross Team Search', () => {
         }
         await TeamDropdownMenuScreen.getAllTeamsItem().tap();
 
-        // * j) Verify the selector changed to All teams
-        // Use polling waitForElementToExist: the testID-based selector is more reliable
-        // than by.text() which can fail on Android due to rendering differences.
-        if (isAndroid()) {
-            await waitForElementToExist(TeamDropdownMenuScreen.getAllTeamsItem(), timeouts.HALF_MIN);
-        } else {
-            await waitFor(TeamDropdownMenuScreen.getAllTeamsItem()).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        }
+        // * j) Verify the All Teams selection was applied. Tapping the item
+        // calls `dismissBottomSheet()` (see app/screens/home/search/bottom_sheet_team_list.tsx)
+        // so the team picker sheet must be gone. A previous version of this
+        // step waited for `getAllTeamsItem()` to be visible again, which can
+        // never recover — the sheet is dismissed — producing a 10s timeout.
+        await waitFor(TeamDropdownMenuScreen.teamDropdownMenuScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # k) In the "Search messages and files" field, type "horses" and press Enter
         await SearchMessagesScreen.searchInput.typeText('horses');
