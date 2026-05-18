@@ -49,6 +49,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type PostProps = {
     appsEnabled: boolean;
+    mmBlocksEnabled: boolean;
     author?: UserModel;
     canDelete: boolean;
     commentCount: number;
@@ -124,6 +125,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Post = ({
     appsEnabled,
+    mmBlocksEnabled,
     author,
     canDelete,
     commentCount,
@@ -398,6 +400,7 @@ const Post = ({
         body = (
             <Body
                 appsEnabled={appsEnabled}
+                mmBlocksEnabled={mmBlocksEnabled}
                 filesInfo={filesInfo}
                 hasReactions={hasReactions}
                 highlight={Boolean(highlightedStyle)}

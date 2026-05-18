@@ -290,3 +290,17 @@ export function getPostTranslation(post: Post | PostModel, locale: string): Post
 export function getPostTranslatedMessage(originalMessage: string, translation: PostTranslation): string {
     return translation.object?.message ?? originalMessage;
 }
+
+export function hasInteractivePostContent(post: Post | PostModel, mmBlocksEnabled: boolean): boolean {
+    if (!mmBlocksEnabled) {
+        return false;
+    }
+    const nAttachments = Array.isArray(post.props?.attachments) ? post.props?.attachments.length : 0;
+    const hasMmBlocksContent = Boolean(
+        (Array.isArray(post.props?.mm_blocks) && post.props.mm_blocks.length) ||
+        (Array.isArray(post.props?.blocks) && post.props.blocks.length) ||
+        (Array.isArray(post.props?.cards) && post.props.cards.length) ||
+        nAttachments,
+    );
+    return hasMmBlocksContent;
+}

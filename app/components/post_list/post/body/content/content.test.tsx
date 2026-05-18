@@ -52,6 +52,7 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         isReplyPost: false,
         layoutWidth: 350,
         location: 'Channel' as AvailableScreens,
+        mmBlocksEnabled: false,
         theme: Preferences.THEMES.denim,
         showPermalinkPreviews: true,
     };

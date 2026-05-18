@@ -29,6 +29,7 @@ describe('performance metrics', () => {
     function getBaseProps(): ComponentProps<typeof Post> {
         return {
             appsEnabled: false,
+            mmBlocksEnabled: false,
             canDelete: false,
             customEmojiNames: [],
             filesInfo: [],

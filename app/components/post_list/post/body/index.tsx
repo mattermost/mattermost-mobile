@@ -12,7 +12,7 @@ import ErrorBoundary from '@components/markdown/error_boundary';
 import {Screens} from '@constants';
 import StatusUpdatePost from '@playbooks/components/status_update_post';
 import {PLAYBOOKS_UPDATE_STATUS_POST_TYPE} from '@playbooks/constants/plugin';
-import {isEdited as postEdited, isPostFailed} from '@utils/post';
+import {isEdited as postEdited, isPostFailed, hasInteractivePostContent} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Acknowledgements from './acknowledgements';
@@ -28,6 +28,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type BodyProps = {
     appsEnabled: boolean;
+    mmBlocksEnabled: boolean;
     filesInfo: FileInfo[];
     hasReactions: boolean;
     highlight: boolean;
@@ -90,6 +91,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Body = ({
     appsEnabled,
+    mmBlocksEnabled,
     filesInfo,
     hasReactions,
     highlight,
@@ -122,7 +124,12 @@ const Body = ({
     const nAttachments = Array.isArray(post.props?.attachments) ? post.props?.attachments.length : 0;
 
     const isReplyPost = Boolean(post.rootId && (!isEphemeral || !hasBeenDeleted) && location !== Screens.THREAD);
-    const hasContent = Boolean((post.metadata?.embeds?.length || (appsEnabled && nBindings)) || nAttachments);
+    const hasContent = Boolean(
+        post.metadata?.embeds?.length ||
+        (appsEnabled && nBindings) ||
+        hasInteractivePostContent(post, mmBlocksEnabled) ||
+        (!mmBlocksEnabled && nAttachments),
+    );
 
     const replyBarStyle = useMemo<StyleProp<ViewStyle>|undefined>(() => {
         if (!isReplyPost || (isCRTEnabled && location === Screens.PERMALINK)) {
@@ -213,6 +220,7 @@ const Body = ({
                     isReplyPost={isReplyPost}
                     layoutWidth={layoutWidth}
                     location={location}
+                    mmBlocksEnabled={mmBlocksEnabled}
                     post={post}
                     theme={theme}
                 />

@@ -78,6 +78,7 @@ export type MarkdownProps = {
     theme: Theme;
     value?: string;
     onLinkLongPress?: (url?: string) => void;
+    onMmBlocksMarkdownAction?: (actionId: string, query: Record<string, string>) => void;
     isUnsafeLinksPost?: boolean;
 }
 
@@ -182,6 +183,7 @@ const Markdown = ({
     value = '',
     baseParagraphStyle,
     onLinkLongPress,
+    onMmBlocksMarkdownAction,
     isUnsafeLinksPost,
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
@@ -497,11 +499,12 @@ const Markdown = ({
             <MarkdownLink
                 href={href}
                 onLinkLongPress={onLinkLongPress}
+                onMmBlocksMarkdownAction={onMmBlocksMarkdownAction}
             >
                 {children}
             </MarkdownLink>
         );
-    }, [isUnsafeLinksPost, onLinkLongPress, renderText]);
+    }, [isUnsafeLinksPost, onLinkLongPress, onMmBlocksMarkdownAction, renderText]);
 
     const renderList = useCallback(({children, start, tight, type}: any) => {
         return (

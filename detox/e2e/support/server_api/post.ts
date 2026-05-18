@@ -100,11 +100,66 @@ export const apiPatchPost = async (baseUrl: string, postId: string, postData: st
     }
 };
 
+/**
+ * Create an ephemeral post visible only to the given user.
+ * See https://api.mattermost.com/#operation/CreatePostEphemeral
+ */
+export const apiCreatePostEphemeral = async (
+    baseUrl: string,
+    userId: string,
+    post: {channel_id: string; message: string; root_id?: string; props?: Record<string, unknown>},
+): Promise<any> => {
+    try {
+        const response = await client.post(`${baseUrl}/api/v4/posts/ephemeral`, {
+            user_id: userId,
+            post,
+        });
+        return {post: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Create an incoming webhook.
+ * See https://api.mattermost.com/#operation/CreateIncomingWebhook
+ */
+export const apiCreateIncomingWebhook = async (
+    baseUrl: string,
+    hook: {channel_id: string; display_name: string},
+): Promise<any> => {
+    try {
+        const response = await client.post(`${baseUrl}/api/v4/hooks/incoming`, hook);
+        return {hook: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * POST a payload to an incoming webhook URL path (`/hooks/{id}`).
+ */
+export const apiPostIncomingWebhook = async (
+    baseUrl: string,
+    hookId: string,
+    payload: Record<string, unknown>,
+): Promise<any> => {
+    try {
+        const response = await client.post(`${baseUrl}/hooks/${hookId}`, payload);
+        return {data: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 export const Post = {
     apiCreatePost,
+    apiCreatePostEphemeral,
+    apiCreateIncomingWebhook,
     apiGetLastPostInChannel,
     apiGetPostsInChannel,
     apiPatchPost,
+    apiPostIncomingWebhook,
 };
 
 export default Post;

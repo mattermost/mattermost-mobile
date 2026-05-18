@@ -14,6 +14,7 @@ import Status from './status';
 import System from './system';
 import Team from './team';
 import User from './user';
+import Webhook from './webhook';
 
 export {
     Bot,
@@ -30,4 +31,5 @@ export {
     System,
     Team,
     User,
+    Webhook,
 };

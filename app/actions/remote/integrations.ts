@@ -45,11 +45,19 @@ export const lookupInteractiveDialog = async (serverUrl: string, submission: Dia
     }
 };
 
-export const postActionWithCookie = async (serverUrl: string, postId: string, actionId: string, actionCookie: string, selectedOption = '') => {
+export const postActionWithCookie = async (
+    serverUrl: string,
+    postId: string,
+    actionId: string,
+    actionCookie: string,
+    selectedOption = '',
+    query?: Record<string, string>,
+    integrationFormat: PostActionIntegrationFormat | '' = '',
+) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
 
-        const data = await client.doPostActionWithCookie(postId, actionId, actionCookie, selectedOption);
+        const data = await client.doPostActionWithCookie(postId, actionId, actionCookie, selectedOption, query, integrationFormat);
         if (data?.trigger_id) {
             IntegrationsMananger.getManager(serverUrl)?.setTriggerId(data.trigger_id);
         }

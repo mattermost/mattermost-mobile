@@ -12,11 +12,13 @@ import {navigateBack} from '@screens/navigation';
 
 import ButtonComponentLibrary from './button.cl';
 import ChipComponentLibrary from './chip.cl';
+import MmBlocksComponentLibrary from './mm_blocks.cl';
 import OptionItemComponentLibrary from './option_item.cl';
 import SectionNoticeComponentLibrary from './section_notice.cl';
 import TagComponentLibrary from './tag.cl';
 
 const componentMap = {
+    'MM blocks': MmBlocksComponentLibrary,
     Button: ButtonComponentLibrary,
     Chip: ChipComponentLibrary,
     OptionItem: OptionItemComponentLibrary,
