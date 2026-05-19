@@ -316,10 +316,6 @@ export type HandleCustomProfileAttributesArgs = PrepareOnly & {
   attributes?: CustomProfileAttribute[];
 };
 
-export type HandleBoardViewsArgs = PrepareOnly & {
-  boardViews?: BoardView[];
-};
-
 export type HandlePropertyFieldsArgs = PrepareOnly & {
   fields?: PropertyField[];
 };

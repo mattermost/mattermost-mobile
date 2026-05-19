@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
+import {BOARDS_TABLES} from '@boards/constants/database';
+import {transformBoardViewRecord} from '@boards/database/operators/transformers';
 import DatabaseManager from '@database/manager';
-import {transformBoardViewRecord} from '@database/operator/server_data_operator/transformers/boards';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
-const {BOARD_VIEW} = MM_TABLES.SERVER;
+const {BOARD_VIEW} = BOARDS_TABLES;
 
 describe('*** Operator: Boards Handlers tests ***', () => {
     let operator: ServerDataOperator;

@@ -4,12 +4,14 @@
 /* eslint-disable max-lines */
 
 import {AGENTS_TABLES} from '@agents/constants/database';
+import {BOARDS_TABLES} from '@boards/constants/database';
 import {MM_TABLES} from '@constants/database';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 
 import {serverSchema} from './index';
 
 const {AI_BOT, AI_THREAD} = AGENTS_TABLES;
+const {BOARD_VIEW} = BOARDS_TABLES;
 
 const {
     CATEGORY,
@@ -50,7 +52,6 @@ const {
     THREADS_IN_TEAM,
     TEAM_THREADS_SYNC,
     USER,
-    BOARD_VIEW,
 } = MM_TABLES.SERVER;
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;

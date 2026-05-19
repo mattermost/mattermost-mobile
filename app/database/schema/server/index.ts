@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {type AppSchema, appSchema} from '@nozbe/watermelondb';
-
 import {AiBotSchema, AiThreadSchema} from '@agents/database/schema';
+import {BoardViewSchema} from '@boards/database/schema';
+import {type AppSchema, appSchema} from '@nozbe/watermelondb';
 import {PlaybookRunSchema, PlaybookChecklistSchema, PlaybookChecklistItemSchema, PlaybookRunAttributeSchema, PlaybookRunAttributeValueSchema} from '@playbooks/database/schema';
 
 import {
@@ -45,7 +45,6 @@ import {
     ThreadParticipantSchema,
     TeamThreadsSyncSchema,
     UserSchema,
-    ViewSchema,
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
@@ -96,6 +95,6 @@ export const serverSchema: AppSchema = appSchema({
         ThreadInTeamSchema,
         ThreadParticipantSchema,
         UserSchema,
-        ViewSchema,
+        BoardViewSchema,
     ],
 });

@@ -3,9 +3,9 @@
 
 import {tableSchema} from '@nozbe/watermelondb';
 
-import {MM_TABLES} from '@constants/database';
+import {BOARDS_TABLES} from '@boards/constants/database';
 
-const {BOARD_VIEW} = MM_TABLES.SERVER;
+const {BOARD_VIEW} = BOARDS_TABLES;
 
 export default tableSchema({
     name: BOARD_VIEW,

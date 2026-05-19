@@ -4,12 +4,12 @@
 import {field, json} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
-import {MM_TABLES} from '@constants/database';
+import {BOARDS_TABLES} from '@boards/constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
-import type BoardViewModelInterface from '@typings/database/models/servers/view';
+import type BoardViewModelInterface from '@boards/types/database/models/board_view';
 
-const {BOARD_VIEW} = MM_TABLES.SERVER;
+const {BOARD_VIEW} = BOARDS_TABLES;
 
 /**
  * The BoardView model represents the 'BoardView' table and describes the per-channel

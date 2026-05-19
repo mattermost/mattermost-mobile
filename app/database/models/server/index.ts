@@ -39,4 +39,3 @@ export {default as ThreadInTeamModel} from './thread_in_team';
 export {default as ThreadParticipantModel} from './thread_participant';
 export {default as TeamThreadsSyncModel} from './team_threads_sync';
 export {default as UserModel} from './user';
-export {default as BoardViewModel} from './view';

@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES, OperationType} from '@constants/database';
-import {transformBoardViewRecord} from '@database/operator/server_data_operator/transformers/boards';
+import {BOARDS_TABLES} from '@boards/constants/database';
+import {transformBoardViewRecord} from '@boards/database/operators/transformers';
+import {OperationType} from '@constants/database';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 
-import type {BoardViewModel} from '@database/models/server';
+import type BoardViewModel from '@boards/types/database/models/board_view';
 
-const {BOARD_VIEW} = MM_TABLES.SERVER;
+const {BOARD_VIEW} = BOARDS_TABLES;
 
 describe('*** BOARDS Prepare Records Test ***', () => {
     describe('=> transformBoardViewRecord', () => {

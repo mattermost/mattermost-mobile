@@ -38,5 +38,4 @@ export {default as ThreadParticipantSchema} from './thread_participant';
 export {default as ThreadInTeamSchema} from './thread_in_team';
 export {default as TeamThreadsSyncSchema} from './team_threads_sync';
 export {default as UserSchema} from './user';
-export {default as ViewSchema} from './view';
 export {default as ConfigSchema} from './config';

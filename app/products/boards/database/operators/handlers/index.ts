@@ -1,19 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES} from '@constants/database';
-import {transformBoardViewRecord} from '@database/operator/server_data_operator/transformers/boards';
+import {BOARDS_TABLES} from '@boards/constants/database';
+import {transformBoardViewRecord} from '@boards/database/operators/transformers';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {logWarning} from '@utils/log';
 
-import type ServerDataOperatorBase from '.';
+import type ServerDataOperatorBase from '@database/operator/server_data_operator/handlers';
 import type Model from '@nozbe/watermelondb/Model';
-import type {HandleBoardViewsArgs} from '@typings/database/database';
 
-const {BOARD_VIEW} = MM_TABLES.SERVER;
+type HandleBoardViewsArgs = {
+    prepareRecordsOnly: boolean;
+    boardViews?: BoardView[];
+}
+
+const {BOARD_VIEW} = BOARDS_TABLES;
 
 export interface BoardsHandlerMix {
-    handleBoardViews: ({boardViews, prepareRecordsOnly}: HandleBoardViewsArgs) => Promise<Model[]>;
+    handleBoardViews: (args: HandleBoardViewsArgs) => Promise<Model[]>;
 }
 
 const BoardsHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {

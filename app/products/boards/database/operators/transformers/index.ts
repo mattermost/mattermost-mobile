@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MM_TABLES, OperationType} from '@constants/database';
+import {BOARDS_TABLES} from '@boards/constants/database';
+import {OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 
-import type {BoardViewModel} from '@database/models/server';
+import type BoardViewModel from '@boards/types/database/models/board_view';
 import type {TransformerArgs} from '@typings/database/database';
 
-const {BOARD_VIEW} = MM_TABLES.SERVER;
+const {BOARD_VIEW} = BOARDS_TABLES;
 
 /**
  * transformBoardViewRecord: Prepares a record of the SERVER database 'BoardView' table for update or create actions.
