@@ -153,7 +153,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await System.apiUpdateConfig(siteOneUrl, {
             ServiceSettings: {EnableGifPicker: true},
             FileSettings: {EnablePublicLink: true},
-            FeatureFlags: {InteractiveDialogAppsForm: true},
             PluginSettings: {
                 Enable: true,
                 AllowInsecureDownloadUrl: true,
