@@ -9,6 +9,7 @@ import ChannelHandler, {type ChannelHandlerMix} from '@database/operator/server_
 import CustomProfileHandler, {type CustomProfileHandlerMix} from '@database/operator/server_data_operator/handlers/custom_profile';
 import GroupHandler, {type GroupHandlerMix} from '@database/operator/server_data_operator/handlers/group';
 import PostHandler, {type PostHandlerMix} from '@database/operator/server_data_operator/handlers/post';
+import PropertiesHandler, {type PropertiesHandlerMix} from '@database/operator/server_data_operator/handlers/properties';
 import TeamHandler, {type TeamHandlerMix} from '@database/operator/server_data_operator/handlers/team';
 import TeamThreadsSyncHandler, {type TeamThreadsSyncHandlerMix} from '@database/operator/server_data_operator/handlers/team_threads_sync';
 import ThreadHandler, {type ThreadHandlerMix} from '@database/operator/server_data_operator/handlers/thread';
@@ -27,6 +28,7 @@ interface ServerDataOperator extends
     GroupHandlerMix,
     PlaybookHandlerMix,
     PostHandlerMix,
+    PropertiesHandlerMix,
     ServerDataOperatorBase,
     TeamHandlerMix,
     ThreadHandlerMix,
@@ -43,6 +45,7 @@ class ServerDataOperator extends mix(ServerDataOperatorBase).with(
     GroupHandler,
     PlaybookHandler,
     PostHandler,
+    PropertiesHandler,
     TeamHandler,
     ThreadHandler,
     TeamThreadsSyncHandler,
