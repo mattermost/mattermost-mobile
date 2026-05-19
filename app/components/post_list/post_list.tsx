@@ -6,6 +6,7 @@ import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, S
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {KeyboardState, useAnimatedKeyboard, useKeyboardState as useControllerKeyboardState} from 'react-native-keyboard-controller';
 import Animated, {scrollTo, useAnimatedProps, useAnimatedReaction, useAnimatedStyle, type AnimatedStyle} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {scheduleOnRN, scheduleOnUI} from 'react-native-worklets';
 
 import {removePost} from '@actions/local/post';
@@ -22,13 +23,14 @@ import {useKeyboardState} from '@context/keyboard_state';
 import {PostConfigProvider} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useDefaultHeaderHeight} from '@hooks/header';
 import {useInputAccessoryViewGesture} from '@hooks/use_input_accessory_view_gesture';
 import {DEFAULT_INPUT_ACCESSORY_HEIGHT} from '@keyboard';
 import PostListPerformance from '@utils/performance/post_list_performance';
 import {getDateForDateLine, preparePostList} from '@utils/post_list';
 import {getTimezone} from '@utils/user';
 
-import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from './config';
+import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
 import MoreMessages from './more_messages';
 import ScrollToEndView from './scroll_to_end_view';
 
@@ -113,6 +115,8 @@ const PostList = ({
 }: Props) => {
     const firstIdInPosts = posts[0]?.id;
     const {panGesture: emojiPickerGesture} = useInputAccessoryViewGesture();
+    const insets = useSafeAreaInsets();
+    const defaultHeaderHeight = useDefaultHeaderHeight();
 
     // Derive values from currentUser
     const currentUserId = currentUser.id;
@@ -293,10 +297,10 @@ const PostList = ({
         listRef.current.scrollToIndex({
             animated,
             index,
-            viewOffset: applyOffset ? Platform.select({ios: -45, default: 0}) : 0,
+            viewOffset: applyOffset ? -(insets.top + defaultHeaderHeight) : 0,
             viewPosition: 1, // 0 is at bottom
         });
-    }, [listRef]);
+    }, [defaultHeaderHeight, insets.top, listRef]);
 
     const internalOnScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const {y} = event.nativeEvent.contentOffset;
@@ -568,6 +572,7 @@ const PostList = ({
                             onScroll={onScrollProp}
                             onScrollToIndexFailed={onScrollToIndexFailed}
                             onViewableItemsChanged={onViewableItemsChanged}
+                            viewabilityConfig={VIEWABILITY_CONFIG}
                             progressViewOffset={progressViewOffset}
                             ref={listRef}
                             renderItem={renderItem}
