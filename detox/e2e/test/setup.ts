@@ -3,6 +3,7 @@
 /* eslint-disable no-await-in-loop, no-console */
 
 import {execSync} from 'child_process';
+import {existsSync} from 'fs';
 
 import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {System, User} from '@support/server_api';
@@ -10,20 +11,7 @@ import {siteOneUrl} from '@support/test_config';
 
 const BUNDLE_ID = 'com.mattermost.rnbeta';
 
-// ─── iOS app state reset ─────────────────────────────────────────────────────
-// On iOS, `device.launchApp({ delete: true })` triggers a full uninstall +
-// reinstall cycle. This is notoriously fragile on CI — Detox frequently loses
-// its WebSocket connection to the app during the reinstall, especially on
-// resource-constrained macOS-15 runners (3 cores, 7 GB RAM) with iOS 26.x
-// simulators.  The failure mode: `server.screen` never appears within 60 s.
-//
-// Fix: clear the app's data container via simctl + clear keychain, then
-// relaunch with `newInstance: true`.  The app binary stays installed (matching
-// the CI pre-boot step), so Detox never drops its connection.
-
 function getSimulatorId(): string {
-    // Detox exposes the allocated device UDID via an internal API.
-    // Fallback to the CI-provided env var set during pre-boot.
     try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const udid = (device as any)._deviceId || (device as any).id || process.env.SIMULATOR_ID || '';
@@ -33,12 +21,6 @@ function getSimulatorId(): string {
     }
 }
 
-// Resolved-once container paths — `xcrun simctl get_app_container` runs an
-// IPC into the booted simulator's launchd, which serializes badly when 20
-// parallel iOS shards each call it ~6× per shard. Under load it sometimes
-// returns an empty string (no error code) and we silently skip the wipe,
-// leaving stale App Group databases that cause the "Couldn't load <team>"
-// cascade on the next launch. Resolve each path once per process and reuse.
 let cachedDataContainer: string | undefined;
 let cachedAppGroupContainer: string | undefined;
 
@@ -61,9 +43,6 @@ function clearIOSAppData(): void {
         return;
     }
 
-    // 1. Kill the app process directly via its PID inside the simulator.
-    //    `simctl terminate` and Detox's terminateApp() can both hang on iOS 26.x.
-    //    The launchd PID approach is instantaneous and cannot hang.
     try {
         const appPid = execSync(
             `xcrun simctl spawn "${simId}" launchctl list 2>/dev/null | grep "${BUNDLE_ID}" | awk '{print $1}' | grep -E '^[0-9]+$' || true`,
@@ -73,12 +52,6 @@ function clearIOSAppData(): void {
         if (appPid) {
             execSync(`xcrun simctl spawn "${simId}" kill -9 "${appPid}"`, {stdio: 'pipe'});
 
-            // Wait for the simulator to fully release the process and its file
-            // handles. Without this, the data wipe below can race with SQLite
-            // WAL/SHM file locks — the app's database files survive partially,
-            // causing WatermelonDB to recover stale server entries on next launch
-            // while the keychain (auth tokens) is already wiped. This produces
-            // the "Couldn't load" error screen on the next test file.
             execSync('sleep 1', {stdio: 'pipe'});
         }
     } catch {
@@ -86,8 +59,6 @@ function clearIOSAppData(): void {
     }
 
     // 2. Find the app's data container and delete its contents.
-    //    This wipes caches, preferences — but NOT the database (which lives in
-    //    the App Group container, cleared separately in step 2b).
     if (!cachedDataContainer) {
         cachedDataContainer = resolveContainerPath(simId, 'data');
     }
@@ -103,22 +74,17 @@ function clearIOSAppData(): void {
         console.warn('[clearIOSAppData] Could not resolve data container (app may not be installed yet)');
     }
 
-    // 2b. Clear the App Group container.
-    //     On iOS the WatermelonDB databases live in the App Group shared directory
-    //     (group.com.mattermost.rnbeta), NOT in the regular data container.
-    //     Without this, stale database files survive across test files — the app
-    //     relaunches with server entries from the previous test but no valid auth
-    //     token (keychain was cleared in step 3), causing fetchMyChannelsForTeam
-    //     to fail and the "Couldn't load" error screen to appear.
     if (!cachedAppGroupContainer) {
         cachedAppGroupContainer = resolveContainerPath(simId, 'group.com.mattermost.rnbeta');
     }
     if (cachedAppGroupContainer) {
-        try {
-            execSync(`find "${cachedAppGroupContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
-            console.info(`[clearIOSAppData] Cleared App Group container: ${cachedAppGroupContainer}`);
-        } catch {
-            console.warn('[clearIOSAppData] App-Group-container wipe failed');
+        if (existsSync(cachedAppGroupContainer)) {
+            try {
+                execSync(`find "${cachedAppGroupContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
+                console.info(`[clearIOSAppData] Cleared App Group container: ${cachedAppGroupContainer}`);
+            } catch {
+                console.warn('[clearIOSAppData] App-Group-container wipe failed');
+            }
         }
     } else {
         console.warn('[clearIOSAppData] Could not resolve App Group container');
@@ -164,7 +130,7 @@ async function loginAdmin(): Promise<void> {
 
 // Android 13+ (API 33+): the `permissions` key in device.launchApp() only works
 // on iOS simulators. On Android, notification permission must be granted via adb.
-function grantAndroidNotificationPermission(): void {
+async function grantAndroidNotificationPermission(): Promise<void> {
     if (device.getPlatform() !== 'android') {
         return;
     }
@@ -180,14 +146,6 @@ function grantAndroidNotificationPermission(): void {
 // Responsibilities: launch app with clean state, admin login, plugin cleanup.
 
 beforeAll(async () => {
-    // On Android, explicitly clear app data before every launch. Two reasons:
-    // 1) The first-file path (newInstance, no delete) can inherit stale state
-    //    from a previous CI run or pre-boot step.
-    // 2) Detox's delete:true on subsequent files occasionally fails to fully
-    //    clear data on CI emulators (observed: app shows channel list instead
-    //    of server screen after delete:true).
-    // We force-stop first so pm clear can safely wipe the data directory while
-    // the app is not holding any open file handles.
     if (device.getPlatform() === 'android') {
         try {
             execSync(`adb shell am force-stop ${BUNDLE_ID}`, {stdio: 'pipe'});
@@ -197,23 +155,21 @@ beforeAll(async () => {
         } catch {
             // Package might not be installed yet on first run
         }
+
+        try {
+            execSync('adb shell settings put secure show_ime_with_hard_keyboard 0', {stdio: 'pipe'});
+            execSync('adb shell settings put secure spell_checker_enabled 0', {stdio: 'pipe'});
+            execSync('adb shell settings put secure auto_text_enabled 0', {stdio: 'pipe'});
+        } catch {
+            // Older AVDs may not support these — non-fatal.
+        }
     }
 
     const isFirstFile = !process.env.DETOX_SETUP_DONE;
     const launchArgs = {detoxDisableSynchronization: 'YES'};
 
-    // Android CI emulators cold-start more slowly than iOS simulators, especially
-    // after adb shell pm clear wipes the data directory. Use a longer ready-timeout
-    // on Android to avoid spurious launch failures that cause the cascade described
-    // in the "logout-failure cascade" bug: if pm clear silently fails (adb glitch),
-    // the app may launch in a logged-in state (channel_list) instead of server.screen.
-    // The detection logic below handles that case explicitly.
     const APP_READY_TIMEOUT = device.getPlatform() === 'android' ? 60_000 : 30_000;
 
-    // Force-clear Android app data via adb before each launch attempt.
-    // This is a stronger reset than pm clear alone: we stop the app, clear its
-    // data, and grant notification permission fresh so the app always starts
-    // in a clean, logged-out state.
     async function forceAndroidDataClear(): Promise<void> {
         if (device.getPlatform() !== 'android') {
             return;
@@ -231,71 +187,22 @@ beforeAll(async () => {
     }
 
     async function launchAndVerify(): Promise<void> {
-        // Grant POST_NOTIFICATIONS BEFORE the app boots. `pm clear` above wiped
-        // the previously-granted permission, so on the next launch the app's
-        // `requestNotifications()` call (app/init/push_notifications.ts:82)
-        // would trigger Android's system permission dialog the moment Hermes
-        // finishes running the bundle. That dialog is its own activity: it
-        // moves MainActivity into PAUSED, blocks all hit-tests on server.screen,
-        // and — because the mount queue keeps draining against the paused
-        // activity — FabricUIManagerIdlingResources never goes idle. Detox's
-        // beforeAll then dies at the 180 s idle-resource timeout. Granting via
-        // `pm grant` before launch makes `isRegisteredForRemoteNotifications()`
-        // return true on the JS side so the prompt is never shown.
-        grantAndroidNotificationPermission();
+        await grantAndroidNotificationPermission();
 
         await device.launchApp({
             newInstance: true,
 
-            // On iOS CI (SIMULATOR_ID is set by the workflow), pass `notifications: 'YES'` so
-            // Detox uses `applesimutils --restartSB --setPermissions notifications=YES`. The
-            // `--restartSB` restarts iOS SpringBoard (~20–30s), flushing all stale system state
-            // from the previous app session. Without this restart, iOS 26.x CI runners leave a
-            // persistent work item on the main queue that blocks Detox's internal `waitForActive`
-            // handshake indefinitely, causing every beforeAll to time out at 90s.
-            //
-            // Gated on SIMULATOR_ID (CI-only env var) because on iOS 26.3.x local simulators
-            // --restartSB unregisters the app binary, breaking subsequent simctl launch calls.
-            // Local machines have sufficient resources that waitForActive completes without help.
-            //
-            // camera/medialibrary/photos omitted — their deny counterparts corrupt the TCC
-            // database on iOS 26.x (see commit 0d08de97c).
             ...(device.getPlatform() === 'ios' && process.env.SIMULATOR_ID? {permissions: {notifications: 'YES'}}: {}),
             launchArgs,
         });
 
-        // Detox synchronization is now disabled AFTER launchApp() has returned (so the
-        // Detox-to-app instrumentation channel is alive and can process the command).
-        //
-        // On Android (RN 0.83.9 New Architecture): FabricUIManagerIdlingResources
-        // monitors the MountItemDispatcher queues. During cold boot the app performs
-        // heavy work (server DB CREATE with 39 tables ~15s, batchRecords of 26 models,
-        // cascading channel-list re-renders driven by combineLatest of 9+ DB observables)
-        // that keeps Fabric's mount queues non-empty. Detox's idleResourceTimeoutSec
-        // (now 180s in DetoxTest.java) would otherwise fire during this legitimate
-        // startup window.
-        //
-        // On iOS 26.x (EarlGrey): a persistent pending work item on the main queue
-        // prevents EarlGrey's main-queue idle check from ever resolving. Disabling
-        // sync bypasses both issues; we rely on the explicit waitFor(serverScreenEl)
-        // with our own timeout for readiness.
-        //
-        // Pattern: call disableSynchronization *after* launchApp (connection exists),
-        // never before. This is the documented Detox pattern:
-        // https://wix.github.io/Detox/docs/api/device/#devicedisablesynchronization
         await device.disableSynchronization();
 
-        // Wait for server.screen (clean state). Use waitFor().withTimeout() which
-        // has Detox-enforced timeout — unlike expect().toExist() which blocks
-        // indefinitely when EarlGrey waits for main queue idle (iOS 26.x has a
-        // persistent pending work item that prevents idle).
         const serverScreenEl = element(by.id('server.screen'));
 
         try {
             await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
         } catch {
-            // On Android, pm clear can silently fail, leaving the app in a logged-in
-            // state (channel_list visible instead of server.screen). Detect and recover.
             if (device.getPlatform() === 'android') {
                 const channelListEl = element(by.id('channel_list.screen'));
                 try {
@@ -306,9 +213,7 @@ beforeAll(async () => {
                     );
                     await forceAndroidDataClear();
 
-                    // Re-grant POST_NOTIFICATIONS before relaunch (same reason
-                    // as above: forceAndroidDataClear's `pm clear` wiped it).
-                    grantAndroidNotificationPermission();
+                    await grantAndroidNotificationPermission();
                     await device.launchApp({newInstance: true, launchArgs});
                     await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
                 } catch {
@@ -317,11 +222,6 @@ beforeAll(async () => {
                     );
                 }
             } else {
-                // On iOS, clearIOSAppData() can race with SQLite WAL file locks:
-                // the database files survive partially, causing the app to launch
-                // with stale server entries but no valid auth token. The app shows
-                // "Couldn't load" (channel_list.screen exists but channels don't
-                // load) instead of server.screen. Detect this and retry the wipe.
                 const channelListEl = element(by.id('channel_list.screen'));
                 try {
                     await waitFor(channelListEl).toExist().withTimeout(5_000);
@@ -354,31 +254,9 @@ beforeAll(async () => {
     }
 
     if (device.getPlatform() === 'ios') {
-        // Always clear iOS data before every file, including the first. Without this,
-        // local re-runs inherit credentials/databases from the previous process, which
-        // triggers the "already connected" path in server screen — the Connect tap
-        // no-ops and the login form never appears, hanging beforeAll on
-        // waitFor(login_form.username.input). CI fresh-boots the simulator so the first
-        // file is implicitly clean there; locally we need to force it ourselves.
-        // Clearing data (not uninstalling) avoids the fragile delete:true reinstall
-        // cycle that breaks the Detox WebSocket on resource-constrained CI runners.
         clearIOSAppData();
     }
 
-    // Retry loop without a Promise.race timeout wrapper.
-    //
-    // The earlier `withTimeout(launchAndVerify(), PER_ATTEMPT_MS)` pattern caused
-    // "Detox has detected multiple interactions taking place simultaneously"
-    // failures: when the outer setTimeout rejected at 120 s, the inner waitFor()
-    // invoke was still pending in Detox's command queue. The retry's next
-    // waitFor() then fired on top of the orphan, and Detox aborted both. ~30
-    // Android beforeAll hooks were dying to this race per CI run.
-    //
-    // Linear `await launchAndVerify()` lets each Detox call complete or throw
-    // on its own internal `withTimeout(...)` (which DOES properly cancel its
-    // invoke). Between attempts the app process is force-killed, which closes
-    // Detox's WebSocket and drains any still-in-flight invokes before the next
-    // attempt is allowed to start.
     const MAX_LAUNCH_ATTEMPTS = 2;
     for (let attempt = 1; attempt <= MAX_LAUNCH_ATTEMPTS; attempt++) {
         try {
@@ -393,10 +271,6 @@ beforeAll(async () => {
                 throw launchError;
             }
 
-            // Between attempts: kill the app process directly (not via
-            // device.terminateApp() which can hang on iOS 26.x). Killing the
-            // PID also forces Detox's WS to disconnect, which is what cleans
-            // up any residual JS-side pending invokes from the failed attempt.
             if (device.getPlatform() === 'ios') {
                 clearIOSAppData();
             } else if (device.getPlatform() === 'android') {
@@ -417,16 +291,5 @@ beforeAll(async () => {
         console.warn('Claude init failed:', e);
     }
 
-    // Admin login — populates the cookie jar for this file's apiInit() calls.
-    // Server config + plugin cleanup already done once in global_setup.js.
     await loginAdmin();
-}, /* timeout */ 360_000);
-// Why 360s instead of relying on testTimeout=240s for this hook:
-// The global beforeAll worst case is launchApp (up to ~90s on Android cold
-// boot under Detox WS-handshake latency) + waitFor server.screen (60s) +
-// fallback retry (~95s) + admin login (10s) = ~255s. That exceeds the 240s
-// Jest hook ceiling, causing setup.ts to fire "Exceeded timeout of 240000 ms
-// for a hook" on slow Android shards (40 occurrences in CI run 25947506060).
-// 360s gives ~105s headroom for the actual recovery path to complete instead
-// of being killed mid-launch. Per-hook timeout is scoped to this beforeAll
-// only; test cases keep using the 240s testTimeout from config.js.
+}, 360_000);

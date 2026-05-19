@@ -61,41 +61,57 @@ class ServerScreen {
         await this.toBeVisible();
         await this.serverUrlInput.replaceText(serverUrl);
         await this.serverDisplayNameInput.replaceText(serverDisplayName);
+        await this.tapConnectButton();
+
         if (isAndroid()) {
-            await this.tapConnectButton();
-
-            // Dismiss "Notifications cannot be received from this server" dialog if it appears.
-            // This Android-only dialog blocks the login form and must be dismissed before proceeding.
-            try {
-                await waitFor(Alert.notificationsCannotBeReceivedTitle).toExist().withTimeout(timeouts.TEN_SEC);
-                await element(by.text('OKAY')).tap();
-            } catch {
-                // Dialog did not appear — proceed normally
-            }
+            await this.waitForAndroidLoginAvailable(timeouts.ONE_MIN);
+        } else {
+            await waitForElementToExist(this.usernameInput, timeouts.HALF_MIN);
         }
 
         if (isIos()) {
-            await this.tapConnectButton();
-        }
-
-        // Wait for the login form to appear after server connection.
-        // Use polling waitForElementToExist instead of waitFor().toExist() — Detox's
-        // built-in wait relies on app-idle sync which can stall indefinitely on
-        // iOS 26.x because the main run loop keeps 2 work items pending (known RN/
-        // RCT_NEW_ARCH=0 behaviour on iOS 26 simulators). The polling helper probes
-        // the element on a wall-clock interval regardless of app-idle state.
-        const timeout = isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN;
-        await waitForElementToExist(this.usernameInput, timeout);
-
-        if (isIos()) {
-            // The push-proxy alert is now deferred in the app (via
-            // InteractionManager.runAfterInteractions in app/screens/server/index.tsx)
-            // so it appears AFTER the RNN transition to LoginScreen completes, not
-            // during. Dismiss it here — the login form is already visible, so any
-            // subsequent LoginScreen interaction would otherwise hit the alert's
-            // dimming overlay and fail.
             await this.dismissIosNotificationsAlert();
         }
+    };
+
+    /**
+     * Android: poll for the login form to be reachable, dismissing the
+     * "Notifications could not be received from this server" AlertDialog as
+     * soon as it appears. The dialog is a separate Window root that blocks
+     * Espresso from finding views in the underlying activity, so we must
+     * dismiss it before `usernameInput` becomes findable.
+     */
+    waitForAndroidLoginAvailable = async (timeout: number) => {
+        const deadline = Date.now() + timeout;
+        const POLL = 1000;
+        const okayButton = element(by.text('OKAY'));
+        /* eslint-disable no-await-in-loop -- sequential probes by design */
+        while (Date.now() < deadline) {
+            // First: dismiss the alert if it's up (alert window steals Espresso
+            // focus, so this matcher resolves against the alert window directly).
+            try {
+                await waitFor(Alert.notificationsCannotBeReceivedTitle).toExist().withTimeout(POLL);
+                try {
+                    await okayButton.tap();
+                } catch {
+                    // OKAY may have animated out between detection and tap — re-loop.
+                }
+                continue;
+            } catch {
+                // No alert — proceed to check the login form.
+            }
+
+            // Alert is not up. Try to find usernameInput now.
+            try {
+                await waitFor(this.usernameInput).toExist().withTimeout(POLL);
+                return;
+            } catch {
+                // Login form not visible yet — loop.
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        throw new Error(`waitForAndroidLoginAvailable: usernameInput not reachable within ${timeout}ms`);
     };
 
     /**
@@ -151,9 +167,6 @@ class ServerScreen {
             try {
                 await btn.tap();
 
-                // Verify the alert is actually gone; a tap on the wrong element
-                // silently no-ops (Detox still returns success) and the alert
-                // remains, blocking the next screen transition.
                 if (!(await alertIsPresent())) {
                     return;
                 }

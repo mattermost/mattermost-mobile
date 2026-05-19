@@ -244,7 +244,7 @@ async function serverSetup() {
             // "The remote cluster service is not enabled." on fresh test servers.
             ConnectedWorkspacesSettings: {EnableRemoteClusterService: true},
         }, {headers});
-        process.stdout.write('[globalSetup] ✅ Server configured for CI\n');
+        process.stdout.write('[globalSetup] ✅ Server configured for E2E tests\n');
     } catch (err) {
         // Non-fatal: env-var-locked settings may reject the patch
         process.stderr.write(`[globalSetup] ⚠️ Could not patch server config: ${err.message}\n`);

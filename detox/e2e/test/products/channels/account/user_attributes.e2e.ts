@@ -19,7 +19,7 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - User Attributes', () => {
@@ -39,26 +39,28 @@ describe('Account - User Attributes', () => {
         // # Login as admin to probe feature availability and create custom profile attribute fields
         await User.apiAdminLogin(siteOneUrl);
 
-        // # Probe feature availability by attempting to create the first field.
-        // If the API returns an error (e.g. 403/501), CustomProfileAttributes is unavailable — skip.
-        const {field: field1, error: probeError} = await CustomProfileAttributes.apiCreateCustomProfileAttributeField(siteOneUrl, {name: 'Bio', type: 'text'});
-        if (probeError) {
+        const fieldNames = ['Bio', 'Department', 'Team'];
+        const {fields: existingFields, error: listError} = await CustomProfileAttributes.apiListCustomProfileAttributeFields(siteOneUrl);
+        if (listError) {
             return;
         }
-        licenseAvailable = true;
-        if (field1?.id) {
-            createdFieldIds.push(field1.id);
-        }
 
-        // # Create remaining 2 custom profile attribute fields (text type)
-        const {field: field2} = await CustomProfileAttributes.apiCreateCustomProfileAttributeField(siteOneUrl, {name: 'Department', type: 'text'});
-        const {field: field3} = await CustomProfileAttributes.apiCreateCustomProfileAttributeField(siteOneUrl, {name: 'Team', type: 'text'});
-        if (field2?.id) {
-            createdFieldIds.push(field2.id);
+        const leaked = Array.isArray(existingFields) ? existingFields : [];
+        await Promise.all(
+            leaked.map((f: any) => CustomProfileAttributes.apiDeleteCustomProfileAttributeField(siteOneUrl, f.id)),
+        );
+
+        // # Create the three fields fresh. With leaked state cleared above, no
+        // duplicate-key errors will fire.
+        for (const name of fieldNames) {
+            // eslint-disable-next-line no-await-in-loop -- sequential create keeps order deterministic
+            const {field, error} = await CustomProfileAttributes.apiCreateCustomProfileAttributeField(siteOneUrl, {name, type: 'text'});
+            if (error || !field?.id) {
+                return; // licenseAvailable stays false → tests skip
+            }
+            createdFieldIds.push(field.id);
         }
-        if (field3?.id) {
-            createdFieldIds.push(field3.id);
-        }
+        licenseAvailable = true;
 
         // # Set up test data: team, channel, user
         const {channel, user} = await Setup.apiInit(siteOneUrl);
@@ -112,32 +114,32 @@ describe('Account - User Attributes', () => {
         // * Verify edit profile screen is visible
         await EditProfileScreen.toBeVisible();
 
-        // # Scroll to first custom attribute field, tap it, type value + '\n' to dismiss keyboard
-        await waitFor(element(by.id(`edit_profile_form.customAttributes.${createdFieldIds[0]}`))).
-            toBeVisible().
-            whileElement(by.id(EditProfileScreen.testID.scrollView)).
-            scroll(300, 'down');
-        await element(by.id(`edit_profile_form.customAttributes.${createdFieldIds[0]}.input`)).tap();
-        await element(by.id(`edit_profile_form.customAttributes.${createdFieldIds[0]}.input`)).typeText(`${attrValue1}\n`);
+        const fillField = async (fieldId: string | undefined, value: string, scrollAmount: number) => {
+            if (!fieldId) {
+                return;
+            }
+            const input = element(by.id(`edit_profile_form.customAttributes.${fieldId}.input`));
+            await waitFor(input).
+                toBeVisible().
+                whileElement(by.id(EditProfileScreen.testID.scrollView)).
+                scroll(scrollAmount, 'down');
+            if (isAndroid()) {
+                await input.tap();
+                await input.clearText();
+                await input.replaceText(value);
+            } else {
+                await input.replaceText(value);
+            }
+        };
 
-        // # Scroll to second attribute field, tap it, type value + '\n' to dismiss keyboard
-        await waitFor(element(by.id(`edit_profile_form.customAttributes.${createdFieldIds[1]}`))).
-            toBeVisible().
-            whileElement(by.id(EditProfileScreen.testID.scrollView)).
-            scroll(200, 'down');
-        await element(by.id(`edit_profile_form.customAttributes.${createdFieldIds[1]}.input`)).tap();
-        await element(by.id(`edit_profile_form.customAttributes.${createdFieldIds[1]}.input`)).typeText(`${attrValue2}\n`);
+        // # Scroll to and fill each custom attribute field
+        await fillField(createdFieldIds[0], attrValue1, 300);
+        await fillField(createdFieldIds[1], attrValue2, 200);
+        await fillField(createdFieldIds[2], attrValue3, 200);
 
-        // # Scroll to third attribute field, tap it, type value + '\n' to dismiss keyboard
-        await waitFor(element(by.id(`edit_profile_form.customAttributes.${createdFieldIds[2]}`))).
-            toBeVisible().
-            whileElement(by.id(EditProfileScreen.testID.scrollView)).
-            scroll(200, 'down');
-        await element(by.id(`edit_profile_form.customAttributes.${createdFieldIds[2]}.input`)).tap();
-        await element(by.id(`edit_profile_form.customAttributes.${createdFieldIds[2]}.input`)).typeText(`${attrValue3}\n`);
+        await EditProfileScreen.saveButton.tap();
 
-        // * Verify returned to account screen — '\n' on the last field triggers onFocusNextField
-        // which calls submitUser() automatically (isLastEnabledField=true, canSave=true)
+        // * Verify returned to account screen — submitUser() closes the modal.
         await waitFor(AccountScreen.accountScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list
@@ -166,21 +168,23 @@ describe('Account - User Attributes', () => {
         // * Verify user profile screen is visible
         await UserProfileScreen.toBeVisible();
 
-        // * Verify first custom attribute (Bio) title and value are displayed in the correct order
+        // # Expand the bottom sheet to its full height so all custom attributes are in the viewport
+        await element(by.id('user_profile_options.send_message.option')).swipe('up', 'fast', 0.8);
+        await wait(timeouts.TWO_SEC);
+
+        // * Verify first custom attribute (Bio) title and value
         await waitFor(element(by.id(`custom_attribute.${createdFieldIds[0]}.title`))).
             toBeVisible().
             withTimeout(timeouts.TEN_SEC);
-        await expect(element(by.id(`custom_attribute.${createdFieldIds[0]}.title`))).toBeVisible();
         await expect(element(by.id(`custom_attribute.${createdFieldIds[0]}.text`))).toHaveText(attrValue1);
 
-        // * Verify second custom attribute (Department) title and value are displayed
-        await expect(element(by.id(`custom_attribute.${createdFieldIds[1]}.title`))).toBeVisible();
+        // * Verify second custom attribute (Department) title and value
+        await waitFor(element(by.id(`custom_attribute.${createdFieldIds[1]}.title`))).
+            toBeVisible().
+            withTimeout(timeouts.TEN_SEC);
         await expect(element(by.id(`custom_attribute.${createdFieldIds[1]}.text`))).toHaveText(attrValue2);
 
-        // * Verify third custom attribute (Team) — swipe up on the options button (above the FlatList)
-        // to trigger BottomSheet snap to 90%, making all custom attributes visible
-        await element(by.id('user_profile_options.send_message.option')).swipe('up', 'fast', 0.8);
-        await wait(timeouts.TWO_SEC);
+        // * Verify third custom attribute (Team) — may require scrolling the sheet content
         await waitFor(element(by.id(`custom_attribute.${createdFieldIds[2]}.title`))).
             toBeVisible().
             withTimeout(timeouts.TEN_SEC);

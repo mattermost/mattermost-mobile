@@ -17,6 +17,22 @@ import {getResponseFromError} from './common';
 // ****************************************************************
 
 /**
+ * List all custom profile attribute fields (admin only).
+ * @param {string} baseUrl - the base server URL
+ * @return {Object} returns {fields} on success or {error, status} on error
+ */
+export const apiListCustomProfileAttributeFields = async (baseUrl: string): Promise<any> => {
+    try {
+        const response = await client.get(
+            `${baseUrl}/api/v4/custom_profile_attributes/fields`,
+        );
+        return {fields: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Create a custom profile attribute field (admin only).
  * @param {string} baseUrl - the base server URL
  * @param {Object} field - field definition ({name, type})
@@ -71,6 +87,7 @@ export const apiUpdateCustomProfileAttributeValues = async (baseUrl: string, val
 export const CustomProfileAttributes = {
     apiCreateCustomProfileAttributeField,
     apiDeleteCustomProfileAttributeField,
+    apiListCustomProfileAttributeFields,
     apiUpdateCustomProfileAttributeValues,
 };
 

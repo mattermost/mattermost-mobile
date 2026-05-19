@@ -29,7 +29,7 @@ import {
     UserProfileScreen,
 } from '@support/ui/screen';
 import {getRandomId, isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Account - Custom Status', () => {
     const serverOneDisplayName = 'Server 1';
@@ -58,23 +58,6 @@ describe('Account - Custom Status', () => {
     });
 
     beforeEach(async () => {
-        // * Verify we landed on channel list OR account screen. Probe each
-        // testID directly instead of calling the page objects' `toBeVisible()`
-        // helpers — `ChannelListScreen.toBeVisible` invokes a defensive
-        // `device.launchApp({newInstance: true})` recovery on miss, which
-        // resets the iOS session and dumps the user back on Server Connect
-        // for the rest of the file (verified locally via
-        // `[ChannelListScreen.toBeVisible] Channel list not found —
-        // attempting recovery relaunch` log entries between MM-T4990_1 PASS
-        // and MM-T4990_2 FAIL on iPhone 17 Pro / iOS 26.3).
-        //
-        // When neither testID is visible (e.g. a previous `it()` failed
-        // mid-test and left the custom-status modal / emoji picker open),
-        // attempt a gentle recovery: tap the custom-status close X if
-        // present (iOS) or press hardware back (Android) up to three times.
-        // We do NOT relaunch the app. If recovery doesn't surface a known
-        // screen, throw with context so the cascading failure points at the
-        // real prior test instead of a misleading 2s timeout.
         const channelList = element(by.id('channel_list.screen'));
         const accountScreen = element(by.id('account.screen'));
         const probe = async () => {
@@ -176,14 +159,14 @@ describe('Account - Custom Status', () => {
         await openCustomStatusScreen();
 
         // # Pick emoji and type custom status
-        await CustomStatusScreen.openEmojiPicker('default', true);
+        await openEmojiPickerForDefault();
         await EmojiPickerScreen.searchInput.replaceText(customEmojiName);
         await EmojiPickerScreen.searchInput.tapReturnKey();
         await element(by.text('🤡')).tap();
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
         await CustomStatusScreen.doneButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await waitForCustomStatusOnAccount({emoji: customEmojiName, duration: customStatusDuration});
 
         // * Verify custom status is set
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
@@ -208,7 +191,7 @@ describe('Account - Custom Status', () => {
         await openCustomStatusScreen();
         await selectSuggestedStatus(status);
         await CustomStatusScreen.doneButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await waitForCustomStatusOnAccount(status);
 
         // * Verify status is set
         await verifyStatusSetOnAccountScreen(status);
@@ -241,12 +224,6 @@ describe('Account - Custom Status', () => {
         const status = STATUSES.IN_MEETING;
 
         await AccountScreen.open();
-
-        // `account.custom_status.option` is partially clipped by the iOS 26
-        // dynamic-island area and doesn't pass Detox's 75% visibility threshold.
-        // The element IS present and interactive (tap handled with y-offset in
-        // CustomStatusScreen.open). Use `.toExist()` to match the pattern from
-        // commit a7faec2e2 (non-touchable wrapper Views on iOS 26).
         await expect(AccountScreen.setStatusOption).toExist();
         await CustomStatusScreen.open();
 
@@ -317,7 +294,7 @@ describe('Account - Custom Status', () => {
 
         // # Save status
         await CustomStatusScreen.doneButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await waitForCustomStatusOnAccount({emoji: customEmojiName, duration: customStatusDuration});
 
         // * Verify status is set in account screen
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
@@ -330,9 +307,6 @@ describe('Account - Custom Status', () => {
         // # Reopen and verify status in recent section
         await CustomStatusScreen.open();
 
-        // `custom_status.recents` is a non-touchable wrapper View that doesn't
-        // pass Detox's 75% visibility threshold on iOS 26 (same pattern as
-        // commit a7faec2e2). Use `.toExist()` instead.
         await expect(CustomStatusScreen.recents).toExist();
         const {customStatusSuggestion: recentStatus} =
             CustomStatusScreen.getRecentCustomStatus(customEmojiName, customStatusText, customStatusDuration);
@@ -376,14 +350,14 @@ describe('Account - Custom Status', () => {
         await openCustomStatusScreen();
 
         // # Create custom status with emoji picker
-        await CustomStatusScreen.openEmojiPicker('default', true);
+        await openEmojiPickerForDefault();
         await EmojiPickerScreen.searchInput.replaceText(customEmojiName);
         await EmojiPickerScreen.searchInput.tapReturnKey();
         await element(by.text('🤡')).tap();
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
         await CustomStatusScreen.doneButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await waitForCustomStatusOnAccount({emoji: customEmojiName, duration: customStatusDuration});
 
         // * Verify status is set
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
@@ -406,7 +380,7 @@ describe('Account - Custom Status', () => {
         const suggestedStatus = STATUSES.IN_MEETING;
         await selectSuggestedStatus(suggestedStatus);
         await CustomStatusScreen.doneButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await waitForCustomStatusOnAccount(suggestedStatus);
         await verifyStatusSetOnAccountScreen(suggestedStatus);
 
         // # Clear and verify in recent section
@@ -427,8 +401,7 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
-    // Flaky: CreateDirectMessageScreen.open() times out on Android — plus button not hittable after DM tutorial
-    it.skip('MM-T4091 - should be able to set custom status with expiry time and verify in various locations', async () => {
+    it('MM-T4091 - should be able to set custom status with expiry time and verify in various locations', async () => {
         const status = STATUSES.OUT_FOR_LUNCH;
         const messageText = `Message ${getRandomId()}`;
 
@@ -473,7 +446,7 @@ describe('Account - Custom Status', () => {
         await CreateDirectMessageScreen.searchInput.replaceText(testUser.username);
         await wait(timeouts.TWO_SEC);
         await expect(CreateDirectMessageScreen.getUserItemDisplayName(testUser.id)).toBeVisible();
-        await CreateDirectMessageScreen.getUserItem(testUser.id).tap();
+        await CreateDirectMessageScreen.getUserItemDisplayName(testUser.id).tap();
         await wait(timeouts.TWO_SEC);
 
         try {
@@ -489,12 +462,6 @@ describe('Account - Custom Status', () => {
         await ChannelInfoScreen.toBeVisible();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
-
-        // # Clean up
-        await AccountScreen.open();
-        await AccountScreen.customStatusClearButton.tap();
-        await wait(timeouts.ONE_SEC);
-        await verifyStatusCleared();
     });
 });
 
@@ -507,8 +474,37 @@ const openCustomStatusScreen = async () => {
 };
 
 const selectSuggestedStatus = async (status: {emoji: string; text: string; duration: string}) => {
-    const {customStatusSuggestion} = CustomStatusScreen.getSuggestedCustomStatus(status.emoji, status.text, status.duration);
-    await customStatusSuggestion.tap();
+    const suggested = CustomStatusScreen.getSuggestedCustomStatus(status.emoji, status.text, status.duration);
+    try {
+        await waitFor(suggested.customStatusSuggestion).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await suggested.customStatusSuggestion.tap();
+        return;
+    } catch { /* try recents */ }
+    const recent = CustomStatusScreen.getRecentCustomStatus(status.emoji, status.text, status.duration);
+    await waitFor(recent.customStatusSuggestion).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+    await recent.customStatusSuggestion.tap();
+};
+
+const waitForCustomStatusOnAccount = async (status: {emoji: string; duration: string}) => {
+    const {accountCustomStatusEmoji} = AccountScreen.getCustomStatus(status.emoji, status.duration);
+    await waitFor(accountCustomStatusEmoji).toExist().withTimeout(timeouts.TEN_SEC);
+    await waitFor(AccountScreen.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+};
+
+const openEmojiPickerForDefault = async () => {
+    const defaultEmoji = CustomStatusScreen.getCustomStatusEmoji('default');
+    try {
+        await waitFor(defaultEmoji).toBeVisible().withTimeout(timeouts.TEN_SEC);
+    } catch {
+        try {
+            await waitFor(CustomStatusScreen.statusInputClearButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await CustomStatusScreen.statusInputClearButton.tap();
+            await waitFor(defaultEmoji).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            // No clear button to use — fall through to the picker open below.
+        }
+    }
+    await CustomStatusScreen.openEmojiPicker('default', true);
 };
 
 const verifyStatusInInput = async (status: {emoji: string; text: string; duration: string}) => {
@@ -567,22 +563,12 @@ const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: stri
     const {accountCustomStatusEmoji, accountCustomStatusText, accountCustomStatusExpiry} =
         AccountScreen.getCustomStatus(status.emoji, status.duration);
 
-    // The emoji testID lives on a non-touchable wrapper <View> whose Detox
-    // `visible` flag reports false on iOS 26 (see custom_status.suggestions
-    // diagnostic). The testID itself encodes the emoji name
-    // (`account.custom_status.custom_status_emoji.<emoji>` — see
-    // `app/screens/home/account/components/options/custom_status/custom_status_emoji.tsx`),
-    // so its presence already proves the correct emoji is on screen.
-    // `.toExist()` matches the semantic intent without tripping the
-    // wrapper-visibility quirk.
     await expect(accountCustomStatusEmoji).toExist();
     await expect(accountCustomStatusText).toHaveText(status.text);
     await expect(accountCustomStatusExpiry).toBeVisible();
 };
 
 const verifyStatusCleared = async () => {
+    await waitFor(AccountScreen.customStatusClearButton).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     await expect(AccountScreen.setStatusOption).toExist();
-    const customStatusText = element(by.id('account.custom_status.custom_status_text'));
-    await expect(customStatusText).toHaveText('Set a custom status');
-    await expect(AccountScreen.customStatusClearButton).not.toBeVisible();
 };

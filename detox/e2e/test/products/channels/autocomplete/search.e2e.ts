@@ -60,9 +60,6 @@ describe('Autocomplete - Search', () => {
         // * Verify channel mention autocomplete list is displayed
         await waitFor(Autocomplete.sectionChannelMentionList).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(Autocomplete.sectionChannelMentionList).toExist();
-
-        // # Clear search and go back to channel list screen
-        await SearchMessagesScreen.searchClearButton.tap();
         await ChannelListScreen.open();
     });
 });

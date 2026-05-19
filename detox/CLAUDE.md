@@ -482,6 +482,60 @@ Tapping `searchModifierIn` inserts `in:` and **does** trigger channel mention au
 
 ## DEBUGGING E2E FAILURES
 
+### MANDATORY: read the artifact before proposing a fix
+
+This rule overrides any default tendency to "patch first and see." If a detox test is failing, you MUST complete steps 1–4 below BEFORE editing any test, page object, or app code. State each finding in the chat before the fix proposal. No exceptions.
+
+1. **Open `detox/artifacts/<latest run>/<test name>/testFnFailure.png`** with the Read tool. State in one sentence what screen the app is on at failure time and which UI element the assertion was looking for.
+2. **Open `device.log` in the same directory.** Find the failing action's timestamp from the run output, then `awk` ±3 seconds around it. Look for:
+   - `UIKit:EventDispatch ... Sending UIEvent` → confirms the synthetic touch was dispatched
+   - `(UIKitCore) send gesture actions` → confirms a gesture handler received it
+   - `RCTAnimatedNodeDTXSpy ... needs update` after the touch → confirms a TouchableOpacity press animation fired
+   - `CFNetwork ... Task <id> resuming` then `received response, status N` → confirms (or refutes) that the handler made its HTTP call
+   - `DTXJSTimerSyncResource ... timed out after Nms` where N >> the declared duration → JS thread was blocked; correlate against what the handler does after `await`
+3. **Open `detox.log`** and grep for `testFailed`. For each failed expectation, parse its `viewHierarchy` JSON and list the testIDs that ARE and AREN'T present at failure time. Use a `python3` heredoc if needed — `id="..."` attributes are testIDs.
+4. **State the diagnosis explicitly using this template**, then fix accordingly:
+   > Tap dispatched: YES/NO (evidence: `<log line>`)
+   > Handler ran: YES/NO (evidence: `<log line>`)
+   > Side effect occurred (HTTP/DB/nav): YES/NO (evidence: `<log line>`)
+   > UI re-rendered: YES/NO (evidence: viewHierarchy testIDs)
+   > Therefore root cause is: <pick one>
+   >   - test (selector/timing/missing wait)
+   >   - detox/native (tap missed, sync stuck, simulator)
+   >   - app (handler didn't fire / state didn't update / observer didn't emit)
+
+Only after stating those four findings may you propose a fix. If finding 4 says "app bug," the fix is NOT a retry loop or longer timeout in the test — say so and either fix the app or stop and report.
+
+### Forbidden patches without evidence
+
+Never apply any of these without first completing the artifact-reading checklist above:
+
+- **Retry loops around a single tap/action.** Detox `tap` reporting success (`invokeResult: {}`) means the synthetic touch WAS dispatched. Retrying it doesn't help if the app's handler ran but produced no state change. If your first attempt at fixing a flake adds a retry loop, you are guessing.
+- **Increasing a timeout beyond what already works in another test.** If `verifyStatusCleared` previously asserted instantaneously and now needs 10s of polling, the right question is "what changed about the state-update path?", not "how long should I wait?".
+- **Wrapping an action in try/catch to swallow the failure.** Hides the symptom; never fixes the cause.
+- **Adding a second tap because the first "might not have fired."** It fired — check `UIKit:EventDispatch` in `device.log`.
+
+You get ONE attempt at increasing a timeout per failure mode. If a second iteration is also "wait longer / try again," stop and run the artifact checklist instead.
+
+### Distinguishing tap-not-received from app-didn't-react
+
+Symptom: Detox `tap` returns success, then a `toBeVisible` / `toHaveText` / `not.toBeVisible` assertion times out.
+
+This is almost always the app, not Detox. Verify by checking:
+
+| Question | Where to look | What it means |
+|---|---|---|
+| Was the touch dispatched to a UIWindow? | `device.log` for `Sending UIEvent type: 0` at the action's timestamp | If yes, the tap reached iOS hit-testing |
+| Did a TouchableOpacity animate (press feedback)? | `device.log` for `RCTAnimatedNodeDTXSpy ... needs update` right after the UIEvent | If yes, an onPress handler was invoked |
+| Did the expected side effect fire? | `device.log` for `CFNetwork ... resuming` (HTTP) or batchRecords log (DB) | If yes, the handler ran to completion |
+| Did the React tree update? | `detox.log` `testFailed.viewHierarchy` — search for the testIDs that should have disappeared/appeared | If old testIDs persist, the observer/render didn't propagate — app bug |
+
+When the app didn't react, the fix belongs in the app (often: an unawaited fire-and-forget Promise in the handler, a stale observable closure, or a model mutation that doesn't trigger emission). Do not patch this in the test.
+
+### Pause-before-edit signals
+
+If the user says any of "stop guessing", "look at the logs", "you're in a loop", "read the screenshot" — treat that as a hard stop. Do not propose a code change in the same turn. Reply with findings from the artifact checklist above, nothing else.
+
 ### Screenshots and Logs
 
 Artifacts saved to `detox/artifacts/` after each run:
