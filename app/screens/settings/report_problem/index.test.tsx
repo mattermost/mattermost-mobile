@@ -69,10 +69,12 @@ describe('screens/settings/report_problem/index', () => {
         expect(getByTestId('serverVersion')).toHaveTextContent('Unknown (Build Unknown)');
         expect(getByTestId('appVersion')).toHaveTextContent('0.0.0 (Build 0)');
         expect(getByTestId('appPlatform')).toHaveTextContent('ios');
+        expect(getByTestId('deviceModel')).toHaveTextContent('Unknown');
         expect(getByTestId('reportAProblemType')).toHaveTextContent('undefined');
         expect(getByTestId('reportAProblemMail')).toHaveTextContent('undefined');
         expect(getByTestId('siteName')).toHaveTextContent('undefined');
         expect(getByTestId('allowDownloadLogs')).toHaveTextContent('true');
+        expect(getByTestId('isFreeEdition')).toHaveTextContent('true');
     });
 
     it('should enhance ReportProblem with correct observables', async () => {
@@ -109,10 +111,12 @@ describe('screens/settings/report_problem/index', () => {
         expect(getByTestId('serverVersion')).toHaveTextContent('7.8.0 (Build 123)');
         expect(getByTestId('appVersion')).toHaveTextContent('0.0.0 (Build 0)');
         expect(getByTestId('appPlatform')).toHaveTextContent('ios');
+        expect(getByTestId('deviceModel')).toHaveTextContent('Unknown');
         expect(getByTestId('reportAProblemType')).toHaveTextContent('email');
         expect(getByTestId('reportAProblemMail')).toHaveTextContent('test@example.com');
         expect(getByTestId('siteName')).toHaveTextContent('Test Site');
         expect(getByTestId('allowDownloadLogs')).toHaveTextContent('true');
+        expect(getByTestId('isFreeEdition')).toHaveTextContent('true');
     });
 
     it('different data should show different values', async () => {
@@ -149,9 +153,11 @@ describe('screens/settings/report_problem/index', () => {
         expect(getByTestId('serverVersion')).toHaveTextContent('7.8.1 (Build 124)');
         expect(getByTestId('appVersion')).toHaveTextContent('0.0.0 (Build 0)');
         expect(getByTestId('appPlatform')).toHaveTextContent('ios');
+        expect(getByTestId('deviceModel')).toHaveTextContent('Unknown');
         expect(getByTestId('reportAProblemType')).toHaveTextContent('link');
         expect(getByTestId('reportAProblemMail')).toHaveTextContent('test2@example.com');
         expect(getByTestId('siteName')).toHaveTextContent('Test Site2');
         expect(getByTestId('allowDownloadLogs')).toHaveTextContent('false');
+        expect(getByTestId('isFreeEdition')).toHaveTextContent('true');
     });
 });

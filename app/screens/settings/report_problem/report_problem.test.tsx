@@ -5,9 +5,11 @@ import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
 import {Screens} from '@constants';
+import {DEFAULT_REPORT_A_PROBLEM_EMAIL} from '@constants/report_a_problem';
 import {navigateToSettingsScreen} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
-import {emailLogs} from '@utils/share_logs';
+import {emailLogs, getDefaultReportAProblemLink} from '@utils/share_logs';
+import {tryOpenURL} from '@utils/url';
 
 import ReportProblem from './report_problem';
 
@@ -15,17 +17,25 @@ jest.mock('@screens/navigation');
 
 jest.mock('@utils/share_logs', () => ({
     emailLogs: jest.fn(),
+    getDefaultReportAProblemLink: jest.fn().mockReturnValue('default-forum-link'),
+}));
+
+jest.mock('@utils/url', () => ({
+    tryOpenURL: jest.fn(),
 }));
 
 describe('screens/settings/report_problem/report_problem', () => {
     const baseProps = {
         allowDownloadLogs: true,
+        attachLogsEnabled: false,
+        isFreeEdition: false,
         metadata: {
             currentUserId: 'user1',
             currentTeamId: 'team1',
             serverVersion: '7.8.0',
             appVersion: '2.0.0',
             appPlatform: 'ios',
+            deviceModel: 'iPhone 14',
         },
     };
 
@@ -116,6 +126,99 @@ describe('screens/settings/report_problem/report_problem', () => {
                 true,
             );
             expect(navigateToSettingsScreen).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should open forum link directly when type is default and free edition', async () => {
+        const props = {
+            ...baseProps,
+            reportAProblemType: 'default',
+            isFreeEdition: true,
+        };
+
+        const {getByTestId} = renderWithIntl(
+            <ReportProblem {...props}/>,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('settings.report_problem.option'));
+            expect(getDefaultReportAProblemLink).toHaveBeenCalledWith(false);
+            expect(tryOpenURL).toHaveBeenCalledWith('default-forum-link');
+            expect(navigateToSettingsScreen).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should email directly when type is default, paid edition, and logs not allowed', async () => {
+        const props = {
+            ...baseProps,
+            allowDownloadLogs: false,
+            reportAProblemType: 'default',
+            isFreeEdition: false,
+            siteName: 'Test Site',
+        };
+
+        const {getByTestId} = renderWithIntl(
+            <ReportProblem {...props}/>,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('settings.report_problem.option'));
+            expect(emailLogs).toHaveBeenCalledWith(
+                props.metadata,
+                props.siteName,
+                DEFAULT_REPORT_A_PROBLEM_EMAIL,
+                true,
+            );
+            expect(navigateToSettingsScreen).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should navigate to screen when type is default, paid edition, logs allowed, and attach preference is set', async () => {
+        const props = {
+            ...baseProps,
+            allowDownloadLogs: true,
+            attachLogsEnabled: true,
+            reportAProblemType: 'default',
+            isFreeEdition: false,
+            siteName: 'Test Site',
+        };
+
+        const {getByTestId} = renderWithIntl(
+            <ReportProblem {...props}/>,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('settings.report_problem.option'));
+            expect(navigateToSettingsScreen).toHaveBeenCalledWith(
+                Screens.REPORT_PROBLEM,
+                {title: 'Report a problem'},
+            );
+            expect(emailLogs).not.toHaveBeenCalled();
+            expect(tryOpenURL).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should navigate to screen when type is default, paid edition, logs allowed, and not auto-attached', async () => {
+        const props = {
+            ...baseProps,
+            allowDownloadLogs: true,
+            attachLogsEnabled: false,
+            reportAProblemType: 'default',
+            isFreeEdition: false,
+        };
+
+        const {getByTestId} = renderWithIntl(
+            <ReportProblem {...props}/>,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('settings.report_problem.option'));
+            expect(navigateToSettingsScreen).toHaveBeenCalledWith(
+                Screens.REPORT_PROBLEM,
+                {title: 'Report a problem'},
+            );
+            expect(emailLogs).not.toHaveBeenCalled();
+            expect(tryOpenURL).not.toHaveBeenCalled();
         });
     });
 });

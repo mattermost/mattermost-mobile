@@ -21,7 +21,7 @@ import {
     observePushVerificationStatus, observeConfig, observeConfigValue, observeMaxFileCount,
     observeIsCustomStatusExpirySupported, observeConfigBooleanValue, observeConfigIntValue,
     observeLicense, observeAllowedThemesKeys, observeOnlyUnreads,
-    observeIsMinimumLicenseTier, observeReportAProblemMetadata,
+    observeIsFreeEdition, observeIsMinimumLicenseTier, observeReportAProblemMetadata,
 } from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -78,6 +78,7 @@ describe('observeReportAProblemMetadata', () => {
                         serverVersion: '7.8.0 (Build 123)',
                         appVersion: '1.2.3 (Build 456)',
                         appPlatform: 'somePlatform',
+                        deviceModel: 'Unknown',
                     });
                     done();
                 });
@@ -93,8 +94,67 @@ describe('observeReportAProblemMetadata', () => {
                 serverVersion: 'Unknown (Build Unknown)',
                 appVersion: '1.2.3 (Build 456)',
                 appPlatform: 'somePlatform',
+                deviceModel: 'Unknown',
             });
             done();
+        });
+    });
+});
+
+describe('observeIsFreeEdition', () => {
+    const serverUrl = 'baseHandler.test.com';
+    let database: Database;
+    let operator: ServerDataOperator;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should return true when no license is present', (done) => {
+        observeIsFreeEdition(database).subscribe((value) => {
+            expect(value).toBe(true);
+            done();
+        });
+    });
+
+    it('should return true when IsLicensed is false', (done) => {
+        operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'false'}}],
+            prepareRecordsOnly: false,
+        }).then(() => {
+            observeIsFreeEdition(database).subscribe((value) => {
+                expect(value).toBe(true);
+                done();
+            });
+        });
+    });
+
+    it('should return true when licensed with Entry SKU', (done) => {
+        operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Entry}}],
+            prepareRecordsOnly: false,
+        }).then(() => {
+            observeIsFreeEdition(database).subscribe((value) => {
+                expect(value).toBe(true);
+                done();
+            });
+        });
+    });
+
+    it('should return false when licensed with a paid SKU', (done) => {
+        operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Professional}}],
+            prepareRecordsOnly: false,
+        }).then(() => {
+            observeIsFreeEdition(database).subscribe((value) => {
+                expect(value).toBe(false);
+                done();
+            });
         });
     });
 });
