@@ -8,6 +8,7 @@ export ENTRY_FILE="index.tsx"
 
 set -e
 WITH_ENVIRONMENT="../node_modules/react-native/scripts/xcode/with-environment.sh"
+REACT_NATIVE_XCODE="../node_modules/react-native/scripts/react-native-xcode.sh"
 SENTRY_XCODE="../node_modules/@sentry/react-native/scripts/sentry-xcode.sh"
 
 if [[ "${SENTRY_ENABLED}" = "true" ]]; then
@@ -18,5 +19,5 @@ if [[ "${SENTRY_ENABLED}" = "true" ]]; then
 	/bin/sh -c "$WITH_ENVIRONMENT $SENTRY_XCODE"
 else
 	echo "Sentry native integration is not enabled"
-	/bin/sh -c "$WITH_ENVIRONMENT"
+	/bin/sh -c "$WITH_ENVIRONMENT $REACT_NATIVE_XCODE"
 fi
