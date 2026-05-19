@@ -66,13 +66,6 @@ class ConversationStoreSingleton {
         }
         delete this.subjects[serverUrl];
     };
-
-    /** Full reset across all servers (test cleanup / full logout). */
-    clear = (): void => {
-        for (const serverUrl of Object.keys(this.subjects)) {
-            this.removeServer(serverUrl);
-        }
-    };
 }
 
 const conversationStore = new ConversationStoreSingleton();

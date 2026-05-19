@@ -4,7 +4,7 @@
 import {act, renderHook, waitFor} from '@testing-library/react-native';
 
 import {
-    clearConversationCache,
+    clearConversationCacheForServer,
     invalidateConversation,
     refetchConversation,
 } from '@agents/actions/remote/conversation';
@@ -53,7 +53,8 @@ async function flush(): Promise<void> {
 
 beforeEach(() => {
     mockedFetch.mockReset();
-    clearConversationCache();
+    clearConversationCacheForServer(SERVER_URL);
+    clearConversationCacheForServer(SERVER_B);
 });
 
 describe('useConversation', () => {

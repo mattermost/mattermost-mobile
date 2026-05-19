@@ -4,7 +4,7 @@
 import {act} from '@testing-library/react-native';
 import React from 'react';
 
-import {clearConversationCache} from '@agents/actions/remote/conversation';
+import {clearConversationCacheForServer} from '@agents/actions/remote/conversation';
 import {CONTROL_SIGNALS} from '@agents/constants';
 import streamingStore from '@agents/store/streaming_store';
 import {BlockType, ToolCallStatusString, type ConversationResponse} from '@agents/types';
@@ -93,8 +93,8 @@ async function flush(): Promise<void> {
 }
 
 beforeEach(() => {
-    streamingStore.clear();
-    clearConversationCache();
+    streamingStore.removeServer('https://test.mattermost.com');
+    clearConversationCacheForServer('https://test.mattermost.com');
     mockFetchConversation.mockReset();
 });
 

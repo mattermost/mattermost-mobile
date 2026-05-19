@@ -646,44 +646,6 @@ describe('StreamingStoreSingleton', () => {
         });
     });
 
-    describe('clear', () => {
-        it('should clear all streaming state', () => {
-            streamingStore.startStreaming(SERVER_URL, 'post1');
-            streamingStore.startStreaming(SERVER_URL, 'post2');
-            streamingStore.startStreaming(SERVER_URL, 'post3');
-
-            expect(streamingStore.isStreaming(SERVER_URL, 'post1')).toBe(true);
-            expect(streamingStore.isStreaming(SERVER_URL, 'post2')).toBe(true);
-            expect(streamingStore.isStreaming(SERVER_URL, 'post3')).toBe(true);
-
-            streamingStore.clear();
-
-            expect(streamingStore.isStreaming(SERVER_URL, 'post1')).toBe(false);
-            expect(streamingStore.isStreaming(SERVER_URL, 'post2')).toBe(false);
-            expect(streamingStore.isStreaming(SERVER_URL, 'post3')).toBe(false);
-        });
-
-        it('should complete all subscriptions', () => {
-            streamingStore.startStreaming(SERVER_URL, 'post1');
-            streamingStore.startStreaming(SERVER_URL, 'post2');
-
-            let completedCount = 0;
-            const sub1 = streamingStore.observeStreamingState(SERVER_URL, 'post1').subscribe({
-                complete: () => completedCount++,
-            });
-            const sub2 = streamingStore.observeStreamingState(SERVER_URL, 'post2').subscribe({
-                complete: () => completedCount++,
-            });
-
-            streamingStore.clear();
-
-            expect(completedCount).toBe(2);
-
-            sub1.unsubscribe();
-            sub2.unsubscribe();
-        });
-    });
-
     describe('multiple concurrent streams', () => {
         it('should handle multiple posts streaming simultaneously', () => {
             streamingStore.startStreaming(SERVER_URL, 'post1');

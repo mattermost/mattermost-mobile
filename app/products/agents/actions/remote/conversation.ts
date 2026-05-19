@@ -125,9 +125,3 @@ export function clearConversationCacheForServer(serverUrl: string): void {
     }
     conversationStore.removeServer(serverUrl);
 }
-
-/** Full reset across all servers (test cleanup). */
-export function clearConversationCache(): void {
-    inflight.clear();
-    conversationStore.clear();
-}

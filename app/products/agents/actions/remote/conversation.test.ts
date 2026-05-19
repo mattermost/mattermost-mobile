@@ -8,7 +8,6 @@ import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
 import {
-    clearConversationCache,
     clearConversationCacheForServer,
     ensureConversation,
     fetchConversation,
@@ -49,7 +48,8 @@ beforeAll(() => {
 
 beforeEach(() => {
     jest.clearAllMocks();
-    clearConversationCache();
+    clearConversationCacheForServer(serverUrl);
+    clearConversationCacheForServer(otherServerUrl);
 });
 
 describe('fetchConversation', () => {

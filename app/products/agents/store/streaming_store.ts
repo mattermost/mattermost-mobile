@@ -257,13 +257,6 @@ class StreamingStoreSingleton {
         }
         delete this.streamingSubjects[serverUrl];
     };
-
-    // Drop every cached subject across every server (test reset / full logout).
-    clear = (): void => {
-        for (const serverUrl of Object.keys(this.streamingSubjects)) {
-            this.removeServer(serverUrl);
-        }
-    };
 }
 
 const streamingStore = new StreamingStoreSingleton();
