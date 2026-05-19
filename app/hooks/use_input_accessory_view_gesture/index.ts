@@ -35,6 +35,8 @@ export function useInputAccessoryViewGesture() {
     const dragVelocityY = useSharedValue(0);
     const isDragActive = useSharedValue(false);
     const previousTouchY = useSharedValue(-1);
+    const startTouchX = useSharedValue(-1);
+    const startTouchY = useSharedValue(-1);
 
     const dismissEmojiPicker = useCallback(() => {
         setIsEmojiSearchFocused(false);
@@ -43,11 +45,13 @@ export function useInputAccessoryViewGesture() {
 
     const panGesture = Gesture.Pan().
         manualActivation(true).
+
         onTouchesMove((e, manager) => {
             'worklet';
 
-            // Skip if emoji picker is not open or search is active
+            // Release the touch when there's nothing to dismiss.
             if (!stateContext.inputAccessoryHeight.value || isEmojiSearchFocused) {
+                manager.fail();
                 return;
             }
 
@@ -56,7 +60,24 @@ export function useInputAccessoryViewGesture() {
                 return;
             }
 
+            const fingerX = touch.absoluteX;
             const fingerY = touch.absoluteY;
+
+            if (startTouchX.value < 0) {
+                startTouchX.value = fingerX;
+                startTouchY.value = fingerY;
+            }
+
+            // Yield to the screen swipe-back when motion is clearly horizontal.
+            if (!isDragActive.value) {
+                const dx = Math.abs(fingerX - startTouchX.value);
+                const dy = Math.abs(fingerY - startTouchY.value);
+                if (dx > 4 && dx > dy * 2) {
+                    manager.fail();
+                    return;
+                }
+            }
+
             const containerHeight = stateContext.postInputContainerHeight.value;
             const pickerHeight = stateContext.inputAccessoryHeight.value;
             const interactiveTopEdge = effectiveWindowHeight - containerHeight - pickerHeight;
@@ -80,6 +101,8 @@ export function useInputAccessoryViewGesture() {
         onTouchesUp((_, manager) => {
             'worklet';
             previousTouchY.value = -1;
+            startTouchX.value = -1;
+            startTouchY.value = -1;
             if (!isDragActive.value) {
                 manager.fail();
             }
@@ -141,6 +164,9 @@ export function useInputAccessoryViewGesture() {
         onFinalize(() => {
             'worklet';
             isDragActive.value = false;
+            previousTouchY.value = -1;
+            startTouchX.value = -1;
+            startTouchY.value = -1;
         });
 
     // Only use on iOS — Android handles emoji picker dismiss differently
