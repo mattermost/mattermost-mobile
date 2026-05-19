@@ -6,12 +6,12 @@ import DatabaseManager from '@database/manager';
 import {
     transformPropertyFieldRecord,
     transformPropertyValueRecord,
-    transformViewRecord,
+    transformBoardViewRecord,
 } from '@database/operator/server_data_operator/transformers/boards';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
-const {PROPERTY_FIELD, PROPERTY_VALUE, VIEW} = MM_TABLES.SERVER;
+const {PROPERTY_FIELD, PROPERTY_VALUE, BOARD_VIEW} = MM_TABLES.SERVER;
 
 describe('*** Operator: Boards Handlers tests ***', () => {
     let operator: ServerDataOperator;
@@ -30,12 +30,12 @@ describe('*** Operator: Boards Handlers tests ***', () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
-    describe('=> handleViews', () => {
-        it('should delegate to handleRecords with the view transformer', async () => {
+    describe('=> handleBoardViews', () => {
+        it('should delegate to handleRecords with the board view transformer', async () => {
             expect.assertions(2);
 
             const spy = jest.spyOn(operator, 'handleRecords');
-            const views: View[] = [{
+            const boardViews: BoardView[] = [{
                 id: 'view1',
                 channel_id: 'channel1',
                 type: 'kanban',
@@ -48,33 +48,33 @@ describe('*** Operator: Boards Handlers tests ***', () => {
                 delete_at: 0,
             }];
 
-            await operator.handleViews({views, prepareRecordsOnly: false});
+            await operator.handleBoardViews({boardViews, prepareRecordsOnly: false});
 
             expect(spy).toHaveBeenCalledTimes(1);
             expect(spy).toHaveBeenCalledWith({
                 fieldName: 'id',
-                createOrUpdateRawValues: views,
-                tableName: VIEW,
+                createOrUpdateRawValues: boardViews,
+                tableName: BOARD_VIEW,
                 prepareRecordsOnly: false,
-                transformer: transformViewRecord,
-            }, 'handleViews');
+                transformer: transformBoardViewRecord,
+            }, 'handleBoardViews');
         });
 
-        it('should return [] without calling handleRecords when views is empty', async () => {
+        it('should return [] without calling handleRecords when boardViews is empty', async () => {
             expect.assertions(2);
 
             const spy = jest.spyOn(operator, 'handleRecords');
-            const result = await operator.handleViews({views: [], prepareRecordsOnly: false});
+            const result = await operator.handleBoardViews({boardViews: [], prepareRecordsOnly: false});
 
             expect(result).toEqual([]);
             expect(spy).not.toHaveBeenCalled();
         });
 
-        it('should return [] without calling handleRecords when views is undefined', async () => {
+        it('should return [] without calling handleRecords when boardViews is undefined', async () => {
             expect.assertions(2);
 
             const spy = jest.spyOn(operator, 'handleRecords');
-            const result = await operator.handleViews({prepareRecordsOnly: false});
+            const result = await operator.handleBoardViews({prepareRecordsOnly: false});
 
             expect(result).toEqual([]);
             expect(spy).not.toHaveBeenCalled();

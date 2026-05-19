@@ -5,10 +5,10 @@ import {tableSchema} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
-const {VIEW} = MM_TABLES.SERVER;
+const {BOARD_VIEW} = MM_TABLES.SERVER;
 
 export default tableSchema({
-    name: VIEW,
+    name: BOARD_VIEW,
     columns: [
         {name: 'channel_id', type: 'string', isIndexed: true},
         {name: 'type', type: 'string'},

@@ -23,7 +23,7 @@ const {
     PROPERTY_FIELD,
     PROPERTY_VALUE,
     SCHEDULED_POST,
-    VIEW,
+    BOARD_VIEW,
 } = MM_TABLES.SERVER;
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
@@ -34,7 +34,7 @@ export default schemaMigrations({migrations: [
         toVersion: 20,
         steps: [
             createTable({
-                name: VIEW,
+                name: BOARD_VIEW,
                 columns: [
                     {name: 'channel_id', type: 'string', isIndexed: true},
                     {name: 'type', type: 'string'},

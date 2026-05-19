@@ -450,8 +450,8 @@ update_at number INDEX
 
 BoardView
 -
-# WatermelonDB table name is BoardView; the domain model class is ViewModel.
-# "BoardView" avoids collision with SQL's reserved VIEW keyword and encodes the boards semantics.
+# WatermelonDB table name is BoardView; the domain model class is BoardViewModel.
+# "BoardView" avoids collision with SQL's reserved VIEW keyword (and with React Native's View) and encodes the boards semantics.
 id PK string # server-generated
 channel_id string INDEX FK >- Channel.id
 type string # 'kanban'

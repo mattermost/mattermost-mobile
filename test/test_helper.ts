@@ -1193,7 +1193,7 @@ class TestHelperSingleton {
         value: `Value ${index + 1}`,
     });
 
-    createView = (channelId: string, index: number): View => ({
+    createView = (channelId: string, index: number): BoardView => ({
         id: `${channelId}-view_${index}`,
         channel_id: channelId,
         type: 'kanban',

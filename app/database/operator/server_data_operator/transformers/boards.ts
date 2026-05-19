@@ -4,15 +4,15 @@
 import {MM_TABLES, OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 
-import type {PropertyFieldModel, PropertyValueModel, ViewModel} from '@database/models/server';
+import type {PropertyFieldModel, PropertyValueModel, BoardViewModel} from '@database/models/server';
 import type {TransformerArgs} from '@typings/database/database';
 
-const {VIEW, PROPERTY_FIELD, PROPERTY_VALUE} = MM_TABLES.SERVER;
+const {BOARD_VIEW, PROPERTY_FIELD, PROPERTY_VALUE} = MM_TABLES.SERVER;
 
 /**
- * transformViewRecord: Prepares a record of the SERVER database 'BoardView' table for update or create actions.
+ * transformBoardViewRecord: Prepares a record of the SERVER database 'BoardView' table for update or create actions.
  */
-export const transformViewRecord = ({action, database, value}: TransformerArgs<ViewModel, View>): Promise<ViewModel> => {
+export const transformBoardViewRecord = ({action, database, value}: TransformerArgs<BoardViewModel, BoardView>): Promise<BoardViewModel> => {
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
@@ -20,7 +20,7 @@ export const transformViewRecord = ({action, database, value}: TransformerArgs<V
         throw new Error('Record not found for non create action');
     }
 
-    const fieldsMapper = (view: ViewModel) => {
+    const fieldsMapper = (view: BoardViewModel) => {
         view._raw.id = isCreateAction ? (raw.id ?? view.id) : record!.id;
         view.channelId = raw.channel_id ?? record?.channelId ?? '';
         view.type = raw.type ?? record?.type ?? 'kanban';
@@ -37,7 +37,7 @@ export const transformViewRecord = ({action, database, value}: TransformerArgs<V
     return prepareBaseRecord({
         action,
         database,
-        tableName: VIEW,
+        tableName: BOARD_VIEW,
         value,
         fieldsMapper,
     });

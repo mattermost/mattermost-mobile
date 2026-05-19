@@ -19,7 +19,7 @@ type KanbanProps = {
     group_by?: KanbanGroupBy;
 };
 
-type View = {
+type BoardView = {
     id: string;
     channel_id: string;
     type: ViewType;
@@ -33,4 +33,4 @@ type View = {
     delete_at: number;
 };
 
-type ViewPatch = Partial<Pick<View, 'title' | 'description' | 'props' | 'sort_order'>>;
+type BoardViewPatch = Partial<Pick<BoardView, 'title' | 'description' | 'props' | 'sort_order'>>;

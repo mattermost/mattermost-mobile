@@ -50,7 +50,7 @@ const {
     THREADS_IN_TEAM,
     TEAM_THREADS_SYNC,
     USER,
-    VIEW,
+    BOARD_VIEW,
 } = MM_TABLES.SERVER;
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
@@ -989,8 +989,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'terms_of_service_create_at', type: 'number'},
                     ],
                 },
-                [VIEW]: {
-                    name: VIEW,
+                [BOARD_VIEW]: {
+                    name: BOARD_VIEW,
                     unsafeSql: undefined,
                     columns: {
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},

@@ -7,17 +7,17 @@ import Model, {type Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
-import type ViewModelInterface from '@typings/database/models/servers/view';
+import type BoardViewModelInterface from '@typings/database/models/servers/view';
 
-const {VIEW} = MM_TABLES.SERVER;
+const {BOARD_VIEW} = MM_TABLES.SERVER;
 
 /**
- * The View model represents the 'BoardView' table and describes the per-channel
+ * The BoardView model represents the 'BoardView' table and describes the per-channel
  * kanban presentation of a board. One channel can have multiple views.
  */
-export default class ViewModel extends Model implements ViewModelInterface {
+export default class BoardViewModel extends Model implements BoardViewModelInterface {
     /** table (name) : BoardView */
-    static table = VIEW;
+    static table = BOARD_VIEW;
 
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {};

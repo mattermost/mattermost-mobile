@@ -4,7 +4,7 @@
 import type {Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
 
-declare class ViewModel extends Model {
+declare class BoardViewModel extends Model {
     static table: string;
     static associations: Associations;
 
@@ -39,4 +39,4 @@ declare class ViewModel extends Model {
     deleteAt: number;
 }
 
-export default ViewModel;
+export default BoardViewModel;

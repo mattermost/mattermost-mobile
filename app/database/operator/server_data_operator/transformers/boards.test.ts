@@ -5,23 +5,23 @@ import {MM_TABLES, OperationType} from '@constants/database';
 import {
     transformPropertyFieldRecord,
     transformPropertyValueRecord,
-    transformViewRecord,
+    transformBoardViewRecord,
 } from '@database/operator/server_data_operator/transformers/boards';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 
-import type {PropertyValueModel, ViewModel} from '@database/models/server';
+import type {PropertyValueModel, BoardViewModel} from '@database/models/server';
 
-const {PROPERTY_FIELD, PROPERTY_VALUE, VIEW} = MM_TABLES.SERVER;
+const {PROPERTY_FIELD, PROPERTY_VALUE, BOARD_VIEW} = MM_TABLES.SERVER;
 
 describe('*** BOARDS Prepare Records Test ***', () => {
-    describe('=> transformViewRecord', () => {
+    describe('=> transformBoardViewRecord', () => {
         it('should prepare a create record for the BoardView table', async () => {
             expect.assertions(3);
 
             const database = await createTestConnection({databaseName: 'boards_view_create', setActive: true});
             expect(database).toBeTruthy();
 
-            const preparedRecord = await transformViewRecord({
+            const preparedRecord = await transformBoardViewRecord({
                 action: OperationType.CREATE,
                 database: database!,
                 value: {
@@ -43,7 +43,7 @@ describe('*** BOARDS Prepare Records Test ***', () => {
             });
 
             expect(preparedRecord).toBeTruthy();
-            expect(preparedRecord!.collection.table).toBe(VIEW);
+            expect(preparedRecord!.collection.table).toBe(BOARD_VIEW);
         });
 
         it('should throw on non-create action without record', async () => {
@@ -52,7 +52,7 @@ describe('*** BOARDS Prepare Records Test ***', () => {
             const database = await createTestConnection({databaseName: 'boards_view_error', setActive: true});
             expect(database).toBeTruthy();
 
-            expect(() => transformViewRecord({
+            expect(() => transformBoardViewRecord({
                 action: OperationType.UPDATE,
                 database: database!,
                 value: {
@@ -68,7 +68,7 @@ describe('*** BOARDS Prepare Records Test ***', () => {
                         create_at: 1,
                         update_at: 1,
                         delete_at: 0,
-                    } as View,
+                    } as BoardView,
                 },
             })).toThrow('Record not found for non create action');
         });
@@ -97,16 +97,16 @@ describe('*** BOARDS Prepare Records Test ***', () => {
                     cb();
                     return mockRecord;
                 }),
-                collection: {table: VIEW},
-            } as unknown as ViewModel;
+                collection: {table: BOARD_VIEW},
+            } as unknown as BoardViewModel;
 
             // Only title changes in partial payload.
-            await transformViewRecord({
+            await transformBoardViewRecord({
                 action: OperationType.UPDATE,
                 database: {} as never,
                 value: {
                     record: mockRecord,
-                    raw: {id: 'view1', title: 'New title'} as View,
+                    raw: {id: 'view1', title: 'New title'} as BoardView,
                 },
             });
 

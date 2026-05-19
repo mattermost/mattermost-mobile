@@ -5,7 +5,7 @@ import {MM_TABLES} from '@constants/database';
 import {
     transformPropertyFieldRecord,
     transformPropertyValueRecord,
-    transformViewRecord,
+    transformBoardViewRecord,
 } from '@database/operator/server_data_operator/transformers/boards';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {logWarning} from '@utils/log';
@@ -15,36 +15,36 @@ import type Model from '@nozbe/watermelondb/Model';
 import type {
     HandlePropertyFieldsArgs,
     HandlePropertyValuesArgs,
-    HandleViewsArgs,
+    HandleBoardViewsArgs,
 } from '@typings/database/database';
 
-const {PROPERTY_FIELD, PROPERTY_VALUE, VIEW} = MM_TABLES.SERVER;
+const {PROPERTY_FIELD, PROPERTY_VALUE, BOARD_VIEW} = MM_TABLES.SERVER;
 
 export interface BoardsHandlerMix {
-    handleViews: ({views, prepareRecordsOnly}: HandleViewsArgs) => Promise<Model[]>;
+    handleBoardViews: ({boardViews, prepareRecordsOnly}: HandleBoardViewsArgs) => Promise<Model[]>;
     handlePropertyFields: ({fields, prepareRecordsOnly}: HandlePropertyFieldsArgs) => Promise<Model[]>;
     handlePropertyValues: ({values, prepareRecordsOnly}: HandlePropertyValuesArgs) => Promise<Model[]>;
 }
 
 const BoardsHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
-     * handleViews: Handler responsible for the Create/Update operations on the BoardView table.
+     * handleBoardViews: Handler responsible for the Create/Update operations on the BoardView table.
      */
-    handleViews = async ({views, prepareRecordsOnly = true}: HandleViewsArgs): Promise<Model[]> => {
-        if (!views?.length) {
-            logWarning('An empty or undefined "views" array has been passed to the handleViews method');
+    handleBoardViews = async ({boardViews, prepareRecordsOnly = true}: HandleBoardViewsArgs): Promise<Model[]> => {
+        if (!boardViews?.length) {
+            logWarning('An empty or undefined "boardViews" array has been passed to the handleBoardViews method');
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: views, key: 'id'});
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: boardViews, key: 'id'});
 
         return this.handleRecords({
             fieldName: 'id',
-            transformer: transformViewRecord,
+            transformer: transformBoardViewRecord,
             createOrUpdateRawValues,
-            tableName: VIEW,
+            tableName: BOARD_VIEW,
             prepareRecordsOnly,
-        }, 'handleViews');
+        }, 'handleBoardViews');
     };
 
     /**

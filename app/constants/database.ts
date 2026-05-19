@@ -48,7 +48,7 @@ export const MM_TABLES = {
         THREAD_PARTICIPANT: 'ThreadParticipant',
         TEAM_THREADS_SYNC: 'TeamThreadsSync',
         USER: 'User',
-        VIEW: 'BoardView',
+        BOARD_VIEW: 'BoardView',
     },
 };
 
