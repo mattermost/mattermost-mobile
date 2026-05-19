@@ -5,7 +5,6 @@ import {Button} from '@rneui/base';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, Platform, type Insets} from 'react-native';
-import {Shadow} from 'react-native-shadow-2';
 
 import {uploadFile} from '@actions/remote/file';
 import CompassIcon from '@components/compass_icon';
@@ -50,6 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderColor: changeOpacity(theme.centerChannelColor, 0.16),
         borderWidth: 1,
         borderRadius: 4,
+        boxShadow: '4px 4px 4px rgba(61, 60, 64, 0.08)',
     },
     fileContainer: {
         height: 64,
@@ -117,7 +117,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const shadowSides = {top: false, bottom: true, end: true, start: false};
 const hitSlop: Insets = {top: 10, bottom: 10, left: 10, right: 10};
 
 const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, setBookmark}: Props) => {
@@ -132,7 +131,7 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
     const [failed, setFailed] = useState(false);
     const styles = getStyleSheet(theme);
     const subContainerStyle = useMemo(() => [styles.viewContainer, {paddingHorizontal: isTablet ? 42 : 0}], [isTablet, styles]);
-    const cancelUpload = useRef<() => void | undefined>();
+    const cancelUpload = useRef<(() => void) | undefined>(undefined);
 
     const onProgress = useCallback((p: number, bytes: number) => {
         if (!file) {
@@ -299,12 +298,7 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
                     defaultMessage='Attachment'
                     style={styles.title}
                 />
-                <Shadow
-                    style={styles.shadowContainer}
-                    startColor='rgba(61, 60, 64, 0.08)'
-                    distance={4}
-                    sides={shadowSides}
-                >
+                <View style={styles.shadowContainer}>
                     <View style={styles.fileContainer}>
                         <FileIcon file={file}/>
                         <View style={styles.fileInfoContainer}>
@@ -345,7 +339,7 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
                             />
                         </View>
                     </TouchableWithFeedback>
-                </Shadow>
+                </View>
                 {uploading &&
                 <View style={styles.progressContainer}>
                     <ProgressBar

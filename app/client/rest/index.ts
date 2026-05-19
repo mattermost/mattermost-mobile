@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import ClientAgents, {type ClientAgentsMix} from '@agents/client/rest';
-
 import ClientCalls, {type ClientCallsMix} from '@calls/client/rest';
 import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
 import ClientPlaybooks, {type ClientPlaybooksMix} from '@playbooks/client/rest';

@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {View} from 'react-native';
+
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import {fetchToolCallPrivate, fetchToolResultPrivate} from '@agents/actions/remote/tool_private';
 import {useStreamingState} from '@agents/store/streaming_store';
 import {ToolApprovalStage, type Annotation, type ToolCall} from '@agents/types';
 import {getToolApprovalStage, isPostRequester, isToolCallRedacted, mergeToolCalls} from '@agents/utils';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {View} from 'react-native';
-
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';

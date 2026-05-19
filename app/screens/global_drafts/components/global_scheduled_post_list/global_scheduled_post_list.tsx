@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
-import {View, type LayoutChangeEvent, InteractionManager, type ListRenderItemInfo, Text, FlatList} from 'react-native';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
+import {View, type LayoutChangeEvent, type ListRenderItemInfo, Text, FlatList} from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
 import {storeScheduledPostsListTutorial} from '@actions/app/global';
@@ -14,7 +14,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
 import DraftTooltip from '@screens/global_drafts/draft_scheduled_post_tooltip';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -22,11 +22,9 @@ import DraftAndScheduledPostSwipeActions from '../draft_and_scheduled_post_swipe
 import ScheduledPostEmptyComponent from '../scheduled_post_empty_component';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     allScheduledPosts: ScheduledPostModel[];
-    location: AvailableScreens;
     tutorialWatched: boolean;
 };
 
@@ -71,24 +69,28 @@ const keyExtractor = (item: ScheduledPostModel) => item.id;
 
 const GlobalScheduledPostList: React.FC<Props> = ({
     allScheduledPosts,
-    location,
     tutorialWatched,
 }) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const [layoutWidth, setLayoutWidth] = useState(0);
     const [tooltipVisible, setTooltipVisible] = useState(false);
+    const tutorialTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setLayoutWidth(e.nativeEvent.layout.width - DRAFT_SCHEDULED_POST_LAYOUT_PADDING);
     }, []);
 
     useDidMount(() => {
-        if (tutorialWatched) {
-            return;
+        if (!tutorialWatched) {
+            tutorialTimerRef.current = setTimeout(() => {
+                setTooltipVisible(true);
+            }, 300);
         }
-        InteractionManager.runAfterInteractions(() => {
-            setTooltipVisible(true);
-        });
+        return () => {
+            if (tutorialTimerRef.current !== undefined) {
+                clearTimeout(tutorialTimerRef.current);
+            }
+        };
     });
 
     const firstScheduledPostId = allScheduledPosts[0]?.id || '';
@@ -102,11 +104,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
         scheduledPostsInSequence.unshift(...allScheduledPosts.filter((post) => post.errorCode !== ''));
     }
 
-    const collapse = useCallback(() => {
-        popTopScreen(Screens.GLOBAL_DRAFTS);
-    }, []);
-
-    useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS, collapse);
+    useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS, navigateBack);
 
     const closeTooltip = useCallback(() => {
         setTooltipVisible(false);
@@ -118,7 +116,6 @@ const GlobalScheduledPostList: React.FC<Props> = ({
             return (
                 <Tooltip
                     isVisible={tooltipVisible}
-                    useInteractionManager={true}
                     contentStyle={styles.tooltipContentStyle}
                     placement={'bottom'}
                     content={
@@ -136,7 +133,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                         <DraftAndScheduledPostSwipeActions
                             draftType={DRAFT_TYPE_SCHEDULED}
                             item={item}
-                            location={location}
+                            location={Screens.GLOBAL_DRAFTS}
                             layoutWidth={layoutWidth}
                             firstItem={item.id === firstScheduledPostId}
                         />
@@ -149,12 +146,12 @@ const GlobalScheduledPostList: React.FC<Props> = ({
             <DraftAndScheduledPostSwipeActions
                 draftType={DRAFT_TYPE_SCHEDULED}
                 item={item}
-                location={location}
+                location={Screens.GLOBAL_DRAFTS}
                 layoutWidth={layoutWidth}
                 firstItem={item.id === firstScheduledPostId}
             />
         );
-    }, [closeTooltip, firstScheduledPostId, layoutWidth, location, styles.swippeableContainer, styles.tooltipContentStyle, styles.tooltipStyle, tooltipVisible, tutorialWatched]);
+    }, [closeTooltip, firstScheduledPostId, layoutWidth, styles.swippeableContainer, styles.tooltipContentStyle, styles.tooltipStyle, tooltipVisible, tutorialWatched]);
 
     return (
         <View
@@ -177,7 +174,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                 keyExtractor={keyExtractor}
                 contentContainerStyle={!scheduledPostsInSequence.length && styles.empty}
                 maxToRenderPerBatch={10}
-                nativeID={location}
+                nativeID={Screens.GLOBAL_DRAFTS}
                 renderItem={renderItem}
                 ListEmptyComponent={ScheduledPostEmptyComponent}
             />

@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
@@ -15,7 +15,7 @@ type UserStatusProps = {
 
 const UserStatus = ({size = 6, status = General.OFFLINE}: UserStatusProps) => {
     const theme = useTheme();
-    let iconName;
+    let iconName: CompassIconName;
     let iconColor;
     switch (status) {
         case General.AWAY:

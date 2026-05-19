@@ -2,16 +2,17 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import PasteInput, {type PasteInputRef} from '@mattermost/react-native-paste-input';
+import PasteInput, {type PasteTextInputInstance} from '@mattermost/react-native-paste-input';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData, View} from 'react-native';
+import {type TextInputSelectionChangeEvent, View} from 'react-native';
 
 import QuickActions from '@components/post_draft/quick_actions/';
 import {INITIAL_PRIORITY} from '@components/post_draft/send_handler/send_handler';
 import Uploads from '@components/post_draft/uploads';
-import {ExtraKeyboard, useExtraKeyboardContext} from '@context/extra_keyboard';
+import {useKeyboardState} from '@context/keyboard_state';
 import {useTheme} from '@context/theme';
+import useDidMount from '@hooks/did_mount';
 import {emptyFunction} from '@utils/general';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
@@ -44,8 +45,10 @@ type PostInputProps = {
     postFiles: FileInfo[];
     version?: string;
     onTextSelectionChange: (curPos: number) => void;
+    updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     onChangeText: (text: string) => void;
-    inputRef: React.MutableRefObject<PasteInputRef | undefined>;
+    updateValue: React.Dispatch<React.SetStateAction<string>>;
+    inputRef: React.MutableRefObject<PasteTextInputInstance | null>;
     addFiles: (file: FileInfo[]) => void;
 }
 
@@ -53,6 +56,8 @@ const EditPostInput = ({
     message,
     onChangeText,
     onTextSelectionChange,
+    updateCursorPosition,
+    updateValue,
     hasError,
     post,
     postFiles,
@@ -65,37 +70,34 @@ const EditPostInput = ({
     const styles = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
+    const {inputRef: keyboardInputRef, registerPostInputCallbacks, setCursorPosition} = useKeyboardState();
+
+    // Sync prop ref → context ref so the KeyboardStateProvider's inputRef points to this input,
+    // allowing InputQuickAction to call setSelection on the correct native view.
+    useDidMount(() => {
+        keyboardInputRef.current = inputRef.current;
+    });
+
     const focus = useCallback(() => {
         inputRef.current?.focus();
     }, [inputRef]);
 
-    const updateValue = useCallback((valueOrUpdater: string | ((prevValue: string) => string)) => {
-        if (typeof valueOrUpdater === 'function') {
-            const newValue = valueOrUpdater(message);
-            onChangeText(newValue);
-        } else {
-            onChangeText(valueOrUpdater);
-        }
-    }, [message, onChangeText]);
-
-    const keyboardContext = useExtraKeyboardContext();
-
-    const onFocus = useCallback(() => {
-        keyboardContext?.registerTextInputFocus();
-    }, [keyboardContext]);
-
-    const onBlur = useCallback(() => {
-        keyboardContext?.registerTextInputBlur();
-    }, [keyboardContext]);
+    // Register with KeyboardStateProvider so InputQuickAction can read/write cursor position.
+    // updateValue and updateCursorPosition are stable setState dispatchers; message seeds
+    // cursorPosition once at mount — ongoing tracking is handled by onSelectionChange.
+    useDidMount(() => {
+        registerPostInputCallbacks(updateValue, updateCursorPosition, message);
+    });
 
     const inputStyle = useMemo(() => {
         return [styles.input];
     }, [styles]);
 
-    const onSelectionChange = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+    const onSelectionChange = useCallback((event: TextInputSelectionChangeEvent) => {
         const curPos = event.nativeEvent.selection.end;
         onTextSelectionChange(curPos);
-    }, [onTextSelectionChange]);
+        setCursorPosition(curPos);
+    }, [onTextSelectionChange, setCursorPosition]);
 
     const containerStyle = useMemo(() => [
         styles.inputContainer,
@@ -122,8 +124,6 @@ const EditPostInput = ({
                 testID='edit_post.message.input'
                 underlineColorAndroid='transparent'
                 value={message}
-                onFocus={onFocus}
-                onBlur={onBlur}
             />
             {isMinimumServerVersion(version, MAJOR_VERSION_TO_SHOW_ATTACHMENTS, MINOR_VERSION_TO_SHOW_ATTACHMENTS) &&
                 <>
@@ -149,7 +149,6 @@ const EditPostInput = ({
                     />
                 </>
             }
-            {Platform.select({ios: <ExtraKeyboard/>})}
         </View>
     );
 };

@@ -4,9 +4,8 @@
 import {Alert, type AlertButton} from 'react-native';
 
 import {removeCurrentUserFromTeam} from '@actions/remote/team';
-import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
-import {showModal} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 
 import {confirmLeaveTeam, openJoinTeamModal} from './team_menu';
 
@@ -17,7 +16,7 @@ jest.mock('@actions/remote/team', () => ({
 }));
 
 jest.mock('@screens/navigation', () => ({
-    showModal: jest.fn(),
+    navigateToScreen: jest.fn(),
 }));
 
 jest.mock('@components/compass_icon', () => ({
@@ -39,23 +38,17 @@ const mockIntl = {
     },
 } as unknown as IntlShape;
 
-const theme = {sidebarHeaderTextColor: '#fff'} as Theme;
-
 describe('openJoinTeamModal', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
     it('shows the JoinTeam modal with a close button', () => {
-        openJoinTeamModal(mockIntl, theme);
+        openJoinTeamModal();
 
-        expect(CompassIcon.getImageSourceSync).toHaveBeenCalledWith('close', 24, theme.sidebarHeaderTextColor);
-        expect(showModal).toHaveBeenCalledTimes(1);
-        const [screen, title, props, options] = (showModal as jest.Mock).mock.calls[0];
+        expect(navigateToScreen).toHaveBeenCalledTimes(1);
+        const [screen] = (navigateToScreen as jest.Mock).mock.calls[0];
         expect(screen).toBe(Screens.JOIN_TEAM);
-        expect(title).toBe('Join Another Team');
-        expect(props).toEqual({closeButtonId: 'close-join-team'});
-        expect(options.topBar.leftButtons[0].id).toBe('close-join-team');
     });
 });
 

@@ -112,286 +112,287 @@ jest.mock('@utils/log', () => {
     };
 });
 
-beforeAll(() => {
+describe('Session Actions', () => {
+    beforeAll(() => {
     // @ts-ignore
-    NetworkManager.getClient = () => mockClient;
+        NetworkManager.getClient = () => mockClient;
 
-    // @ts-ignore
-    WebsocketManager.getClient = () => mockWebsocketClient;
-});
-
-beforeEach(async () => {
-    await DatabaseManager.init([serverUrl]);
-    operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
-});
-
-afterEach(async () => {
-    await DatabaseManager.destroyServerDatabase(serverUrl);
-});
-
-describe('sessions', () => {
-    it('addPushProxyVerificationStateFromLogin - handle not found database', async () => {
-        const result = await addPushProxyVerificationStateFromLogin('foo');
-        expect(result).toBeDefined();
-        expect(result.error).toBeDefined();
+        // @ts-ignore
+        WebsocketManager.getClient = () => mockWebsocketClient;
     });
 
-    it('addPushProxyVerificationStateFromLogin - no verification', async () => {
-        mockGetPushProxyVerificationState.mockImplementationOnce(() => '');
-        const result = await addPushProxyVerificationStateFromLogin(serverUrl);
-        expect(result).toBeDefined();
-        expect(result.error).toBeUndefined();
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
     });
 
-    it('addPushProxyVerificationStateFromLogin - base case', async () => {
-        const result = await addPushProxyVerificationStateFromLogin(serverUrl);
-        expect(result).toBeDefined();
-        expect(result.error).toBeUndefined();
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
-    it('forceLogoutIfNecessary - handle not found database', async () => {
-        const result = await forceLogoutIfNecessary('foo', {});
-        expect(result).toBeDefined();
-        expect(result.error).toBeTruthy();
-        expect(result.logout).toBe(false);
-    });
-
-    it('forceLogoutIfNecessary - logout expected from 401', async () => {
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
-
-        const result = await forceLogoutIfNecessary(serverUrl, {status_code: 401, url: '/api/v4/users/me'});
-        expect(result).toBeDefined();
-        expect(result.error).toBeNull();
-        expect(result.logout).toBe(true);
-    });
-
-    it('forceLogoutIfNecessary - logout not expected', async () => {
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
-
-        const result = await forceLogoutIfNecessary(serverUrl, {status_code: 500, url: '/api/v4/users/me'});
-        expect(result).toBeDefined();
-        expect(result.error).toBeNull();
-        expect(result.logout).toBe(false);
-    });
-
-    it('fetchSessions - handle error', async () => {
-        mockClient.getSessions.mockImplementationOnce(jest.fn(throwFunc));
-        const result = await fetchSessions('foo', '');
-        expect(result).toBeUndefined();
-    });
-
-    it('fetchSessions - handle client error', async () => {
-        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
-
-        const result = await fetchSessions(serverUrl, user1.id);
-        expect(result).toBeUndefined();
-    });
-
-    it('fetchSessions - base case', async () => {
-        const result = await fetchSessions(serverUrl, user1.id);
-        expect(result).toBeDefined();
-        expect(result?.length).toBe(1);
-    });
-
-    it('login - base case', async () => {
-        const result = await login(serverUrl, {config: {DiagnosticId: 'diagnosticid'}} as LoginArgs);
-        expect(result).toBeDefined();
-        expect(result.error).toBeUndefined();
-        expect(result.failed).toBe(false);
-    });
-
-    it('login - handle throw on login request', async () => {
-        mockClient.login.mockImplementationOnce(jest.fn(throwFunc));
-
-        const result = await login(serverUrl, {config: {DiagnosticId: 'diagnosticid'}} as LoginArgs);
-        expect(result).toBeDefined();
-        expect(result.error).toBeDefined();
-        expect(result.failed).toBe(true);
-    });
-
-    it('login - handle throw after login request', async () => {
-        jest.spyOn(DatabaseManager, 'setActiveServerDatabase').mockImplementationOnce(throwFunc);
-
-        const result = await login(serverUrl, {config: {DiagnosticId: 'diagnosticid'}} as LoginArgs);
-        expect(result).toBeDefined();
-        expect(result.error).toBeDefined();
-        expect(result.failed).toBe(false);
-    });
-
-    it('cancelSessionNotification - handle not found database', async () => {
-        const result = await cancelSessionNotification('foo');
-        expect(result).toBeDefined();
-        expect(result.error).toBeDefined();
-    });
-
-    it('cancelSessionNotification - base case', async () => {
-        await operator.handleSystem({
-            systems: [{
-                id: SYSTEM_IDENTIFIERS.SESSION_EXPIRATION,
-                value: {
-                    id: 'sessionid1',
-                    notificationId: 'notificationid',
-                    expiresAt: 123,
-                },
-            }],
-            prepareRecordsOnly: false,
+    describe('sessions', () => {
+        it('addPushProxyVerificationStateFromLogin - handle not found database', async () => {
+            const result = await addPushProxyVerificationStateFromLogin('foo');
+            expect(result).toBeDefined();
+            expect(result.error).toBeDefined();
         });
 
-        const result = await cancelSessionNotification(serverUrl);
-        expect(result).toBeDefined();
-        expect(result.error).toBeUndefined();
-    });
-
-    it('cancelSessionNotification - no expired session', async () => {
-        const result = await cancelSessionNotification(serverUrl);
-        expect(result).toBeDefined();
-        expect(result.error).toBeUndefined();
-    });
-
-    it('scheduleSessionNotification - handle not found database', async () => {
-        const result = await scheduleSessionNotification('foo');
-        expect(result).toBeDefined();
-        expect(result.error).toBeDefined();
-    });
-
-    it('scheduleSessionNotification - base case', async () => {
-        await operator.handleSystem({
-            systems: [{
-                id: SYSTEM_IDENTIFIERS.SESSION_EXPIRATION,
-                value: {
-                    id: 'sessionid1',
-                    notificationId: 'notificationid',
-                    expiresAt: 123,
-                },
-            }],
-            prepareRecordsOnly: false,
+        it('addPushProxyVerificationStateFromLogin - no verification', async () => {
+            mockGetPushProxyVerificationState.mockImplementationOnce(() => '');
+            const result = await addPushProxyVerificationStateFromLogin(serverUrl);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
         });
 
-        const result = await scheduleSessionNotification(serverUrl);
-        expect(result).toBeDefined();
-        expect(result.error).toBeUndefined();
-    });
-
-    it('scheduleSessionNotification - no session', async () => {
-        mockClient.getSessions.mockImplementationOnce(() => []);
-        const result = await scheduleSessionNotification(serverUrl);
-        expect(result).toBeDefined();
-        expect(result.error).toBeUndefined();
-    });
-
-    it('scheduleSessionNotification - null sessions', async () => {
-        mockClient.getSessions.mockImplementationOnce(() => null as any);
-        const result = await scheduleSessionNotification(serverUrl);
-        expect(result).toBeDefined();
-        expect(result.error).toBeUndefined();
-    });
-
-    it('sendPasswordResetEmail - handle error', async () => {
-        mockClient.sendPasswordResetEmail.mockImplementationOnce(jest.fn(throwFunc));
-        const result = await sendPasswordResetEmail('foo', '');
-        expect(result).toBeDefined();
-        expect(result.error).toBeDefined();
-    });
-
-    it('sendPasswordResetEmail - base case', async () => {
-        const result = await sendPasswordResetEmail(serverUrl, user1.email);
-        expect(result).toBeDefined();
-        expect(result.error).toBeUndefined();
-        expect(result.status).toBe(200);
-    });
-
-    it('ssoLogin - handle error', async () => {
-        mockClient.getMe.mockImplementationOnce(jest.fn(throwFunc));
-        const result = await ssoLogin('foo', '', '', '', '');
-        expect(result).toBeDefined();
-        expect(result.error).toBeDefined();
-        expect(result.failed).toBe(true);
-    });
-
-    it('ssoLogin - base case', async () => {
-        const result = await ssoLogin(serverUrl, 'servername', 'diagnosticid', 'authtoken', 'csrftoken');
-        expect(result).toBeDefined();
-        expect(result.error).toBeUndefined();
-        expect(result.failed).toBe(false);
-    });
-
-    it('ssoLogin - handle throw after login request', async () => {
-        jest.spyOn(DatabaseManager, 'setActiveServerDatabase').mockImplementationOnce(throwFunc);
-
-        const result = await ssoLogin(serverUrl, 'servername', 'diagnosticid', 'authtoken', 'csrftoken');
-        expect(result).toBeDefined();
-        expect(result.error).toBeDefined();
-        expect(result.failed).toBe(false);
-    });
-
-    it('findSession - handle not found database', async () => {
-        const result = await findSession('foo', []);
-        expect(result).toBeUndefined();
-    });
-
-    it('findSession - by id', async () => {
-        await operator.handleSystem({
-            systems: [{
-                id: SYSTEM_IDENTIFIERS.SESSION_EXPIRATION,
-                value: {
-                    id: 'sessionid1',
-                    notificationId: 'notificationid',
-                    expiresAt: 123,
-                },
-            }],
-            prepareRecordsOnly: false,
+        it('addPushProxyVerificationStateFromLogin - base case', async () => {
+            const result = await addPushProxyVerificationStateFromLogin(serverUrl);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
         });
 
-        const session = await findSession(serverUrl, [session1]);
-        expect(session).toBeDefined();
-    });
-
-    it('findSession - by device', async () => {
-        await DatabaseManager.appDatabase?.operator.handleGlobal({
-            globals: [{id: GLOBAL_IDENTIFIERS.DEVICE_TOKEN, value: 'deviceid'}],
-            prepareRecordsOnly: false,
+        it('forceLogoutIfNecessary - handle not found database', async () => {
+            const result = await forceLogoutIfNecessary('foo', {});
+            expect(result).toBeDefined();
+            expect(result.error).toBeTruthy();
+            expect(result.logout).toBe(false);
         });
 
-        const session = await findSession(serverUrl, [session1]);
-        expect(session).toBeDefined();
-    });
+        it('forceLogoutIfNecessary - logout expected from 401', async () => {
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
 
-    it('findSession - non-match device token', async () => {
-        await DatabaseManager.appDatabase?.operator.handleGlobal({
-            globals: [{id: GLOBAL_IDENTIFIERS.DEVICE_TOKEN, value: 'diffdeviceid'}],
-            prepareRecordsOnly: false,
+            const result = await forceLogoutIfNecessary(serverUrl, {status_code: 401, url: '/api/v4/users/me'});
+            expect(result).toBeDefined();
+            expect(result.error).toBeNull();
+            expect(result.logout).toBe(true);
         });
 
-        const session = await findSession(serverUrl, [session1]);
-        expect(session).toBeDefined();
+        it('forceLogoutIfNecessary - logout not expected', async () => {
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+            const result = await forceLogoutIfNecessary(serverUrl, {status_code: 500, url: '/api/v4/users/me'});
+            expect(result).toBeDefined();
+            expect(result.error).toBeNull();
+            expect(result.logout).toBe(false);
+        });
+
+        it('fetchSessions - handle error', async () => {
+            mockClient.getSessions.mockImplementationOnce(jest.fn(throwFunc));
+            const result = await fetchSessions('foo', '');
+            expect(result).toBeUndefined();
+        });
+
+        it('fetchSessions - handle client error', async () => {
+            jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+            const result = await fetchSessions(serverUrl, user1.id);
+            expect(result).toBeUndefined();
+        });
+
+        it('fetchSessions - base case', async () => {
+            const result = await fetchSessions(serverUrl, user1.id);
+            expect(result).toBeDefined();
+            expect(result?.length).toBe(1);
+        });
+
+        it('login - base case', async () => {
+            const result = await login(serverUrl, {config: {DiagnosticId: 'diagnosticid'}} as LoginArgs);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+            expect(result.failed).toBe(false);
+        });
+
+        it('login - handle throw on login request', async () => {
+            mockClient.login.mockImplementationOnce(jest.fn(throwFunc));
+
+            const result = await login(serverUrl, {config: {DiagnosticId: 'diagnosticid'}} as LoginArgs);
+            expect(result).toBeDefined();
+            expect(result.error).toBeDefined();
+            expect(result.failed).toBe(true);
+        });
+
+        it('login - handle throw after login request', async () => {
+            jest.spyOn(DatabaseManager, 'setActiveServerDatabase').mockImplementationOnce(throwFunc);
+
+            const result = await login(serverUrl, {config: {DiagnosticId: 'diagnosticid'}} as LoginArgs);
+            expect(result).toBeDefined();
+            expect(result.error).toBeDefined();
+            expect(result.failed).toBe(false);
+        });
+
+        it('cancelSessionNotification - handle not found database', async () => {
+            const result = await cancelSessionNotification('foo');
+            expect(result).toBeDefined();
+            expect(result.error).toBeDefined();
+        });
+
+        it('cancelSessionNotification - base case', async () => {
+            await operator.handleSystem({
+                systems: [{
+                    id: SYSTEM_IDENTIFIERS.SESSION_EXPIRATION,
+                    value: {
+                        id: 'sessionid1',
+                        notificationId: 'notificationid',
+                        expiresAt: 123,
+                    },
+                }],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await cancelSessionNotification(serverUrl);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+        });
+
+        it('cancelSessionNotification - no expired session', async () => {
+            const result = await cancelSessionNotification(serverUrl);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+        });
+
+        it('scheduleSessionNotification - handle not found database', async () => {
+            const result = await scheduleSessionNotification('foo');
+            expect(result).toBeDefined();
+            expect(result.error).toBeDefined();
+        });
+
+        it('scheduleSessionNotification - base case', async () => {
+            await operator.handleSystem({
+                systems: [{
+                    id: SYSTEM_IDENTIFIERS.SESSION_EXPIRATION,
+                    value: {
+                        id: 'sessionid1',
+                        notificationId: 'notificationid',
+                        expiresAt: 123,
+                    },
+                }],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await scheduleSessionNotification(serverUrl);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+        });
+
+        it('scheduleSessionNotification - no session', async () => {
+            mockClient.getSessions.mockImplementationOnce(() => []);
+            const result = await scheduleSessionNotification(serverUrl);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+        });
+
+        it('scheduleSessionNotification - null sessions', async () => {
+            mockClient.getSessions.mockImplementationOnce(() => null as any);
+            const result = await scheduleSessionNotification(serverUrl);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+        });
+
+        it('sendPasswordResetEmail - handle error', async () => {
+            mockClient.sendPasswordResetEmail.mockImplementationOnce(jest.fn(throwFunc));
+            const result = await sendPasswordResetEmail('foo', '');
+            expect(result).toBeDefined();
+            expect(result.error).toBeDefined();
+        });
+
+        it('sendPasswordResetEmail - base case', async () => {
+            const result = await sendPasswordResetEmail(serverUrl, user1.email);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+            expect(result.status).toBe(200);
+        });
+
+        it('ssoLogin - handle error', async () => {
+            mockClient.getMe.mockImplementationOnce(jest.fn(throwFunc));
+            const result = await ssoLogin('foo', '', '', '', '');
+            expect(result).toBeDefined();
+            expect(result.error).toBeDefined();
+            expect(result.failed).toBe(true);
+        });
+
+        it('ssoLogin - base case', async () => {
+            const result = await ssoLogin(serverUrl, 'servername', 'diagnosticid', 'authtoken', 'csrftoken');
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+            expect(result.failed).toBe(false);
+        });
+
+        it('ssoLogin - handle throw after login request', async () => {
+            jest.spyOn(DatabaseManager, 'setActiveServerDatabase').mockImplementationOnce(throwFunc);
+
+            const result = await ssoLogin(serverUrl, 'servername', 'diagnosticid', 'authtoken', 'csrftoken');
+            expect(result).toBeDefined();
+            expect(result.error).toBeDefined();
+            expect(result.failed).toBe(false);
+        });
+
+        it('findSession - handle not found database', async () => {
+            const result = await findSession('foo', []);
+            expect(result).toBeUndefined();
+        });
+
+        it('findSession - by id', async () => {
+            await operator.handleSystem({
+                systems: [{
+                    id: SYSTEM_IDENTIFIERS.SESSION_EXPIRATION,
+                    value: {
+                        id: 'sessionid1',
+                        notificationId: 'notificationid',
+                        expiresAt: 123,
+                    },
+                }],
+                prepareRecordsOnly: false,
+            });
+
+            const session = await findSession(serverUrl, [session1]);
+            expect(session).toBeDefined();
+        });
+
+        it('findSession - by device', async () => {
+            await DatabaseManager.appDatabase?.operator.handleGlobal({
+                globals: [{id: GLOBAL_IDENTIFIERS.DEVICE_TOKEN, value: 'deviceid'}],
+                prepareRecordsOnly: false,
+            });
+
+            const session = await findSession(serverUrl, [session1]);
+            expect(session).toBeDefined();
+        });
+
+        it('findSession - non-match device token', async () => {
+            await DatabaseManager.appDatabase?.operator.handleGlobal({
+                globals: [{id: GLOBAL_IDENTIFIERS.DEVICE_TOKEN, value: 'diffdeviceid'}],
+                prepareRecordsOnly: false,
+            });
+
+            const session = await findSession(serverUrl, [session1]);
+            expect(session).toBeDefined();
+        });
+
+        it('findSession - by csrf', async () => {
+            const session = await findSession(serverUrl, [session1]);
+            expect(session).toBeDefined();
+        });
+
+        it('findSession - no csrf token', async () => {
+            mockGetCSRFFromCookie.mockResolvedValueOnce('');
+            const session = await findSession(serverUrl, [session1]);
+            expect(session).toBeUndefined();
+        });
+
+        it('findSession - by os', async () => {
+            const session = await findSession(serverUrl, [{...session1, props: {os: Platform.OS, csrf: 'diffcsrfid'}}]);
+            expect(session).toBeDefined();
+        });
+
+        it('findSession - handle error', async () => {
+            jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockImplementationOnce(throwFunc);
+            const result = await findSession(serverUrl, []);
+            expect(result).toBeUndefined();
+        });
     });
 
-    it('findSession - by csrf', async () => {
-        const session = await findSession(serverUrl, [session1]);
-        expect(session).toBeDefined();
-    });
-
-    it('findSession - no csrf token', async () => {
-        mockGetCSRFFromCookie.mockResolvedValueOnce('');
-        const session = await findSession(serverUrl, [session1]);
-        expect(session).toBeUndefined();
-    });
-
-    it('findSession - by os', async () => {
-        const session = await findSession(serverUrl, [{...session1, props: {os: Platform.OS, csrf: 'diffcsrfid'}}]);
-        expect(session).toBeDefined();
-    });
-
-    it('findSession - handle error', async () => {
-        jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockImplementationOnce(throwFunc);
-        const result = await findSession(serverUrl, []);
-        expect(result).toBeUndefined();
-    });
-});
-
-describe('logout', () => {
-    const mockEmit = jest.spyOn(DeviceEventEmitter, 'emit').mockImplementation(() => true);
-    const mockAlert = jest.spyOn(Alert, 'alert').mockImplementation(() => true);
+    describe('logout', () => {
+        const mockEmit = jest.spyOn(DeviceEventEmitter, 'emit').mockImplementation(() => true);
+        const mockAlert = jest.spyOn(Alert, 'alert').mockImplementation(() => true);
 
     type TestCase = {
         options: {
@@ -492,168 +493,157 @@ describe('logout', () => {
             expect(mockAlert).not.toHaveBeenCalled();
         }
     });
-});
+    });
 
-describe('nativeEntraLogin', () => {
-    const serverDisplayName = 'Test Server';
-    const serverIdentifier = 'test-server-id';
-    const intuneScope = 'api://test-scope/.default';
+    describe('nativeEntraLogin', () => {
+        const serverDisplayName = 'Test Server';
+        const serverIdentifier = 'test-server-id';
+        const intuneScope = 'api://test-scope/.default';
 
-    const mockTokens = {
-        accessToken: 'mock-access-token',
-        idToken: 'mock-id-token',
-        identity: {
-            upn: 'test@example.com',
-            tid: 'tenant-id',
-            oid: 'object-id',
-        },
-    };
+        const mockTokens = {
+            accessToken: 'mock-access-token',
+            idToken: 'mock-id-token',
+            identity: {
+                upn: 'test@example.com',
+                tid: 'tenant-id',
+                oid: 'object-id',
+            },
+        };
 
-    let IntuneManager: any;
+        let IntuneManager: any;
 
-    beforeEach(() => {
+        beforeEach(() => {
         // Get the mocked IntuneManager
-        IntuneManager = require('@managers/intune_manager').default;
+            IntuneManager = require('@managers/intune_manager').default;
 
-        // Reset all mocks
-        jest.clearAllMocks();
+            // Reset all mocks
+            jest.clearAllMocks();
 
-        // Set up default implementations
-        IntuneManager.login.mockResolvedValue(mockTokens);
-        IntuneManager.enrollServer.mockResolvedValue(undefined);
-        IntuneManager.isManagedServer.mockResolvedValue(false);
+            // Set up default implementations
+            IntuneManager.login.mockResolvedValue(mockTokens);
+            IntuneManager.enrollServer.mockReturnValue(undefined);
+            IntuneManager.isManagedServer.mockReturnValue(false);
 
-        mockClient.loginByIntune.mockReset().mockImplementation(() => Promise.resolve(user1));
-        mockGetCSRFFromCookie.mockImplementation(() => Promise.resolve('csrfid'));
-    });
+            mockClient.loginByIntune.mockReset().mockImplementation(() => Promise.resolve(user1));
+            mockGetCSRFFromCookie.mockImplementation(() => Promise.resolve('csrfid'));
+        });
 
-    it('should successfully login on first try without enrollment', async () => {
-        IntuneManager.isManagedServer.mockResolvedValue(false);
+        it('should successfully login on first try without enrollment', async () => {
+            IntuneManager.isManagedServer.mockReturnValue(false);
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
 
-        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+            expect(result.failed).toBe(false);
+            expect(IntuneManager.login).toHaveBeenCalledWith(serverUrl, [intuneScope]);
+            expect(mockClient.loginByIntune).toHaveBeenCalledWith(mockTokens.accessToken, expect.any(String));
+            expect(mockClient.setCSRFToken).toHaveBeenCalledWith('csrfid');
+            expect(IntuneManager.enrollServer).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
+        });
 
-        expect(result.failed).toBe(false);
-        expect(IntuneManager.login).toHaveBeenCalledWith(serverUrl, [intuneScope]);
-        expect(mockClient.loginByIntune).toHaveBeenCalledWith(mockTokens.accessToken, expect.any(String));
-        expect(mockClient.setCSRFToken).toHaveBeenCalledWith('csrfid');
-        expect(IntuneManager.enrollServer).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
-    });
+        it('should handle 401 token expiration and retry with refreshed token', async () => {
+            const refreshedTokens = {
+                ...mockTokens,
+                accessToken: 'refreshed-access-token',
+            };
 
-    it('should handle 401 token expiration and retry with refreshed token', async () => {
-        const refreshedTokens = {
-            ...mockTokens,
-            accessToken: 'refreshed-access-token',
-        };
+            mockClient.loginByIntune.mockRejectedValueOnce({status_code: 401} as never).mockResolvedValueOnce(user1);
+            IntuneManager.login.mockResolvedValueOnce(mockTokens).mockResolvedValueOnce(refreshedTokens);
 
-        mockClient.loginByIntune.mockRejectedValueOnce({status_code: 401} as never).mockResolvedValueOnce(user1);
-        IntuneManager.login.mockResolvedValueOnce(mockTokens).mockResolvedValueOnce(refreshedTokens);
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
 
-        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+            expect(result.failed).toBe(false);
+            expect(IntuneManager.login).toHaveBeenCalledTimes(2);
+            expect(mockClient.loginByIntune).toHaveBeenCalledTimes(2);
+            expect(mockClient.loginByIntune).toHaveBeenNthCalledWith(2, refreshedTokens.accessToken, expect.any(String));
+        });
 
-        expect(result.failed).toBe(false);
-        expect(IntuneManager.login).toHaveBeenCalledTimes(2);
-        expect(mockClient.loginByIntune).toHaveBeenCalledTimes(2);
-        expect(mockClient.loginByIntune).toHaveBeenNthCalledWith(2, refreshedTokens.accessToken, expect.any(String));
-    });
+        it('should handle 412 MAM enrollment required', async () => {
+            const error = {status_code: 412};
+            mockClient.loginByIntune.mockRejectedValueOnce(error);
 
-    it('should handle 412 MAM enrollment required', async () => {
-        const error = {status_code: 412};
-        mockClient.loginByIntune.mockRejectedValueOnce(error);
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
 
-        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+            expect(result.failed).toBe(true);
+            expect(result.error).toEqual(error);
+        });
 
-        expect(result.failed).toBe(true);
-        expect(result.error).toEqual(error);
-    });
+        it('should handle 400 LDAP user missing error', async () => {
+            const error = {
+                status_code: 400,
+                server_error_id: 'ent.intune.login.ldap_user_missing.app_error',
+            };
+            mockClient.loginByIntune.mockRejectedValueOnce(error);
 
-    it('should handle 400 LDAP user missing error', async () => {
-        const error = {
-            status_code: 400,
-            server_error_id: 'ent.intune.login.ldap_user_missing.app_error',
-        };
-        mockClient.loginByIntune.mockRejectedValueOnce(error);
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
 
-        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+            expect(result.failed).toBe(true);
+            expect(result.error).toEqual(error);
+        });
 
-        expect(result.failed).toBe(true);
-        expect(result.error).toEqual(error);
-    });
+        it('should handle 409 user deactivated error', async () => {
+            const error = {status_code: 409};
+            mockClient.loginByIntune.mockRejectedValueOnce(error);
 
-    it('should handle 409 user deactivated error', async () => {
-        const error = {status_code: 409};
-        mockClient.loginByIntune.mockRejectedValueOnce(error);
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
 
-        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+            expect(result.failed).toBe(true);
+            expect(result.error).toEqual(error);
+        });
 
-        expect(result.failed).toBe(true);
-        expect(result.error).toEqual(error);
-    });
+        it('should handle 428 account creation blocked error', async () => {
+            const error = {
+                status_code: 428,
+                server_error_id: 'ent.intune.login.account_creation_blocked.app_error',
+            };
+            mockClient.loginByIntune.mockRejectedValueOnce(error);
 
-    it('should handle 428 account creation blocked error', async () => {
-        const error = {
-            status_code: 428,
-            server_error_id: 'ent.intune.login.account_creation_blocked.app_error',
-        };
-        mockClient.loginByIntune.mockRejectedValueOnce(error);
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
 
-        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+            expect(result.failed).toBe(true);
+            expect(result.error).toEqual(error);
+        });
 
-        expect(result.failed).toBe(true);
-        expect(result.error).toEqual(error);
-    });
+        it('should handle MSAL login failure', async () => {
+            const msalError = {
+                domain: 'MSALErrorDomain',
+                code: -50005,
+                message: 'User canceled authentication',
+            };
+            IntuneManager.login.mockRejectedValueOnce(msalError);
 
-    it('should handle MSAL login failure', async () => {
-        const msalError = {
-            domain: 'MSALErrorDomain',
-            code: -50005,
-            message: 'User canceled authentication',
-        };
-        IntuneManager.login.mockRejectedValueOnce(msalError);
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
 
-        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+            expect(result.failed).toBe(true);
+            expect(result.error).toEqual(msalError);
+        });
 
-        expect(result.failed).toBe(true);
-        expect(result.error).toEqual(msalError);
-    });
+        it('should enroll in MAM after successful login if not already managed', async () => {
+            IntuneManager.isManagedServer.mockReturnValue(false);
 
-    it('should enroll in MAM after successful login if not already managed', async () => {
-        IntuneManager.isManagedServer.mockResolvedValue(false);
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
 
-        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+            expect(result.failed).toBe(false);
+            expect(IntuneManager.isManagedServer).toHaveBeenCalledWith(serverUrl);
+            expect(IntuneManager.enrollServer).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
+        });
 
-        expect(result.failed).toBe(false);
-        expect(IntuneManager.isManagedServer).toHaveBeenCalledWith(serverUrl);
-        expect(IntuneManager.enrollServer).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
-    });
+        it('should skip MAM enrollment if already managed', async () => {
+            IntuneManager.isManagedServer.mockReturnValue(true);
 
-    it('should skip MAM enrollment if already managed', async () => {
-        IntuneManager.isManagedServer.mockResolvedValue(true);
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
 
-        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+            expect(result.failed).toBe(false);
+            expect(IntuneManager.isManagedServer).toHaveBeenCalledWith(serverUrl);
+            expect(IntuneManager.enrollServer).not.toHaveBeenCalled();
+        });
 
-        expect(result.failed).toBe(false);
-        expect(IntuneManager.isManagedServer).toHaveBeenCalledWith(serverUrl);
-        expect(IntuneManager.enrollServer).not.toHaveBeenCalled();
-    });
+        it('should handle generic server errors', async () => {
+            const error = {status_code: 500, message: 'Internal server error'};
+            mockClient.loginByIntune.mockRejectedValueOnce(error);
 
-    it('should fail if post-login MAM enrollment fails', async () => {
-        const enrollmentError = new Error('Enrollment failed');
-        IntuneManager.isManagedServer.mockResolvedValue(false);
-        IntuneManager.enrollServer.mockRejectedValueOnce(enrollmentError);
+            const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
 
-        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
-
-        expect(result.failed).toBe(true);
-        expect(result.error).toEqual(enrollmentError);
-    });
-
-    it('should handle generic server errors', async () => {
-        const error = {status_code: 500, message: 'Internal server error'};
-        mockClient.loginByIntune.mockRejectedValueOnce(error);
-
-        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
-
-        expect(result.failed).toBe(true);
-        expect(result.error).toEqual(error);
+            expect(result.failed).toBe(true);
+            expect(result.error).toEqual(error);
+        });
     });
 });

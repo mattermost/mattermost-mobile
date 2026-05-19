@@ -2,20 +2,19 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
-import {TouchableHighlight} from 'react-native';
+import {TouchableHighlight, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {findChannels} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        flexDirection: 'row',
         justifyContent: 'flex-start',
         flex: 1,
         backgroundColor: changeOpacity(theme.sidebarText, 0.12),
@@ -24,6 +23,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginVertical: 20,
         height: 40,
     },
+    row: {flexDirection: 'row'},
     icon: {
         width: 24,
         fontSize: 24,
@@ -39,15 +39,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const SearchField = () => {
     const theme = useTheme();
-    const intl = useIntl();
     const styles = getStyleSheet(theme);
 
     const onPress = usePreventDoubleTap(useCallback(() => {
-        findChannels(
-            intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
-            theme,
-        );
-    }, [intl, theme]));
+        navigateToScreen(Screens.FIND_CHANNELS, {theme});
+    }, [theme]));
 
     return (
         <TouchableHighlight
@@ -56,7 +52,7 @@ const SearchField = () => {
             underlayColor={changeOpacity(theme.sidebarText, 0.32)}
             testID='channel_list_subheader.search_field.button'
         >
-            <>
+            <View style={styles.row}>
                 <CompassIcon
                     name='magnify'
                     style={styles.icon}
@@ -66,7 +62,7 @@ const SearchField = () => {
                     id='channel_list.find_channels'
                     style={styles.input}
                 />
-            </>
+            </View>
         </TouchableHighlight>
     );
 };

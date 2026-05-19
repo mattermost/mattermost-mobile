@@ -4,13 +4,13 @@
 import React from 'react';
 
 import {Screens} from '@constants';
-import {goToScreen} from '@screens/navigation';
+import {navigateToChannelInfoScreen} from '@screens/navigation';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ChannelConfigurationOption from './channel_configuration_option';
 
 jest.mock('@screens/navigation', () => ({
-    goToScreen: jest.fn(),
+    navigateToChannelInfoScreen: jest.fn(),
 }));
 jest.mock('@hooks/utils', () => ({
     usePreventDoubleTap: (fn: () => void) => fn,
@@ -40,11 +40,9 @@ describe('ChannelConfigurationOption', () => {
             />,
         );
         fireEvent.press(getByTestId('channel_settings.configuration.option'));
-        expect(goToScreen).toHaveBeenCalledWith(
+        expect(navigateToChannelInfoScreen).toHaveBeenCalledWith(
             Screens.CHANNEL_CONFIGURATION,
-            'Configuration',
-            {channelId: 'channel-id-123'},
-            {topBar: {subtitle: {color: 'rgba(255,255,255,0.72)', text: 'Channel 1'}}},
+            {channelId: 'channel-id-123', subtitle: 'Channel 1'},
         );
     });
 });

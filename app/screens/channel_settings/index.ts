@@ -8,7 +8,6 @@ import {distinctUntilChanged, map, switchMap, combineLatestWith} from 'rxjs/oper
 import {observeIsCallsEnabledInChannel} from '@calls/observers';
 import {observeCallsConfig} from '@calls/state';
 import {General, Permissions} from '@constants';
-import {withServerUrl} from '@context/server';
 import {observeChannel} from '@queries/servers/channel';
 import {observePermissionForChannel, observePermissionForTeam, observeCanManageChannelSettings, observeCanManageChannelAutotranslations, observeCanManageSharedChannel} from '@queries/servers/role';
 import {
@@ -204,5 +203,5 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
     };
 });
 
-export default withDatabase(withServerUrl(enhanced(ChannelSettings)));
+export default withDatabase(enhanced(ChannelSettings));
 

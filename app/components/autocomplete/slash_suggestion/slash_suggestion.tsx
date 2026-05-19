@@ -49,7 +49,7 @@ const filterCommands = (matchTerm: string, commands: Command[]): AutocompleteSug
 
 const keyExtractor = (item: Command & AutocompleteSuggestion): string => item.id || item.Suggestion;
 
-type Props = {
+export type SlashSuggestionProps = {
     currentTeamId: string;
     updateValue: (text: string) => void;
     onShowingChange: (c: boolean) => void;
@@ -74,7 +74,7 @@ const SlashSuggestion = ({
     updateValue,
     value = '',
     listStyle,
-}: Props) => {
+}: SlashSuggestionProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId));

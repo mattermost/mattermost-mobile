@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 
-import {act, renderHook} from '@testing-library/react-hooks'; // Use instead of react-native version due to different behavior. Consider migrating
+import {act, renderHook} from '@testing-library/react-native';
 import {createIntl} from 'react-intl';
 import {Alert} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
@@ -114,15 +114,6 @@ jest.mock('@calls/alerts', () => {
 });
 
 jest.mock('@calls/utils');
-
-jest.mock('react-native-navigation', () => ({
-    Navigation: {
-        pop: jest.fn(() => Promise.resolve({
-            catch: jest.fn(),
-        })),
-        setDefaultOptions: jest.fn(),
-    },
-}));
 
 jest.mock('@actions/remote/session', () => ({
     forceLogoutIfNecessary: jest.fn(),
@@ -421,15 +412,16 @@ describe('Actions.Calls', () => {
         });
 
         // Test successful case
+        let successResult: Awaited<ReturnType<typeof CallsActions.loadCalls>>;
         await act(async () => {
-            const successResult = await CallsActions.loadCalls('server1', 'userId1');
-            expect(successResult.data).toBeDefined();
-            expect(mockClient.getCalls).toHaveBeenCalled();
-            assert.equal((result.current[0] as CallsState).calls['channel-1'].channelId, 'channel-1');
-            assert.equal((result.current[0] as CallsState).enabled['channel-1'], true);
-            assert.equal((result.current[1] as ChannelsWithCalls)['channel-1'], true);
-            assert.equal((result.current[2] as CurrentCall | null), null);
+            successResult = await CallsActions.loadCalls('server1', 'userId1');
         });
+        expect(successResult!.data).toBeDefined();
+        expect(mockClient.getCalls).toHaveBeenCalled();
+        assert.equal((result.current[0] as CallsState).calls['channel-1'].channelId, 'channel-1');
+        assert.equal((result.current[0] as CallsState).enabled['channel-1'], true);
+        assert.equal((result.current[1] as ChannelsWithCalls)['channel-1'], true);
+        assert.equal((result.current[2] as CurrentCall | null), null);
 
         // Test error case
         mockClient.getCalls = jest.fn().mockRejectedValueOnce(forceLogoutError);
@@ -475,19 +467,20 @@ describe('Actions.Calls', () => {
         const {result} = renderHook(() => useCallsConfig('server1'));
 
         // Test successful case
+        let successResult: Awaited<ReturnType<typeof CallsActions.loadConfig>>;
         await act(async () => {
             mockClient.getCallsConfig.mockReturnValueOnce({DefaultEnabled: true, AllowEnableCalls: true});
-            const successResult = await CallsActions.loadConfig('server1', false, 'Server Switch');
-            expect(successResult.data).toBeDefined();
-            expect(mockClient.getCallsConfig).toHaveBeenCalledWith('Server Switch');
-            assert.equal(result.current.DefaultEnabled, true);
-            assert.equal(result.current.AllowEnableCalls, true);
+            successResult = await CallsActions.loadConfig('server1', false, 'Server Switch');
         });
+        expect(successResult!.data).toBeDefined();
+        expect(mockClient.getCallsConfig).toHaveBeenCalledWith('Server Switch');
+        assert.equal(result.current.DefaultEnabled, true);
+        assert.equal(result.current.AllowEnableCalls, true);
 
         // Test successful retrival from cache
         await act(async () => {
             expect(mockClient.getCallsConfig).toHaveBeenCalledTimes(1);
-            const successResult = await CallsActions.loadConfig('server1', false, 'Server Switch');
+            successResult = await CallsActions.loadConfig('server1', false, 'Server Switch');
             expect(successResult.data).toBeDefined();
             expect(mockClient.getCallsConfig).toHaveBeenCalledTimes(1);
         });
@@ -506,12 +499,13 @@ describe('Actions.Calls', () => {
         // Test successful case
         assert.equal(result.current.enabled['channel-1'], undefined);
         mockClient.enableChannelCalls.mockReturnValueOnce({enabled: true});
+        let enableResult: Awaited<ReturnType<typeof CallsActions.enableChannelCalls>>;
         await act(async () => {
-            const successResult = await CallsActions.enableChannelCalls('server1', 'channel-1', true);
-            expect(successResult).toEqual({});
-            expect(mockClient.enableChannelCalls).toHaveBeenCalledWith('channel-1', true);
-            assert.equal(result.current.enabled['channel-1'], true);
+            enableResult = await CallsActions.enableChannelCalls('server1', 'channel-1', true);
         });
+        expect(enableResult!).toEqual({});
+        expect(mockClient.enableChannelCalls).toHaveBeenCalledWith('channel-1', true);
+        assert.equal(result.current.enabled['channel-1'], true);
 
         // Test error case
         mockClient.enableChannelCalls.mockRejectedValueOnce(forceLogoutError);
@@ -972,6 +966,7 @@ describe('Actions.Calls', () => {
         });
 
         // Test successful case
+        let loadCallResult: Awaited<ReturnType<typeof CallsActions.loadCallForChannel>>;
         await act(async () => {
             mockClient.getCallForChannel.mockReturnValueOnce({
                 call: {
@@ -986,12 +981,12 @@ describe('Actions.Calls', () => {
                     ],
                 },
                 enabled: true});
-            const successResult = await CallsActions.loadCallForChannel('server1', 'channel-1');
-            expect(successResult.data).toBeDefined();
-            expect(mockClient.getCallForChannel).toHaveBeenCalled();
-            assert.equal((result.current[0].calls as Dictionary<Call>)['channel-1'].channelId, 'channel-1');
-            assert.equal((result.current[0].enabled as Dictionary<boolean>)['channel-1'], true);
+            loadCallResult = await CallsActions.loadCallForChannel('server1', 'channel-1');
         });
+        expect(loadCallResult!.data).toBeDefined();
+        expect(mockClient.getCallForChannel).toHaveBeenCalled();
+        assert.equal((result.current[0].calls as Dictionary<Call>)['channel-1'].channelId, 'channel-1');
+        assert.equal((result.current[0].enabled as Dictionary<boolean>)['channel-1'], true);
 
         // Test error case
         mockClient.getCallForChannel.mockRejectedValueOnce(forceLogoutError);

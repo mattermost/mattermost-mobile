@@ -7,18 +7,17 @@ import Animated from 'react-native-reanimated';
 
 import {Events} from '@constants';
 import {GalleryInit} from '@context/gallery';
+import {usePostConfig} from '@context/post_config';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {isImage, isVideo} from '@utils/file';
+import {fileExists, isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {getViewPortWidth} from '@utils/images';
 
 import File from './file';
 
 type FilesProps = {
-    canDownloadFiles: boolean;
-    enableSecureFilePreview: boolean;
     failed?: boolean;
     filesInfo: FileInfo[];
     layoutWidth?: number;
@@ -54,8 +53,6 @@ const styles = StyleSheet.create({
 });
 
 const Files = ({
-    canDownloadFiles,
-    enableSecureFilePreview,
     failed,
     filesInfo,
     isReplyPost,
@@ -68,11 +65,16 @@ const Files = ({
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
     const isTablet = useIsTablet();
+    const {canDownloadFiles, enableSecureFilePreview} = usePostConfig();
+
+    // Validate local paths asynchronously after render
+    const [validatedFilesInfo, setValidatedFilesInfo] = useState(filesInfo);
+
+    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(validatedFilesInfo);
 
     // Force re-render when a file is rejected (to move it from images to nonImages)
     const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
 
-    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(filesInfo);
     const [filesForGallery, setFilesForGallery] = useState(() => [...imageAttachments, ...nonImageAttachments]);
 
     const attachmentIndex = (fileId: string) => {
@@ -180,6 +182,41 @@ const Files = ({
     useEffect(() => {
         setFilesForGallery([...imageAttachments, ...nonImageAttachments]);
     }, [imageAttachments, nonImageAttachments]);
+
+    // Validate local paths asynchronously in background
+    useEffect(() => {
+        let isCancelled = false;
+
+        const validateFiles = () => {
+            // If no files have localPath, skip validation but still update state
+            const hasLocalPaths = filesInfo.some((f) => f.localPath);
+            if (!hasLocalPaths) {
+                if (!isCancelled) {
+                    setValidatedFilesInfo(filesInfo);
+                }
+                return;
+            }
+
+            // Validate each file's localPath
+            const validated = filesInfo.map((file) => {
+                if (file.localPath && !fileExists(file.localPath)) {
+                    return {...file, localPath: ''};
+                }
+                return file;
+            });
+
+            // Only update state if component is still mounted
+            if (!isCancelled) {
+                setValidatedFilesInfo(validated);
+            }
+        };
+
+        validateFiles();
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [filesInfo]);
 
     // Listen for file rejection events and re-render if one of our files is rejected
     // This handles the race condition where files render before rejection status is known

@@ -28,6 +28,7 @@ exports[`AttachmentFooter it matches snapshot when both footer and footer_icon a
     onLoadStart={[Function]}
     onProgress={[Function]}
     placeholder={[]}
+    sfEffect={null}
     source={
       [
         {
@@ -46,6 +47,8 @@ exports[`AttachmentFooter it matches snapshot when both footer and footer_icon a
         "width": 12,
       }
     }
+    symbolSize={null}
+    symbolWeight={null}
     transition={null}
     width={12}
   />

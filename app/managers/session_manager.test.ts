@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CookieManager from '@react-native-cookies/cookies';
+import CookieManager from '@preeternal/react-native-cookie-manager';
 import {AppState, DeviceEventEmitter, Platform} from 'react-native';
 
 import {cancelAllSessionNotifications} from '@actions/local/session';
@@ -9,7 +9,7 @@ import {logout, scheduleSessionNotification} from '@actions/remote/session';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
-import {relaunchApp} from '@init/launch';
+import {determineRouteFromLaunchProps} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
 import IntuneManager from '@managers/intune_manager';
 import NetworkManager from '@managers/network_manager';
@@ -26,7 +26,7 @@ import {SessionManagerSingleton as SessionManagerClass} from './session_manager'
 import type {Query} from '@nozbe/watermelondb';
 import type GlobalModel from '@typings/database/models/app/global';
 
-jest.mock('@react-native-cookies/cookies', () => ({
+jest.mock('@preeternal/react-native-cookie-manager', () => ({
     get: jest.fn(),
     clearByName: jest.fn(),
     flush: jest.fn(),
@@ -109,6 +109,8 @@ describe('SessionManager', () => {
 
         AppState.currentState = 'active';
         Platform.OS = 'ios';
+
+        jest.mocked(determineRouteFromLaunchProps).mockResolvedValue({route: '/', params: {}});
 
         // Reset queryGlobalValue mock to return cache migration as done
         jest.mocked(queryGlobalValue).mockReturnValue({
@@ -203,7 +205,7 @@ describe('SessionManager', () => {
             expect(logout).toHaveBeenCalledWith(mockServerUrl, undefined, {skipEvents: true, skipServerLogout: true});
             expect(SecurityManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
             expect(IntuneManager.unenrollServer).toHaveBeenCalledWith(mockServerUrl, true);
-            expect(relaunchApp).toHaveBeenCalled();
+            expect(determineRouteFromLaunchProps).toHaveBeenCalled();
         });
     });
 

@@ -1,337 +1,288 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useKeyboardAnimationContext} from '@context/keyboard_animation';
+import {useKeyboardState} from '@context/keyboard_state';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import InputQuickAction from '.';
+import InputQuickAction from './index';
 
-jest.mock('@context/keyboard_animation', () => ({
-    useKeyboardAnimationContext: jest.fn(),
+jest.mock('@context/keyboard_state', () => ({
+    useKeyboardState: jest.fn(),
 }));
 
-jest.mock('@hooks/useFocusAfterEmojiDismiss', () => ({
-    useFocusAfterEmojiDismiss: jest.fn((inputRef, focusInput) => ({
+jest.mock('@hooks/use_focus_after_emoji_dismiss', () => ({
+    useFocusAfterEmojiDismiss: jest.fn((_inputRef, focusInput) => ({
         focus: focusInput,
-        isDismissingEmojiPicker: {current: false},
-        focusTimeoutRef: {current: null},
-        isManuallyFocusingAfterEmojiDismiss: false,
     })),
 }));
 
 describe('InputQuickAction', () => {
-    const mockUseKeyboardAnimationContext = jest.mocked(useKeyboardAnimationContext);
+    const mockGetCursorPosition = jest.fn(() => 0);
+    const mockSetCursorPosition = jest.fn();
     const mockUpdateCursorPosition = jest.fn();
-    const mockInputRef = {current: undefined};
+    const mockUseKeyboardState = jest.mocked(useKeyboardState);
+
+    const baseProps = {
+        testID: 'test-id',
+        updateValue: jest.fn(),
+        inputType: 'at' as const,
+        focus: jest.fn(),
+    };
 
     beforeEach(() => {
         jest.clearAllMocks();
+        mockUseKeyboardState.mockReturnValue({
+            inputRef: {current: null},
+            getCursorPosition: mockGetCursorPosition,
+            setCursorPosition: mockSetCursorPosition,
+            updateCursorPosition: mockUpdateCursorPosition,
+        } as unknown as ReturnType<typeof useKeyboardState>);
     });
 
-    describe('fallback behavior (no cursor position context)', () => {
+    describe('fallback behavior (no cursor position functions)', () => {
         beforeEach(() => {
-            mockUseKeyboardAnimationContext.mockReturnValue({
-                inputRef: mockInputRef,
-                cursorPositionRef: undefined,
+            mockUseKeyboardState.mockReturnValue({
+                inputRef: {current: null},
+                getCursorPosition: undefined,
+                setCursorPosition: undefined,
                 updateCursorPosition: undefined,
-            } as unknown as ReturnType<typeof useKeyboardAnimationContext>);
+            } as unknown as ReturnType<typeof useKeyboardState>);
         });
 
         it('should add @ to empty string', () => {
             const updateValue = jest.fn();
-            const testID = 'test-id';
-            const inputType = 'at';
-            const focus = jest.fn();
-
             const {getByTestId} = renderWithIntlAndTheme(
                 <InputQuickAction
-                    testID={testID}
+                    {...baseProps}
                     updateValue={updateValue}
-                    inputType={inputType}
-                    focus={focus}
-                />);
+                />,
+            );
 
-            const icon = getByTestId('test-id');
-            fireEvent.press(icon);
+            fireEvent.press(getByTestId('test-id'));
 
-            expect(updateValue).toHaveBeenCalledWith(expect.any(Function));
-            const updateFunction = updateValue.mock.calls[0][0];
-            expect(updateFunction('')).toBe('@');
-            expect(focus).toHaveBeenCalled();
+            const updateFn = updateValue.mock.calls[0][0];
+            expect(updateFn('')).toBe('@');
         });
 
-        it('should add space before @ if there is existing text and it doesnt end with a space', () => {
+        it('should add space before @ when text does not end with a space', () => {
             const updateValue = jest.fn();
-            const testID = 'test-id';
-            const inputType = 'at';
-            const focus = jest.fn();
-
             const {getByTestId} = renderWithIntlAndTheme(
                 <InputQuickAction
-                    testID={testID}
+                    {...baseProps}
                     updateValue={updateValue}
-                    inputType={inputType}
+                />,
+            );
+
+            fireEvent.press(getByTestId('test-id'));
+
+            const updateFn = updateValue.mock.calls[0][0];
+            expect(updateFn('Hello')).toBe('Hello @');
+        });
+
+        it('should not add space before @ when text ends with a space', () => {
+            const updateValue = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <InputQuickAction
+                    {...baseProps}
+                    updateValue={updateValue}
+                />,
+            );
+
+            fireEvent.press(getByTestId('test-id'));
+
+            const updateFn = updateValue.mock.calls[0][0];
+            expect(updateFn('Hello ')).toBe('Hello @');
+        });
+
+        it('should insert / and return it for slash input type', () => {
+            const updateValue = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <InputQuickAction
+                    {...baseProps}
+                    inputType='slash'
+                    updateValue={updateValue}
+                />,
+            );
+
+            fireEvent.press(getByTestId('test-id'));
+
+            const updateFn = updateValue.mock.calls[0][0];
+            expect(updateFn('anything')).toBe('/');
+        });
+
+        it('should call focus after updating the value', () => {
+            const focus = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <InputQuickAction
+                    {...baseProps}
                     focus={focus}
-                />);
+                />,
+            );
 
-            const icon = getByTestId('test-id');
-            fireEvent.press(icon);
+            fireEvent.press(getByTestId('test-id'));
 
-            expect(updateValue).toHaveBeenCalledWith(expect.any(Function));
-            const updateFunction = updateValue.mock.calls[0][0];
-            expect(updateFunction('Hello')).toBe('Hello @');
-            expect(focus).toHaveBeenCalled();
+            expect(focus).toHaveBeenCalledTimes(1);
         });
     });
 
-    describe('cursor position insertion', () => {
-        let cursorPositionRef: {current: number};
+    describe('@ input type with cursor position', () => {
+        it('should insert @ at beginning (cursor=0) without adding a space', () => {
+            mockGetCursorPosition.mockReturnValue(0);
+            const updateValue = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <InputQuickAction
+                    {...baseProps}
+                    updateValue={updateValue}
+                />,
+            );
 
-        beforeEach(() => {
-            cursorPositionRef = {current: 0};
-            mockUseKeyboardAnimationContext.mockReturnValue({
-                inputRef: mockInputRef,
-                cursorPositionRef,
-                updateCursorPosition: mockUpdateCursorPosition,
-            } as unknown as ReturnType<typeof useKeyboardAnimationContext>);
+            fireEvent.press(getByTestId('test-id'));
+
+            const updateFn = updateValue.mock.calls[0][0];
+            expect(updateFn('Hello')).toBe('@Hello');
+            expect(mockSetCursorPosition).toHaveBeenCalledWith(1);
+            expect(mockUpdateCursorPosition).toHaveBeenCalledWith(1);
         });
 
-        describe('@ input type', () => {
-            it('should insert @ at cursor position at the beginning', () => {
-                const updateValue = jest.fn();
-                const testID = 'test-id';
-                const inputType = 'at';
-                const focus = jest.fn();
-                cursorPositionRef.current = 0;
+        it('should insert @ at a middle cursor position', () => {
+            mockGetCursorPosition.mockReturnValue(3);
+            const updateValue = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <InputQuickAction
+                    {...baseProps}
+                    updateValue={updateValue}
+                />,
+            );
 
-                const {getByTestId} = renderWithIntlAndTheme(
-                    <InputQuickAction
-                        testID={testID}
-                        updateValue={updateValue}
-                        inputType={inputType}
-                        focus={focus}
-                    />);
+            fireEvent.press(getByTestId('test-id'));
 
-                const icon = getByTestId('test-id');
-                fireEvent.press(icon);
-
-                expect(updateValue).toHaveBeenCalledWith(expect.any(Function));
-                const updateFunction = updateValue.mock.calls[0][0];
-                expect(updateFunction('Hello')).toBe('@Hello');
-                expect(cursorPositionRef.current).toBe(1);
-                expect(mockUpdateCursorPosition).toHaveBeenCalledWith(1);
-                expect(focus).toHaveBeenCalled();
-            });
-
-            it('should insert @ at cursor position in the middle', () => {
-                const updateValue = jest.fn();
-                const testID = 'test-id';
-                const inputType = 'at';
-                const focus = jest.fn();
-                cursorPositionRef.current = 3;
-
-                const {getByTestId} = renderWithIntlAndTheme(
-                    <InputQuickAction
-                        testID={testID}
-                        updateValue={updateValue}
-                        inputType={inputType}
-                        focus={focus}
-                    />);
-
-                const icon = getByTestId('test-id');
-                fireEvent.press(icon);
-
-                expect(updateValue).toHaveBeenCalledWith(expect.any(Function));
-                const updateFunction = updateValue.mock.calls[0][0];
-                expect(updateFunction('Hello')).toBe('Hel@lo');
-                expect(cursorPositionRef.current).toBe(4);
-                expect(mockUpdateCursorPosition).toHaveBeenCalledWith(4);
-                expect(focus).toHaveBeenCalled();
-            });
-
-            it('should insert @ at cursor position at the end', () => {
-                const updateValue = jest.fn();
-                const testID = 'test-id';
-                const inputType = 'at';
-                const focus = jest.fn();
-                cursorPositionRef.current = 5;
-
-                const {getByTestId} = renderWithIntlAndTheme(
-                    <InputQuickAction
-                        testID={testID}
-                        updateValue={updateValue}
-                        inputType={inputType}
-                        focus={focus}
-                    />);
-
-                const icon = getByTestId('test-id');
-                fireEvent.press(icon);
-
-                expect(updateValue).toHaveBeenCalledWith(expect.any(Function));
-                const updateFunction = updateValue.mock.calls[0][0];
-                expect(updateFunction('Hello')).toBe('Hello @');
-                expect(cursorPositionRef.current).toBe(7);
-                expect(mockUpdateCursorPosition).toHaveBeenCalledWith(7);
-                expect(focus).toHaveBeenCalled();
-            });
-
-            it('should add space before @ when cursor is at the end and previous char is not space', () => {
-                const updateValue = jest.fn();
-                const testID = 'test-id';
-                const inputType = 'at';
-                const focus = jest.fn();
-                cursorPositionRef.current = 5;
-
-                const {getByTestId} = renderWithIntlAndTheme(
-                    <InputQuickAction
-                        testID={testID}
-                        updateValue={updateValue}
-                        inputType={inputType}
-                        focus={focus}
-                    />);
-
-                const icon = getByTestId('test-id');
-                fireEvent.press(icon);
-
-                expect(updateValue).toHaveBeenCalledWith(expect.any(Function));
-                const updateFunction = updateValue.mock.calls[0][0];
-                expect(updateFunction('Hello')).toBe('Hello @');
-                expect(cursorPositionRef.current).toBe(7);
-                expect(mockUpdateCursorPosition).toHaveBeenCalledWith(7);
-                expect(focus).toHaveBeenCalled();
-            });
-
-            it('should not add space before @ when cursor is at the end and previous char is space', () => {
-                const updateValue = jest.fn();
-                const testID = 'test-id';
-                const inputType = 'at';
-                const focus = jest.fn();
-                cursorPositionRef.current = 6;
-
-                const {getByTestId} = renderWithIntlAndTheme(
-                    <InputQuickAction
-                        testID={testID}
-                        updateValue={updateValue}
-                        inputType={inputType}
-                        focus={focus}
-                    />);
-
-                const icon = getByTestId('test-id');
-                fireEvent.press(icon);
-
-                expect(updateValue).toHaveBeenCalledWith(expect.any(Function));
-                const updateFunction = updateValue.mock.calls[0][0];
-                expect(updateFunction('Hello ')).toBe('Hello @');
-                expect(cursorPositionRef.current).toBe(7);
-                expect(mockUpdateCursorPosition).toHaveBeenCalledWith(7);
-                expect(focus).toHaveBeenCalled();
-            });
-
-            it('should not add space before @ when cursor is at the beginning', () => {
-                const updateValue = jest.fn();
-                const testID = 'test-id';
-                const inputType = 'at';
-                const focus = jest.fn();
-                cursorPositionRef.current = 0;
-
-                const {getByTestId} = renderWithIntlAndTheme(
-                    <InputQuickAction
-                        testID={testID}
-                        updateValue={updateValue}
-                        inputType={inputType}
-                        focus={focus}
-                    />);
-
-                const icon = getByTestId('test-id');
-                fireEvent.press(icon);
-
-                expect(updateValue).toHaveBeenCalledWith(expect.any(Function));
-                const updateFunction = updateValue.mock.calls[0][0];
-                expect(updateFunction('Hello')).toBe('@Hello');
-                expect(cursorPositionRef.current).toBe(1);
-                expect(mockUpdateCursorPosition).toHaveBeenCalledWith(1);
-                expect(focus).toHaveBeenCalled();
-            });
+            const updateFn = updateValue.mock.calls[0][0];
+            expect(updateFn('Hello')).toBe('Hel@lo');
+            expect(mockSetCursorPosition).toHaveBeenCalledWith(4);
+            expect(mockUpdateCursorPosition).toHaveBeenCalledWith(4);
         });
 
-        describe('slash input type', () => {
-            it('should insert / at cursor position at the beginning', () => {
-                const updateValue = jest.fn();
-                const testID = 'test-id';
-                const inputType = 'slash';
-                const focus = jest.fn();
-                cursorPositionRef.current = 0;
+        it('should insert " @" at end when previous char is not a space', () => {
+            mockGetCursorPosition.mockReturnValue(5);
+            const updateValue = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <InputQuickAction
+                    {...baseProps}
+                    updateValue={updateValue}
+                />,
+            );
 
-                const {getByTestId} = renderWithIntlAndTheme(
-                    <InputQuickAction
-                        testID={testID}
-                        updateValue={updateValue}
-                        inputType={inputType}
-                        focus={focus}
-                    />);
+            fireEvent.press(getByTestId('test-id'));
 
-                const icon = getByTestId('test-id');
-                fireEvent.press(icon);
+            const updateFn = updateValue.mock.calls[0][0];
+            expect(updateFn('Hello')).toBe('Hello @');
+            expect(mockSetCursorPosition).toHaveBeenCalledWith(7);
+            expect(mockUpdateCursorPosition).toHaveBeenCalledWith(7);
+        });
 
-                expect(updateValue).toHaveBeenCalledWith(expect.any(Function));
-                const updateFunction = updateValue.mock.calls[0][0];
-                expect(updateFunction('Hello')).toBe('/Hello');
-                expect(cursorPositionRef.current).toBe(1);
-                expect(mockUpdateCursorPosition).toHaveBeenCalledWith(1);
-                expect(focus).toHaveBeenCalled();
-            });
+        it('should insert "@" at end when previous char is already a space', () => {
+            mockGetCursorPosition.mockReturnValue(6);
+            const updateValue = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <InputQuickAction
+                    {...baseProps}
+                    updateValue={updateValue}
+                />,
+            );
 
-            it('should insert / at cursor position in the middle', () => {
-                const updateValue = jest.fn();
-                const testID = 'test-id';
-                const inputType = 'slash';
-                const focus = jest.fn();
-                cursorPositionRef.current = 3;
+            fireEvent.press(getByTestId('test-id'));
 
-                const {getByTestId} = renderWithIntlAndTheme(
-                    <InputQuickAction
-                        testID={testID}
-                        updateValue={updateValue}
-                        inputType={inputType}
-                        focus={focus}
-                    />);
+            const updateFn = updateValue.mock.calls[0][0];
+            expect(updateFn('Hello ')).toBe('Hello @');
+            expect(mockSetCursorPosition).toHaveBeenCalledWith(7);
+            expect(mockUpdateCursorPosition).toHaveBeenCalledWith(7);
+        });
 
-                const icon = getByTestId('test-id');
-                fireEvent.press(icon);
+        it('should call focus after inserting @', () => {
+            mockGetCursorPosition.mockReturnValue(0);
+            const focus = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <InputQuickAction
+                    {...baseProps}
+                    focus={focus}
+                />,
+            );
 
-                expect(updateValue).toHaveBeenCalledWith(expect.any(Function));
-                const updateFunction = updateValue.mock.calls[0][0];
-                expect(updateFunction('Hello')).toBe('Hel/lo');
-                expect(cursorPositionRef.current).toBe(4);
-                expect(mockUpdateCursorPosition).toHaveBeenCalledWith(4);
-                expect(focus).toHaveBeenCalled();
-            });
+            fireEvent.press(getByTestId('test-id'));
 
-            it('should insert / at cursor position at the end', () => {
-                const updateValue = jest.fn();
-                const testID = 'test-id';
-                const inputType = 'slash';
-                const focus = jest.fn();
-                cursorPositionRef.current = 5;
+            expect(focus).toHaveBeenCalledTimes(1);
+        });
+    });
 
-                const {getByTestId} = renderWithIntlAndTheme(
-                    <InputQuickAction
-                        testID={testID}
-                        updateValue={updateValue}
-                        inputType={inputType}
-                        focus={focus}
-                    />);
+    describe('slash input type with cursor position', () => {
+        it('should insert / at beginning (cursor=0)', () => {
+            mockGetCursorPosition.mockReturnValue(0);
+            const updateValue = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <InputQuickAction
+                    {...baseProps}
+                    inputType='slash'
+                    updateValue={updateValue}
+                />,
+            );
 
-                const icon = getByTestId('test-id');
-                fireEvent.press(icon);
+            fireEvent.press(getByTestId('test-id'));
 
-                expect(updateValue).toHaveBeenCalledWith(expect.any(Function));
-                const updateFunction = updateValue.mock.calls[0][0];
-                expect(updateFunction('Hello')).toBe('Hello/');
-                expect(cursorPositionRef.current).toBe(6);
-                expect(mockUpdateCursorPosition).toHaveBeenCalledWith(6);
-                expect(focus).toHaveBeenCalled();
-            });
+            const updateFn = updateValue.mock.calls[0][0];
+            expect(updateFn('Hello')).toBe('/Hello');
+            expect(mockSetCursorPosition).toHaveBeenCalledWith(1);
+            expect(mockUpdateCursorPosition).toHaveBeenCalledWith(1);
+        });
+
+        it('should insert / at a middle cursor position', () => {
+            mockGetCursorPosition.mockReturnValue(3);
+            const updateValue = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <InputQuickAction
+                    {...baseProps}
+                    inputType='slash'
+                    updateValue={updateValue}
+                />,
+            );
+
+            fireEvent.press(getByTestId('test-id'));
+
+            const updateFn = updateValue.mock.calls[0][0];
+            expect(updateFn('Hello')).toBe('Hel/lo');
+            expect(mockSetCursorPosition).toHaveBeenCalledWith(4);
+            expect(mockUpdateCursorPosition).toHaveBeenCalledWith(4);
+        });
+
+        it('should insert / at end', () => {
+            mockGetCursorPosition.mockReturnValue(5);
+            const updateValue = jest.fn();
+            const {getByTestId} = renderWithIntlAndTheme(
+                <InputQuickAction
+                    {...baseProps}
+                    inputType='slash'
+                    updateValue={updateValue}
+                />,
+            );
+
+            fireEvent.press(getByTestId('test-id'));
+
+            const updateFn = updateValue.mock.calls[0][0];
+            expect(updateFn('Hello')).toBe('Hello/');
+            expect(mockSetCursorPosition).toHaveBeenCalledWith(6);
+            expect(mockUpdateCursorPosition).toHaveBeenCalledWith(6);
+        });
+    });
+
+    describe('disabled state', () => {
+        it('should use testID.disabled when disabled=true', () => {
+            const {getByTestId} = renderWithIntlAndTheme(
+                <InputQuickAction
+                    {...baseProps}
+                    disabled={true}
+                />,
+            );
+
+            expect(getByTestId('test-id.disabled')).toBeTruthy();
         });
     });
 });

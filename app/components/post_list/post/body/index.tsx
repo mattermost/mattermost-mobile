@@ -10,7 +10,6 @@ import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
 import ErrorBoundary from '@components/markdown/error_boundary';
 import {Screens} from '@constants';
-import {THREAD} from '@constants/screens';
 import StatusUpdatePost from '@playbooks/components/status_update_post';
 import {PLAYBOOKS_UPDATE_STATUS_POST_TYPE} from '@playbooks/constants/plugin';
 import {isEdited as postEdited, isPostFailed} from '@utils/post';
@@ -29,7 +28,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type BodyProps = {
     appsEnabled: boolean;
-    hasFiles: boolean;
+    filesInfo: FileInfo[];
     hasReactions: boolean;
     highlight: boolean;
     highlightReplyBar: boolean;
@@ -91,7 +90,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Body = ({
     appsEnabled,
-    hasFiles,
+    filesInfo,
     hasReactions,
     highlight,
     highlightReplyBar,
@@ -122,7 +121,7 @@ const Body = ({
     const nBindings = Array.isArray(post.props?.app_bindings) ? post.props?.app_bindings.length : 0;
     const nAttachments = Array.isArray(post.props?.attachments) ? post.props?.attachments.length : 0;
 
-    const isReplyPost = Boolean(post.rootId && (!isEphemeral || !hasBeenDeleted) && location !== THREAD);
+    const isReplyPost = Boolean(post.rootId && (!isEphemeral || !hasBeenDeleted) && location !== Screens.THREAD);
     const hasContent = Boolean((post.metadata?.embeds?.length || (appsEnabled && nBindings)) || nAttachments);
 
     const replyBarStyle = useMemo<StyleProp<ViewStyle>|undefined>(() => {
@@ -218,12 +217,14 @@ const Body = ({
                     theme={theme}
                 />
                 }
-                {hasFiles &&
+                {Boolean(filesInfo.length) &&
                 <Files
                     failed={isFailed}
+                    filesInfo={filesInfo}
                     layoutWidth={layoutWidth}
                     location={location}
-                    post={post}
+                    postId={post.id}
+                    postProps={post.props ?? undefined}
                     isReplyPost={isReplyPost}
                 />
                 }
@@ -272,4 +273,4 @@ const Body = ({
     );
 };
 
-export default Body;
+export default React.memo(Body);

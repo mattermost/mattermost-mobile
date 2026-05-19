@@ -7,7 +7,7 @@ import {
     View,
 } from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -22,8 +22,8 @@ type ChannelListRowProps = {
 
 type Props = ChannelListRowProps & CustomListRowProps;
 
-const getIconForChannel = (selectedChannel: Channel): string => {
-    let icon = 'globe';
+const getIconForChannel = (selectedChannel: Channel): CompassIconName => {
+    let icon: CompassIconName = 'globe';
 
     if (selectedChannel.type === 'P') {
         icon = 'lock-outline';
@@ -80,7 +80,7 @@ const ChannelListRow = ({
         onPress(channel);
     }, [onPress, channel]);
 
-    const renderPurpose = (channelPurpose: string): JSX.Element | null => {
+    const renderPurpose = (channelPurpose: string): React.ReactNode => {
         if (!channelPurpose) {
             return null;
         }

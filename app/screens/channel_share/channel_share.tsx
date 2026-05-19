@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, ScrollView, Text, View} from 'react-native';
@@ -15,24 +16,22 @@ import {
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
+import NavigationButton from '@components/navigation_button';
+import NavigationHeaderTitle from '@components/navigation_header_title';
 import OptionItem from '@components/option_item';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useIsTablet} from '@hooks/device';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {bottomSheet, buildNavigationButton, dismissBottomSheet, popTopScreen, setButtons} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet, navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {getFullErrorMessage} from '@utils/errors';
-import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import AddWorkspaceSheetContent, {getAddWorkspaceSheetContentHeight} from './add_workspace_sheet_content';
 import {messages} from './messages';
 import WorkspaceItem, {type SharedChannelWorkspace} from './workspace_item';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 function idUpdate(value: SharedChannelWorkspace['status'], id?: string) {
     return (w: SharedChannelWorkspace) => {
@@ -49,9 +48,7 @@ function notInSet(ids: Set<string>) {
 
 type Props = {
     channelId: string;
-    componentId: AvailableScreens;
     displayName: string;
-    onSharedRemotesChanged: () => void;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -88,10 +85,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelShare = ({channelId, componentId, displayName, onSharedRemotesChanged}: Props) => {
+const ChannelShare = ({channelId, displayName}: Props) => {
+    const navigation = useNavigation();
     const intl = useIntl();
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
 
     const [enabled, setEnabled] = useState(false);
@@ -111,15 +108,18 @@ const ChannelShare = ({channelId, componentId, displayName, onSharedRemotesChang
     const serverUrl = useServerUrl();
 
     useEffect(() => {
-        mergeNavigationOptions(componentId, {
-            topBar: {
-                subtitle: {
-                    color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
-                    text: displayName,
-                },
-            },
+        navigation.setOptions({
+            headerTitle: () => (
+                <NavigationHeaderTitle
+                    title={intl.formatMessage({
+                        id: 'channel_settings.share_with_connected_workspaces',
+                        defaultMessage: 'Share with connected workspaces',
+                    })}
+                    subtitle={displayName}
+                />
+            ),
         });
-    }, [componentId, displayName, theme.sidebarHeaderTextColor]);
+    }, [displayName, intl, navigation]);
 
     useEffect(() => {
         if (!serverUrl) {
@@ -171,7 +171,10 @@ const ChannelShare = ({channelId, componentId, displayName, onSharedRemotesChang
         }
     }, [workspaces.length]);
 
-    const onClose = useCallback(() => popTopScreen(componentId), [componentId]);
+    const onClose = useCallback(() => {
+        CallbackStore.removeCallback();
+        navigateBack();
+    }, []);
 
     const performSave = useCallback(async () => {
         if (savingRef.current) {
@@ -210,9 +213,10 @@ const ChannelShare = ({channelId, componentId, displayName, onSharedRemotesChang
         } finally {
             savingRef.current = false;
             setSaving(false);
-            onSharedRemotesChanged();
+            const onSharedRemotesChanged = CallbackStore.getCallback<() => void>();
+            onSharedRemotesChanged?.();
         }
-    }, [channelId, intl, serverUrl, toRemove, workspaces, onSharedRemotesChanged]);
+    }, [channelId, intl, serverUrl, toRemove, workspaces]);
 
     const save = useCallback(() => {
         if (!canSave) {
@@ -243,21 +247,21 @@ const ChannelShare = ({channelId, componentId, displayName, onSharedRemotesChang
         performSave();
     }, [canSave, displayName, intl, performSave, toRemove, workspaces]);
 
-    useNavButtonPressed('save-channel-share', componentId, save, [save]);
-    useAndroidHardwareBackHandler(componentId, onClose);
+    useAndroidHardwareBackHandler(Screens.CHANNEL_SHARE, onClose);
 
     useEffect(() => {
-        const saveButton = buildNavigationButton(
-            'save-channel-share',
-            'channel_share.save.button',
-            undefined,
-            intl.formatMessage(messages.save),
-        );
-        saveButton.enabled = canSave && !saving;
-        saveButton.showAsAction = 'always';
-        saveButton.color = theme.sidebarHeaderTextColor;
-        setButtons(componentId, {rightButtons: [saveButton]});
-    }, [componentId, canSave, intl, saving, theme.sidebarHeaderTextColor]);
+        navigation.setOptions({
+            headerRight: () => (
+                <NavigationButton
+                    onPress={save}
+                    text={intl.formatMessage(messages.save)}
+                    testID='channel_share.save.button'
+                    color={canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                    disabled={!canSave}
+                />
+            ),
+        });
+    }, [canSave, intl, navigation, save, saving, theme.sidebarHeaderTextColor]);
 
     const addWorkspace = useCallback(
         (remote: RemoteClusterInfo) => {
@@ -296,19 +300,14 @@ const ChannelShare = ({channelId, componentId, displayName, onSharedRemotesChang
             workspaces.filter((w) => !toRemove.has(w.remote_id)).map((w) => w.remote_id),
         );
         const available = remoteClusters.filter((r) => !alreadyIds.has(r.remote_id));
-        bottomSheet({
-            title: intl.formatMessage(messages.connectedWorkspaces),
-            theme,
-            closeButtonId: 'close-add-workspace',
-            snapPoints: [1, getAddWorkspaceSheetContentHeight(isTablet, available.length)],
-            renderContent: () => (
-                <AddWorkspaceSheetContent
-                    available={available}
-                    onSelect={addWorkspace}
-                />
-            ),
-        });
-    }, [intl, isTablet, remoteClusters, theme, toRemove, workspaces, addWorkspace]);
+        const renderContent = () => (
+            <AddWorkspaceSheetContent
+                available={available}
+                onSelect={addWorkspace}
+            />
+        );
+        bottomSheet(renderContent, [1, getAddWorkspaceSheetContentHeight(available.length)]);
+    }, [remoteClusters, toRemove, workspaces, addWorkspace]);
 
     const removeWorkspace = useCallback(
         (item: SharedChannelWorkspace) => {
@@ -442,18 +441,13 @@ const ChannelShare = ({channelId, componentId, displayName, onSharedRemotesChang
     }
 
     return (
-        <View
+        <SafeAreaView
+            edges={edges}
             style={styles.flex}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
+            testID='channel_share.screen'
         >
-            <SafeAreaView
-                edges={edges}
-                style={styles.flex}
-                testID='channel_share.screen'
-            >
-                {content}
-            </SafeAreaView>
-        </View>
+            {content}
+        </SafeAreaView>
     );
 };
 

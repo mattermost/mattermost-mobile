@@ -39,6 +39,16 @@ else
     echo "Generating app assets"
 fi
 
+GENERATE_GLYPH_MAP_SCRIPT="scripts/generate-compass-glyph-map.mjs"
+
+if [ ! -f "$GENERATE_GLYPH_MAP_SCRIPT" ]; then
+    echo "Compass glyph map script not found at: $GENERATE_GLYPH_MAP_SCRIPT"
+    exit 1
+fi
+
+echo "Generating Compass Icons glyph map"
+node "$GENERATE_GLYPH_MAP_SCRIPT"
+
 SOUNDS="assets/sounds"
 if [ -z "$SOUNDS" ]; then
     echo "Sound assets not found"

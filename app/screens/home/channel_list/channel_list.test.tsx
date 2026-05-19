@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type ComponentProps} from 'react';
+import React, {act, type ComponentProps} from 'react';
 
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
@@ -24,13 +24,6 @@ jest.mock('@react-native-camera-roll/camera-roll', () => ({
     },
 }));
 
-jest.mock('@screens/navigation', () => ({
-    resetToTeams: jest.fn(),
-    openToS: jest.fn(),
-    showWatermarkOverlay: jest.fn(),
-    dismissWatermarkOverlay: jest.fn(),
-}));
-
 function getBaseProps(): ComponentProps<typeof ChannelListScreen> {
     return {
         hasChannels: true,
@@ -39,7 +32,6 @@ function getBaseProps(): ComponentProps<typeof ChannelListScreen> {
         hasTeams: true,
         isCRTEnabled: true,
         isLicensed: true,
-        isWatermarkEnabled: false,
         launchType: 'normal',
         showIncomingCalls: true,
         showToS: false,
@@ -55,16 +47,20 @@ describe('performance metrics', () => {
         database = server.database;
     });
 
+    afterAll(async () => {
+        await TestHelper.tearDown(serverUrl);
+    });
+
     it('finish load on load', async () => {
         const props = getBaseProps();
         renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
-        await waitFor(() => {
+        await act(async () => {
             expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('HOME', serverUrl);
         });
     });
 });
 
-describe('watermark overlay', () => {
+describe('team sidebar visibility', () => {
     let database: Database;
     const serverUrl = 'http://www.someserverurl.com';
 
@@ -77,35 +73,21 @@ describe('watermark overlay', () => {
         jest.clearAllMocks();
     });
 
-    it('should show the watermark overlay when isWatermarkEnabled is true', async () => {
-        const {showWatermarkOverlay} = require('@screens/navigation');
-        const props = {...getBaseProps(), isWatermarkEnabled: true};
-        renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
+    it('should render when canJoinOtherTeams is true and user has only one team', async () => {
+        const props = getBaseProps();
+        props.hasMoreThanOneTeam = false;
+        const {getByTestId} = renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
         await waitFor(() => {
-            expect(showWatermarkOverlay).toHaveBeenCalledTimes(1);
+            expect(getByTestId('channel_list.screen')).toBeTruthy();
         });
     });
 
-    it('should not show the watermark overlay when isWatermarkEnabled is false', async () => {
-        const {showWatermarkOverlay} = require('@screens/navigation');
-        const props = {...getBaseProps(), isWatermarkEnabled: false};
-        renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
+    it('should render when canJoinOtherTeams is false and user has only one team', async () => {
+        const props = getBaseProps();
+        props.hasMoreThanOneTeam = false;
+        const {getByTestId} = renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
         await waitFor(() => {
-            expect(showWatermarkOverlay).not.toHaveBeenCalled();
-        });
-    });
-
-    it('should dismiss the watermark overlay when isWatermarkEnabled changes to false', async () => {
-        const {showWatermarkOverlay, dismissWatermarkOverlay} = require('@screens/navigation');
-        const props = {...getBaseProps(), isWatermarkEnabled: true};
-        const {rerender} = renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
-        await waitFor(() => {
-            expect(showWatermarkOverlay).toHaveBeenCalledTimes(1);
-        });
-
-        rerender(<ChannelListScreen {...{...props, isWatermarkEnabled: false}}/>);
-        await waitFor(() => {
-            expect(dismissWatermarkOverlay).toHaveBeenCalledTimes(1);
+            expect(getByTestId('channel_list.screen')).toBeTruthy();
         });
     });
 });

@@ -142,10 +142,10 @@ const ImageTransformer = (
         element = (
             <ExpoImage
                 id={cacheKey}
+                autoplay={autoplay}
                 onLoad={onLoadImageSuccess}
                 source={imageSource}
                 style={{width, height}}
-                autoplay={autoplay}
             />
         );
     }

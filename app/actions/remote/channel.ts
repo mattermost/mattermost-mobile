@@ -22,7 +22,7 @@ import {getCommonSystemValues, getConfig, getCurrentChannelId, getCurrentTeamId,
 import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams, removeChannelFromTeamHistory, getTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
+import {navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
@@ -1184,6 +1184,7 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
         return {error: `${serverUrl} database not found`};
     }
 
+    DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
     DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, true);
 
     fetchPostsForChannel(serverUrl, channelId, false, false, groupLabel);
@@ -1462,7 +1463,7 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
             const channel = await getChannelById(database, channelId);
             if (channel) {
                 DeviceEventEmitter.emit(event, channel.displayName);
-                await dismissAllModalsAndPopToRoot();
+                await navigateToRoot();
             }
         }
 

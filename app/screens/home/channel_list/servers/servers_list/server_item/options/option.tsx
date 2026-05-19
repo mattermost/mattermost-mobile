@@ -5,14 +5,14 @@ import React, {useMemo} from 'react';
 import {Animated, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
     color: string;
-    icon: string;
+    icon: CompassIconName;
     onPress: () => void;
     positionX: number;
     progress: Animated.AnimatedInterpolation<number>;

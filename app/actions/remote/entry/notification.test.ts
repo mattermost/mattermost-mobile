@@ -6,7 +6,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import {mockApiClient} from '@test/mock_api_client';
 import TestHelper from '@test/test_helper';
 
@@ -16,6 +16,11 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('@managers/performance_metrics_manager');
 jest.mock('@store/navigation_store');
+
+const mockDismissKeyboard = jest.fn();
+jest.mock('@utils/keyboard', () => ({
+    dismissKeyboard: (...args: unknown[]) => mockDismissKeyboard(...args),
+}));
 
 const mockedNavigationStore = jest.mocked(NavigationStore);
 
@@ -97,6 +102,7 @@ describe('Performance metrics are set correctly', () => {
             version: '', // Version is not checked at this level
         });
 
+        expect(mockDismissKeyboard).toHaveBeenCalled();
         expect(PerformanceMetricsManager.setLoadTarget).toHaveBeenCalledWith('CHANNEL');
     });
 

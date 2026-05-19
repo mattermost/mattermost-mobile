@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {View} from 'react-native';
+
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import {isConversationRequester} from '@agents/requester';
 import {invalidateConversation, useConversation, useTurnForPost} from '@agents/store/conversation_store';
@@ -14,9 +17,6 @@ import {
     extractToolCallsForPost,
 } from '@agents/turn_content';
 import {ToolApprovalStage, type Annotation, type ToolCall} from '@agents/types';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {View} from 'react-native';
-
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';

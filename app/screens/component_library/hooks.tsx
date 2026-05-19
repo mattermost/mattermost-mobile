@@ -10,7 +10,7 @@ import {Screens} from '@constants';
 
 type HookResult<T> = [
     {[x: string]: T},
-    JSX.Element,
+    React.JSX.Element,
 ]
 export const useStringProp = (
     propName: string,
@@ -93,7 +93,7 @@ const ALL_OPTION = 'ALL';
 type DropdownHookResult = [
     {[x: string]: string} | undefined,
     {[x: string]: string[]} | undefined,
-    JSX.Element,
+    React.JSX.Element,
 ];
 export const useDropdownProp = (
     propName: string,

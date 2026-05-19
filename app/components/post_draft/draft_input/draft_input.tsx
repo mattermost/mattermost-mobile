@@ -1,19 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import RewritingIndicator from '@agents/components/rewriting_indicator';
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
-import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
+import {useAnimatedReaction} from 'react-native-reanimated';
+import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {scheduleOnRN} from 'react-native-worklets';
 
+import RewritingIndicator from '@agents/components/rewriting_indicator';
 import {Screens} from '@constants';
-import {useKeyboardAnimationContext} from '@context/keyboard_animation';
+import {isAndroidEdgeToEdge} from '@constants/device';
+import {useKeyboardState} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
-import {openAsBottomSheet} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
+import {useCurrentScreen} from '@store/navigation_store';
 import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -65,7 +70,6 @@ export type Props = {
     scheduledPostsEnabled: boolean;
 }
 
-const SCHEDULED_POST_PICKER_BUTTON = 'close-scheduled-post-picker';
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -146,12 +150,32 @@ function DraftInput({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const isTablet = useIsTablet();
+    const currentScreen = useCurrentScreen();
+    const [layoutHeight, setLayoutHeight] = React.useState(0);
+    const {bottom} = useSafeAreaInsets();
+    const {inputRef, stateContext, blurAndDismissKeyboard} = useKeyboardState();
 
-    const {inputRef, focusInput: focus} = useKeyboardAnimationContext();
+    const focus = useCallback(() => {
+        inputRef.current?.focus();
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const edges = useMemo<Edge[]>(() => {
+        if (isTablet && currentScreen === Screens.CHANNEL_LIST) {
+            return ['left', 'right'];
+        }
+
+        return SAFE_AREA_VIEW_EDGES;
+    }, [isTablet, currentScreen]);
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
-        updatePostInputTop(e.nativeEvent.layout.height);
-    }, [updatePostInputTop]);
+        const {height} = e.nativeEvent.layout;
+        setLayoutHeight(height);
+        if (!isAndroidEdgeToEdge) {
+            updatePostInputTop(height + bottom);
+        }
+    }, [bottom, updatePostInputTop]);
 
     // Render
     const postInputTestID = `${testID}.post.input`;
@@ -176,27 +200,26 @@ function DraftInput({
         return sendMessage(schedulingInfo);
     }, [persistentNotificationsEnabled, serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval, currentUserId, channelName, channelType]);
 
-    const handleShowScheduledPostOptions = useCallback(() => {
+    const handleShowScheduledPostOptions = useCallback(async () => {
         if (!scheduledPostsEnabled) {
             return;
         }
 
-        Keyboard.dismiss();
-        const title = isTablet ? intl.formatMessage({id: 'scheduled_post.picker.title', defaultMessage: 'Schedule draft'}) : '';
-
-        openAsBottomSheet({
-            closeButtonId: SCHEDULED_POST_PICKER_BUTTON,
-            screen: Screens.SCHEDULED_POST_OPTIONS,
-            theme,
-            title,
-            props: {
-                closeButtonId: SCHEDULED_POST_PICKER_BUTTON,
-                onSchedule: handleSendMessage,
-            },
-        });
-    }, [handleSendMessage, intl, isTablet, scheduledPostsEnabled, theme]);
+        await blurAndDismissKeyboard();
+        CallbackStore.setCallback<((schedulingInfo: SchedulingInfo) => Promise<void | {data?: boolean; error?: unknown}>)>(handleSendMessage);
+        navigateToScreen(Screens.SCHEDULED_POST_OPTIONS);
+    }, [blurAndDismissKeyboard, handleSendMessage, scheduledPostsEnabled]);
 
     const sendActionDisabled = !canSend || noMentionsError;
+    useAnimatedReaction(
+        () => stateContext.postInputTranslateY.value,
+        (translateY) => {
+            if (isAndroidEdgeToEdge) {
+                scheduleOnRN(updatePostInputTop, layoutHeight + translateY + (2 * bottom));
+            }
+        },
+        [layoutHeight, updatePostInputTop, bottom, stateContext.postInputTranslateY],
+    );
 
     return (
         <>
@@ -206,7 +229,7 @@ function DraftInput({
                 rootId={rootId}
             />
             <SafeAreaView
-                edges={SAFE_AREA_VIEW_EDGES}
+                edges={edges}
                 onLayout={handleLayout}
                 style={style.inputWrapper}
                 testID={testID}
@@ -238,7 +261,6 @@ function DraftInput({
                         value={value}
                         addFiles={addFiles}
                         sendMessage={handleSendMessage}
-                        inputRef={inputRef}
                         setIsFocused={setIsFocused}
                     />
                     <Uploads

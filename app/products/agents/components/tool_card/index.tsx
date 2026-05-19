@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {Pressable, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
+import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';

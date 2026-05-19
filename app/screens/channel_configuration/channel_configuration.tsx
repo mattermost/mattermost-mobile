@@ -1,27 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import {useIntl} from 'react-intl';
+import {ScrollView, StyleSheet} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {useTheme} from '@context/theme';
+import NavigationHeaderTitle from '@components/navigation_header_title';
+import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import SecurityManager from '@managers/security_manager';
-import {popTopScreen} from '@screens/navigation';
-import {mergeNavigationOptions} from '@utils/navigation';
-import {changeOpacity} from '@utils/theme';
+import {navigateBack} from '@screens/navigation';
 
 import ChannelAutotranslation from './channel_autotranslation';
 import ShareWithConnectedWorkspaces from './share_with_connected_workspaces';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     canManageAutotranslations: boolean;
     canManageSharedChannel: boolean;
     channelId: string;
-    componentId: AvailableScreens;
     displayName: string;
     isChannelShared: boolean;
 }
@@ -42,58 +39,53 @@ const ChannelConfiguration = ({
     canManageAutotranslations,
     canManageSharedChannel,
     channelId,
-    componentId,
     displayName,
     isChannelShared,
 }: Props) => {
-    const theme = useTheme();
+    const navigation = useNavigation();
+    const intl = useIntl();
 
     const onPressed = useCallback(() => {
-        return popTopScreen(componentId);
-    }, [componentId]);
+        navigateBack();
+    }, []);
 
     useEffect(() => {
-        mergeNavigationOptions(componentId, {
-            topBar: {
-                subtitle: {
-                    color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
-                    text: displayName,
-                },
-            },
+        navigation.setOptions({
+            headerTitle: () => (
+                <NavigationHeaderTitle
+                    title={intl.formatMessage({id: 'channel_settings.configuration', defaultMessage: 'Configuration'})}
+                    subtitle={displayName}
+                />
+            ),
         });
-    }, [componentId, displayName, theme.sidebarHeaderTextColor]);
+    }, [displayName, intl, navigation]);
 
-    useAndroidHardwareBackHandler(componentId, onPressed);
+    useAndroidHardwareBackHandler(Screens.CHANNEL_CONFIGURATION, onPressed);
 
     return (
-        <View
+        <SafeAreaView
+            edges={edges}
             style={styles.flex}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
+            testID='channel_configuration.screen'
         >
-            <SafeAreaView
-                edges={edges}
-                style={styles.flex}
-                testID='channel_configuration.screen'
+            <ScrollView
+                bounces={true}
+                alwaysBounceVertical={false}
+                contentContainerStyle={styles.content}
+                testID='channel_configuration.scroll_view'
             >
-                <ScrollView
-                    bounces={true}
-                    alwaysBounceVertical={false}
-                    contentContainerStyle={styles.content}
-                    testID='channel_configuration.scroll_view'
-                >
-                    {canManageAutotranslations &&
-                        <ChannelAutotranslation channelId={channelId}/>
-                    }
-                    {canManageSharedChannel &&
-                        <ShareWithConnectedWorkspaces
-                            channelId={channelId}
-                            isChannelShared={isChannelShared}
-                            channelDisplayName={displayName}
-                        />
-                    }
-                </ScrollView>
-            </SafeAreaView>
-        </View>
+                {canManageAutotranslations &&
+                    <ChannelAutotranslation channelId={channelId}/>
+                }
+                {canManageSharedChannel &&
+                    <ShareWithConnectedWorkspaces
+                        channelId={channelId}
+                        isChannelShared={isChannelShared}
+                        channelDisplayName={displayName}
+                    />
+                }
+            </ScrollView>
+        </SafeAreaView>
     );
 };
 

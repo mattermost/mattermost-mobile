@@ -7,7 +7,7 @@ import {updatePlaybooksVersion} from '@playbooks/actions/remote/version';
 import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {getCurrentChannelId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 

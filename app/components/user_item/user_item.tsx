@@ -17,7 +17,7 @@ import {displayUsername, getUserCustomStatus, isBot, isCustomStatusExpired, isDe
 
 import type UserModel from '@typings/database/models/servers/user';
 
-type Props = {
+export type UserItemProps = {
     FooterComponent?: ReactNode;
     user?: UserProfile | UserModel;
     containerStyle?: StyleProp<ViewStyle>;
@@ -109,7 +109,7 @@ const UserItem = ({
     padding,
     includeMargin,
     hideGuestTags,
-}: Props) => {
+}: UserItemProps) => {
     const theme = useTheme();
     const style = getThemedStyles(theme);
     const intl = useIntl();

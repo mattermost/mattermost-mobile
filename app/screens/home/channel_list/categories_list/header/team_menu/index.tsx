@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import {dismissBottomSheet} from '@screens/navigation';
 import {confirmLeaveTeam, openJoinTeamModal} from '@utils/team_menu';
 
@@ -19,13 +18,12 @@ type Props = {
 
 const TeamMenu = ({canJoinOtherTeams, hasMoreThanOneTeam, currentTeamId, currentTeamDisplayName}: Props) => {
     const intl = useIntl();
-    const theme = useTheme();
     const serverUrl = useServerUrl();
 
     const onJoinAnotherTeam = useCallback(async () => {
         await dismissBottomSheet();
-        openJoinTeamModal(intl, theme);
-    }, [intl, theme]);
+        openJoinTeamModal();
+    }, []);
 
     const onLeaveTeam = useCallback(async () => {
         await dismissBottomSheet();

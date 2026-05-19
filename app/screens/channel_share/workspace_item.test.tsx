@@ -3,10 +3,13 @@
 
 import React from 'react';
 
-import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {fireEvent, renderWithIntlAndTheme, within} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import WorkspaceItem, {type SharedChannelWorkspace} from './workspace_item';
+
+// check-circle icon glyph rendered by CompassIcon
+const CHECK_CIRCLE_GLYPH = String.fromCodePoint(0xf05e0);
 
 jest.mock('@hooks/utils', () => ({
     usePreventDoubleTap: (fn: () => void) => fn,
@@ -26,7 +29,8 @@ describe('WorkspaceItem', () => {
             />,
         );
         expect(getByText('My Remote')).toBeTruthy();
-        expect(getByText('Online')).toBeTruthy();
+        const statusNode = getByTestId('channel_share.workspace_item.status');
+        expect(statusNode.props.children).toContain('Online');
         expect(getByTestId('channel_share.remove.r1')).toBeTruthy();
     });
 
@@ -71,7 +75,7 @@ describe('WorkspaceItem', () => {
             ...TestHelper.fakeRemoteClusterInfo({site_url: 'pending_abc', last_ping_at: 0, display_name: 'Pending'}),
             status: 'saved',
         };
-        const {getByText} = renderWithIntlAndTheme(
+        const {getByText, getByTestId} = renderWithIntlAndTheme(
             <WorkspaceItem
                 item={item}
                 onRemove={jest.fn()}
@@ -79,7 +83,8 @@ describe('WorkspaceItem', () => {
             />,
         );
         expect(getByText('Pending')).toBeTruthy();
-        expect(getByText('Connection pending')).toBeTruthy();
+        const statusNode = getByTestId('channel_share.workspace_item.status');
+        expect(statusNode.props.children).toContain('Connection pending');
     });
 
     it('shows Pending save when status is pending', () => {
@@ -87,7 +92,7 @@ describe('WorkspaceItem', () => {
             ...TestHelper.fakeRemoteClusterInfo({display_name: 'New Workspace', remote_id: 'r1'}),
             status: 'pending',
         };
-        const {getByText} = renderWithIntlAndTheme(
+        const {getByText, getByTestId} = renderWithIntlAndTheme(
             <WorkspaceItem
                 item={item}
                 onRemove={jest.fn()}
@@ -95,7 +100,8 @@ describe('WorkspaceItem', () => {
             />,
         );
         expect(getByText('New Workspace')).toBeTruthy();
-        expect(getByText('Pending save')).toBeTruthy();
+        const statusNode = getByTestId('channel_share.workspace_item.status');
+        expect(statusNode.props.children).toContain('Pending save');
     });
 
     it('shows Saving when status is saving', () => {
@@ -103,7 +109,7 @@ describe('WorkspaceItem', () => {
             ...TestHelper.fakeRemoteClusterInfo({display_name: 'Syncing', remote_id: 'r1'}),
             status: 'saving',
         };
-        const {getByText} = renderWithIntlAndTheme(
+        const {getByText, getByTestId} = renderWithIntlAndTheme(
             <WorkspaceItem
                 item={item}
                 onRemove={jest.fn()}
@@ -111,7 +117,8 @@ describe('WorkspaceItem', () => {
             />,
         );
         expect(getByText('Syncing')).toBeTruthy();
-        expect(getByText('Saving')).toBeTruthy();
+        const statusNode = getByTestId('channel_share.workspace_item.status');
+        expect(statusNode.props.children).toContain('Saving');
     });
 
     it('shows Online when status is saved and connection is recent', () => {
@@ -119,7 +126,7 @@ describe('WorkspaceItem', () => {
             ...TestHelper.fakeRemoteClusterInfo({display_name: 'Live Remote', remote_id: 'r1', last_ping_at: Date.now()}),
             status: 'saved',
         };
-        const {getByText} = renderWithIntlAndTheme(
+        const {getByText, getByTestId} = renderWithIntlAndTheme(
             <WorkspaceItem
                 item={item}
                 onRemove={jest.fn()}
@@ -127,7 +134,11 @@ describe('WorkspaceItem', () => {
             />,
         );
         expect(getByText('Live Remote')).toBeTruthy();
-        expect(getByText('Online')).toBeTruthy();
+        const statusNode = getByTestId('channel_share.workspace_item.status');
+
+        // CompassIcon renders as a nested Text with the unicode glyph as children
+        expect(within(statusNode).getByText(CHECK_CIRCLE_GLYPH)).toBeTruthy();
+        expect(statusNode.props.children).toContain('Online');
     });
 
     it('shows Offline when status is saved and last_ping_at is stale', () => {
@@ -140,7 +151,7 @@ describe('WorkspaceItem', () => {
             }),
             status: 'saved',
         };
-        const {getByText} = renderWithIntlAndTheme(
+        const {getByText, getByTestId} = renderWithIntlAndTheme(
             <WorkspaceItem
                 item={item}
                 onRemove={jest.fn()}
@@ -148,6 +159,7 @@ describe('WorkspaceItem', () => {
             />,
         );
         expect(getByText('Gone Remote')).toBeTruthy();
-        expect(getByText('Offline')).toBeTruthy();
+        const statusNode = getByTestId('channel_share.workspace_item.status');
+        expect(statusNode.props.children).toContain('Offline');
     });
 });

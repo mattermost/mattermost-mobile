@@ -46,6 +46,7 @@ const Highlighter = ({code, language, textStyle, selectable = false}: SyntaxHigl
     [theme, selectable, style]);
     const maximumLineLength = useMemo(() => getMaximumLineLength(code), [code]);
     const languageToUse = maximumLineLength > MAXIMUM_CODE_LINE_LENGTH ? 'text' : language;
+    const showLineNumbers = useMemo(() => code.split('\n').length > 1, [code]);
 
     const nativeRenderer = useCallback(({rows, stylesheet}: rendererProps) => {
         const digits = rows.length.toString().length;
@@ -58,9 +59,10 @@ const Highlighter = ({code, language, textStyle, selectable = false}: SyntaxHigl
                 fontFamily={textStyle.fontFamily || 'monospace'}
                 fontSize={textStyle.fontSize}
                 selectable={selectable}
+                selectionColor={theme.onlineIndicator}
             />
         );
-    }, [style.hljs.color, theme.centerChannelColor, textStyle, selectable]);
+    }, [style.hljs.color, theme.centerChannelColor, theme.onlineIndicator, textStyle.fontFamily, textStyle.fontSize, selectable]);
 
     const preTag = useCallback((info: any) => (
         <View
@@ -75,10 +77,11 @@ const Highlighter = ({code, language, textStyle, selectable = false}: SyntaxHigl
             style={style}
             language={languageToUse}
             horizontal={true}
-            showLineNumbers={true}
+            showLineNumbers={showLineNumbers}
             renderer={nativeRenderer}
             PreTag={preTag}
             CodeTag={View}
+            wrapLines={true}
         >
             {code}
         </SyntaxHighlighter>

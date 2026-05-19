@@ -37,7 +37,7 @@ const EDITED_INDICATOR_CONTEXT = ['paragraph'];
 const MIN_PERMALINK_WIDTH = 340;
 const TABLET_PADDING_OFFSET = 40;
 
-type PermalinkPreviewProps = {
+export type PermalinkPreviewProps = {
     embedData: PermalinkEmbedData;
     author?: UserModel;
     currentUser?: UserModel;
@@ -313,6 +313,7 @@ const PermalinkPreview = ({
                             isReplyPost={false}
                             parentLocation={parentLocation}
                             parentPostId={parentPostId}
+                            filesInfo={filesInfo}
                         />
                     )}
                 </View>

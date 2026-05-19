@@ -171,6 +171,12 @@ export default class WebSocketClient {
                 }
                 return;
             }
+
+            // Invalidate the previous native client so it doesn't remain as an orphan
+            // in the native registry. With reliable websockets each reconnect builds a
+            // new URL (different connection_id/sequence_number), so getOrCreateWebSocketClient
+            // creates a new native entry — the old one must be explicitly removed.
+            this.conn?.invalidate();
             this.conn = client;
         } catch (error) {
             return;

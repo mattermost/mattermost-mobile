@@ -1,16 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, renderHook} from '@testing-library/react-hooks';
+import {act, renderHook} from '@testing-library/react-native';
 import {DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
 
 import {useTeamSwitch} from './team_switch';
 
-jest.useFakeTimers();
-
 describe('useTeamSwitch', () => {
+    beforeEach(() => {
+        jest.useFakeTimers({doNotFake: ['nextTick']});
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
     it('should initialize with loading false', () => {
         const {result} = renderHook(() => useTeamSwitch());
         expect(result.current).toBe(false);
