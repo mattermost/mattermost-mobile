@@ -1,23 +1,37 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchConversation} from '@agents/actions/remote/conversation';
-import {act, renderHook} from '@testing-library/react-hooks';
+import {act, renderHook, waitFor} from '@testing-library/react-native';
 
 import {
     clearConversationCache,
     invalidateConversation,
-    useConversation,
-    useTurnForPost,
-} from './conversation_store';
+    refetchConversation,
+} from '@agents/actions/remote/conversation';
+import NetworkManager from '@managers/network_manager';
+
+import {useConversation, useTurnForPost} from './conversation_store';
 
 import type {ConversationResponse} from '@agents/types';
 
-jest.mock('@agents/actions/remote/conversation');
+jest.mock('@actions/remote/session');
+jest.mock('@managers/network_manager');
+jest.mock('@utils/errors', () => ({
+    getFullErrorMessage: jest.fn((err) => (err instanceof Error ? err.message : 'error')),
+}));
 
-const mockedFetch = jest.mocked(fetchConversation);
+const mockClient = {
+    getConversation: jest.fn(),
+};
 
-const SERVER_URL = 'https://test.mattermost.com';
+beforeAll(() => {
+    jest.mocked(NetworkManager.getClient).mockReturnValue(mockClient as any);
+});
+
+const mockedFetch = mockClient.getConversation;
+
+const SERVER_URL = 'https://server-a.test';
+const SERVER_B = 'https://server-b.test';
 
 function makeConversation(id: string): ConversationResponse {
     return {
@@ -37,10 +51,6 @@ async function flush(): Promise<void> {
     await Promise.resolve();
 }
 
-// clearConversationCache() drops every cached subject and inflight entry, so
-// each test starts from a fresh store. jest.resetModules() would also work
-// but would force a re-import of React via the test renderer, breaking
-// renderHook's identity assumptions.
 beforeEach(() => {
     mockedFetch.mockReset();
     clearConversationCache();
@@ -49,42 +59,40 @@ beforeEach(() => {
 describe('useConversation', () => {
     it('should kick off a fetch and resolve to the returned conversation', async () => {
         const conv = makeConversation('c1');
-        mockedFetch.mockResolvedValue({data: conv});
+        mockedFetch.mockResolvedValue(conv);
 
-        const {result, waitForNextUpdate} = renderHook(() => useConversation(SERVER_URL, 'c1'));
+        const {result} = renderHook(() => useConversation(SERVER_URL, 'c1'));
 
         expect(result.current.loading).toBe(true);
         expect(result.current.conversation).toBeUndefined();
 
-        await waitForNextUpdate();
+        await waitFor(() => expect(result.current.loading).toBe(false));
 
-        expect(mockedFetch).toHaveBeenCalledWith(SERVER_URL, 'c1');
+        expect(mockedFetch).toHaveBeenCalledWith('c1');
+        expect(NetworkManager.getClient).toHaveBeenCalledWith(SERVER_URL);
         expect(result.current.conversation).toEqual(conv);
         expect(result.current.error).toBeUndefined();
-        expect(result.current.loading).toBe(false);
     });
 
     it('should dedup concurrent subscribers for the same id', async () => {
         const conv = makeConversation('c1');
-        mockedFetch.mockResolvedValue({data: conv});
+        mockedFetch.mockResolvedValue(conv);
 
         const hookA = renderHook(() => useConversation(SERVER_URL, 'c1'));
         const hookB = renderHook(() => useConversation(SERVER_URL, 'c1'));
 
-        await hookA.waitForNextUpdate();
+        await waitFor(() => expect(hookA.result.current.conversation).toEqual(conv));
 
         expect(mockedFetch).toHaveBeenCalledTimes(1);
-        expect(hookA.result.current.conversation).toEqual(conv);
         expect(hookB.result.current.conversation).toEqual(conv);
     });
 
     it('should cache errors so a remount with the same id does not retry', async () => {
-        mockedFetch.mockResolvedValueOnce({error: 'boom'});
+        mockedFetch.mockRejectedValueOnce(new Error('boom'));
 
         const first = renderHook(() => useConversation(SERVER_URL, 'c1'));
-        await first.waitForNextUpdate();
+        await waitFor(() => expect(first.result.current.error).toBe('boom'));
 
-        expect(first.result.current.error).toBe('boom');
         expect(mockedFetch).toHaveBeenCalledTimes(1);
 
         first.unmount();
@@ -111,32 +119,74 @@ describe('useConversation', () => {
             ...makeConversation('c1'),
             turns: [{id: 't1', post_id: 'p', role: 'assistant', content: null, sequence: 0, tokens_in: 0, tokens_out: 0}],
         } as unknown as ConversationResponse;
-        mockedFetch.mockResolvedValue({data: rawConversation});
+        mockedFetch.mockResolvedValue(rawConversation);
 
         const hook = renderHook(() => useConversation(SERVER_URL, 'c1'));
-        await hook.waitForNextUpdate();
-
-        expect(hook.result.current.conversation?.turns[0].content).toEqual([]);
+        await waitFor(() => expect(hook.result.current.conversation?.turns[0].content).toEqual([]));
     });
 });
 
 describe('invalidateConversation', () => {
-    it('should drop the cached entry and trigger a fresh fetch', async () => {
-        const first = makeConversation('c1');
-        const second = {...makeConversation('c1'), title: 'Updated'};
-        mockedFetch.mockResolvedValueOnce({data: first}).mockResolvedValueOnce({data: second});
+    it('should drop the cached entry from the subscriber state without triggering a fresh fetch', async () => {
+        mockedFetch.mockResolvedValue(makeConversation('c1'));
 
         const hook = renderHook(() => useConversation(SERVER_URL, 'c1'));
-        await hook.waitForNextUpdate();
-        expect(hook.result.current.conversation?.title).toBe('Chat');
+        await waitFor(() => expect(hook.result.current.conversation?.title).toBe('Chat'));
+        expect(mockedFetch).toHaveBeenCalledTimes(1);
 
         act(() => {
             invalidateConversation(SERVER_URL, 'c1');
         });
-        await hook.waitForNextUpdate();
+        await flush();
+
+        // The subscriber sees the entry cleared; invalidate alone does not
+        // refetch — callers that need fresh data call refetchConversation.
+        expect(hook.result.current.conversation).toBeUndefined();
+        expect(mockedFetch).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('refetchConversation', () => {
+    it('should drop the cached entry and trigger a fresh fetch even when no subscriber is mounted', async () => {
+        const first = makeConversation('c1');
+        const second = {...makeConversation('c1'), title: 'Updated'};
+        mockedFetch.mockResolvedValueOnce(first).mockResolvedValueOnce(second);
+
+        const hook = renderHook(() => useConversation(SERVER_URL, 'c1'));
+        await waitFor(() => expect(hook.result.current.conversation?.title).toBe('Chat'));
+
+        await act(async () => {
+            await refetchConversation(SERVER_URL, 'c1');
+        });
 
         expect(mockedFetch).toHaveBeenCalledTimes(2);
         expect(hook.result.current.conversation?.title).toBe('Updated');
+    });
+});
+
+describe('per-server isolation', () => {
+    it('should keep conversations with the same id on different servers isolated', async () => {
+        const convA = {...makeConversation('c1'), title: 'A'};
+        const convB = {...makeConversation('c1'), title: 'B'};
+        const clientA = {getConversation: jest.fn().mockResolvedValue(convA)};
+        const clientB = {getConversation: jest.fn().mockResolvedValue(convB)};
+        jest.mocked(NetworkManager.getClient).mockImplementation((url) => (
+            (url === SERVER_URL ? clientA : clientB) as any
+        ));
+
+        const hookA = renderHook(() => useConversation(SERVER_URL, 'c1'));
+        const hookB = renderHook(() => useConversation(SERVER_B, 'c1'));
+
+        await waitFor(() => {
+            expect(hookA.result.current.conversation?.title).toBe('A');
+            expect(hookB.result.current.conversation?.title).toBe('B');
+        });
+
+        expect(clientA.getConversation).toHaveBeenCalledWith('c1');
+        expect(clientB.getConversation).toHaveBeenCalledWith('c1');
+
+        // Reset for subsequent tests
+        jest.mocked(NetworkManager.getClient).mockReturnValue(mockClient as any);
     });
 });
 

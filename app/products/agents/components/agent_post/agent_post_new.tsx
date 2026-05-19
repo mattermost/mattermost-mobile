@@ -4,9 +4,10 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {View} from 'react-native';
 
+import {refetchConversation} from '@agents/actions/remote/conversation';
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import {isConversationRequester} from '@agents/requester';
-import {invalidateConversation, useConversation, useTurnForPost} from '@agents/store/conversation_store';
+import {useConversation, useTurnForPost} from '@agents/store/conversation_store';
 import streamingStore, {useStreamingState} from '@agents/store/streaming_store';
 import {
     anyToolHasArguments,
@@ -99,7 +100,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const {conversation, loading: conversationLoading, error: conversationError} = useConversation(serverUrl, conversationId);
     const turn = useTurnForPost(conversation, post.id);
 
-    const streamingState = useStreamingState(post.id);
+    const streamingState = useStreamingState(serverUrl, post.id);
     const isGenerating = streamingState?.generating ?? false;
     const isPrecontent = streamingState?.precontent ?? false;
     const isReasoningLoading = streamingState?.isReasoningLoading ?? false;
@@ -158,7 +159,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         const wasGenerating = wasGeneratingRef.current;
         wasGeneratingRef.current = isGenerating;
         if (wasGenerating && !isGenerating) {
-            invalidateConversation(serverUrl, conversationId);
+            refetchConversation(serverUrl, conversationId);
         }
     }, [serverUrl, conversationId, isGenerating]);
 
@@ -190,7 +191,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         // Clear local display + streaming store so the new stream starts from
         // a clean slate instead of showing the previous round's data.
         setDisplayState(INITIAL_DISPLAY_STATE);
-        streamingStore.removePost(post.id);
+        streamingStore.removePost(serverUrl, post.id);
         const {error} = await regenerateResponse(serverUrl, post.id);
         if (error) {
             showSnackBar({barType: SNACK_BAR_TYPE.AGENT_REGENERATE_ERROR});

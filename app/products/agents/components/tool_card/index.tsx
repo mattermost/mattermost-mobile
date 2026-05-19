@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {Pressable, Text, View} from 'react-native';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {Platform, Pressable, Text, View} from 'react-native';
+import Animated, {FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import CompassIcon from '@components/compass_icon';
@@ -337,7 +337,10 @@ const ToolCard = ({
             </Pressable>
 
             {!isCollapsed && (
-                <View>
+                <Animated.View
+                    entering={FadeIn.duration(200)}
+                    exiting={Platform.select({ios: FadeOut.duration(200)})}
+                >
                     {showArguments && (
                         <View
                             style={styles.argumentsContainer}
@@ -437,7 +440,7 @@ const ToolCard = ({
                             />
                         </View>
                     )}
-                </View>
+                </Animated.View>
             )}
 
             {isPending && !hasLocalDecision && isProcessing && (

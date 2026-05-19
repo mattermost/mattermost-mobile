@@ -104,7 +104,7 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
     }, [post.props]);
 
     // Subscribe to streaming state via observable
-    const streamingState = useStreamingState(post.id);
+    const streamingState = useStreamingState(serverUrl, post.id);
 
     // Determine the message to display (use ?? not || to preserve empty string during streaming)
     const displayMessage = streamingState?.message ?? post.message ?? '';

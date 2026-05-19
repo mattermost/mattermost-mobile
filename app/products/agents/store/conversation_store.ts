@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchConversation} from '@agents/actions/remote/conversation';
 import {useEffect, useMemo, useState} from 'react';
 import {BehaviorSubject, type Observable} from 'rxjs';
+
+import {ensureConversation} from '@agents/actions/remote/conversation';
 
 import type {ConversationResponse, Turn} from '@agents/types';
 
@@ -13,120 +14,82 @@ export interface ConversationState {
     error?: string;
 }
 
-const INITIAL_STATE: ConversationState = {loading: false};
+export const INITIAL_CONVERSATION_STATE: ConversationState = {loading: false};
 
-// Backend may serialise turn.content as the JSON literal `null`; coerce to []
-// so downstream code can iterate without a guard.
-function normalizeConversationResponse(raw: ConversationResponse): ConversationResponse {
-    return {
-        ...raw,
-        turns: (raw.turns ?? []).map((turn) => ({
-            ...turn,
-            content: turn.content ?? [],
-        })),
+// Passive per-server, per-id conversation cache. The action layer
+// (`@agents/actions/remote/conversation`) owns fetching, dedup, and writes
+// into this store via `setState`.
+class ConversationStoreSingleton {
+    private subjects: {[serverUrl: string]: {[id: string]: BehaviorSubject<ConversationState>}} = {};
+
+    private getSubject = (serverUrl: string, id: string): BehaviorSubject<ConversationState> => {
+        if (!this.subjects[serverUrl]) {
+            this.subjects[serverUrl] = {};
+        }
+        let subject = this.subjects[serverUrl][id];
+        if (!subject) {
+            subject = new BehaviorSubject<ConversationState>(INITIAL_CONVERSATION_STATE);
+            this.subjects[serverUrl][id] = subject;
+        }
+        return subject;
+    };
+
+    setState = (serverUrl: string, id: string, state: ConversationState): void => {
+        this.getSubject(serverUrl, id).next(state);
+    };
+
+    getState = (serverUrl: string, id: string): ConversationState => {
+        return this.subjects[serverUrl]?.[id]?.value ?? INITIAL_CONVERSATION_STATE;
+    };
+
+    observe = (serverUrl: string, id: string): Observable<ConversationState> => {
+        return this.getSubject(serverUrl, id).asObservable();
+    };
+
+    /** Drop a single conversation entry without re-fetching. */
+    evict = (serverUrl: string, id: string): void => {
+        const subject = this.subjects[serverUrl]?.[id];
+        if (subject) {
+            subject.next(INITIAL_CONVERSATION_STATE);
+        }
+    };
+
+    /** Drop every conversation belonging to one server. Called on per-server logout. */
+    removeServer = (serverUrl: string): void => {
+        const inner = this.subjects[serverUrl];
+        if (!inner) {
+            return;
+        }
+        for (const subject of Object.values(inner)) {
+            subject.next(INITIAL_CONVERSATION_STATE);
+            subject.complete();
+        }
+        delete this.subjects[serverUrl];
+    };
+
+    /** Full reset across all servers (test cleanup / full logout). */
+    clear = (): void => {
+        for (const serverUrl of Object.keys(this.subjects)) {
+            this.removeServer(serverUrl);
+        }
     };
 }
 
-// Ephemeral per-conversation cache. Errors are cached so a failed fetch
-// doesn't retry on every render — invalidate() or evict() to retry.
-class ConversationStore {
-    private subjects = new Map<string, BehaviorSubject<ConversationState>>();
-
-    private inflight = new Map<string, Promise<void>>();
-
-    private getSubject(conversationId: string): BehaviorSubject<ConversationState> {
-        let subject = this.subjects.get(conversationId);
-        if (!subject) {
-            subject = new BehaviorSubject<ConversationState>(INITIAL_STATE);
-            this.subjects.set(conversationId, subject);
-        }
-        return subject;
-    }
-
-    private fetch(serverUrl: string, conversationId: string): Promise<void> {
-        const existing = this.inflight.get(conversationId);
-        if (existing) {
-            return existing;
-        }
-
-        const subject = this.getSubject(conversationId);
-        subject.next({...subject.value, loading: true, error: undefined});
-
-        const promise = fetchConversation(serverUrl, conversationId).then(({data, error}) => {
-            this.inflight.delete(conversationId);
-            if (error) {
-                // Preserve cached data on error so transient failures don't
-                // blank the UI; evict() is required to drop it.
-                subject.next({conversation: subject.value.conversation, loading: false, error});
-                return;
-            }
-            subject.next({conversation: data && normalizeConversationResponse(data), loading: false});
-        });
-
-        this.inflight.set(conversationId, promise);
-        return promise;
-    }
-
-    /** Load a conversation if it's not cached and no request is inflight. */
-    ensure(serverUrl: string, conversationId: string): void {
-        const subject = this.getSubject(conversationId);
-        const {conversation, error, loading} = subject.value;
-        if (conversation || error || loading) {
-            return;
-        }
-        this.fetch(serverUrl, conversationId);
-    }
-
-    /** Force re-fetch of a specific conversation. */
-    invalidate(serverUrl: string, conversationId: string): void {
-        this.inflight.delete(conversationId);
-        this.fetch(serverUrl, conversationId);
-    }
-
-    /** Drop a conversation's cache entry without re-fetching. */
-    evict(conversationId: string): void {
-        this.inflight.delete(conversationId);
-        const subject = this.subjects.get(conversationId);
-        if (subject) {
-            subject.next(INITIAL_STATE);
-        }
-    }
-
-    getState(conversationId: string): ConversationState {
-        return this.subjects.get(conversationId)?.value ?? INITIAL_STATE;
-    }
-
-    observe(conversationId: string): Observable<ConversationState> {
-        return this.getSubject(conversationId).asObservable();
-    }
-
-    // Called on logout to drop every cached conversation.
-    clear(): void {
-        // Clear inflight first so resolutions land on still-active subjects.
-        this.inflight.clear();
-        for (const subject of this.subjects.values()) {
-            subject.next(INITIAL_STATE);
-            subject.complete();
-        }
-        this.subjects.clear();
-    }
-}
-
-const conversationStore = new ConversationStore();
+const conversationStore = new ConversationStoreSingleton();
 
 export function useConversation(serverUrl: string, conversationId?: string): ConversationState {
     const [state, setState] = useState<ConversationState>(() => (
-        conversationId ? conversationStore.getState(conversationId) : INITIAL_STATE
+        conversationId ? conversationStore.getState(serverUrl, conversationId) : INITIAL_CONVERSATION_STATE
     ));
 
     useEffect(() => {
         if (!conversationId) {
-            setState(INITIAL_STATE);
+            setState(INITIAL_CONVERSATION_STATE);
             return undefined;
         }
 
-        conversationStore.ensure(serverUrl, conversationId);
-        const subscription = conversationStore.observe(conversationId).subscribe(setState);
+        ensureConversation(serverUrl, conversationId);
+        const subscription = conversationStore.observe(serverUrl, conversationId).subscribe(setState);
         return () => subscription.unsubscribe();
     }, [serverUrl, conversationId]);
 
@@ -140,18 +103,6 @@ export function useTurnForPost(conversation: ConversationResponse | undefined, p
         }
         return conversation.turns.find((turn) => turn.post_id === postId);
     }, [conversation, postId]);
-}
-
-export function invalidateConversation(serverUrl: string, conversationId: string): void {
-    conversationStore.invalidate(serverUrl, conversationId);
-}
-
-export function evictConversation(conversationId: string): void {
-    conversationStore.evict(conversationId);
-}
-
-export function clearConversationCache(): void {
-    conversationStore.clear();
 }
 
 export default conversationStore;

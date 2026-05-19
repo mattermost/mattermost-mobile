@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {invalidateConversation} from '@agents/store/conversation_store';
+import {refetchConversation} from '@agents/actions/remote/conversation';
 import streamingStore from '@agents/store/streaming_store';
 
 import {handleAgentConversationUpdated, handleAgentPostUpdate} from './index';
 
 import type {PostUpdateWebsocketMessage} from '@agents/types';
 
-// Mock the streaming store
+const SERVER_URL = 'https://test.mattermost.com';
+
 jest.mock('@agents/store/streaming_store', () => ({
     __esModule: true,
     default: {
@@ -16,8 +17,8 @@ jest.mock('@agents/store/streaming_store', () => ({
     },
 }));
 
-jest.mock('@agents/store/conversation_store', () => ({
-    invalidateConversation: jest.fn(),
+jest.mock('@agents/actions/remote/conversation', () => ({
+    refetchConversation: jest.fn(),
 }));
 
 describe('handleAgentPostUpdate', () => {
@@ -25,7 +26,7 @@ describe('handleAgentPostUpdate', () => {
         jest.clearAllMocks();
     });
 
-    it('should call streamingStore.handleWebSocketMessage with message data', () => {
+    it('should call streamingStore.handleWebSocketMessage with serverUrl and message data', () => {
         const messageData: PostUpdateWebsocketMessage = {
             post_id: 'post123',
             next: 'Hello world',
@@ -44,10 +45,10 @@ describe('handleAgentPostUpdate', () => {
             seq: 1,
         };
 
-        handleAgentPostUpdate(msg);
+        handleAgentPostUpdate(SERVER_URL, msg);
 
         expect(streamingStore.handleWebSocketMessage).toHaveBeenCalledTimes(1);
-        expect(streamingStore.handleWebSocketMessage).toHaveBeenCalledWith(messageData);
+        expect(streamingStore.handleWebSocketMessage).toHaveBeenCalledWith(SERVER_URL, messageData);
     });
 
     it('should return early when data is undefined', () => {
@@ -63,7 +64,7 @@ describe('handleAgentPostUpdate', () => {
             seq: 1,
         };
 
-        handleAgentPostUpdate(msg as unknown as WebSocketMessage<PostUpdateWebsocketMessage>);
+        handleAgentPostUpdate(SERVER_URL, msg as unknown as WebSocketMessage<PostUpdateWebsocketMessage>);
 
         expect(streamingStore.handleWebSocketMessage).not.toHaveBeenCalled();
     });
@@ -81,7 +82,7 @@ describe('handleAgentPostUpdate', () => {
             seq: 2,
         };
 
-        handleAgentPostUpdate(msg as unknown as WebSocketMessage<PostUpdateWebsocketMessage>);
+        handleAgentPostUpdate(SERVER_URL, msg as unknown as WebSocketMessage<PostUpdateWebsocketMessage>);
 
         expect(streamingStore.handleWebSocketMessage).not.toHaveBeenCalled();
     });
@@ -92,7 +93,7 @@ describe('handleAgentConversationUpdated', () => {
         jest.clearAllMocks();
     });
 
-    it('should invalidate the conversation cache for the given id', () => {
+    it('should refetch the conversation for the given id', () => {
         const msg = {
             event: 'custom_mattermost-ai_conversation_updated',
             data: {conversation_id: 'conv123'},
@@ -105,13 +106,13 @@ describe('handleAgentConversationUpdated', () => {
             seq: 3,
         };
 
-        handleAgentConversationUpdated('https://test.mattermost.com', msg as unknown as WebSocketMessage<{conversation_id?: string}>);
+        handleAgentConversationUpdated(SERVER_URL, msg as unknown as WebSocketMessage<{conversation_id?: string}>);
 
-        expect(invalidateConversation).toHaveBeenCalledTimes(1);
-        expect(invalidateConversation).toHaveBeenCalledWith('https://test.mattermost.com', 'conv123');
+        expect(refetchConversation).toHaveBeenCalledTimes(1);
+        expect(refetchConversation).toHaveBeenCalledWith(SERVER_URL, 'conv123');
     });
 
-    it('should not invalidate when conversation_id is missing', () => {
+    it('should not refetch when conversation_id is missing', () => {
         const msg = {
             event: 'custom_mattermost-ai_conversation_updated',
             data: {},
@@ -124,8 +125,8 @@ describe('handleAgentConversationUpdated', () => {
             seq: 4,
         };
 
-        handleAgentConversationUpdated('https://test.mattermost.com', msg as unknown as WebSocketMessage<{conversation_id?: string}>);
+        handleAgentConversationUpdated(SERVER_URL, msg as unknown as WebSocketMessage<{conversation_id?: string}>);
 
-        expect(invalidateConversation).not.toHaveBeenCalled();
+        expect(refetchConversation).not.toHaveBeenCalled();
     });
 });

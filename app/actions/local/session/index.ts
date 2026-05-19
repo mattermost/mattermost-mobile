@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {clearConversationCache} from '@agents/store/conversation_store';
-import streamingStore from '@agents/store/streaming_store';
 import NetInfo from '@react-native-community/netinfo';
 import {Platform} from 'react-native';
 
 import {removePushDisabledInServerAcknowledged} from '@actions/app/global';
+import {clearConversationCacheForServer} from '@agents/actions/remote/conversation';
+import streamingStore from '@agents/store/streaming_store';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {resetMomentLocale} from '@i18n';
@@ -151,12 +151,10 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
 
     EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);
 
-    // Drop ephemeral agents caches so a fresh session does not see stale
-    // conversation or streaming state from the previous account. Both stores
-    // are global, so this also clears state for other connected servers; on
-    // logout that's harmless (caches re-fetch on next view).
-    clearConversationCache();
-    streamingStore.clear();
+    // Drop ephemeral agents caches for this server only; other connected
+    // servers must keep their cached conversations and in-flight streams.
+    clearConversationCacheForServer(serverUrl);
+    streamingStore.removeServer(serverUrl);
 
     // Remove push disabled acknowledgment (non-critical)
     if (removeServer) {

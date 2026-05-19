@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {CONTROL_SIGNALS} from '@agents/constants';
-import {clearConversationCache} from '@agents/store/conversation_store';
-import streamingStore from '@agents/store/streaming_store';
-import {BlockType, ToolCallStatusString, type ConversationResponse} from '@agents/types';
 import {act} from '@testing-library/react-native';
 import React from 'react';
 
+import {clearConversationCache} from '@agents/actions/remote/conversation';
+import {CONTROL_SIGNALS} from '@agents/constants';
+import streamingStore from '@agents/store/streaming_store';
+import {BlockType, ToolCallStatusString, type ConversationResponse} from '@agents/types';
 import {Screens} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -29,8 +29,23 @@ jest.mock('@context/server', () => ({
 }));
 
 const mockFetchConversation = jest.fn();
-jest.mock('@agents/actions/remote/conversation', () => ({
-    fetchConversation: (...args: unknown[]) => mockFetchConversation(...args),
+jest.mock('@managers/network_manager', () => ({
+    __esModule: true,
+    default: {
+        getClient: jest.fn(() => ({
+            getConversation: async (id: string) => {
+                const res = await mockFetchConversation('https://test.mattermost.com', id);
+                if (res?.error) {
+                    throw new Error(res.error);
+                }
+                return res?.data;
+            },
+        })),
+    },
+}));
+jest.mock('@actions/remote/session');
+jest.mock('@utils/errors', () => ({
+    getFullErrorMessage: jest.fn((err) => (err instanceof Error ? err.message : String(err))),
 }));
 
 jest.mock('@agents/actions/remote/generation_controls', () => ({
@@ -100,7 +115,7 @@ describe('AgentPostNew — streaming text (Bug #1)', () => {
 
         // Simulate the plugin's websocket events in order.
         await act(async () => {
-            streamingStore.handleWebSocketMessage({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.START});
             await flush();
         });
 
@@ -108,7 +123,7 @@ describe('AgentPostNew — streaming text (Bug #1)', () => {
         expect(getByText('Generating response...')).toBeTruthy();
 
         await act(async () => {
-            streamingStore.handleWebSocketMessage({post_id: POST_ID, next: 'Hello from the bot'});
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'Hello from the bot'});
             await flush();
         });
 
@@ -236,11 +251,11 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
 
         // Kick off a stream, receive tool calls over the wire, then end.
         await act(async () => {
-            streamingStore.handleWebSocketMessage({post_id: POST_ID, control: 'start'});
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: 'start'});
             await flush();
         });
         await act(async () => {
-            streamingStore.handleWebSocketMessage({
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {
                 post_id: POST_ID,
                 control: 'tool_call',
                 tool_call: JSON.stringify([{
@@ -260,7 +275,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
         // Now end the stream. Effect 3 invalidates, the re-fetch resolves with
         // the finalized turns, Effect 1 re-populates from the conversation.
         await act(async () => {
-            streamingStore.handleWebSocketMessage({post_id: POST_ID, control: 'end'});
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: 'end'});
             await flush();
         });
 
@@ -367,11 +382,11 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
 
         // Stream start + tool_call event (status 0 === Pending).
         await act(async () => {
-            streamingStore.handleWebSocketMessage({post_id: POST_ID, control: 'start'});
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: 'start'});
             await flush();
         });
         await act(async () => {
-            streamingStore.handleWebSocketMessage({
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {
                 post_id: POST_ID,
                 control: 'tool_call',
                 tool_call: JSON.stringify([{
@@ -390,14 +405,14 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
 
         // Stream ends awaiting approval.
         await act(async () => {
-            streamingStore.handleWebSocketMessage({post_id: POST_ID, control: 'end'});
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: 'end'});
             await flush();
         });
 
         // POST_EDITED races in and clears the streaming state. This is what
         // handlePostEdited() does in posts.ts line 276.
         await act(async () => {
-            streamingStore.removePost(POST_ID);
+            streamingStore.removePost('https://test.mattermost.com', POST_ID);
             await flush();
         });
 
