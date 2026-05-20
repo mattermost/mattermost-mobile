@@ -1354,6 +1354,7 @@
   "report_a_problem.metadata.copy": "Copy",
   "report_a_problem.metadata.currentTeamId": "Current Team ID",
   "report_a_problem.metadata.currentUserId": "Current User ID",
+  "report_a_problem.metadata.deviceModel": "Device Model",
   "report_a_problem.metadata.serverVersion": "Server Version",
   "report_problem.download_logs.title": "Download app logs",
   "report_problem.title": "Report a problem",
