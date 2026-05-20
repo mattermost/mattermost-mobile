@@ -6,6 +6,7 @@ import React from 'react';
 import {AppState, type AppStateStatus} from 'react-native';
 
 import {reconnectErasedServer} from '@actions/remote/ephemeral_mode/reconnect';
+import ServerUrlProvider from '@context/server';
 import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer} from '@database/subscription/unreads';
 import {bottomSheet} from '@screens/navigation';
@@ -32,6 +33,15 @@ describe('DataErased', () => {
     const serverUrl = 'https://server.test';
     const displayName = 'My Server';
 
+    const renderScreen = () => renderWithIntlAndTheme(
+        <ServerUrlProvider server={{url: serverUrl, displayName}}>
+            <DataErased
+                serverUrl={serverUrl}
+                displayName={displayName}
+            />
+        </ServerUrlProvider>,
+    );
+
     beforeEach(() => {
         jest.clearAllMocks();
 
@@ -39,15 +49,11 @@ describe('DataErased', () => {
         // the implementation, leaving subsequent tests with undefined. Re-establish it
         // here so every test gets a valid subscription object.
         (AppState.addEventListener as jest.Mock).mockReturnValue({remove: jest.fn()});
+        (subscribeAllServers as jest.Mock).mockReturnValue({unsubscribe: jest.fn()});
     });
 
     it('renders title, body, and reconnect button', () => {
-        const {getByText, getByTestId} = renderWithIntlAndTheme(
-            <DataErased
-                serverUrl={serverUrl}
-                displayName={displayName}
-            />,
-        );
+        const {getByText, getByTestId} = renderScreen();
 
         expect(getByText('Cached data cleared')).toBeTruthy();
         expect(getByText(/My Server/)).toBeTruthy(); // body interpolates {displayName}
@@ -60,12 +66,7 @@ describe('DataErased', () => {
             resolveReconnect = r;
         }));
 
-        const {getByTestId} = renderWithIntlAndTheme(
-            <DataErased
-                serverUrl={serverUrl}
-                displayName={displayName}
-            />,
-        );
+        const {getByTestId} = renderScreen();
 
         fireEvent.press(getByTestId('data_erased.reconnect.button'));
 
@@ -94,12 +95,7 @@ describe('DataErased', () => {
             return {remove: removeSpy};
         });
 
-        const {getByTestId, findByText, queryByText} = renderWithIntlAndTheme(
-            <DataErased
-                serverUrl={serverUrl}
-                displayName={displayName}
-            />,
-        );
+        const {getByTestId, findByText, queryByText} = renderScreen();
 
         fireEvent.press(getByTestId('data_erased.reconnect.button'));
 
@@ -122,12 +118,7 @@ describe('DataErased', () => {
     it('shows inline error text when reconnectErasedServer returns {error}', async () => {
         jest.mocked(reconnectErasedServer).mockResolvedValue({error: new Error('Network unreachable')});
 
-        const {getByTestId, findByText} = renderWithIntlAndTheme(
-            <DataErased
-                serverUrl={serverUrl}
-                displayName={displayName}
-            />,
-        );
+        const {getByTestId, findByText} = renderScreen();
 
         fireEvent.press(getByTestId('data_erased.reconnect.button'));
 
@@ -141,12 +132,7 @@ describe('DataErased', () => {
             return {unsubscribe: jest.fn()};
         });
 
-        const {getByTestId} = renderWithIntlAndTheme(
-            <DataErased
-                serverUrl={serverUrl}
-                displayName={displayName}
-            />,
-        );
+        const {getByTestId} = renderScreen();
 
         await act(async () => {
             observer?.([
@@ -161,14 +147,7 @@ describe('DataErased', () => {
     });
 
     it('does not open the bottom sheet when no servers have been observed yet', () => {
-        (subscribeAllServers as jest.Mock).mockReturnValue({unsubscribe: jest.fn()});
-
-        const {getByTestId} = renderWithIntlAndTheme(
-            <DataErased
-                serverUrl={serverUrl}
-                displayName={displayName}
-            />,
-        );
+        const {getByTestId} = renderScreen();
 
         fireEvent.press(getByTestId('data_erased.servers.server_icon'));
 
@@ -183,12 +162,7 @@ describe('DataErased', () => {
         });
         (subscribeUnreadAndMentionsByServer as jest.Mock).mockReturnValue({unsubscribe: jest.fn()});
 
-        renderWithIntlAndTheme(
-            <DataErased
-                serverUrl={serverUrl}
-                displayName={displayName}
-            />,
-        );
+        renderScreen();
 
         await act(async () => {
             observer?.([
