@@ -14,6 +14,7 @@ jest.mock('@context/theme', () => {
     const {Preferences: Prefs} = require('@constants');
     return {
         useTheme: () => Prefs.THEMES.denim,
+        getDefaultThemeByAppearance: () => Prefs.THEMES.denim,
     };
 });
 
