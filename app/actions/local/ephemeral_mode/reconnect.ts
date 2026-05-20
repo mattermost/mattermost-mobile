@@ -3,19 +3,19 @@
 
 import NetInfo from '@react-native-community/netinfo';
 import {router} from 'expo-router';
+import {DeviceEventEmitter} from 'react-native';
 
 import {loginEntry} from '@actions/remote/entry';
-import {Launch} from '@constants';
+import {Events, Launch} from '@constants';
 import {HTTP_UNAUTHORIZED} from '@constants/network';
 import DatabaseManager from '@database/manager';
-import {getServerCredentials, removePreauthSecret, removeServerCredentials} from '@init/credentials';
+import {getServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
 import NetworkManager from '@managers/network_manager';
-import {getServerDisplayName} from '@queries/app/servers';
 import {setCurrentUserId} from '@queries/servers/system';
 import {isErrorWithStatusCode} from '@utils/errors';
 
-type Result = {error?: unknown; needsReauth?: boolean};
+type Result = {error?: unknown};
 
 export const reconnectErasedServer = async (serverUrl: string): Promise<Result> => {
     try {
@@ -61,14 +61,8 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
 
 const handleReconnectError = async (serverUrl: string, error: unknown): Promise<Result> => {
     if (isErrorWithStatusCode(error) && error.status_code === HTTP_UNAUTHORIZED) {
-        const displayName = (await getServerDisplayName(serverUrl)) || serverUrl;
-        await DatabaseManager.updatePersistenceFlag(serverUrl, '');
-        await removeServerCredentials(serverUrl);
-        await removePreauthSecret(serverUrl);
-
-        const launchRoute = await determineRouteFromLaunchProps({launchType: Launch.AddServer, serverUrl, displayName});
-        router.replace({pathname: launchRoute.route, params: launchRoute.params});
-        return {needsReauth: true};
+        DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, removeServer: false});
+        return {};
     }
     await DatabaseManager.wipeServerData(serverUrl);
     return {error};

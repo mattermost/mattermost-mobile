@@ -3,14 +3,14 @@
 
 import NetInfo, {type NetInfoState} from '@react-native-community/netinfo';
 import {router} from 'expo-router';
+import {DeviceEventEmitter} from 'react-native';
 
 import {loginEntry} from '@actions/remote/entry';
-import {Launch} from '@constants';
+import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getServerCredentials, removePreauthSecret, removeServerCredentials} from '@init/credentials';
+import {getServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
 import NetworkManager from '@managers/network_manager';
-import {getServerDisplayName} from '@queries/app/servers';
 import {setCurrentUserId} from '@queries/servers/system';
 
 import {reconnectErasedServer} from './reconnect';
@@ -27,8 +27,6 @@ jest.mock('@actions/remote/entry', () => ({
 }));
 jest.mock('@init/credentials', () => ({
     getServerCredentials: jest.fn(),
-    removeServerCredentials: jest.fn(),
-    removePreauthSecret: jest.fn(),
 }));
 jest.mock('@init/launch', () => ({
     determineRouteFromLaunchProps: jest.fn(),
@@ -37,9 +35,6 @@ jest.mock('@managers/network_manager', () => ({
     __esModule: true,
     default: {getClient: jest.fn()},
 }));
-jest.mock('@queries/app/servers', () => ({
-    getServerDisplayName: jest.fn(),
-}));
 jest.mock('@queries/servers/system', () => ({
     setCurrentUserId: jest.fn().mockResolvedValue({}),
 }));
@@ -47,11 +42,11 @@ jest.mock('@utils/log');
 
 describe('reconnectErasedServer', () => {
     const serverUrl = 'https://server.test';
-    const displayName = 'My Server';
 
     let updatePersistenceFlagSpy: jest.SpyInstance;
     let setActiveServerDatabaseSpy: jest.SpyInstance;
     let wipeServerDataSpy: jest.SpyInstance;
+    let emitSpy: jest.SpyInstance;
 
     const fakeUser = {id: 'u1', email: 'u@example.com'};
     const mockHandleUsers = jest.fn().mockResolvedValue(undefined);
@@ -62,6 +57,7 @@ describe('reconnectErasedServer', () => {
         updatePersistenceFlagSpy = jest.spyOn(DatabaseManager, 'updatePersistenceFlag').mockResolvedValue(undefined);
         setActiveServerDatabaseSpy = jest.spyOn(DatabaseManager, 'setActiveServerDatabase').mockResolvedValue(undefined);
         wipeServerDataSpy = jest.spyOn(DatabaseManager, 'wipeServerData').mockResolvedValue(undefined);
+        emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
         jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockReturnValue({
             operator: {handleUsers: mockHandleUsers} as any,
             database: {} as any,
@@ -70,7 +66,6 @@ describe('reconnectErasedServer', () => {
         mockGetMe.mockResolvedValue(fakeUser);
         jest.mocked(NetInfo.fetch).mockResolvedValue({isConnected: true} as NetInfoState);
         jest.mocked(getServerCredentials).mockResolvedValue({serverUrl: 'https://server.test', userId: 'u1', token: 'tok-abc', preauthSecret: 'preauth'});
-        jest.mocked(getServerDisplayName).mockResolvedValue(displayName);
         jest.mocked(loginEntry).mockResolvedValue({});
         jest.mocked(determineRouteFromLaunchProps).mockResolvedValue({
             route: '/(authenticated)/(home)',
@@ -108,19 +103,16 @@ describe('reconnectErasedServer', () => {
         expect(result).toEqual({});
     });
 
-    it('on 401 from getMe: clears persistenceFlag and credentials, then replaces route into AddServer', async () => {
+    it('on 401 from getMe: emits SERVER_LOGOUT to delegate teardown to SessionManager', async () => {
         mockGetMe.mockRejectedValue({status_code: 401, message: 'Unauthorized'});
-        jest.mocked(determineRouteFromLaunchProps).mockResolvedValue({route: '/server', params: {serverUrl, displayName}} as Awaited<ReturnType<typeof determineRouteFromLaunchProps>>);
 
         const result = await reconnectErasedServer(serverUrl);
 
-        expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverUrl, '');
-        expect(removeServerCredentials).toHaveBeenCalledWith(serverUrl);
-        expect(removePreauthSecret).toHaveBeenCalledWith(serverUrl);
+        expect(emitSpy).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl, removeServer: false});
         expect(loginEntry).not.toHaveBeenCalled();
-        expect(determineRouteFromLaunchProps).toHaveBeenCalledWith({launchType: Launch.AddServer, serverUrl, displayName});
-        expect(router.replace).toHaveBeenCalledWith({pathname: '/server', params: {serverUrl, displayName}});
-        expect(result).toEqual({needsReauth: true});
+        expect(wipeServerDataSpy).not.toHaveBeenCalled();
+        expect(router.replace).not.toHaveBeenCalled();
+        expect(result).toEqual({});
     });
 
     it('on generic error from getMe: re-wipes the partial DB and returns the error', async () => {
@@ -132,7 +124,7 @@ describe('reconnectErasedServer', () => {
         expect(wipeServerDataSpy).toHaveBeenCalledWith(serverUrl);
         expect(loginEntry).not.toHaveBeenCalled();
         expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();
-        expect(removeServerCredentials).not.toHaveBeenCalled();
+        expect(emitSpy).not.toHaveBeenCalledWith(Events.SERVER_LOGOUT, expect.anything());
         expect(router.replace).not.toHaveBeenCalled();
         expect(result).toEqual({error: networkError});
     });

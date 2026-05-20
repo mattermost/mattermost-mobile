@@ -55,7 +55,7 @@ describe('DataErased', () => {
     });
 
     it('reconnect button: invokes the handler and disables / shows loading while in flight', async () => {
-        let resolveReconnect: (value: {error?: unknown; needsReauth?: boolean}) => void = () => {};
+        let resolveReconnect: (value: {error?: unknown}) => void = () => {};
         jest.mocked(reconnectErasedServer).mockReturnValue(new Promise((r) => {
             resolveReconnect = r;
         }));
