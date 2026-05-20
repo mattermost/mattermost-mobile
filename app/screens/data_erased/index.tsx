@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {AppState, Dimensions, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {reconnectErasedServer} from '@actions/local/ephemeral_mode/reconnect';
+import {reconnectErasedServer} from '@actions/remote/ephemeral_mode/reconnect';
 import Button from '@components/button';
 import FormattedText from '@components/formatted_text';
 import Alert from '@components/illustrations/alert';

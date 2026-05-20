@@ -5,7 +5,7 @@ import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {AppState, type AppStateStatus} from 'react-native';
 
-import {reconnectErasedServer} from '@actions/local/ephemeral_mode/reconnect';
+import {reconnectErasedServer} from '@actions/remote/ephemeral_mode/reconnect';
 import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer} from '@database/subscription/unreads';
 import {bottomSheet} from '@screens/navigation';
@@ -15,7 +15,7 @@ import DataErased from './index';
 
 import type ServersModel from '@typings/database/models/app/servers';
 
-jest.mock('@actions/local/ephemeral_mode/reconnect', () => ({
+jest.mock('@actions/remote/ephemeral_mode/reconnect', () => ({
     reconnectErasedServer: jest.fn(),
 }));
 jest.mock('@screens/navigation', () => ({
