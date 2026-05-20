@@ -11,7 +11,7 @@ import {isChannelMentions} from '@components/markdown/channel_mention/channel_me
 import {Screens} from '@constants';
 import {usePostConfig} from '@context/post_config';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
-import {getPostTranslatedMessage, getPostTranslation} from '@utils/post';
+import {getPostTranslatedMessage, getPostTranslation, isFromBot, isFromPlugin, isFromWebhook, isPostEphemeral} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -109,6 +109,13 @@ const Message = ({
         return post.metadata?.images ?? EMPTY_IMAGES_METADATA;
     }, [post.metadata?.images]);
 
+    const allowInlineActions = useMemo(() => {
+        if (isPostEphemeral(post)) {
+            return false;
+        }
+        return isFromBot(post) || isFromWebhook(post) || isFromPlugin(post);
+    }, [post]);
+
     const translation = getPostTranslation(post, intl.locale);
     let message = post.message;
     if (isChannelAutotranslated && post.type === '' && translation?.state === 'ready') {
@@ -129,6 +136,7 @@ const Message = ({
                         onLayout={onLayout}
                     >
                         <Markdown
+                            allowInlineActions={allowInlineActions}
                             baseTextStyle={style.message}
                             channelId={post.channelId}
                             channelMentions={channelMentions}
