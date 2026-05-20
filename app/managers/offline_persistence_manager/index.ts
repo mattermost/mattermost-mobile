@@ -91,7 +91,7 @@ class OfflinePersistenceManagerSingleton {
         return this.offlineSubjects[serverUrl]?.getValue() ?? false;
     };
 
-    public addServer = (serverUrl: string) => {
+    private addServer = (serverUrl: string) => {
         if (this.configSubscriptions[serverUrl]) {
             return;
         }
