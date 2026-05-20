@@ -6,6 +6,7 @@ import {router} from 'expo-router';
 
 import {loginEntry} from '@actions/remote/entry';
 import {Launch} from '@constants';
+import {HTTP_UNAUTHORIZED} from '@constants/network';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials, removePreauthSecret, removeServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
@@ -13,8 +14,6 @@ import NetworkManager from '@managers/network_manager';
 import {getServerDisplayName} from '@queries/app/servers';
 import {setCurrentUserId} from '@queries/servers/system';
 import {isErrorWithStatusCode} from '@utils/errors';
-
-const HTTP_UNAUTHORIZED = 401;
 
 type Result = {error?: unknown; needsReauth?: boolean};
 
