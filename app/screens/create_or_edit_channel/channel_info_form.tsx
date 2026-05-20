@@ -13,7 +13,7 @@ import {
     type NativeScrollEvent,
     Platform,
 } from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
@@ -26,7 +26,6 @@ import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useKeyboardHeight, useKeyboardOverlap} from '@hooks/device';
-import {useInputPropagation} from '@hooks/input';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -70,6 +69,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 }));
 
 type Props = {
+    canCreatePublicChannels: boolean;
+    canCreatePrivateChannels: boolean;
     channelType?: string;
     displayName: string;
     onDisplayNameChange: (text: string) => void;
@@ -86,6 +87,8 @@ type Props = {
 }
 
 export default function ChannelInfoForm({
+    canCreatePrivateChannels,
+    canCreatePublicChannels,
     channelType,
     displayName,
     onDisplayNameChange,
@@ -110,15 +113,10 @@ export default function ChannelInfoForm({
     const purposeInput = useRef<TextInput>(null);
     const headerInput = useRef<TextInput>(null);
 
-    const scrollViewRef = useRef<KeyboardAwareScrollView>(null);
+    const updateScrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
-    const updateScrollTimeout = useRef<NodeJS.Timeout>();
-
-    const mainView = useRef<View>(null);
     const [wrapperHeight, setWrapperHeight] = useState(0);
-    const keyboardOverlap = useKeyboardOverlap(mainView, wrapperHeight);
-
-    const [propagateValue, shouldProcessEvent] = useInputPropagation();
+    const keyboardOverlap = useKeyboardOverlap();
 
     const keyboardHeight = useKeyboardHeight();
     const [keyboardVisible, setKeyBoardVisible] = useState(false);
@@ -129,7 +127,6 @@ export default function ChannelInfoForm({
     const [makePrivateHeight, setMakePrivateHeight] = useState(0);
     const [purposeFieldHeight, setPurposeFieldHeight] = useState(0);
     const [headerFieldHeight, setHeaderFieldHeight] = useState(0);
-    const [headerPosition, setHeaderPosition] = useState(0);
 
     const optionalText = formatMessage({id: 'channel_modal.optional', defaultMessage: '(optional)'});
     const labelDisplayName = formatMessage({id: 'channel_modal.name', defaultMessage: 'Name'});
@@ -144,9 +141,9 @@ export default function ChannelInfoForm({
     const makePrivateDescription = formatMessage({id: 'channel_modal.makePrivate.description', defaultMessage: 'When a channel is set to private, only invited team members can access and participate in that channel'});
 
     const displayHeaderOnly = headerOnly || channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL;
-    const showSelector = !displayHeaderOnly && !editing;
+    const showSelector = !displayHeaderOnly && !editing && (canCreatePrivateChannels);
 
-    const isPrivate = type === General.PRIVATE_CHANNEL;
+    const isPrivate = type === General.PRIVATE_CHANNEL || (!editing && !canCreatePublicChannels);
 
     const handlePress = () => {
         const chtype = isPrivate ? General.OPEN_CHANNEL : General.PRIVATE_CHANNEL;
@@ -157,14 +154,7 @@ export default function ChannelInfoForm({
         nameInput.current?.blur();
         purposeInput.current?.blur();
         headerInput.current?.blur();
-        scrollViewRef.current?.scrollToPosition(0, 0, true);
     }, []);
-
-    const scrollHeaderToTop = useCallback(() => {
-        if (scrollViewRef?.current) {
-            scrollViewRef.current?.scrollToPosition(0, headerPosition);
-        }
-    }, [headerPosition]);
 
     const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
         const pos = e.nativeEvent.contentOffset.y;
@@ -191,15 +181,11 @@ export default function ChannelInfoForm({
 
     const onHeaderAutocompleteChange = useCallback((value: string) => {
         onHeaderChange(value);
-        propagateValue(value);
-    }, [onHeaderChange, propagateValue]);
+    }, [onHeaderChange]);
 
     const onHeaderInputChange = useCallback((value: string) => {
-        if (!shouldProcessEvent(value)) {
-            return;
-        }
         onHeaderChange(value);
-    }, [onHeaderChange, shouldProcessEvent]);
+    }, [onHeaderChange]);
 
     const onLayoutError = useCallback((e: LayoutChangeEvent) => {
         setErrorHeight(e.nativeEvent.layout.height);
@@ -215,7 +201,6 @@ export default function ChannelInfoForm({
     }, []);
     const onLayoutHeader = useCallback((e: LayoutChangeEvent) => {
         setHeaderFieldHeight(e.nativeEvent.layout.height);
-        setHeaderPosition(e.nativeEvent.layout.y);
     }, []);
     const onLayoutWrapper = useCallback((e: LayoutChangeEvent) => {
         setWrapperHeight(e.nativeEvent.layout.height);
@@ -269,20 +254,20 @@ export default function ChannelInfoForm({
     }
 
     return (
-        <SafeAreaView
-            edges={['bottom', 'left', 'right']}
+        <View
             style={styles.container}
             testID='create_or_edit_channel.screen'
             onLayout={onLayoutWrapper}
-            ref={mainView}
         >
             <KeyboardAwareScrollView
+                bounces={false}
                 testID={'create_or_edit_channel.scroll_view'}
-                ref={scrollViewRef}
                 keyboardShouldPersistTaps={'always'}
-                enableAutomaticScroll={!keyboardVisible}
+                bottomOffset={62}
                 contentContainerStyle={styles.scrollView}
+                scrollToOverflowEnabled={true}
                 onScroll={onScroll}
+                mode='layout'
             >
                 {displayError}
                 <TouchableWithoutFeedback
@@ -357,7 +342,6 @@ export default function ChannelInfoForm({
                                 value={header}
                                 ref={headerInput}
                                 theme={theme}
-                                onFocus={scrollHeaderToTop}
                                 onLayout={onLayoutHeader}
                             />
                             <FormattedText
@@ -381,6 +365,6 @@ export default function ChannelInfoForm({
                 shouldDirectlyReact={false}
                 growDown={growDown}
             />
-        </SafeAreaView>
+        </View>
     );
 }

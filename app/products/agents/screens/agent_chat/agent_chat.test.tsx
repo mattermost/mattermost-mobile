@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {waitFor} from '@testing-library/react-native';
+import {act, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {createDirectChannel} from '@actions/remote/channel';
-import {Screens} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -88,6 +87,18 @@ jest.mock('@agents/screens/navigation', () => ({
     goToAgentThreadsList: jest.fn(),
 }));
 
+// --- Navigation state mocks ---
+jest.mock('@react-navigation/native', () => ({
+    useIsFocused: jest.fn(() => true),
+}));
+
+// scrollTo from react-native-reanimated logs a warning when called in Jest because
+// it requires a native driver that isn't available in the test environment.
+jest.mock('react-native-reanimated', () => ({
+    ...jest.requireActual('react-native-reanimated/mock'),
+    scrollTo: jest.fn(),
+}));
+
 // --- Native module mocks ---
 jest.mock('@hooks/android_back_handler', () => jest.fn());
 
@@ -102,7 +113,10 @@ jest.mock('@utils/post', () => ({
 // --- UI mocks (SVG can't render in Jest) ---
 jest.mock('@agents/components/illustrations', () => {
     const {View} = require('react-native');
-    return {AgentsIntro: () => <View testID='mock-agents-intro'/>};
+    return {
+        __esModule: true,
+        default: () => <View testID='mock-agents-intro'/>,
+    };
 });
 
 const mockBot = {
@@ -142,10 +156,7 @@ describe('AgentChat', () => {
 
     it('should render PostDraft without error when channel is available', async () => {
         const {getByTestId} = renderWithEverything(
-            <AgentChat
-                componentId={Screens.AGENT_CHAT}
-                bots={[mockBot]}
-            />,
+            <AgentChat bots={[mockBot]}/>,
             {database},
         );
 
@@ -161,14 +172,15 @@ describe('AgentChat', () => {
         // PortalProvider must wrap PostDraft so that Autocomplete's Portal
         // (used on Android when input is focused) has a context to render into.
         expect(portalProviderRendered).toBe(true);
+
+        // Flush any remaining async state updates (e.g. fetchAIBots resolving after
+        // the waitFor assertion passes) to prevent act() warnings.
+        await act(async () => {});
     });
 
     it('should render intro screen when no bots are available', async () => {
         const {getByTestId, queryByTestId} = renderWithEverything(
-            <AgentChat
-                componentId={Screens.AGENT_CHAT}
-                bots={[]}
-            />,
+            <AgentChat bots={[]}/>,
             {database},
         );
 
@@ -177,5 +189,8 @@ describe('AgentChat', () => {
             expect(getByTestId('mock-agents-intro')).toBeTruthy();
         });
         expect(queryByTestId('agent_chat.post_draft')).toBeNull();
+
+        // Flush any remaining async state updates to prevent act() warnings.
+        await act(async () => {});
     });
 });

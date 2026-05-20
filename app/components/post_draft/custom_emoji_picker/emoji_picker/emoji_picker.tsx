@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
@@ -17,7 +17,7 @@ import CustomEmojiSections from '../emoji_sections';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type {SharedValue} from 'react-native-reanimated';
 
-type Props = {
+export type EmojiPickerProps = {
     customEmojis: CustomEmojiModel[];
     customEmojisEnabled: boolean;
     onEmojiPress: (emoji: string) => void;
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const EmojiPicker: React.FC<Props> = ({
+const EmojiPicker: React.FC<EmojiPickerProps> = ({
     customEmojisEnabled,
     imageUrl,
     file,
@@ -55,9 +55,8 @@ const EmojiPicker: React.FC<Props> = ({
 
     const onCancelSearch = useCallback(() => {
         setSearchTerm(undefined);
-        setIsEmojiSearchFocused(false);
         isSelectingEmoji.current = false;
-    }, [setIsEmojiSearchFocused]);
+    }, []);
 
     const searchCustom = debounce((text: string) => {
         if (text && text.length > 1) {
@@ -77,6 +76,8 @@ const EmojiPicker: React.FC<Props> = ({
         isSelectingEmoji.current = true;
         onEmojiPress(emojiName);
     }, [onEmojiPress]);
+
+    const keyboardAppearance = useMemo(() => getKeyboardAppearanceFromTheme(theme), [theme]);
 
     const EmojiList = (
         <EmojiFiltered
@@ -105,7 +106,7 @@ const EmojiPicker: React.FC<Props> = ({
         >
             <EmojiPickerHeader
                 autoCapitalize='none'
-                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                keyboardAppearance={keyboardAppearance}
                 onCancel={onCancelSearch}
                 onChangeText={onChangeSearchTerm}
                 testID={`${testID}.search_bar`}

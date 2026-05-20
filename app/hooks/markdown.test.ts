@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {renderHook} from '@testing-library/react-hooks';
+import {renderHook} from '@testing-library/react-native';
 
 import TestHelper from '@test/test_helper';
 import {getUsersByUsername} from '@utils/user';

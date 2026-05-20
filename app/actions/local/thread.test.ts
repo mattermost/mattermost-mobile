@@ -37,8 +37,18 @@ jest.mock('@store/navigation_store', () => {
     const original = jest.requireActual('@store/navigation_store');
     return {
         ...original,
-        waitUntilScreenIsTop: jest.fn(() => Promise.resolve()),
-        getScreensInStack: jest.fn(() => []),
+        NavigationStore: {
+            ...original.NavigationStore,
+            waitUntilScreenIsTop: jest.fn(() => Promise.resolve()),
+            waitUntilScreenHasLoaded: jest.fn(() => Promise.resolve()),
+            getScreensInStack: jest.fn(() => []),
+            getRootRouteInfo: jest.fn(() => {
+                return {
+                    pathname: '/(authenticated)/(home)/channel',
+                    params: {team: 'team1', channel: 'channel1'},
+                };
+            }),
+        },
     };
 });
 
@@ -160,7 +170,7 @@ describe('switchToThread', () => {
     });
 
     it('base case', async () => {
-        EphemeralStore.theme = Preferences.THEMES.denim;
+        EphemeralStore.setTheme(Preferences.THEMES.denim);
         await operator.handleUsers({users: [user, user2], prepareRecordsOnly: false});
         await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'teamid2'}, {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
@@ -178,7 +188,7 @@ describe('switchToThread', () => {
     });
 
     it('base case not from notification', async () => {
-        EphemeralStore.theme = Preferences.THEMES.denim;
+        EphemeralStore.setTheme(Preferences.THEMES.denim);
         await operator.handleUsers({users: [user, user2], prepareRecordsOnly: false});
         await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'teamid2'}, {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
@@ -196,7 +206,7 @@ describe('switchToThread', () => {
     });
 
     it('base case for DM', async () => {
-        EphemeralStore.theme = Preferences.THEMES.denim;
+        EphemeralStore.setTheme(Preferences.THEMES.denim);
         await operator.handleUsers({users: [user, user2], prepareRecordsOnly: false});
         await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'teamid2'}, {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});

@@ -22,10 +22,9 @@ extension Database {
         var teamIds = [String]()
         if teamId.isEmpty {
             let idCol = Expression<String>("id")
-            if let myTeams = try? db.prepare(myTeamTable.select(idCol)) {
-                if let ids = try? myTeams.map({ try $0.get(idCol) }) {
-                    teamIds.append(contentsOf: ids)
-                }
+            let iterator = try db.prepareRowIterator(myTeamTable.select(idCol))
+            while let row = try iterator.failableNext() {
+                teamIds.append(try row.get(idCol))
             }
         } else {
             teamIds.append(teamId)

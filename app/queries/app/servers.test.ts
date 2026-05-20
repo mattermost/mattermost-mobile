@@ -9,7 +9,7 @@ import DatabaseManager from '@database/manager';
 import {getConfigValue} from '@queries/servers/system';
 import {isMinimumServerVersion} from '@utils/helpers';
 
-import {queryServerDisplayName, queryAllActiveServers, getServer, getAllServers, getActiveServer, getActiveServerUrl, getServerByIdentifier, getServerByDisplayName, getServerDisplayName, observeServerDisplayName, observeAllActiveServers, areAllServersSupported} from './servers';
+import {queryServerDisplayName, queryAllActiveServers, getServer, getAllServers, getActiveServer, getActiveServerUrl, getServerByIdentifier, getServerByDisplayName, getServerDisplayName, getWipedServers, observeServerDisplayName, observeAllActiveServers, areAllServersSupported} from './servers';
 
 jest.mock('@database/manager', () => ({
     getAppDatabaseAndOperator: jest.fn(),
@@ -140,6 +140,26 @@ describe('Servers Queries', () => {
         mockServerModel.query.mockReturnValueOnce({fetch: jest.fn().mockResolvedValue(servers)} as any);
         const result = await getActiveServerUrl();
         expect(result).toEqual('https://example2.com');
+    });
+
+    test('getWipedServers should query for rows where persistence_flag = wiped', async () => {
+        const wipedServers = [{url: 'https://wiped.test', persistenceFlag: 'wiped'}];
+        mockServerModel.query.mockReturnValueOnce({fetch: jest.fn().mockResolvedValue(wipedServers)} as any);
+
+        const result = await getWipedServers();
+
+        expect(mockDatabase.get).toHaveBeenCalledWith(SERVERS);
+        expect(mockServerModel.query).toHaveBeenCalledWith(Q.where('persistence_flag', 'wiped'));
+        expect(result).toEqual(wipedServers);
+    });
+
+    it('getWipedServers should return an empty array if there is an error', async () => {
+        mockedGetAppDatabaseAndOperator.mockImplementationOnce(() => {
+            throw new Error('Error');
+        });
+
+        const result = await getWipedServers();
+        expect(result).toEqual([]);
     });
 
     test('getServerByIdentifier should return a server by identifier', async () => {

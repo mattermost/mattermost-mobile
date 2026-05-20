@@ -17,12 +17,12 @@ import type {Database} from '@nozbe/watermelondb';
 const serverUrl = 'some.server.url';
 
 jest.mock('@playbooks/components/channel_actions/playbook_runs_option');
-jest.mocked(PlaybookRunsOption).mockImplementation((props) => {
+jest.mocked(PlaybookRunsOption).mockImplementation((props: ComponentProps<typeof PlaybookRunsOption>) => {
     return React.createElement('PlaybookRunsOption', {...props, testID: 'playbook-runs-option'});
 });
 
 jest.mock('./my_autotranslation');
-jest.mocked(MyAutotranslation).mockImplementation((props) => {
+jest.mocked(MyAutotranslation).mockImplementation((props: ComponentProps<typeof MyAutotranslation>) => {
     return React.createElement('MyAutotranslation', {...props, testID: 'my-autotranslation-option'});
 });
 
@@ -38,6 +38,7 @@ describe('ChannelInfoOptions', () => {
             isPlaybooksEnabled: true,
             hasChannelSettingsActions: false,
             isAutotranslationEnabledForThisChannel: true,
+            channelDisplayName: 'Channel 1',
         };
     }
     beforeEach(async () => {

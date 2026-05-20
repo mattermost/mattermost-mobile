@@ -4,7 +4,7 @@
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {ScrollView, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {dismissAnnouncement} from '@actions/local/systems';
@@ -13,13 +13,11 @@ import Markdown from '@components/markdown';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
-import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type Props = {
+export type ExpandedAnnouncementBannerProps = {
     allowDismissal: boolean;
     bannerText: string;
     headingText?: string;
@@ -57,14 +55,12 @@ const ExpandedAnnouncementBanner = ({
     allowDismissal,
     bannerText,
     headingText,
-}: Props) => {
+}: ExpandedAnnouncementBannerProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
-    const isTablet = useIsTablet();
     const intl = useIntl();
     const insets = useSafeAreaInsets();
-    const {enabled, panResponder} = useBottomSheetListsFix();
 
     const dismissBanner = useCallback(() => {
         dismissAnnouncement(serverUrl, bannerText);
@@ -75,8 +71,6 @@ const ExpandedAnnouncementBanner = ({
         return [style.container, {marginBottom: insets.bottom + 10}];
     }, [style, insets.bottom]);
 
-    const Scroll = useMemo(() => (isTablet ? ScrollView : BottomSheetScrollView), [isTablet]);
-
     const heading = headingText || intl.formatMessage({
         id: 'mobile.announcement_banner.title',
         defaultMessage: 'Announcement',
@@ -84,16 +78,10 @@ const ExpandedAnnouncementBanner = ({
 
     return (
         <View style={containerStyle}>
-            {!isTablet && (
-                <Text style={style.title}>
-                    {heading}
-                </Text>
-            )}
-            <Scroll
-                style={style.scrollContainer}
-                scrollEnabled={enabled}
-                {...panResponder.panHandlers}
-            >
+            <Text style={style.title}>
+                {heading}
+            </Text>
+            <BottomSheetScrollView style={style.scrollContainer}>
                 <Markdown
                     baseTextStyle={style.baseTextStyle}
                     disableGallery={true}
@@ -101,7 +89,7 @@ const ExpandedAnnouncementBanner = ({
                     theme={theme}
                     location={Screens.BOTTOM_SHEET}
                 />
-            </Scroll>
+            </BottomSheetScrollView>
             <Button
                 text={intl.formatMessage({id: 'announcment_banner.okay', defaultMessage: 'Okay'})}
                 onPress={close}

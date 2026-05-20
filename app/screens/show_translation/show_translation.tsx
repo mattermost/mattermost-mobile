@@ -11,16 +11,16 @@ import Tag from '@components/tag';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {getPostTranslation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type PostModel from '@typings/database/models/servers/post';
-import type {AvailableScreens} from '@typings/screens/navigation';
+import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    componentId: AvailableScreens;
+    currentUser: UserModel;
     post?: PostModel;
     appsEnabled: boolean;
     customEmojiNames: string[];
@@ -62,7 +62,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 function ShowTranslation({
-    componentId,
+    currentUser,
     post,
     appsEnabled,
     customEmojiNames,
@@ -73,12 +73,10 @@ function ShowTranslation({
     const style = getStyleSheet(theme);
 
     const close = useCallback(() => {
-        if (componentId) {
-            popTopScreen(componentId);
-        }
-    }, [componentId]);
+        navigateBack();
+    }, []);
 
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.SHOW_TRANSLATION, close);
 
     if (!post) {
         return null;
@@ -103,6 +101,7 @@ function ShowTranslation({
                     />
                 </View>
                 <Post
+                    currentUser={currentUser}
                     appsEnabled={appsEnabled}
                     customEmojiNames={customEmojiNames}
                     highlightPinnedOrSaved={false}

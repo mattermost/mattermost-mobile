@@ -53,7 +53,7 @@ const NotifyAbout = ({isSelected, notifyLevel, onPress}: Props) => {
         <SettingBlock headerText={THREAD_REPLIES}>
             <SettingOption
                 action={onPress}
-                label={formatMessage({id: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.id, defaultMessage: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.defaultMessage})}
+                label={formatMessage(NOTIFY_OPTIONS_THREAD.THREAD_REPLIES)}
                 testID={NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.testID}
                 type='toggle'
                 selected={isSelected}

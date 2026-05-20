@@ -27,6 +27,7 @@ type Props = {
     isPlaybooksEnabled: boolean;
     hasChannelSettingsActions: boolean;
     isAutotranslationEnabledForThisChannel: boolean;
+    channelDisplayName: string;
 }
 
 const Options = ({
@@ -38,13 +39,17 @@ const Options = ({
     isPlaybooksEnabled,
     hasChannelSettingsActions,
     isAutotranslationEnabledForThisChannel,
+    channelDisplayName,
 }: Props) => {
     const isDMorGM = isTypeDMorGM(type);
 
     return (
         <>
             {hasChannelSettingsActions && (
-                <ChannelSettings channelId={channelId}/>
+                <ChannelSettings
+                    channelId={channelId}
+                    channelDisplayName={channelDisplayName}
+                />
             )}
             {type !== General.DM_CHANNEL && (
                 <>

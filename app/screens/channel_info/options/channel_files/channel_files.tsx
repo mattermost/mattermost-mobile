@@ -7,10 +7,8 @@ import {Platform} from 'react-native';
 
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {goToScreen} from '@screens/navigation';
-import {changeOpacity} from '@utils/theme';
+import {navigateToChannelInfoScreen} from '@screens/navigation';
 
 type Props = {
     channelId: string;
@@ -19,24 +17,12 @@ type Props = {
 }
 
 const ChannelFiles = ({channelId, count, displayName}: Props) => {
-    const theme = useTheme();
     const {formatMessage} = useIntl();
     const title = formatMessage({id: 'channel_info.channel_files', defaultMessage: 'Files'});
 
     const goToChannelFiles = usePreventDoubleTap(useCallback(() => {
-        const options = {
-            topBar: {
-                title: {
-                    text: title,
-                },
-                subtitle: {
-                    color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
-                    text: displayName,
-                },
-            },
-        };
-        goToScreen(Screens.CHANNEL_FILES, title, {channelId}, options);
-    }, [channelId, displayName, theme.sidebarHeaderTextColor, title]));
+        navigateToChannelInfoScreen(Screens.CHANNEL_FILES, {channelId, displayName});
+    }, [channelId, displayName]));
 
     return (
         <OptionItem

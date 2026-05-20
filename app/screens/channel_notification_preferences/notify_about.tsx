@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {defineMessages, useIntl} from 'react-intl';
+import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
 import {type LayoutChangeEvent, View} from 'react-native';
 
 import SettingBlock from '@components/settings/block';
@@ -99,7 +99,8 @@ const NotifyAbout = ({
             {Object.keys(NOTIFY_OPTIONS).map((key) => {
                 const {id, defaultMessage, value, testID} = NOTIFY_OPTIONS[key];
                 const defaultOption = key === defaultLevel ? formatMessage({id: 'channel_notification_preferences.default', defaultMessage: '(default)'}) : '';
-                const label = `${formatMessage({id, defaultMessage})} ${defaultOption}`;
+                const formattedMessage: MessageDescriptor = {id, defaultMessage};
+                const label = `${formatMessage(formattedMessage)} ${defaultOption}`;
 
                 return (
                     <View key={`notif_pref_option${key}`}>

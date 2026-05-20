@@ -94,6 +94,10 @@ describe('ClientTracking', () => {
     });
 
     afterEach(() => {
+        // Clear any pending completion timers to prevent open handles
+        for (const groupLabel of client.requestGroups.keys()) {
+            client.clearCompletionTimer(groupLabel as any);
+        }
         jest.clearAllMocks();
     });
 

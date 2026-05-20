@@ -6,9 +6,9 @@ import React, {useCallback} from 'react';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
-import {useKeyboardAnimationContext} from '@context/keyboard_animation';
+import {useKeyboardState} from '@context/keyboard_state';
 import {useTheme} from '@context/theme';
-import {useFocusAfterEmojiDismiss} from '@hooks/useFocusAfterEmojiDismiss';
+import {useFocusAfterEmojiDismiss} from '@hooks/use_focus_after_emoji_dismiss';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -40,16 +40,19 @@ export default function InputQuickAction({
     focus,
 }: Props) {
     const theme = useTheme();
-    const {inputRef, cursorPositionRef, updateCursorPosition} = useKeyboardAnimationContext();
+    const {inputRef, getCursorPosition, setCursorPosition, updateCursorPosition} = useKeyboardState();
 
     // Use hook to handle focus after emoji picker dismissal
     const {focus: focusWithEmojiDismiss} = useFocusAfterEmojiDismiss(inputRef, focus);
 
     const onPress = useCallback(() => {
-        if (cursorPositionRef && updateCursorPosition) {
-            const currentCursorPosition = cursorPositionRef.current;
+        if (getCursorPosition && updateCursorPosition) {
+            const currentCursorPosition = getCursorPosition();
 
             updateValue((v) => {
+                let newCursorPosition: number;
+                let newValue: string;
+
                 if (inputType === 'at') {
                     let insertedText = '@';
                     const charBeforeCursor = currentCursorPosition > 0 ? v[currentCursorPosition - 1] : '';
@@ -58,20 +61,19 @@ export default function InputQuickAction({
                         insertedText = ' @';
                     }
 
-                    const newValue = v.slice(0, currentCursorPosition) + insertedText + v.slice(currentCursorPosition);
-                    const newCursorPosition = currentCursorPosition + insertedText.length;
-
-                    cursorPositionRef.current = newCursorPosition;
-                    updateCursorPosition(newCursorPosition);
-
-                    return newValue;
+                    newValue = v.slice(0, currentCursorPosition) + insertedText + v.slice(currentCursorPosition);
+                    newCursorPosition = currentCursorPosition + insertedText.length;
+                } else {
+                    newValue = v.slice(0, currentCursorPosition) + '/' + v.slice(currentCursorPosition);
+                    newCursorPosition = currentCursorPosition + 1;
                 }
 
-                const newValue = v.slice(0, currentCursorPosition) + '/' + v.slice(currentCursorPosition);
-                const newCursorPosition = currentCursorPosition + 1;
-
-                cursorPositionRef.current = newCursorPosition;
+                setCursorPosition(newCursorPosition);
                 updateCursorPosition(newCursorPosition);
+
+                // On Android the controlled PasteInput doesn't reposition the native cursor
+                // after a value change unless we explicitly call setSelection.
+                inputRef.current?.setSelection(newCursorPosition, newCursorPosition);
 
                 return newValue;
             });
@@ -87,16 +89,15 @@ export default function InputQuickAction({
             });
         }
         focusWithEmojiDismiss();
-    }, [inputType, updateValue, focusWithEmojiDismiss, cursorPositionRef, updateCursorPosition]);
 
-    const actionTestID = disabled ?
-        `${testID}.disabled` :
-        testID;
+    // inputRef is a stable MutableRefObject from useKeyboardState — its identity never changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [inputType, updateValue, focusWithEmojiDismiss, getCursorPosition, setCursorPosition, updateCursorPosition]);
+
+    const actionTestID = disabled ? `${testID}.disabled` : testID;
     const style = getStyleSheet(theme);
     const iconName = inputType === 'at' ? inputType : 'slash-forward-box-outline';
-    const iconColor = disabled ?
-        changeOpacity(theme.centerChannelColor, 0.16) :
-        changeOpacity(theme.centerChannelColor, 0.64);
+    const iconColor = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
 
     return (
         <TouchableWithFeedback

@@ -8,10 +8,10 @@ import {Navigation, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
-import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory} from '@queries/servers/team';
-import {goToScreen, popTo} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
+import {dismissAllRoutesAndPopToScreen} from '@screens/navigation';
+import {NavigationStore} from '@store/navigation_store';
 import {getExtensionFromMime} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
@@ -40,8 +40,7 @@ export const switchToGlobalDrafts = async (serverUrl: string, teamId?: string, i
             throw new Error('no team to switch to');
         }
 
-        const currentChannelId = await getCurrentChannelId(database);
-        await setCurrentTeamAndChannelId(operator, teamIdToUse, currentChannelId);
+        await setCurrentTeamAndChannelId(operator, teamIdToUse, '');
         const history = await addChannelToTeamHistory(operator, teamIdToUse, Screens.GLOBAL_DRAFTS, true);
         models.push(...history);
 
@@ -52,7 +51,7 @@ export const switchToGlobalDrafts = async (serverUrl: string, teamId?: string, i
 
         const isDraftAlreadyInNavigationStack = NavigationStore.getScreensInStack().includes(Screens.GLOBAL_DRAFTS);
         if (isDraftAlreadyInNavigationStack) {
-            popTo(Screens.GLOBAL_DRAFTS);
+            dismissAllRoutesAndPopToScreen(Screens.GLOBAL_DRAFTS);
             return {models};
         }
 
@@ -62,7 +61,8 @@ export const switchToGlobalDrafts = async (serverUrl: string, teamId?: string, i
         if (isTabletDevice) {
             DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, params);
         } else {
-            goToScreen(Screens.GLOBAL_DRAFTS, '', params, {topBar: {visible: false}});
+            await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
+            dismissAllRoutesAndPopToScreen(Screens.GLOBAL_DRAFTS, params);
         }
 
         return {models};

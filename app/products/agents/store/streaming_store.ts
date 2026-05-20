@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {CONTROL_SIGNALS} from '@agents/constants';
-import {type StreamingState, type PostUpdateWebsocketMessage} from '@agents/types';
 import {useEffect, useState} from 'react';
 import {BehaviorSubject, type Observable} from 'rxjs';
 
+import {CONTROL_SIGNALS} from '@agents/constants';
+import {type StreamingState, type PostUpdateWebsocketMessage} from '@agents/types';
 import {logWarning} from '@utils/log';
 
 /**

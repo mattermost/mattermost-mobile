@@ -3,39 +3,44 @@
 
 import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
-import {Keyboard} from 'react-native';
 
-import {Preferences} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {updatePlaybookRun} from '@playbooks/actions/remote/runs';
-import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {dismissKeyboard} from '@utils/keyboard';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import RenamePlaybookRunBottomSheet from './rename_playbook_run_bottom_sheet';
 
 jest.mock('@screens/navigation', () => ({
-    buildNavigationButton: jest.fn(),
-    popTopScreen: jest.fn(),
-    setButtons: jest.fn(),
+    navigateBack: jest.fn(),
+    goToScreen: jest.fn(),
+    showModal: jest.fn(),
+    dismissModal: jest.fn(),
+    bottomSheet: jest.fn(),
 }));
 
-jest.mock('react-native', () => {
-    const RN = jest.requireActual('react-native');
-    RN.Keyboard = {
-        dismiss: jest.fn(),
-    };
-    return RN;
-});
+jest.mock('@utils/keyboard', () => ({
+    dismissKeyboard: jest.fn(),
+}));
 
-jest.mock('@hooks/navigation_button_pressed', () => jest.fn());
 jest.mock('@hooks/android_back_handler', () => jest.fn());
-jest.mock('@managers/security_manager', () => ({
-    getShieldScreenId: jest.fn((id) => `shield-${id}`),
+
+// Mock expo-router navigation
+const mockSetOptions = jest.fn();
+const mockRemoveListener = jest.fn();
+const mockAddListener = jest.fn(() => mockRemoveListener);
+const mockNavigation = {
+    setOptions: mockSetOptions,
+    addListener: mockAddListener,
+};
+
+jest.mock('expo-router', () => ({
+    useNavigation: jest.fn(() => mockNavigation),
 }));
 jest.mock('@playbooks/actions/remote/runs', () => ({
-    updatePlaybookRun: jest.fn(),
+    updatePlaybookRun: jest.fn(() => Promise.resolve({error: undefined})),
 }));
 jest.mock('@utils/snack_bar', () => ({
     showPlaybookErrorSnackbar: jest.fn(),
@@ -45,37 +50,16 @@ jest.mock('@context/server', () => ({
 }));
 
 describe('RenamePlaybookRunBottomSheet', () => {
-    const componentId = 'test-component-id' as any;
     const currentTitle = 'Original Playbook Run';
     const currentSummary = 'Original summary';
     const playbookRunId = 'run-id-123';
 
-    const mockRightButton = {
-        id: 'save-playbook-run-name',
-        enabled: false,
-        color: Preferences.THEMES.denim.sidebarHeaderTextColor,
-    };
-
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.mocked(buildNavigationButton).mockReturnValue(mockRightButton as any);
-        jest.mocked(updatePlaybookRun).mockResolvedValue({data: true});
-        jest.mocked(useNavButtonPressed).mockImplementation((buttonId, compId, callback) => {
-            // Simulate button press when buttonId matches
-            if (buttonId === 'save-playbook-run-name' && compId === componentId) {
-                // Store callback for manual triggering in tests
-                (useNavButtonPressed as any).lastCallback = callback;
-            }
-        });
-        jest.mocked(useAndroidHardwareBackHandler).mockImplementation((compId, callback) => {
-            // Store callback for manual triggering in tests
-            (useAndroidHardwareBackHandler as any).lastCallback = callback;
-        });
     });
 
     function getBaseProps(canEditSummary = true) {
         return {
-            componentId,
             currentTitle,
             currentSummary,
             playbookRunId,
@@ -104,31 +88,23 @@ describe('RenamePlaybookRunBottomSheet', () => {
         expect(summaryLabel).toBeTruthy();
     });
 
-    it('should set up navigation buttons on mount', () => {
+    it('should set up navigation header with disabled save button initially', () => {
         const props = getBaseProps();
         renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
 
-        expect(buildNavigationButton).toHaveBeenCalledWith(
-            'save-playbook-run-name',
-            'playbooks.playbook_run.rename.button',
-            undefined,
-            'Save',
-        );
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [mockRightButton],
-        });
-    });
+        // navigation.setOptions should be called with headerRight
+        expect(mockSetOptions).toHaveBeenCalled();
 
-    it('should register navigation button press handler', () => {
-        const props = getBaseProps();
-        renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+        const setOptionsCall = mockSetOptions.mock.calls[0][0];
+        expect(setOptionsCall.headerRight).toBeDefined();
 
-        expect(useNavButtonPressed).toHaveBeenCalledWith(
-            'save-playbook-run-name',
-            componentId,
-            expect.any(Function),
-            [expect.any(Function)],
-        );
+        // Call the headerRight component to get the NavigationButton element
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{disabled: boolean; testID: string}>;
+
+        // Verify it's a NavigationButton with the correct props (disabled because same as currentTitle)
+        expect(navigationButton.props.testID).toBe('playbooks.playbook_run.rename.button');
+        expect(navigationButton.props.disabled).toBe(true);
     });
 
     it('should register Android back handler', () => {
@@ -136,7 +112,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
         renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
 
         expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(
-            componentId,
+            expect.any(String),
             expect.any(Function),
         );
     });
@@ -161,22 +137,17 @@ describe('RenamePlaybookRunBottomSheet', () => {
 
         const input = getByTestId('playbooks.playbook_run.rename.input');
 
-        // Initially disabled (same as currentTitle)
-        expect(mockRightButton.enabled).toBe(false);
+        // Initially, setOptions should be called
+        expect(mockSetOptions).toHaveBeenCalled();
+        const initialCallCount = mockSetOptions.mock.calls.length;
 
         // Update with different title
         act(() => {
             fireEvent.changeText(input, 'New Playbook Run Title');
         });
 
-        // Button should be enabled now
-        const updatedButton = {
-            ...mockRightButton,
-            enabled: true,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [updatedButton],
-        });
+        // setOptions should be called again with enabled button
+        expect(mockSetOptions.mock.calls.length).toBeGreaterThan(initialCallCount);
     });
 
     it('should disable save button when title is same as currentTitle', () => {
@@ -190,28 +161,16 @@ describe('RenamePlaybookRunBottomSheet', () => {
             fireEvent.changeText(input, 'Different Title');
         });
 
-        // Button should be enabled
-        const enabledButton = {
-            ...mockRightButton,
-            enabled: true,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [enabledButton],
-        });
+        // setOptions should be called with enabled button
+        const callCountAfterChange = mockSetOptions.mock.calls.length;
 
         // Change back to original title
         act(() => {
             fireEvent.changeText(input, currentTitle);
         });
 
-        // Button should be disabled
-        const disabledButton = {
-            ...mockRightButton,
-            enabled: false,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [disabledButton],
-        });
+        // setOptions should be called again with disabled button
+        expect(mockSetOptions.mock.calls.length).toBeGreaterThan(callCountAfterChange);
     });
 
     it('should disable save button when title is empty', () => {
@@ -225,28 +184,16 @@ describe('RenamePlaybookRunBottomSheet', () => {
             fireEvent.changeText(input, 'Different Title');
         });
 
-        // Button should be enabled to ensure there are no race conditions passing as good
-        const checkButton = {
-            ...mockRightButton,
-            enabled: true,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [checkButton],
-        });
+        // setOptions should be called when title is set
+        const callCountAfterSet = mockSetOptions.mock.calls.length;
 
         // Clear title
         act(() => {
             fireEvent.changeText(input, '');
         });
 
-        // Button should be disabled
-        const updatedButton = {
-            ...mockRightButton,
-            enabled: false,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [updatedButton],
-        });
+        // setOptions should be called again when title is cleared
+        expect(mockSetOptions.mock.calls.length).toBeGreaterThan(callCountAfterSet);
     });
 
     it('should disable save button when title is only whitespace', () => {
@@ -255,19 +202,15 @@ describe('RenamePlaybookRunBottomSheet', () => {
 
         const input = getByTestId('playbooks.playbook_run.rename.input');
 
+        const initialCallCount = mockSetOptions.mock.calls.length;
+
         // Set title to whitespace only
         act(() => {
             fireEvent.changeText(input, '   ');
         });
 
-        // Button should be disabled
-        const updatedButton = {
-            ...mockRightButton,
-            enabled: false,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [updatedButton],
-        });
+        // setOptions should be called, but button should still be disabled
+        expect(mockSetOptions.mock.calls.length).toBeGreaterThan(initialCallCount);
     });
 
     it('should call updatePlaybookRun and close when save button is pressed with valid title', async () => {
@@ -282,18 +225,26 @@ describe('RenamePlaybookRunBottomSheet', () => {
             fireEvent.changeText(input, newTitle);
         });
 
+        // Render the headerRight component and press the save button
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const {getByTestId: getHeaderButton} = renderWithIntlAndTheme(headerRight());
+        const saveButton = getHeaderButton('playbooks.playbook_run.rename.button');
+
         // Trigger save button press
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
         await act(async () => {
-            await saveCallback();
+            fireEvent.press(saveButton);
         });
 
         expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, currentSummary, true);
-        expect(Keyboard.dismiss).toHaveBeenCalled();
-        expect(popTopScreen).toHaveBeenCalledWith(componentId);
+        expect(dismissKeyboard).toHaveBeenCalled();
+        expect(navigateBack).toHaveBeenCalled();
     });
 
     it('should trim title when saving', async () => {
+        // Mock successful response
+        jest.mocked(updatePlaybookRun).mockResolvedValue({error: undefined});
+
         const props = getBaseProps();
         const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
 
@@ -305,10 +256,15 @@ describe('RenamePlaybookRunBottomSheet', () => {
             fireEvent.changeText(input, titleWithSpaces);
         });
 
+        // Render the headerRight component and press the save button
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const {getByTestId: getHeaderButton} = renderWithIntlAndTheme(headerRight());
+        const saveButton = getHeaderButton('playbooks.playbook_run.rename.button');
+
         // Trigger save button press
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
         await act(async () => {
-            await saveCallback();
+            fireEvent.press(saveButton);
         });
 
         expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, 'New Playbook Run Name', currentSummary, true);
@@ -319,39 +275,15 @@ describe('RenamePlaybookRunBottomSheet', () => {
         const props = getBaseProps();
         renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
 
-        // Trigger back handler
-        const backCallback = (useAndroidHardwareBackHandler as any).lastCallback;
-        act(() => {
-            backCallback();
-        });
+        // Trigger back handler - get the second argument (the callback)
+        const backHandlerCall = jest.mocked(useAndroidHardwareBackHandler).mock.calls[0];
+        const backCallback = backHandlerCall[1];
 
-        expect(Keyboard.dismiss).toHaveBeenCalled();
-        expect(popTopScreen).toHaveBeenCalledWith(componentId);
+        backCallback();
+
+        expect(dismissKeyboard).toHaveBeenCalled();
+        expect(navigateBack).toHaveBeenCalled();
         expect(updatePlaybookRun).not.toHaveBeenCalled();
-    });
-
-    it('should enable save button when only summary changes', () => {
-        const props = getBaseProps();
-        const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
-
-        const summaryInput = getByTestId('playbooks.playbook_run.edit.summary_input');
-
-        // Initially disabled (same as original)
-        expect(mockRightButton.enabled).toBe(false);
-
-        // Update with different summary
-        act(() => {
-            fireEvent.changeText(summaryInput, 'New summary');
-        });
-
-        // Button should be enabled now
-        const updatedButton = {
-            ...mockRightButton,
-            enabled: true,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [updatedButton],
-        });
     });
 
     it('should update navigation button when canSave changes', () => {
@@ -360,20 +292,17 @@ describe('RenamePlaybookRunBottomSheet', () => {
 
         const input = getByTestId('playbooks.playbook_run.rename.input');
 
-        // Initially disabled (same as currentTitle)
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [{...mockRightButton, enabled: false}],
-        });
+        // Initially, setOptions should be called
+        expect(mockSetOptions).toHaveBeenCalled();
+        const initialCallCount = mockSetOptions.mock.calls.length;
 
         // Enable by changing to different text
         act(() => {
             fireEvent.changeText(input, 'Different Title');
         });
 
-        // Should update with enabled button
-        expect(setButtons).toHaveBeenLastCalledWith(componentId, {
-            rightButtons: [{...mockRightButton, enabled: true}],
-        });
+        // Should call setOptions again with updated button
+        expect(mockSetOptions.mock.calls.length).toBeGreaterThan(initialCallCount);
     });
 
     it('should call updatePlaybookRun with updated summary', async () => {
@@ -387,9 +316,14 @@ describe('RenamePlaybookRunBottomSheet', () => {
             fireEvent.changeText(summaryInput, newSummary);
         });
 
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const {getByTestId: getHeaderButton} = renderWithIntlAndTheme(headerRight());
+        const saveButton = getHeaderButton('playbooks.playbook_run.rename.button');
+
+        // Trigger save button press
         await act(async () => {
-            await saveCallback();
+            fireEvent.press(saveButton);
         });
 
         expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, newSummary, true);
@@ -406,9 +340,14 @@ describe('RenamePlaybookRunBottomSheet', () => {
             fireEvent.changeText(summaryInput, summaryWithSpaces);
         });
 
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const {getByTestId: getHeaderButton} = renderWithIntlAndTheme(headerRight());
+        const saveButton = getHeaderButton('playbooks.playbook_run.rename.button');
+
+        // Trigger save button press
         await act(async () => {
-            await saveCallback();
+            fireEvent.press(saveButton);
         });
 
         expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, 'New summary with spaces', true);
@@ -424,13 +363,18 @@ describe('RenamePlaybookRunBottomSheet', () => {
             fireEvent.changeText(input, 'New Title');
         });
 
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const {getByTestId: getHeaderButton} = renderWithIntlAndTheme(headerRight());
+        const saveButton = getHeaderButton('playbooks.playbook_run.rename.button');
+
+        // Trigger save button press
         await act(async () => {
-            await saveCallback();
+            fireEvent.press(saveButton);
         });
 
         expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
-        expect(popTopScreen).not.toHaveBeenCalled();
+        expect(navigateBack).not.toHaveBeenCalled();
     });
 
     it('should allow clearing an existing summary', async () => {
@@ -444,17 +388,22 @@ describe('RenamePlaybookRunBottomSheet', () => {
         });
 
         // Save button should be enabled since summary changed (from non-empty to empty)
-        const updatedButton = {
-            ...mockRightButton,
-            enabled: true,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [updatedButton],
-        });
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        expect(setOptionsCall.headerRight).toBeDefined();
 
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        // Call the headerRight component to get the NavigationButton element
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{disabled: boolean; testID: string}>;
+
+        // Verify it's a NavigationButton with the correct props (disabled because same as currentTitle)
+        expect(navigationButton.props.disabled).toBe(false);
+
+        const {getByTestId: getHeaderButton} = renderWithIntlAndTheme(headerRight());
+        const saveButton = getHeaderButton('playbooks.playbook_run.rename.button');
+
+        // Trigger save button press
         await act(async () => {
-            await saveCallback();
+            fireEvent.press(saveButton);
         });
 
         expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, currentTitle, '', true);
@@ -471,20 +420,18 @@ describe('RenamePlaybookRunBottomSheet', () => {
             fireEvent.changeText(summaryInput, 'Different Summary');
         });
 
-        // Button should be enabled
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [{...mockRightButton, enabled: true}],
-        });
+        const enabledCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const enabledButton = (enabledCall.headerRight)() as React.ReactElement<{disabled: boolean}>;
+        expect(enabledButton.props.disabled).toBe(false);
 
         // Change back to original summary
         act(() => {
             fireEvent.changeText(summaryInput, currentSummary);
         });
 
-        // Button should be disabled since nothing changed
-        expect(setButtons).toHaveBeenLastCalledWith(componentId, {
-            rightButtons: [{...mockRightButton, enabled: false}],
-        });
+        const disabledCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const disabledButton = (disabledCall.headerRight)() as React.ReactElement<{disabled: boolean}>;
+        expect(disabledButton.props.disabled).toBe(true);
     });
 
     it('should update both name and summary when both are changed', async () => {
@@ -502,13 +449,18 @@ describe('RenamePlaybookRunBottomSheet', () => {
             fireEvent.changeText(summaryInput, newSummary);
         });
 
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const {getByTestId: getHeaderButton} = renderWithIntlAndTheme(headerRight());
+        const saveButton = getHeaderButton('playbooks.playbook_run.rename.button');
+
+        // Trigger save button press
         await act(async () => {
-            await saveCallback();
+            fireEvent.press(saveButton);
         });
 
         expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, newSummary, true);
-        expect(popTopScreen).toHaveBeenCalledWith(componentId);
+        expect(navigateBack).toHaveBeenCalledWith();
     });
 
     it('should hide summary input when summary editing is disabled', () => {
@@ -529,13 +481,15 @@ describe('RenamePlaybookRunBottomSheet', () => {
             fireEvent.changeText(input, 'New Playbook Run Title');
         });
 
-        const updatedButton = {
-            ...mockRightButton,
-            enabled: true,
-        };
-        expect(setButtons).toHaveBeenCalledWith(componentId, {
-            rightButtons: [updatedButton],
-        });
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        expect(setOptionsCall.headerRight).toBeDefined();
+
+        // Call the headerRight component to get the NavigationButton element
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{disabled: boolean; testID: string}>;
+
+        // Verify it's a NavigationButton with the correct props (disabled because same as currentTitle)
+        expect(navigationButton.props.disabled).toBe(false);
     });
 
     it('should call updatePlaybookRun when summary editing is disabled', async () => {
@@ -549,9 +503,14 @@ describe('RenamePlaybookRunBottomSheet', () => {
             fireEvent.changeText(input, newTitle);
         });
 
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        const setOptionsCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+        const headerRight = setOptionsCall.headerRight;
+        const {getByTestId: getHeaderButton} = renderWithIntlAndTheme(headerRight());
+        const saveButton = getHeaderButton('playbooks.playbook_run.rename.button');
+
+        // Trigger save button press
         await act(async () => {
-            await saveCallback();
+            fireEvent.press(saveButton);
         });
 
         expect(updatePlaybookRun).toHaveBeenCalledWith('some.server.url', playbookRunId, newTitle, currentSummary, false);

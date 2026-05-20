@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import ClientAgents, {type ClientAgentsMix} from '@agents/client/rest';
-
 import ClientCalls, {type ClientCallsMix} from '@calls/client/rest';
 import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
 import ClientPlaybooks, {type ClientPlaybooksMix} from '@playbooks/client/rest';
@@ -23,6 +22,7 @@ import ClientIntegrations, {type ClientIntegrationsMix} from './integrations';
 import ClientNPS, {type ClientNPSMix} from './nps';
 import ClientPosts, {type ClientPostsMix} from './posts';
 import ClientPreferences, {type ClientPreferencesMix} from './preferences';
+import ClientProperties, {type ClientPropertiesMix} from './properties';
 import ClientScheduledPost, {type ClientScheduledPostMix} from './scheduled_post';
 import ClientTeams, {type ClientTeamsMix} from './teams';
 import ClientThreads, {type ClientThreadsMix} from './threads';
@@ -44,6 +44,7 @@ interface Client extends ClientBase,
     ClientIntegrationsMix,
     ClientPostsMix,
     ClientPreferencesMix,
+    ClientPropertiesMix,
     ClientScheduledPostMix,
     ClientTeamsMix,
     ClientThreadsMix,
@@ -72,6 +73,7 @@ class Client extends mix(ClientBase).with(
     ClientIntegrations,
     ClientPosts,
     ClientPreferences,
+    ClientProperties,
     ClientScheduledPost,
     ClientTeams,
     ClientThreads,

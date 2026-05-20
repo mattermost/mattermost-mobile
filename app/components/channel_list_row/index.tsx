@@ -8,7 +8,7 @@ import {
     View,
 } from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -95,7 +95,7 @@ export default function ChannelListRow({
 
     const itemTestID = `${testID}.${channel.name}`;
     const channelDisplayNameTestID = `${itemTestID}.display_name`;
-    let icon = 'globe';
+    let icon: CompassIconName = 'globe';
     if (channel.delete_at) {
         icon = 'archive-outline';
     } else if (channel.shared) {

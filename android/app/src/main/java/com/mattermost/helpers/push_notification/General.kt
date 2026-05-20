@@ -15,8 +15,11 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetch(serverUrl: Str
             override fun resolve(value: Any?) {
                 val response = value as ReadableMap?
                 if (response != null && !response.getBoolean("ok")) {
-                    val error = response.getMap("data")
-                    cont.resumeWith(Result.failure((IOException("Unexpected code ${error?.getInt("status_code")} ${error?.getString("message")}"))))
+                    // Server may return "data" as a Map (normal error response), String
+                    // (e.g. HTML error pages, proxy errors), or other types. Handle each
+                    // ReadableType explicitly to avoid UnexpectedNativeTypeException.
+                    val errorMessage = formatErrorMessage(response)
+                    cont.resumeWith(Result.failure(IOException(errorMessage)))
                 } else {
                     cont.resumeWith(Result.success(response))
                 }

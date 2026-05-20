@@ -4,12 +4,14 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
 import {observeCurrentTeamId} from '@queries/servers/system';
 
-import IntegrationSelector from './integration_selector';
+import IntegrationSelector, {type Props} from './integration_selector';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const withTeamId = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentTeamId: observeCurrentTeamId(database),
 }));
+
+export {type Props};
 
 export default withDatabase(withTeamId(IntegrationSelector));

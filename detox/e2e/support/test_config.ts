@@ -1,6 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// this enables creating a .venv file in /detox to handle the environment variables
+import {config} from 'dotenv';
+config({path: './detox/.env'});
+
 export const serverOneUrl = process.env.SITE_1_URL || (process.env.IOS === 'true' ? 'http://localhost:8065' : 'http://10.0.2.2:8065');
 export const siteOneUrl = process.env.SITE_1_URL || 'http://localhost:8065';
 export const serverTwoUrl = process.env.SITE_2_URL || 'http://localhost:8065';

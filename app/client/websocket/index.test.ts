@@ -414,6 +414,45 @@ describe('WebSocketClient', () => {
         expect(mockConn.send).not.toHaveBeenCalled();
     });
 
+    describe('waitForClose', () => {
+        it('should resolve immediately when conn is undefined', async () => {
+            // No initialize() call, so conn is undefined
+            await expect(client.waitForClose()).resolves.toBeUndefined();
+        });
+
+        it('should wait for onClose even when readyState is already CLOSED', async () => {
+            await client.initialize();
+            mockConn.readyState = WebSocketReadyState.CLOSED;
+
+            const waitPromise = client.waitForClose();
+
+            // readyState is CLOSED but onClose hasn't fired yet — should not resolve immediately
+            mockConn.onClose.mock.calls[0][0]({});
+
+            await expect(waitPromise).resolves.toBeUndefined();
+        });
+
+        it('should resolve when onClose fires', async () => {
+            await client.initialize();
+
+            const waitPromise = client.waitForClose();
+            mockConn.close();
+
+            await expect(waitPromise).resolves.toBeUndefined();
+        });
+
+        it('should resolve after timeout if onClose never fires', async () => {
+            await client.initialize();
+
+            const waitPromise = client.waitForClose();
+
+            // Advance past the 500ms timeout
+            await advanceTimers(600);
+
+            await expect(waitPromise).resolves.toBeUndefined();
+        });
+    });
+
     it('should reset ping interval state when reconnecting during pending ping', async () => {
         enableFakeTimers();
 

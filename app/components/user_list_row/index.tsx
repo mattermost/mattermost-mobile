@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useLayoutEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {
-    InteractionManager,
     Platform,
     View,
 } from 'react-native';
@@ -17,6 +16,7 @@ import TutorialLongPress from '@components/tutorial_highlight/long_press';
 import UserItem from '@components/user_item';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -97,25 +97,10 @@ function UserListRow({
     const theme = useTheme();
     const isTablet = useIsTablet();
     const [showTutorial, setShowTutorial] = useState(false);
-    const [itemBounds, setItemBounds] = useState<TutorialItemBounds>({startX: 0, startY: 0, endX: 0, endY: 0});
     const viewRef = useRef<View>(null);
+    const tutorialTimerRef = useRef<NodeJS.Timeout | null>(null);
     const style = getStyleFromTheme(theme);
     const {formatMessage} = useIntl();
-    const tutorialShown = useRef(false);
-
-    const startTutorial = () => {
-        viewRef.current?.measureInWindow((x, y, w, h) => {
-            const bounds: TutorialItemBounds = {
-                startX: x,
-                startY: y,
-                endX: x + w,
-                endY: y + h,
-            };
-            if (viewRef.current) {
-                setItemBounds(bounds);
-            }
-        });
-    };
 
     const handleDismissTutorial = useCallback(() => {
         setShowTutorial(false);
@@ -151,21 +136,18 @@ function UserListRow({
 
     const onLayout = useCallback(() => {
         if (highlight && !tutorialWatched) {
-            if (isTablet) {
+            tutorialTimerRef.current = setTimeout(() => {
                 setShowTutorial(true);
-                return;
-            }
-            InteractionManager.runAfterInteractions(() => {
-                setShowTutorial(true);
-            });
+            }, 300);
         }
-    }, [highlight, isTablet, tutorialWatched]);
+    }, [highlight, tutorialWatched]);
 
-    useLayoutEffect(() => {
-        if (showTutorial && !tutorialShown.current) {
-            tutorialShown.current = true;
-            startTutorial();
-        }
+    useDidMount(() => {
+        return () => {
+            if (tutorialTimerRef.current) {
+                clearTimeout(tutorialTimerRef.current);
+            }
+        };
     });
 
     const icon = useMemo(() => {
@@ -204,15 +186,14 @@ function UserListRow({
             />
             {showTutorial &&
             <TutorialHighlight
-                itemBounds={itemBounds}
+                itemRef={viewRef}
                 onDismiss={handleDismissTutorial}
+                inModal={true}
             >
-                {Boolean(itemBounds.endX) &&
                 <TutorialLongPress
                     message={formatMessage({id: 'user.tutorial.long_press', defaultMessage: "Long-press on an item to view a user's profile"})}
                     style={isTablet ? style.tutorialTablet : style.tutorial}
                 />
-                }
             </TutorialHighlight>
             }
         </>

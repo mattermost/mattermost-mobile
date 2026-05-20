@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {submitToolApproval} from '@agents/actions/remote/tool_approval';
-import {submitToolResult} from '@agents/actions/remote/tool_result';
-import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {View} from 'react-native';
 
+import {submitToolApproval} from '@agents/actions/remote/tool_approval';
+import {submitToolResult} from '@agents/actions/remote/tool_result';
+import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
@@ -129,9 +129,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         setIsSubmitting(false);
 
         if (error) {
-            const barType = approvalStage === ToolApprovalStage.Result
-                ? SNACK_BAR_TYPE.AGENT_TOOL_RESULT_ERROR
-                : SNACK_BAR_TYPE.AGENT_TOOL_APPROVAL_ERROR;
+            const barType = approvalStage === ToolApprovalStage.Result? SNACK_BAR_TYPE.AGENT_TOOL_RESULT_ERROR: SNACK_BAR_TYPE.AGENT_TOOL_APPROVAL_ERROR;
             showSnackBar({barType});
         }
 

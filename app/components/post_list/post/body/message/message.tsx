@@ -8,7 +8,8 @@ import Animated from 'react-native-reanimated';
 
 import Markdown from '@components/markdown';
 import {isChannelMentions} from '@components/markdown/channel_mention/channel_mention';
-import {SEARCH} from '@constants/screens';
+import {Screens} from '@constants';
+import {usePostConfig} from '@context/post_config';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {getPostTranslatedMessage, getPostTranslation} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -23,7 +24,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type MessageProps = {
     currentUser?: UserModel;
-    isHighlightWithoutNotificationLicensed?: boolean;
     highlight: boolean;
     isEdited: boolean;
     isPendingOrFailed: boolean;
@@ -39,6 +39,8 @@ type MessageProps = {
 const SHOW_MORE_HEIGHT = 54;
 
 const EMPTY_HIGHLIGHT_KEYS: HighlightWithoutNotificationKey[] = [];
+const EMPTY_CHANNEL_MENTIONS = {};
+const EMPTY_IMAGES_METADATA = undefined;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -61,7 +63,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Message = ({
     currentUser,
-    isHighlightWithoutNotificationLicensed,
     highlight,
     isEdited,
     isPendingOrFailed,
@@ -79,17 +80,18 @@ const Message = ({
     const maxHeight = Math.round((dimensions.height * 0.5) + SHOW_MORE_HEIGHT);
     const animatedStyle = useShowMoreAnimatedStyle(height, maxHeight, open);
     const style = getStyleSheet(theme);
+    const postConfig = usePostConfig();
     const intl = useIntl();
 
     // We need to memoize these two values because they are actually getters that return a new list
     // on every render. We need to trust that changes in the currentUser will trigger the recalculation.
     const mentionKeys = useMemo(() => currentUser?.mentionKeys ?? undefined, [currentUser]);
     const highlightKeys = useMemo(() => {
-        if (isHighlightWithoutNotificationLicensed) {
+        if (postConfig.isHighlightWithoutNotificationLicensed) {
             return currentUser?.highlightKeys ?? EMPTY_HIGHLIGHT_KEYS;
         }
         return EMPTY_HIGHLIGHT_KEYS;
-    }, [currentUser, isHighlightWithoutNotificationLicensed]);
+    }, [currentUser, postConfig.isHighlightWithoutNotificationLicensed]);
 
     const onLayout = useCallback((event: LayoutChangeEvent) => {
         const h = event.nativeEvent.layout.height;
@@ -100,8 +102,12 @@ const Message = ({
     const onPress = () => setOpen(!open);
 
     const channelMentions = useMemo(() => {
-        return isChannelMentions(post.props?.channel_mentions) ? post.props.channel_mentions : {};
+        return isChannelMentions(post.props?.channel_mentions) ? post.props.channel_mentions : EMPTY_CHANNEL_MENTIONS;
     }, [post.props?.channel_mentions]);
+
+    const imagesMetadata = useMemo(() => {
+        return post.metadata?.images ?? EMPTY_IMAGES_METADATA;
+    }, [post.metadata?.images]);
 
     const translation = getPostTranslation(post, intl.locale);
     let message = post.message;
@@ -126,10 +132,10 @@ const Message = ({
                             baseTextStyle={style.message}
                             channelId={post.channelId}
                             channelMentions={channelMentions}
-                            imagesMetadata={post.metadata?.images}
+                            imagesMetadata={imagesMetadata}
                             isEdited={isEdited}
                             isReplyPost={isReplyPost}
-                            isSearchResult={location === SEARCH}
+                            isSearchResult={location === Screens.SEARCH}
                             layoutWidth={layoutWidth}
                             location={location}
                             postId={post.id}

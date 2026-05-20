@@ -247,6 +247,29 @@ export const apiViewChannel = async (baseUrl: string, userId: string, channelId:
     }
 };
 
+/**
+ * Share channel with a remote (connected workspace).
+ * POST /api/v4/remotecluster/{remoteId}/channels/{channelId}/invite
+ * @param {string} baseUrl - the base server URL
+ * @param {string} channelId - The channel ID to share with the remote
+ * @param {string} remoteId - The remote cluster ID (connected workspace)
+ * @return {Object} returns {} on success or {error, status} on error
+ */
+export const apiShareChannelWithRemote = async (
+    baseUrl: string,
+    channelId: string,
+    remoteId: string,
+): Promise<{error?: {message: string}; status?: number}> => {
+    try {
+        await client.post(
+            `${baseUrl}/api/v4/remotecluster/${encodeURIComponent(remoteId)}/channels/${channelId}/invite`,
+        );
+        return {};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 export const generateRandomChannel = (teamId: string, type: string, prefix: string) => {
     const randomId = getRandomId();
 
@@ -271,6 +294,7 @@ export const Channel = {
     apiGetUnreadMessages,
     apiRestoreChannel,
     apiRemoveUserFromChannel,
+    apiShareChannelWithRemote,
     apiViewChannel,
     generateRandomChannel,
 };

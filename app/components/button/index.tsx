@@ -5,7 +5,7 @@ import {Button as ElementButton, type ButtonProps} from '@rneui/base';
 import React, {useMemo, type ReactNode} from 'react';
 import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle, type Insets} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import Loading from '@components/loading';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 
@@ -23,7 +23,7 @@ type Props = Omit<ButtonProps, 'size'> & {
     disabled?: boolean;
     hitSlop?: Insets;
     isIconOnTheRight?: boolean;
-    iconName?: string;
+    iconName?: CompassIconName;
     showLoader?: boolean;
     isInverted?: boolean;
     isDestructive?: boolean;
@@ -131,7 +131,7 @@ const Button = ({
                 style={styles.container}
                 testID={`${testID}-text-container`}
             >
-                {showLoader && loadingComponent}
+                {showLoader && !isIconOnTheRight && loadingComponent}
                 {!isIconOnTheRight && icon}
                 <Text
                     style={txtStyleToUse}
@@ -139,6 +139,7 @@ const Button = ({
                 >
                     {text}
                 </Text>
+                {showLoader && isIconOnTheRight && loadingComponent}
                 {isIconOnTheRight && icon}
             </View>
         </ElementButton>

@@ -1,17 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {FlashList, type ListRenderItem, type ViewToken} from '@shopify/flash-list';
+import {FlashList, type FlashListRef, type ListRenderItem, type ViewToken} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, View, type LayoutChangeEvent} from 'react-native';
 
 import {fetchDirectChannelsInfo, switchToChannelById} from '@actions/remote/channel';
 import ChannelItem from '@components/channel_item';
-import {ROW_HEIGHT as CHANNEL_ROW_HEIGHT} from '@components/channel_item/channel_item';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
-import {Events} from '@constants';
-import {CHANNEL, DRAFT, THREAD} from '@constants/screens';
+import {Events, Screens} from '@constants';
 import {HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -36,7 +34,6 @@ type Props = {
     isTablet: boolean;
 };
 
-const HEADER_HEIGHT = 44;
 const ESTIMATED_ITEM_SIZE = 42;
 const VIEWABILITY_CONFIG = {
     itemVisiblePercentThreshold: 50,
@@ -65,7 +62,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const listRef = useRef<FlashList<FlattenedItem>>(null);
+    const listRef = useRef<FlashListRef<FlattenedItem> | null>(null);
     const serverUrl = useServerUrl();
     const switchingTeam = useTeamSwitch();
     const [initialLoad, setInitialLoad] = useState(flattenedItems.length === 0);
@@ -76,7 +73,7 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.ACTIVE_SCREEN, (screen: string) => {
-            setChannelScreenActive(screen !== DRAFT && screen !== THREAD);
+            setChannelScreenActive(screen !== Screens.GLOBAL_DRAFTS && screen !== Screens.THREAD && screen !== Screens.PARTICIPANT_PLAYBOOKS);
         });
 
         return () => {
@@ -98,7 +95,7 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
     }, [directChannels, serverUrl]);
 
     const onChannelSwitch = useCallback(async (c: Channel | ChannelModel) => {
-        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, CHANNEL);
+        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, Screens.CHANNEL);
         PerformanceMetricsManager.startMetric('mobile_channel_switch');
         switchToChannelById(serverUrl, c.id);
     }, [serverUrl]);
@@ -132,24 +129,12 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
         );
     }, [styles, onChannelSwitch, isChannelScreenActive]);
 
-    const overrideItemLayout = useCallback((
-        layout: {span?: number; size?: number},
-        item: FlattenedItem,
-    ) => {
-        if (item.type === 'unreads_header' || item.type === 'header') {
-            layout.size = HEADER_HEIGHT;
-        } else {
-            layout.size = CHANNEL_ROW_HEIGHT;
-        }
-        layout.span = 1;
-    }, []);
-
     const onListLayout = useCallback((event: LayoutChangeEvent) => {
         const {height} = event.nativeEvent.layout;
         setListHeight(height);
     }, []);
 
-    const onViewableItemsChanged = useCallback(({viewableItems}: {viewableItems: ViewToken[]}) => {
+    const onViewableItemsChanged = useCallback(({viewableItems}: {viewableItems: Array<ViewToken<FlattenedItem>>}) => {
         if (!viewableItems.length || !unreadChannelIds.size) {
             setHasUnreadsAbove(false);
             setHasUnreadsBelow(false);
@@ -246,8 +231,6 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
                     renderItem={renderItem}
                     keyExtractor={keyExtractor}
                     getItemType={getItemType}
-                    estimatedItemSize={ESTIMATED_ITEM_SIZE}
-                    overrideItemLayout={overrideItemLayout}
                     drawDistance={ESTIMATED_ITEM_SIZE * 20}
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}

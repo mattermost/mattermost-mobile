@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type ComponentProps} from 'react';
+import React, {act, type ComponentProps} from 'react';
 
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
@@ -47,11 +47,47 @@ describe('performance metrics', () => {
         database = server.database;
     });
 
+    afterAll(async () => {
+        await TestHelper.tearDown(serverUrl);
+    });
+
     it('finish load on load', async () => {
         const props = getBaseProps();
         renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
-        await waitFor(() => {
+        await act(async () => {
             expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('HOME', serverUrl);
+        });
+    });
+});
+
+describe('team sidebar visibility', () => {
+    let database: Database;
+    const serverUrl = 'http://www.someserverurl.com';
+
+    beforeAll(async () => {
+        const server = await TestHelper.setupServerDatabase(serverUrl);
+        database = server.database;
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should render when canJoinOtherTeams is true and user has only one team', async () => {
+        const props = getBaseProps();
+        props.hasMoreThanOneTeam = false;
+        const {getByTestId} = renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(getByTestId('channel_list.screen')).toBeTruthy();
+        });
+    });
+
+    it('should render when canJoinOtherTeams is false and user has only one team', async () => {
+        const props = getBaseProps();
+        props.hasMoreThanOneTeam = false;
+        const {getByTestId} = renderWithEverything(<ChannelListScreen {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(getByTestId('channel_list.screen')).toBeTruthy();
         });
     });
 });

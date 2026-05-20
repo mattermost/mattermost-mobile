@@ -5,7 +5,7 @@ import {of as of$, combineLatest, type Observable} from 'rxjs';
 import {switchMap, map, distinctUntilChanged} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {DMS_CATEGORY, UNREADS_CATEGORY} from '@constants/categories';
+import {DMS_CATEGORY, MANAGED_LOCAL_CATEGORY_PREFIX, UNREADS_CATEGORY} from '@constants/categories';
 import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
 import {filterAndSortMyChannels, makeChannelsMap} from '@helpers/database';
 import {queryCategoriesByTeamIds} from '@queries/servers/categories';
@@ -29,10 +29,6 @@ import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
-
-const filterUnreads = (channels: ChannelModel[], unreadIds: Set<string>) => {
-    return channels.filter((c) => !unreadIds.has(c.id));
-};
 
 const observeCategoryChannels = (category: CategoryModel, myChannels: Observable<MyChannelModel[]>) => {
     const channels = category.channels.observeWithColumns(['create_at', 'display_name']);
@@ -195,6 +191,54 @@ const observeFlattenedUnreads = (
     );
 };
 
+const processCategoriesData = (categoriesData: CategoryData[], unreadsOnTopValue: boolean): FlattenedCategoriesData => {
+    const filtered = filterManagedDuplicates(categoriesData);
+
+    const unreadChannelIds = new Set<string>();
+    for (const catData of filtered) {
+        for (const ch of catData.allUnreadChannels) {
+            unreadChannelIds.add(ch.id);
+        }
+    }
+
+    let processed = filtered;
+    if (unreadsOnTopValue) {
+        processed = filtered.map((catData) => ({
+            ...catData,
+            sortedChannels: catData.sortedChannels.filter((ch) => !catData.unreadIds.has(ch.id)),
+        }));
+    }
+
+    const items = flattenCategories(processed, unreadsOnTopValue);
+    return {items, unreadChannelIds};
+};
+
+const filterManagedDuplicates = (categoriesData: CategoryData[]): CategoryData[] => {
+    const managedChannelIds = new Set<string>();
+    for (const catData of categoriesData) {
+        if (catData.category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
+            for (const ch of catData.sortedChannels) {
+                managedChannelIds.add(ch.id);
+            }
+        }
+    }
+
+    if (managedChannelIds.size === 0) {
+        return categoriesData;
+    }
+
+    return categoriesData.map((catData) => {
+        if (catData.category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
+            return catData;
+        }
+        const channels = catData.sortedChannels.filter((ch) => !managedChannelIds.has(ch.id));
+        if (channels.length === catData.sortedChannels.length) {
+            return catData;
+        }
+        return {...catData, sortedChannels: channels};
+    });
+};
+
 // Observable for normal mode - categories with headers and grouped channels
 const observeFlattenedCategoriesNormal = (
     categories: CategoryModel[],
@@ -218,27 +262,7 @@ const observeFlattenedCategoriesNormal = (
     );
 
     return combineLatest([combineLatest(categoryDataObservables), unreadsOnTop]).pipe(
-        map(([categoriesData, unreadsOnTopValue]) => {
-            // Collect all unread channel IDs and process categories in one pass
-            const unreadChannelIds = new Set<string>();
-            const processedCategoriesData: CategoryData[] = categoriesData.map((catData) => {
-                // Add all unread channels from this category to the set
-                for (const channel of catData.allUnreadChannels) {
-                    unreadChannelIds.add(channel.id);
-                }
-
-                if (unreadsOnTopValue) {
-                    return {
-                        ...catData,
-                        sortedChannels: filterUnreads(catData.sortedChannels, catData.unreadIds),
-                    };
-                }
-                return catData;
-            });
-
-            const items = flattenCategories(processedCategoriesData, unreadsOnTopValue);
-            return {items, unreadChannelIds};
-        }),
+        map(([categoriesData, unreadsOnTopValue]) => processCategoriesData(categoriesData, unreadsOnTopValue)),
         distinctUntilChanged((prev, curr) => {
             if (prev.items.length !== curr.items.length) {
                 return false;

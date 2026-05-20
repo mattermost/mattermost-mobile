@@ -1,14 +1,47 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import EphemeralStore from './ephemeral_store';
+
 describe('EphemeralStore', () => {
     afterEach(() => {
         jest.resetModules();
     });
 
-    it('playbooks sync', () => {
-        const EphemeralStore = require('./ephemeral_store').default;
+    it('theme observable', () => {
+        const {Preferences} = require('@constants');
 
+        // Initial value should be the default theme
+        const initialTheme = EphemeralStore.getTheme();
+        expect(initialTheme).toBeDefined();
+
+        // Set theme
+        const theme = Preferences.THEMES.denim;
+        EphemeralStore.setTheme(theme);
+        expect(EphemeralStore.getTheme()).toBe(theme);
+
+        // Observable should emit values
+        const mockCallback = jest.fn();
+        const subscription = EphemeralStore.observeTheme().subscribe(mockCallback);
+
+        // Should immediately get current value
+        expect(mockCallback).toHaveBeenCalledWith(theme);
+
+        // Should get new values when theme changes
+        const newTheme = Preferences.THEMES.sapphire;
+        EphemeralStore.setTheme(newTheme);
+        expect(mockCallback).toHaveBeenCalledWith(newTheme);
+        expect(mockCallback).toHaveBeenCalledTimes(2);
+
+        // Clean up
+        subscription.unsubscribe();
+
+        // After unsubscribe, callback should not be called
+        EphemeralStore.setTheme(theme);
+        expect(mockCallback).toHaveBeenCalledTimes(2);
+    });
+
+    it('playbooks sync', () => {
         // Expect false if not yet set
         expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id')).toBe(false);
 

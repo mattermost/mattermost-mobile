@@ -6,8 +6,7 @@ import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 
 import OptionItem, {type OptionItemProps} from '@components/option_item';
-
-import Options, {DisplayOptionConfig, NotificationsOptionConfig, SettingOptionConfig} from '../../screens/settings/config';
+import Options, {DisplayOptionConfig, NotificationsOptionConfig, SettingOptionConfig} from '@screens/settings/config';
 
 import SettingSeparator from './separator';
 
@@ -28,7 +27,7 @@ const SettingItem = ({
     const intl = useIntl();
     const config = Options[optionName];
 
-    const label = props.label || intl.formatMessage({id: config.i18nId, defaultMessage: config.defaultMessage});
+    const label = props.label || intl.formatMessage(config);
 
     return (
         <>

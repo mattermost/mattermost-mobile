@@ -7,6 +7,8 @@ import {useTheme} from '@context/theme';
 
 import Button from '../button';
 
+import type {SectionNoticeButtonProps} from './types';
+
 type ButtonProps = {
     button: SectionNoticeButtonProps;
     emphasis: 'primary' | 'tertiary' | 'link';

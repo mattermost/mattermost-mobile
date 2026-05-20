@@ -28,7 +28,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     canChangeMemberRoles: boolean;
     channelId?: string;
-    closeButtonId: string;
     currentUserId: string;
     enablePostIconOverride: boolean;
     enablePostUsernameOverride: boolean;
@@ -87,7 +86,6 @@ const UserProfile = ({
     canChangeMemberRoles,
     canManageAndRemoveMembers,
     channelId,
-    closeButtonId,
     currentUserId,
     enablePostIconOverride,
     enablePostUsernameOverride,
@@ -252,8 +250,7 @@ const UserProfile = ({
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId={closeButtonId}
-            componentId={Screens.USER_PROFILE}
+            screen={Screens.USER_PROFILE}
             initialSnapIndex={1}
             snapPoints={snapPoints}
             testID='user_profile'

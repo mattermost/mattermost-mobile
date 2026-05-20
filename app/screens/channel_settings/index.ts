@@ -3,16 +3,16 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$} from 'rxjs';
-import {distinctUntilChanged, switchMap, combineLatestWith} from 'rxjs/operators';
+import {distinctUntilChanged, map, switchMap, combineLatestWith} from 'rxjs/operators';
 
 import {observeIsCallsEnabledInChannel} from '@calls/observers';
 import {observeCallsConfig} from '@calls/state';
 import {General, Permissions} from '@constants';
-import {withServerUrl} from '@context/server';
 import {observeChannel} from '@queries/servers/channel';
-import {observePermissionForChannel, observePermissionForTeam, observeCanManageChannelSettings, observeCanManageChannelAutotranslations} from '@queries/servers/role';
+import {observePermissionForChannel, observePermissionForTeam, observeCanManageChannelSettings, observeCanManageChannelAutotranslations, observeCanManageSharedChannel} from '@queries/servers/role';
 import {
     observeConfigValue,
+    observeConfigBooleanValue,
     observeCurrentTeamId,
 } from '@queries/servers/system';
 import {observeCurrentTeam} from '@queries/servers/team';
@@ -178,6 +178,15 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
         switchMap((u) => (u ? observeCanManageChannelAutotranslations(database, channelId, u) : of$(false))),
     );
 
+    // Shared channels (connected workspaces)
+    const sharedChannelsEnabled = observeConfigBooleanValue(database, 'ExperimentalSharedChannels');
+    const canManageSharedChannelPermission = currentUser.pipe(
+        switchMap((u) => (u ? observeCanManageSharedChannel(database, channelId, u) : of$(false))),
+    );
+    const canManageSharedChannel = combineLatest([canManageSharedChannelPermission, sharedChannelsEnabled]).pipe(
+        map(([canManage, enabled]) => canManage && enabled),
+    );
+
     return {
         canArchive,
         canConvert,
@@ -188,10 +197,11 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
         displayName: channel.pipe(switchMap((c) => of$(c?.displayName || ''))),
         isCallsEnabledInChannel,
         canManageAutotranslations,
+        canManageSharedChannel,
         isGuestUser,
         type,
     };
 });
 
-export default withDatabase(withServerUrl(enhanced(ChannelSettings)));
+export default withDatabase(enhanced(ChannelSettings));
 

@@ -9,7 +9,8 @@ import SearchBar from '@components/search';
 import ServerUserList from '@components/server_user_list';
 import {General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {act, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -63,8 +64,6 @@ describe('SelectUser', () => {
     function getBaseProps(): ComponentProps<typeof SelectUser> {
         return {
             currentTeamId: 'team-1',
-            handleSelect: jest.fn(),
-            componentId: 'PlaybookSelectUser',
             participantIds: ['participant-1', 'participant-2'],
         };
     }
@@ -95,7 +94,7 @@ describe('SelectUser', () => {
 
     it('renders no assignee button when handleRemove is provided and no search term', () => {
         const props = getBaseProps();
-        props.handleRemove = jest.fn();
+        CallbackStore.setCallback({handleRemove: jest.fn()});
         const {getByTestId} = renderWithEverything(<SelectUser {...props}/>, {database});
 
         const button = getByTestId('button');
@@ -106,7 +105,7 @@ describe('SelectUser', () => {
 
     it('does not render no assignee button when search term is present', () => {
         const props = getBaseProps();
-        props.handleRemove = jest.fn();
+        CallbackStore.setCallback({handleRemove: jest.fn()});
         const {queryByTestId, getByTestId} = renderWithEverything(<SelectUser {...props}/>, {database});
 
         expect(getByTestId('button')).toBeTruthy();
@@ -157,26 +156,35 @@ describe('SelectUser', () => {
     it('handles profile selection correctly', () => {
         const props = getBaseProps();
         const mockUser = TestHelper.fakeUser({id: 'user-1'});
+        const handleSelect = jest.fn();
+        CallbackStore.setCallback({handleSelect});
         const {getByTestId} = renderWithEverything(<SelectUser {...props}/>, {database});
 
         const serverUserList = getByTestId('integration_selector.user_list');
         serverUserList.props.handleSelectProfile(mockUser);
 
-        expect(props.handleSelect).toHaveBeenCalledWith(mockUser);
-        expect(popTopScreen).toHaveBeenCalled();
+        expect(handleSelect).toHaveBeenCalledWith(mockUser);
+        expect(navigateBack).toHaveBeenCalled();
+        CallbackStore.removeCallback();
     });
 
     it('handles remove action correctly', () => {
         const props = getBaseProps();
-        props.handleRemove = jest.fn();
+        const handleRemove = jest.fn();
+        const handleSelect = jest.fn();
+        CallbackStore.setCallback({
+            handleSelect,
+            handleRemove,
+        });
         const {getByTestId} = renderWithEverything(<SelectUser {...props}/>, {database});
 
         const button = getByTestId('button');
         button.props.onPress();
 
-        expect(props.handleRemove).toHaveBeenCalled();
-        expect(props.handleSelect).not.toHaveBeenCalled();
-        expect(popTopScreen).toHaveBeenCalled();
+        expect(handleRemove).toHaveBeenCalled();
+        expect(handleSelect).not.toHaveBeenCalled();
+        expect(navigateBack).toHaveBeenCalled();
+        CallbackStore.removeCallback();
     });
 
     it('creates empty selectedIds set when selected prop is not provided', () => {

@@ -9,6 +9,7 @@ import {random} from 'lodash';
 import nock from 'nock';
 import {of as of$} from 'rxjs';
 
+import {ChannelAccessLevel, UserAccessLevel, type AIThread, type LLMBot} from '@agents/types';
 import Config from '@assets/config.json';
 import {Client} from '@client/rest';
 import {ActionType} from '@constants';
@@ -315,6 +316,20 @@ class TestHelperSingleton {
         };
     };
 
+    fakeRemoteClusterInfo = (overwrite: Partial<RemoteClusterInfo> = {}): RemoteClusterInfo => {
+        const id = overwrite.remote_id ?? this.generateId();
+        return {
+            remote_id: id,
+            name: `remote-${id}`,
+            display_name: `Remote ${id}`,
+            create_at: 1507840900004,
+            delete_at: 0,
+            last_ping_at: Date.now(),
+            site_url: `https://remote-${id}.example.com`,
+            ...overwrite,
+        };
+    };
+
     fakeDmChannel = (userId: string, otherUserId: string): Partial<Channel> => {
         return {
             name: userId > otherUserId ? otherUserId + '__' + userId : userId + '__' + otherUserId,
@@ -589,6 +604,7 @@ class TestHelperSingleton {
             threadParticipations: this.fakeQuery([]),
 
             prepareStatus: () => null,
+            toAPI: () => ({} as UserProfile),
 
             ...overwrite,
         };
@@ -1001,6 +1017,34 @@ class TestHelperSingleton {
             notify_props: this.fakeUserNotifyProps(),
             position: '',
             update_at: 0,
+            ...overwrite,
+        };
+    };
+
+    fakeLLMBot = (overwrite?: Partial<LLMBot>): LLMBot => {
+        return {
+            id: this.generateId(),
+            displayName: this.generateId(),
+            username: this.generateId(),
+            lastIconUpdate: 0,
+            dmChannelID: this.generateId(),
+            channelAccessLevel: ChannelAccessLevel.All,
+            channelIDs: [],
+            userAccessLevel: UserAccessLevel.All,
+            userIDs: [],
+            teamIDs: [],
+            ...overwrite,
+        };
+    };
+
+    fakeAiThread = (overwrite?: Partial<AIThread>): AIThread => {
+        return {
+            id: this.generateId(),
+            message: this.generateId(),
+            title: this.generateId(),
+            channel_id: this.generateId(),
+            reply_count: 0,
+            update_at: Date.now(),
             ...overwrite,
         };
     };
@@ -1646,7 +1690,7 @@ class TestHelperSingleton {
         };
     };
 
-    tearDown = async () => {
+    tearDown = async (url?: string) => {
         nock.restore();
 
         this.basicClient = null;
@@ -1656,6 +1700,10 @@ class TestHelperSingleton {
         this.basicChannel = null;
         this.basicChannelMember = null;
         this.basicPost = null;
+
+        if (url) {
+            await DatabaseManager.destroyServerDatabase(url);
+        }
     };
 
     wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time));

@@ -72,13 +72,7 @@ export default function ChannelDropdown({
         }
 
         const itemsSnap = bottomSheetSnapPoint(items, ITEM_HEIGHT) + TITLE_HEIGHT;
-        bottomSheet({
-            title: intl.formatMessage({id: 'browse_channels.dropdownTitle', defaultMessage: 'Show'}),
-            renderContent,
-            snapPoints: [1, itemsSnap],
-            closeButtonId: 'close',
-            theme,
-        });
+        bottomSheet(renderContent, [1, itemsSnap]);
     };
 
     let channelDropdownText = intl.formatMessage({id: 'browse_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});

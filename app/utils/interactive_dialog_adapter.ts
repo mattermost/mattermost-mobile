@@ -1,15 +1,29 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {defineMessages, type IntlShape} from 'react-intl';
+
 import {submitInteractiveDialog} from '@actions/remote/integrations';
 import {AppCallResponseTypes} from '@constants/apps';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
 import {convertAppFormValuesToDialogSubmission, convertDialogToAppForm} from './dialog_conversion';
-import {DialogErrorMessages} from './dialog_utils';
 
-import type {IntlShape} from 'react-intl';
+const submissionMessages = defineMessages({
+    submissionFailed: {
+        id: 'interactive_dialog.submission_failed',
+        defaultMessage: 'Submission failed. Please try again.',
+    },
+    submissionFailedNetwork: {
+        id: 'interactive_dialog.submission_failed_network',
+        defaultMessage: 'Submission failed due to network error. Please check your connection and try again.',
+    },
+    submissionFailedValidation: {
+        id: 'interactive_dialog.submission_failed_validation',
+        defaultMessage: 'Submission failed due to form validation. Please check your inputs and try again.',
+    },
+});
 
 /**
  * Mobile Interactive Dialog Adapter
@@ -100,27 +114,14 @@ export class InteractiveDialogAdapter {
                 let userFriendlyMessage: string;
                 if (error instanceof Error) {
                     if (error.message.includes('network') || error.message.includes('fetch')) {
-                        userFriendlyMessage = intl.formatMessage({
-                            id: DialogErrorMessages.SUBMISSION_FAILED_NETWORK,
-                            defaultMessage: 'Submission failed due to network error. Please check your connection and try again.',
-                        });
+                        userFriendlyMessage = intl.formatMessage(submissionMessages.submissionFailedNetwork);
                     } else if (error.message.includes('conversion') || error.message.includes('validation')) {
-                        userFriendlyMessage = intl.formatMessage({
-                            id: DialogErrorMessages.SUBMISSION_FAILED_VALIDATION,
-                            defaultMessage: 'Submission failed due to form validation. Please check your inputs and try again.',
-                        });
+                        userFriendlyMessage = intl.formatMessage(submissionMessages.submissionFailedValidation);
                     } else {
-                        // Don't expose internal error details for security
-                        userFriendlyMessage = intl.formatMessage({
-                            id: DialogErrorMessages.SUBMISSION_FAILED,
-                            defaultMessage: 'Submission failed. Please try again.',
-                        });
+                        userFriendlyMessage = intl.formatMessage(submissionMessages.submissionFailed);
                     }
                 } else {
-                    userFriendlyMessage = intl.formatMessage({
-                        id: DialogErrorMessages.SUBMISSION_FAILED,
-                        defaultMessage: 'Submission failed. Please try again.',
-                    });
+                    userFriendlyMessage = intl.formatMessage(submissionMessages.submissionFailed);
                 }
 
                 return {
