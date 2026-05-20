@@ -36,7 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignSelf: 'center',
     },
     boldText: {
-        ...typography('Body', 100, 'SemiBold'),
+        ...typography('Body', 200, 'SemiBold'),
         lineHeight: 20,
     },
     icon: {
