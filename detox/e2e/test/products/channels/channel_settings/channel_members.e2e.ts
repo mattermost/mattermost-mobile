@@ -175,6 +175,12 @@ describe('Channels', () => {
         // # Search and add user
         await AddMembersScreen.searchAndAddUser(newUser.username, newUser.id);
 
+        // With expo-router, tapping "Add Members" pops AddMembersScreen one level back to
+        // Channel Info (its navigation parent). RNN used to pop all the way to Channel.
+        // Close Channel Info explicitly before verifying the system message, following the
+        // same pattern used in MM-T3196 / MM-T3205 after ManageChannelMembersScreen.
+        await ChannelInfoScreen.close();
+
         // * Verify user added system message appears
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
@@ -205,6 +211,9 @@ describe('Channels', () => {
         await AddMembersScreen.dismissTutorial();
         await AddMembersScreen.toBeVisible();
         await AddMembersScreen.searchAndAddUser(newUser.username, newUser.id);
+
+        // expo-router pops AddMembersScreen one level back to Channel Info — close it first.
+        await ChannelInfoScreen.close();
 
         // * Verify user added system message appears
         await ChannelScreen.toBeVisible();
@@ -276,6 +285,9 @@ describe('Channels', () => {
         await AddMembersScreen.dismissTutorial();
         await AddMembersScreen.toBeVisible();
         await AddMembersScreen.searchAndAddUser(newUser.username, newUser.id);
+
+        // expo-router pops AddMembersScreen one level back to Channel Info — close it first.
+        await ChannelInfoScreen.close();
 
         // * Verify user added system message appears
         await ChannelScreen.toBeVisible();

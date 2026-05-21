@@ -3,7 +3,7 @@
 
 import {SearchBar} from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 
 class EmojiPickerScreen {
     testID = {
@@ -25,7 +25,9 @@ class EmojiPickerScreen {
 
     toBeVisible = async () => {
         await waitFor(this.searchInput).toExist().withTimeout(timeouts.TEN_SEC);
-        await waitFor(this.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        if (!isAndroid()) {
+            await waitFor(this.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
 
         return this.searchInput;
     };

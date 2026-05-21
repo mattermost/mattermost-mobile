@@ -192,9 +192,14 @@ class ChannelScreen {
     };
 
     back = async () => {
-        await wait(timeouts.ONE_SEC);
+        await wait(isIos() ? timeouts.TWO_SEC : timeouts.ONE_SEC);
         await this.backButton.tap();
-        await expect(this.channelScreen).not.toBeVisible();
+
+        if (isAndroid()) {
+            await waitFor(this.channelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await expect(this.channelScreen).not.toBeVisible();
+        }
     };
 
     leaveChannel = async ({confirm = true} = {}) => {
@@ -259,9 +264,7 @@ class ChannelScreen {
 
         // On Android, long-press on the inner text element — more reliable than the
         // compound-matched post container, which can silently swallow the gesture.
-        const longPressTarget = isAndroid()
-            ? element(by.text(text).withAncestor(by.id(`${this.testID.channelScreenPrefix}post_list.post.${postId}`)))
-            : postListPostItem;
+        const longPressTarget = isAndroid()? element(by.text(text).withAncestor(by.id(`${this.testID.channelScreenPrefix}post_list.post.${postId}`))): postListPostItem;
 
         await longPressWithScrollRetry(
             longPressTarget,

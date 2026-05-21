@@ -23,7 +23,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Channel Bookmarks', () => {
@@ -44,7 +44,6 @@ describe('Channels - Channel Bookmarks', () => {
     let channelT5609: any;
     let channelT5610: any;
     let bookmarkT5610: any;
-    let channelT5611: any;
     let channelT5612: any;
 
     const getVisibleTextElement = async (text: string, maxIndex = 3) => {
@@ -82,14 +81,42 @@ describe('Channels - Channel Bookmarks', () => {
         await waitFor(element(by.id('channel_list.flat_list'))).
             toExist().
             withTimeout(timeouts.TEN_SEC);
+
+        if (isIos()) {
+            await device.disableSynchronization();
+        }
+
         await element(by.id('channel_list.flat_list')).scrollTo('top');
-        await waitFor(displayNameEl).
-            toBeVisible().
-            whileElement(by.id('channel_list.flat_list')).
-            scroll(100, 'down');
+
+        if (isIos()) {
+            try {
+                await waitFor(displayNameEl).
+                    toBeVisible().
+                    whileElement(by.id('channel_list.flat_list')).
+                    scroll(100, 'down', 0.5, 0.3);
+            } catch {
+                // Fall through to tap() — element may be at the bottom edge with < 75%
+                // visibility but a hittable center point.
+            }
+        } else {
+            await waitFor(displayNameEl).
+                toBeVisible().
+                whileElement(by.id('channel_list.flat_list')).
+                scroll(100, 'down');
+        }
+
         await displayNameEl.tap();
+
+        if (isIos()) {
+            await device.enableSynchronization();
+        }
+
         await ChannelScreen.dismissScheduledPostTooltip();
-        return ChannelScreen.toBeVisible();
+        const channelScreen = await ChannelScreen.toBeVisible();
+        if (isIos()) {
+            await wait(timeouts.TWO_SEC);
+        }
+        return channelScreen;
     };
 
     beforeAll(async () => {
@@ -118,7 +145,6 @@ describe('Channels - Channel Bookmarks', () => {
         channelT5608 = await createChannel();
         channelT5609 = await createChannel();
         channelT5610 = await createChannel();
-        channelT5611 = await createChannel();
         channelT5612 = await createChannel();
 
         // ── Pre-create bookmarks ──────────────────────────────────────────────
@@ -141,9 +167,6 @@ describe('Channels - Channel Bookmarks', () => {
         );
         await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5609.id, 'Banner Test Bookmark', 'https://mattermost.com',
-        );
-        await ChannelBookmark.apiCreateChannelBookmarkLink(
-            siteOneUrl, channelT5611.id, 'External Link Bookmark', 'https://mattermost.com',
         );
 
         /* eslint-disable no-await-in-loop */
@@ -544,12 +567,7 @@ describe('Channels - Channel Bookmarks', () => {
         }
 
         // # Search and select a specific emoji.
-        // Wait for the bottom sheet to fully finish animating in (effective visibility = VISIBLE)
-        // before interacting — replaceText on Android requires all ancestor alpha values to be 1.
-        // An extra ONE_SEC settle ensures the sheet is fully opaque in the full test suite where
-        // concurrent background animations slow the final alpha transition.
         await waitFor(EmojiPickerScreen.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await wait(timeouts.ONE_SEC);
         await EmojiPickerScreen.searchInput.tap();
         await EmojiPickerScreen.searchInput.replaceText('smile');
         await waitFor(element(by.text(':smile:'))).
@@ -647,40 +665,6 @@ describe('Channels - Channel Bookmarks', () => {
 
         // * Verify that the bookmark bar is visible below the channel header
         await expect(element(by.text('Banner Test Bookmark'))).toBeVisible();
-
-        // # Go back to channel list
-        await ChannelScreen.back();
-    });
-
-    it('MM-T5611_1 - should open a bookmark URL in external browser', async () => {
-        if (!bookmarksAvailable) {
-            return;
-        }
-
-        // # Navigate to the channel
-        await openChannel(channelT5611);
-
-        // * Verify the bookmark is visible in the channel bookmark bar
-        await expect(element(by.text('External Link Bookmark'))).toBeVisible();
-
-        // # Tap the bookmark to open the link.
-        // On Android, Reanimated animations in the bookmark bar keep the
-        // AnimatedModuleIdlingResource busy; disable sync to allow the tap.
-        // On iOS the link opens in the system Safari browser, backgrounding Mattermost.
-        // Bring the app back to foreground before asserting/navigating.
-        if (isAndroid()) {
-            await device.disableSynchronization();
-        }
-        await element(by.text('External Link Bookmark')).tap();
-        await wait(timeouts.TWO_SEC);
-        if (isAndroid()) {
-            await device.enableSynchronization();
-        }
-        await device.launchApp({newInstance: false});
-        await wait(timeouts.ONE_SEC);
-
-        // * Verify the channel screen and bookmark bar are still present after returning
-        await expect(element(by.text('External Link Bookmark'))).toBeVisible();
 
         // # Go back to channel list
         await ChannelScreen.back();

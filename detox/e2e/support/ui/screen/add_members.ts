@@ -64,6 +64,9 @@ class AddMembersScreen {
 
         const userItem = this.getUserItem(userId);
         await waitFor(userItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        if (isIos()) {
+            await wait(timeouts.TWO_SEC);
+        }
         await userItem.tap();
         await wait(timeouts.ONE_SEC);
 

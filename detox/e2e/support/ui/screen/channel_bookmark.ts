@@ -7,8 +7,7 @@ import {expect, waitFor} from 'detox';
 class ChannelBookmarkScreen {
     testID = {
         channelBookmarkScreen: 'channel_bookmark.screen',
-        closeAddButton: 'close.channel_bookmark_add.button',
-        closeEditButton: 'close.channel_bookmark_edit.button',
+        closeButton: 'close.channel_bookmark.button',
         saveButton: 'channel_bookmark.edit.save_button',
         linkInput: 'channel_bookmark_add.link.input',
         linkLoading: 'channel_bookmark_add.link.loading',
@@ -17,8 +16,15 @@ class ChannelBookmarkScreen {
     };
 
     channelBookmarkScreen = element(by.id(this.testID.channelBookmarkScreen));
-    closeAddButton = element(by.id(this.testID.closeAddButton));
-    closeEditButton = element(by.id(this.testID.closeEditButton));
+    closeButton = element(by.id(this.testID.closeButton));
+
+    // Aliases kept for call sites that reference the add/edit variants.
+    get closeAddButton() {
+        return this.closeButton;
+    }
+    get closeEditButton() {
+        return this.closeButton;
+    }
     saveButton = element(by.id(this.testID.saveButton));
     linkInput = element(by.id(this.testID.linkInput));
     linkLoading = element(by.id(this.testID.linkLoading));
@@ -107,13 +113,8 @@ class ChannelBookmarkScreen {
     };
 
     close = async () => {
-        try {
-            await waitFor(this.closeAddButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
-            await this.closeAddButton.tap();
-        } catch {
-            await waitFor(this.closeEditButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
-            await this.closeEditButton.tap();
-        }
+        await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.closeButton.tap();
         await expect(this.channelBookmarkScreen).not.toBeVisible();
     };
 }

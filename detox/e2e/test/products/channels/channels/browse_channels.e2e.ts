@@ -180,9 +180,23 @@ describe('Channels - Browse Channels', () => {
 
         // # Open browse channels screen and switch to archived channels view
         await BrowseChannelsScreen.open();
+
+        // Trigger tap with sync enabled so Espresso confirms the modal is stable first.
         await BrowseChannelsScreen.channelDropdownTextPublic.tap();
         await waitFor(element(by.id('browse_channels.dropdown_slideup_item.archived_channels'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await element(by.id('browse_channels.dropdown_slideup_item.archived_channels')).tap();
+
+        if (isAndroid()) {
+            await wait(timeouts.ONE_SEC);
+            await device.disableSynchronization();
+        }
+        try {
+            await element(by.id('browse_channels.dropdown_slideup_item.archived_channels')).tap();
+        } finally {
+            if (isAndroid()) {
+                await device.enableSynchronization();
+            }
+        }
+        await wait(timeouts.ONE_SEC);
 
         // # Search for the archived channel by name
         await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);

@@ -74,6 +74,12 @@ class ManageChannelMembersScreen {
     };
 
     close = async () => {
+        // On iOS 26 the UITransitionView from the navigation push persists for
+        // slightly over 1 second after the screen appears. Tapping the back button
+        // while it is still present fails with EarlGrey's 100% visibility check
+        // ("View does not pass visibility percent threshold"). 2 seconds clears
+        // the overlay reliably; Android is unaffected so keeps the original wait.
+        await wait(isIos() ? timeouts.TWO_SEC : timeouts.ONE_SEC);
         await this.backButton.tap();
         await expect(this.manageMembersScreen).not.toBeVisible();
     };
