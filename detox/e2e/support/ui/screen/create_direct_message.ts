@@ -82,30 +82,10 @@ class CreateDirectMessageScreen {
     };
 
     open = async () => {
-        // # Open create direct message screen
-        // Wait for the plus button to exist before tapping. The button only renders
-        // when the team displayName is loaded — after a recovery relaunch or a slow
-        // login flow the team data may not be hydrated yet, causing the tap to fail
-        // with "No elements found". Using toExist() (not toBeVisible()) also handles
-        // alert dimming overlays left by previous tests.
-        await waitFor(ChannelListScreen.headerPlusButton).toExist().withTimeout(timeouts.HALF_MIN);
+        await waitForElementToExist(ChannelListScreen.headerPlusButton, timeouts.HALF_MIN);
         await ChannelListScreen.headerPlusButton.tap();
-
-        // Wait for the bottom-sheet menu item to be VISIBLE (≥75% on-screen) before
-        // tapping. `toExist()` only checks the view hierarchy — the item is added before
-        // the sheet finishes animating, so a tap on an `toExist()`-passing element can still
-        // land on the backdrop if the sheet is mid-slide. `waitForElementToBeVisible` uses
-        // polling (bypasses BridgeIdlingResource) and requires the view to be fully rendered
-        // on-screen, ensuring the animation has settled before we tap.
         await waitForElementToBeVisible(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
 
-        // On Android, disable Detox synchronization BEFORE tapping the navigation item.
-        // After the tap, the JS bridge becomes busy with navigation/screen mounting.
-        // Calling device.disableSynchronization() AFTER the tap means it must wait for
-        // bridge-idle before taking effect — which can block for 60+ seconds while the
-        // DM screen loads. Disabling sync BEFORE the tap avoids this: sync is already off
-        // when the navigation fires, so all subsequent element checks are pure polling.
-        // Re-enabled in the finally block after toBeVisible() confirms the screen is ready.
         if (isAndroid()) {
             await device.disableSynchronization();
         }

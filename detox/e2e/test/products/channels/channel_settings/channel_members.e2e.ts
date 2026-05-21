@@ -33,7 +33,7 @@ import {
     ManageChannelMembersScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels', () => {
@@ -148,6 +148,12 @@ describe('Channels', () => {
         await LoginScreen.login(testUser);
     });
 
+    beforeEach(async () => {
+        // Reset to channel list between tests. Prior tests can leave modals (Add Members,
+        // Channel Info) or a pushed channel screen open, which makes sidebar/header taps fail.
+        await ChannelListScreen.toBeVisible();
+    });
+
     afterAll(async () => {
         // # Log out
         await HomeScreen.logout();
@@ -240,7 +246,7 @@ describe('Channels', () => {
         await ChannelInfoScreen.membersOption.tap();
 
         await wait(timeouts.TWO_SEC);
-        await element(by.text(isAndroid()? 'MANAGE': 'Manage')).tap();
+        await ManageChannelMembersScreen.manageButton.tap();
         await wait(timeouts.TWO_SEC);
 
         // # Search and remove user
@@ -266,12 +272,8 @@ describe('Channels', () => {
         const privateChannel = privateChannel1;
         const newUser = privUser;
 
-        // # Wait for private channel to appear in channel list before opening
-        await waitFor(ChannelListScreen.getChannelItemDisplayName(channelsCategory, privateChannel.name)).
-            toExist().withTimeout(timeouts.HALF_MIN);
-
-        // # Open private channel
-        await ChannelScreen.open(channelsCategory, privateChannel.name);
+        // # Open private channel (Find Channels is reliable for API-created channels)
+        await ChannelScreen.openViaFindChannels(privateChannel.name);
 
         // # Open channel info and tap add members
         await ChannelInfoScreen.open();
@@ -305,12 +307,8 @@ describe('Channels', () => {
         const privateChannel = privateChannel2;
         const removedUser = removeMeUser;
 
-        // # Wait for private channel to appear in channel list before opening
-        await waitFor(ChannelListScreen.getChannelItemDisplayName(channelsCategory, privateChannel.name)).
-            toExist().withTimeout(timeouts.HALF_MIN);
-
-        // # Open private channel
-        await ChannelScreen.open(channelsCategory, privateChannel.name);
+        // # Open private channel (Find Channels is reliable for API-created channels)
+        await ChannelScreen.openViaFindChannels(privateChannel.name);
 
         // # Open channel info and tap members option
         await ChannelInfoScreen.open();
@@ -320,7 +318,7 @@ describe('Channels', () => {
         await ChannelInfoScreen.membersOption.tap();
         await wait(timeouts.TWO_SEC);
 
-        await element(by.text(isAndroid()? 'MANAGE': 'Manage')).tap();
+        await ManageChannelMembersScreen.manageButton.tap();
         await wait(timeouts.TWO_SEC);
 
         // # Search and remove user
@@ -379,7 +377,7 @@ describe('Channels', () => {
         await expect(ManageChannelMembersScreen.gmMemberSectionList).toBeVisible();
 
         // # Go back
-        await ManageChannelMembersScreen.backButton.tap();
+        await ManageChannelMembersScreen.close();
         await wait(timeouts.ONE_SEC);
 
         await ChannelInfoScreen.close();

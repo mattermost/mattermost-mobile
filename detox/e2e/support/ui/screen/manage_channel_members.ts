@@ -3,7 +3,7 @@
 
 import {Alert, ProfilePicture} from '@support/ui/component';
 import {ChannelInfoScreen} from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, pressBack, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ManageChannelMembersScreen {
@@ -74,13 +74,7 @@ class ManageChannelMembersScreen {
     };
 
     close = async () => {
-        // On iOS 26 the UITransitionView from the navigation push persists for
-        // slightly over 1 second after the screen appears. Tapping the back button
-        // while it is still present fails with EarlGrey's 100% visibility check
-        // ("View does not pass visibility percent threshold"). 2 seconds clears
-        // the overlay reliably; Android is unaffected so keeps the original wait.
-        await wait(isIos() ? timeouts.TWO_SEC : timeouts.ONE_SEC);
-        await this.backButton.tap();
+        await pressBack();
         await expect(this.manageMembersScreen).not.toBeVisible();
     };
 
@@ -126,9 +120,15 @@ class ManageChannelMembersScreen {
         await this.searchInput.typeText(`${username}`);
         await wait(timeouts.TWO_SEC);
 
-        const userItem = this.getUserItem(userId);
-        await waitFor(userItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await userItem.tap();
+        const userDisplayName = this.getUserItemDisplayName(userId);
+        await waitForElementToExist(userDisplayName, timeouts.TEN_SEC);
+        if (isIos()) {
+            try {
+                await this.searchInput.tapReturnKey();
+            } catch { /* keyboard may already be dismissed */ }
+            await wait(timeouts.HALF_SEC);
+        }
+        await userDisplayName.tap();
         await wait(timeouts.TWO_SEC);
 
         await expect(this.removeButton).toBeVisible();
@@ -138,7 +138,11 @@ class ManageChannelMembersScreen {
         await Alert.removeButton.tap();
         await wait(timeouts.TWO_SEC);
 
-        await device.pressBack();
+        // Dismiss the remove-member alert overlay on Android. On iOS pressBack() is not
+        // supported — callers use close() to pop ManageChannelMembersScreen instead.
+        if (isAndroid()) {
+            await device.pressBack();
+        }
     };
 }
 

@@ -394,3 +394,25 @@ export async function waitForElementToExist(
     // Final check - will throw if still not found
     await detoxExpect(detoxElement).toExist();
 }
+
+/**
+ * Navigate back one screen using the platform-appropriate mechanism.
+ *
+ * On Android, screens that use the native stack header (expo-router `presentation: 'card'`
+ * with no custom `headerLeft`) render the back arrow as a native Toolbar view. That view
+ * has no React Native `testID`, so Espresso's `view.getTag()` matcher never finds
+ * `navigation.header.back`. The hardware/software back key is the correct substitute.
+ *
+ * On iOS, EarlGrey can tap the `navigation.header.back` element, but iOS 26's liquid-glass
+ * transition leaves a `UITransitionView` overlay for ~2 seconds after a push navigation.
+ * EarlGrey enforces a 100 % visibility threshold for taps, so we wait for the overlay to
+ * clear before tapping.
+ */
+export async function pressBack(): Promise<void> {
+    if (isAndroid()) {
+        await device.pressBack();
+    } else {
+        await wait(timeouts.TWO_SEC);
+        await element(by.id('navigation.header.back')).tap();
+    }
+}

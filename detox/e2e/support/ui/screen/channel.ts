@@ -14,6 +14,7 @@ import {
 } from '@support/ui/component';
 import {
     ChannelListScreen,
+    FindChannelsScreen,
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
@@ -187,6 +188,25 @@ class ChannelScreen {
         } else {
             await ChannelListScreen.getChannelItemDisplayName(category, name).tap();
         }
+        await this.dismissScheduledPostTooltip();
+        return this.toBeVisible();
+    };
+
+    /**
+     * Open a channel via Find Channels. Use for API-created private channels that may
+     * not appear in the sidebar immediately after login or between tests.
+     */
+    openViaFindChannels = async (channelName: string) => {
+        await ChannelListScreen.toBeVisible();
+        await FindChannelsScreen.open();
+        await FindChannelsScreen.searchInput.replaceText(channelName);
+        await FindChannelsScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
+        await waitForElementToBeVisible(
+            FindChannelsScreen.getFilteredChannelItem(channelName),
+            timeouts.HALF_MIN,
+        );
+        await FindChannelsScreen.getFilteredChannelItem(channelName).tap();
         await this.dismissScheduledPostTooltip();
         return this.toBeVisible();
     };

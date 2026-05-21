@@ -87,9 +87,21 @@ class ChannelListScreen {
         return element(by.id(`${this.testID.categoryPrefix}${categoryKey}.channel_item.${channelName}.display_name`));
     };
 
+    ensureCategoryExpanded = async (categoryKey: string) => {
+        try {
+            await waitForElementToExist(this.getCategoryCollapsed(categoryKey), timeouts.TWO_SEC);
+            await this.getCategoryCollapsed(categoryKey).tap();
+            await wait(timeouts.ONE_SEC);
+        } catch {
+            // Category already expanded or header not yet rendered
+        }
+    };
+
     waitForSidebarPublicChannelDisplayNameVisible = async (channelName: string, timeout = timeouts.ONE_MIN) => {
         const deadline = Date.now() + timeout;
         const categories = ['channels', 'unreads', 'favorites'] as const;
+
+        await this.ensureCategoryExpanded('channels');
 
         try {
             const channelsHeader = this.getCategoryHeaderDisplayName('channels');
