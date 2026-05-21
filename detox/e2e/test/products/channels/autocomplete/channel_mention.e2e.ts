@@ -75,8 +75,8 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_1 - should suggest channel based on channel name', async () => {
-        // # Type in "~" to activate channel mention autocomplete
-        await ChannelScreen.postInput.typeText('~');
+        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete.
+        await ChannelScreen.tildeInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -90,8 +90,8 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_2 - should suggest channel based on channel display name', async () => {
-        // # Type in "~" to activate channel mention autocomplete
-        await ChannelScreen.postInput.typeText('~');
+        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
+        await ChannelScreen.tildeInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -105,8 +105,8 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_3 - should suggest channel based on lowercase channel display name', async () => {
-        // # Type in "~" to activate channel mention autocomplete
-        await ChannelScreen.postInput.typeText('~');
+        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
+        await ChannelScreen.tildeInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -120,8 +120,8 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_4 - should suggest channel based on partial channel display name', async () => {
-        // # Type in "~" to activate channel mention autocomplete
-        await ChannelScreen.postInput.typeText('~');
+        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
+        await ChannelScreen.tildeInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -135,8 +135,8 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_5 - should stop suggesting channel after channel display name with trailing space', async () => {
-        // # Type in "~" to activate channel mention autocomplete
-        await ChannelScreen.postInput.typeText('~');
+        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
+        await ChannelScreen.tildeInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -157,8 +157,8 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_6 - should stop suggesting channel when keyword is not associated with any channel', async () => {
-        // # Type in "~" to activate channel mention autocomplete
-        await ChannelScreen.postInput.typeText('~');
+        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
+        await ChannelScreen.tildeInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -172,9 +172,10 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_7 - should be able to select channel mention multiple times', async () => {
-        // # Type in "~" to activate channel mention autocomplete
+        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
         await expect(Autocomplete.sectionChannelMentionList).not.toExist();
-        await ChannelScreen.postInput.typeText('~');
+        await ChannelScreen.tildeInputQuickAction.tap();
+        await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
         await expect(Autocomplete.sectionChannelMentionList).toExist();
@@ -186,17 +187,20 @@ describe('Autocomplete - Channel Mention', () => {
         // * Verify channel mention list disappears
         await expect(Autocomplete.sectionChannelMentionList).not.toExist();
 
-        // # Type in "~" again to re-activate channel mention list
-        await ChannelScreen.postInput.typeText('~');
+        // # Clear the input (which now contains the inserted channel mention text),
+        // then re-activate channel mention list via the tilde quick action.
+        await ChannelScreen.postInput.clearText();
+        await ChannelScreen.tildeInputQuickAction.tap();
+        await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
         await expect(Autocomplete.sectionChannelMentionList).toExist();
     });
 
     it('MM-T4879_8 - should be able to autocomplete archived channel', async () => {
-        // # Archive another team channel and type in "~" to activate channel mention autocomplete
+        // # Archive another team channel and tap tilde quick action to activate autocomplete
         await Channel.apiDeleteChannel(siteOneUrl, testOtherChannel.id);
-        await ChannelScreen.postInput.typeText('~');
+        await ChannelScreen.tildeInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -208,11 +212,11 @@ describe('Autocomplete - Channel Mention', () => {
         // * Verify channel mention autocomplete contains associated channel suggestion
         await expect(otherChannelMentionAutocomplete).toExist();
 
-        // # Unarchive channel, clear post input, and type in "~" to activate channel mention list
+        // # Unarchive channel, clear post input, and tap tilde quick action to activate autocomplete
         await Channel.apiRestoreChannel(siteOneUrl, testOtherChannel.id);
         await ChannelScreen.postInput.clearText();
         await Autocomplete.toBeVisible(false);
-        await ChannelScreen.postInput.typeText('~');
+        await ChannelScreen.tildeInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -226,10 +230,10 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_9 - should not be able to autocomplete out of team channel', async () => {
-        // # Type in "~" to activate channel mention autocomplete
+        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
         const {team: otherTeam} = await Team.apiCreateTeam(siteOneUrl);
         const {channel: outOfTeamChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: otherTeam.id});
-        await ChannelScreen.postInput.typeText('~');
+        await ChannelScreen.tildeInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -244,8 +248,8 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_10 - should include current channel in autocomplete', async () => {
-        // # Type in "~" to activate channel mention autocomplete
-        await ChannelScreen.postInput.typeText('~');
+        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
+        await ChannelScreen.tildeInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed

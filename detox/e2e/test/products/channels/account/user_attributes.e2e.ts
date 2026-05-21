@@ -114,33 +114,42 @@ describe('Account - User Attributes', () => {
         // * Verify edit profile screen is visible
         await EditProfileScreen.toBeVisible();
 
-        const fillField = async (fieldId: string | undefined, value: string, scrollAmount: number) => {
-            if (!fieldId) {
-                return;
-            }
-            const input = element(by.id(`edit_profile_form.customAttributes.${fieldId}.input`));
-            await waitFor(input).
-                toBeVisible().
-                whileElement(by.id(EditProfileScreen.testID.scrollView)).
-                scroll(scrollAmount, 'down');
-            if (isAndroid()) {
+        // Length guard above guarantees all three IDs exist.
+        const [fieldId0, fieldId1, fieldId2] = createdFieldIds as [string, string, string];
+
+        if (isAndroid()) {
+            // Android: scroll each field into view then tap + clearText + replaceText
+            const fillField = async (fieldId: string, value: string, scrollAmount: number) => {
+                const input = element(by.id(`edit_profile_form.customAttributes.${fieldId}.input`));
+                await waitFor(input).
+                    toBeVisible().
+                    whileElement(by.id(EditProfileScreen.testID.scrollView)).
+                    scroll(scrollAmount, 'down');
                 await input.tap();
                 await input.clearText();
                 await input.replaceText(value);
-            } else {
-                await input.replaceText(value);
-            }
-        };
+            };
+            await fillField(fieldId0, attrValue1, 300);
+            await fillField(fieldId1, attrValue2, 200);
+            await fillField(fieldId2, attrValue3, 200);
+        } else {
+            // iOS: scroll to and tap the first field only; use \n to let
+            const bioInput = element(by.id(`edit_profile_form.customAttributes.${fieldId0}.input`));
+            const deptInput = element(by.id(`edit_profile_form.customAttributes.${fieldId1}.input`));
+            const teamInput = element(by.id(`edit_profile_form.customAttributes.${fieldId2}.input`));
 
-        // # Scroll to and fill each custom attribute field
-        await fillField(createdFieldIds[0], attrValue1, 300);
-        await fillField(createdFieldIds[1], attrValue2, 200);
-        await fillField(createdFieldIds[2], attrValue3, 200);
+            await waitFor(bioInput).
+                toBeVisible().
+                whileElement(by.id(EditProfileScreen.testID.scrollView)).
+                scroll(300, 'down');
+            await bioInput.tap();
+            await bioInput.typeText(`${attrValue1}\n`);
+            await deptInput.typeText(`${attrValue2}\n`);
+            await teamInput.typeText(attrValue3);
+        }
 
         await EditProfileScreen.saveButton.tap();
-
-        // * Verify returned to account screen — submitUser() closes the modal.
-        await waitFor(AccountScreen.accountScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await AccountScreen.toBeVisible();
 
         // # Go back to channel list
         await ChannelListScreen.open();

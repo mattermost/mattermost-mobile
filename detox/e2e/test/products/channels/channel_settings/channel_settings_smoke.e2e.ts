@@ -175,6 +175,10 @@ describe('Channel Settings - Smoke', () => {
         // # Edit the message and save
         const updatedMessage = `${message} edited`;
         await EditPostScreen.messageInput.replaceText(updatedMessage);
+
+        // Wait for the controlled PasteInput's onChangeText to propagate through
+        // React state so that canSave becomes true before tapping Save.
+        await wait(timeouts.ONE_SEC);
         await EditPostScreen.saveButton.tap();
 
         // * Verify post is edited and saves as one copy, not a duplicate

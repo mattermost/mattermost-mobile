@@ -102,6 +102,8 @@ class ChannelScreen {
     headerTitle = NavigationHeader.headerTitle;
     atInputQuickAction = InputQuickAction.getAtInputQuickAction(this.testID.channelScreenPrefix);
     atInputQuickActionDisabled = InputQuickAction.getAtInputQuickActionDisabled(this.testID.channelScreenPrefix);
+    tildeInputQuickAction = InputQuickAction.getTildeInputQuickAction(this.testID.channelScreenPrefix);
+    tildeInputQuickActionDisabled = InputQuickAction.getTildeInputQuickActionDisabled(this.testID.channelScreenPrefix);
     slashInputQuickAction = InputQuickAction.getSlashInputQuickAction(this.testID.channelScreenPrefix);
     slashInputQuickActionDisabled = InputQuickAction.getSlashInputQuickActionDisabled(this.testID.channelScreenPrefix);
     fileQuickAction = FileQuickAction.getFileQuickAction(this.testID.channelScreenPrefix);
@@ -602,12 +604,22 @@ class ChannelScreen {
         // Escape special characters in the message for regex
         const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        // Match text that contains the updated message followed by "Edited" (with possible spacing/icon)
-        const completeTextPattern = new RegExp(`${escapedMessage}.*Edited`, 'i');
-        const completeTextMatcher = by.text(completeTextPattern).withAncestor(postItemMatcher);
-
-        // Wait for the text containing both message and "Edited" to be visible
-        await waitFor(element(completeTextMatcher)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        if (isAndroid()) {
+            // On Android New Architecture (Fabric), each <Text testID="..."> becomes its own
+            // android.widget.TextView. The EditedIndicator (<Text testID="edited_indicator">)
+            // is therefore a separate TextView from the message body, so a combined regex
+            // spanning both cannot match. Assert each part independently.
+            const messageMatcher = by.text(new RegExp(escapedMessage, 'i')).withAncestor(postItemMatcher);
+            const editedIndicatorMatcher = by.id('edited_indicator').withAncestor(postItemMatcher);
+            await waitFor(element(messageMatcher)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(element(editedIndicatorMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            // On iOS, nested <Text> components share a single UITextView text container,
+            // so the combined regex matches both the message body and "Edited" in one view.
+            const completeTextPattern = new RegExp(`${escapedMessage}.*Edited`, 'i');
+            const completeTextMatcher = by.text(completeTextPattern).withAncestor(postItemMatcher);
+            await waitFor(element(completeTextMatcher)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
     };
 }
 

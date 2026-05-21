@@ -83,7 +83,23 @@ describe('Share with connected workspaces', () => {
 
         await User.apiAdminLogin(siteOneUrl);
         const {license} = await System.apiGetClientLicense(siteOneUrl);
-        sharedChannelsAvailable = license?.SharedChannels === 'true';
+        const hasSharedChannelsLicense = license?.SharedChannels === 'true';
+
+        if (hasSharedChannelsLicense) {
+            await System.apiPatchConfig(siteOneUrl, {
+                ConnectedWorkspacesSettings: {EnableRemoteClusterService: true},
+            });
+            const {error: rcError} = await System.apiGetRemoteClusters(siteOneUrl);
+            sharedChannelsAvailable = !rcError;
+
+            // Reset to clean state regardless of outcome.
+            await System.apiPatchConfig(siteOneUrl, {
+                ConnectedWorkspacesSettings: {
+                    EnableSharedChannels: false,
+                    EnableRemoteClusterService: false,
+                },
+            });
+        }
 
         // Enable autotranslation so the Configuration option is always visible in Channel Settings
         // (required when shared channels is disabled, e.g. TC-MOB-02).
@@ -130,7 +146,10 @@ describe('Share with connected workspaces', () => {
     const setSharedChannelsFeature = async (enabled: boolean) => {
         await User.apiAdminLogin(siteOneUrl);
         await System.apiPatchConfig(siteOneUrl, {
-            ConnectedWorkspacesSettings: {EnableSharedChannels: enabled},
+            ConnectedWorkspacesSettings: {
+                EnableSharedChannels: enabled,
+                EnableRemoteClusterService: enabled,
+            },
         });
     };
 

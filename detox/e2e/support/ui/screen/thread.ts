@@ -11,14 +11,14 @@ import {
     SendButton,
 } from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isAndroid, longPressWithScrollRetry, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 class ThreadScreen {
     testID = {
         threadScreenPrefix: 'thread.',
         threadScreen: 'thread.screen',
-        backButton: 'navigation.header.back',
+        backButton: 'thread.navigation.back.button',
         followButton: 'thread.follow_thread.button',
         followingButton: 'thread.following_thread.button',
         scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',
@@ -115,10 +115,23 @@ class ThreadScreen {
     };
 
     back = async () => {
-        // ThreadScreen uses the native expo-router stack header which does not
-        // expose a testID on the back chevron — `tapNativeBackButton` queries it
-        // platform-natively (Android `pressBack`, iOS `by.label('Back')`).
-        await tapNativeBackButton();
+        // Android API 35: tapping the Toolbar 'Navigate up' button fires via Espresso
+        // but the navigation event does not propagate through expo-router on API 35.
+        // device.pressBack() triggers useAndroidHardwareBackHandler(Screens.THREAD,
+        // navigation.goBack) which reliably pops the screen.
+        //
+        // iOS 26: The native UIKit back button (_UIModernBarButton) is blocked by the
+        // UITransitionView glass overlay (enabled:false, hittable:false). The interactive
+        // pop swipe gesture is also unavailable when Thread is the root screen of its
+        // navigator (opened from a modal context such as PinnedMessages reply — the router
+        // pushes Thread into a new UINavigationController with no history).
+        // The thread route sets a custom headerLeft Pressable (RNSScreenStackHeaderSubview)
+        // that bypasses UITransitionView and calls navigation.goBack(). Tap that instead.
+        if (isAndroid()) {
+            await device.pressBack();
+        } else {
+            await this.backButton.tap();
+        }
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Wait for the previous screen to be fully loaded and rendered

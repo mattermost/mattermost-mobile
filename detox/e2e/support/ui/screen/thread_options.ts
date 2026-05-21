@@ -13,8 +13,8 @@ class ThreadOptionsScreen {
         openInChannelOption: 'thread_options.open_in_channel.option',
         markAsReadOption: 'thread_options.mark_as_read.option',
         markAsUnreadOption: 'thread_options.mark_as_unread.option',
-        saveThreadOption: 'post_options.save_post.option',
-        unsaveThreadOption: 'post_options.unsave_post.option',
+        saveThreadOption: 'post_options.Save_post.option',
+        unsaveThreadOption: 'post_options.Unsave_post.option',
         copyLinkOption: 'post_options.copy_permalink.option',
     };
 

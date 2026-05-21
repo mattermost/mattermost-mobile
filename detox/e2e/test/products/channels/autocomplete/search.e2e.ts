@@ -20,7 +20,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Autocomplete - Search', () => {
@@ -60,6 +60,11 @@ describe('Autocomplete - Search', () => {
         // * Verify channel mention autocomplete list is displayed
         await waitFor(Autocomplete.sectionChannelMentionList).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(Autocomplete.sectionChannelMentionList).toExist();
+
+        if (isAndroid()) {
+            await device.pressBack();
+            await wait(timeouts.ONE_SEC);
+        }
         await ChannelListScreen.open();
     });
 });

@@ -20,7 +20,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channel Settings - Channel Notifications', () => {
@@ -64,9 +64,16 @@ describe('Channel Settings - Channel Notifications', () => {
         const notificationSettingsScreen = element(by.id('push_notification_settings.screen'));
         await expect(notificationSettingsScreen).toBeVisible();
 
-        // # Navigate back to channel info screen and close
-        const backButton = element(by.id('navigation.header.back'));
-        await backButton.tap();
+        // # Navigate back to channel info screen
+        // Android: navigation.header.back is the native Toolbar button with no React Native testID;
+        //   use the hardware back key which triggers useAndroidHardwareBackHandler.
+        // iOS 26: UITransitionView glass overlay blocks the 100% visibility threshold required
+        //   to tap navigation.header.back; use swipe-back gesture instead.
+        if (isAndroid()) {
+            await device.pressBack();
+        } else {
+            await element(by.id('push_notification_settings.screen')).swipe('right', 'fast', 0.8, 0.05, 0.5);
+        }
         await wait(timeouts.ONE_SEC);
         await ChannelInfoScreen.close();
 

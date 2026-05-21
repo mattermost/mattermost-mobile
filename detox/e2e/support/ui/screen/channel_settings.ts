@@ -5,6 +5,7 @@ import {
     Alert,
 } from '@support/ui/component';
 import {timeouts, wait} from '@support/utils';
+import {tapNativeBackButton} from '@support/utils/detoxhelpers';
 import {expect, waitFor} from 'detox';
 
 class ChannelSettingsScreen {
@@ -37,8 +38,10 @@ class ChannelSettingsScreen {
     };
 
     close = async () => {
-        await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await this.closeButton.tap();
+        // Use platform-native back chevron: Android via 'Navigate up' label,
+        // iOS via 'Back' label. The custom NavigationHeader testID does not
+        // exist on this screen (expo-router native stack with getHeaderOptions).
+        await tapNativeBackButton();
         await waitFor(this.channelSettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 

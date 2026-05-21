@@ -65,8 +65,7 @@ describe('Autocomplete - At-Mention - Name Matching', () => {
     });
 
     it('MM-T3409_1 - should suggest user based on username', async () => {
-        // # Type in "@" to activate at-mention autocomplete
-        await ChannelScreen.postInput.typeText('@');
+        await ChannelScreen.atInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed
@@ -80,8 +79,8 @@ describe('Autocomplete - At-Mention - Name Matching', () => {
     });
 
     it('MM-T3409_2 - should suggest user based on nickname', async () => {
-        // # Type in "@" to activate at-mention autocomplete
-        await ChannelScreen.postInput.typeText('@');
+        // # Tap the @ quick action button to activate at-mention autocomplete
+        await ChannelScreen.atInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed
@@ -95,8 +94,8 @@ describe('Autocomplete - At-Mention - Name Matching', () => {
     });
 
     it('MM-T3409_3 - should suggest user based on camel case first name', async () => {
-        // # Type in "@" to activate at-mention autocomplete
-        await ChannelScreen.postInput.typeText('@');
+        // # Tap the @ quick action button to activate at-mention autocomplete
+        await ChannelScreen.atInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed
@@ -110,8 +109,8 @@ describe('Autocomplete - At-Mention - Name Matching', () => {
     });
 
     it('MM-T3409_4 - should suggest user based on camel case last name', async () => {
-        // # Type in "@" to activate at-mention autocomplete
-        await ChannelScreen.postInput.typeText('@');
+        // # Tap the @ quick action button to activate at-mention autocomplete
+        await ChannelScreen.atInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed
@@ -125,8 +124,8 @@ describe('Autocomplete - At-Mention - Name Matching', () => {
     });
 
     it('MM-T3409_5 - should suggest user based on lower case first name', async () => {
-        // # Type in "@" to activate at-mention autocomplete
-        await ChannelScreen.postInput.typeText('@');
+        // # Tap the @ quick action button to activate at-mention autocomplete
+        await ChannelScreen.atInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed
@@ -140,8 +139,8 @@ describe('Autocomplete - At-Mention - Name Matching', () => {
     });
 
     it('MM-T3409_6 - should suggest user based on lower case last name', async () => {
-        // # Type in "@" to activate at-mention autocomplete
-        await ChannelScreen.postInput.typeText('@');
+        // # Tap the @ quick action button to activate at-mention autocomplete
+        await ChannelScreen.atInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed
@@ -155,8 +154,8 @@ describe('Autocomplete - At-Mention - Name Matching', () => {
     });
 
     it('MM-T3409_7 - should suggest user based on full name with space', async () => {
-        // # Type in "@" to activate at-mention autocomplete
-        await ChannelScreen.postInput.typeText('@');
+        // # Tap the @ quick action button to activate at-mention autocomplete
+        await ChannelScreen.atInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed
@@ -170,8 +169,8 @@ describe('Autocomplete - At-Mention - Name Matching', () => {
     });
 
     it('MM-T3409_8 - should suggest user based on partial full name with space', async () => {
-        // # Type in "@" to activate at-mention autocomplete
-        await ChannelScreen.postInput.typeText('@');
+        // # Tap the @ quick action button to activate at-mention autocomplete
+        await ChannelScreen.atInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed
@@ -185,8 +184,8 @@ describe('Autocomplete - At-Mention - Name Matching', () => {
     });
 
     it('MM-T3409_9 - should stop suggesting user after full name with trailing space', async () => {
-        // # Type in "@" to activate at-mention autocomplete
-        await ChannelScreen.postInput.typeText('@');
+        // # Tap the @ quick action button to activate at-mention autocomplete
+        await ChannelScreen.atInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed
@@ -198,17 +197,19 @@ describe('Autocomplete - At-Mention - Name Matching', () => {
         // * Verify at-mention autocomplete contains associated user suggestion
         await expect(userAtMentionAutocomplete).toExist();
 
-        // # Type in trailing space after full name
-        await ChannelScreen.postInput.typeText(' ');
-        await wait(timeouts.ONE_SEC);
+        // # Add trailing space. Clear and retype full string to ensure cursor
+        // ends after the space. replaceText can leave cursor position stale on Android.
+        await ChannelScreen.postInput.clearText();
+        await ChannelScreen.atInputQuickAction.tap();
+        await ChannelScreen.postInput.typeText(`${testUser.first_name} ${testUser.last_name} `);
 
-        // * Verify at-mention autocomplete does not contain associated user suggestion
-        await expect(userAtMentionAutocomplete).not.toExist();
+        // * Verify at-mention list disappears — the trailing space makes the matchTerm
+        await waitFor(Autocomplete.sectionAtMentionList).not.toExist().withTimeout(timeouts.TEN_SEC);
     });
 
     it('MM-T3409_10 - should stop suggesting user when keyword is not associated with any user', async () => {
-        // # Type in "@" to activate at-mention autocomplete
-        await ChannelScreen.postInput.typeText('@');
+        // # Tap the @ quick action button to activate at-mention autocomplete
+        await ChannelScreen.atInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed
@@ -226,9 +227,9 @@ describe('Autocomplete - At-Mention - Name Matching', () => {
         // * Verify at-mention list is not displayed
         await expect(Autocomplete.sectionAtMentionList).not.toExist();
 
-        // # Type in "@" and username, then tap user to select
-        await ChannelScreen.postInput.typeText('@');
-        await wait(timeouts.ONE_SEC);
+        // # Tap "@" and type username, then tap user to select
+        await ChannelScreen.atInputQuickAction.tap();
+        await Autocomplete.toBeVisible();
         await expect(Autocomplete.sectionAtMentionList).toExist();
         await ChannelScreen.postInput.typeText(testUser.username);
         await userAtMentionAutocomplete.tap();
@@ -236,9 +237,11 @@ describe('Autocomplete - At-Mention - Name Matching', () => {
         // * Verify at-mention list disappears after selection
         await expect(Autocomplete.sectionAtMentionList).not.toExist();
 
-        // # Type in "@" again to re-activate at-mention list
-        await ChannelScreen.postInput.typeText('@');
-        await wait(timeouts.ONE_SEC);
+        await ChannelScreen.postInput.clearText();
+
+        // # Tap "@" again to re-activate at-mention list
+        await ChannelScreen.atInputQuickAction.tap();
+        await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed again
         await expect(Autocomplete.sectionAtMentionList).toExist();

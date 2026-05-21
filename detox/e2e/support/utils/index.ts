@@ -182,15 +182,7 @@ export async function longPressWithScrollRetry(
                 await scrollTarget.scroll(100, 'down', 0.5, 0.5);
             } catch { /* ignore — list may be at the bottom boundary */ }
         } else {
-            // On iOS 26 iPhone 17 Pro the dynamic island covers roughly the top 60pt.
-            // A fresh post can render with its centre point under the island and fail
-            // Detox's hittability probe (view_point {201,30} — visibility percent 100).
-            // Swipe DOWN (finger moves top→bottom) so the post moves DOWN out from under
-            // the island. Use swipe (real gesture) — scroll() can use a programmatic
-            // offset that doesn't actually reposition in the layout for hittability.
-            try {
-                await scrollTarget.swipe('down', 'slow', 0.25);
-            } catch { /* ignore — list may already be at top */ }
+            // On iOS no swipe/scroll is needed before the longPress.
         }
 
         // Increase Android wait/press durations: API 35 CI emulators need more time

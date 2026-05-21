@@ -63,6 +63,9 @@ describe('Threads - Follow and Unfollow Thread', () => {
     });
 
     afterAll(async () => {
+        // # Navigate back from GlobalThreadsScreen if MM-T4806_4 left us there
+        await GlobalThreadsScreen.back();
+
         // # Log out
         await HomeScreen.logout();
     });
@@ -109,6 +112,9 @@ describe('Threads - Follow and Unfollow Thread', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem: parentPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
+        await waitFor(parentPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
         await ThreadScreen.back();
@@ -145,6 +151,11 @@ describe('Threads - Follow and Unfollow Thread', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        // Pre-position the post at ≥75% visibility before longPress (same pattern as MM-T4806_1).
+        const {postListPostItem: parentPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
+        await waitFor(parentPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
         await ThreadScreen.back();
@@ -197,6 +208,11 @@ describe('Threads - Follow and Unfollow Thread', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        // Pre-position the post at ≥75% visibility before longPress (same pattern as MM-T4806_1).
+        const {postListPostItem: parentPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
+        await waitFor(parentPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
