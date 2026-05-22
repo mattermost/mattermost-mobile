@@ -10,7 +10,8 @@ import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {formatPropertyFieldOptionsForSelector, getPropertyValueDisplay} from '@playbooks/utils/property_fields';
-import {goToScreen} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
+import SettingsStore from '@store/settings_store';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getSelectedOptionIds} from '@utils/user';
@@ -122,13 +123,9 @@ const PropertySelectField = ({
             return;
         }
 
-        goToScreen(Screens.INTEGRATION_SELECTOR, propertyField.name, {
-            dataSource: '',
-            options,
-            handleSelect,
-            selected: selectedValue,
-            isMultiselect,
-        });
+        SettingsStore.setIntegrationsSelectCallback(handleSelect);
+        const passProps = {dataSource: '', options, selected: selectedValue, title: propertyField.name, isMultiselect};
+        navigateToScreen(Screens.INTEGRATION_SELECTOR, passProps);
     }, [isDisabled, propertyField.name, options, handleSelect, selectedValue, isMultiselect]);
 
     const subContainer = [styles.viewContainer, {paddingHorizontal: isTablet ? 42 : 20}];

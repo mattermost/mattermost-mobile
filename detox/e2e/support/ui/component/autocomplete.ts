@@ -31,6 +31,7 @@ class Autocomplete {
         const atMentionItemTestId = `${this.testID.atMentionItemPrefix}${userId}`;
         const atMentionItemMatcher = by.id(atMentionItemTestId);
         const atMentionItemProfilePictureMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.atMentionItemPrefix, userId);
+        const atMentionItemAgentTagMatcher = by.id(`${atMentionItemTestId}.agent.tag`);
         const atMentionItemBotTagMatcher = by.id(`${atMentionItemTestId}.bot.tag`);
         const atMentionItemGuestTagMatcher = by.id(`${atMentionItemTestId}.guest.tag`);
         const atMentionItemUserDisplayNameMatcher = by.id(`${atMentionItemTestId}.display_name`);
@@ -40,6 +41,7 @@ class Autocomplete {
         return {
             atMentionItem: element(atMentionItemMatcher),
             atMentionItemProfilePicture: element(atMentionItemProfilePictureMatcher),
+            atMentionItemAgentTag: element(atMentionItemAgentTagMatcher),
             atMentionItemBotTag: element(atMentionItemBotTagMatcher),
             atMentionItemGuestTag: element(atMentionItemGuestTagMatcher),
             atMentionItemUserDisplayName: element(atMentionItemUserDisplayNameMatcher),

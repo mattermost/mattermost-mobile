@@ -4,10 +4,9 @@
 import Fuse from 'fuse.js';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, Platform, Text, View, type ListRenderItemInfo} from 'react-native';
-import Animated, {useAnimatedStyle} from 'react-native-reanimated';
+import {FlatList, Text, View, type ListRenderItemInfo} from 'react-native';
+import Animated from 'react-native-reanimated';
 
-import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {getEmojis, searchEmojis} from '@utils/emoji/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -23,11 +22,6 @@ type Props = {
     onEmojiPress: (emojiName: string) => void;
     hideEmojiNames?: boolean;
 };
-
-export const SEARCH_BAR_HEIGHT = 56; // paddingTop: 12 + paddingBottom: 12 + search bar ~32px
-export const SEARCH_CONTAINER_PADDING = 8; // paddingVertical: 4 * 2
-export const SEARCH_VISIBILITY_OFFSET = 40; // Extra height to ensure search values are visible
-export const SEARCH_VISIBILITY_OFFSET_ANDROID = 60;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -57,22 +51,10 @@ const EmojiFiltered: React.FC<Props> = ({
     onEmojiPress,
     hideEmojiNames = false,
 }) => {
-    const {keyboardHeight} = useKeyboardAnimationContext();
     const emojis = useMemo(() => getEmojis(skinTone, customEmojis), [skinTone, customEmojis]);
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
-
-    // Calculate dynamic height: keyboardHeight + search bar height + search container padding + visibility offset
-    // On Android, use increased visibility offset to account for bottom safe area
-    const animatedStyle = useAnimatedStyle(() => {
-        const calculatedKeyboardHeight = Math.max(keyboardHeight.value, 0);
-        const visibilityOffset = Platform.OS === 'android' ? SEARCH_VISIBILITY_OFFSET_ANDROID : SEARCH_VISIBILITY_OFFSET;
-        const calculatedHeight = calculatedKeyboardHeight + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + visibilityOffset;
-        return {
-            height: calculatedHeight,
-        };
-    }, [keyboardHeight]);
 
     const fuse = useMemo(() => {
         const options = {findAllMatches: true, ignoreLocation: true, includeMatches: true, shouldSort: false, includeScore: true};
@@ -117,7 +99,7 @@ const EmojiFiltered: React.FC<Props> = ({
     ]);
 
     return (
-        <Animated.View style={[style.container, animatedStyle]}>
+        <Animated.View style={style.container}>
             <FlatList
                 data={data}
                 initialNumToRender={30}

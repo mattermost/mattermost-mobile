@@ -8,7 +8,7 @@ import {observeCallStateInChannel, observeIsCallsEnabledInChannel} from '@calls/
 import {observeCallsConfig} from '@calls/state';
 import {Preferences} from '@constants';
 import {withServerUrl} from '@context/server';
-import {observeChannel, observeCurrentChannel} from '@queries/servers/channel';
+import {observeCurrentChannel} from '@queries/servers/channel';
 import {queryBookmarks} from '@queries/servers/channel_bookmark';
 import {observeHasGMasDMFeature} from '@queries/servers/features';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
@@ -17,10 +17,9 @@ import {
     observeConfigBooleanValue,
     observeCurrentChannelId,
     observeCurrentUserId,
-    observeLicense,
 } from '@queries/servers/system';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
-import {shouldShowChannelBanner} from '@screens/channel/channel_feature_checks';
+import {observeChannelBannerIncluded} from '@screens/channel/channel_feature_checks';
 
 import Channel from './channel';
 
@@ -57,18 +56,7 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         distinctUntilChanged(),
     );
 
-    const license = observeLicense(database);
-    const bannerInfo = channelId.pipe(
-        switchMap((cId) => observeChannel(database, cId)),
-        switchMap((channel) => of$(channel?.bannerInfo)),
-    );
-
-    const includeChannelBanner = channelType.pipe(
-        combineLatestWith(license, bannerInfo),
-        switchMap(([channelTypeValue, licenseValue, bannerInfoValue]) =>
-            of$(shouldShowChannelBanner(channelTypeValue, licenseValue, bannerInfoValue)),
-        ),
-    );
+    const includeChannelBanner = observeChannelBannerIncluded(database, channelType, channelId);
 
     const isCRTEnabled = observeIsCRTEnabled(database);
 

@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AgentsButton from '@agents/components/agents_button';
 import React, {useEffect, useMemo, useState} from 'react';
-import {DeviceEventEmitter, useWindowDimensions} from 'react-native';
+import {DeviceEventEmitter, FlatList, useWindowDimensions} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
+import AgentsButton from '@agents/components/agents_button';
 import DraftsButton from '@components/drafts_buttton';
 import ThreadsButton from '@components/threads_button';
 import {Events, Screens} from '@constants';
-import {AGENTS, CHANNEL, DRAFT, THREAD} from '@constants/screens';
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -27,7 +27,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.sidebarBg,
         paddingTop: 10,
     },
+    flex: {
+        flex: 1,
+    },
 }));
+
+type ScreenType = typeof Screens.GLOBAL_DRAFTS | typeof Screens.GLOBAL_THREADS | typeof Screens.CHANNEL | typeof Screens.PARTICIPANT_PLAYBOOKS | typeof Screens.AGENT_CHAT;
 
 type ChannelListProps = {
     hasChannels: boolean;
@@ -37,7 +42,7 @@ type ChannelListProps = {
     draftsCount: number;
     scheduledPostCount: number;
     scheduledPostHasError: boolean;
-    lastChannelId?: string;
+    lastChannelId?: ScreenType;
     scheduledPostsEnabled?: boolean;
     agentsEnabled?: boolean;
     showPlaybooksButton?: boolean;
@@ -47,7 +52,7 @@ const getTabletWidth = (moreThanOneTeam: boolean) => {
     return TABLET_SIDEBAR_WIDTH - (moreThanOneTeam ? TEAM_SIDEBAR_WIDTH : 0);
 };
 
-type ScreenType = typeof AGENTS | typeof DRAFT | typeof THREAD | typeof CHANNEL;
+const edges: Edge[] = ['right'];
 
 const CategoriesList = ({
     hasChannels,
@@ -67,7 +72,7 @@ const CategoriesList = ({
     const {width} = useWindowDimensions();
     const isTablet = useIsTablet();
     const tabletWidth = useSharedValue(isTablet ? getTabletWidth(moreThanOneTeam) : 0);
-    const [activeScreen, setActiveScreen] = useState<ScreenType>(isTablet && lastChannelId === Screens.GLOBAL_DRAFTS ? DRAFT : CHANNEL);
+    const [activeScreen, setActiveScreen] = useState<ScreenType>(isTablet && lastChannelId ? lastChannelId : Screens.CHANNEL);
 
     useEffect(() => {
         if (isTablet) {
@@ -80,10 +85,10 @@ const CategoriesList = ({
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.ACTIVE_SCREEN, (screen: string) => {
-            if (screen === AGENTS || screen === DRAFT || screen === THREAD) {
+            if (screen === Screens.GLOBAL_DRAFTS || screen === Screens.GLOBAL_THREADS || screen === Screens.PARTICIPANT_PLAYBOOKS || screen === Screens.AGENT_CHAT) {
                 setActiveScreen(screen);
             } else {
-                setActiveScreen(CHANNEL);
+                setActiveScreen(Screens.CHANNEL);
             }
         });
 
@@ -110,17 +115,17 @@ const CategoriesList = ({
         return (
             <ThreadsButton
                 isOnHome={true}
-                shouldHighlightActive={activeScreen === THREAD}
+                shouldHighlightActive={activeScreen === Screens.GLOBAL_THREADS}
             />
         );
     }, [activeScreen, isCRTEnabled]);
 
     const draftsButtonComponent = useMemo(() => {
-        if (draftsCount > 0 || (scheduledPostCount > 0 && scheduledPostsEnabled) || (isTablet && activeScreen === DRAFT)) {
+        if (draftsCount > 0 || (scheduledPostCount > 0 && scheduledPostsEnabled) || (isTablet && activeScreen === Screens.GLOBAL_DRAFTS)) {
             return (
                 <DraftsButton
                     draftsCount={draftsCount}
-                    shouldHighlightActive={activeScreen === DRAFT}
+                    shouldHighlightActive={activeScreen === Screens.GLOBAL_DRAFTS}
                     scheduledPostCount={scheduledPostCount}
                     scheduledPostHasError={scheduledPostHasError}
                 />
@@ -137,7 +142,7 @@ const CategoriesList = ({
 
         return (
             <AgentsButton
-                shouldHighlightActive={activeScreen === AGENTS}
+                shouldHighlightActive={activeScreen === Screens.AGENT_CHAT}
             />
         );
     }, [agentsEnabled, activeScreen]);
@@ -147,27 +152,41 @@ const CategoriesList = ({
             return null;
         }
 
+        const shouldHighlightActive = activeScreen === Screens.PARTICIPANT_PLAYBOOKS && activeScreen === lastChannelId && isTablet;
         return (
-            <PlaybooksButton/>
+            <PlaybooksButton
+                shouldHighlightActive={shouldHighlightActive}
+            />
         );
-    }, [showPlaybooksButton]);
+    }, [activeScreen, isTablet, lastChannelId, showPlaybooksButton]);
 
     const content = useMemo(() => {
         if (!hasChannels) {
             return (<LoadChannelsError/>);
         }
 
+        const components = [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent,
+            <Categories
+                key='categories'
+                isTablet={isTablet}
+            />,
+        ];
+
         return (
-            <>
+            <SafeAreaView
+                edges={edges}
+                style={styles.flex}
+            >
                 <SubHeader/>
-                {threadButtonComponent}
-                {draftsButtonComponent}
-                {agentsButtonComponent}
-                {playbooksButtonComponent}
-                <Categories isTablet={isTablet}/>
-            </>
+                <FlatList
+                    data={components}
+                    renderItem={({item}) => item}
+                    nestedScrollEnabled={true}
+                    style={styles.flex}
+                />
+            </SafeAreaView>
         );
-    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isTablet, playbooksButtonComponent, threadButtonComponent]);
+    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isTablet, playbooksButtonComponent, styles.flex, threadButtonComponent]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>

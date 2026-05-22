@@ -1,17 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetFlashList} from '@gorhom/bottom-sheet';
-import {FlashList, type ListRenderItemInfo} from '@shopify/flash-list';
+import {useBottomSheetScrollableCreator} from '@gorhom/bottom-sheet';
+import {FlashList, type FlashListRef, type ListRenderItemInfo} from '@shopify/flash-list';
 import {chunk} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {View, StyleSheet} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
-import EmojiCategoryBar from '@components/emoji_category_bar';
-import {EMOJI_CATEGORY_ICONS, EMOJI_ROW_MARGIN, EMOJI_SIZE, EMOJIS_PER_PAGE, EMOJIS_PER_ROW, EMOJIS_PER_ROW_TABLET} from '@constants/emoji';
+import {EMOJI_CATEGORY_ICONS, EMOJIS_PER_PAGE, EMOJIS_PER_ROW, EMOJIS_PER_ROW_TABLET} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
-import {useIsTablet} from '@hooks/device';
+import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {setEmojiCategoryBarIcons, setEmojiCategoryBarSection, useEmojiCategoryBar} from '@hooks/emoji_category_bar';
 import {CategoryNames, EmojiIndicesByCategory, CategoryTranslations, CategoryMessage} from '@utils/emoji';
 import {fillEmoji} from '@utils/emoji/helpers';
@@ -21,6 +21,7 @@ import SectionFooter from './section_footer';
 import SectionHeader, {type EmojiSection} from './section_header';
 
 import type {CustomEmojiModel} from '@database/models/server';
+import type {CategoryTranslation, EmojiAlias} from '@typings/screens/emoji_selector';
 
 type SectionListItem = EmojiSection | EmojiSectionRow;
 
@@ -39,8 +40,7 @@ const keyExtractor = (item: SectionListItem) => {
 const getItemType = (item: SectionListItem) => item.type;
 
 const styles = StyleSheet.create({
-    container: {flex: 1, paddingBottom: 20},
-    containerStyle: {paddingBottom: 50},
+    container: {flex: 1},
 });
 
 type Props = {
@@ -70,8 +70,11 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
     const {currentIndex, selectedIndex} = useEmojiCategoryBar();
+    const keyboardHeight = useKeyboardHeight();
+    const {bottom} = useSafeAreaInsets();
 
-    const list = useRef<FlashList<SectionListItem> | null>(null);
+    const list = useRef<FlashListRef<SectionListItem> | null>(null);
+    const BottomSheetScrollable = useBottomSheetScrollableCreator();
 
     const sections: SectionListItem[] = useMemo(() => {
         const emojisPerRow = isTablet ? EMOJIS_PER_ROW_TABLET : EMOJIS_PER_ROW;
@@ -209,12 +212,12 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
         setFetchingCustomEmojis(false);
     }, [customEmojisEnabled, fetchingCustomEmojis, loadedAllCustomEmojis, serverUrl, customEmojiPage]);
 
-    const handleStickyHeaderIndexChanged = useCallback((index: number) => {
+    const handleChangeStickyIndex = useCallback((current: number) => {
         if (scrollingToIndex.current) {
             return;
         }
 
-        const stickyIndex = stickyHeaderIndices.indexOf(index);
+        const stickyIndex = stickyHeaderIndices.indexOf(current);
         if (stickyIndex !== -1 && currentIndex !== stickyIndex) {
             requestAnimationFrame(() => {
                 setEmojiCategoryBarSection(stickyIndex);
@@ -225,8 +228,6 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
     const renderFooter = useMemo(() => {
         return fetchingCustomEmojis ? <SectionFooter/> : null;
     }, [fetchingCustomEmojis]);
-
-    const List = useMemo(() => (isTablet ? FlashList : BottomSheetFlashList), [isTablet]);
 
     useEffect(() => {
         setEmojiCategoryBarIcons(sections.filter((s) => s.type === 'section').map((s) => ({
@@ -244,27 +245,27 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedIndex]);
 
+    const containerStyle = useMemo(() => ({
+        paddingBottom: keyboardHeight > 0 ? undefined : bottom,
+    }), [bottom, keyboardHeight]);
+
     return (
         <View style={styles.container}>
-            <List
-                contentContainerStyle={styles.containerStyle}
+            <FlashList
+                contentContainerStyle={containerStyle}
                 data={sections}
-                estimatedItemSize={EMOJI_SIZE + EMOJI_ROW_MARGIN}
-                getItemType={getItemType}
                 keyExtractor={keyExtractor}
                 ListFooterComponent={renderFooter}
                 onEndReachedThreshold={0.5}
                 onEndReached={loadMoreCustomEmojis}
-                onStickyHeaderIndexChanged={handleStickyHeaderIndexChanged}
-
-                //@ts-expect-error type definition for ref
+                onChangeStickyIndex={handleChangeStickyIndex}
+                keyboardShouldPersistTaps='handled'
                 ref={list}
                 renderItem={renderItem}
                 stickyHeaderIndices={stickyHeaderIndices}
+                getItemType={getItemType}
+                renderScrollComponent={BottomSheetScrollable}
             />
-            {isTablet &&
-            <EmojiCategoryBar/>
-            }
         </View>
     );
 }

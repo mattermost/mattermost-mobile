@@ -36,7 +36,7 @@ apply plugin: "com.facebook.react"
     // bundleAssetName = "MyApplication.android.bundle"
     //
     //   The entry file for bundle generation. Default is 'index.android.js' or 'index.js'
-    entryFile = file("../../index.ts")
+    entryFile = file("../../index.tsx")
     //
     //   A list of extra flags to pass to the 'bundle' commands.
     //   See https://github.com/react-native-community/cli/blob/main/docs/commands.md#bundle
@@ -51,8 +51,6 @@ apply plugin: "com.facebook.react"
     /* Autolinking */
     autolinkLibrariesWithApp()
 }
-
-apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
 if (System.getenv("SENTRY_ENABLED") == "true") {
     project.ext.sentryCli = [
@@ -81,14 +79,14 @@ def enableProguardInReleaseBuilds = false
  * The preferred build flavor of JavaScriptCore (JSC)
  *
  * For example, to use the international variant, you can use:
- * `def jscFlavor = 'org.webkit:android-jsc-intl:+'`
+ * `def jscFlavor = 'io.github.react-native-community:jsc-android-intl:2026004.+'`
  *
  * The international variant includes ICU i18n library and necessary data
  * allowing to use e.g. `Date.toLocaleString` and `String.localeCompare` that
  * give correct results when using with locales other than en-US. Note that
  * this variant is about 6MiB larger per architecture than default.
  */
-def jscFlavor = 'org.webkit:android-jsc-intl:+'
+def jscFlavor = 'io.github.react-native-community:jsc-android-intl:2026004.+'
 
 /**
  * Private function to get the list of Native Architectures you want to build.
@@ -115,10 +113,11 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 731
-        versionName "2.39.0"
+        versionCode 755
+        versionName "2.41.0"
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
 
     signingConfigs {
@@ -220,7 +219,7 @@ dependencies {
     implementation 'com.facebook.fresco:animated-webp:3.6.0'
     implementation 'com.facebook.fresco:webpsupport:3.6.0'
 
-    implementation project(':reactnativenotifications')
+    implementation project(':react-native-notifications')
     implementation project(':watermelondb-jsi')
 
     api('io.jsonwebtoken:jjwt-api:0.12.5')
@@ -233,6 +232,11 @@ dependencies {
 configurations.all {
     resolutionStrategy {
         force 'androidx.test:core:1.6.1'
+        force 'com.squareup.okhttp3:okhttp:5.3.2'
+        force 'com.squareup.okhttp3:okhttp-urlconnection:5.3.2'
+        force 'com.squareup.okhttp3:okhttp-brotli:5.3.2'
+        force 'com.squareup.okio:okio:3.16.4'
+        force "org.jetbrains.kotlin:kotlin-stdlib:${rootProject.ext.kotlinVersion}"
         eachDependency { DependencyResolveDetails details ->
             if (details.requested.name == 'play-services-base') {
                 details.useTarget group: details.requested.group, name: details.requested.name, version: '18.5.0'
@@ -242,15 +246,6 @@ configurations.all {
             }
             if (details.requested.name == 'play-services-basement') {
                 details.useTarget group: details.requested.group, name: details.requested.name, version: '18.5.0'
-            }
-            if (details.requested.name == 'okhttp') {
-                details.useTarget group: details.requested.group, name: details.requested.name, version: '4.12.0'
-            }
-            if (details.requested.name == 'okhttp-tls') {
-                details.useTarget group: details.requested.group, name: details.requested.name, version: '4.12.0'
-            }
-            if (details.requested.name == 'okhttp-urlconnection') {
-                details.useTarget group: details.requested.group, name: details.requested.name, version: '4.12.0'
             }
         }
     }

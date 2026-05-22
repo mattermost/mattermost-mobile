@@ -8,7 +8,6 @@ import {
     DialogDataSources,
     DialogElementTypes,
     DialogTextSubtypes,
-    DialogErrorMessages,
     mapDialogTypeToAppFieldType,
     mapAppFieldTypeToDialogType,
     getDataSourceForAppFieldType,
@@ -265,17 +264,5 @@ describe('dialog_utils', () => {
             expect(DialogTextSubtypes.TEXTAREA).toBe('textarea');
         });
 
-        it('should have dialog error message constants', () => {
-            expect(DialogErrorMessages.REQUIRED).toBe('interactive_dialog.error.required');
-            expect(DialogErrorMessages.TOO_SHORT).toBe('interactive_dialog.error.too_short');
-            expect(DialogErrorMessages.BAD_EMAIL).toBe('interactive_dialog.error.bad_email');
-            expect(DialogErrorMessages.BAD_NUMBER).toBe('interactive_dialog.error.bad_number');
-            expect(DialogErrorMessages.BAD_URL).toBe('interactive_dialog.error.bad_url');
-            expect(DialogErrorMessages.INVALID_OPTION).toBe('interactive_dialog.error.invalid_option');
-            expect(DialogErrorMessages.SUBMISSION_FAILED).toBe('interactive_dialog.submission_failed');
-            expect(DialogErrorMessages.SUBMISSION_FAILED_NETWORK).toBe('interactive_dialog.submission_failed_network');
-            expect(DialogErrorMessages.SUBMISSION_FAILED_VALIDATION).toBe('interactive_dialog.submission_failed_validation');
-            expect(DialogErrorMessages.SUBMISSION_FAILED_WITH_DETAILS).toBe('interactive_dialog.submission_failed_with_details');
-        });
     });
 });

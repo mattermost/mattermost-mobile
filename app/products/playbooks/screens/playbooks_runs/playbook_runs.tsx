@@ -3,26 +3,24 @@
 
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {fetchFinishedRunsForChannel} from '@playbooks/actions/remote/runs';
 import RunList, {type RunListTabsNames} from '@playbooks/components/run_list';
 import {isRunFinished} from '@playbooks/utils/run';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     channelId: string;
     allRuns: PlaybookRunModel[];
-    componentId: AvailableScreens;
 };
 
 const PlaybookRuns = ({
     channelId,
     allRuns,
-    componentId,
 }: Props) => {
     const serverUrl = useServerUrl();
 
@@ -32,11 +30,7 @@ const PlaybookRuns = ({
 
     const [remoteFinishedRuns, setRemoteFinishedRuns] = useState<PlaybookRun[]>([]);
 
-    const exit = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-
-    useAndroidHardwareBackHandler(componentId, exit);
+    useAndroidHardwareBackHandler(Screens.PLAYBOOKS_RUNS, navigateBack);
 
     const [inProgressRuns, localFinishedRuns] = useMemo(() => {
         const inProgress: PlaybookRunModel[] = [];
@@ -77,7 +71,7 @@ const PlaybookRuns = ({
 
     return (
         <RunList
-            componentId={componentId}
+            location={Screens.PLAYBOOKS_RUNS}
             inProgressRuns={inProgressRuns}
             finishedRuns={remoteFinishedRuns.length ? remoteFinishedRuns : localFinishedRuns}
             fetchMoreRuns={fetchMoreFinishedRuns}

@@ -5,12 +5,13 @@ import {DeviceEventEmitter} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 
 import {Events} from '@constants';
+import {getDefaultThemeByAppearance} from '@context/theme';
 import {toMilliseconds} from '@utils/datetime';
 
 const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
 
 class EphemeralStoreSingleton {
-    theme: Theme | undefined;
+    private themeSubject = new BehaviorSubject<Theme>(getDefaultThemeByAppearance());
     creatingChannel = false;
     creatingDMorGMTeammates: string[] = [];
 
@@ -49,6 +50,8 @@ class EphemeralStoreSingleton {
     // This is used to avoid fetching the playbooks for the same channel multiple times.
     // It is cleared any time the connection with the server is lost.
     private channelPlaybooksSynced: {[serverUrl: string]: Set<string>} = {};
+
+    private managedCategoryPropertyIds: {[serverUrl: string]: {groupId: string; fieldId: string} | undefined} = {};
 
     // Track how many translations are being executed at the same time on the channel.
     // We limit this to avoid overwhelming the device.
@@ -322,6 +325,30 @@ class EphemeralStoreSingleton {
 
     clearChannelPlaybooksSynced = (serverUrl: string) => {
         delete this.channelPlaybooksSynced[serverUrl];
+    };
+
+    observeTheme = () => {
+        return this.themeSubject.asObservable();
+    };
+
+    setTheme = (theme: Theme) => {
+        this.themeSubject.next(theme);
+    };
+
+    getTheme = () => {
+        return this.themeSubject.value;
+    };
+
+    getManagedCategoryPropertyIds = (serverUrl: string) => {
+        return this.managedCategoryPropertyIds[serverUrl];
+    };
+
+    setManagedCategoryPropertyIds = (serverUrl: string, ids: {groupId: string; fieldId: string}) => {
+        this.managedCategoryPropertyIds[serverUrl] = ids;
+    };
+
+    clearManagedCategoryPropertyIds = (serverUrl: string) => {
+        delete this.managedCategoryPropertyIds[serverUrl];
     };
 
     // Ephemeral control for rejected files

@@ -37,7 +37,7 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
         if (credentials?.token) {
             const intunePolicy = await IntuneManager.getPolicy(serverUrl);
             SecurityManager.addServer(serverUrl, clData.config, false, intunePolicy);
-            WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
+            await WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
             await WebsocketManager.initializeClient(serverUrl, 'Login');
         }
 

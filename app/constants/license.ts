@@ -8,6 +8,7 @@ export const SKU_SHORT_NAME = {
     Professional: 'professional',
     Enterprise: 'enterprise',
     EnterpriseAdvanced: 'advanced',
+    Entry: 'entry',
 };
 
 export const SelfHostedProducts = {
@@ -23,6 +24,7 @@ export const TIER = {
 export const LicenseSkuTier = {
     [SKU_SHORT_NAME.Professional]: TIER.ProfessionalTier,
     [SKU_SHORT_NAME.Enterprise]: TIER.EnterpriseTier,
+    [SKU_SHORT_NAME.Entry]: TIER.EnterpriseAdvancedTier,
     [SKU_SHORT_NAME.EnterpriseAdvanced]: TIER.EnterpriseAdvancedTier,
 };
 

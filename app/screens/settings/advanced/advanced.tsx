@@ -3,7 +3,7 @@
 
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, TouchableOpacity} from 'react-native';
+import {Alert, Pressable, type PressableStateCallbackType} from 'react-native';
 
 import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
@@ -13,20 +13,17 @@ import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {goToScreen, popTopScreen} from '@screens/navigation';
+import {navigateBack, navigateToSettingsScreen} from '@screens/navigation';
 import {deleteFileCache, getAllFilesInCachesDirectory, getFormattedFileSize} from '@utils/file';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
 import type {FileInfo} from 'expo-file-system';
 
 const EMPTY_FILES: FileInfo[] = [];
 
 type AdvancedSettingsProps = {
-    componentId: AvailableScreens;
     isDevMode: boolean;
 };
 const AdvancedSettings = ({
-    componentId,
     isDevMode,
 }: AdvancedSettingsProps) => {
     const intl = useIntl();
@@ -34,8 +31,8 @@ const AdvancedSettings = ({
     const [dataSize, setDataSize] = useState<number | undefined>(0);
     const [files, setFiles] = useState<FileInfo[]>(EMPTY_FILES);
 
-    const getAllCachedFiles = useCallback(async () => {
-        const {totalSize = 0, files: cachedFiles} = await getAllFilesInCachesDirectory(serverUrl);
+    const getAllCachedFiles = useCallback(() => {
+        const {totalSize = 0, files: cachedFiles} = getAllFilesInCachesDirectory(serverUrl);
         setDataSize(totalSize);
         setFiles(cachedFiles || EMPTY_FILES);
     }, [serverUrl]);
@@ -56,8 +53,8 @@ const AdvancedSettings = ({
                         {
                             text: formatMessage({id: 'settings.advanced.delete', defaultMessage: 'Delete'}),
                             style: 'destructive',
-                            onPress: async () => {
-                                await deleteFileCache(serverUrl);
+                            onPress: () => {
+                                deleteFileCache(serverUrl);
                                 getAllCachedFiles();
                             },
                         },
@@ -71,30 +68,26 @@ const AdvancedSettings = ({
     }, [files.length, getAllCachedFiles, intl, serverUrl]));
 
     const onPressComponentLibrary = useCallback(() => {
-        const screen = Screens.COMPONENT_LIBRARY;
-        const title = intl.formatMessage({id: 'settings.advanced_settings.component_library', defaultMessage: 'Component library'});
-
-        goToScreen(screen, title);
-    }, [intl]);
+        navigateToSettingsScreen(Screens.COMPONENT_LIBRARY);
+    }, []);
 
     useDidMount(() => {
         getAllCachedFiles();
     });
 
-    const close = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_ADVANCED, navigateBack);
 
     const hasData = Boolean(dataSize && dataSize > 0);
 
+    const pressedStyleFn = useCallback(({pressed}: PressableStateCallbackType) => (pressed && hasData && {opacity: 0.72}), [hasData]);
+    const pressedStyleDevFn = useCallback(({pressed}: PressableStateCallbackType) => (pressed && {opacity: 0.72}), []);
+
     return (
         <SettingContainer testID='advanced_settings'>
-            <TouchableOpacity
+            <Pressable
                 onPress={onPressDeleteData}
                 disabled={!hasData}
-                activeOpacity={hasData ? 1 : 0}
+                style={pressedStyleFn}
             >
                 <SettingOption
                     destructive={true}
@@ -105,10 +98,11 @@ const AdvancedSettings = ({
                     type='none'
                 />
                 <SettingSeparator/>
-            </TouchableOpacity>
+            </Pressable>
             {isDevMode && (
-                <TouchableOpacity
+                <Pressable
                     onPress={onPressComponentLibrary}
+                    style={pressedStyleDevFn}
                 >
                     <SettingOption
                         label={intl.formatMessage({id: 'settings.advanced.component_library', defaultMessage: 'Component library'})}
@@ -116,7 +110,7 @@ const AdvancedSettings = ({
                         type='none'
                     />
                     <SettingSeparator/>
-                </TouchableOpacity>
+                </Pressable>
             )}
         </SettingContainer>
     );

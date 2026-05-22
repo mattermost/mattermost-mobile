@@ -4,7 +4,7 @@
 import {defineConfig} from 'eslint/config';
 import headerPlugin from "eslint-plugin-header";
 import tseslint from "@typescript-eslint/eslint-plugin";
-import stylisticTs from "@stylistic/eslint-plugin-ts";
+import stylistic from "@stylistic/eslint-plugin";
 
 headerPlugin.rules.header.meta.schema = false;
 
@@ -24,7 +24,7 @@ export default defineConfig([
     plugins: {
       header: headerPlugin,
       "@typescript-eslint": tseslint,
-      "@stylistic/ts": stylisticTs,
+      "@stylistic": stylistic,
     },
     rules: {
       "array-bracket-spacing": [2, "never"],
@@ -187,8 +187,8 @@ export default defineConfig([
       "space-before-blocks": [2, "always"],
       "space-in-parens": [2, "never"],
       "@typescript-eslint/array-type": [2, { default: "array-simple" }],
-      "@stylistic/ts/member-delimiter-style": 2,
-      "@stylistic/ts/type-annotation-spacing": 2,
+      "@stylistic/member-delimiter-style": 2,
+      "@stylistic/type-annotation-spacing": 2,
       "@typescript-eslint/no-redeclare": [
         2,
         { ignoreDeclarationMerge: true }

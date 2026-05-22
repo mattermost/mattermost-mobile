@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook, act} from '@testing-library/react-hooks';
+import {renderHook, act} from '@testing-library/react-native';
 import {BehaviorSubject} from 'rxjs';
 
 import {
@@ -91,7 +91,7 @@ describe('EmojiCategoryBar', () => {
 
     describe('setEmojiCategoryBarIcons', () => {
         it('should update the icons in the state', () => {
-            const icons = [{key: 'smile', name: 'smile', icon: 'smile'}];
+            const icons = [{key: 'smile', icon: 'emoticon-happy-outline' as const}];
             setEmojiCategoryBarIcons(icons);
 
             expect(mockSubject.next).toHaveBeenCalledWith({

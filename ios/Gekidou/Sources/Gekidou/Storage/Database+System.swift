@@ -11,7 +11,7 @@ import SQLite
 
 extension Database {
     public func getDeviceToken() -> String? {
-        if let db = try? Connection(DEFAULT_DB_PATH) {
+        if let db = try? openConnection(DEFAULT_DB_PATH) {
             let idCol = Expression<String>("id")
             let valueCol = Expression<String>("value")
             let query = globalTable.select(valueCol).filter(idCol == "deviceToken")

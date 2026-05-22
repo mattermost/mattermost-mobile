@@ -3,10 +3,11 @@
 
 import {type ImageSource} from 'expo-image';
 import React, {useMemo} from 'react';
+import {Platform} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {ExpoImageAnimated} from '@components/expo_image';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
@@ -21,7 +22,7 @@ type Props = {
     forwardRef?: React.RefObject<any>;
     iconSize?: number;
     size: number;
-    source?: ImageSource | string;
+    source?: ImageSource | CompassIconName;
     url?: string;
 };
 
@@ -52,8 +53,12 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
             return undefined;
         }
 
+        if (source) {
+            return source;
+        }
+
         const pictureUrl = buildProfileImageUrlFromUser(serverUrl, author);
-        return source ?? {uri: buildAbsoluteUrl(serverUrl, pictureUrl)};
+        return {uri: buildAbsoluteUrl(serverUrl, pictureUrl)};
 
     // We need to pass the lastPictureUpdateAt, because changes in this
     // value are used internally, and may not be followed by a change
@@ -79,13 +84,18 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
     }
 
     if (imgSource?.uri?.startsWith('file://')) {
+        const uri = Platform.select({
+            ios: imgSource.uri.replace(/^file:\/+/, '/'),
+            default: imgSource.uri,
+        });
+
         return (
             <ExpoImageAnimated
                 id={id}
                 key={id}
                 ref={forwardRef}
                 style={fIStyle}
-                source={{uri: imgSource.uri}}
+                source={{uri}}
             />
         );
     }

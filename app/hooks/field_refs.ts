@@ -6,7 +6,7 @@ import {useRef, useCallback} from 'react';
 import {type FloatingTextInputRef} from '@components/floating_input/floating_text_input_label';
 
 const useFieldRefs = (): [(key: string) => FloatingTextInputRef | undefined, (key: string) => (providedRef: FloatingTextInputRef) => () => void] => {
-    const allRefs = useRef<Map<string, FloatingTextInputRef>>();
+    const allRefs = useRef<Map<string, FloatingTextInputRef> | undefined>(undefined);
 
     const getAllRefs = useCallback(() => {
         if (!allRefs.current) {

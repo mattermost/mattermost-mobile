@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {observeAIBots} from '@agents/database/queries/bot';
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+
+import {observeAIBots} from '@agents/database/queries/bot';
 
 import AgentChat from './agent_chat';
 

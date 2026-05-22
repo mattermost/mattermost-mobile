@@ -43,7 +43,7 @@ describe('fetchCategories', () => {
         const result = await fetchCategories(serverUrl, teamId);
 
         expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
-        expect(mockClient.getCategories).toHaveBeenCalledWith('me', teamId);
+        expect(mockClient.getCategories).toHaveBeenCalledWith('me', teamId, undefined);
         expect(storeCategories).toHaveBeenCalledWith(serverUrl, mockCategories, false);
         expect(result).toEqual({categories: mockCategories});
     });
@@ -57,7 +57,7 @@ describe('fetchCategories', () => {
         const result = await fetchCategories(serverUrl, teamId, false, true);
 
         expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
-        expect(mockClient.getCategories).toHaveBeenCalledWith('me', teamId);
+        expect(mockClient.getCategories).toHaveBeenCalledWith('me', teamId, undefined);
         expect(result).toEqual({categories: mockCategories});
     });
 
@@ -71,7 +71,7 @@ describe('fetchCategories', () => {
         const result = await fetchCategories(serverUrl, teamId);
 
         expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
-        expect(mockClient.getCategories).toHaveBeenCalledWith('me', teamId);
+        expect(mockClient.getCategories).toHaveBeenCalledWith('me', teamId, undefined);
         expect(logDebug).toHaveBeenCalledWith('error on fetchCategories', 'Full error message');
         expect(result).toEqual({error});
     });

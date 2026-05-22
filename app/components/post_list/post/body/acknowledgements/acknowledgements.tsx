@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, useWindowDimensions} from 'react-native';
 
 import {acknowledgePost, unacknowledgePost} from '@actions/remote/post';
@@ -10,7 +9,6 @@ import {fetchMissingProfilesByIds} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
-import {useIsTablet} from '@hooks/device';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -73,8 +71,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, location, post, theme}: Props) => {
-    const intl = useIntl();
-    const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
     const {height} = useWindowDimensions();
 
@@ -125,13 +121,11 @@ const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, loc
 
         const renderContent = () => (
             <>
-                {!isTablet && (
-                    <FormattedText
-                        id='mobile.acknowledgements.header'
-                        defaultMessage={'Acknowledgements'}
-                        style={style.listHeaderText}
-                    />
-                )}
+                <FormattedText
+                    id='mobile.acknowledgements.header'
+                    defaultMessage={'Acknowledgements'}
+                    style={style.listHeaderText}
+                />
                 <UsersList
                     channelId={post.channelId}
                     location={location}
@@ -149,19 +143,8 @@ const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, loc
             snapPoints.push(snapPoint2);
         }
 
-        bottomSheet({
-            closeButtonId: 'close-ack-users-list',
-            renderContent,
-            initialSnapIndex: 1,
-            snapPoints,
-            title: intl.formatMessage({id: 'mobile.acknowledgements.header', defaultMessage: 'Acknowledgements'}),
-            theme,
-        });
-    }, [
-        acknowledgements, height, intl,
-        theme, serverUrl, isTablet, style.listHeaderText,
-        post.channelId, location, currentUserTimezone,
-    ]);
+        bottomSheet(renderContent, snapPoints);
+    }, [acknowledgements, height, serverUrl, style.listHeaderText, post.channelId, location, currentUserTimezone]);
 
     return (
         <>

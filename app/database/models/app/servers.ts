@@ -6,7 +6,7 @@ import {field} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
 
-import type ServersModelInterface from '@typings/database/models/app/servers';
+import type {default as ServersModelInterface, PersistenceFlag} from '@typings/database/models/app/servers';
 
 const {SERVERS} = MM_TABLES.APP;
 
@@ -32,4 +32,7 @@ export default class ServersModel extends Model implements ServersModelInterface
 
     /** identifier: Determines the installation identifier of a server */
     @field('identifier') identifier!: string;
+
+    /** persistence_flag: Marker for non-default persistence behavior on this server's local database */
+    @field('persistence_flag') persistenceFlag!: PersistenceFlag;
 }

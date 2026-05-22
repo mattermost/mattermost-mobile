@@ -254,6 +254,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
     );
 
     const isPlaybooksEnabled = observeIsPlaybooksEnabled(database);
+    const channelDisplayName = channel.pipe(switchMap((c) => of$(c?.displayName || '')));
     return {
         type,
         isCallsEnabledInChannel,
@@ -264,6 +265,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         isPlaybooksEnabled,
         hasChannelSettingsActions: observeHasChannelSettingsActions(database, serverUrl, channelId, channel, currentUser, type),
         isAutotranslationEnabledForThisChannel,
+        channelDisplayName,
     };
 });
 

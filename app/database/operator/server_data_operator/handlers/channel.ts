@@ -77,7 +77,12 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
                 return res;
             }
 
-            if (e.updateAt !== c.update_at || e.deleteAt !== c.delete_at || c.fake) {
+            if (
+                e.updateAt !== c.update_at ||
+                e.deleteAt !== c.delete_at ||
+                c.fake ||
+                e.shared !== c.shared // Backwards compatibility: server may not update UpdateAt when sending shared updates (see mattermost/mattermost#35448)
+            ) {
                 res.push(c);
             }
 

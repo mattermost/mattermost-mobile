@@ -80,15 +80,9 @@ const PublicPrivate = ({displayName, purpose}: Props) => {
                 );
             };
 
-            bottomSheet({
-                closeButtonId: 'close-mardown-link',
-                renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
-                title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
-                theme,
-            });
+            bottomSheet(renderContent, [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)]);
         }
-    }, [managedConfig?.copyAndPasteProtection, intl, theme, onCopy]);
+    }, [managedConfig?.copyAndPasteProtection, intl, onCopy]);
 
     return (
         <>

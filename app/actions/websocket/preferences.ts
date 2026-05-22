@@ -9,15 +9,18 @@ import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
 import {deletePreferences, differsFromLocalNameFormat, getHasCRTChanged} from '@queries/servers/preference';
 import EphemeralStore from '@store/ephemeral_store';
+import {logDebug} from '@utils/log';
 
 export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     if (EphemeralStore.isEnablingCRT()) {
+        logDebug('[handlePreferenceChangedEvent] skipping: CRT is being enabled');
         return;
     }
 
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const preference: PreferenceType = JSON.parse(msg.data.preference);
+        logDebug('[handlePreferenceChangedEvent] PREFERENCE_CHANGED', preference.category, preference.name);
         handleSavePostAdded(serverUrl, [preference]);
 
         const hasDiffNameFormatPref = await differsFromLocalNameFormat(database, [preference]);
@@ -42,12 +45,14 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
 
 export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     if (EphemeralStore.isEnablingCRT()) {
+        logDebug('[handlePreferencesChangedEvent] skipping: CRT is being enabled');
         return;
     }
 
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const preferences: PreferenceType[] = JSON.parse(msg.data.preferences);
+        logDebug('[handlePreferencesChangedEvent] PREFERENCES_CHANGED', preferences.map((p) => `${p.category}/${p.name}`).join(', '));
         handleSavePostAdded(serverUrl, preferences);
 
         const hasDiffNameFormatPref = await differsFromLocalNameFormat(database, preferences);

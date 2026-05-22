@@ -1,10 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
-import {handleAgentPostUpdate} from '@agents/actions/websocket';
-import {handleAgentsEvents} from '@agents/actions/websocket/events';
-
 import * as bookmark from '@actions/local/channel_bookmark';
 import {
     handleBoRPostAllRevealed,
@@ -12,6 +8,9 @@ import {
     handleBoRPostRevealedEvent,
 } from '@actions/websocket/burn_on_read';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
+import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
+import {handleAgentPostUpdate} from '@agents/actions/websocket';
+import {handleAgentsEvents} from '@agents/actions/websocket/events';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
@@ -21,6 +20,7 @@ import * as channel from './channel';
 import * as files from './files';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
+import {handleManagedChannelCategoriesPropertyValuesUpdated} from './managed_categories';
 import * as posts from './posts';
 import {handlePostTranslationUpdatedEvent} from './posts';
 import * as preferences from './preferences';
@@ -311,6 +311,10 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         case WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_FIELD_DELETED:
             handleCustomProfileAttributesFieldDeletedEvent(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.PROPERTY_VALUES_UPDATED:
+            handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl, msg);
             break;
 
         // Agents

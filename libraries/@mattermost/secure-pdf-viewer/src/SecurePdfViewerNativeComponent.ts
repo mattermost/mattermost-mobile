@@ -1,43 +1,43 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {requireNativeComponent, type HostComponent, type NativeSyntheticEvent, type ViewProps} from 'react-native';
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-interface OnLinkPressedPayload {
+import type {NativeSyntheticEvent, ViewProps} from 'react-native';
+import type {DirectEventHandler, Double, Int32} from 'react-native/Libraries/Types/CodegenTypes';
+
+// Event payload interfaces matching native implementation
+export type OnLinkPressedPayload = Readonly<{
   url: string;
-}
+}>;
 
-interface OnLoadErrorPayload {
+export type OnLoadErrorPayload = Readonly<{
   message: string;
-}
+}>;
 
-interface OnPasswordFailedPayload {
-  remainingAttempts: number;
-}
+export type OnPasswordFailedPayload = Readonly<{
+  remainingAttempts: Int32;
+}>;
 
-interface OnPasswordRequiredPayload {
-  maxAttempts: number;
-  remainingAttempts: number;
-}
+export type OnPasswordRequiredPayload = Readonly<{
+  maxAttempts: Int32;
+  remainingAttempts: Int32;
+}>;
 
-interface OnPasswordLimitReached {
-  maxAttempts: number;
-}
+export type OnPasswordLimitReachedPayload = Readonly<{
+  maxAttempts: Int32;
+}>;
 
-interface OnTapPayload {
-  x: number;
-  y: number;
-  pageX: number;
-  pageY: number;
-  timestamp: number;
-  pointerType: 'touch' | 'mouse' | 'pen';
-}
+export type OnTapPayload = Readonly<{
+  x: Double;
+  y: Double;
+}>;
 
+// Legacy event types for old architecture compatibility
 export type OnLinkPressedEvent = NativeSyntheticEvent<OnLinkPressedPayload>;
 export type OnLoadErrorEvent = NativeSyntheticEvent<OnLoadErrorPayload>;
 export type OnPasswordFailedEvent = NativeSyntheticEvent<OnPasswordFailedPayload>;
-export type OnPasswordLimitReachedEvent = NativeSyntheticEvent<OnPasswordLimitReached>;
+export type OnPasswordLimitReachedEvent = NativeSyntheticEvent<OnPasswordLimitReachedPayload>;
 export type OnPasswordRequiredEvent = NativeSyntheticEvent<OnPasswordRequiredPayload>;
 export type OnTapEvent = NativeSyntheticEvent<OnTapPayload>;
 
@@ -45,29 +45,22 @@ export interface NativeProps extends ViewProps {
   source: string;
   password?: string;
   allowLinks?: boolean;
-  onLinkPressed?: (event: OnLinkPressedEvent) => void;
-  onLinkPressedDisabled?: () => void;
-  onLoad?: () => void;
-  onPasswordRequired?: (event: OnPasswordRequiredEvent) => void;
-  onPasswordFailed?: (event: OnPasswordFailedEvent) => void;
-  onPasswordFailureLimitReached?: (event: OnPasswordLimitReachedEvent) => void;
-  onLoadError?: (event: OnLoadErrorEvent) => void;
-  onTap?: (event: OnTapEvent) => void;
+  onLinkPressed?: DirectEventHandler<OnLinkPressedPayload>;
+  onLinkPressedDisabled?: DirectEventHandler<{}>;
+  onLoad?: DirectEventHandler<{}>;
+  onPasswordRequired?: DirectEventHandler<OnPasswordRequiredPayload>;
+  onPasswordFailed?: DirectEventHandler<OnPasswordFailedPayload>;
+  onPasswordFailureLimitReached?: DirectEventHandler<OnPasswordLimitReachedPayload>;
+  onLoadError?: DirectEventHandler<OnLoadErrorPayload>;
+  onTap?: DirectEventHandler<OnTapPayload>;
 }
 
-const COMPONENT_NAME = 'SecurePdfViewer';
-
-let SecurePdfViewerNativeComponent: HostComponent<NativeProps>;
-
-// @ts-expect-error global not defined
-if (global?.nativeFabricUIManager == null) {
-    // Paper (Old Architecture)
-    SecurePdfViewerNativeComponent = requireNativeComponent<NativeProps>(COMPONENT_NAME);
-
-} else {
-    // Fabric (New Architecture)
-    SecurePdfViewerNativeComponent = codegenNativeComponent<NativeProps>(COMPONENT_NAME);
-}
-
-export default SecurePdfViewerNativeComponent;
+// For codegen to work properly, we need to export the codegenNativeComponent call directly
+// This works with both Old and New Architecture:
+// - New Arch (Fabric): Uses the codegen-generated component
+// - Old Arch (Paper): Falls back to requireNativeComponent at runtime
+export default codegenNativeComponent<NativeProps>('SecurePdfViewer', {
+    excludedPlatforms: [],
+    paperComponentName: 'SecurePdfViewer',
+});
 

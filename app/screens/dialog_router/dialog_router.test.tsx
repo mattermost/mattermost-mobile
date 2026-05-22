@@ -127,7 +127,6 @@ describe('DialogRouter', () => {
             const {getByTestId, queryByTestId} = renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={false}
                 />,
             );
@@ -136,15 +135,13 @@ describe('DialogRouter', () => {
             expect(getByTestId('interactive-dialog')).toBeTruthy();
             expect(mockInteractiveDialog).toHaveBeenCalledWith({
                 config: mockConfig,
-                componentId: 'InteractiveDialog',
-            }, {});
+            }, undefined);
         });
 
         it('should not call dialog conversion when feature flag is disabled', () => {
             renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={false}
                 />,
             );
@@ -158,7 +155,6 @@ describe('DialogRouter', () => {
             const {getByTestId, queryByTestId} = renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={true}
                 />,
             );
@@ -167,18 +163,16 @@ describe('DialogRouter', () => {
             expect(getByTestId('apps-form-component')).toBeTruthy();
             expect(mockAppsFormComponent).toHaveBeenCalledWith({
                 form: mockAppForm,
-                componentId: 'InteractiveDialog',
                 submit: expect.any(Function),
                 performLookupCall: expect.any(Function),
                 refreshOnSelect: expect.any(Function),
-            }, {});
+            }, undefined);
         });
 
         it('should call dialog conversion with correct config', () => {
             renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={true}
                 />,
             );
@@ -190,7 +184,6 @@ describe('DialogRouter', () => {
             renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={true}
                 />,
             );
@@ -208,7 +201,6 @@ describe('DialogRouter', () => {
             const {getByTestId, queryByTestId} = renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={true}
                 />,
             );
@@ -226,7 +218,6 @@ describe('DialogRouter', () => {
             const {getByTestId, queryByTestId} = renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={true}
                 />,
             );
@@ -244,7 +235,6 @@ describe('DialogRouter', () => {
             const {getByTestId, queryByTestId} = renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={true}
                 />,
             );
@@ -261,7 +251,6 @@ describe('DialogRouter', () => {
             renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={true}
                 />,
             );
@@ -286,7 +275,6 @@ describe('DialogRouter', () => {
             renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={true}
                 />,
             );
@@ -309,7 +297,6 @@ describe('DialogRouter', () => {
             const {rerender} = renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={true}
                 />,
             );
@@ -324,7 +311,6 @@ describe('DialogRouter', () => {
                 >
                     <DialogRouter
                         config={mockConfig}
-                        componentId='InteractiveDialog'
                         isAppsFormEnabled={true}
                     />
                 </IntlProvider>,
@@ -338,7 +324,6 @@ describe('DialogRouter', () => {
             const {rerender} = renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={true}
                 />,
             );
@@ -360,7 +345,6 @@ describe('DialogRouter', () => {
                 >
                     <DialogRouter
                         config={newConfig}
-                        componentId='InteractiveDialog'
                         isAppsFormEnabled={true}
                     />
                 </IntlProvider>,
@@ -374,7 +358,6 @@ describe('DialogRouter', () => {
             const {rerender} = renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={false}
                 />,
             );
@@ -390,7 +373,6 @@ describe('DialogRouter', () => {
                 >
                     <DialogRouter
                         config={mockConfig}
-                        componentId='InteractiveDialog'
                         isAppsFormEnabled={true}
                     />
                 </IntlProvider>,
@@ -406,16 +388,15 @@ describe('DialogRouter', () => {
             const {rerender} = renderWithIntl(
                 <DialogRouter
                     config={mockConfig}
-                    componentId='InteractiveDialog'
                     isAppsFormEnabled={true}
                 />,
             );
 
             expect(mockAppsFormComponent).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    componentId: 'InteractiveDialog',
+                    form: expect.any(Object),
                 }),
-                expect.any(Object),
+                undefined,
             );
 
             rerender(
@@ -425,7 +406,6 @@ describe('DialogRouter', () => {
                 >
                     <DialogRouter
                         config={mockConfig}
-                        componentId='AppForm'
                         isAppsFormEnabled={true}
                     />
                 </IntlProvider>,
@@ -433,9 +413,9 @@ describe('DialogRouter', () => {
 
             expect(mockAppsFormComponent).toHaveBeenLastCalledWith(
                 expect.objectContaining({
-                    componentId: 'AppForm',
+                    form: expect.any(Object),
                 }),
-                expect.any(Object),
+                undefined,
             );
         });
     });
@@ -447,7 +427,6 @@ describe('DialogRouter', () => {
                 renderWithIntl(
                     <DialogRouter
                         config={null as any}
-                        componentId='InteractiveDialog'
                         isAppsFormEnabled={true}
                     />,
                 );
@@ -464,7 +443,6 @@ describe('DialogRouter', () => {
                 renderWithIntl(
                     <DialogRouter
                         config={invalidConfig}
-                        componentId='InteractiveDialog'
                         isAppsFormEnabled={true}
                     />,
                 );

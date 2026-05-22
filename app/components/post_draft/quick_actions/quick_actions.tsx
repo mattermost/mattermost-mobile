@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AIRewriteAction from '@agents/components/ai_rewrite_action';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
+import AIRewriteAction from '@agents/components/ai_rewrite_action';
 import BoRQuickAction from '@components/post_draft/quick_actions/bor_quick_action';
 import {Screens} from '@constants';
 
@@ -26,6 +26,7 @@ type Props = {
     canShowSlashCommands?: boolean;
     canShowEmojiPicker?: boolean;
     maxFileCount: number;
+    showAttachLogs?: boolean;
     location?: AvailableScreens;
 
     // Draft Handler
@@ -62,6 +63,7 @@ export default function QuickActions({
     canShowPostPriority,
     canShowEmojiPicker = true,
     maxFileCount,
+    showAttachLogs,
     updateValue,
     addFiles,
     postPriority,
@@ -89,6 +91,7 @@ export default function QuickActions({
         maxFileCount,
         maxFilesReached: fileCount >= maxFileCount,
         onUploadFiles: addFiles,
+        showAttachLogs,
     };
 
     return (

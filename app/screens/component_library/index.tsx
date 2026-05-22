@@ -8,16 +8,13 @@ import AutocompleteSelector from '@components/autocomplete_selector';
 import {Preferences, Screens} from '@constants';
 import {CustomThemeProvider} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import SecurityManager from '@managers/security_manager';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 
 import ButtonComponentLibrary from './button.cl';
 import ChipComponentLibrary from './chip.cl';
 import OptionItemComponentLibrary from './option_item.cl';
 import SectionNoticeComponentLibrary from './section_notice.cl';
 import TagComponentLibrary from './tag.cl';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const componentMap = {
     Button: ButtonComponentLibrary,
@@ -50,11 +47,7 @@ const backgroundOptions = [{
     text: 'Sidebar background',
 }];
 
-type Props = {
-    componentId: AvailableScreens;
-};
-
-const ComponentLibrary = ({componentId}: Props) => {
+const ComponentLibrary = () => {
     const [selectedComponent, setSelectedComponent] = useState<ComponentName>(defaultComponent);
     const onSelectComponent = useCallback((value: SelectedDialogOption) => {
         if (!value) {
@@ -112,18 +105,11 @@ const ComponentLibrary = ({componentId}: Props) => {
         }
     }, [selectedBackground, selectedTheme]);
 
-    const close = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.COMPONENT_LIBRARY, navigateBack);
 
     const SelectedComponent = componentMap[selectedComponent];
     return (
-        <ScrollView
-            style={{margin: 10}}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-        >
+        <ScrollView style={{margin: 10}}>
             <AutocompleteSelector
                 testID='selectedComponent'
                 label='Component'

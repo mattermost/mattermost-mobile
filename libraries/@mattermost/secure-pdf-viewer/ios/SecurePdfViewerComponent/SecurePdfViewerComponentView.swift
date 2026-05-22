@@ -1,8 +1,10 @@
 import Foundation
 import PDFKit
 import UIKit
+import React
 
 @objc(SecurePdfViewerComponentView)
+@objcMembers
 public class SecurePdfViewerComponentView: UIView, UIGestureRecognizerDelegate {
     let attemptStore = PasswordAttemptStore()
     let pdfView = SecurePDFView()
@@ -34,7 +36,7 @@ public class SecurePdfViewerComponentView: UIView, UIGestureRecognizerDelegate {
     var doubleTapRecognizer: UITapGestureRecognizer!
     var hideTimer: Timer?
     
-    @objc var source: NSString = "" {
+    @objc public var source: NSString = "" {
         didSet {
             let rawPath = source as String
             if rawPath.hasPrefix("file://"), let url = URL(string: rawPath), url.isFileURL {
@@ -48,7 +50,7 @@ public class SecurePdfViewerComponentView: UIView, UIGestureRecognizerDelegate {
         }
     }
 
-    @objc var password: NSString? {
+    @objc public var password: NSString? {
         didSet {
             if !normalizedSource.isEmpty && password != nil {
                 attemptUnlockIfNeeded()
@@ -56,15 +58,19 @@ public class SecurePdfViewerComponentView: UIView, UIGestureRecognizerDelegate {
         }
     }
 
-    @objc var allowLinks: Bool = true
-    @objc var onLinkPressed: RCTDirectEventBlock?
-    @objc var onLinkPressedDisabled: RCTDirectEventBlock?
-    @objc var onLoad: RCTDirectEventBlock?
-    @objc var onPasswordRequired: RCTDirectEventBlock?
-    @objc var onPasswordFailed: RCTDirectEventBlock?
-    @objc var onPasswordFailureLimitReached: RCTDirectEventBlock?
-    @objc var onLoadError: RCTDirectEventBlock?
-    @objc var onTap: RCTDirectEventBlock?
+    @objc public var allowLinks: Bool = true
+
+    // Use closures instead of RCTDirectEventBlock to be architecture-agnostic
+    // Old architecture (Paper) will set these via RCTDirectEventBlock in the manager
+    // New architecture (Fabric) will set these directly from the C++ wrapper
+    @objc public var onLinkPressed: (([String: Any]) -> Void)?
+    @objc public var onLinkPressedDisabled: (([String: Any]) -> Void)?
+    @objc public var onLoad: (([String: Any]) -> Void)?
+    @objc public var onPasswordRequired: (([String: Any]) -> Void)?
+    @objc public var onPasswordFailed: (([String: Any]) -> Void)?
+    @objc public var onPasswordFailureLimitReached: (([String: Any]) -> Void)?
+    @objc public var onLoadError: (([String: Any]) -> Void)?
+    @objc public var onTap: (([String: Any]) -> Void)?
 
     @objc public override init(frame: CGRect) {
         super.init(frame: frame)
@@ -75,7 +81,14 @@ public class SecurePdfViewerComponentView: UIView, UIGestureRecognizerDelegate {
         super.init(coder: coder)
         setupPDFView()
     }
-    
+
+    deinit {
+        // Clean up observers and timers to prevent crashes
+        contentOffsetObservation?.invalidate()
+        hideTimer?.invalidate()
+        NotificationCenter.default.removeObserver(self)
+    }
+
     public override func layoutSubviews() {
         super.layoutSubviews()
         

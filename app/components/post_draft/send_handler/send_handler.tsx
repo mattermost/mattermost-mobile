@@ -49,7 +49,6 @@ type Props = {
 
     draftType?: DraftType;
     postId?: string;
-    bottomSheetId?: AvailableScreens;
     channelDisplayName?: string;
     isFromDraftView?: boolean;
     draftReceiverUserName?: string;
@@ -91,7 +90,6 @@ export default function SendHandler({
     persistentNotificationInterval,
     persistentNotificationMaxRecipients,
     postPriority,
-    bottomSheetId,
     draftReceiverUserName,
     isFromDraftView,
     draftType,
@@ -144,7 +142,6 @@ export default function SendHandler({
                 useChannelMentions={useChannelMentions}
                 userIsOutOfOffice={userIsOutOfOffice}
                 customEmojis={customEmojis}
-                bottomSheetId={bottomSheetId}
                 value={value}
                 files={files}
                 postPriority={postPriority}

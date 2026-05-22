@@ -74,6 +74,7 @@ interface ClientConfig {
     EnableLatex: string;
     EnableLdap: string;
     EnableLinkPreviews: string;
+    EnableManagedChannelCategories?: string;
     EnablePermalinkPreviews: string;
     EnableMarketplace: string;
     EnableMetrics: string;
@@ -116,6 +117,7 @@ interface ClientConfig {
     ExperimentalEnableClickToReply: string;
     ExperimentalEnableDefaultChannelLeaveJoinMessages: string;
     ExperimentalEnablePostMetadata: string;
+    ExperimentalEnableWatermark: string;
     ExperimentalGroupUnreadChannels: string;
     ExperimentalHideTownSquareinLHS: string;
     ExperimentalNormalizeMarkdownLinks: string;

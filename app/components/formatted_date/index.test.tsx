@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import locales from '@i18n/languages';
 import React from 'react';
 import timezones from 'timezones.json';
 
 import {renderWithIntl} from '@test/intl-test-helper';
 import {logDebug} from '@utils/log';
-
-import locales from '../../i18n/languages';
 
 import FormattedDate, {type FormattedDateFormat} from './index';
 

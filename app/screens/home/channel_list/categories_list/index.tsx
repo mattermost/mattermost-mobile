@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {observeIsAgentsEnabled} from '@agents/database/queries/version';
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {observeIsAgentsEnabled} from '@agents/database/queries/version';
 import {observeHasRunningPlaybookRunsInTeam} from '@playbooks/database/queries/run';
 import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {observeDraftCount} from '@queries/servers/drafts';

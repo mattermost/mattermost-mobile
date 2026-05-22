@@ -8,6 +8,7 @@ import AdvancedSettingsScreen from './advanced_settings';
 import AutoResponderNotificationSettingsScreen from './auto_responder_notification_settings';
 import BrowseChannelsScreen from './browse_channels';
 import ChannelScreen from './channel';
+import ChannelConfigurationScreen from './channel_configuration';
 import ChannelDropdownMenuScreen from './channel_dropdown_menu';
 import ChannelInfoScreen from './channel_info';
 import ChannelListScreen from './channel_list';
@@ -39,6 +40,7 @@ import PostOptionsScreen from './post_options';
 import PushNotificationSettingsScreen from './push_notification_settings';
 import ReactionsScreen from './reactions';
 import RecentMentionsScreen from './recent_mentions';
+import ReportProblemScreen from './report_problem';
 import SavedMessagesScreen from './saved_messages';
 import ScheduleMessageScreen from './scheduled_message_screen';
 import SearchMessagesScreen from './search_messages';
@@ -65,6 +67,7 @@ export {
     ChannelDropdownMenuScreen,
     ChannelInfoScreen,
     ChannelListScreen,
+    ChannelConfigurationScreen,
     ChannelSettingsScreen,
     ClockDisplaySettingsScreen,
     CreateDirectMessageScreen,
@@ -92,6 +95,7 @@ export {
     PushNotificationSettingsScreen,
     ReactionsScreen,
     RecentMentionsScreen,
+    ReportProblemScreen,
     SavedMessagesScreen,
     SearchMessagesScreen,
     SelectTimezoneScreen,
