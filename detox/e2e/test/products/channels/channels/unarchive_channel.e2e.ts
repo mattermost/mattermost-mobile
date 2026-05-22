@@ -19,7 +19,7 @@ import {
     ChannelInfoScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {getAdminAccount, getRandomId, timeouts, wait} from '@support/utils';
+import {getAdminAccount, getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Unarchive Channel', () => {
@@ -41,7 +41,7 @@ describe('Channels - Unarchive Channel', () => {
         // block indefinitely and LoginScreen.toBeVisible() to time out on Android CI.
         await device.launchApp({newInstance: true, launchArgs: {detoxDisableSynchronization: 'YES'}});
 
-        // # Log in to server as admin
+        // # Log in to server as admin.
         await ServerScreen.connectToServer(serverTwoUrl, serverOneDisplayName);
         await LoginScreen.loginAsAdmin(getAdminAccount());
 
@@ -53,9 +53,7 @@ describe('Channels - Unarchive Channel', () => {
         // channel operation may see stale config (ExperimentalViewArchivedChannels=false).
         await wait(timeouts.TWO_SEC);
 
-        // Wait for the channel list header plus button to be fully visible and hittable
-        // before any test attempts to tap it. A fixed TWO_SEC sleep was insufficient on
-        // iOS/Android CI where the navigation animation can take longer after relaunch.
+        // Wait for the channel list header plus button to be fully visible and hittable.
         await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
     });
 
@@ -87,10 +85,15 @@ describe('Channels - Unarchive Channel', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
+        // # After archiving from channel settings, channel settings closes but the
+        // channel info modal is still showing. Close it to reach the channel screen.
+        await ChannelInfoScreen.close();
+
         // * Verify channel is in archived (read-only) state — with ExperimentalViewArchivedChannels
-        // enabled the app stays on the channel screen after archiving
-        await ChannelScreen.toBeVisible();
-        await expect(ChannelScreen.postDraftArchived).toBeVisible();
+        // enabled the app stays on the channel screen after archiving.
+        // Use polling (waitForElementToBeVisible) to survive the UITransitionView overlay
+        // from the modal dismiss animation, which temporarily obscures the bottom of the screen.
+        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.TEN_SEC);
 
         // # Unarchive the channel from channel settings
         await ChannelInfoScreen.open();
@@ -121,9 +124,10 @@ describe('Channels - Unarchive Channel', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePrivateChannel({confirm: true});
 
-        // * Verify channel is in archived (read-only) state
-        await ChannelScreen.toBeVisible();
-        await expect(ChannelScreen.postDraftArchived).toBeVisible();
+        // # Close channel info modal that remains after archiving, then poll for
+        // postDraftArchived to survive the UITransitionView dismiss animation.
+        await ChannelInfoScreen.close();
+        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.TEN_SEC);
 
         // # Unarchive the channel from channel settings
         await ChannelInfoScreen.open();

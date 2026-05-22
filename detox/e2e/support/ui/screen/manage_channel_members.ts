@@ -3,7 +3,7 @@
 
 import {Alert, ProfilePicture} from '@support/ui/component';
 import {ChannelInfoScreen} from '@support/ui/screen';
-import {isAndroid, isIos, pressBack, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ManageChannelMembersScreen {
@@ -64,17 +64,21 @@ class ManageChannelMembersScreen {
         // # Tap on members option to navigate to manage members screen.
         // Wait for the element to be visible first to ensure it is on-screen and
         // tappable before interacting with it.
-        // NOTE: Does NOT call toBeVisible() internally — on Android the tutorial
-        // modal fires immediately and creates a foreground native window that makes
-        // background screen testIDs unreachable. Callers must dismiss the tutorial
-        // (closeTutorial()) before calling toBeVisible().
         await waitFor(ChannelInfoScreen.membersOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelInfoScreen.membersOption.tap();
         await wait(timeouts.ONE_SEC);
     };
 
     close = async () => {
-        await pressBack();
+        if (isIos()) {
+            // The navigation.header.back button on this screen is permanently obscured by
+            // iOS 26.3's liquid-glass UIVisualEffectView, causing EarlGrey's 100% visibility
+            // threshold tap to fail. Use the iOS interactive pop gesture (left-edge swipe)
+            // instead, which the UINavigationController intercepts at the system level.
+            await this.manageMembersScreen.swipe('right', 'slow', 0.75, 0.01, 0.5);
+        } else {
+            await device.pressBack();
+        }
         await expect(this.manageMembersScreen).not.toBeVisible();
     };
 

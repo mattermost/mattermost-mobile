@@ -80,7 +80,9 @@ describe('Channels - Edit Channel', () => {
         await CreateOrEditChannelScreen.openEditChannel();
 
         // * Verify basic elements on edit channel screen
-        await expect(CreateOrEditChannelScreen.backButton).toBeVisible();
+        // Note: Edit Channel uses expo-router's native stack header (getHeaderOptions), not the
+        // custom NavigationHeader component, so 'navigation.header.back' testID does not exist
+        // on this screen. Back navigation is tested implicitly via CreateOrEditChannelScreen.back().
         await expect(CreateOrEditChannelScreen.saveButton).toBeVisible();
         await expect(CreateOrEditChannelScreen.displayNameInput).toBeVisible();
         await expect(CreateOrEditChannelScreen.purposeInput).toBeVisible();
@@ -111,9 +113,17 @@ describe('Channels - Edit Channel', () => {
         }
 
         // # Edit channel info and save changes
-        await CreateOrEditChannelScreen.displayNameInput.typeText(' name');
-        await CreateOrEditChannelScreen.purposeInput.typeText(' purpose');
-        await CreateOrEditChannelScreen.headerInput.typeText('\nheader1\nheader2');
+        // On Android, typeText inserts at the cursor position (often mid-text in a pre-filled
+        // input), producing garbled results. Use replaceText with the full intended value instead.
+        if (isAndroid()) {
+            await CreateOrEditChannelScreen.displayNameInput.replaceText(`${testChannel.display_name} name`);
+            await CreateOrEditChannelScreen.purposeInput.replaceText(`Channel purpose: ${testChannel.display_name.toLowerCase()} purpose`);
+            await CreateOrEditChannelScreen.headerInput.replaceText(`Channel header: ${testChannel.display_name.toLowerCase()}\nheader1\nheader2`);
+        } else {
+            await CreateOrEditChannelScreen.displayNameInput.typeText(' name');
+            await CreateOrEditChannelScreen.purposeInput.typeText(' purpose');
+            await CreateOrEditChannelScreen.headerInput.typeText('\nheader1\nheader2');
+        }
         await CreateOrEditChannelScreen.saveButton.tap();
 
         // * Verify on channel info screen and changes have been saved (back from CreateOrEditChannel lands on Channel Settings, close to get to Channel Info)

@@ -35,10 +35,14 @@ class PostOptionsScreen {
     markAsUnreadOption = element(by.id(this.testID.markAsUnreadOption));
     copyLinkOption = element(by.id(this.testID.copyLinkOption));
     savePostOption = element(by.id(this.testID.savePostOption));
+    savePostOptionLabel = element(by.id(`${this.testID.savePostOption}.label`));
     unsavePostOption = element(by.id(this.testID.unsavePostOption));
+    unsavePostOptionLabel = element(by.id(`${this.testID.unsavePostOption}.label`));
     copyTextOption = element(by.id(this.testID.copyTextOption));
     pinPostOption = element(by.id(this.testID.pinPostOption));
+    pinPostOptionLabel = element(by.id(`${this.testID.pinPostOption}.label`));
     unpinPostOption = element(by.id(this.testID.unpinPostOption));
+    unpinPostOptionLabel = element(by.id(`${this.testID.unpinPostOption}.label`));
     editPostOption = element(by.id(this.testID.editPostOption));
     deletePostOption = element(by.id(this.testID.deletePostOption));
 

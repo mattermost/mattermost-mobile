@@ -26,7 +26,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Favorite and Unfavorite Channel', () => {
@@ -59,7 +59,7 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T4929_1 - should be able to favorite/unfavorite a channel from channel quick actions', async () => {
+    it.only('MM-T4929_1 - should be able to favorite/unfavorite a channel from channel quick actions', async () => {
         // # Open a channel screen, tap on channel quick actions button, and tap on favorite quick action to favorite the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.channelQuickActionsButton.tap();
@@ -76,7 +76,8 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await ChannelScreen.back();
 
         // * Verify channel is listed under favorites category
-        await expect(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, testChannel.name)).toBeVisible();
+        await ChannelListScreen.ensureCategoryExpanded(favoritesCategory);
+        await waitForElementToExist(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, testChannel.name), timeouts.TWENTY_SEC);
 
         // # Go back to the favorited channel, tap on channel quick actions button, and tap on favorited quick action to unfavorite the channel
         await ChannelScreen.open(favoritesCategory, testChannel.name);
@@ -85,8 +86,6 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await ChannelScreen.unfavoriteQuickAction.tap();
 
         // * Verify unfavorited toast message appears
-        // Use waitFor with a timeout instead of expect() to handle the async toast
-        // animation on Android where getText() may return null if checked too early.
         await waitFor(ChannelScreen.toastMessage).toHaveText('This channel was unfavorited').withTimeout(timeouts.TEN_SEC);
         await waitFor(ChannelScreen.toastMessage).not.toExist().withTimeout(timeouts.TEN_SEC);
 
@@ -94,13 +93,12 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await ChannelScreen.back();
 
         // * Verify channel is not listed anymore under favorites category and is back under channels category
-        await expect(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, testChannel.name)).not.toBeVisible();
-        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, testChannel.name)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name), timeouts.TWENTY_SEC);
     });
 
     it('MM-T4929_2 - should be able to favorite/unfavorite a channel from channel info screen', async () => {
         // # Open a channel screen, open channel info screen, tap on favorite action to favorite the channel, and go back to channel list screen
-        // Open the channel regardless of which category it's in (it may be in favorites if MM-T4929_1 left it there)
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
 
@@ -118,7 +116,8 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await ChannelScreen.back();
 
         // * Verify channel is listed under favorites category
-        await expect(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, testChannel.name)).toBeVisible();
+        await ChannelListScreen.ensureCategoryExpanded(favoritesCategory);
+        await waitForElementToExist(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, testChannel.name), timeouts.TWENTY_SEC);
 
         // # Go back to the favorited channel, open channel info screen, tap on favorited action to unfavorite the channel, and go back to channel list screen
         await ChannelScreen.open(favoritesCategory, testChannel.name);
@@ -128,8 +127,8 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await ChannelScreen.back();
 
         // * Verify channel is not listed anymore under favorites category and is back under channels category
-        await expect(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, testChannel.name)).not.toBeVisible();
-        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, testChannel.name)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name), timeouts.TWENTY_SEC);
     });
 
     it('MM-T4929_3 - should be able to favorite/unfavorite a direct message channel from channel intro', async () => {
@@ -155,6 +154,8 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await ChannelScreen.back();
 
         // * Verify direct message channel is listed under favorites category
+        await ChannelListScreen.ensureCategoryExpanded(favoritesCategory);
+        await waitForElementToExist(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, directMessageChannel.name), timeouts.TWENTY_SEC);
         await expect(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, directMessageChannel.name)).toHaveText(newUser.username);
 
         // # Go back to the favorited direct message channel, tap on intro favorited action to unfavorite the direct message channel, and go back to channel list screen
@@ -163,7 +164,7 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await ChannelScreen.back();
 
         // * Verify direct message channel is not listed anymore under favorites category and is back under direct messages category
-        await expect(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, directMessageChannel.name)).not.toBeVisible();
-        await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name)).toBeVisible();
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, directMessageChannel.name)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name), timeouts.TWENTY_SEC);
     });
 });

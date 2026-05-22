@@ -84,14 +84,13 @@ describe('Channels - Manage Own Channel Membership', () => {
         // * Verify manage mode is enabled (done button should be visible)
         await expect(ManageChannelMembersScreen.doneButton).toBeVisible();
 
-        // * Verify the current user can be selected in manage mode (they should have the manage mode icon visible)
-        // The manage mode icon (chevron-down) should be visible for the current user
+        // * Verify the current user can be selected in manage mode
         await expect(ManageChannelMembersScreen.getUserItem(testUser.id)).toBeVisible();
 
         // # Tap on the current user in manage mode
         await ManageChannelMembersScreen.getUserItem(testUser.id).tap();
 
-        // * Verify that tapping on own user in manage mode opens the user profile or shows manage options
+        // * Verify that tapping on own user in manage mode opens the user profile
         // This verifies that the restriction preventing users from managing their own membership has been removed
         await UserProfileScreen.toBeVisible();
 
@@ -110,4 +109,3 @@ describe('Channels - Manage Own Channel Membership', () => {
         await ChannelScreen.back();
     });
 });
-

@@ -7,7 +7,7 @@ import {
     ChannelListScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isIos, tapNativeBackButton, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CreateOrEditChannelScreen {
@@ -110,7 +110,10 @@ class CreateOrEditChannelScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
+        // Edit Channel uses expo-router's native stack header (getHeaderOptions), not the
+        // custom NavigationHeader component, so 'navigation.header.back' testID does not
+        // exist on this screen. Use the native back button instead.
+        await tapNativeBackButton();
         await expect(this.createOrEditChannelScreen).not.toBeVisible();
     };
 

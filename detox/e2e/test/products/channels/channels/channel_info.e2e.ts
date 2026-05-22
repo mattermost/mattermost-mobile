@@ -73,7 +73,13 @@ describe('Channels - Channel Info', () => {
         await expect(ChannelInfoScreen.ignoreMentionsOptionToggledOff).toBeVisible();
         await ChannelInfoScreen.scrollView.scrollTo('bottom');
         await expect(ChannelInfoScreen.pinnedMessagesOption).toBeVisible();
-        await expect(ChannelInfoScreen.copyChannelLinkOption).toBeVisible();
+
+        try {
+            await waitFor(ChannelInfoScreen.copyChannelLinkOption).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        } catch {
+            // Calls not enabled — copy link is in the quick actions bar instead
+            await expect(ChannelInfoScreen.copyChannelLinkAction).toExist();
+        }
         await ChannelInfoScreen.scrollView.scrollTo('bottom');
         await expect(ChannelInfoScreen.channelSettingsOption).toBeVisible();
         await ChannelInfoScreen.scrollView.scrollTo('bottom');
@@ -92,7 +98,10 @@ describe('Channels - Channel Info', () => {
 
         // * Verify basic elements on channel settings screen
         await ChannelSettingsScreen.toBeVisible();
-        await expect(ChannelSettingsScreen.closeButton).toBeVisible();
+
+        // Note: Channel Settings uses expo-router's native stack header, not the custom
+        // NavigationHeader component, so 'navigation.header.back' testID does not exist
+        // on this screen. Back navigation is tested implicitly via ChannelSettingsScreen.close().
         await expect(ChannelSettingsScreen.channelInfoOption).toBeVisible();
 
         // Note: convertPrivateOption visibility depends on server-side permissions

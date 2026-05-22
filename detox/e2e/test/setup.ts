@@ -192,7 +192,13 @@ beforeAll(async () => {
         await device.launchApp({
             newInstance: true,
 
-            ...(device.getPlatform() === 'ios' && process.env.SIMULATOR_ID? {permissions: {notifications: 'YES'}}: {}),
+            // In CI, notification permission is pre-granted before any test runs via
+            // `xcrun simctl privacy grant notifications` in the workflow, so we skip
+            // the {permissions} key here — Detox's permission grant calls `simctl privacy`
+            // synchronously before launch, adding 6–9s overhead and potential flakiness.
+            // Locally (no SIMULATOR_ID in env), we must grant it here to suppress the
+            // first-time notification dialog that would otherwise block the login flow.
+            ...(device.getPlatform() === 'ios' && !process.env.SIMULATOR_ID ? {permissions: {notifications: 'YES'}} : {}),
             launchArgs,
         });
 
@@ -232,7 +238,7 @@ beforeAll(async () => {
                     clearIOSAppData();
                     await device.launchApp({
                         newInstance: true,
-                        ...(process.env.SIMULATOR_ID ? {permissions: {notifications: 'YES'}} : {}),
+                        ...(process.env.SIMULATOR_ID ? {} : {permissions: {notifications: 'YES'}}),
                         launchArgs,
                     });
                     await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);

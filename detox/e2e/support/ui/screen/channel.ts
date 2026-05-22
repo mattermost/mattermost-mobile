@@ -628,14 +628,9 @@ class ChannelScreen {
         const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
         if (isAndroid()) {
-            // On Android New Architecture (Fabric), each <Text testID="..."> becomes its own
-            // android.widget.TextView. The EditedIndicator (<Text testID="edited_indicator">)
-            // is therefore a separate TextView from the message body, so a combined regex
-            // spanning both cannot match. Assert each part independently.
-            const messageMatcher = by.text(new RegExp(escapedMessage, 'i')).withAncestor(postItemMatcher);
-            const editedIndicatorMatcher = by.id('edited_indicator').withAncestor(postItemMatcher);
-            await waitFor(element(messageMatcher)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-            await waitFor(element(editedIndicatorMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
+            const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, 'is');
+            const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
+            await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
         } else {
             // On iOS, nested <Text> components share a single UITextView text container,
             // so the combined regex matches both the message body and "Edited" in one view.

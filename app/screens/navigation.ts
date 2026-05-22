@@ -117,11 +117,13 @@ export function bottomSheet(renderContent: () => React.ReactNode, snapPoints: Ar
 }
 
 export async function dismissBottomSheet() {
-    if (!NavigationStore.isScreenInStack(Screens.BOTTOM_SHEET)) {
+    const hasGenericSheet = NavigationStore.isScreenInStack(Screens.GENERIC_BOTTOM_SHEET);
+    const hasRegularSheet = NavigationStore.isScreenInStack(Screens.BOTTOM_SHEET);
+    if (!hasGenericSheet && !hasRegularSheet) {
         return;
     }
     DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
-    await NavigationStore.waitUntilScreensIsRemoved(Screens.BOTTOM_SHEET);
+    await NavigationStore.waitUntilScreensIsRemoved(hasGenericSheet ? Screens.GENERIC_BOTTOM_SHEET : Screens.BOTTOM_SHEET);
     BottomSheetStore.reset();
     await new Promise((resolve) => setTimeout(resolve, 250));
 }

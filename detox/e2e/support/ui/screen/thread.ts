@@ -115,23 +115,7 @@ class ThreadScreen {
     };
 
     back = async () => {
-        // Android API 35: tapping the Toolbar 'Navigate up' button fires via Espresso
-        // but the navigation event does not propagate through expo-router on API 35.
-        // device.pressBack() triggers useAndroidHardwareBackHandler(Screens.THREAD,
-        // navigation.goBack) which reliably pops the screen.
-        //
-        // iOS 26: The native UIKit back button (_UIModernBarButton) is blocked by the
-        // UITransitionView glass overlay (enabled:false, hittable:false). The interactive
-        // pop swipe gesture is also unavailable when Thread is the root screen of its
-        // navigator (opened from a modal context such as PinnedMessages reply — the router
-        // pushes Thread into a new UINavigationController with no history).
-        // The thread route sets a custom headerLeft Pressable (RNSScreenStackHeaderSubview)
-        // that bypasses UITransitionView and calls navigation.goBack(). Tap that instead.
-        if (isAndroid()) {
-            await device.pressBack();
-        } else {
-            await this.backButton.tap();
-        }
+        await this.backButton.tap();
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Wait for the previous screen to be fully loaded and rendered
@@ -144,14 +128,6 @@ class ThreadScreen {
         // Poll for the post to become visible without waiting for idle bridge
         await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
-        // On Android, dismiss the keyboard before long-pressing. The soft keyboard
-        // stays open after postMessage() and intercepts the long-press gesture on
-        // API 35 — the post options bottom sheet never appears because Android's
-        // gesture system routes the touch to the keyboard's window instead of the
-        // post list. A swipe gesture on the post list triggers keyboardDismissMode
-        // 'on-drag' which reliably dismisses the keyboard. Detox's scroll() API
-        // may use programmatic scrolling that doesn't trigger on-drag dismissal,
-        // whereas swipe() performs a real touch gesture.
         if (isAndroid()) {
             try {
                 await this.postList.getFlatList().swipe('up', 'fast', 0.3);
@@ -159,16 +135,6 @@ class ThreadScreen {
             await wait(timeouts.TWO_SEC);
         }
 
-        // Scroll to the top of the thread list to ensure the target post is in the
-        // fully-hittable viewport area (100% visibility threshold required by long-press).
-        //
-        // Background: longPressWithScrollRetry scrolls DOWN on each retry attempt,
-        // which moves a post at the top of the list progressively further off-screen
-        // behind the PostDraft overlay — the opposite of what is needed. Pre-positioning
-        // at the top of the list means the target post's center is always well above the
-        // PostDraft overlay. For short threads (e.g. parent + 1 reply) both posts remain
-        // simultaneously visible after scrollTo('top'), so replies at the bottom are
-        // unaffected.
         try {
             await this.postList.getFlatList().scrollTo('top');
             await wait(timeouts.ONE_SEC);
@@ -205,25 +171,9 @@ class ThreadScreen {
     };
 
     longPressSendButton = async () => {
-        // # Dismiss the scheduled-post tooltip before long-pressing the send button.
-        // On Android the tooltip overlay intercepts the long-press gesture, preventing
-        // the scheduling sheet from opening. Dismissing it first ensures the press lands
-        // on the actual send button element.
         await this.dismissScheduledPostTooltip();
-
-        // # Wait for the send button to be visible before attempting the long press.
-        // enterMessageToSchedule calls replaceText() which may not have triggered the
-        // React state update that renders the send button by the time we get here.
-        // Use polling (waitForElementToBeVisible) instead of waitFor().toBeVisible()
-        // so the wait does not depend on bridge-idle sync, which is permanently busy
-        // on both iOS 26.x (main run loop) and Android API 35 (JS bridge after input).
         await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
 
-        // # On Android, the soft keyboard stays open after replaceText(). Swipe the
-        // post list to trigger keyboardDismissMode='on-drag' and dismiss the keyboard
-        // BEFORE disabling sync. With sync disabled the gesture system is unrestricted,
-        // so the long-press must land on the actual send button — the keyboard must be
-        // gone by then or it will intercept the press.
         if (isAndroid()) {
             try {
                 await this.postList.getFlatList().swipe('up', 'fast', 0.3);
@@ -231,10 +181,6 @@ class ThreadScreen {
             await wait(timeouts.ONE_SEC);
         }
 
-        // # Disable Detox synchronization before the long press. On iOS 26 the main
-        // run loop never fully idles, and on Android the JS bridge stays busy after
-        // text input. This causes longPress() to hang waiting for idle-sync. Disabling
-        // sync lets the gesture dispatch immediately; we then poll for the bottom sheet.
         await device.disableSynchronization();
         try {
             await this.sendButton.longPress();

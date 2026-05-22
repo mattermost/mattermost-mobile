@@ -7,7 +7,11 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {siteTwoUrl} from '@support/test_config';
+import {Setup, User} from '@support/server_api';
+import {
+    serverOneUrl,
+    siteOneUrl,
+} from '@support/test_config';
 import {
     ChannelScreen,
     ChannelListScreen,
@@ -18,29 +22,37 @@ import {
     ChannelInfoScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {getAdminAccount, getRandomId, timeouts} from '@support/utils';
+import {getRandomId, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Convert to Private Channel', () => {
-    const siteOneDisplayName = 'Server 1';
+    const serverOneDisplayName = 'Server 1';
+    let testUser: any;
 
     beforeAll(async () => {
+        // # Create a fresh user with system_admin role in an isolated team.
+        // Using the shared sysadmin account causes the mqt_js thread to stay busy
+        // for minutes loading all accumulated teams and channels from prior test runs.
+        const {user} = await Setup.apiInit(siteOneUrl);
+        await User.apiUpdateUserRoles(siteOneUrl, user.id, 'system_user system_admin');
+        testUser = user;
+
         // # Ensure a clean app state regardless of what the previous suite left behind.
         // Disable Detox synchronization during app init: after newInstance the JS bridge
         // (mqt_js) is busy bootstrapping React Native, causing BridgeIdlingResource to
         // block indefinitely and LoginScreen.toBeVisible() to time out on Android CI.
         await device.launchApp({newInstance: true, launchArgs: {detoxDisableSynchronization: 'YES'}});
 
-        // # Log in to server as admin
-        await ServerScreen.connectToServer(siteTwoUrl, siteOneDisplayName);
-        await LoginScreen.loginAsAdmin(getAdminAccount());
+        // # Log in as the fresh system admin user
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(testUser);
 
         // Re-enable synchronization now that the app has settled past the init bridge burst.
         await device.enableSynchronization();
 
         // Wait for the channel list header plus button to be fully visible and hittable
-        // before any test attempts to tap it. A fixed TWO_SEC sleep was insufficient on
-        // iOS/Android CI where the navigation animation can take longer after relaunch.
+        // before any test attempts to tap it. A fixed sleep was insufficient on CI where
+        // the navigation animation can take longer after relaunch.
         await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
     });
 
