@@ -273,12 +273,28 @@ class DatabaseManagerSingleton {
         }
     };
 
+    public wipeServerData = async (serverUrl: string): Promise<void> => {
+        const server = await this.getServer(serverUrl);
+        if (server) {
+            delete this.serverDatabases[serverUrl];
+            await this.deleteServerDatabaseFiles(serverUrl);
+            await this.createServerDatabase({
+                config: {
+                    dbName: urlSafeBase64Encode(serverUrl),
+                    displayName: server.displayName,
+                    identifier: '',
+                    serverUrl,
+                },
+            });
+        }
+    };
+
     public deleteServerDatabase = async (serverUrl: string): Promise<void> => {
         const database = this.appDatabase?.database;
         if (database) {
             const server = await this.getServer(serverUrl);
             if (server) {
-                database.write(async () => {
+                await database.write(async () => {
                     await server.update((record) => {
                         record.lastActiveAt = 0;
                         record.identifier = '';
@@ -286,7 +302,7 @@ class DatabaseManagerSingleton {
                 });
 
                 delete this.serverDatabases[serverUrl];
-                this.deleteServerDatabaseFiles(serverUrl);
+                await this.deleteServerDatabaseFiles(serverUrl);
             }
         }
     };

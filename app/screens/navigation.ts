@@ -28,7 +28,7 @@ export function updateParams(props: Record<string, any>) {
 }
 
 // Helper to build Expo Router path from screen constant
-function getExpoRouterPath(screen: AvailableScreens, props?: any): string | undefined {
+export function getExpoRouterPath(screen: AvailableScreens, props?: any): string | undefined {
     if (UNAUTHENTICATED_SCREENS.has(screen)) {
         if (props?.isModal) {
             return `/(modals)/(add-server)/${screen}`;
