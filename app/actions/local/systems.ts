@@ -20,9 +20,6 @@ import {
     getLastGlobalDataRetentionRun,
     getIsDataRetentionEnabled,
     getLastBoRPostCleanupRun,
-    getDisconnectedSince,
-    getLastSeenTime,
-    getOfflineSince,
 } from '@queries/servers/system';
 import PostModel from '@typings/database/models/servers/post';
 import SystemModel from '@typings/database/models/servers/system';
@@ -41,14 +38,12 @@ export async function setDisconnectedSince(serverUrl: string, value: number | nu
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         if (value === null) {
-            const existing = await getDisconnectedSince(database);
-            if (existing === undefined) {
-                return;
+            const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE).catch(() => null);
+            if (record) {
+                await database.write(async () => {
+                    await record.destroyPermanently();
+                });
             }
-            const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE);
-            await database.write(async () => {
-                await record.destroyPermanently();
-            });
             return;
         }
 
@@ -61,21 +56,9 @@ export async function setDisconnectedSince(serverUrl: string, value: number | nu
     }
 }
 
-export async function setOfflineSince(serverUrl: string, value: number | null): Promise<void> {
+export async function setOfflineSince(serverUrl: string, value: number): Promise<void> {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        if (value === null) {
-            const existing = await getOfflineSince(database);
-            if (existing === undefined) {
-                return;
-            }
-            const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.OFFLINE_SINCE);
-            await database.write(async () => {
-                await record.destroyPermanently();
-            });
-            return;
-        }
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         await operator.handleSystem({
             systems: [{id: SYSTEM_IDENTIFIERS.OFFLINE_SINCE, value}],
@@ -86,21 +69,9 @@ export async function setOfflineSince(serverUrl: string, value: number | null): 
     }
 }
 
-export async function setLastSeenTime(serverUrl: string, value: number | null): Promise<void> {
+export async function setLastSeenTime(serverUrl: string, value: number): Promise<void> {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        if (value === null) {
-            const existing = await getLastSeenTime(database);
-            if (existing === undefined) {
-                return;
-            }
-            const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_SEEN_TIME);
-            await database.write(async () => {
-                await record.destroyPermanently();
-            });
-            return;
-        }
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         await operator.handleSystem({
             systems: [{id: SYSTEM_IDENTIFIERS.LAST_SEEN_TIME, value}],
