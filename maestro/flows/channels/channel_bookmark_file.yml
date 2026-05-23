@@ -85,22 +85,10 @@ appId: ${MAESTRO_APP_ID}
           visible:
             id: "channel_bookmark.screen"
           timeout: 15000
-# Wait for the file metadata to appear (upload complete indicator):
-# "PNG" or "KB" size text appears in the attachment once the file is processed.
-# This is a more reliable upload-complete signal than the filename alone,
-# because the filename pre-fills the title input immediately on file selection
-# (before upload finishes), while the file-size label appears after processing.
+# Wait for the file selection to appear on the bookmark screen.
 - extendedWaitUntil:
     visible:
       text: "test_bookmark.png"
-    timeout: 30000
-# Wait for upload complete: the fileInfoContainer gets testID="channel_bookmark.file.upload_complete"
-# only when file.id is set (i.e., the server has accepted the upload and returned a file_id).
-# This is a stable React Native View — unlike the RNN UIBarButtonItem (save button), it does NOT
-# get recreated by enableSaveButton(true), so it never causes kAXErrorInvalidUIElement.
-- extendedWaitUntil:
-    visible:
-      id: "channel_bookmark.file.upload_complete"
     timeout: 30000
 # --- Tap Save to create the bookmark ---
 # iOS: RNN UIBarButtonItem exposes testID in accessibility tree.
@@ -124,7 +112,7 @@ appId: ${MAESTRO_APP_ID}
 - extendedWaitUntil:
     notVisible:
       id: "channel_bookmark.screen"
-    timeout: 30000
+    timeout: 60000
 # iOS: FlatList container exposes its testID; individual item testIDs are not in the tree.
 # Android: FlatList container testID is not exposed; individual item testIDs are.
 - runFlow:

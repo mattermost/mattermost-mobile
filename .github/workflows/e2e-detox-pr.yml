@@ -335,6 +335,34 @@ jobs:
           status: ${{ needs.run-ios-ipad-tests.outputs.STATUS || 'failure' }}
           target_url: ${{ needs.run-ios-ipad-tests.outputs.TARGET_URL }}
 
+  run-maestro-ios:
+    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    name: Maestro iOS
+    needs:
+      - build-ios-simulator
+      - provision-servers
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    with:
+      platform: ios
+      run-type: ${{ inputs.run_type || 'PR' }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      MM_TEST_SERVER_URL: ${{ inputs.SITE_2_URL }}
+    secrets: inherit
+
+  run-maestro-android:
+    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    name: Maestro Android
+    needs:
+      - build-android-apk
+      - provision-servers
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    with:
+      platform: android
+      run-type: ${{ inputs.run_type || 'PR' }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      MM_TEST_SERVER_URL: ${{ inputs.SITE_2_URL }}
+    secrets: inherit
+
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR
     runs-on: ubuntu-22.04
@@ -342,6 +370,8 @@ jobs:
       - update-final-status-ios
       - update-final-status-android
       - update-final-status-ipad
+      - run-maestro-ios
+      - run-maestro-android
     # IMPORTANT: !cancelled() prevents label removal when the workflow is cancelled
     # (e.g. by concurrency cancel-in-progress). Without this, Matterwick sees the
     # label removed and deletes the test servers while the replacement run is still

@@ -52,7 +52,7 @@ jobs:
   e2e-maestro-ios:
     name: Maestro E2E Tests (iOS)
     if: ${{ inputs.platform == 'ios' || inputs.platform == '' }}
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 60
     outputs:
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
@@ -157,7 +157,12 @@ jobs:
           xcrun simctl bootstatus "$SIMULATOR_ID"
 
           open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID"
-          sleep 5
+          # Poll until Simulator.app has rendered the device (listapps succeeds only
+          # once SpringBoard is fully running and Simulator.app has attached).
+          for i in $(seq 1 30); do
+            xcrun simctl listapps "$SIMULATOR_ID" &>/dev/null && break
+            sleep 2
+          done
 
           echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
 
@@ -230,8 +235,10 @@ jobs:
           if [ -n "${{ inputs.flow-path }}" ]; then
             echo "flow_path=${{ inputs.flow-path }}" >> $GITHUB_OUTPUT
           else
-            # iOS: run all single-device flows (skip multi_device only)
-            echo "flow_path=maestro/flows/account maestro/flows/calls maestro/flows/channels maestro/flows/share_extension maestro/flows/timezone" >> $GITHUB_OUTPUT
+            # iOS: run single-device flows seeded by seed.ts only.
+            # Excluded: start_call.yml (requires calls_seed.ts to enable the Calls plugin)
+            #           file_type_preview.yml (requires seed_file_preview.ts for file IDs)
+            echo "flow_path=maestro/flows/account maestro/flows/calls/call_ui_permission.yml maestro/flows/channels/channel_bookmark_file.yml maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/share_extension maestro/flows/timezone" >> $GITHUB_OUTPUT
           fi
 
       - name: Run Maestro Flows (iOS)
@@ -407,46 +414,58 @@ jobs:
             echo "flow_path=maestro/flows/account maestro/flows/calls maestro/flows/timezone" >> $GITHUB_OUTPUT
           fi
 
-      - name: Set up emulator, install app, and run Maestro flows (Android)
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+      - name: Enable KVM
         run: |
-          set -e
-
-          # --- 1. Enable KVM ---
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-          # --- 2. Set up Android SDK ---
-          export ANDROID_HOME=/usr/local/lib/android/sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
+      - name: Cache Android SDK components
+        id: android-sdk-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/platform-tools
+            /usr/local/lib/android/sdk/emulator
+            /usr/local/lib/android/sdk/platforms/android-34
+            /usr/local/lib/android/sdk/system-images/android-34
+          key: android-sdk-34-google-apis-x86_64-v1
 
-          # --- 3. Install SDK components ---
+      - name: Install Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit != 'true'
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: |
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
           for attempt in 1 2 3; do
-            echo "SDK install attempt $attempt..."
-            yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-34" "system-images;android-34;google_apis;x86_64" && break
-            echo "Attempt $attempt failed, retrying..."
+            yes | sdkmanager --install \
+              "platform-tools" "emulator" \
+              "platforms;android-34" \
+              "system-images;android-34;google_apis;x86_64" && break
+            echo "Attempt $attempt failed, retrying in 10s..."
             sleep 10
           done
 
-          # --- 4. Create AVD (set ANDROID_AVD_HOME so emulator can find it) ---
+      - name: Create and boot Android emulator
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: |
+          export ANDROID_HOME=/usr/local/lib/android/sdk
           export ANDROID_AVD_HOME=$(pwd)/.android/avd
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH
           mkdir -p "$ANDROID_AVD_HOME"
-          echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME"
 
           echo "no" | avdmanager create avd -n maestro_avd \
             -k "system-images;android-34;google_apis;x86_64" \
             -d "pixel_4_xl" --force
 
-          # --- 5. Start emulator ---
-          echo "Starting emulator..."
           nohup emulator -avd maestro_avd \
             -no-snapshot-save -no-window -gpu swiftshader_indirect \
             -noaudio -no-boot-anim -camera-back none \
             -accel on -qemu -m 8192 &
 
-          # --- 6. Wait for boot (5 min timeout, matching Detox pattern) ---
+          # Wait for boot with 5-minute timeout
           adb wait-for-device
           boot_timeout=300
           boot_elapsed=0
@@ -459,18 +478,40 @@ jobs:
             sleep 10
             boot_elapsed=$((boot_elapsed + 10))
           done
-          echo "Emulator is fully booted."
-          sleep 15
-          adb shell pm list packages > /dev/null 2>&1
+
+          # Wait for package manager to be ready (more reliable than sleep 15)
+          for i in $(seq 1 30); do
+            adb shell pm list packages > /dev/null 2>&1 && break
+            sleep 2
+          done
           echo "Emulator is fully ready."
 
-          # Disable animations
+          # Persist SDK env for subsequent steps
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> $GITHUB_ENV
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/emulator" >> $GITHUB_PATH
+
+      - name: Configure emulator
+        run: |
+          # Disable animations to prevent flakiness
           adb shell settings put global window_animation_scale 0
           adb shell settings put global transition_animation_scale 0
           adb shell settings put global animator_duration_scale 0
           adb shell input keyevent 82
 
-          # --- 7. Install APK ---
+          # Set timezone for MM-T1325 timezone flow.
+          # persist.sys.timezone survives reboots but only takes effect at boot time.
+          # Setting sys.timezone and broadcasting TIMEZONE_CHANGED forces the running
+          # system to pick up the new timezone without a reboot.
+          adb root
+          adb shell setprop persist.sys.timezone "America/New_York"
+          adb shell setprop sys.timezone "America/New_York"
+          adb shell am broadcast -a android.intent.action.TIMEZONE_CHANGED \
+            --ez bypassUserRestrictions true 2>/dev/null || true
+
+      - name: Install APK on emulator
+        run: |
           APK_PATH=$(find mobile-artifacts/apk -name "*.apk" | head -1)
           if [ -z "$APK_PATH" ]; then
             echo "Error: Could not find APK in mobile-artifacts/apk/"
@@ -478,11 +519,12 @@ jobs:
             exit 1
           fi
           echo "Installing APK from: $APK_PATH"
-          adb install -r "$APK_PATH"
-
-          # Set timezone for MM-T1325 timezone flow
-          adb root
-          adb shell setprop persist.sys.timezone "America/New_York"
+          # Retry install up to 3 times — adb install can fail transiently on CI
+          for attempt in 1 2 3; do
+            adb install -r "$APK_PATH" && break
+            echo "Install attempt $attempt failed, retrying..."
+            sleep 5
+          done
 
           # Push test fixture file for bookmark flow
           FIXTURE="detox/e2e/support/fixtures/image.png"
@@ -491,14 +533,15 @@ jobs:
             echo "Pushed test fixture to /sdcard/Download/test_bookmark.png"
           fi
 
-          # --- 8. Run Maestro flows ---
+      - name: Run Maestro Flows (Android)
+        run: |
           set -a
           source maestro/.maestro-test-env.sh
           set +a
 
+          mkdir -p build
           FLOW_PATH="${{ steps.resolve-flow-path.outputs.flow_path }}"
 
-          mkdir -p build
           ~/.maestro/bin/maestro test \
             --format junit \
             --output build/maestro-report.xml \

@@ -251,20 +251,27 @@ async function serverSetup() {
     }
 
     // 4. Disable non-prepackaged plugins
-    const plugins = await axios.get(`${SITE_URL}/api/v4/plugins`, {headers});
-    const active = plugins.data?.active || [];
-    const toDisable = active.filter(
-        (plugin) => !PREPACKAGED_PLUGINS.has(plugin.id) && plugin.id !== 'com.mattermost.demo-plugin',
-    );
-    await Promise.all(toDisable.map((plugin) => {
-        process.stdout.write(`[globalSetup] Disabling plugin: ${plugin.id}\n`);
-        return axios.post(
-            `${SITE_URL}/api/v4/plugins/${encodeURIComponent(plugin.id)}/disable`,
-            null,
-            {headers},
+    // Non-fatal: cloud servers restrict the plugins API (returns 403), so we
+    // wrap this block the same way as the config patch above.
+    try {
+        const plugins = await axios.get(`${SITE_URL}/api/v4/plugins`, {headers});
+        const active = plugins.data?.active || [];
+        const toDisable = active.filter(
+            (plugin) => !PREPACKAGED_PLUGINS.has(plugin.id) && plugin.id !== 'com.mattermost.demo-plugin',
         );
-    }));
-    process.stdout.write('[globalSetup] ✅ Plugin cleanup done\n');
+        await Promise.all(toDisable.map((plugin) => {
+            process.stdout.write(`[globalSetup] Disabling plugin: ${plugin.id}\n`);
+            return axios.post(
+                `${SITE_URL}/api/v4/plugins/${encodeURIComponent(plugin.id)}/disable`,
+                null,
+                {headers},
+            );
+        }));
+        process.stdout.write('[globalSetup] ✅ Plugin cleanup done\n');
+    } catch (err) {
+        // Non-fatal: cloud servers restrict plugin management API
+        process.stderr.write(`[globalSetup] ⚠️ Could not clean up plugins: ${err.message}\n`);
+    }
 }
 
 module.exports = async () => {

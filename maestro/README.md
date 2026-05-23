@@ -41,10 +41,10 @@ Does the test cross app boundaries (share sheet, deep link from another app)?
 ### 1. Install Maestro CLI
 
 ```bash
-curl -Ls "https://get.maestro.mobile.dev" | bash
+curl -fsSL "https://get.maestro.mobile.dev" | bash -s -- --version 2.3.0
 # Adds ~/.maestro/bin to PATH
 export PATH="$PATH:$HOME/.maestro/bin"
-maestro --version  # should print 1.38.1
+maestro --version  # should print 2.3.0
 ```
 
 ### 2. Install Node dependencies (for seed/poll scripts)
@@ -60,10 +60,11 @@ All flows use the same environment variables as Detox:
 
 ```bash
 export SITE_1_URL="http://localhost:8065"
-export ADMIN_EMAIL="admin@example.com"
+export ADMIN_USERNAME="admin"             # username, not email
 export ADMIN_PASSWORD="Admin1234!"
 export TEST_USER_EMAIL="testuser@example.com"
 export TEST_USER_PASSWORD="User1234!"
+export TEST_CHANNEL_NAME="town-square"
 export MAESTRO_APP_ID="com.mattermost.rnbeta"   # optional, defaults to rnbeta
 ```
 
@@ -71,14 +72,44 @@ export MAESTRO_APP_ID="com.mattermost.rnbeta"   # optional, defaults to rnbeta
 
 Maestro **does not build the app**. Flows run against whatever app is already installed on the simulator or device. See [Building the app for Maestro](#building-the-app-for-maestro) below for options.
 
-**Quick local option:** from the repo root, run `npm run ios` once to build and install on the booted simulator, then run Maestro.
-
-### 5. Seed test data
+**Quick local option:** from the repo root, set `RUNNING_E2E=true` in `.env` (required to suppress the LogBox red screen that otherwise blocks tests), then build and install on the booted simulator:
 
 ```bash
-node maestro/fixtures/seed.js
+echo "RUNNING_E2E=true" > .env
+npm run ios   # starts Metro and installs the debug build
+```
+
+### 5. Configure the simulator for stable test runs (iOS)
+
+These settings mirror what CI applies automatically. They prevent flakiness from system
+dialogs and animations interfering with flows:
+
+```bash
+# Disable auto-correct and predictive text (prevents unexpected input mutations)
+xcrun simctl spawn booted defaults write -g KeyboardAutocorrection -bool false
+xcrun simctl spawn booted defaults write -g UIKeyboardPrediction -bool false
+
+# Disable slow animations (optional but makes flows faster locally)
+xcrun simctl spawn booted defaults write com.apple.UIKit UIAnimationDragCoefficient 0.01
+
+# Grant location permission to the app (avoids unexpected dialog mid-test)
+xcrun simctl privacy booted grant location-always com.mattermost.rnbeta
+
+# Grant photo library permission (required for share_image_to_channel)
+xcrun simctl privacy booted grant photos com.mattermost.rnbeta
+```
+
+### 6. Seed test data
+
+```bash
+# From the repo root:
+npx tsx maestro/fixtures/seed.ts
 source .maestro-test-env.sh   # exports TEST_USER_EMAIL, TEST_USER_PASSWORD, etc.
 ```
+
+> **Note**: `maestro/utils/setup.yml` is a placeholder — it does NOT run the seed script.
+> Maestro's `runScript` command runs in a sandboxed JS environment and cannot execute
+> Node.js modules. Always seed via the shell command above before starting flows.
 
 ---
 
@@ -116,16 +147,15 @@ The Maestro workflow (`.github/workflows/e2e-maestro-template.yml`) **does not c
 ```bash
 # Run all flows
 cd /path/to/mattermost-mobile
-npm run test              # from maestro/package.json
-# or directly:
-maestro test maestro/flows/
+npm run test:ios          # targets iOS simulator (explicit --platform ios)
+npm run test:android      # targets Android emulator (explicit --platform android)
 
-# Run a specific suite
-maestro test maestro/flows/share_extension/
-maestro test maestro/flows/calls/
+# Run a specific suite or single flow by passing the path directly
+maestro test --platform ios maestro/flows/share_extension/
+maestro test --platform ios maestro/flows/calls/call_ui_permission.yml
 
-# Dry-run (validate YAML without executing)
-maestro test --dry-run maestro/flows/
+# Dry-run (validate YAML syntax without executing on a device)
+npm run dry-run           # equivalent to: maestro test --dry-run maestro/flows/
 
 # Two-device sync test
 DEVICE_A_UDID=<udid-a> DEVICE_B_UDID=<udid-b> \
@@ -144,7 +174,7 @@ DEVICE_A_UDID=<udid-a> DEVICE_B_UDID=<udid-b> \
    cd detox && npm run e2e:android-inject-settings && npm run e2e:android-build
    adb install -r android/app/build/outputs/apk/debug/app-debug.apk
    ```
-3. **Set env vars** (e.g. `SITE_1_URL`, `TEST_USER_EMAIL`, `TEST_USER_PASSWORD`, `TEST_CHANNEL_NAME`). Optionally run `node maestro/fixtures/seed.js` and `source .maestro-test-env.sh`.
+3. **Set env vars** (e.g. `SITE_1_URL`, `TEST_USER_EMAIL`, `TEST_USER_PASSWORD`, `TEST_CHANNEL_NAME`). Optionally run `npx tsx maestro/fixtures/seed.ts` and `source .maestro-test-env.sh`.
 4. **Run Maestro** with `--platform android` so it targets the Android device instead of iOS:
    ```bash
    maestro test --platform android maestro/flows/
@@ -161,7 +191,9 @@ Every flow file **must** follow these rules:
 
 1. **Use `utils/login.yml`** as the first sub-flow to authenticate.
 2. **Use `utils/navigate_to_channel.yml`** before any channel interaction.
-3. **Use `utils/setup.yml`** in flows that need fresh test data (seeded channel/user).
+3. **Seed data before the flow, not inside it**: run `npx tsx maestro/fixtures/seed.ts` in the
+   shell before invoking Maestro. `utils/setup.yml` is a no-op placeholder — it cannot run
+   Node.js scripts from inside a Maestro flow.
 4. **Include Zephyr tags**: every flow must declare `tags: [MM-TXXXX]` at the top.
 5. **50-line lint rule**: no flow file may exceed 50 lines without a comment explaining what the block does.
 6. **Take a screenshot** at the end of each flow for artifact upload.
@@ -169,12 +201,12 @@ Every flow file **must** follow these rules:
 ### Sub-flow Usage Example
 
 ```yaml
-appId: com.mattermost.rnbeta
+appId: ${MAESTRO_APP_ID}
 ---
 - runFlow: ../../utils/login.yml
 - runFlow: ../../utils/navigate_to_channel.yml
 - tapOn:
-    id: "channel.post_draft.input"
+    id: "channel.post_draft.post.input"
 - inputText: "Hello from Maestro"
 - tapOn:
     id: "channel.post_draft.send_action.send.button"
@@ -188,7 +220,7 @@ appId: com.mattermost.rnbeta
 | Variable | Default | Description |
 |---|---|---|
 | `SITE_1_URL` | — | Mattermost server URL (required) |
-| `ADMIN_EMAIL` | — | Admin account email for seeding |
+| `ADMIN_USERNAME` | — | Admin account username (not email) for seeding |
 | `ADMIN_PASSWORD` | — | Admin account password for seeding |
 | `TEST_USER_EMAIL` | — | Test user email for login |
 | `TEST_USER_PASSWORD` | — | Test user password for login |
@@ -198,17 +230,22 @@ appId: com.mattermost.rnbeta
 | `DEVICE_A_UDID` | — | UDID of first device (multi-device only) |
 | `DEVICE_B_UDID` | — | UDID of second device (multi-device only) |
 | `ADMIN_TOKEN` | — | Mattermost personal access token for API polling |
-| `TEST_CHANNEL_ID` | — | Channel ID used in poll_for_message.js |
+| `TEST_CHANNEL_ID` | — | Channel ID used in `poll_for_message.ts` |
 
 ---
 
 ## CI Integration
 
-Maestro tests run via `.github/workflows/e2e-maestro-template.yml`, a reusable `workflow_call` template invoked by nightly or on-demand jobs — not in the standard PR gate.
+Maestro tests run via `.github/workflows/e2e-maestro-template.yml`, a reusable `workflow_call` template. They are triggered in two ways:
 
-- All flows (including share extension and calls) run on an **iOS simulator** (iPhone 17 Pro, iOS 26.3.1) on `macos-15` GitHub Actions runners. No real device is needed for CI.
-- Multi-device sync tests (`MM-T3055`/`MM-T3056`) are the exception — they require two physical devices and are run separately via `maestro/scripts/run_two_device.sh`.
-- Keyboard/autocorrect tests (`MM-T227`) use `--ignore-uncovered` because autocorrect is non-deterministic across iOS versions.
+- **PR gate** (`e2e-detox-pr.yml`): Maestro runs alongside Detox when the `E2E Tests` label is added to a PR. It uses `SITE_2_URL` (a separate provisioned server) to avoid overloading the Detox test server.
+- **On-demand / nightly**: The template can also be called directly for scheduled or manual runs.
+
+Additional CI notes:
+
+- All PR flows run on an **iOS simulator** (iPhone 17 Pro, iOS 26.2) on `macos-26` runners and on an **Android emulator** (API 34) on `ubuntu-latest-8-cores`. No real devices needed for CI.
+- `start_call.yml` and `file_type_preview.yml` are **excluded from the default CI run** because they require separate seed scripts (`calls_seed.ts`, `seed_file_preview.ts`) that are not part of the standard PR setup.
+- Multi-device sync tests (`MM-T3055`/`MM-T3056`) require two physical devices and are run separately via `maestro/scripts/run_two_device.sh`.
 - JUnit XML reports are written to `build/maestro-report.xml` and uploaded as CI artifacts.
 
 ---
@@ -217,25 +254,35 @@ Maestro tests run via `.github/workflows/e2e-maestro-template.yml`, a reusable `
 
 ```
 maestro/
-  package.json                         # Maestro CLI version pin + scripts
+  package.json                         # Maestro CLI version pin + npm scripts
   README.md                            # This file
   utils/
     login.yml                          # Reusable: app launch + login
+    logout.yml                         # Reusable: logout from app
     navigate_to_channel.yml            # Reusable: tap channel in sidebar
-    setup.yml                          # Reusable: seed test data
+    setup.yml                          # Placeholder — seed via shell (see Setup §6)
   fixtures/
-    seed.js                            # Node script: create team/channel/user via API
-    poll_for_message.js                # Node script: poll API for SYNC_TOKEN message
+    seed.ts                            # Node script: create team/channel/user via API
+    seed_file_preview.ts               # Node script: seed for file_type_preview flows
+    calls_seed.ts                      # Node script: seed calls-specific data
+    poll_for_message.ts                # Node script: poll API for SYNC_TOKEN message
   flows/
     account/
+      attach_logs.yml                  # MM-T3261
       help_url.yml                     # MM-T3260
     calls/
       call_ui_permission.yml           # MM-T1411
+      device_a_start_call.yml          # multi-device calls
+      device_b_join_call.yml           # multi-device calls
+      leave_call.yml                   # calls UI
+      mute_unmute.yml                  # calls UI
+      start_call.yml                   # requires calls_seed.ts (not in default CI run)
     channels/
       channel_bookmark_file.yml        # MM-T5603
-      channel_bookmark_attach_file_with_title.yml  # MM-T5616
-    keyboard/
-      autocorrect.yml                  # MM-T227 (nightly)
+      channel_bookmark_file_android_picker.yml  # Android-specific picker variant
+      channel_bookmark_file_ios_picker.yml      # iOS-specific picker variant
+      channel_bookmark_link_external.yml        # MM-T5604
+      file_type_preview.yml            # requires seed_file_preview.ts (not in default CI run)
     multi_device/
       user_a_sends_message.yml         # MM-T3055
       user_b_receives_message.yml      # MM-T3056

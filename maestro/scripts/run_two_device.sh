@@ -17,7 +17,7 @@ echo "Device B: $DEVICE_B_UDID"
 echo "Sync token: $SYNC_TOKEN"
 
 # Seed test data (creates 2 users sharing 1 channel)
-node maestro/fixtures/seed.js --two-users
+npx tsx maestro/fixtures/seed.ts --two-users
 
 # Source the generated env file (provides USER_A_EMAIL, USER_B_EMAIL, TEST_CHANNEL_ID, etc.)
 # shellcheck disable=SC1091
@@ -42,7 +42,7 @@ echo "--- Waiting for Device A to post message (polling API) ---"
 # Poll the API until the sync message appears before starting Device B
 POLL_COUNT=0
 MAX_POLLS=30
-until node maestro/fixtures/poll_for_message.js; do
+until npx tsx maestro/fixtures/poll_for_message.ts; do
   POLL_COUNT=$((POLL_COUNT + 1))
   if [ $POLL_COUNT -ge $MAX_POLLS ]; then
     echo "Error: Device A did not post message within timeout"

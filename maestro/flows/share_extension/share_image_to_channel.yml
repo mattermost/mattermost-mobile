@@ -1,7 +1,7 @@
 # MM-T2862: Share an image to a Mattermost channel via the share extension
 tags:
   - MM-T2862
-appId: com.mattermost.rnbeta
+appId: ${MAESTRO_APP_ID}
 ---
 - runFlow: ../../utils/login.yml
 - runFlow: ../../utils/navigate_to_channel.yml
@@ -56,7 +56,7 @@ appId: com.mattermost.rnbeta
 
 # Return to Mattermost and verify the image post appeared in the channel
 - launchApp:
-    appId: "com.mattermost.rnbeta"
+    appId: "${MAESTRO_APP_ID}"
 - extendedWaitUntil:
     visible:
       id: "channel.post_list.post"

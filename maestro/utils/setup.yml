@@ -1,6 +1,11 @@
 # Sub-flow: Seed test data
-# Usage: - runFlow: ../utils/setup.yml
-# Requires: SITE_1_URL, ADMIN_EMAIL, ADMIN_PASSWORD env vars
-# Effect: Runs seed.js which writes .maestro-test-env.sh with test credentials
+# NOTE: Maestro's runScript runs in a sandboxed JS environment and cannot execute
+# Node.js modules. Seeding must be done as a shell step BEFORE running Maestro:
+#
+#   npx tsx maestro/fixtures/seed.ts
+#   source .maestro-test-env.sh   # exports TEST_USER_EMAIL, TEST_USER_PASSWORD, etc.
+#
+# This file is intentionally left empty. Any flow that declares
+#   - runFlow: ../../utils/setup.yml
+# will simply continue without error.
 ---
-- runScript: ../fixtures/seed.js

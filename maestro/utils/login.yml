@@ -3,10 +3,8 @@
 # Requires: SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD env vars
 # Optional: MAESTRO_APP_ID (defaults to com.mattermost.rnbeta)
 #
-# NOTE: Do NOT use clearState:true on iOS. clearState simulates a fresh install
-# which triggers the native "Allow Notifications?" system dialog. That dialog
-# appears after the server form loads and interferes with the connection flow,
-# leaving the app stuck on the server connect screen.
+# iOS: clearState:true is used here. It simulates a fresh install and triggers
+# the native "Allow Notifications?" dialog — handled below with an optional tap.
 # Android: clearState:true wipes app data (including granted permissions) so a
 # stale session can't interfere, but it re-triggers the notification permission
 # dialog. The flow handles this with a timed wait + optional Allow tap.
@@ -25,13 +23,12 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - launchApp:
           stopApp: true
-      # On a fresh install the JS bundle can take 30-60s to load from Metro.
-      # Without this explicit wait the conditional checks below fire while
-      # the screen is still blank and back-presses exit the app to the launcher.
+          clearState: true
+      # After clearState, the JS bundle loads fresh + notification dialog
+      # may appear. Wait longer for bundle + permission dialog.
       - waitForAnimationToEnd:
-          timeout: 60000
-      # Notification permission dialog may appear on first launch.
-      # Dismiss if present (granted via simctl privacy, but dialog can still fire).
+          timeout: 90000
+      # Notification permission dialog — dismiss if present.
       - tapOn:
           text: "Allow"
           optional: true
@@ -98,6 +95,15 @@ appId: ${MAESTRO_APP_ID}
       visible:
         id: "tab_bar.home.tab"
     file: logout.yml
+# On iOS, logout navigates to the server list (not the login form).
+# Tap the first server to navigate to the login form.
+- runFlow:
+    when:
+      visible:
+        id: "server_list.screen"
+    commands:
+      - tapOn:
+          id: "server_list.server_item.server_1"
 # Only press back if we are NOT already on the login form, NOT on the server
 # connect form, AND NOT on the home screen. If we're on the home screen, the
 # logout block below will handle it. Without this home-screen check, back

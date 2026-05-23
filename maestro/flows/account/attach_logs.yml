@@ -52,23 +52,31 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "settings.report_problem.option"
 
-# iOS: SFSafariViewController hosts the report form. iOS 26+ exposes the
-# breadcrumb back-to-app pill; older iOS uses a "Done" button.
+# iOS: On free-edition servers, SFSafariViewController hosts the report form,
+# showing a breadcrumb back-to-app pill (iOS 26+) or Done button (older).
+# On Enterprise servers, the in-app report_problem.screen opens instead.
 - runFlow:
     when:
       platform: iOS
     commands:
-      - extendedWaitUntil:
-          visible:
-            id: "breadcrumb"
-          timeout: 8000
-      - takeScreenshot: report-problem-opened
-      - tapOn:
-          id: "breadcrumb"
-          optional: true
-      - tapOn:
-          text: "Done"
-          optional: true
+      - runFlow:
+          when:
+            visible:
+              id: "breadcrumb"
+          commands:
+            - takeScreenshot: report-problem-opened
+            - tapOn:
+                id: "breadcrumb"
+            - tapOn:
+                text: "Done"
+                optional: true
+      - runFlow:
+          when:
+            visible:
+              id: "report_problem.screen"
+          commands:
+            - takeScreenshot: report-problem-in-app
+            - back
 
 # Android: Chrome Custom Tab opens in foreground; the settings option leaves
 # the tree. Wait for that, screenshot, then press Back to return.

@@ -13,7 +13,7 @@ appId: ${MAESTRO_APP_ID}
     id: "channel.post_draft.post.input"
 - inputText: "MM-T3055 sync test message ${SYNC_TOKEN}"
 - tapOn:
-    id: "channel.post_draft.post.input.send_action.send.button"
+    id: "channel.post_draft.send_action.send.button"
 
 # Verify the message appeared in the channel on this device
 - extendedWaitUntil:

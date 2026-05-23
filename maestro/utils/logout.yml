@@ -58,11 +58,15 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - tapOn:
           id: "android:id/button1"
-# Wait for logout to complete — the login form or server form should appear.
-# Using login/server form as the signal instead of account.screen:notVisible
-# because new-architecture logout can keep account.screen visible during
-# animated transitions.
-- extendedWaitUntil:
-    visible:
-      id: "login_form.username.input"
-    timeout: 60000
+# Wait for logout to complete — login form or server list.
+# On iOS, logout may navigate to the server list (multiple servers) or
+# directly to the login form (single server). Accept either.
+- runFlow:
+    when:
+      notVisible:
+        id: "login_form.username.input"
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "server_list.screen"
+          timeout: 60000
