@@ -9,6 +9,7 @@
 
 import {System} from '@support/server_api';
 import {serverTwoUrl, siteTwoUrl} from '@support/test_config';
+import {Alert} from '@support/ui/component';
 import {
     ChannelScreen,
     ChannelListScreen,
@@ -20,7 +21,7 @@ import {
     ChannelSettingsScreen,
 } from '@support/ui/screen';
 import {getAdminAccount, getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Channels - Unarchive Channel', () => {
     const serverOneDisplayName = 'Server 1';
@@ -54,10 +55,17 @@ describe('Channels - Unarchive Channel', () => {
         await wait(timeouts.TWO_SEC);
 
         // Wait for the channel list header plus button to be fully visible and hittable.
-        await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
+        // Use polling helper to avoid the bridge-idle block on Android API 35.
+        await waitForElementToBeVisible(ChannelListScreen.headerPlusButton, timeouts.HALF_MIN);
     });
 
     beforeEach(async () => {
+        // Dismiss any lingering "Removed from channel" or "Archived channel"
+        // dialogs that may have appeared asynchronously via WebSocket events
+        // from the previous test's channel archival. These native Alert dialogs
+        // block all Detox interactions until dismissed.
+        await Alert.dismissChannelRemoveOrArchiveAlert();
+
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
     });

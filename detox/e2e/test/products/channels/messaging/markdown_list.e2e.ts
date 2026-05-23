@@ -55,19 +55,19 @@ describe('Messaging - Markdown List', () => {
         // * Verify markdown bullet list is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemListItem, postListPostItemListItemBullet} = ChannelScreen.getPostListPostItem(post.id);
-        await expect(postListPostItemListItem.atIndex(0)).toBeVisible();
-        await expect(element(by.text(item1))).toBeVisible();
-        await expect(element(by.text(item2))).toBeVisible();
-        await expect(element(by.text(item2SubPoint))).toBeVisible();
+        await expect(postListPostItemListItem.atIndex(0)).toBeVisible(50);
+        await expect(element(by.text(item1))).toBeVisible(50);
+        await expect(element(by.text(item2))).toBeVisible(50);
+        await expect(element(by.text(item2SubPoint))).toBeVisible(50);
 
         if (isAndroid()) {
             await expect(postListPostItemListItem.atIndex(0)).toHaveLabel(`• ${item1}`);
         }
 
         if (isIos()) {
-            await expect(postListPostItemListItem.atIndex(0)).toBeVisible();
-            await expect(postListPostItemListItem.atIndex(1)).toBeVisible();
-            await expect(postListPostItemListItem.atIndex(2)).toBeVisible();
+            await expect(postListPostItemListItem.atIndex(0)).toBeVisible(50);
+            await expect(postListPostItemListItem.atIndex(1)).toBeVisible(50);
+            await expect(postListPostItemListItem.atIndex(2)).toBeVisible(50);
 
             await expect(postListPostItemListItemBullet.atIndex(0)).toHaveText('•');
             await expect(postListPostItemListItemBullet.atIndex(1)).toHaveText('•');
@@ -90,20 +90,20 @@ describe('Messaging - Markdown List', () => {
         // * Verify markdown ordered list is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemListItem, postListPostItemListItemBullet} = ChannelScreen.getPostListPostItem(post.id);
-        await expect(postListPostItemListItem.atIndex(0)).toBeVisible();
+        await expect(postListPostItemListItem.atIndex(0)).toBeVisible(50);
         await expect(postListPostItemListItemBullet.atIndex(0)).toHaveText('1.');
-        await expect(element(by.text(item1))).toBeVisible();
-        await expect(element(by.text(item2))).toBeVisible();
-        await expect(element(by.text(item3))).toBeVisible();
+        await expect(element(by.text(item1))).toBeVisible(50);
+        await expect(element(by.text(item2))).toBeVisible(50);
+        await expect(element(by.text(item3))).toBeVisible(50);
 
         if (isAndroid()) {
             await expect(postListPostItemListItem.atIndex(0)).toHaveLabel(`1. ${item1}`);
         }
 
         if (isIos()) {
-            await expect(postListPostItemListItem.atIndex(1)).toBeVisible();
+            await expect(postListPostItemListItem.atIndex(1)).toBeVisible(50);
             await expect(postListPostItemListItemBullet.atIndex(1)).toHaveText('2.');
-            await expect(postListPostItemListItem.atIndex(2)).toBeVisible();
+            await expect(postListPostItemListItem.atIndex(2)).toBeVisible(50);
             await expect(postListPostItemListItemBullet.atIndex(2)).toHaveText('3.');
         }
 

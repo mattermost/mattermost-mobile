@@ -33,7 +33,7 @@ import {
     TeamDropdownMenuScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Search Messages', () => {
@@ -96,7 +96,7 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.searchModifierFrom.tap();
         await SearchMessagesScreen.searchInput.typeText(testUser.username);
         const {atMentionItem} = Autocomplete.getAtMentionItem(testUser.id);
-        await waitFor(atMentionItem).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitForElementToBeVisible(atMentionItem, timeouts.TWO_SEC);
         await atMentionItem.tap();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
@@ -126,7 +126,7 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.searchModifierIn.tap();
         await SearchMessagesScreen.searchInput.typeText(testChannel.name);
         const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
-        await waitFor(channelMentionItem).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitForElementToBeVisible(channelMentionItem, timeouts.TWO_SEC);
         await channelMentionItem.tap();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
@@ -416,8 +416,8 @@ describe('Search - Search Messages', () => {
 
         // * Verify reply count and following button
         await wait(timeouts.FOUR_SEC);
-        await waitFor(element(by.text('1 reply'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await waitFor(element(by.text('Following'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitForElementToBeVisible(element(by.text('1 reply')), timeouts.TWO_SEC);
+        await waitForElementToBeVisible(element(by.text('Following')), timeouts.TWO_SEC);
 
         // # Open post options for updated searched message and delete post
         await element(by.id(`search_results.post_list.post.${searchedPost.id}`)).longPress();

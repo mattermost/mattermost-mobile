@@ -11,6 +11,7 @@ import {
     ChannelBookmark,
     Channel,
     Setup,
+    System,
     Team,
     User,
 } from '@support/server_api';
@@ -34,8 +35,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     let testTeam: any;
     let testUser: any;
     let regularUser: any;
-    let bookmarksAvailable = false;
-
     let channelT5615: any;
     let channelT5725: any;
 
@@ -65,15 +64,8 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         testTeam = team;
         testUser = user;
 
-        // ── Check if bookmarks API is available on this server ────────────────
-        const probeChannel = await createChannel();
-        const isAvailable = await ChannelBookmark.apiIsBookmarksAvailable(siteOneUrl, probeChannel.id);
-        if (!isAvailable) {
-            // eslint-disable-next-line no-console
-            console.warn('Channel bookmarks API not available on this server — skipping suite');
-            return;
-        }
-        bookmarksAvailable = true;
+        // ── Enable channel bookmarks feature flag ────────────────────────────
+        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: true}});
 
         // Create the regular user needed for the permission test (MM-T5615_1).
         const {user: rUser} = await User.apiCreateUser(siteOneUrl);
@@ -104,24 +96,15 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     });
 
     beforeEach(async () => {
-        if (!bookmarksAvailable) {
-            return;
-        }
         await ChannelListScreen.toBeVisible();
     });
 
     afterAll(async () => {
-        if (!bookmarksAvailable) {
-            return;
-        }
+        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: false}});
         await HomeScreen.logout();
     });
 
     it('MM-T5615_1 - users without manage permissions should not see add/edit/delete/reorder bookmark options', async () => {
-        if (!bookmarksAvailable) {
-            return;
-        }
-
         // # Log out the admin user and log in as the regular channel member
         await HomeScreen.logout();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -150,10 +133,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify Edit and Delete options ARE visible.
-        // Mattermost's default permission scheme grants edit_bookmark_public_channel
-        // and delete_bookmark_public_channel to the channel_user role, meaning all
-        // channel members (not just admins) can edit and delete existing bookmarks.
-        // Only the "Add a bookmark" action is restricted to channel admins (verified above).
         await expect(ChannelBookmarkScreen.editOption).toBeVisible();
         await expect(ChannelBookmarkScreen.deleteOption).toBeVisible();
 
@@ -181,10 +160,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     });
 
     it('MM-T5725_1 - should not be able to add, edit, or delete bookmarks in an archived channel', async () => {
-        if (!bookmarksAvailable) {
-            return;
-        }
-
         // # Navigate to the channel.
         // Extra wait after openChannel: on Android, device.reloadReactNative() in T5615_1 can
         // leave the app mid-settle, causing ChannelInfoScreen.open()'s header-visibility check

@@ -282,9 +282,8 @@ class ChannelScreen {
             } catch { /* ignore — list may be at the boundary */ }
         }
 
-        // On Android, long-press on the inner text element — more reliable than the
-        // compound-matched post container, which can silently swallow the gesture.
-        const longPressTarget = isAndroid()? element(by.text(text).withAncestor(by.id(`${this.testID.channelScreenPrefix}post_list.post.${postId}`))): postListPostItem;
+        const postTestID = `${this.testID.channelScreenPrefix}post_list.post.${postId}`;
+        const longPressTarget = element(by.id('post_header.date_time').withAncestor(by.id(postTestID)));
 
         await longPressWithScrollRetry(
             longPressTarget,

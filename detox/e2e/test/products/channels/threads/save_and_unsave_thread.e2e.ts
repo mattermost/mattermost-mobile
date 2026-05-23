@@ -26,8 +26,8 @@ import {
     ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Threads - Save and Unsave Thread', () => {
     const serverOneDisplayName = 'Server 1';
@@ -75,7 +75,7 @@ describe('Threads - Save and Unsave Thread', () => {
 
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitForElementToBeVisible(postListPostItem, timeouts.FOUR_SEC);
 
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;

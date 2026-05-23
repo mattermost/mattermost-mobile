@@ -6,7 +6,7 @@ import {
     ChannelListScreen,
     ThreadOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait} from '@support/utils';
+import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class GlobalThreadsScreen {
@@ -62,7 +62,7 @@ class GlobalThreadsScreen {
 
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
-        await waitFor(this.globalThreadsScreen).toExist().withTimeout(timeout);
+        await waitForElementToExist(this.globalThreadsScreen, timeout);
 
         return this.globalThreadsScreen;
     };
@@ -75,15 +75,8 @@ class GlobalThreadsScreen {
     };
 
     back = async () => {
-        // Permalink → "Jump to recent messages" runs `navigateBack()` followed
-        // by `switchToChannelById()` (app/screens/permalink/permalink.tsx),
-        // which pops the global-threads route off the navigation stack before
-        // pushing the destination channel. After the test calls
-        // `ChannelScreen.back()` we land directly on the channel list — there
-        // is no global-threads screen left to pop. Probe first so the test
-        // teardown is idempotent.
         try {
-            await waitFor(this.globalThreadsScreen).toExist().withTimeout(timeouts.ONE_SEC);
+            await waitForElementToExist(this.globalThreadsScreen, timeouts.ONE_SEC);
         } catch {
             return;
         }

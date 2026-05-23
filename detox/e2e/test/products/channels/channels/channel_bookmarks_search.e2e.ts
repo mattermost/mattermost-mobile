@@ -11,6 +11,7 @@ import {
     ChannelBookmark,
     Channel,
     Setup,
+    System,
 } from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
@@ -31,8 +32,6 @@ describe('Channels - Channel Bookmarks Search', () => {
     const channelsCategory = 'channels';
     let testTeam: any;
     let testUser: any;
-    let bookmarksAvailable = false;
-
     let channelDelete: any;
     let bookmarkDelete: any;
     let channelT5613: any;
@@ -67,15 +66,8 @@ describe('Channels - Channel Bookmarks Search', () => {
         testTeam = team;
         testUser = user;
 
-        // ── Check if bookmarks API is available on this server ────────────────
-        const probeChannel = await createChannel();
-        const isAvailable = await ChannelBookmark.apiIsBookmarksAvailable(siteOneUrl, probeChannel.id);
-        if (!isAvailable) {
-            // eslint-disable-next-line no-console
-            console.warn('Channel bookmarks API not available on this server — skipping suite');
-            return;
-        }
-        bookmarksAvailable = true;
+        // ── Enable channel bookmarks feature flag ────────────────────────────
+        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: true}});
 
         // Unique search titles — generated once so they stay unique per run.
         fileSearchTitle = `FileSearch-${Date.now()}`;
@@ -118,24 +110,15 @@ describe('Channels - Channel Bookmarks Search', () => {
     });
 
     beforeEach(async () => {
-        if (!bookmarksAvailable) {
-            return;
-        }
         await ChannelListScreen.toBeVisible();
     });
 
     afterAll(async () => {
-        if (!bookmarksAvailable) {
-            return;
-        }
+        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: false}});
         await HomeScreen.logout();
     });
 
     it('should be able to delete a bookmark via channel info', async () => {
-        if (!bookmarksAvailable) {
-            return;
-        }
-
         // # Navigate to the channel
         await openChannel(channelDelete);
 
@@ -170,10 +153,6 @@ describe('Channels - Channel Bookmarks Search', () => {
     });
 
     it('MM-T5613_1 - file bookmarks should be searchable in Search Results Files tab', async () => {
-        if (!bookmarksAvailable) {
-            return;
-        }
-
         // # Open search screen (channel + bookmark created in beforeAll — no reload needed)
         await SearchMessagesScreen.open();
 
@@ -202,10 +181,6 @@ describe('Channels - Channel Bookmarks Search', () => {
     });
 
     it('MM-T5614_1 - file bookmark should no longer appear in search after bookmark is deleted', async () => {
-        if (!bookmarksAvailable) {
-            return;
-        }
-
         // # Navigate to the channel and verify the bookmark is visible
         await openChannel(channelT5614);
         await expect(element(by.text(deleteSearchTitle))).toBeVisible();

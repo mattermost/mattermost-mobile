@@ -9,7 +9,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 class SavedMessagesScreen {
@@ -44,7 +44,7 @@ class SavedMessagesScreen {
 
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
-        await waitFor(this.savedMessagesScreen).toExist().withTimeout(timeout);
+        await waitForElementToExist(this.savedMessagesScreen, timeout);
 
         return this.savedMessagesScreen;
     };

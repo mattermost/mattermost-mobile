@@ -9,7 +9,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 class RecentMentionsScreen {
@@ -46,13 +46,13 @@ class RecentMentionsScreen {
 
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
-        await waitFor(this.recentMentionsScreen).toExist().withTimeout(timeout);
+        await waitForElementToExist(this.recentMentionsScreen, timeout);
 
         return this.recentMentionsScreen;
     };
 
     recentMentionPostListToBeVisible = async () => {
-        await waitFor(this.recentMentionPostList).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToBeVisible(this.recentMentionPostList, timeouts.TEN_SEC);
     };
 
     open = async () => {
@@ -68,11 +68,6 @@ class RecentMentionsScreen {
         // Poll for the post to become visible without waiting for idle bridge
         await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
-        // Choose the safest longPress target inside the post:
-        // - post_pre_header.text (the "Saved"/"Pinned" indicator) has no interactive children
-        //   and is at the very top of the post card — use it when present.
-        // - Fall back to the timestamp (post_header.date_time) which sits in the header row
-        //   away from the @mention message body.
         const postPreHeaderText = element(
             by.id('post_pre_header.text').withAncestor(by.id(`${this.testID.recentMentionPostList}.${postId}`)),
         );
@@ -81,12 +76,12 @@ class RecentMentionsScreen {
         );
         let longPressTarget = postHeaderDateTime;
         try {
-            await waitFor(postPreHeaderText).toExist().withTimeout(timeouts.TWO_SEC);
+            await waitForElementToExist(postPreHeaderText, timeouts.TWO_SEC);
             longPressTarget = postPreHeaderText;
         } catch (_e) {
             // No pre-header (post is not saved/pinned) — fall back to timestamp
         }
-        await waitFor(longPressTarget).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToBeVisible(longPressTarget, timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
 
         // # Open post options (with retry — longPress can fail on Android during animations)

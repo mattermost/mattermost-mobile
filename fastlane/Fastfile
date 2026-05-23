@@ -469,7 +469,7 @@ platform :ios do
     UI.message("Building for #{build_arch} architecture on #{host_arch} host")
 
     build_ios_unsigned_or_simulator(
-      more_xc_args: "-sdk iphonesimulator -arch #{build_arch}",
+      more_xc_args: "-sdk iphonesimulator -arch #{build_arch} -destination 'generic/platform=iOS Simulator'",
       rel_build_dir: "Release-iphonesimulator",
       output_file: output_file,
       ci_optimized: true,

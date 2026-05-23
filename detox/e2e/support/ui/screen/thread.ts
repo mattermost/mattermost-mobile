@@ -92,13 +92,13 @@ class ThreadScreen {
     dismissScheduledPostTooltip = async () => {
         // Try to close scheduled post tooltip if it exists (try both regular and admin account versions)
         try {
-            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+            await waitForElementToBeVisible(this.scheduledPostTooltipCloseButton, timeouts.FOUR_SEC);
             await this.scheduledPostTooltipCloseButton.tap();
             await waitFor(this.scheduledPostTooltipCloseButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
         } catch {
             // Try admin account version
             try {
-                await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+                await waitForElementToBeVisible(this.scheduledPostTooltipCloseButtonAdminAccount, timeouts.FOUR_SEC);
                 await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
                 await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).not.toExist().withTimeout(timeouts.FIVE_SEC);
             } catch {
@@ -109,7 +109,7 @@ class ThreadScreen {
 
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
-        await waitFor(this.threadScreen).toExist().withTimeout(timeout);
+        await waitForElementToExist(this.threadScreen, timeout);
 
         return this.threadScreen;
     };

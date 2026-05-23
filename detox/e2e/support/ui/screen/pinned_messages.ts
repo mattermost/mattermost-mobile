@@ -6,8 +6,8 @@ import {
     ChannelInfoScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {expect} from 'detox';
 
 class PinnedMessagesScreen {
     testID = {
@@ -39,19 +39,7 @@ class PinnedMessagesScreen {
 
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
-
-        // On Android the JS bridge stays busy during the navigation push animation,
-        // the ActivityIndicator spinner animation, and the fetchPinnedPosts network
-        // request + WatermelonDB writes.  waitFor().toExist().withTimeout() blocks
-        // until the bridge is idle *before* querying the hierarchy, which means it
-        // never fires on CI emulators (BridgeIdlingResource timeout).
-        // Use the polling helper instead — it checks expect().toExist() directly
-        // every 500ms without waiting for bridge idle.
-        if (isAndroid()) {
-            await waitForElementToExist(this.pinnedMessagesScreen, timeout);
-        } else {
-            await waitFor(this.pinnedMessagesScreen).toExist().withTimeout(timeout);
-        }
+        await waitForElementToExist(this.pinnedMessagesScreen, timeout);
 
         return this.pinnedMessagesScreen;
     };
@@ -64,20 +52,12 @@ class PinnedMessagesScreen {
     };
 
     back = async () => {
-        // iOS 26: UITransitionView glass overlay makes the native 'Back' label button
-        // non-hittable. A swipe-back gesture from the screen container's left edge
-        // bypasses the overlay and triggers the interactive pop gesture.
-        //
-        // Android API 35: tapping the Toolbar 'Navigate up' button fires via Espresso
-        // but the navigation event does not propagate through expo-router on API 35.
-        // device.pressBack() triggers useAndroidHardwareBackHandler(Screens.PINNED_MESSAGES,
-        // navigateBack) which reliably pops the screen.
         if (isAndroid()) {
             await device.pressBack();
         } else {
             await this.pinnedMessagesScreen.swipe('right', 'fast', 0.8, 0.05, 0.5);
         }
-        await waitFor(this.pinnedMessagesScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToNotExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {

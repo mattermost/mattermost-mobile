@@ -1,0 +1,181 @@
+# MM-T5611: Tapping a link bookmark opens the URL in an external browser
+#
+# This test was originally a Detox test (channel_bookmarks.e2e.ts MM-T5611_1) but had
+# to be moved to Maestro because tapping a link bookmark calls Linking.openURL(), which
+# opens Safari.app (iOS) or a Chrome Custom Tab (Android). Detox is scoped to the main
+# app process and cannot interact with an external browser or an in-app
+# SFSafariViewController overlay. Maestro drives automation at the OS accessibility
+# layer and can see elements in both the app and any browser overlay.
+#
+# Flow:
+#   1. Login and navigate to the test channel
+#   2. Open channel info → add a link bookmark (https://mattermost.com)
+#   3. Save and close channel info
+#   4. Verify the bookmark bar is visible in the channel header
+#   5. Tap the bookmark — browser opens
+#   6. Screenshot the browser as evidence; dismiss it
+#   7. Verify the channel screen is back
+#
+# Requires env vars:
+#   SITE_1_URL          — server URL (e.g. http://localhost:8065)
+#   TEST_USER_EMAIL     — test user email
+#   TEST_USER_PASSWORD  — test user password
+#   TEST_CHANNEL_NAME   — name of a channel with no posts (bookmark bar will be empty)
+#   MAESTRO_APP_ID      — app bundle ID (default: com.mattermost.rnbeta)
+tags:
+  - MM-T5611
+appId: ${MAESTRO_APP_ID}
+---
+# --- Setup: login and navigate to the test channel ---
+- runFlow: ../../utils/login.yml
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# --- Open channel info via the channel intro options ---
+# navigation.header.title has opacity:0 on iOS 26 when the channel is not scrolled
+# (the Animated.Text opacity is driven by scroll position and starts at 0).
+# The intro "Info" action is always accessible when the channel has no posts.
+- tapOn:
+    id: "channel_post_list.intro_options.channel_info.action"
+- extendedWaitUntil:
+    visible:
+      id: "channel_info.screen"
+    timeout: 10000
+
+# --- Open the bookmark type picker bottom sheet ---
+- tapOn:
+    id: "channel_info.add_bookmark.button"
+- extendedWaitUntil:
+    visible:
+      id: "channel_bookmark.type.link"
+    timeout: 10000
+
+# --- Select "Add a link" ---
+- tapOn:
+    id: "channel_bookmark.type.link"
+- extendedWaitUntil:
+    visible:
+      id: "channel_bookmark.screen"
+    timeout: 10000
+
+# --- Enter the bookmark URL ---
+- tapOn:
+    id: "channel_bookmark_add.link.input"
+- inputText: "https://mattermost.com"
+
+# --- Wait for link metadata fetch to complete ---
+# The loading indicator (channel_bookmark_add.link.loading) disappears once the server
+# has fetched the Open Graph / page-title metadata and autofilled the title input.
+# Waiting here ensures the autofill is finished before we overwrite the title field.
+- extendedWaitUntil:
+    notVisible:
+      id: "channel_bookmark_add.link.loading"
+    timeout: 60000
+
+# --- Set a predictable bookmark title ---
+# The autofilled title varies by site content; using a fixed title lets us reliably
+# identify the bookmark in the channel header bar when we tap it later.
+- tapOn:
+    id: "channel_bookmark_add.title.input"
+- eraseText: 100
+- inputText: "Test Link Bookmark"
+
+# --- Save the bookmark ---
+# iOS: the save button is exposed as an accessibility element with its testID.
+# Android: RNN top-bar button shows text "SAVE" (uppercased) but no testID.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "channel_bookmark.edit.save_button"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          text: "SAVE"
+
+# --- Verify the bookmark screen closed ---
+- extendedWaitUntil:
+    notVisible:
+      id: "channel_bookmark.screen"
+    timeout: 30000
+
+# --- Verify the bookmark is visible in the channel info bookmark list ---
+# iOS: the FlatList container exposes its testID; individual item testIDs are not in the tree.
+# Android: the FlatList container testID is not exposed; individual item testIDs are.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "channel_info.bookmarks.list"
+          timeout: 20000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "channel_bookmark\\..+\\.title"
+          timeout: 20000
+
+# --- Close channel info and return to the channel screen ---
+- tapOn:
+    id: "close.channel_info.button"
+- extendedWaitUntil:
+    notVisible:
+      id: "channel_info.screen"
+    timeout: 10000
+
+# --- Verify the bookmark bar is visible in the channel header ---
+- extendedWaitUntil:
+    visible:
+      id: "channel_header.bookmarks.list"
+    timeout: 10000
+
+# --- Tap the bookmark to open it in the browser ---
+# The bookmark title "Test Link Bookmark" is the text we typed above.
+- tapOn:
+    text: "Test Link Bookmark"
+
+# --- iOS: Linking.openURL opens Safari.app (system browser).
+#         iOS 26+ shows a "breadcrumb" back-to-app button in the status bar
+#         (resource-id: breadcrumb). iOS ≤ 18 shows a "Done" button top-left.
+#         Both are handled via optional taps so either iOS version works. ---
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "breadcrumb"
+          timeout: 15000
+      - takeScreenshot: bookmark-browser-opened
+      - tapOn:
+          id: "breadcrumb"
+          optional: true
+      - tapOn:
+          text: "Done"
+          optional: true
+
+# --- Android: Chrome Custom Tab opens in the foreground (bookmark bar leaves the tree).
+#              Screenshot for evidence, then press Back to return to the app. ---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          notVisible:
+            id: "channel_header.bookmarks.list"
+          timeout: 15000
+      - takeScreenshot: bookmark-browser-opened
+      - pressKey: Back
+
+# --- Verify the channel screen is visible again (browser dismissed) ---
+- extendedWaitUntil:
+    visible:
+      id: "channel.post_draft.post.input"
+    timeout: 15000
+- takeScreenshot: bookmark-browser-dismissed

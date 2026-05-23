@@ -29,7 +29,7 @@ import {
     DraftScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Scheduled Draft,', () => {
@@ -97,7 +97,7 @@ describe('Scheduled Draft,', () => {
         const parentMessage = 'Root Post for Scheduled Message';
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitForElementToBeVisible(ChannelScreen.postInput, timeouts.FOUR_SEC);
         await ChannelScreen.postMessage(parentMessage);
 
         // # On Android the keyboard stays open after postMessage when the post list is
@@ -116,7 +116,7 @@ describe('Scheduled Draft,', () => {
         // # Open reply thread
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
-        await waitFor(ThreadScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitForElementToBeVisible(ThreadScreen.postInput, timeouts.FOUR_SEC);
         await ThreadScreen.enterMessageToSchedule(scheduledMessageText);
         await ThreadScreen.longPressSendButton();
         await chooseScheduleMessageDate();

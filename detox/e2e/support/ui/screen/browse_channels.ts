@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class BrowseChannelsScreen {
@@ -44,8 +44,9 @@ class BrowseChannelsScreen {
     };
 
     toBeVisible = async () => {
-        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
-        await waitFor(this.browseChannelsScreen).toExist().withTimeout(timeout);
+        // Use TWENTY_SEC on both platforms — CI simulators/emulators are slower than
+        // local devices, so TEN_SEC was timing out on iOS CI before the screen appeared.
+        await waitFor(this.browseChannelsScreen).toExist().withTimeout(timeouts.TWENTY_SEC);
 
         return this.browseChannelsScreen;
     };
@@ -62,12 +63,6 @@ class BrowseChannelsScreen {
         }
 
         // # Open browse channels screen from the channel list header plus button.
-        // Wait for the plus button to exist (not just be visible) with a long timeout.
-        // The plus button only renders when the team displayName is loaded — after a
-        // recovery relaunch (launchApp({newInstance:true})) the app has to re-hydrate
-        // team data from WatermelonDB, which can take >10 s on slow CI machines.
-        // Using toExist() (not toBeVisible()) also handles the case where a previous
-        // test left an alert dimming overlay on top.
         await waitFor(ChannelListScreen.headerPlusButton).toExist().withTimeout(timeouts.HALF_MIN);
 
         // On iOS, a UITransitionView (navigation animation overlay) can still be running

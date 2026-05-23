@@ -599,12 +599,12 @@ describe('Channels - Archived Channel Interactions', () => {
         if (isAndroid()) {
             // Wait for the tutorial text (in the foreground Dialog window) as a
             // proxy that the Members screen has loaded, then dismiss it.
+            // Use polling helper to avoid the bridge-idle block on Android API 35.
             try {
-                await waitFor(
+                await waitForElementToBeVisible(
                     element(by.text("Long-press on an item to view a user's profile")),
-                ).
-                    toBeVisible().
-                    withTimeout(timeouts.TEN_SEC);
+                    timeouts.TEN_SEC,
+                );
             } catch {
                 // Tutorial may not appear if already dismissed in a previous run
             }

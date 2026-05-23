@@ -30,7 +30,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Recent Mentions', () => {
@@ -177,7 +177,7 @@ describe('Search - Recent Mentions', () => {
         await ThreadScreen.back();
 
         // * Verify reply count
-        await waitFor(element(by.text('1 reply'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToBeVisible(element(by.text('1 reply')), timeouts.TEN_SEC);
 
         // # Open post options for updated recent mention and delete post
         // longPress on header timestamp to avoid triggering @mention tap handler

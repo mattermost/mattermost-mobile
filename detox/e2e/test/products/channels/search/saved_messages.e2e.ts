@@ -29,8 +29,8 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Search - Saved Messages', () => {
     const serverOneDisplayName = 'Server 1';
@@ -157,15 +157,15 @@ describe('Search - Saved Messages', () => {
         // * Verify reply is posted
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
-        await waitFor(replyPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitForElementToBeVisible(replyPostListPostItem, timeouts.FOUR_SEC);
 
         // # Go back to saved messages screen
         await ThreadScreen.back();
 
         // * Verify reply count and following button
         const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, updatedMessage);
-        await waitFor(element(by.text('1 reply'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await waitFor(element(by.text('Following'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitForElementToBeVisible(element(by.text('1 reply')), timeouts.TWO_SEC);
+        await waitForElementToBeVisible(element(by.text('Following')), timeouts.TWO_SEC);
 
         // # Open post options for updated saved message and delete post
         await element(by.id(`saved_messages.post_list.post.${savedPost.id}`)).longPress();
@@ -201,7 +201,7 @@ describe('Search - Saved Messages', () => {
 
         // * Verify saved message is not displayed anymore
         const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, message);
-        await waitFor(postListPostItem).not.toExist().withTimeout(3000);
+        await waitForElementToNotExist(postListPostItem, 3000);
         await expect(postListPostItem).not.toExist();
 
         // # Go back to channel list screen

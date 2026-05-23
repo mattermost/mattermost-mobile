@@ -32,6 +32,9 @@ describe('Messaging - Channel Link', () => {
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
+    let replyThreadChannelLink: string;
+    let replyThreadTargetDisplayName: string;
+    let replyThreadPostId: string;
 
     beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
@@ -42,6 +45,17 @@ describe('Messaging - Channel Link', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
+
+        // # Set up MM-T4877_2: post the channel link to testChannel via API before any
+        const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
+        replyThreadChannelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name}`;
+        replyThreadTargetDisplayName = targetChannel.display_name;
+
+        await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message: replyThreadChannelLink});
+
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        replyThreadPostId = post.id;
     });
 
     beforeEach(async () => {
@@ -74,26 +88,16 @@ describe('Messaging - Channel Link', () => {
     });
 
     it('MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread', async () => {
-        // # Open a channel screen, post a channel link to target channel
+        // # Open testChannel (always in sidebar) and open the reply thread for the pre-posted link
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
-        const channelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name}`;
-        await ChannelScreen.postMessage(channelLink);
-
-        // # Wait for keyboard to dismiss and message to be visible
-        await wait(timeouts.TWO_SEC);
-
-        // # Open reply thread for the post containing the channel link
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.openReplyThreadFor(post.id, channelLink);
+        await ChannelScreen.openReplyThreadFor(replyThreadPostId, replyThreadChannelLink);
 
         // # Tap on channel link from within the reply thread
-        await element(by.text(channelLink)).atIndex(0).tap({x: 5, y: 10});
+        await element(by.text(replyThreadChannelLink)).atIndex(0).tap();
         await wait(timeouts.FOUR_SEC);
 
         // * Verify redirected to target channel
-        await expect(ChannelScreen.headerTitle).toHaveText(targetChannel.display_name);
+        await expect(ChannelScreen.headerTitle).toHaveText(replyThreadTargetDisplayName);
 
         // # Go back to channel list screen
         await ChannelScreen.back();

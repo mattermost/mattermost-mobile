@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 class ThreadOptionsScreen {
@@ -30,7 +30,7 @@ class ThreadOptionsScreen {
     copyLinkOption = element(by.id(this.testID.copyLinkOption));
 
     toBeVisible = async () => {
-        await waitFor(this.threadOptionsScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(this.threadOptionsScreen, timeouts.TEN_SEC);
 
         return threadOptionsScreen;
     };

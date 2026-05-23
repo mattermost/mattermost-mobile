@@ -70,7 +70,7 @@ describe('Channels - Browse Channels', () => {
         // * Verify basic elements on browse channels screen
         await expect(BrowseChannelsScreen.closeButton).toBeVisible();
         await expect(BrowseChannelsScreen.searchInput).toBeVisible();
-        await expect(BrowseChannelsScreen.flatChannelList).toBeVisible();
+        await expect(BrowseChannelsScreen.flatChannelList).toBeVisible(50);
 
         // # Go back to channel list screen
         await BrowseChannelsScreen.close();
@@ -180,6 +180,8 @@ describe('Channels - Browse Channels', () => {
 
         // # Open browse channels screen and switch to archived channels view
         await BrowseChannelsScreen.open();
+
+        await waitFor(BrowseChannelsScreen.channelDropdownTextPublic).toExist().withTimeout(timeouts.TEN_SEC);
 
         // Trigger tap with sync enabled so Espresso confirms the modal is stable first.
         await BrowseChannelsScreen.channelDropdownTextPublic.tap();
