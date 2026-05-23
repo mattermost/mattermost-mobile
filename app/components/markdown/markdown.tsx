@@ -19,10 +19,12 @@ import {computeTextStyle, getMarkdownBlockStyles, getMarkdownTextStyles} from '@
 import PostListPerformance from '@utils/performance/post_list_performance';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+import {getScheme} from '@utils/url';
 
 import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
 import Hashtag from './hashtag';
+import InlineActionButton from './inline_action_button';
 import InlineEntityLink, {type InlineEntityType} from './inline_entity_link';
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
@@ -46,6 +48,7 @@ import type {
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 export type MarkdownProps = {
+    allowInlineActions?: boolean;
     baseTextStyle: StyleProp<TextStyle>;
     baseParagraphStyle?: StyleProp<TextStyle>;
     channelId?: string;
@@ -151,6 +154,7 @@ const renderHashtagWithStyles = (
 };
 
 const Markdown = ({
+    allowInlineActions,
     baseTextStyle,
     channelId,
     channelMentions,
@@ -493,6 +497,21 @@ const Markdown = ({
             return renderText({context: [], literal: href});
         }
 
+        if (getScheme(href) === 'mmaction') {
+            if (allowInlineActions && postId) {
+                return (
+                    <InlineActionButton
+                        href={href}
+                        postId={postId}
+                        baseTextStyle={baseTextStyle}
+                    >
+                        {children}
+                    </InlineActionButton>
+                );
+            }
+            return <Text>{children}</Text>;
+        }
+
         return (
             <MarkdownLink
                 href={href}
@@ -501,7 +520,7 @@ const Markdown = ({
                 {children}
             </MarkdownLink>
         );
-    }, [isUnsafeLinksPost, onLinkLongPress, renderText]);
+    }, [allowInlineActions, baseTextStyle, isUnsafeLinksPost, onLinkLongPress, postId, renderText]);
 
     const renderList = useCallback(({children, start, tight, type}: any) => {
         return (

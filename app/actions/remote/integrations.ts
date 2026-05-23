@@ -62,6 +62,23 @@ export const postActionWithCookie = async (serverUrl: string, postId: string, ac
     }
 };
 
+export const postActionWithQuery = async (serverUrl: string, postId: string, actionId: string, query: Record<string, string>) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+
+        const data = await client.doPostActionWithQuery(postId, actionId, query);
+        if (data?.trigger_id) {
+            IntegrationsMananger.getManager(serverUrl)?.setTriggerId(data.trigger_id);
+        }
+
+        return {data};
+    } catch (error) {
+        logDebug('error on postActionWithQuery', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
 export const selectAttachmentMenuAction = (serverUrl: string, postId: string, actionId: string, selectedOption: string) => {
     return postActionWithCookie(serverUrl, postId, actionId, '', selectedOption);
 };

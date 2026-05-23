@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 
 import {
     getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getPushVerificationStatus,
-    getCommonSystemValues, getConfig, getConfigValue, getLastGlobalDataRetentionRun,
+    getCommonSystemValues, getConfig, getConfigValue, getDisconnectedSince, getLastGlobalDataRetentionRun,
     getLastBoRPostCleanupRun, getGlobalDataRetentionPolicy, getGranularDataRetentionPolicies,
     getIsDataRetentionEnabled, getLicense, getRecentCustomStatuses, getExpandedLinks,
     getRecentReactions, getLastFullSync, setLastFullSync, resetLastFullSync,
@@ -156,6 +156,39 @@ describe('observeIsFreeEdition', () => {
                 done();
             });
         });
+    });
+});
+
+describe('getDisconnectedSince', () => {
+    const serverUrl = 'baseHandler.test.com';
+    let database: Database;
+    let operator: ServerDataOperator;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = serverDatabaseAndOperator.database;
+        operator = serverDatabaseAndOperator.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should return undefined when no record exists', async () => {
+        const result = await getDisconnectedSince(database);
+        expect(result).toBeUndefined();
+    });
+
+    it('should return the stored timestamp when a record exists', async () => {
+        const timestamp = 1719400000000;
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE, value: timestamp}],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await getDisconnectedSince(database);
+        expect(result).toBe(timestamp);
     });
 });
 
