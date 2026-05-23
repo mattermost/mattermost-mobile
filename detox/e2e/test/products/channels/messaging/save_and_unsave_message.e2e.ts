@@ -88,28 +88,37 @@ describe('Messaging - Save and Unsave Message', () => {
     });
 
     it('MM-T4864_2 - should be able to save/unsave a message via post options on thread screen', async () => {
-        // # Open a channel screen, post a message, tap on post to open thread, open post options for message, and tap on save option
-        const message = `Message ${getRandomId()}`;
+        // # Open a channel screen, post a root message, tap to open thread, post a reply,
+        // then save the REPLY via post options.
+        const rootMessage = `Message ${getRandomId()}`;
+        const replyMessage = `Reply ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        await ChannelScreen.postMessage(rootMessage);
 
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await postListPostItem.tap();
-        await ThreadScreen.openPostOptionsFor(post.id, message);
+        const {post: rootPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem: rootItem} = ChannelScreen.getPostListPostItem(rootPost.id, rootMessage);
+        await waitFor(rootItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await rootItem.tap();
+
+        // # Post a reply in the thread
+        await ThreadScreen.postMessage(replyMessage);
+        await wait(timeouts.ONE_SEC);
+        const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        // # Open post options on the reply and save it
+        await ThreadScreen.openPostOptionsFor(replyPost.id, replyMessage);
         await PostOptionsScreen.savePostOption.tap();
 
-        // * Verify saved text is displayed on the post pre-header
+        // * Verify saved text is displayed on the reply's pre-header
         await wait(timeouts.ONE_SEC);
-        const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(post.id, message);
+        const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
         await expect(postListPostItemPreHeaderText).toHaveText(savedText);
 
-        // # Open post options for message and tap on unsave option
-        await ThreadScreen.openPostOptionsFor(post.id, message);
+        // # Open post options on the reply and unsave it
+        await ThreadScreen.openPostOptionsFor(replyPost.id, replyMessage);
         await PostOptionsScreen.unsavePostOption.tap();
 
-        // * Verify saved text is not displayed on the post pre-header
+        // * Verify saved text is not displayed on the reply's pre-header
         await wait(timeouts.ONE_SEC);
         await expect(postListPostItemPreHeaderText).not.toBeVisible();
 

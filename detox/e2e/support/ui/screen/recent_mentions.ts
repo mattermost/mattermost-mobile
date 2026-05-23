@@ -68,19 +68,10 @@ class RecentMentionsScreen {
         // Poll for the post to become visible without waiting for idle bridge
         await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
-        const postPreHeaderText = element(
-            by.id('post_pre_header.text').withAncestor(by.id(`${this.testID.recentMentionPostList}.${postId}`)),
-        );
-        const postHeaderDateTime = element(
-            by.id('post_header.date_time').withAncestor(by.id(`${this.testID.recentMentionPostList}.${postId}`)),
-        );
-        let longPressTarget = postHeaderDateTime;
-        try {
-            await waitForElementToExist(postPreHeaderText, timeouts.TWO_SEC);
-            longPressTarget = postPreHeaderText;
-        } catch (_e) {
-            // No pre-header (post is not saved/pinned) — fall back to timestamp
-        }
+        // Long-press the post's TouchableHighlight directly (always rendered).
+        // post_header.date_time is only rendered on non-consecutive posts —
+        // see app/components/post_list/post/post.tsx:315.
+        const longPressTarget = element(by.id(`${this.testID.recentMentionPostList}.${postId}`));
         await waitForElementToBeVisible(longPressTarget, timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
 

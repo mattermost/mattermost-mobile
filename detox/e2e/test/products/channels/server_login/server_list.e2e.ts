@@ -79,7 +79,15 @@ describe('Server Login - Server List', () => {
 
         // # Open server list screen
         await ServerListScreen.open();
-        await ServerListScreen.serverListScreen.swipe('up');
+        if (isIos()) {
+            await ServerListScreen.serverListScreen.swipe('up');
+        } else if (isAndroid()) {
+            // Pixel 8 API 35 uses gesture nav; a default swipe('up') on the
+            // full-screen bottom sheet starts in the system home-gesture hot
+            // zone and backgrounds the app. Use explicit coords with startY
+            // mid-screen to stay clear of the edge.
+            await ServerListScreen.serverListScreen.swipe('up', 'fast', 0.1, 0.5, 0.3);
+        }
 
         // * Verify first server is active
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);

@@ -142,21 +142,24 @@ describe('preferences', () => {
     it('deleteSavedPost - base case', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
 
+        const preparedDeletion = {id: 'prepared-deletion'};
         const prefModel = {
             user_id: user1.id,
             name: post1.id,
             category: Preferences.CATEGORIES.SAVED_POST,
             value: 'true',
-            destroyPermanently: jest.fn(),
+            prepareDestroyPermanently: jest.fn().mockReturnValue(preparedDeletion),
         } as unknown as PreferenceModel;
         (querySavedPostsPreferences as jest.Mock).mockReturnValueOnce({fetch: jest.fn(() => [prefModel])});
+        const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockResolvedValue();
 
         const result = await deleteSavedPost(serverUrl, post1.id);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.preference).toBeDefined();
         expect(EphemeralStore.addRecentlyUnsavedSavedPost).toHaveBeenCalledWith(serverUrl, post1.id);
-        expect(prefModel.destroyPermanently).toHaveBeenCalledTimes(1);
+        expect(prefModel.prepareDestroyPermanently).toHaveBeenCalledTimes(1);
+        expect(batchRecordsSpy).toHaveBeenCalledWith([preparedDeletion], 'deleteSavedPost');
     });
 
     it('deleteSavedPost - does not mark ephemeral store when API call fails', async () => {
@@ -167,7 +170,7 @@ describe('preferences', () => {
             name: post1.id,
             category: Preferences.CATEGORIES.SAVED_POST,
             value: 'true',
-            destroyPermanently: jest.fn(),
+            prepareDestroyPermanently: jest.fn(),
         } as unknown as PreferenceModel;
         (querySavedPostsPreferences as jest.Mock).mockReturnValueOnce({fetch: jest.fn(() => [prefModel])});
         mockClient.deletePreferences.mockImplementationOnce(jest.fn(throwFunc));
@@ -175,7 +178,7 @@ describe('preferences', () => {
         const result = await deleteSavedPost(serverUrl, post1.id);
         expect(result.error).toBeDefined();
         expect(EphemeralStore.addRecentlyUnsavedSavedPost).not.toHaveBeenCalled();
-        expect(prefModel.destroyPermanently).not.toHaveBeenCalled();
+        expect(prefModel.prepareDestroyPermanently).not.toHaveBeenCalled();
     });
 
     it('openChannelIfNeeded - handle not found database', async () => {

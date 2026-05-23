@@ -32,7 +32,6 @@ import {expect} from 'detox';
 describe('Threads - Save and Unsave Thread', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
-    const savedText = 'Saved';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -92,9 +91,8 @@ describe('Threads - Save and Unsave Thread', () => {
         await ThreadOptionsScreen.saveThreadOption.tap();
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
-        // * Verify saved text is displayed on the post pre-header
-        const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(parentPost.id, parentMessage);
-        await expect(postListPostItemPreHeaderText).toHaveText(savedText);
+        // * Verify the thread is saved via the ThreadOverview's unsave (bookmark-filled) button.
+        await expect(element(by.id('thread.post_list.thread_overview.unsave.button'))).toBeVisible();
 
         // # Go back to global threads screen, open thread options for thread, tap on save option, and tap on thread
         await ThreadScreen.back();
@@ -102,8 +100,10 @@ describe('Threads - Save and Unsave Thread', () => {
         await ThreadOptionsScreen.unsaveThreadOption.tap();
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
-        // * Verify saved text is not displayed on the post pre-header
-        await expect(postListPostItemPreHeaderText).not.toBeVisible();
+        // * Verify the thread is unsaved: the ThreadOverview should now expose the save button
+        // (not the unsave button), reflecting the cleared saved state.
+        await expect(element(by.id('thread.post_list.thread_overview.save.button'))).toBeVisible();
+        await expect(element(by.id('thread.post_list.thread_overview.unsave.button'))).not.toBeVisible();
 
         // # Go back to channel list screen
         await ThreadScreen.back();
@@ -130,12 +130,15 @@ describe('Threads - Save and Unsave Thread', () => {
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
         await ThreadScreen.getThreadOverviewSaveButton().tap();
 
-        // * Verify saved text is displayed on the post pre-header
-        const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(parentPost.id, parentMessage);
-        await expect(postListPostItemPreHeaderText).toHaveText(savedText);
+        // * Verify the thread is saved via ThreadOverview's unsave button (the toggled state).
+        // Pre-header text is suppressed on the thread root by design (post_list.tsx:455).
+        await expect(element(by.id('thread.post_list.thread_overview.unsave.button'))).toBeVisible();
 
         // # Tap on thread overview unsave button
         await ThreadScreen.getThreadOverviewUnsaveButton().tap();
+
+        // * Verify the thread is unsaved
+        await expect(element(by.id('thread.post_list.thread_overview.save.button'))).toBeVisible();
 
         // # Go back to channel list screen
         await ThreadScreen.back();

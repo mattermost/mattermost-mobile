@@ -153,8 +153,14 @@ describe('Search - Recent Mentions', () => {
         await EditPostScreen.messageInput.replaceText(updatedMessage);
         await EditPostScreen.saveButton.tap();
 
-        // * Verify post message is updated and displays edited indicator '(edited)'
-        await ChannelScreen.assertPostMessageEdited(mentionPost.id, updatedMessage, 'recent_mentions_page');
+        // * Verify post displays the edited indicator. We don't use
+        // assertPostMessageEdited's combined-text regex here because the @mention
+        // is rendered as a separate component (not contiguous plain text), so the
+        // `message.*Edited` pattern can't match across React nodes. Check the
+        // EditedIndicator's own testID instead (app/components/edited_indicator/index.tsx:61).
+        await waitFor(
+            element(by.id('edited_indicator').withAncestor(by.id(`recent_mentions.post_list.post.${mentionPost.id}`))),
+        ).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Open post options for recent mention and tap on reply option
         // longPress on header timestamp to avoid triggering @mention tap handler

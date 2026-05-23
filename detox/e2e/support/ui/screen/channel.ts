@@ -58,7 +58,7 @@ class ChannelScreen {
         clickOnScheduledMessageButton: 'scheduled_post_create_button',
         scheduledDraftInfoInChannel: 'scheduled_post_header.scheduled_post_indicator',
         scheduledDraftTooltipText: 'scheduled_post.tooltip.description',
-        scheduledPostOptionsBottomSheet: 'scheduled_post_options_bottom_sheet',
+        scheduledPostOptionsBottomSheet: 'scheduled_post_options_bottom_sheet.screen',
     };
 
     scheduleDraftInforMessage = element(by.text('Type a message and long press the send button to schedule it for a later time.'));
@@ -283,7 +283,7 @@ class ChannelScreen {
         }
 
         const postTestID = `${this.testID.channelScreenPrefix}post_list.post.${postId}`;
-        const longPressTarget = element(by.id('post_header.date_time').withAncestor(by.id(postTestID)));
+        const longPressTarget = element(by.id(postTestID));
 
         await longPressWithScrollRetry(
             longPressTarget,

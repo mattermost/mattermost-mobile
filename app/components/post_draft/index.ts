@@ -47,7 +47,7 @@ const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (
     );
 
     const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => (c && u ? observePermissionForChannel(database, c, u, Permissions.CREATE_POST, true) : of$(true))));
-    const channelIsArchived = channel.pipe(switchMap((c) => (ownProps.channelIsArchived ? of$(true) : of$(c?.deleteAt !== 0))));
+    const channelIsArchived = channel.pipe(switchMap((c) => (ownProps.channelIsArchived ? of$(true) : of$(c != null && c.deleteAt !== 0))));
 
     const channelIsReadOnly = observeIsReadOnlyChannel(database, ownProps.channelId);
 

@@ -245,6 +245,16 @@ async function configureTestServer(token) {
     config.ExperimentalSettings.EnableSharedChannels = true;
     config.ExperimentalSettings.EnableRemoteClusterService = true;
 
+    // Enable the Custom Profile Attributes feature flag. The mobile client reads
+    // FeatureFlagCustomProfileAttributes via observeConfigBooleanValue
+    // (see app/screens/edit_profile/index.ts) and gates the entire custom-fields
+    // form on it. Admin-only field-definition APIs succeed regardless of the flag,
+    // so e2e tests that probe the feature by creating fields can wrongly conclude
+    // it's available — they then fail when the user-facing form renders no rows.
+    // Forcing the flag on here makes MM-T5781 deterministic.
+    config.FeatureFlags = config.FeatureFlags || {};
+    config.FeatureFlags.CustomProfileAttributes = true;
+
     console.log('[provision] Updating plugin uploads, Marketplace, disabling rate limiting, and removing user caps...');
     const updateRes = await request('PUT', '/api/v4/config', config, token);
     if (updateRes.status >= 400) {

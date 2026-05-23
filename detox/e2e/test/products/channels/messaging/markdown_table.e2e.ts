@@ -103,10 +103,14 @@ describe('Messaging - Markdown Table', () => {
         await TableScreen.toBeVisible();
         await expect(element(by.text('Left header that wraps'))).toBeVisible(50);
         await expect(element(by.text('Center header that wraps'))).toBeVisible(50);
-        await expect(element(by.text('Right header that wraps'))).toBeVisible(50);
+
+        // Right-side columns render beyond the viewport on Android (the table's
+        // minimum column width pushes the third column off-screen). Scroll the
+        // table horizontally until the right header/row become visible.
+        await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
         await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
         await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
-        await expect(element(by.text('Right text that wraps row'))).toBeVisible(50);
+        await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
 
         // # Go back to channel list screen
         await TableScreen.back();
@@ -174,7 +178,10 @@ describe('Messaging - Markdown Table', () => {
         await waitFor(postListPostItemTableExpandButton).toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(50, 'down');
         await postListPostItemTableExpandButton.tap();
         await TableScreen.toBeVisible();
-        await expect(element(by.text('Header VS last'))).toBeVisible(50);
+
+        // The expanded table renders columns wider than the in-channel preview, so
+        // the 3rd column header is off-screen until the table is scrolled right.
+        await waitFor(element(by.text('Header VS last'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
         await expect(element(by.text('Right VS last'))).not.toBeVisible();
 
         // * Verify table screen is scrollable to the bottom

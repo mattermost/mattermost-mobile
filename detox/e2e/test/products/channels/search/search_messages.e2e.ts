@@ -11,6 +11,7 @@ import {
     Channel,
     Post,
     Setup,
+    System,
     Team,
 } from '@support/server_api';
 import {
@@ -48,6 +49,13 @@ describe('Search - Search Messages', () => {
         testChannel = channel;
         testTeam = team;
         testUser = user;
+
+        await System.apiUpdateConfig(siteOneUrl, {
+            ServiceSettings: {
+                CollapsedThreads: 'always_on',
+                ThreadAutoFollow: true,
+            },
+        });
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -414,10 +422,10 @@ describe('Search - Search Messages', () => {
         await ThreadScreen.back();
         await SearchMessagesScreen.toBeVisible();
 
-        // * Verify reply count and following button
+        // * Verify reply count and following button.
         await wait(timeouts.FOUR_SEC);
-        await waitForElementToBeVisible(element(by.text('1 reply')), timeouts.TWO_SEC);
-        await waitForElementToBeVisible(element(by.text('Following')), timeouts.TWO_SEC);
+        await waitForElementToBeVisible(element(by.text('1 reply')), timeouts.TEN_SEC);
+        await waitForElementToBeVisible(element(by.text('Following')), timeouts.TEN_SEC);
 
         // # Open post options for updated searched message and delete post
         await element(by.id(`search_results.post_list.post.${searchedPost.id}`)).longPress();

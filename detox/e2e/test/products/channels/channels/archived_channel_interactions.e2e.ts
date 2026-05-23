@@ -499,10 +499,14 @@ describe('Channels - Archived Channel Interactions', () => {
         await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(postListPostItem).toBeVisible();
 
-        // * Verify the channel info (jump link) is visible on the saved post from the archived channel
+        // * Verify the channel info (jump link) is visible on the saved post from the archived channel.
+        // Poll the assertion: the inner Text inside the channel-info row can finish its layout
+        // pass a frame or two after the parent post item becomes visible on Android Fabric,
+        // which makes a single-shot expect().toBeVisible() return "Got: was null" from Espresso's
+        // getGlobalVisibleRect() (matcher resolves the view, but its rect isn't computable yet).
         const {postListPostItemChannelInfoChannelDisplayName} =
             SavedMessagesScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItemChannelInfoChannelDisplayName).toBeVisible();
+        await waitFor(postListPostItemChannelInfoChannelDisplayName).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelListScreen.open();

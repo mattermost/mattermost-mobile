@@ -118,7 +118,7 @@ export const savePreference = async (serverUrl: string, preferences: PreferenceT
 
 export const deleteSavedPost = async (serverUrl: string, postId: string) => {
     try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
         const userId = await getCurrentUserId(database);
         const records = await querySavedPostsPreferences(database, postId).fetch();
@@ -133,7 +133,15 @@ export const deleteSavedPost = async (serverUrl: string, postId: string) => {
         if (postPreferenceRecord) {
             await client.deletePreferences(userId, [pref]);
             EphemeralStore.addRecentlyUnsavedSavedPost(serverUrl, postId);
-            await postPreferenceRecord.destroyPermanently();
+
+            // Use prepareDestroyPermanently + batchRecords (the codebase convention,
+            // e.g. app/queries/servers/preference.ts:59 in `deletePreferences`).
+            // Calling postPreferenceRecord.destroyPermanently() directly throws
+            // "Model.destroyPermanently() can only be called from inside of a Writer"
+            // — the action runs outside a WatermelonDB writer context, so the
+            // local preference row was never removed and the post stayed visible
+            // in the Saved Messages list after an unsave action.
+            await operator.batchRecords([postPreferenceRecord.prepareDestroyPermanently()], 'deleteSavedPost');
         }
 
         return {

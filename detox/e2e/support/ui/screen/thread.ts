@@ -23,7 +23,7 @@ class ThreadScreen {
         followingButton: 'thread.following_thread.button',
         scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',
         scheduledPostTooltipCloseButtonAdminAccount: 'scheduled_post_tutorial_tooltip.close',
-        scheduledPostOptionsBottomSheet: 'scheduled_post_options_bottom_sheet',
+        scheduledPostOptionsBottomSheet: 'scheduled_post_options_bottom_sheet.screen',
     };
 
     threadScreen = element(by.id(this.testID.threadScreen));

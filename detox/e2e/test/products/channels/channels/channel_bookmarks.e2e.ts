@@ -627,29 +627,44 @@ describe('Channels - Channel Bookmarks', () => {
         // * Verify that the last bookmark starts off-screen
         await expect(element(lastBookmarkMatcher)).not.toBeVisible();
 
-        // # Scroll the bookmark bar by swiping left to reveal the last bookmark.
-        // Detox's scroll() action on a horizontal FlatList fails on iOS because EarlGrey
-        // requires the start point to be directly on a UIScrollView, but all coordinates
-        // are occupied by bookmark item child views. swipe() performs a raw gesture
-        // without that constraint and correctly scrolls the FlatList.
-        // With 12 bookmarks (~150pt each) on a ~393pt screen, ~5 fast swipes are needed.
-        /* eslint-disable no-await-in-loop */
-        for (let i = 0; i < 5; i++) {
-            await element(channelHeaderBookmarksList).swipe('left', 'fast', 0.9, 0.5, 0.5);
+        // # Scroll the bookmark bar to reveal the last bookmark.
+        // iOS: swipe gesture (Detox's scroll() fails on iOS horizontal FlatList because
+        //   EarlGrey requires the start point to be directly on a UIScrollView, but all
+        //   coordinates are occupied by bookmark item child views).
+        // Android: use scroll() — a programmatic Espresso scroll that does not issue
+        //   touch events, so it cannot be misinterpreted as a long-press on a bookmark
+        //   item (which previously opened a bookmark action sheet mid-test, see CI run
+        //   26337780597 testFnFailure for MM-T5612_1). Poll-and-scroll via whileElement
+        //   so it stops as soon as the target bookmark is visible.
+        if (isAndroid()) {
+            await waitFor(element(lastBookmarkMatcher)).
+                toBeVisible().
+                whileElement(channelHeaderBookmarksList).
+                scroll(300, 'right');
+        } else {
+            /* eslint-disable no-await-in-loop */
+            for (let i = 0; i < 5; i++) {
+                await element(channelHeaderBookmarksList).swipe('left', 'fast', 0.9, 0.5, 0.5);
+            }
+            /* eslint-enable no-await-in-loop */
+            await waitFor(element(lastBookmarkMatcher)).
+                toBeVisible().
+                withTimeout(timeouts.TEN_SEC);
         }
-        /* eslint-enable no-await-in-loop */
 
-        // * Verify the last bookmark becomes visible after scrolling to the end
-        await waitFor(element(lastBookmarkMatcher)).
-            toBeVisible().
-            withTimeout(timeouts.TEN_SEC);
-
-        // # Swipe back right to the beginning
-        /* eslint-disable no-await-in-loop */
-        for (let i = 0; i < 5; i++) {
-            await element(channelHeaderBookmarksList).swipe('right', 'fast', 0.9, 0.5, 0.5);
+        // # Scroll back to the beginning
+        if (isAndroid()) {
+            await waitFor(element(firstBookmarkMatcher)).
+                toBeVisible().
+                whileElement(channelHeaderBookmarksList).
+                scroll(300, 'left');
+        } else {
+            /* eslint-disable no-await-in-loop */
+            for (let i = 0; i < 5; i++) {
+                await element(channelHeaderBookmarksList).swipe('right', 'fast', 0.9, 0.5, 0.5);
+            }
+            /* eslint-enable no-await-in-loop */
         }
-        /* eslint-enable no-await-in-loop */
 
         // # Go back to channel list
         await ChannelScreen.back();

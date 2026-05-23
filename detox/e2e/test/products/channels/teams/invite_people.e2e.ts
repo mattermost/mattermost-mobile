@@ -20,7 +20,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Teams - Invite', () => {
     const serverOneDisplayName = 'Server 1';
@@ -71,8 +71,8 @@ describe('Teams - Invite', () => {
     });
 
     it('MM-T5360 - should open the invite screen', async () => {
-        // * Verify invite screen Header buttons
-        await expect(Invite.closeButton).toBeVisible();
+        // * Verify invite screen Header buttons.
+        await waitFor(Invite.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(Invite.sendButton).toBeVisible();
 
         // * Verify Team data

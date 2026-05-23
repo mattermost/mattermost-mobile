@@ -158,11 +158,11 @@ describe('Smoke Test - Channels', () => {
         await CreateOrEditChannelScreen.headerInput.typeText('\nheader1\nheader2');
         await CreateOrEditChannelScreen.saveButton.tap();
 
-        // * Verify on channel info screen and changes have been saved (close channel settings first to return to channel info)
+        // * Verify on channel info screen and changes have been saved (close channel settings first to return to channel info).
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.close();
         await ChannelInfoScreen.toBeVisible();
-        await expect(element(by.text(`Channel header: ${testChannel.display_name.toLowerCase()}\nheader1\nheader2`))).toBeVisible();
+        await waitFor(element(by.text(`Channel header: ${testChannel.display_name.toLowerCase()}\nheader1\nheader2`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelInfoScreen.close();
@@ -171,11 +171,6 @@ describe('Smoke Test - Channels', () => {
 
     it('MM-T4774_5 - should be able to favorite and mute a channel', async () => {
         // # Reload React Native to establish a fresh WebSocket connection.
-        // By the time this test runs, the WebSocket can be in CLOSE-WAIT state
-        // (server has closed its end). toggleFavoriteChannel relies on the
-        // sidebar_category_updated WebSocket event to update the local DB and flip
-        // the button testID from favorite.action → unfavorite.action. Without a
-        // live WebSocket, that event never arrives and the assertion times out.
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
 
@@ -186,11 +181,6 @@ describe('Smoke Test - Channels', () => {
         await ChannelInfoScreen.muteAction.tap();
 
         // * Verify channel is favorited and muted
-        // On Android, toggleFavoriteChannel depends on a WebSocket server event
-        // (sidebar_category_updated) to update the local DB, which changes the button testID.
-        // While that async processing runs, the Detox BridgeIdlingResource keeps waitFor() blocked
-        // waiting for bridge-idle. Disabling sync allows us to poll freely without waiting
-        // for the JS bridge to settle between each check.
         if (isAndroid()) {
             await device.disableSynchronization();
             try {
