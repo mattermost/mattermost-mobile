@@ -28,7 +28,7 @@ import {
     UserProfileScreen,
 } from '@support/ui/screen';
 import {timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - At-Mention', () => {
     const serverOneDisplayName = 'Server 1';
@@ -156,7 +156,11 @@ describe('Messaging - At-Mention', () => {
 
         // * Verify on user profile screen
         await UserProfileScreen.toBeVisible();
-        await expect(UserProfileScreen.getUserProfilePicture(testUser.id)).toBeVisible();
+
+        // The user profile bottom sheet may still be animating into place when
+        // toBeVisible() resolves on its screen container — its avatar can briefly
+        // fail a 75% visibility threshold while the sheet finishes snapping.
+        await waitFor(UserProfileScreen.getUserProfilePicture(testUser.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(UserProfileScreen.userDisplayName).toHaveText(`@${testUser.username}`);
 
         // # Go back to channel list screen

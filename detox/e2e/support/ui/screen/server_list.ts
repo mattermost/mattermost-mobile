@@ -36,19 +36,19 @@ class ServerListScreen {
     };
 
     getServerItemEditOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.edit.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.edit.option`));
     };
 
     getServerItemRemoveOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.remove.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.remove.option`));
     };
 
     getServerItemLoginOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.login.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.login.option`));
     };
 
     getServerItemLogoutOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.logout.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.logout.option`));
     };
 
     toBeVisible = async () => {

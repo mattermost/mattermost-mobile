@@ -68,6 +68,12 @@ describe('Messaging - Message Edit', () => {
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);
+
+        // Wait for the bottom-sheet edit option to be fully visible before tapping.
+        // On iOS 26.x the post options sheet can be mid-slide-in when the previous
+        // wait elapses, leaving the row clipped to a small strip at the top of the
+        // screen and causing "View is not hittable at {201, *}; bounds 402x*".
+        await waitFor(PostOptionsScreen.editPostOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await PostOptionsScreen.editPostOption.tap();
 
         // * Verify on edit post screen
@@ -111,6 +117,9 @@ describe('Messaging - Message Edit', () => {
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);
+
+        // Wait for the bottom-sheet edit option to be fully visible before tapping.
+        await waitFor(PostOptionsScreen.editPostOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await PostOptionsScreen.editPostOption.tap();
 
         // * Verify on edit post screen
@@ -158,6 +167,9 @@ describe('Messaging - Message Edit', () => {
         // # Scroll the thread post list (not the post item) to dismiss keyboard before long press
         await ThreadScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
         await ThreadScreen.openPostOptionsFor(replyPost.id, replyMessage);
+
+        // Wait for the bottom-sheet edit option to be fully visible before tapping.
+        await waitFor(PostOptionsScreen.editPostOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await PostOptionsScreen.editPostOption.tap();
 
         // * Verify on edit post screen

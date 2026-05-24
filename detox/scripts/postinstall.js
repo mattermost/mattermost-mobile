@@ -27,23 +27,34 @@ if (fs.existsSync(nativePath)) {
     console.log('postinstall: detox native.js not found, skipping VisibleMatcher patch');
 }
 
-// Patch Detox's FabricUIManagerIdlingResources to handle RN 0.81+ field rename.
+// Patch Detox's FabricUIManagerIdlingResources to null-guard the UIManager lookup.
 //
-// Detox 20.51.1 hardcodes the field name `mMountItemDispatcher` at
-// FabricUIManagerIdlingResources.kt:103:
-//   val mountItemDispatcher = Reflect.on(fabricUIManager).field("mMountItemDispatcher").get<Any>()
+// Bug: Detox 20.50.4 calls
+//   UIManagerHelper.getUIManager(reactContext, UIManagerType.FABRIC)
+// and passes the result directly to `Reflect.on(...)`. The Kotlin signature of
+// `getUIManager` returns `UIManager?` (nullable), and RN returns null during
+// brief React-context teardown / screen-replace windows. joor's
+//   `Reflect.on(null)` falls back to `Object.class` as the reflection target.
+//   `Object.class.getField/getDeclaredField("mMountItemDispatcher")` then
+//   throws `NoSuchFieldException`.
+// This crashes whatever test happens to be running when Detox's periodic
+// QueryStatusActionHandler sync poll fires (MM-T868_1, MM-T1697,
+// Teams - Invite suite — observed varying victims across CI runs).
 //
-// RN 0.81+ dropped the `m` prefix from several FabricUIManager internal fields.
-// Detox already version-gates two of these (`mountItems`/`mMountItems` at line ~92,
-// `viewCommandMountItems`/`mViewCommandMountItems` at line ~109) but missed
-// `mountItemDispatcher`. On RN 0.83 (this repo) the reflection throws
-// `NoSuchFieldException: mMountItemDispatcher`, which Detox surfaces as a crash via
-// the periodic QueryStatusActionHandler sync poll — abruptly terminating any test
-// in flight (channel_copy MM-T868_1 and all Teams - Invite specs crashed this way in
-// CI run 26348154923; full stack in shard-19 detox.log).
+// The previous attempt (a field-name version-gate) was based on the wrong
+// hypothesis that RN 0.83 had renamed the field. It hadn't — RN 0.83.9
+// FabricUIManager.java:177 still declares
+//   `private final MountItemDispatcher mMountItemDispatcher;`.
+// The lookup target class was the issue (Object, due to null), not the name.
 //
-// Fix: replace the hardcoded `"mMountItemDispatcher"` with the same version-gate
-// pattern Detox already uses on the two adjacent fields.
+// Fix: null-guard the UIManager lookup; if it's null, treat the queue as
+// empty (size 0) — semantically correct because a non-existent UIManager
+// trivially has nothing to mount.
+//
+// NOTE: This patch modifies the .kt source in `node_modules/detox`. It only
+// takes effect at runtime if gradle compiles Detox from source — see
+// `android/settings.gradle` for the `include ':detox'` block. With the
+// default prebuilt `com.wix:detox` AAR setup the patch is dead code.
 const fabricIdlingPath = path.join(
     __dirname, '..', 'node_modules', 'detox',
     'android', 'detox', 'src', 'full', 'java', 'com', 'wix', 'detox',
@@ -51,15 +62,36 @@ const fabricIdlingPath = path.join(
     'FabricUIManagerIdlingResources.kt',
 );
 
-if (fs.existsSync(fabricIdlingPath)) {
-    const kt = fs.readFileSync(fabricIdlingPath, 'utf8');
-    const target =
+function applyFabricIdlingPatch(kt) {
+    // Idempotent marker so we can detect "already patched".
+    const patchedMarker = '// mattermost-mobile patch: null-guard getUIManager';
+    if (kt.includes(patchedMarker)) {
+        return {kt, msg: 'already applied (null-guard)'};
+    }
+
+    // Step 1 — replace `getMountItemDispatcher`. Two starting states are
+    // accepted: (a) Detox 20.50.4 original; (b) the previous (wrong)
+    // field-rename version we shipped in an earlier postinstall.
+    const newGetter =
+        '    private fun getMountItemDispatcher(): Any? {\n' +
+        '        ' + patchedMarker + '. UIManagerHelper.getUIManager returns\n' +
+        '        // UIManager? — RN 0.83 returns null during brief context-teardown windows\n' +
+        '        // and joor`s `Reflect.on(null)` falls back to Object.class, which then\n' +
+        '        // throws `NoSuchFieldException: mMountItemDispatcher`. Treat null as idle.\n' +
+        '        val fabricUIManager = UIManagerHelper.getUIManager(reactContext, UIManagerType.FABRIC)\n' +
+        '            ?: return null\n' +
+        '        val mountItemDispatcher = Reflect.on(fabricUIManager).field("mMountItemDispatcher").get<Any>()\n' +
+        '        return mountItemDispatcher\n' +
+        '    }';
+
+    const originalGetter =
         '    private fun getMountItemDispatcher(): Any {\n' +
         '        val fabricUIManager = UIManagerHelper.getUIManager(reactContext, UIManagerType.FABRIC)\n' +
         '        val mountItemDispatcher = Reflect.on(fabricUIManager).field("mMountItemDispatcher").get<Any>()\n' +
         '        return mountItemDispatcher\n' +
         '    }';
-    const replacement =
+
+    const wrongFieldRenameGetter =
         '    private fun getMountItemDispatcher(): Any {\n' +
         '        val fabricUIManager = UIManagerHelper.getUIManager(reactContext, UIManagerType.FABRIC)\n' +
         '        // mattermost-mobile patch: RN 0.81+ dropped the `m` prefix from this field, matching\n' +
@@ -75,14 +107,36 @@ if (fs.existsSync(fabricIdlingPath)) {
         '        return mountItemDispatcher\n' +
         '    }';
 
-    if (kt.includes(replacement)) {
-        console.log('postinstall: FabricUIManagerIdlingResources mountItemDispatcher patch already applied');
-    } else if (kt.includes(target)) {
-        fs.writeFileSync(fabricIdlingPath, kt.replace(target, replacement), 'utf8');
-        console.log('postinstall: FabricUIManagerIdlingResources mountItemDispatcher patched for RN 0.81+ field rename');
+    let out = kt;
+    if (out.includes(originalGetter)) {
+        out = out.replace(originalGetter, newGetter);
+    } else if (out.includes(wrongFieldRenameGetter)) {
+        out = out.replace(wrongFieldRenameGetter, newGetter);
     } else {
-        console.log('postinstall: FabricUIManagerIdlingResources mountItemDispatcher pattern not found (Detox version may have changed), skipping');
+        return {kt, msg: 'getMountItemDispatcher pattern not found (Detox source layout changed?), skipping'};
     }
+
+    // Step 2 — null-guard the two callers so a null dispatcher means "idle"
+    // (size 0). The original callers assume the return type is `Any`. We've
+    // widened it to `Any?` above, so the callers need an early-return when
+    // null.
+    const sizeCallerOriginal = 'val mountItemDispatcher = getMountItemDispatcher()\n';
+    const sizeCallerPatched = 'val mountItemDispatcher = getMountItemDispatcher() ?: return 0\n';
+    if (!out.includes(sizeCallerOriginal)) {
+        return {kt, msg: 'getMountItemDispatcher caller pattern not found, skipping (no changes made)'};
+    }
+    out = out.split(sizeCallerOriginal).join(sizeCallerPatched);
+
+    return {kt: out, msg: 'patched (null-guard)'};
+}
+
+if (fs.existsSync(fabricIdlingPath)) {
+    const kt = fs.readFileSync(fabricIdlingPath, 'utf8');
+    const {kt: patched, msg} = applyFabricIdlingPatch(kt);
+    if (patched !== kt) {
+        fs.writeFileSync(fabricIdlingPath, patched, 'utf8');
+    }
+    console.log(`postinstall: FabricUIManagerIdlingResources ${msg}`);
 } else {
-    console.log('postinstall: FabricUIManagerIdlingResources.kt not found, skipping mountItemDispatcher patch');
+    console.log('postinstall: FabricUIManagerIdlingResources.kt not found, skipping null-guard patch');
 }

@@ -60,6 +60,28 @@ describe('Account - Custom Status', () => {
     beforeEach(async () => {
         const channelList = element(by.id('channel_list.screen'));
         const accountScreen = element(by.id('account.screen'));
+        const customStatusScreen = element(by.id('custom_status.screen'));
+
+        try {
+            await waitFor(customStatusScreen).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            /* eslint-disable no-await-in-loop */
+            for (let attempt = 0; attempt < 3; attempt++) {
+                try {
+                    if (isIos()) {
+                        await element(by.id('close.custom_status.button')).tap();
+                    } else {
+                        await device.pressBack();
+                    }
+                    await wait(timeouts.ONE_SEC);
+                    await waitFor(customStatusScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+                    break;
+                } catch { /* dismissal didn't take, retry */ }
+            }
+            /* eslint-enable no-await-in-loop */
+        } catch {
+            /* No lingering modal — fall through to the normal probe below */
+        }
+
         const probe = async () => {
             try {
                 await waitFor(channelList).toExist().withTimeout(timeouts.TWO_SEC);

@@ -62,11 +62,19 @@ describe('Teams - Invite', () => {
         await Invite.open();
     });
 
-    afterAll(async () => {
-        // # Close invite screen
-        await Invite.close();
+    afterEach(async () => {
+        // If the test left the app on the Invite modal (e.g. Summary screen
+        // after sending invites in MM-T5365), close it so the next test's
+        // beforeEach doesn't compound with a stuck modal. Invite.close()
+        // handles both the Selection close-X and the Summary "Done" button.
+        try {
+            await waitFor(Invite.inviteScreen).toBeVisible().withTimeout(timeouts.ONE_SEC);
+            await Invite.close();
+        } catch { /* not on invite — nothing to clean up */ }
+    });
 
-        // # Log out
+    afterAll(async () => {
+        // afterEach already closes the invite modal; just log out here.
         await HomeScreen.logout();
     });
 

@@ -1,0 +1,70 @@
+# MM-T67856_3: Disabling the "Attach app logs" toggle removes the
+# "Attach app logs" entry from the channel post-draft's attachment menu.
+#
+# PRE-CONDITIONS (same as MM-T67856_1):
+#   - Trial license active, ReportAProblemType=default, AllowDownloadLogs=true.
+#   - Toggle assumed enabled at the start of this flow. If the toggle starts
+#     disabled the first tap inverts it, and this flow then leaves the toggle
+#     enabled — re-running the flow will produce the opposite result. To
+#     stabilise, either:
+#       (a) Run MM-T67856_2 immediately before this flow as a fixture, or
+#       (b) Tap the toggle twice (off->on->off) — guaranteed end state of off.
+#     We use (b) below to avoid cross-flow ordering.
+#
+# Flow:
+#   1. Login + navigate to channel.
+#   2. Account > Settings > Report a Problem.
+#   3. Tap toggle twice — definitive "off" end-state.
+#   4. Back to channel post draft.
+#   5. Tap the attachment quick action.
+#   6. Assert `file_attachment.attach_logs` is NOT visible.
+#
+# All testIDs are source-verified — see attach_logs_toggle_on_surfaces_option.yml
+# for the full `channel.post_draft.quick_actions.attachment_action` derivation.
+tags:
+  - MM-T67856_3
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+- runFlow: ../../utils/navigate_to_channel.yml
+
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 10000
+- tapOn:
+    id: "account.settings.option"
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 10000
+- tapOn:
+    id: "settings.report_problem.option"
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.enable_log_attachments"
+    timeout: 10000
+
+# Definitive end-state: tap twice so toggle finishes "off" regardless of
+# starting state.
+- tapOn:
+    id: "report_problem.enable_log_attachments"
+- tapOn:
+    id: "report_problem.enable_log_attachments"
+
+# Back to channel post draft. navigate_to_channel.yml goes via the Channels
+# tab so it's idempotent regardless of stack depth — no `back × N` fragility.
+- runFlow: ../../utils/navigate_to_channel.yml
+
+- tapOn:
+    id: "channel.post_draft.quick_actions.attachment_action"
+
+# Give the bottom sheet a moment to render before negative-asserting.
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Assert the attach_logs option is NOT present in the menu.
+- assertNotVisible:
+    id: "file_attachment.attach_logs"

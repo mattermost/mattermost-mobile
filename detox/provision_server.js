@@ -223,6 +223,17 @@ async function configureTestServer(token) {
     config.TeamSettings = config.TeamSettings || {};
     config.TeamSettings.MaxUsersPerTeam = 999999;
 
+    // Keep the user on the archived channel after archive/unarchive (mobile
+    // archive/unarchive flow tests depend on this — without it, archiveChannel
+    // takes the "removeCurrentUserFromChannel" branch in
+    // app/actions/remote/channel.ts:1394 and never renders the post_draft.archived
+    // banner that MM-T4932/T3208/T1703/T4944/T3197/T5725 assert on. Several test
+    // specs already call apiUpdateConfig in beforeAll to flip this on, but the
+    // client config can be stale at archive-time because config is fetched once
+    // at login and not refreshed; setting it here makes it persistent on the
+    // server so login-time fetch always sees it.).
+    config.TeamSettings.ExperimentalViewArchivedChannels = true;
+
     // Enable bot account creation. Default is false in mattermost server's
     // SetDefaults (server/public/model/config.go), and trial-licensed cloud
     // test servers ship with it off, so `POST /api/v4/bots` returns 403 with

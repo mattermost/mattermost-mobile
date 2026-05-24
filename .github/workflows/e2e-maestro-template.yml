@@ -47,8 +47,6 @@ env:
   SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL }}
   TYPE: ${{ inputs.run-type }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
-  # AWS SDK v3 (used by detox/utils/artifacts.js) requires a region — auto-detects
-  # from this env var. Matches the detox iOS/Android templates' env block.
   AWS_REGION: "us-east-1"
 
 jobs:
@@ -240,16 +238,41 @@ jobs:
           ADMIN_USERNAME: ${{ env.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
 
+      - name: Push test fixture into iOS simulator
+        run: |
+          # Required by maestro/flows/channels/channel_bookmark_file.yml: the
+          # iOS document picker can only see files that already exist in the
+          # local File Provider storage at maestro launch time. We drop the
+          # detox image fixture there so the picker's "On My iPhone > Browse"
+          # path can reach it. Android does the equivalent via `adb push` in
+          # the Android job below. Best-effort: if the path detection fails,
+          # we don't fail the job — channel_bookmark_file.yml will surface the
+          # missing fixture as a flow failure.
+          UDID=$(xcrun simctl list devices booted -j | python3 -c "import sys,json; d=json.load(sys.stdin); print(next(iter(d['devices'].values()))[0]['udid'])")
+          LOCAL_STORAGE=$(find ~/Library/Developer/CoreSimulator/Devices/$UDID/data/Containers/Shared/AppGroup \
+            -name ".com.apple.mobile_container_manager.metadata.plist" \
+            -exec grep -l "FileProvider.LocalStorage" {} \; | xargs -I{} dirname {} | head -1 || true)
+          if [ -n "$LOCAL_STORAGE" ]; then
+            mkdir -p "$LOCAL_STORAGE/File Provider Storage"
+            cp detox/e2e/support/fixtures/image.png "$LOCAL_STORAGE/File Provider Storage/test_bookmark.png"
+            echo "Pushed test fixture to $LOCAL_STORAGE/File Provider Storage/test_bookmark.png"
+          else
+            echo "Warning: FileProvider.LocalStorage container not found; channel_bookmark_file.yml may fail"
+          fi
+
       - name: Resolve flow path
         id: resolve-flow-path
         run: |
           if [ -n "${{ inputs.flow-path }}" ]; then
             echo "flow_path=${{ inputs.flow-path }}" >> $GITHUB_OUTPUT
           else
-            # iOS: run single-device flows seeded by seed.ts only.
-            # Excluded: start_call.yml (requires calls_seed.ts to enable the Calls plugin)
-            #           file_type_preview.yml (requires seed_file_preview.ts for file IDs)
-            echo "flow_path=maestro/flows/account maestro/flows/calls/call_ui_permission.yml maestro/flows/channels/channel_bookmark_file.yml maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/share_extension maestro/flows/timezone" >> $GITHUB_OUTPUT
+            # iOS: run single-device flows. seed.ts now enables Calls in the
+            # test channel (POST /plugins/com.mattermost.calls/{channelId}),
+            # so start_call / mute_unmute / leave_call run here without a
+            # separate calls_seed.ts step.
+            # Excluded: file_type_preview.yml (requires seed_file_preview.ts for file IDs)
+            #           channel_bookmark_file_android_picker.yml (Android-only picker)
+            echo "flow_path=maestro/flows/account maestro/flows/calls maestro/flows/channels/channel_bookmark_file.yml maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/share_extension maestro/flows/timezone" >> $GITHUB_OUTPUT
           fi
 
       - name: Run Maestro Flows (iOS)
@@ -261,11 +284,15 @@ jobs:
           mkdir -p build
           FLOW_PATH="${{ steps.resolve-flow-path.outputs.flow_path }}"
 
+          # Exclude MM-T67856_4 from the main run — it requires
+          # AllowDownloadLogs=false on the server, set in the dedicated step
+          # below. All other flows assume the default `true`.
           ~/.maestro/bin/maestro test \
             --format junit \
             --output build/maestro-report.xml \
             --test-output-dir build/maestro-artifacts \
             --flatten-debug-output \
+            --exclude-tags=MM-T67856_4 \
             --env SITE_1_URL="${SITE_1_URL}" \
             --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
             --env TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
@@ -274,6 +301,48 @@ jobs:
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             $FLOW_PATH
+
+      - name: Run MM-T67856_4 with AllowDownloadLogs=false (iOS)
+        # Isolated step: patch the server config to AllowDownloadLogs=false,
+        # run the single flow, then restore. Always restore even on failure.
+        # Failure here does not fail the job — the main report is the source
+        # of truth; this is additive coverage.
+        if: always()
+        continue-on-error: true
+        run: |
+          set -a
+          source maestro/.maestro-test-env.sh
+          set +a
+
+          echo "==> Patching ServiceSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
+          curl -sS -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"ServiceSettings":{"AllowDownloadLogs":false}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+
+          # Always restore the default before exiting this step, regardless
+          # of whether the maestro run passes.
+          trap 'curl -sS -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"ServiceSettings\":{\"AllowDownloadLogs\":true}}" \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored AllowDownloadLogs=true"' EXIT
+
+          ~/.maestro/bin/maestro test \
+            --format junit \
+            --output build/maestro-report-T67856_4.xml \
+            --test-output-dir build/maestro-artifacts-T67856_4 \
+            --flatten-debug-output \
+            --env SITE_1_URL="${SITE_1_URL}" \
+            --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
+            --env TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
+            --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
+            --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
+            --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
+            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
+            maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
 
       - name: Upload Maestro Artifacts
         if: always()
@@ -453,9 +522,17 @@ jobs:
           if [ -n "${{ inputs.flow-path }}" ]; then
             echo "flow_path=${{ inputs.flow-path }}" >> $GITHUB_OUTPUT
           else
-            # Android: skip share_extension (cross-app), multi_device,
-            # and channels/channel_bookmark_file (iOS document picker navigation)
-            echo "flow_path=maestro/flows/account maestro/flows/calls maestro/flows/timezone" >> $GITHUB_OUTPUT
+            # Android: skip share_extension (cross-app) and multi_device.
+            # The two-device orchestration flows that only work via
+            # run_calls_two_device.sh live in maestro/flows/multi_device/ and
+            # are excluded by not listing that directory.
+            #
+            # Channel bookmarks: channel_bookmark_file.yml is cross-platform
+            # — it branches into the OS-specific *_picker.yml sub-flow via
+            # `platform:` clauses. File fixture is pushed via `adb push` in
+            # the "Install APK" step. channel_bookmark_link_external is
+            # also cross-platform.
+            echo "flow_path=maestro/flows/account maestro/flows/calls maestro/flows/channels/channel_bookmark_file.yml maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/timezone" >> $GITHUB_OUTPUT
           fi
 
       - name: Enable KVM
@@ -588,10 +665,53 @@ jobs:
           mkdir -p build
           FLOW_PATH="${{ steps.resolve-flow-path.outputs.flow_path }}"
 
+          # Exclude MM-T67856_4 from the main run (requires
+          # AllowDownloadLogs=false; handled by the dedicated step below).
           ~/.maestro/bin/maestro test \
             --format junit \
             --output build/maestro-report.xml \
             --test-output-dir build/maestro-artifacts \
+            --flatten-debug-output \
+            --platform android \
+            --exclude-tags=MM-T67856_4 \
+            --env SITE_1_URL="${SITE_1_URL}" \
+            --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
+            --env TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
+            --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
+            --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
+            --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
+            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
+            $FLOW_PATH
+
+      - name: Run MM-T67856_4 with AllowDownloadLogs=false (Android)
+        # Isolated step: patch server config to AllowDownloadLogs=false, run
+        # the single flow, restore on exit. continue-on-error so the main
+        # report stays authoritative.
+        if: always()
+        continue-on-error: true
+        run: |
+          set -a
+          source maestro/.maestro-test-env.sh
+          set +a
+
+          echo "==> Patching ServiceSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
+          curl -sS -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"ServiceSettings":{"AllowDownloadLogs":false}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+
+          trap 'curl -sS -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"ServiceSettings\":{\"AllowDownloadLogs\":true}}" \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored AllowDownloadLogs=true"' EXIT
+
+          ~/.maestro/bin/maestro test \
+            --format junit \
+            --output build/maestro-report-T67856_4.xml \
+            --test-output-dir build/maestro-artifacts-T67856_4 \
             --flatten-debug-output \
             --platform android \
             --env SITE_1_URL="${SITE_1_URL}" \
@@ -601,7 +721,7 @@ jobs:
             --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
-            $FLOW_PATH
+            maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
 
       - name: Upload Maestro Artifacts
         if: always()

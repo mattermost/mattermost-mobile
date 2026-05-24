@@ -45,7 +45,7 @@ echo "--- Starting Device A (starts call) ---"
     test \
     --format junit \
     --output build/maestro-calls-device-a-report.xml \
-    maestro/flows/calls/device_a_start_call.yml \
+    maestro/flows/multi_device/device_a_start_call.yml \
     --env "TEST_USER_EMAIL=${USER_A_EMAIL}" \
     --env "TEST_USER_PASSWORD=${USER_A_PASSWORD}" \
     --env "SITE_1_URL=${SITE_1_URL}" \
@@ -87,7 +87,7 @@ echo "--- Starting Device B (joins call via banner) ---"
     test \
     --format junit \
     --output build/maestro-calls-device-b-report.xml \
-    maestro/flows/calls/device_b_join_call.yml \
+    maestro/flows/multi_device/device_b_join_call.yml \
     --env "TEST_USER_EMAIL=${USER_B_EMAIL}" \
     --env "TEST_USER_PASSWORD=${USER_B_PASSWORD}" \
     --env "SITE_1_URL=${SITE_1_URL}" \

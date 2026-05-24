@@ -29,11 +29,18 @@ appId: ${MAESTRO_APP_ID}
 - runFlow: ../../utils/navigate_to_channel.yml
 
 # --- Open channel info ---
-# navigation.header.title has opacity:0 in iOS 26 when the channel is not scrolled
-# (the Animated.Text opacity is driven by scroll position and starts at 0).
-# Use the intro "Info" action instead — visible when the channel has no posts yet.
+# navigation.header.title has opacity:0 in iOS 26 when the channel is not scrolled.
+# The intro "Info" action is only visible when the channel has no posts yet — earlier
+# Maestro flows that posted to TEST_CHANNEL_NAME leave posts behind, so prefer the
+# always-available quick-actions entry (three-dots in header → "View Info").
 - tapOn:
-    id: "channel_post_list.intro_options.channel_info.action"
+    id: "channel_header.channel_quick_actions.button"
+- extendedWaitUntil:
+    visible:
+      id: "channel.quick_actions.channel_info.action"
+    timeout: 10000
+- tapOn:
+    id: "channel.quick_actions.channel_info.action"
 - extendedWaitUntil:
     visible:
       id: "channel_info.screen"

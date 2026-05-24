@@ -19,11 +19,16 @@ appId: ${MAESTRO_APP_ID}
           timeout: 15000
       - tapOn:
           id: "TabBarItemTitle"
-      - inputText: "https://wikipedia.org"
+      # example.com is preferred over wikipedia.org: Wikipedia shows a
+      # persistent fundraising overlay on iOS Safari that covers the page
+      # text, blocking long-press selection and turning the fallback
+      # coordinate tap into "Donate now" (confirmed via failing-run
+      # screenshot: after-longpress-text.png shows the donation banner).
+      - inputText: "https://example.com"
       - pressKey: Enter
       - extendedWaitUntil:
           visible:
-            text: "Wikipedia"
+            text: "Example Domain"
           timeout: 30000
       - tapOn:
           text: "Continue"
@@ -33,31 +38,27 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           id: "Share"
           optional: true
-      # Fallback: long-press a word to select, then tap "Share..." from context menu
-      - extendedWaitUntil:
-          visible:
-            text: "Wikipedia"
-          timeout: 15000
-      - longPressOn:
-          text: "Wikipedia"
-      - takeScreenshot: after-longpress-text
-      # iOS 26 context menu may not show "Share..." — try text match, then
-      # fall back to a coordinate tap at the context menu position.
-      - runFlow:
-          when:
-            visible:
-              text: "Share..."
-          commands:
-            - tapOn:
-                text: "Share..."
+      # If the share sheet did NOT open, fall back to long-press → "Share..."
       - runFlow:
           when:
             notVisible:
-              text: "Share..."
+              text: "Mattermost Beta"
           commands:
-            - tapOn:
-                point: "50%,60%"
-      - takeScreenshot: after-tap-share
+            - extendedWaitUntil:
+                visible:
+                  text: "Example Domain"
+                timeout: 10000
+            - longPressOn:
+                text: "Example Domain"
+            - takeScreenshot: after-longpress-text
+            - runFlow:
+                when:
+                  visible:
+                    text: "Share..."
+                commands:
+                  - tapOn:
+                      text: "Share..."
+            - takeScreenshot: after-tap-share
       # Tap "Mattermost Beta" in the share sheet to open the share extension
       - extendedWaitUntil:
           visible:

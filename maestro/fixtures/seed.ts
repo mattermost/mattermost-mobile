@@ -171,6 +171,36 @@ async function addUserToChannel(adminToken: string, channelId: string, userId: s
     console.log(`[seed] Added user ${userId} to channel ${channelId}`);
 }
 
+// Enable Calls in the test channel. Mirrors the mobile app's enableChannelCalls()
+// (POST /plugins/com.mattermost.calls/{channelId}) and matches what calls_seed.ts
+// does. Required because `PluginSettings.Plugins['com.mattermost.calls'].DefaultEnabled=true`
+// (set by detox/provision_server.js) does NOT reliably auto-enable calls on
+// cloud-hosted channels — the per-channel toggle still has to be POSTed. Without
+// this, all maestro/flows/calls/* flows hang waiting on calls.current_call_bar.
+// Non-fatal: flows that don't use Calls still pass if the Calls plugin isn't
+// installed on this site.
+async function enableCallsInChannel(adminToken: string, channelId: string): Promise<void> {
+    // POST /plugins/com.mattermost.calls/{channelId} returns 200 with an empty
+    // body on success, which would make the JSON-parsing `request()` helper
+    // throw. Use doRequest() directly so we can inspect the status code without
+    // requiring a JSON body.
+    try {
+        const res = await doRequest(
+            SITE_1_URL + `/plugins/com.mattermost.calls/${channelId}`,
+            'POST',
+            JSON.stringify({enabled: true}),
+            {'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}`},
+        );
+        if ((res.statusCode ?? 0) >= 400) {
+            console.warn(`[seed] Could not enable calls in channel (HTTP ${res.statusCode}): ${res.body}`);
+            return;
+        }
+        console.log(`[seed] Calls enabled in channel ${channelId}`);
+    } catch (err: any) {
+        console.warn(`[seed] Could not enable calls in channel: ${err.message}`);
+    }
+}
+
 function writeEnvFile(vars: Record<string, string>): void {
     const lines = Object.entries(vars).
         map(([k, v]) => `export ${k}="${v}"`).
@@ -221,6 +251,10 @@ async function main(): Promise<void> {
     // Add admin to team/channel so they can manage it
     await addUserToTeam(adminToken, team.id, adminUser.id);
     await addUserToChannel(adminToken, channel.id, adminUser.id);
+
+    // Enable Calls in the channel (per-channel POST; needed even when
+    // PluginSettings.Plugins['com.mattermost.calls'].DefaultEnabled=true).
+    await enableCallsInChannel(adminToken, channel.id);
 
     const envVars: Record<string, string> = {
         SITE_1_URL,

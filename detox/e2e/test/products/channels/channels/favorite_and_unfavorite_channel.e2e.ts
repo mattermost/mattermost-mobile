@@ -59,7 +59,7 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await HomeScreen.logout();
     });
 
-    it.only('MM-T4929_1 - should be able to favorite/unfavorite a channel from channel quick actions', async () => {
+    it('MM-T4929_1 - should be able to favorite/unfavorite a channel from channel quick actions', async () => {
         // # Open a channel screen, tap on channel quick actions button, and tap on favorite quick action to favorite the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.channelQuickActionsButton.tap();

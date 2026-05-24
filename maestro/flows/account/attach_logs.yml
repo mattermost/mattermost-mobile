@@ -37,13 +37,17 @@ appId: ${MAESTRO_APP_ID}
       id: "account.screen"
     timeout: 10000
 
-# Open Settings — wait for a known child element so the screen is fully rendered
+# Open Settings — wait for a known child element so the screen is fully rendered.
+# The Report-a-Problem item is rendered via WatermelonDB observables for
+# AllowDownloadLogs / ReportAProblemType / Version / BuildNumber. On a fresh
+# iOS first-login the server config sync can lag, so the SettingItem appears
+# only after the observables emit. Allow up to 30s.
 - tapOn:
     id: "account.settings.option"
 - extendedWaitUntil:
     visible:
       id: "settings.report_problem.option"
-    timeout: 10000
+    timeout: 30000
 
 # Tap Report a Problem. On a free-edition server this calls tryOpenURL(...) and
 # the OS-level browser opens; on a licensed server with default config it

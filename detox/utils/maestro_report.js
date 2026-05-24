@@ -57,6 +57,17 @@ function parseMaestroReport(xmlPath) {
         for (const tc of testcases) {
             const name = tc.name?.[0] || 'unknown';
             const classname = tc.classname?.[0] || suite.name?.[0] || '';
+
+            // The XML's `file` attribute is the flow's full path
+            // (e.g. "maestro/flows/calls/start_call.yml"). We extract the
+            // category (parent directory under flows/) so screenshots whose
+            // filename starts with the category prefix can be matched even
+            // when the flow filename token isn't a substring of the screenshot
+            // name (which is the common case for Maestro screenshots whose
+            // names are author-defined ad-hoc strings).
+            const file = (tc.$ && tc.$.file) || tc.file?.[0] || '';
+            const categoryMatch = String(file).match(/flows\/([^/]+)\//);
+            const category = categoryMatch ? categoryMatch[1].toLowerCase() : '';
             const time = parseFloat(tc.time?.[0] || '0');
             let status = 'passed';
             let failureMessage = null;
@@ -75,7 +86,7 @@ function parseMaestroReport(xmlPath) {
                 status = 'skipped';
             }
 
-            flows.push({name, classname, time, status, failureMessage});
+            flows.push({name, classname, file, category, time, status, failureMessage});
         }
     }
 
@@ -151,10 +162,53 @@ function normalizeFlowToken(name) {
 }
 
 /**
- * Group artifact files by which flow they belong to, using path/filename
- * prefix matching against the flow names from the XML. Anything we can't
- * attribute lands in the `__unattributed` bucket so the operator can still
- * see it.
+ * Score how strongly a screenshot/log path belongs to a given flow.
+ *
+ * Maestro screenshots are named by the flow author via `takeScreenshot:` and
+ * usually combine a category prefix with an ad-hoc state name
+ * (e.g. `calls-mute-initial-state.png`). The simple substring rule
+ * (`lowerToken.includes(token)`) fails because the flow filename token
+ * (`mute_unmute`) is rarely a substring of the screenshot's token
+ * (`calls_mute_initial_state`).
+ *
+ * Scoring:
+ *   +100 per full-token substring match (kept so legacy well-named artifacts
+ *        like `mute_unmute_step3.png` still attribute correctly).
+ *   + 10 per shared word (>= 2 chars) between the flow's name tokens and
+ *        the file's name tokens — picks up `mute` in `calls-mute-initial-state`.
+ *   +  1 if the screenshot's leading prefix equals the flow's category
+ *        (e.g. `calls-...` for a flow under `maestro/flows/calls/`) — a weak
+ *        tie-breaker so screenshots stay within their suite.
+ *
+ * Returns 0 when there's no plausible link; bucketing falls back to
+ * `__unattributed` in that case.
+ */
+function scoreFlowMatch(flow, fileToken, fileWords, filePrefix) {
+    let score = 0;
+
+    if (flow.token && fileToken.includes(flow.token)) {
+        score += 100;
+    }
+
+    if (flow.words.size) {
+        for (const w of fileWords) {
+            if (flow.words.has(w)) {
+                score += 10;
+            }
+        }
+    }
+
+    if (flow.category && filePrefix && flow.category === filePrefix) {
+        score += 1;
+    }
+
+    return score;
+}
+
+/**
+ * Group artifact files by which flow they belong to. Each file is scored
+ * against every flow (see scoreFlowMatch); the highest-scoring flow wins.
+ * Files with no plausible link land in `__unattributed`.
  */
 function bucketArtifactsByFlow(flows, artifactPaths) {
     const buckets = {__unattributed: []};
@@ -162,15 +216,47 @@ function bucketArtifactsByFlow(flows, artifactPaths) {
         buckets[flow.name] = [];
     }
 
-    // Pre-compute normalized tokens for every flow once.
-    const tokenized = flows.map((f) => ({original: f.name, token: normalizeFlowToken(f.name)}));
+    const tokenized = flows.map((f) => {
+        const token = normalizeFlowToken(f.name);
+        return {
+            original: f.name,
+            token,
+            words: new Set(token.split('_').filter((w) => w.length >= 1)),
+            category: (f.category || '').toLowerCase(),
+        };
+    });
 
     for (const relPath of artifactPaths) {
         const lower = relPath.toLowerCase();
-        const lowerToken = lower.replace(/[^a-z0-9/]+/g, '_');
-        const match = tokenized.find(({token}) => token && lowerToken.includes(token));
-        if (match) {
-            buckets[match.original].push(relPath);
+        const fileToken = lower.replace(/[^a-z0-9/]+/g, '_');
+        const fileWords = path.basename(lower).
+            replace(/\.[a-z0-9]+$/i, ''). // strip extension
+            split(/[^a-z0-9]+/).
+            filter((w) => w.length >= 1);
+        const prefixMatch = path.basename(lower).match(/^([a-z0-9]+)[-_]/);
+        const filePrefix = prefixMatch ? prefixMatch[1] : '';
+
+        let bestFlow = null;
+        let bestScore = 0;
+        let bestUnique = true;
+        for (const f of tokenized) {
+            const score = scoreFlowMatch(f, fileToken, fileWords, filePrefix);
+            if (score > bestScore) {
+                bestScore = score;
+                bestFlow = f;
+                bestUnique = true;
+            } else if (score === bestScore && score > 0) {
+                bestUnique = false;
+            }
+        }
+
+        // Only attribute when there's a UNIQUE best match. If multiple flows
+        // tie at the highest score (common for ambiguous ad-hoc screenshot
+        // names like `calls-call-ended.png` that share words with every
+        // calls/* flow), defer to `__unattributed` rather than arbitrarily
+        // picking the first one by iteration order.
+        if (bestFlow && bestUnique) {
+            buckets[bestFlow.original].push(relPath);
         } else {
             buckets.__unattributed.push(relPath);
         }

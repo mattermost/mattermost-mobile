@@ -28,24 +28,31 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Continue"
           optional: true
-      # Tap the Safari Share button in the toolbar
+      # Tap the Safari Share button in the toolbar. If this tap lands, the
+      # iOS share sheet appears and "Mattermost Beta" is reachable directly.
       - tapOn:
           id: "Share"
           optional: true
-      # Fallback: long-press approach if Share button not found
-      - extendedWaitUntil:
-          visible:
-            text: "Example Domain"
-          timeout: 10000
-      - longPressOn:
-          text: "Example"
+      # If the share sheet did NOT open (Share button missed or hidden by
+      # the page), fall back to long-pressing a word in the page.
       - runFlow:
           when:
-            visible:
-              text: "Share..."
+            notVisible:
+              text: "Mattermost Beta"
           commands:
-            - tapOn:
-                text: "Share..."
+            - extendedWaitUntil:
+                visible:
+                  text: "Example Domain"
+                timeout: 10000
+            - longPressOn:
+                text: "Example Domain"
+            - runFlow:
+                when:
+                  visible:
+                    text: "Share..."
+                commands:
+                  - tapOn:
+                      text: "Share..."
       # Tap "Mattermost Beta" in the share sheet
       - extendedWaitUntil:
           visible:

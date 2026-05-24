@@ -272,8 +272,6 @@ maestro/
       help_url.yml                     # MM-T3260
     calls/
       call_ui_permission.yml           # MM-T1411
-      device_a_start_call.yml          # multi-device calls
-      device_b_join_call.yml           # multi-device calls
       leave_call.yml                   # calls UI
       mute_unmute.yml                  # calls UI
       start_call.yml                   # requires calls_seed.ts (not in default CI run)
@@ -284,6 +282,8 @@ maestro/
       channel_bookmark_link_external.yml        # MM-T5604
       file_type_preview.yml            # requires seed_file_preview.ts (not in default CI run)
     multi_device/
+      device_a_start_call.yml          # MM-T4830 (two-device calls)
+      device_b_join_call.yml           # MM-T4831 (two-device calls)
       user_a_sends_message.yml         # MM-T3055
       user_b_receives_message.yml      # MM-T3056
     share_extension/

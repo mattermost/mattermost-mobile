@@ -437,7 +437,16 @@ class ChannelScreen {
 
     tapSendButton = async () => {
         // # wait for Send button to be enabled
-        await waitFor(this.sendButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        //
+        // Use polling (waitForElementToBeVisible) instead of waitFor().toBeVisible().
+        // Detox's bridge-sync visibility check requires a 75% on-screen area threshold
+        // AND an idle React/native bridge. On iOS 26 and Android API 35 the post-input
+        // React state update from replaceText() can keep the bridge busy long enough
+        // that the 2s bridge-sync window expires even though the send button is
+        // visually rendered (confirmed on CI failure screenshots for T4909_5/T4910_4/
+        // T4910_5 where the send button is clearly drawn at failure capture). This
+        // mirrors the rationale documented on longPressSendButton below.
+        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
         await this.sendButton.tap();
         await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
@@ -493,9 +502,15 @@ class ChannelScreen {
     hasPostMessage = async (postId: string, postMessage: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, postMessage);
 
+        // The post may not yet be present in the windowed FlatList immediately after
+        // a send + confirmation alert dismissal (the JS thread is still flushing the
+        // websocket POSTED event). Wait for the row to exist before asserting
+        // visibility, otherwise a one-shot toBeVisible can race the render.
+        await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+
         // Use 50% threshold: on iOS 26.x the message input bar can clip the bottom
         // post to ~50–74% visible, causing the default 75% check to fail intermittently.
-        await expect(postListPostItem).toBeVisible(50);
+        await waitFor(postListPostItem).toBeVisible(50).withTimeout(timeouts.TEN_SEC);
     };
 
     hasPostMessageAtIndex = async (index: number, postMessage: string) => {

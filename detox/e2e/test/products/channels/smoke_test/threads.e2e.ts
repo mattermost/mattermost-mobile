@@ -191,8 +191,12 @@ describe('Smoke Test - Threads', () => {
         // the bookmark icon in the thread_overview row instead, which swaps between
         // `*.save.button` (not saved) and `*.unsave.button` (saved). Same testID scheme on iOS
         // and Android — no platform branches in app/components/post_list/thread_overview.
-        const threadOverviewUnsaveButton = element(by.id('thread.post_list.thread_overview.unsave.button'));
-        const threadOverviewSaveButton = element(by.id('thread.post_list.thread_overview.save.button'));
+        // .atIndex(0): expo-router's tab-stack persistence can leave a stale ThreadScreen
+        // mounted off-screen (e.g. from a previous tab) while the current one is active.
+        // Both emit the same `thread.post_list.thread_overview.{un,}save.button` testID.
+        // Detox's view-hierarchy traversal returns the active (topmost) screen first.
+        const threadOverviewUnsaveButton = element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0);
+        const threadOverviewSaveButton = element(by.id('thread.post_list.thread_overview.save.button')).atIndex(0);
         await waitFor(threadOverviewUnsaveButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to global threads screen, open thread options for thread, tap on unsave option

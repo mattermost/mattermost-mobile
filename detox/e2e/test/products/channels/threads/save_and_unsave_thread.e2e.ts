@@ -92,7 +92,13 @@ describe('Threads - Save and Unsave Thread', () => {
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
         // * Verify the thread is saved via the ThreadOverview's unsave (bookmark-filled) button.
-        await expect(element(by.id('thread.post_list.thread_overview.unsave.button'))).toBeVisible();
+        // The testID `thread.post_list.thread_overview.{un,}save.button` is the same on every
+        // mounted thread.post_list. With expo-router's tab-stack persistence the previous
+        // ThreadScreen (opened from the channel tab) can remain mounted off-screen while the
+        // current one is on the global-threads tab — so the same testID matches twice. The
+        // .atIndex(0) selects the active (topmost) match — Detox's view-hierarchy traversal
+        // returns the active screen first in practice for this app.
+        await waitFor(element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to global threads screen, open thread options for thread, tap on save option, and tap on thread
         await ThreadScreen.back();
@@ -101,9 +107,9 @@ describe('Threads - Save and Unsave Thread', () => {
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
         // * Verify the thread is unsaved: the ThreadOverview should now expose the save button
-        // (not the unsave button), reflecting the cleared saved state.
-        await expect(element(by.id('thread.post_list.thread_overview.save.button'))).toBeVisible();
-        await expect(element(by.id('thread.post_list.thread_overview.unsave.button'))).not.toBeVisible();
+        // (not the unsave button), reflecting the cleared saved state. See note above on atIndex(0).
+        await waitFor(element(by.id('thread.post_list.thread_overview.save.button')).atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await expect(element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0)).not.toBeVisible();
 
         // # Go back to channel list screen
         await ThreadScreen.back();
@@ -132,13 +138,14 @@ describe('Threads - Save and Unsave Thread', () => {
 
         // * Verify the thread is saved via ThreadOverview's unsave button (the toggled state).
         // Pre-header text is suppressed on the thread root by design (post_list.tsx:455).
-        await expect(element(by.id('thread.post_list.thread_overview.unsave.button'))).toBeVisible();
+        // .atIndex(0): see comment block in MM-T4808_1 above for expo-router multi-mount context.
+        await waitFor(element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Tap on thread overview unsave button
         await ThreadScreen.getThreadOverviewUnsaveButton().tap();
 
         // * Verify the thread is unsaved
-        await expect(element(by.id('thread.post_list.thread_overview.save.button'))).toBeVisible();
+        await waitFor(element(by.id('thread.post_list.thread_overview.save.button')).atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ThreadScreen.back();

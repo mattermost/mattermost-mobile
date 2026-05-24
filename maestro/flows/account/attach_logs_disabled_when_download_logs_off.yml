@@ -1,0 +1,91 @@
+# MM-T67856_4: When the server's `AllowDownloadLogs` is false, the in-app
+# Report a Problem screen is NOT reachable from settings — `Settings > Report
+# a Problem` instead silently triggers an email-via-mail-client (see
+# `skipReportAProblemScreen` branch in
+# app/screens/settings/report_problem/report_problem.tsx:40-43), so the
+# "Show an option to attach app logs" toggle is never rendered for the user.
+#
+# Server-side gate logic (with trial license active so isFreeEdition=false):
+#   skipReportAProblemScreen = (ReportAProblemType==='default' && !AllowDownloadLogs)
+#   => true when AllowDownloadLogs is false.
+#
+# Note: the full gate at report_problem.tsx:40-43 also activates when
+# `(ReportAProblemType === 'email' && !AllowDownloadLogs)`. We don't touch
+# the email branch in this flow because the test config keeps
+# ReportAProblemType at 'default' — but a future test that flips type=email
+# would short-circuit the same way and could share this fixture.
+#
+# PRE-CONDITION:
+#   Flip AllowDownloadLogs to false on the server BEFORE running this flow.
+#   This is NOT done by the default seed/provisioner (which leaves the
+#   server default `true`), so set it explicitly as part of the test
+#   bring-up. Two options:
+#
+#   (a) One-liner (run before `maestro test`):
+#       curl -sS -X PUT \
+#         -H "Authorization: Bearer $ADMIN_TOKEN" \
+#         -H "Content-Type: application/json" \
+#         -d '{"ServiceSettings":{"AllowDownloadLogs":false}}' \
+#         "$SITE_1_URL/api/v4/config/patch" > /dev/null
+#
+#   (b) Add the patch as a `runScript` step at the top of this flow once
+#       the maestro-flows runner supports it (Maestro v1.36+ adds script
+#       steps; current pinned version is v1.42 per .github/workflows/setup).
+#
+#   Cleanup (run AFTER this flow so other flows see the default again):
+#       curl -sS -X PUT \
+#         -H "Authorization: Bearer $ADMIN_TOKEN" \
+#         -H "Content-Type: application/json" \
+#         -d '{"ServiceSettings":{"AllowDownloadLogs":true}}' \
+#         "$SITE_1_URL/api/v4/config/patch" > /dev/null
+#
+# Flow:
+#   1. Login.
+#   2. Account > Settings > tap Report a Problem.
+#   3. The in-app Report a Problem screen must NOT appear (skipped to email).
+#      The toggle is "hidden" by virtue of the screen not existing for users
+#      on this server config.
+#   4. The mail composer or share-sheet may appear on the device — Maestro
+#      dismisses it by sending the OS Back action.
+#
+# Source-of-truth references:
+#   - logic gate: app/screens/settings/report_problem/report_problem.tsx:40-43
+#   - in-app screen id (must NOT appear here): report_problem.screen
+tags:
+  - MM-T67856_4
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+
+# Navigate Settings > Report a Problem.
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 10000
+- tapOn:
+    id: "account.settings.option"
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 10000
+- tapOn:
+    id: "settings.report_problem.option"
+
+# Give the email composer / share sheet time to appear, then assert the
+# in-app screen DID NOT render. waitForAnimationToEnd settles any modal that
+# the mail-client invocation may animate in.
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Assertion: the in-app Report a Problem screen is not present, which means
+# the toggle is unreachable (the test's "hidden" condition).
+- assertNotVisible:
+    id: "report_problem.screen"
+- assertNotVisible:
+    id: "report_problem.enable_log_attachments"
+
+# Defensive cleanup: dismiss any modal/share-sheet/mail composer that may
+# have appeared so the next test starts on a clean screen.
+- back

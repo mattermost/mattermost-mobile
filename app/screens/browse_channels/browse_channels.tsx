@@ -118,6 +118,18 @@ export default function BrowseChannels(props: Props) {
         setHeaderButtons(false);
         setAdding(true);
 
+        // For archived channels, skip `joinChannel`: the server returns a 400 from
+        // `addToChannel` on archived channels ("You cannot add the requested user…
+        // who is in the deactivated channel"), which surfaces here as an error that
+        // shows the "couldn't join" alert and blocks navigation. Users who can see
+        // an archived channel in Browse Channels are existing members (when
+        // ExperimentalViewArchivedChannels is enabled), so we can switch directly.
+        if (channel.delete_at && channel.delete_at > 0) {
+            await close();
+            switchToChannelById(serverUrl, channel.id, currentTeamId);
+            return;
+        }
+
         const result = await joinChannel(serverUrl, currentTeamId, channel.id, '', false);
 
         if (result.error) {

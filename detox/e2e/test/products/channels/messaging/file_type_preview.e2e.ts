@@ -35,7 +35,9 @@ const dismissGallery = async () => {
     if (isAndroid()) {
         await device.pressBack();
     } else {
-        await element(by.id('gallery.header.close.button')).tap();
+        // react-native-gesture-handler's Pressable on iOS exposes the same testID
+        // on both the wrapper and inner button — use atIndex(0) to disambiguate.
+        await element(by.id('gallery.header.close.button')).atIndex(0).tap();
     }
     await waitFor(element(by.id('gallery.header.close.button'))).not.toExist().withTimeout(timeouts.TEN_SEC);
     await wait(isAndroid() ? timeouts.TWO_SEC : timeouts.ONE_SEC);

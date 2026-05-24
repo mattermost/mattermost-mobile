@@ -118,6 +118,13 @@ android {
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
+
+        // Detox is included as a source subproject (see android/settings.gradle).
+        // Its build.gradle declares product flavors `full` and `coreNative` on a
+        // `detox` flavor dimension. Our app doesn't declare that dimension, so
+        // tell Gradle to resolve `:detox` dependencies against the `full` flavor
+        // (which is what the prebuilt AAR also corresponds to).
+        missingDimensionStrategy 'detox', 'full'
     }
 
     signingConfigs {
@@ -207,10 +214,16 @@ dependencies {
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation "com.google.firebase:firebase-messaging:$firebaseVersion"
-    androidTestImplementation('com.wix:detox:+')
+    // Detox: build from source via the `:detox` Gradle subproject defined in
+    // android/settings.gradle. This activates detox/scripts/postinstall.js's
+    // null-guard patch in FabricUIManagerIdlingResources.kt (see the comment in
+    // settings.gradle for why). To revert to the prebuilt AAR, replace the next
+    // line with:
+    //   androidTestImplementation('com.wix:detox:+')
+    //   androidTestImplementation 'com.wix:detox:20.26.2'
+    androidTestImplementation(project(':detox'))
     androidTestImplementation 'androidx.test:core:1.6.1'
     androidTestImplementation 'androidx.test:runner:1.6.2'
-    androidTestImplementation 'com.wix:detox:20.26.2'
 
     // For animated GIF support
     implementation 'com.facebook.fresco:animated-gif:3.6.0'

@@ -72,6 +72,14 @@ describe('Channels', () => {
         await LoginScreen.login(testUser);
     });
 
+    beforeEach(async () => {
+        // Recovery anchor for every test: ensures the previous test's modal/stack state
+        // is dismissed and we are back on the channel list before proceeding.
+        // ChannelListScreen.toBeVisible() internally dismisses any open modals and pops
+        // back navigation until the channel list is visible (see channel_list.ts).
+        await ChannelListScreen.toBeVisible();
+    });
+
     afterAll(async () => {
         await HomeScreen.logout();
     });
@@ -175,8 +183,10 @@ describe('Channels', () => {
         await CreateOrEditChannelScreen.saveButton.tap();
 
         // After saving, app pops back to ChannelSettings (not ChannelInfo directly).
-        // Close ChannelSettings first, then verify the channel info was updated.
-        await wait(timeouts.TWO_SEC);
+        // Anchor on the Edit Channel screen dismissing — a fixed 2s sleep is fragile when
+        // the save round-trip or pop animation is slower on CI. Waiting on the screen
+        // transition is deterministic and bounded by the same TEN_SEC envelope.
+        await waitFor(CreateOrEditChannelScreen.createOrEditChannelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.close();
 
@@ -214,8 +224,10 @@ describe('Channels', () => {
         await CreateOrEditChannelScreen.saveButton.tap();
 
         // After saving, app pops back to ChannelSettings (not ChannelInfo directly).
-        // Close ChannelSettings first, then verify the channel info was updated.
-        await wait(timeouts.TWO_SEC);
+        // Anchor on the Edit Channel screen dismissing — a fixed 2s sleep is fragile when
+        // the save round-trip or pop animation is slower on CI. Waiting on the screen
+        // transition is deterministic and bounded by the same TEN_SEC envelope.
+        await waitFor(CreateOrEditChannelScreen.createOrEditChannelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.close();
 
@@ -255,6 +267,13 @@ describe('Channels', () => {
     });
 
     it('MM-T867 - RN apps Copying channel header text', async () => {
+        // # Reload React Native to force a fresh WebSocket sync so the API-created
+        // channelWithMetadata (added in beforeAll) is present in the sidebar. Without
+        // this, the join event from beforeAll can fail to propagate by the time this
+        // test runs, leaving waitForSidebarPublicChannelDisplayNameVisible to time out.
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+
         // # Navigate to the channel with metadata
         await ChannelScreen.open(channelsCategory, channelWithMetadata.name);
         await ChannelInfoScreen.open();
@@ -274,6 +293,11 @@ describe('Channels', () => {
     });
 
     it('MM-T865 - RN apps Copying channel purpose text', async () => {
+        // # Reload React Native for the same reason as MM-T867 — guarantees the sidebar
+        // reflects the API-joined channel even if MM-T867 was skipped or failed.
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+
         // # Navigate to the channel with metadata
         await ChannelScreen.open(channelsCategory, channelWithMetadata.name);
         await ChannelInfoScreen.open();

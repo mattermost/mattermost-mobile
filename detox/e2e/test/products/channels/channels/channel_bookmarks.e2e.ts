@@ -546,12 +546,18 @@ describe('Channels - Channel Bookmarks', () => {
         // * Verify the emoji picker opens
         await EmojiPickerScreen.toBeVisible();
 
-        // # Dismiss the skin-tone tooltip if it appears (Android shows it on first open)
+        // # Dismiss the skin-tone tooltip if it appears.
+        // Shows on first open on both Android and iOS. On iOS the tooltip renders
+        // ~3-5s after the picker mounts (post-animation), so a 2s wait races the
+        // tooltip and the test then times out on the search input which the
+        // tooltip overlay is still occluding (see CI run 26352177261 testFnFailure
+        // for MM-T5606_1).
         try {
             await waitFor(EmojiPickerScreen.toolTipCloseButton).
                 toBeVisible().
-                withTimeout(timeouts.TWO_SEC);
+                withTimeout(timeouts.TEN_SEC);
             await EmojiPickerScreen.toolTipCloseButton.tap();
+            await wait(timeouts.ONE_SEC);
         } catch {
             // Tooltip did not appear — continue normally
         }
@@ -703,6 +709,21 @@ describe('Channels - Channel Bookmarks', () => {
                 await element(channelHeaderBookmarksList).swipe('right', 'fast', 0.9, 0.5, 0.5);
             }
             /* eslint-enable no-await-in-loop */
+        }
+
+        // On iOS the fast horizontal swipe can be misinterpreted as a long-press on a
+        // bookmark item, opening the bookmark actions bottom sheet (Edit / Copy Link /
+        // Share / Delete). That sheet then occludes the navigation header and the
+        // subsequent ChannelScreen.back() taps a non-hittable back button. Detect the
+        // sheet by its Delete row and swipe it down before navigating back.
+        // See CI run 26352177261 testFnFailure for MM-T5612_1.
+        try {
+            const bookmarkActionsDelete = element(by.text('Delete'));
+            await waitFor(bookmarkActionsDelete).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await bookmarkActionsDelete.swipe('down', 'fast', 0.9, 0.5, 0.1);
+            await wait(timeouts.ONE_SEC);
+        } catch {
+            // Action sheet not present — continue normally.
         }
 
         // # Go back to channel list

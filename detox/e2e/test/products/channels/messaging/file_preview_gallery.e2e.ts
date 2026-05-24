@@ -34,7 +34,11 @@ const dismissGallery = async () => {
     if (isAndroid()) {
         await device.pressBack();
     } else {
-        await element(by.id('gallery.header.close.button')).tap();
+        // react-native-gesture-handler's Pressable on iOS exposes the same testID
+        // on both the RNGestureHandlerButtonComponentView wrapper and its inner
+        // RNGestureHandlerButton, causing "Multiple elements found" if matched
+        // directly. Both target the same press, so atIndex(0) is safe.
+        await element(by.id('gallery.header.close.button')).atIndex(0).tap();
     }
 
     // Wait for the close button to disappear — confirms gallery is fully unmounted.
