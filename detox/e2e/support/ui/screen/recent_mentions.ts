@@ -52,7 +52,26 @@ class RecentMentionsScreen {
     };
 
     recentMentionPostListToBeVisible = async () => {
-        await waitForElementToBeVisible(this.recentMentionPostList, timeouts.TEN_SEC);
+        const MAX_REFETCHES = 3;
+        /* eslint-disable no-await-in-loop -- sequential by design: each retry must
+           complete the back→open dance before the next visibility poll. */
+        for (let attempt = 1; attempt <= MAX_REFETCHES; attempt++) {
+            try {
+                await waitForElementToBeVisible(this.recentMentionPostList, timeouts.TEN_SEC);
+                return;
+            } catch (e) {
+                if (attempt === MAX_REFETCHES) {
+                    throw e;
+                }
+
+                // Force a fresh fetchRecentMentions by leaving + re-entering the tab.
+                await HomeScreen.channelListTab.tap();
+                await wait(timeouts.TWO_SEC);
+                await HomeScreen.mentionsTab.tap();
+                await this.toBeVisible();
+            }
+        }
+        /* eslint-enable no-await-in-loop */
     };
 
     open = async () => {

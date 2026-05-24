@@ -22,6 +22,7 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
+    ThreadScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
@@ -46,13 +47,13 @@ describe('Messaging - Channel Link', () => {
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
 
-        // # Set up MM-T4877_2: post the channel link to testChannel via API before any
+        // # Set up MM-T4877_2: pre-create the target channel and a plain-text parent post.
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         replyThreadChannelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name}`;
         replyThreadTargetDisplayName = targetChannel.display_name;
 
-        await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message: replyThreadChannelLink});
+        await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message: 'Reply thread parent message'});
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         replyThreadPostId = post.id;
@@ -88,9 +89,13 @@ describe('Messaging - Channel Link', () => {
     });
 
     it('MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread', async () => {
-        // # Open testChannel (always in sidebar) and open the reply thread for the pre-posted link
+        // # Open testChannel and open the reply thread for the pre-posted plain-text parent.
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.openReplyThreadFor(replyThreadPostId, replyThreadChannelLink);
+        await ChannelScreen.openReplyThreadFor(replyThreadPostId, 'Reply thread parent message');
+
+        // # Post the channel link as a reply inside the thread
+        await ThreadScreen.postMessage(replyThreadChannelLink);
+        await wait(timeouts.TWO_SEC);
 
         // # Tap on channel link from within the reply thread
         await element(by.text(replyThreadChannelLink)).atIndex(0).tap();

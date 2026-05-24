@@ -143,6 +143,10 @@ describe('Channels', () => {
         // # Archive the channel
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
+        // # Channel settings closes but channel info modal remains; dismiss it
+        // to reach the channel screen where the archived close-channel button renders.
+        await ChannelInfoScreen.close();
+
         await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Navigate back from the archived channel to the channel list

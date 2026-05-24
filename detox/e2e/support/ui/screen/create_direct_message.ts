@@ -3,7 +3,7 @@
 
 import {ProfilePicture} from '@support/ui/component';
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CreateDirectMessageScreen {
@@ -94,7 +94,7 @@ class CreateDirectMessageScreen {
             await this.toBeVisible();
         } finally {
             if (isAndroid()) {
-                await device.enableSynchronization();
+                await safeEnableSynchronization();
             }
         }
 

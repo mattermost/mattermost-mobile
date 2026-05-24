@@ -95,6 +95,38 @@ jobs:
           description: Detox iPad tests for mattermost mobile app have started ...
           status: pending
 
+  # Set initial pending status for the maestro checks so they appear on the PR
+  # immediately when the workflow starts, mirroring the detox pattern above.
+  # Without these, the e2e/maestro-{ios,android}-tests contexts only show up
+  # after the maestro run completes (or not at all if it's still running).
+  update-initial-status-maestro-ios:
+    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
+          context: e2e/maestro-ios-tests
+          description: Maestro iOS tests for mattermost mobile app have started ...
+          status: pending
+
+  update-initial-status-maestro-android:
+    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
+          context: e2e/maestro-android-tests
+          description: Maestro Android tests for mattermost mobile app have started ...
+          status: pending
+
   build-ios-simulator:
     if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
     runs-on: macos-26
@@ -152,6 +184,16 @@ jobs:
           STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
           MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
+      # Cache Gradle dependencies — same key as e2e-detox-release.yml so the
+      # PR + release workflows share cache. Saves 3-5 min on warm runs by
+      # skipping gradle plugin resolution + Maven dep downloads.
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches/modules-2/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
       - name: Detox build
         run: |
           cd detox
@@ -174,6 +216,17 @@ jobs:
           validate_url() {
             local url="$1" label="$2"
             if [ -z "$url" ]; then return 0; fi
+
+            # Reject any whitespace (space, tab, newline). Without this, an input
+            # like "https://valid.cloud  https://evil.example.com" would pass the
+            # rest of the validators (urlparse only inspects up to the first
+            # space) but then get word-split into two URLs by an unquoted shell
+            # iteration downstream — letting the second, unvalidated URL reach
+            # the provisioning sink. Whitespace is never legal in a URL anyway.
+            if [[ "$url" =~ [[:space:]] ]]; then
+              echo "::error::$label contains whitespace: $url"
+              exit 1
+            fi
 
             # Must be HTTPS
             if [[ ! "$url" =~ ^https:// ]]; then
@@ -219,7 +272,12 @@ jobs:
 
       - name: Provision servers (license + plugins)
         run: |
-          for url in $SITE_1_URL $SITE_2_URL $SITE_3_URL; do
+          # Quote every variable in the iteration. Without quotes, bash word-splits
+          # on whitespace and would treat e.g. "https://a https://b" as two URLs,
+          # bypassing the per-variable validation in the previous step (which
+          # validates the value as a single string). The validator above also
+          # rejects whitespace outright, so this is belt-and-suspenders.
+          for url in "$SITE_1_URL" "$SITE_2_URL" "$SITE_3_URL"; do
             if [ -n "$url" ]; then
               echo "--- Provisioning $url ---"
               node detox/provision_server.js "$url" || echo "Warning: provisioning $url failed (non-fatal)"
@@ -350,6 +408,7 @@ jobs:
     if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
     name: Maestro iOS
     needs:
+      - update-initial-status-maestro-ios
       - build-ios-simulator
       - provision-servers
     uses: ./.github/workflows/e2e-maestro-template.yml
@@ -370,13 +429,14 @@ jobs:
     # see e2e-maestro-template.yml. This also lets maestro android start as
     # soon as provision-servers finishes instead of waiting on the detox build.
     needs:
+      - update-initial-status-maestro-android
       - provision-servers
     uses: ./.github/workflows/e2e-maestro-template.yml
     with:
       platform: android
       run-type: ${{ inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_2_URL }}
+      MM_TEST_SERVER_URL: ${{ inputs.SITE_3_URL }}
     secrets: inherit
 
   update-final-status-maestro-ios:

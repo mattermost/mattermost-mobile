@@ -28,6 +28,7 @@ import {
 import {
     isAndroid,
     isIos,
+    safeEnableSynchronization,
     timeouts,
     wait,
     waitForElementToBeVisible,
@@ -118,7 +119,7 @@ async function openArchivedChannelsFilter() {
         await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
     } finally {
         if (isAndroid()) {
-            await device.enableSynchronization();
+            await safeEnableSynchronization();
         }
     }
     await wait(timeouts.ONE_SEC);

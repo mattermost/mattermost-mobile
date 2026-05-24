@@ -73,6 +73,14 @@ jobs:
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
+      # disable_ios_autofill.js (called later during simulator boot) lives in
+      # detox/utils/ and requires `shelljs` from detox/package.json. The repo-root
+      # `prepare-node-deps` only installs top-level node_modules, so we need a
+      # separate install for the detox sub-package or the script throws
+      # `Cannot find module 'shelljs'`.
+      - name: Install Detox Dependencies
+        run: cd detox && npm ci --prefer-offline --no-audit --no-fund
+
       - name: Cache Maestro
         id: maestro-cache
         uses: actions/cache@v4
@@ -403,21 +411,20 @@ jobs:
       - name: Verify Maestro installation
         run: ~/.maestro/bin/maestro --version
 
-      # Maestro requires a self-contained APK (JS bundled, no Metro). The detox
-      # `build-android-apk` job produces an `assembleDebug` APK that expects a
-      # Metro dev server at localhost:8081 — fine for detox (which starts Metro
-      # in `detox/create_android_emulator.sh:108,125`) but unusable for maestro.
-      # So we build a release APK locally here. The release variant bundles JS
-      # via the RN gradle plugin.
-      #
-      # We don't `MATTERMOST_RELEASE_STORE_FILE` in this job's gradle.properties,
-      # so `android/app/build.gradle:156` makes the `release` build type fall
-      # back to the debug keystore — enough for `adb install` on the emulator.
       - name: ci/setup-java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
+
+      # Same key as e2e-detox-pr.yml's build-android-apk + e2e-detox-release.yml,
+      # so the maestro self-build shares the cache populated by detox runs.
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches/modules-2/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
 
       - name: ci/jetify-android-libraries
         run: ./node_modules/.bin/jetify

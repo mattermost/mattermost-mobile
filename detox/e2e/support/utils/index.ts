@@ -396,6 +396,34 @@ export async function waitForElementToExist(
 }
 
 /**
+ * Re-enable Detox synchronization safely after a screen transition.
+ *
+ * On Android with RN Fabric (New Architecture) + Detox 20.47, calling
+ * `device.enableSynchronization()` immediately after a screen replace can
+ * race the FabricUIManagerIdlingResource probe — the probe reads
+ * `UIManagerModule.getReactContext()` while the bridge is between contexts
+ * and throws "ReactContext is null!".
+ *
+ * The race window is short (the new ReactContext is bound within a frame),
+ * so a single retry after a brief pause clears it. iOS has no such probe
+ * and the call resolves immediately, so this helper is safe to use
+ * unconditionally and behaves identically on both platforms.
+ */
+export async function safeEnableSynchronization(): Promise<void> {
+    try {
+        await device.enableSynchronization();
+
+    } catch (error) {
+        const message = (error as Error)?.message ?? String(error);
+        if (!message.includes('ReactContext is null')) {
+            throw error;
+        }
+        await wait(timeouts.HALF_SEC);
+        await device.enableSynchronization();
+    }
+}
+
+/**
  * Navigate back one screen using the platform-appropriate mechanism.
  *
  * On Android, screens that use the native stack header (expo-router `presentation: 'card'`

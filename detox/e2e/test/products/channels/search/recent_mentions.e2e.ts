@@ -225,8 +225,11 @@ describe('Search - Recent Mentions', () => {
         await wait(timeouts.TWO_SEC);
         await SavedMessagesScreen.open();
 
-        // * Verify recent mention is not displayed anymore on saved messages screen
-        await expect(postListPostItem).not.toExist();
+        // * Verify recent mention is not displayed anymore on saved messages screen.
+        // Poll: the unsave preference deletion propagates through the DB observable to
+        // the saved messages list, which can take longer than a single-shot expect()
+        // allows on slower devices.
+        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelListScreen.open();

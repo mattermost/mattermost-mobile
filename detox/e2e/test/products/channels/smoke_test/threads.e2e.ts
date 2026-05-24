@@ -29,12 +29,11 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Threads', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
-    const savedText = 'Saved';
     let testChannel: any;
 
     beforeAll(async () => {
@@ -181,78 +180,30 @@ describe('Smoke Test - Threads', () => {
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
         await ThreadOptionsScreen.saveThreadOption.tap();
 
-        // Wait for PREFERENCES_CHANGED WS event to be processed before proceeding.
-        // On a heavily loaded simulator (Xcode + Metro + simulator + server all competing
-        // for CPU), the server's async WS hub can delay broadcasting the event by 20-30s.
-        // If this event arrives after the local unsave delete (PREFERENCES_DELETED is a
-        // no-op since the record is already gone), it re-creates the preference and isSaved
-        // stays true permanently. Waiting here ensures the WS event fires while the record
-        // still exists (upsert no-op), so the subsequent unsave delete is the last write.
-        await device.disableSynchronization();
-        await wait(timeouts.HALF_MIN);
-        await device.enableSynchronization();
-
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
-        // * Verify saved text is displayed on the post pre-header
-        const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(parentPost.id, parentMessage);
-        await expect(postListPostItemPreHeaderText).toHaveText(savedText);
+        // * Verify the thread is saved — assert on the thread_overview bookmark button,
+        // not on the post pre-header.
+        //
+        // The "Saved" pre-header is deliberately suppressed on the thread-view root post
+        // (app/components/post_list/post_list.tsx — `skipSavedHeader = location === Screens.THREAD
+        // && post.id === rootId`). The product surfaces saved-state on the thread root via
+        // the bookmark icon in the thread_overview row instead, which swaps between
+        // `*.save.button` (not saved) and `*.unsave.button` (saved). Same testID scheme on iOS
+        // and Android — no platform branches in app/components/post_list/thread_overview.
+        const threadOverviewUnsaveButton = element(by.id('thread.post_list.thread_overview.unsave.button'));
+        const threadOverviewSaveButton = element(by.id('thread.post_list.thread_overview.save.button'));
+        await waitFor(threadOverviewUnsaveButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to global threads screen, open thread options for thread, tap on unsave option
         await ThreadScreen.back();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
         await waitFor(ThreadOptionsScreen.unsaveThreadOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ThreadOptionsScreen.unsaveThreadOption.tap();
-        await wait(timeouts.TWO_SEC);
 
-        // * Verify saved text is not displayed on the post pre-header
-        // Use a retry loop to handle the WS race: if the server's delayed PREFERENCES_CHANGED
-        // event (from the save) re-creates the preference after our delete, the pre-header "Saved"
-        // text will reappear. We re-open thread options and tap unsave again until the pre-header
-        // is confirmed gone. The pre-header is on the root post which is always visible when the
-        // thread opens — no scrolling needed, unlike the ThreadOverview save button.
-        const UNSAVE_RETRY_LIMIT = 5;
-        let unsaveVerified = false;
-        /* eslint-disable no-await-in-loop */
-        for (let attempt = 0; attempt < UNSAVE_RETRY_LIMIT; attempt++) {
-            await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-            await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
-
-            // Poll for pre-header to be gone (sync disabled so WS events don't block the check).
-            // waitFor(element).toBeVisible() throws when element is not visible or not found;
-            // catching the error means isSaved=false and the pre-header is gone.
-            await device.disableSynchronization();
-            let preHeaderStillVisible = false;
-            try {
-                await waitFor(postListPostItemPreHeaderText).toBeVisible().withTimeout(timeouts.FIVE_SEC);
-                preHeaderStillVisible = true;
-            } catch {
-                preHeaderStillVisible = false;
-            }
-            await device.enableSynchronization();
-
-            if (!preHeaderStillVisible) {
-                unsaveVerified = true;
-                break;
-            }
-
-            // Pre-header still visible (isSaved=true) — go back and re-unsave via thread options
-            await ThreadScreen.back();
-            if (attempt < UNSAVE_RETRY_LIMIT - 1) {
-                await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
-                await waitFor(ThreadOptionsScreen.unsaveThreadOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
-                await ThreadOptionsScreen.unsaveThreadOption.tap();
-                await wait(timeouts.FIVE_SEC);
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-
-        if (!unsaveVerified) {
-            throw new Error('Thread unsave did not complete after retries — "Saved" pre-header still visible');
-        }
-
-        // Confirm pre-header is gone (we are currently in the thread)
-        await expect(postListPostItemPreHeaderText).not.toBeVisible();
+        // * Verify the thread is unsaved — the thread_overview button flips back to *.save.button.
+        await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
+        await waitFor(threadOverviewSaveButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to global threads screen, open thread options for thread, tap on open in channel option, and jump to recent messages
         await ThreadScreen.back();

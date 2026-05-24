@@ -117,6 +117,10 @@ describe('Account - User Attributes', () => {
         // Length guard above guarantees all three IDs exist.
         const [fieldId0, fieldId1, fieldId2] = createdFieldIds as [string, string, string];
 
+        await waitFor(element(by.id(`edit_profile_form.customAttributes.${fieldId0}.input`))).
+            toExist().
+            withTimeout(timeouts.TEN_SEC);
+
         if (isAndroid()) {
             // Android: scroll each field into view then tap + clearText + replaceText
             const fillField = async (fieldId: string, value: string, scrollAmount: number) => {

@@ -104,12 +104,17 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Left header that wraps'))).toBeVisible(50);
         await expect(element(by.text('Center header that wraps'))).toBeVisible(50);
 
+        // Verify the left/center body cells are visible BEFORE scrolling right.
+        // The Android table renders the right column beyond the viewport, so the
+        // scroll-right below pushes the left column off-screen — assert left/center
+        // here first to avoid asserting them after they have been scrolled away.
+        await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
+        await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
+
         // Right-side columns render beyond the viewport on Android (the table's
         // minimum column width pushes the third column off-screen). Scroll the
         // table horizontally until the right header/row become visible.
         await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
-        await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
-        await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
         await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
 
         // # Go back to channel list screen

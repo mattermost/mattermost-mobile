@@ -168,10 +168,13 @@ describe('Channels - Archive Channel from Settings', () => {
         // # Channel settings closes but channel info modal remains; dismiss it to reach channel screen
         await ChannelInfoScreen.close();
 
-        // * Verify the close channel button is visible (confirms archived state)
-        await expect(
+        // * Verify the close channel button is visible (confirms archived state).
+        // The archive WS event must propagate through the DB observable to the post draft
+        // component before the archived close-channel button mounts. Poll because a
+        // one-shot expect().toBeVisible() can race the observable update on slower devices.
+        await waitFor(
             ChannelScreen.postDraftArchivedCloseChannelButton,
-        ).toBeVisible();
+        ).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Navigate back to channel list via back button
         await ChannelScreen.back();
@@ -218,10 +221,11 @@ describe('Channels - Archive Channel from Settings', () => {
         // # Channel settings closes but channel info modal remains; dismiss it to reach channel screen
         await ChannelInfoScreen.close();
 
-        // * Verify the close channel button is visible (confirms archived state)
-        await expect(
+        // * Verify the close channel button is visible (confirms archived state).
+        // Poll the assertion — see MM-T4932_1 above for the same DB-observable race.
+        await waitFor(
             ChannelScreen.postDraftArchivedCloseChannelButton,
-        ).toBeVisible();
+        ).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Navigate back to channel list via back button
         await ChannelScreen.back();
@@ -257,10 +261,11 @@ describe('Channels - Archive Channel from Settings', () => {
         // # Channel settings closes but channel info modal remains; dismiss it to reach channel screen
         await ChannelInfoScreen.close();
 
-        // * Verify the close channel button is visible (confirms archived state)
-        await expect(
+        // * Verify the close channel button is visible (confirms archived state).
+        // Poll the assertion — see MM-T4932_1 above for the same DB-observable race.
+        await waitFor(
             ChannelScreen.postDraftArchivedCloseChannelButton,
-        ).toBeVisible();
+        ).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Navigate back to channel list via back button
         await ChannelScreen.back();
@@ -313,13 +318,17 @@ describe('Channels - Archive Channel from Settings', () => {
         // # Channel settings closes but channel info modal remains; dismiss it to reach channel screen
         await ChannelInfoScreen.close();
 
-        // * Verify the archived post draft view is shown (channel is read-only)
-        await expect(ChannelScreen.postDraftArchived).toBeVisible();
+        // * Verify the archived post draft view is shown (channel is read-only).
+        // Poll because the archive WS event must propagate through the DB observable
+        // before the archived post draft renders.
+        await waitFor(ChannelScreen.postDraftArchived).
+            toBeVisible().
+            withTimeout(timeouts.TEN_SEC);
 
         // * Verify the close channel button is visible at the bottom
-        await expect(
+        await waitFor(
             ChannelScreen.postDraftArchivedCloseChannelButton,
-        ).toBeVisible();
+        ).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Navigate back to channel list via back button
         await ChannelScreen.back();

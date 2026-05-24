@@ -200,8 +200,12 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
-        // * Verify channel is archived (draft area shows archived state)
-        await expect(ChannelScreen.postDraftArchived).toBeVisible();
+        // * Verify channel is archived (draft area shows archived state).
+        // Poll because the archive WS event must propagate through the DB observable
+        // before the archived post draft renders.
+        await waitFor(ChannelScreen.postDraftArchived).
+            toBeVisible().
+            withTimeout(timeouts.TEN_SEC);
 
         // * Verify the bookmark no longer exists anywhere in the channel view.
         // Archiving a channel causes the server to send CHANNEL_BOOKMARK_DELETED events,

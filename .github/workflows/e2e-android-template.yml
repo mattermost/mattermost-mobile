@@ -239,7 +239,22 @@ jobs:
             exit 1
           fi
 
+      # Cache the SDK components themselves. Without this, every shard re-runs
+      # sdkmanager (~2-3 min per shard × 20 shards = 40-60 runner-minutes
+      # per workflow). With cache hit, install step skips entirely.
+      - name: Cache Android SDK components
+        id: android-sdk-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/platform-tools
+            /usr/local/lib/android/sdk/emulator
+            /usr/local/lib/android/sdk/platforms/android-35
+            /usr/local/lib/android/sdk/system-images/android-35
+          key: android-sdk-35-google-apis-x86_64-v1
+
       - name: Install Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit != 'true'
         run: |
           for attempt in 1 2 3; do
             echo "SDK install attempt $attempt..."
@@ -257,12 +272,13 @@ jobs:
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
 
+      # AVD-specific cache (created lazily per shard by create_android_emulator.sh).
+      # Smaller key — only covers ~/.android/avd which doesn't overlap with the
+      # SDK components cache above.
       - name: Cache Android Emulator & AVD
         uses: actions/cache@v4
         with:
           path: |
-            /usr/local/lib/android/sdk/system-images
-            /usr/local/lib/android/sdk/emulator
             ~/.android/avd
           key: android-emulator-${{ runner.os }}-${{ runner.arch }}-api-35
           restore-keys: |

@@ -27,7 +27,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Browse Channels', () => {
@@ -195,7 +195,7 @@ describe('Channels - Browse Channels', () => {
             await element(by.id('browse_channels.dropdown_slideup_item.archived_channels')).tap();
         } finally {
             if (isAndroid()) {
-                await device.enableSynchronization();
+                await safeEnableSynchronization();
             }
         }
         await wait(timeouts.ONE_SEC);

@@ -152,10 +152,17 @@ describe('Smoke Test - Channels', () => {
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
 
-        // # Open channel info screen, open edit channel screen, edit channel info, and save changes
+        // # Open channel info screen, open edit channel screen, edit channel info, and save changes.
+        // Use replaceText with the full final value rather than typeText to append.
+        // On Android the initial caret position can land inside the pre-filled
+        // header text, causing typeText('\nheader1\nheader2') to insert the new
+        // lines mid-word (the test previously saw "chann\nheader1\nheader2el e06882"
+        // saved as the channel header).
+        const initialHeader = `Channel header: ${testChannel.display_name.toLowerCase()}`;
+        const updatedHeader = `${initialHeader}\nheader1\nheader2`;
         await ChannelInfoScreen.open();
         await CreateOrEditChannelScreen.openEditChannel();
-        await CreateOrEditChannelScreen.headerInput.typeText('\nheader1\nheader2');
+        await CreateOrEditChannelScreen.headerInput.replaceText(updatedHeader);
         await CreateOrEditChannelScreen.saveButton.tap();
 
         // * Verify on channel info screen and changes have been saved (close channel settings first to return to channel info).

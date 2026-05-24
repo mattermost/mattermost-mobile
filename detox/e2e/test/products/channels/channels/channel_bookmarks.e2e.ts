@@ -43,6 +43,7 @@ describe('Channels - Channel Bookmarks', () => {
     let channelT5609: any;
     let channelT5610: any;
     let bookmarkT5610: any;
+    let bookmarkT5606: any;
     let channelT5612: any;
 
     const getVisibleTextElement = async (text: string, maxIndex = 3) => {
@@ -151,9 +152,13 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5605.id, 'No Favicon Bookmark', 'https://example.com',
         );
-        await ChannelBookmark.apiCreateChannelBookmarkLink(
+        const {bookmark: bT5606} = await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5606.id, 'Emoji Icon Test', 'https://example.com',
         );
+        if (!bT5606?.id) {
+            throw new Error('[beforeAll] Failed to create bookmarkT5606');
+        }
+        bookmarkT5606 = bT5606;
         await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5607.id, 'Revert Emoji Test', 'https://example.com',
         );
@@ -168,6 +173,32 @@ describe('Channels - Channel Bookmarks', () => {
             );
         }
         /* eslint-enable no-await-in-loop */
+
+        // TEMP DIAGNOSTIC — remove once bookmark Android failures are resolved.
+        // Logs the SERVER-side bookmark count per channel after creation, so we can
+        // disambiguate between (a) apiCreateChannelBookmarkLink silently failed for some
+        // channels, vs (b) bookmarks exist on the server but the Android app doesn't
+        // fetch/render them. Tied to investigation of MM-T5605/_7/_9, MM-T5610, MM-T5612.
+        /* eslint-disable no-console, no-await-in-loop */
+        const diagChannels: Array<[string, any]> = [
+            ['T5600', channelT5600], ['T5601', channelT5601], ['T5602', channelT5602],
+            ['T5604', channelT5604], ['T5605', channelT5605], ['T5606', channelT5606],
+            ['T5607', channelT5607], ['T5608', channelT5608], ['T5609', channelT5609],
+            ['T5610', channelT5610], ['T5612', channelT5612],
+        ];
+        for (const [label, ch] of diagChannels) {
+            try {
+                const {bookmarks, error} = await ChannelBookmark.apiGetChannelBookmarks(siteOneUrl, ch.id);
+                if (error) {
+                    console.log(`[BOOKMARK-DIAG] ${label} (${ch.id}) GET error: ${JSON.stringify(error)}`);
+                } else {
+                    console.log(`[BOOKMARK-DIAG] ${label} (${ch.id}) server bookmark count = ${(bookmarks || []).length}`);
+                }
+            } catch (e) {
+                console.log(`[BOOKMARK-DIAG] ${label} (${ch.id}) GET threw: ${String(e).slice(0, 200)}`);
+            }
+        }
+        /* eslint-enable no-console, no-await-in-loop */
 
         // ── Single login + reload to sync all API-created data ────────────────
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -294,7 +325,7 @@ describe('Channels - Channel Bookmarks', () => {
 
         // # Open channel info and tap "Add a bookmark"
         await ChannelInfoScreen.open();
-        await element(by.text('Add a bookmark')).tap();
+        await element(by.id('channel_info.add_bookmark.button')).tap();
 
         // * Verify bottom sheet options appear
         await expect(ChannelBookmarkScreen.addALinkOption).toBeVisible();
@@ -395,7 +426,7 @@ describe('Channels - Channel Bookmarks', () => {
 
         // # Open channel info and tap "Add a bookmark"
         await ChannelInfoScreen.open();
-        await element(by.text('Add a bookmark')).tap();
+        await element(by.id('channel_info.add_bookmark.button')).tap();
 
         // # Tap "Add a link"
         await ChannelBookmarkScreen.addALinkOption.tap();
@@ -471,11 +502,19 @@ describe('Channels - Channel Bookmarks', () => {
         // # Open channel info to see the bookmark
         await ChannelInfoScreen.open();
 
-        // * Verify the bookmark is visible
-        const bookmarkTitle = await getVisibleTextElement('Emoji Icon Test');
+        // * Verify the bookmark is visible. Use the bookmark's stable testID scoped to
+        // channel_info.bookmarks.list to avoid the channel_header ambiguity (same bookmark
+        // also renders in the bookmark bar mounted behind the channel_info modal) and to
+        // avoid flakiness when text rendering is delayed by OG-fetch network requests.
+        const bookmarkEl = element(
+            by.
+                id(`channel_bookmark.${bookmarkT5606.id}`).
+                withAncestor(by.id('channel_info.bookmarks.list')),
+        );
+        await waitFor(bookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Long press on the bookmark to open options
-        await bookmarkTitle.longPress();
+        await bookmarkEl.longPress();
 
         // * Verify bookmark options appear
         await expect(ChannelBookmarkScreen.editOption).toBeVisible();

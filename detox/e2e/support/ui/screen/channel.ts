@@ -619,6 +619,14 @@ class ChannelScreen {
             recent_mentions_page: 'recent_mentions.post_list.post',
         };
 
+        // Wait for the Edit Message modal to close before asserting on the underlying page.
+        // After EditPostScreen.saveButton.tap() the modal dismiss can lag a frame or two
+        // (RNN screen-replace race), so a one-shot assertion below races the underlying
+        // post item that is still occluded by the edit modal.
+        await waitFor(element(by.id('edit_post.screen'))).
+            not.toExist().
+            withTimeout(timeouts.TEN_SEC);
+
         const postItemTestID = locatorTestIDs[locator];
         const postItemElement = `${postItemTestID}.${postId}`;
         const postItemMatcher = by.id(postItemElement);

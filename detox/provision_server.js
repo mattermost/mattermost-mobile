@@ -81,6 +81,10 @@ const REQUIRED_PLUGINS = [
         id: 'mattermost-ai',
         url: 'https://github.com/mattermost/mattermost-plugin-agents/releases/download/v1.14.0/mattermost-plugin-agents-v1.14.0-linux-amd64.tar.gz',
     },
+    {
+        id: 'com.mattermost.calls',
+        url: 'https://github.com/mattermost/mattermost-plugin-calls/releases/download/v1.11.5/mattermost-plugin-calls-v1.11.5-linux-amd64.tar.gz',
+    },
 ];
 
 function request(method, urlPath, body, token) {
@@ -254,6 +258,21 @@ async function configureTestServer(token) {
     // Forcing the flag on here makes MM-T5781 deterministic.
     config.FeatureFlags = config.FeatureFlags || {};
     config.FeatureFlags.CustomProfileAttributes = true;
+
+    // Enable Calls plugin by default on all teams/channels. Without this the
+    // Calls plugin installs but stays disabled, so maestro/flows/calls/* time
+    // out waiting for the call bar to render. Enterprise feature; works with
+    // the trial license ensureTrialLicense() activates above.
+    config.PluginSettings.Plugins = config.PluginSettings.Plugins || {};
+    config.PluginSettings.Plugins['com.mattermost.calls'] = {
+        ...(config.PluginSettings.Plugins['com.mattermost.calls'] || {}),
+        DefaultEnabled: true,
+    };
+
+    // Enable Channel Bookmarks — exercised by maestro/flows/channels/* and
+    // detox channel-bookmark tests. The menu option silently disappears when
+    // this is false.
+    config.ServiceSettings.EnableChannelBookmarks = true;
 
     console.log('[provision] Updating plugin uploads, Marketplace, disabling rate limiting, and removing user caps...');
     const updateRes = await request('PUT', '/api/v4/config', config, token);
