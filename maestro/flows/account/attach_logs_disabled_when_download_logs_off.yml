@@ -21,11 +21,12 @@
 #   server default `true`), so set it explicitly as part of the test
 #   bring-up. Two options:
 #
-#   (a) One-liner (run before `maestro test`):
+#   (a) One-liner (run before `maestro test`).  Note: AllowDownloadLogs
+#       lives under SupportSettings, not ServiceSettings:
 #       curl -sS -X PUT \
 #         -H "Authorization: Bearer $ADMIN_TOKEN" \
 #         -H "Content-Type: application/json" \
-#         -d '{"ServiceSettings":{"AllowDownloadLogs":false}}' \
+#         -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
 #         "$SITE_1_URL/api/v4/config/patch" > /dev/null
 #
 #   (b) Add the patch as a `runScript` step at the top of this flow once
@@ -36,7 +37,7 @@
 #       curl -sS -X PUT \
 #         -H "Authorization: Bearer $ADMIN_TOKEN" \
 #         -H "Content-Type: application/json" \
-#         -d '{"ServiceSettings":{"AllowDownloadLogs":true}}' \
+#         -d '{"SupportSettings":{"AllowDownloadLogs":true}}' \
 #         "$SITE_1_URL/api/v4/config/patch" > /dev/null
 #
 # Flow:

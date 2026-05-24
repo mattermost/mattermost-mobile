@@ -3,6 +3,12 @@
 This file is the authoritative guide for AI agents working in the `detox/` directory.
 Follow these rules exactly. Do not improvise on conventions that are explicitly defined here.
 
+> **Working on Maestro flows?** See `maestro/CLAUDE.md` for flow gotchas
+> (toggle-tap pattern, modal back-nav on iOS 26.3, server preference persistence,
+> `AllowDownloadLogs` path under `SupportSettings`, etc.) and per-flow server-setting
+> requirements. Server provisioning lives in `detox/provision_server.js` and is
+> shared between Detox and Maestro.
+
 ---
 
 ## AGENT SAFETY RULES

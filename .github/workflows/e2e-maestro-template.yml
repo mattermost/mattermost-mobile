@@ -314,11 +314,14 @@ jobs:
           source maestro/.maestro-test-env.sh
           set +a
 
-          echo "==> Patching ServiceSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
+          # AllowDownloadLogs lives under SupportSettings (not ServiceSettings)
+          # in the Mattermost server config — verified during local maestro
+          # iteration against SITE_1_URL.
+          echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
           curl -sS -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{"ServiceSettings":{"AllowDownloadLogs":false}}' \
+            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null
 
           # Always restore the default before exiting this step, regardless
@@ -326,7 +329,7 @@ jobs:
           trap 'curl -sS -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"ServiceSettings\":{\"AllowDownloadLogs\":true}}" \
+            -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
             echo "==> Restored AllowDownloadLogs=true"' EXIT
 
@@ -694,17 +697,20 @@ jobs:
           source maestro/.maestro-test-env.sh
           set +a
 
-          echo "==> Patching ServiceSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
+          # AllowDownloadLogs lives under SupportSettings (not ServiceSettings)
+          # in the Mattermost server config — verified during local maestro
+          # iteration against SITE_1_URL.
+          echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
           curl -sS -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{"ServiceSettings":{"AllowDownloadLogs":false}}' \
+            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null
 
           trap 'curl -sS -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"ServiceSettings\":{\"AllowDownloadLogs\":true}}" \
+            -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
             echo "==> Restored AllowDownloadLogs=true"' EXIT
 

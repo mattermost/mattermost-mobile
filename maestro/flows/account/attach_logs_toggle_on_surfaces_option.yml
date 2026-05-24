@@ -52,30 +52,41 @@ appId: ${MAESTRO_APP_ID}
       id: "report_problem.enable_log_attachments"
     timeout: 10000
 
-# Enable the toggle. The Switch tap toggles state.
+# Tap the toggle switch to turn it ON. Use optional:true so if toggle
+# is already ON (from a prior run's saved preference), the tap is skipped.
 - tapOn:
-    id: "report_problem.enable_log_attachments"
+    id: "report_problem.enable_log_attachments.toggled.false.button"
+    optional: true
 
-# Navigate back from Report Problem to Settings, then dismiss the Settings
-# modal. On iOS 26.3, Maestro's `back` (swipe-back gesture) works for
-# pushed screens but NOT for dismissing a modal from its root. Use the
-# navigation header back button to pop from Settings back to Account.
-- back
+# Wait for the toggle to confirm "on" state. This also gives the async
+# savePreference call time to complete (API + local DB write) before the
+# app is killed.
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.enable_log_attachments.toggled.true.button"
+    timeout: 10000
 
-# Now on Settings screen — dismiss this modal by tapping the back button
-# in the navigation header, which returns us to the Account tab.
-- tapOn:
-    id: "navigation.header.back"
+# Give the async DB write a moment to flush.
+- waitForAnimationToEnd:
+    timeout: 3000
 
-# Confirm tab bar is visible.
+# Navigate back to the Home tab, then into the test channel.
+# On iOS 26.3, Maestro's `back` doesn't dismiss modal-presented screens.
+# Re-launching the app (stopApp + clearState:false) kills and restarts the
+# app without wiping data — user stays logged in, app lands on Home tab.
+- launchApp:
+    stopApp: true
+    clearState: false
+
+# Wait for the app to relaunch and JS bundle to load.
+- waitForAnimationToEnd:
+    timeout: 30000
+
+# Confirm we're on the Home tab with tab bar visible.
 - extendedWaitUntil:
     visible:
       id: "tab_bar.home.tab"
-    timeout: 10000
-
-# Tap Home tab to reach the channel list.
-- tapOn:
-    id: "tab_bar.home.tab"
+    timeout: 15000
 
 # Wait for the channel list to render before navigating into the test channel.
 - extendedWaitUntil:

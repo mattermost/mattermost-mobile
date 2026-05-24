@@ -3,20 +3,15 @@
 #
 # PRE-CONDITIONS (same as MM-T67856_1):
 #   - Trial license active, ReportAProblemType=default, AllowDownloadLogs=true.
-#   - Toggle assumed enabled at the start of this flow. If the toggle starts
-#     disabled the first tap inverts it, and this flow then leaves the toggle
-#     enabled — re-running the flow will produce the opposite result. To
-#     stabilise, either:
-#       (a) Run MM-T67856_2 immediately before this flow as a fixture, or
-#       (b) Tap the toggle twice (off->on->off) — guaranteed end state of off.
-#     We use (b) below to avoid cross-flow ordering.
+#   - Each flow runs with clearState → toggle starts disabled (false).
+#   - Tap twice (off→on→off) for definitive off end-state.
 #
 # Flow:
-#   1. Login + navigate to channel.
+#   1. Login.
 #   2. Account > Settings > Report a Problem.
-#   3. Tap toggle twice — definitive "off" end-state.
-#   4. Back to channel post draft.
-#   5. Tap the attachment quick action.
+#   3. Tap toggle switch twice — definitive "off" end-state.
+#   4. Relaunch app (iOS 26.3 back-nav workaround) → navigate to channel.
+#   5. Tap attachment quick action.
 #   6. Assert `file_attachment.attach_logs` is NOT visible.
 #
 # All testIDs are source-verified — see attach_logs_toggle_on_surfaces_option.yml
@@ -26,8 +21,8 @@ tags:
 appId: ${MAESTRO_APP_ID}
 ---
 - runFlow: ../../utils/login.yml
-- runFlow: ../../utils/navigate_to_channel.yml
 
+# Open Account > Settings > Report a Problem
 - tapOn:
     id: "tab_bar.account.tab"
 - extendedWaitUntil:
@@ -47,17 +42,51 @@ appId: ${MAESTRO_APP_ID}
       id: "report_problem.enable_log_attachments"
     timeout: 10000
 
-# Definitive end-state: tap twice so toggle finishes "off" regardless of
-# starting state.
+# Tap the toggle switch to turn it OFF. The parent container is NOT
+# touchable for toggle type (TOGGLE ∉ TouchableOptionTypes at OptionItem:19).
+# Use optional:true so if toggle is already OFF, the tap is skipped.
 - tapOn:
-    id: "report_problem.enable_log_attachments"
-- tapOn:
-    id: "report_problem.enable_log_attachments"
+    id: "report_problem.enable_log_attachments.toggled.true.button"
+    optional: true
 
-# Back to channel post draft. navigate_to_channel.yml goes via the Channels
-# tab so it's idempotent regardless of stack depth — no `back × N` fragility.
+# Confirm toggle is now OFF (either we just toggled it off, or it was
+# already off — either way, the false button should be visible).
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.enable_log_attachments.toggled.false.button"
+    timeout: 10000
+
+# Give the async savePreference call time to complete the API + DB write.
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Navigate back to the Home tab, then into the test channel.
+# On iOS 26.3, Maestro's `back` doesn't dismiss modal-presented screens.
+# Re-launching the app (stopApp + clearState:false) kills and restarts the
+# app without wiping data — user stays logged in, app lands on Home tab.
+- launchApp:
+    stopApp: true
+    clearState: false
+
+# Wait for the app to relaunch and JS bundle to load.
+- waitForAnimationToEnd:
+    timeout: 30000
+
+# Confirm we're on the Home tab with tab bar visible.
+- extendedWaitUntil:
+    visible:
+      id: "tab_bar.home.tab"
+    timeout: 15000
+
+# Wait for the channel list to render before navigating into the test channel.
+- extendedWaitUntil:
+    visible:
+      id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+    timeout: 10000
+
 - runFlow: ../../utils/navigate_to_channel.yml
 
+# Open the post-draft attachment menu.
 - tapOn:
     id: "channel.post_draft.quick_actions.attachment_action"
 
