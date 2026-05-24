@@ -58,10 +58,19 @@ project(':watermelondb-jsi').projectDir = new File(rootProject.projectDir, '../n
 // null-guard the lookup. That patch only takes effect if gradle compiles
 // Detox from source — hence this `include`.
 //
-// To revert (back to prebuilt AAR), remove the two lines below; gradle will
+// To revert (back to prebuilt AAR), remove the block below; gradle will
 // resolve `com.wix:detox:+` from the maven repo declared at
 // android/build.gradle:37-39.
-include ':detox'
-project(':detox').projectDir = new File(rootProject.projectDir, '../detox/node_modules/detox/android/detox')
+//
+// Guarded on the directory's existence because non-detox builds (notably
+// the maestro Android job in .github/workflows/e2e-maestro-template.yml,
+// which runs `./gradlew :app:assembleRelease` without installing detox's
+// node_modules) would otherwise fail with
+// "Configuring project ':detox' without an existing directory is not allowed".
+def detoxAndroidSrc = new File(rootProject.projectDir, '../detox/node_modules/detox/android/detox')
+if (detoxAndroidSrc.isDirectory()) {
+    include ':detox'
+    project(':detox').projectDir = detoxAndroidSrc
+}
 
 includeBuild(expoAutolinking.reactNativeGradlePlugin)

@@ -239,19 +239,33 @@ jobs:
           ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
 
       - name: Push test fixture into iOS simulator
+        # Required by maestro/flows/channels/channel_bookmark_file.yml: the
+        # iOS document picker can only see files that already exist in the
+        # local File Provider storage at maestro launch time. We drop the
+        # detox image fixture there so the picker's "On My iPhone > Browse"
+        # path can reach it. Android does the equivalent via `adb push` in
+        # the Android job below.
+        #
+        # Best-effort: every command is allowed to fail without failing the
+        # job. `channel_bookmark_file.yml` will surface a missing fixture as
+        # a flow failure if this step couldn't place it.
+        #
+        # The previous implementation used a python one-liner that crashed
+        # with IndexError when the first runtime in simctl's JSON had an
+        # empty device array. Grep-the-UDID-format is simpler and never
+        # raises — if no UDID is found, `set -e` is bypassed by `|| true`.
+        continue-on-error: true
         run: |
-          # Required by maestro/flows/channels/channel_bookmark_file.yml: the
-          # iOS document picker can only see files that already exist in the
-          # local File Provider storage at maestro launch time. We drop the
-          # detox image fixture there so the picker's "On My iPhone > Browse"
-          # path can reach it. Android does the equivalent via `adb push` in
-          # the Android job below. Best-effort: if the path detection fails,
-          # we don't fail the job — channel_bookmark_file.yml will surface the
-          # missing fixture as a flow failure.
-          UDID=$(xcrun simctl list devices booted -j | python3 -c "import sys,json; d=json.load(sys.stdin); print(next(iter(d['devices'].values()))[0]['udid'])")
-          LOCAL_STORAGE=$(find ~/Library/Developer/CoreSimulator/Devices/$UDID/data/Containers/Shared/AppGroup \
+          set +e
+          UDID=$(xcrun simctl list devices booted 2>/dev/null | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
+          if [ -z "$UDID" ]; then
+            echo "Warning: no booted iOS simulator found; skipping fixture push"
+            exit 0
+          fi
+          echo "Resolved booted simulator UDID: $UDID"
+          LOCAL_STORAGE=$(find "$HOME/Library/Developer/CoreSimulator/Devices/$UDID/data/Containers/Shared/AppGroup" \
             -name ".com.apple.mobile_container_manager.metadata.plist" \
-            -exec grep -l "FileProvider.LocalStorage" {} \; | xargs -I{} dirname {} | head -1 || true)
+            -exec grep -l "FileProvider.LocalStorage" {} \; 2>/dev/null | xargs -I{} dirname {} | head -1)
           if [ -n "$LOCAL_STORAGE" ]; then
             mkdir -p "$LOCAL_STORAGE/File Provider Storage"
             cp detox/e2e/support/fixtures/image.png "$LOCAL_STORAGE/File Provider Storage/test_bookmark.png"
