@@ -667,6 +667,35 @@ jobs:
           path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
           echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
 
+      - name: Update shard-duration ledger from junit
+        # Parse per-spec times from the merged junit reports into
+        # detox/.shard-durations.json. The follow-up cache-save step persists
+        # this so the next run's generate-specs has fresh LPT input.
+        # Non-fatal: if no junit files are present (catastrophic shard failure),
+        # the ledger is left untouched.
+        run: |
+          set -e
+          # Detox's per-shard junit lives at detox/artifacts/*/junit*.xml after
+          # download-artifact has unpacked everything.
+          node .github/actions/generate-specs/update-durations.js
+        env:
+          JUNIT_ROOT: detox/artifacts
+          # Match detox's per-shard `${platform}-junit*.xml` filename (written
+          # by junit-report-merger; see detox/save_report.js).
+          JUNIT_NAME_REGEX: "^ios-junit.*\\.xml$"
+          DURATIONS_FILE: detox/.shard-durations.json
+        continue-on-error: true
+
+      - name: Save shard-duration ledger to cache
+        # Uses actions/cache/save@v4 (not actions/cache@v4) so we ALWAYS write
+        # at this step regardless of cache-restore status in generate-specs.
+        # The key matches generate-specs/action.yml's restore key.
+        uses: actions/cache/save@v4
+        if: hashFiles('detox/.shard-durations.json') != ''
+        with:
+          path: detox/.shard-durations.json
+          key: shard-durations-v1-macOS-${{ env.DEVICE_NAME }}-${{ inputs.search_path }}-${{ github.run_id }}
+
       - name: Save report Detox Dependencies
         id: report-link
         run: |

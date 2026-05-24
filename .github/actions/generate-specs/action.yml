@@ -25,6 +25,28 @@ outputs:
 runs:
   using: "composite"
   steps:
+    # Restore the per-spec duration ledger from the actions cache. Used by
+    # split-tests.js's LPT bin-packing to balance shard wall-clock. Cache miss
+    # is non-fatal — split-tests.js falls back to median / uniform default.
+    #
+    # Key scope:
+    #   - Per-platform (so iOS durations don't leak into Android shards and
+    #     vice versa — iOS specs are notably slower than Android on most files).
+    #   - Per-search-path (the iPad job has different durations than the main
+    #     iOS job, and any future product-specific search_path differs too).
+    #   - `-v1` suffix lets us invalidate the cache by bumping the version when
+    #     the duration parser or schema changes.
+    - name: Restore shard-duration ledger
+      uses: actions/cache/restore@v4
+      with:
+        path: detox/.shard-durations.json
+        key: shard-durations-v1-${{ runner.os }}-${{ inputs.device_name }}-${{ inputs.search_path }}
+        # Falls back to the most-recently-saved ledger for any device on this
+        # search_path if the exact device key misses. Still better than no data.
+        restore-keys: |
+          shard-durations-v1-${{ runner.os }}-${{ inputs.device_name }}-
+          shard-durations-v1-${{ runner.os }}-
+
     - name: ci/generate-specs
       id: generate-specs
       env:
@@ -32,6 +54,7 @@ runs:
         SEARCH_PATH: ${{ inputs.search_path }}
         DEVICE_NAME: ${{ inputs.device_name }}
         DEVICE_OS_VERSION: ${{ inputs.device_os_version }}
+        DURATIONS_FILE: detox/.shard-durations.json
       run: |
         set -e
         node ${{ github.action_path }}/split-tests.js | tee output.json

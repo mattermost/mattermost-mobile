@@ -340,6 +340,25 @@ jobs:
           path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
           echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
 
+      - name: Update shard-duration ledger from junit
+        run: |
+          set -e
+          node .github/actions/generate-specs/update-durations.js
+        env:
+          JUNIT_ROOT: detox/artifacts
+          JUNIT_NAME_REGEX: "^android-junit.*\\.xml$"
+          DURATIONS_FILE: detox/.shard-durations.json
+        continue-on-error: true
+
+      - name: Save shard-duration ledger to cache
+        uses: actions/cache/save@v4
+        if: hashFiles('detox/.shard-durations.json') != ''
+        with:
+          path: detox/.shard-durations.json
+          # Android device_name is currently a fixed AVD; key matches the
+          # restore key in .github/actions/generate-specs/action.yml.
+          key: shard-durations-v1-Linux-${{ env.DEVICE_NAME || 'android' }}-${{ inputs.search_path }}-${{ github.run_id }}
+
       - name: Save report Detox Dependencies
         id: report-link
         run: |
