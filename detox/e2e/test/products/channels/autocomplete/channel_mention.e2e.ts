@@ -37,6 +37,16 @@ describe('Autocomplete - Channel Mention', () => {
     let otherChannelMentionAutocomplete: any;
 
     beforeAll(async () => {
+        // Force clean app process. Same wedge pattern as the sibling
+        // channel_post_draft.e2e.ts: when a prior spec on this shard
+        // (typically user_attributes) fails its logout, Detox's WebSocket
+        // to the app is left in a state where the next ServerScreen.connectToServer
+        // hangs for 360s with "Detox can't seem to connect to the test app(s)!".
+        // CI run 26368981355 iOS shard 4 catastrophically failed this entire spec
+        // (testExecError, no tests even enumerated) — same shard as channel_post_draft.
+        // launchApp({newInstance: true}) gives us a fresh process before connectToServer.
+        await device.launchApp({newInstance: true});
+
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;

@@ -495,7 +495,14 @@ jobs:
           echo "✅ Simulator is healthy and ready"
 
       - name: Start Metro Bundler and Run Detox E2E Tests
-        timeout-minutes: 60
+        # Bumped from 60 to 180 min: with ~6 specs per shard averaging 5-15 min each,
+        # the 60min step timeout was being hit silently — GitHub kills the step but
+        # `continue-on-error: true` masks it, and the tests that didn't run get
+        # dropped from the result count. iOS run 26368981355 had 524 tests vs
+        # Android's 537 (same codebase, same 124 spec files) — the 13-test gap was
+        # tail tests on shards that timed out at this step. 180 matches the job
+        # timeout above so the step uses the full available budget.
+        timeout-minutes: 180
         continue-on-error: true # We want to run all the tests
         run: |
           # Start Metro bundler in background
