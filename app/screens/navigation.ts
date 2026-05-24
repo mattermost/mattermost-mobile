@@ -117,13 +117,16 @@ export function bottomSheet(renderContent: () => React.ReactNode, snapPoints: Ar
 }
 
 export async function dismissBottomSheet() {
-    const hasGenericSheet = NavigationStore.isScreenInStack(Screens.GENERIC_BOTTOM_SHEET);
     const hasRegularSheet = NavigationStore.isScreenInStack(Screens.BOTTOM_SHEET);
-    if (!hasGenericSheet && !hasRegularSheet) {
+    const hasGenericSheet = NavigationStore.isScreenInStack(Screens.GENERIC_BOTTOM_SHEET);
+    if (!hasRegularSheet && !hasGenericSheet) {
         return;
     }
     DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
-    await NavigationStore.waitUntilScreensIsRemoved(hasGenericSheet ? Screens.GENERIC_BOTTOM_SHEET : Screens.BOTTOM_SHEET);
+
+    // Prefer the regular BOTTOM_SHEET when present (historical contract); fall back to
+    // GENERIC_BOTTOM_SHEET so callers using the generic variant aren't silently ignored.
+    await NavigationStore.waitUntilScreensIsRemoved(hasRegularSheet ? Screens.BOTTOM_SHEET : Screens.GENERIC_BOTTOM_SHEET);
     BottomSheetStore.reset();
     await new Promise((resolve) => setTimeout(resolve, 250));
 }

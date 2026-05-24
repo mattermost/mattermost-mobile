@@ -47,6 +47,9 @@ env:
   SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL }}
   TYPE: ${{ inputs.run-type }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+  # AWS SDK v3 (used by detox/utils/artifacts.js) requires a region — auto-detects
+  # from this env var. Matches the detox iOS/Android templates' env block.
+  AWS_REGION: "us-east-1"
 
 jobs:
   e2e-maestro-ios:
@@ -278,7 +281,7 @@ jobs:
           cd detox
           npm ci --prefer-offline --no-audit --no-fund
           node -e "
-            const {parseMaestroReport} = require('./utils/maestro_report');
+            const {parseMaestroReport, generateMaestroHtmlReport} = require('./utils/maestro_report');
             const summary = parseMaestroReport('../build/maestro-report.xml');
             const fs = require('fs');
             if (summary) {
@@ -292,6 +295,17 @@ jobs:
                 'PERCENTAGE=' + s.passPercent,
               ];
               output.forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
+
+              // Generate a rich HTML report (stats + per-flow drill-down with
+              // inline screenshots + log links). Lives next to maestro-artifacts/
+              // so relative <img src> URLs resolve when viewed from S3.
+              generateMaestroHtmlReport({
+                xmlPath: '../build/maestro-report.xml',
+                artifactsDir: '../build/maestro-artifacts',
+                outputPath: '../build/maestro-report.html',
+                platform: 'iOS',
+                commitSha: process.env.GITHUB_SHA || '',
+              });
             } else {
               console.log('No Maestro report found — marking as failure');
               ['FAILURES=1','PASSES=0','TOTAL=0','ERRORS=1','SKIPPED=0','PERCENTAGE=0','NO_REPORT=true'].forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
@@ -322,7 +336,10 @@ jobs:
         env:
           S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
         run: |
-          echo "TARGET_URL=https://${S3_BUCKET:-mattermost-detox-report}.s3.amazonaws.com/maestro-ios-${{ github.run_id }}/maestro-ios/maestro-report.xml" >> "$GITHUB_OUTPUT"
+          # Point at the HTML report generated above. It's uploaded inside
+          # detox/artifacts/maestro-ios/, which lands at the maestro-ios/
+          # path segment under the S3 prefix.
+          echo "TARGET_URL=https://${S3_BUCKET:-mattermost-detox-report}.s3.amazonaws.com/maestro-ios-${{ github.run_id }}/maestro-ios/maestro-report.html" >> "$GITHUB_OUTPUT"
 
       - name: Determine Status
         id: determine-status
@@ -386,11 +403,31 @@ jobs:
       - name: Verify Maestro installation
         run: ~/.maestro/bin/maestro --version
 
-      - name: Download Android APK Build
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+      # Maestro requires a self-contained APK (JS bundled, no Metro). The detox
+      # `build-android-apk` job produces an `assembleDebug` APK that expects a
+      # Metro dev server at localhost:8081 — fine for detox (which starts Metro
+      # in `detox/create_android_emulator.sh:108,125`) but unusable for maestro.
+      # So we build a release APK locally here. The release variant bundles JS
+      # via the RN gradle plugin.
+      #
+      # We don't `MATTERMOST_RELEASE_STORE_FILE` in this job's gradle.properties,
+      # so `android/app/build.gradle:156` makes the `release` build type fall
+      # back to the debug keystore — enough for `adb install` on the emulator.
+      - name: ci/setup-java
+        uses: actions/setup-java@v4
         with:
-          name: android-build-files-${{ github.run_id }}
-          path: mobile-artifacts/apk
+          distribution: temurin
+          java-version: "17"
+
+      - name: ci/jetify-android-libraries
+        run: ./node_modules/.bin/jetify
+
+      - name: Build Android Release APK for Maestro
+        env:
+          ORG_GRADLE_PROJECT_jvmargs: -Xmx6g
+        run: |
+          cd android
+          ./gradlew :app:assembleRelease --no-daemon
 
       - name: Seed test data
         run: |
@@ -512,10 +549,12 @@ jobs:
 
       - name: Install APK on emulator
         run: |
-          APK_PATH=$(find mobile-artifacts/apk -name "*.apk" | head -1)
+          # Locally-built release APK (single fat APK because gradle.properties
+          # does not enable `enableSeparateBuildPerCPUArchitecture`).
+          APK_PATH=$(find android/app/build/outputs/apk/release -name "app-release.apk" -o -name "app-*-release.apk" | head -1)
           if [ -z "$APK_PATH" ]; then
-            echo "Error: Could not find APK in mobile-artifacts/apk/"
-            ls -la mobile-artifacts/apk/ || true
+            echo "Error: Could not find release APK in android/app/build/outputs/apk/release/"
+            ls -la android/app/build/outputs/apk/release/ || true
             exit 1
           fi
           echo "Installing APK from: $APK_PATH"
@@ -571,7 +610,7 @@ jobs:
           cd detox
           npm ci --prefer-offline --no-audit --no-fund
           node -e "
-            const {parseMaestroReport} = require('./utils/maestro_report');
+            const {parseMaestroReport, generateMaestroHtmlReport} = require('./utils/maestro_report');
             const summary = parseMaestroReport('../build/maestro-report.xml');
             const fs = require('fs');
             if (summary) {
@@ -585,6 +624,16 @@ jobs:
                 'PERCENTAGE=' + s.passPercent,
               ];
               output.forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
+
+              // Generate a rich HTML report (stats + per-flow drill-down with
+              // inline screenshots + log links). See maestro iOS notes above.
+              generateMaestroHtmlReport({
+                xmlPath: '../build/maestro-report.xml',
+                artifactsDir: '../build/maestro-artifacts',
+                outputPath: '../build/maestro-report.html',
+                platform: 'Android',
+                commitSha: process.env.GITHUB_SHA || '',
+              });
             } else {
               console.log('No Maestro report found — marking as failure');
               ['FAILURES=1','PASSES=0','TOTAL=0','ERRORS=1','SKIPPED=0','PERCENTAGE=0','NO_REPORT=true'].forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
@@ -615,7 +664,8 @@ jobs:
         env:
           S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
         run: |
-          echo "TARGET_URL=https://${S3_BUCKET:-mattermost-detox-report}.s3.amazonaws.com/maestro-android-${{ github.run_id }}/maestro-android/maestro-report.xml" >> "$GITHUB_OUTPUT"
+          # Point at the HTML report generated above.
+          echo "TARGET_URL=https://${S3_BUCKET:-mattermost-detox-report}.s3.amazonaws.com/maestro-android-${{ github.run_id }}/maestro-android/maestro-report.html" >> "$GITHUB_OUTPUT"
 
       - name: Determine Status
         id: determine-status

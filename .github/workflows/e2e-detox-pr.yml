@@ -278,7 +278,12 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/detox-ios-tests
-          description: ${{ needs.run-ios-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results' || format('Completed with {0} failures', needs.run-ios-tests.outputs.FAILURES || '?') }}
+          # Description rule: catastrophic fallback first (-1), then all-passing case,
+          # otherwise show pass/total + failure count.
+          description: >-
+            ${{ needs.run-ios-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
+              || needs.run-ios-tests.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-ios-tests.outputs.TOTAL)
+              || format('{0}/{1} passed ({2} failures)', needs.run-ios-tests.outputs.PASSES || '?', needs.run-ios-tests.outputs.TOTAL || '?', needs.run-ios-tests.outputs.FAILURES || '?') }}
           status: ${{ needs.run-ios-tests.outputs.STATUS || 'failure' }}
           target_url: ${{ needs.run-ios-tests.outputs.TARGET_URL }}
 
@@ -295,7 +300,10 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/detox-android-tests
-          description: ${{ needs.run-android-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results' || format('Completed with {0} failures', needs.run-android-tests.outputs.FAILURES || '?') }}
+          description: >-
+            ${{ needs.run-android-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
+              || needs.run-android-tests.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-android-tests.outputs.TOTAL)
+              || format('{0}/{1} passed ({2} failures)', needs.run-android-tests.outputs.PASSES || '?', needs.run-android-tests.outputs.TOTAL || '?', needs.run-android-tests.outputs.FAILURES || '?') }}
           status: ${{ needs.run-android-tests.outputs.STATUS || 'failure' }}
           target_url: ${{ needs.run-android-tests.outputs.TARGET_URL }}
 
@@ -331,7 +339,10 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/detox-ipad-tests
-          description: ${{ needs.run-ios-ipad-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results' || format('Completed with {0} failures', needs.run-ios-ipad-tests.outputs.FAILURES || '?') }}
+          description: >-
+            ${{ needs.run-ios-ipad-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
+              || needs.run-ios-ipad-tests.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-ios-ipad-tests.outputs.TOTAL)
+              || format('{0}/{1} passed ({2} failures)', needs.run-ios-ipad-tests.outputs.PASSES || '?', needs.run-ios-ipad-tests.outputs.TOTAL || '?', needs.run-ios-ipad-tests.outputs.FAILURES || '?') }}
           status: ${{ needs.run-ios-ipad-tests.outputs.STATUS || 'failure' }}
           target_url: ${{ needs.run-ios-ipad-tests.outputs.TARGET_URL }}
 
@@ -352,8 +363,13 @@ jobs:
   run-maestro-android:
     if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
     name: Maestro Android
+    # NOTE: We deliberately do NOT depend on build-android-apk. The detox APK is
+    # an `assembleDebug` build that skips JS bundling and expects a Metro dev
+    # server at runtime (detox starts Metro itself, maestro does not). Maestro
+    # builds its own JS-bundled APK via `assembleRelease` inside its own job —
+    # see e2e-maestro-template.yml. This also lets maestro android start as
+    # soon as provision-servers finishes instead of waiting on the detox build.
     needs:
-      - build-android-apk
       - provision-servers
     uses: ./.github/workflows/e2e-maestro-template.yml
     with:
@@ -363,6 +379,46 @@ jobs:
       MM_TEST_SERVER_URL: ${{ inputs.SITE_2_URL }}
     secrets: inherit
 
+  update-final-status-maestro-ios:
+    runs-on: ubuntu-22.04
+    if: always() && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
+    needs:
+      - run-maestro-ios
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
+          context: e2e/maestro-ios-tests
+          description: >-
+            ${{ needs.run-maestro-ios.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
+              || needs.run-maestro-ios.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-maestro-ios.outputs.TOTAL)
+              || format('{0}/{1} passed ({2} failures)', needs.run-maestro-ios.outputs.PASSES || '?', needs.run-maestro-ios.outputs.TOTAL || '?', needs.run-maestro-ios.outputs.FAILURES || '?') }}
+          status: ${{ needs.run-maestro-ios.outputs.STATUS || 'failure' }}
+          target_url: ${{ needs.run-maestro-ios.outputs.TARGET_URL }}
+
+  update-final-status-maestro-android:
+    runs-on: ubuntu-22.04
+    if: always() && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+    needs:
+      - run-maestro-android
+    steps:
+      - uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
+          context: e2e/maestro-android-tests
+          description: >-
+            ${{ needs.run-maestro-android.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
+              || needs.run-maestro-android.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-maestro-android.outputs.TOTAL)
+              || format('{0}/{1} passed ({2} failures)', needs.run-maestro-android.outputs.PASSES || '?', needs.run-maestro-android.outputs.TOTAL || '?', needs.run-maestro-android.outputs.FAILURES || '?') }}
+          status: ${{ needs.run-maestro-android.outputs.STATUS || 'failure' }}
+          target_url: ${{ needs.run-maestro-android.outputs.TARGET_URL }}
+
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR
     runs-on: ubuntu-22.04
@@ -370,8 +426,8 @@ jobs:
       - update-final-status-ios
       - update-final-status-android
       - update-final-status-ipad
-      - run-maestro-ios
-      - run-maestro-android
+      - update-final-status-maestro-ios
+      - update-final-status-maestro-android
     # IMPORTANT: !cancelled() prevents label removal when the workflow is cancelled
     # (e.g. by concurrency cancel-in-progress). Without this, Matterwick sees the
     # label removed and deletes the test servers while the replacement run is still
