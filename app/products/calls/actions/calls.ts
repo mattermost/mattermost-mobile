@@ -17,6 +17,12 @@ import {
     showErrorAlertOnClose,
 } from '@calls/alerts';
 import {
+    endNativeCall,
+    mirrorMuteToNativeCall,
+    registerOutgoingNativeCall,
+    reportNativeCallConnected,
+} from '@calls/native_call';
+import {
     getCallsConfig,
     getCallsState,
     getChannelsWithCalls,
@@ -34,22 +40,20 @@ import {
 } from '@calls/state';
 import {type AudioDevice, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
 import {areGroupCallsAllowed} from '@calls/utils';
-import {General, Preferences, Screens} from '@constants';
+import {General, Screens} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
-import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getConfig, getCurrentTeamId, getLicense, setCurrentTeamId} from '@queries/servers/system';
+import {getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
 import {getThreadById} from '@queries/servers/thread';
-import {getCurrentUser, getUserById} from '@queries/servers/user';
+import {getCurrentUser} from '@queries/servers/user';
 import {navigateToRoot, dismissAllRoutesAndPopToScreen, navigateToScreen} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
-import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/user';
+import {isSystemAdmin} from '@utils/user';
 
 import {newConnection} from '../connection/connection';
 
@@ -241,14 +245,21 @@ export const joinCall = async (
     setSpeakerphoneOn(false);
     newCurrentCall(serverUrl, channelId, userId);
 
+    // Register with the system call UI so the user gets lock-screen /
+    // control-center controls if they background or lock mid-call. Skip
+    // when a mapping already exists — that means we're inside the
+    // inbound-push flow and the native layer already reported the call.
+    const ownedNativeUUID = await registerOutgoingNativeCall(serverUrl, channelId, rootId);
+
     try {
         connection = await newConnection(serverUrl, channelId, (err?: Error) => {
             myselfLeftCall();
+            endNativeCall(serverUrl, channelId, err ? 'failed' : 'remoteEnded');
             if (err) {
                 logDebug('calls: error on close', getFullErrorMessage(err));
                 showErrorAlertOnClose(err, intl);
             }
-        }, setScreenShareURL, hasMicPermission, title, rootId);
+        }, setScreenShareURL, hasMicPermission, intl, title, rootId);
     } catch (error) {
         await forceLogoutIfNecessary(serverUrl, error);
         return {error};
@@ -258,6 +269,7 @@ export const joinCall = async (
         const sessionId = await connection.waitForPeerConnection();
 
         setCurrentCallConnected(channelId, sessionId);
+        reportNativeCallConnected(ownedNativeUUID);
 
         // Follow the thread.
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -318,12 +330,14 @@ export const leaveCallConfirmation = async (
 export const muteMyself = () => {
     if (connection) {
         connection.mute();
+        mirrorMuteToNativeCall(true);
     }
 };
 
 export const unmuteMyself = () => {
     if (connection) {
         connection.unmute();
+        mirrorMuteToNativeCall(false);
     }
 };
 
@@ -408,16 +422,10 @@ export const getEndCallMessage = async (serverUrl: string, channelId: string, cu
     }, {numParticipants: numSessions, displayName: channel.displayName});
 
     if (channel.type === General.DM_CHANNEL) {
-        const otherID = getUserIdFromChannelName(currentUserId, channel.name);
-        const otherUser = await getUserById(database, otherID);
-        const license = await getLicense(database);
-        const config = await getConfig(database);
-        const preferences = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
-        const displaySetting = getTeammateNameDisplaySetting(preferences, config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
         msg = intl.formatMessage({
             id: 'mobile.calls_end_msg_dm',
             defaultMessage: 'Are you sure you want to end the call with {displayName}?',
-        }, {displayName: displayUsername(otherUser, intl.locale, displaySetting)});
+        }, {displayName: channel.displayName});
     }
 
     return msg;

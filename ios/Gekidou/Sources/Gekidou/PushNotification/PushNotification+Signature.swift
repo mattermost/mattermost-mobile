@@ -12,6 +12,12 @@ extension PushNotification {
         return self.verifySignature(notification.userInfo)
     }
     public func verifySignature(_ userInfo: [AnyHashable : Any]) -> Bool {
+        return verifySignature(userInfo, storedDeviceToken: Database.default.getDeviceToken())
+    }
+    public func verifyVoIPSignature(_ userInfo: [AnyHashable : Any]) -> Bool {
+        return verifySignature(userInfo, storedDeviceToken: Database.default.getVoIPDeviceToken())
+    }
+    private func verifySignature(_ userInfo: [AnyHashable : Any], storedDeviceToken: String?) -> Bool {
         guard let signature =  userInfo["signature"] as? String
         else {
             // Backward compatibility with old push proxies
@@ -142,7 +148,7 @@ extension PushNotification {
             return false
         }
 
-        guard let storedDeviceToken = Database.default.getDeviceToken()
+        guard let storedDeviceToken = storedDeviceToken
         else {
             GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: No device token")
             return false

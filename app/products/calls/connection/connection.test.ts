@@ -33,7 +33,6 @@ jest.mock('react-native-webrtc', () => ({
 jest.mock('@calls/connection/foreground_service', () => ({
     foregroundServiceStart: jest.fn(),
     foregroundServiceStop: jest.fn(),
-    foregroundServiceSetup: jest.fn(),
 }));
 
 describe('newConnection', () => {
@@ -78,6 +77,8 @@ describe('newConnection', () => {
             failed: [],
         },
     };
+
+    const mockIntl = {formatMessage: jest.fn((m) => m.defaultMessage)} as unknown as import('react-intl').IntlShape;
 
     beforeAll(() => {
         // eslint-disable-next-line
@@ -164,6 +165,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             true,
+            mockIntl,
         );
         expect(connection).toBeDefined();
 
@@ -207,6 +209,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             true,
+            mockIntl,
         );
 
         // First unmute should use addStream
@@ -239,6 +242,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             false,
+            mockIntl,
         );
 
         connection.raiseHand();
@@ -265,6 +269,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             false,
+            mockIntl,
         );
 
         const emoji = {name: 'thumbsup', unified: '1F44D'};
@@ -297,6 +302,7 @@ describe('newConnection', () => {
             mockCloseCb,
             () => {},
             false,
+            mockIntl,
         );
 
         // eslint-disable-next-line
@@ -332,6 +338,7 @@ describe('newConnection', () => {
             mockCloseCb,
             () => {},
             false,
+            mockIntl,
         );
 
         // eslint-disable-next-line
@@ -349,6 +356,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             true,
+            mockIntl,
         );
 
         expect(getUserMedia).toHaveBeenCalledWith({
@@ -406,6 +414,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             true,
+            mockIntl,
         );
         expect(connection).toBeDefined();
 
@@ -491,6 +500,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             true,
+            mockIntl,
         );
         expect(connection).toBeDefined();
 
@@ -549,7 +559,7 @@ describe('newConnection', () => {
         // @ts-ignore
         parseRTCStats.mockImplementation(() => mockRTCStats);
 
-        const connection = await newConnection('http://localhost:8065', 'channelID', () => {}, () => {}, false);
+        const connection = await newConnection('http://localhost:8065', 'channelID', () => {}, () => {}, false, mockIntl);
         expect(connection).toBeDefined();
         expect(joinHandler).toHaveBeenCalled();
         await joinPromise;
@@ -562,6 +572,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             true,
+            mockIntl,
         );
         expect(connection).toBeDefined();
 
@@ -602,6 +613,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             true,
+            mockIntl,
         );
         expect(connection).toBeDefined();
 

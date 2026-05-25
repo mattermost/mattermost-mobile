@@ -6,6 +6,7 @@ import RNKeychain
 import RNNotifications
 import RNSentry
 import react_native_paste_input
+import mattermost_calls_native
 import mattermost_rnutils
 import mattermost_hardware_keyboard
 import TurboLogIOSNative
@@ -75,6 +76,11 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
 
         // Configure Gekidou to use TurboLog via wrapper
         GekidouWrapper.default.configureTurboLogForGekidou()
+
+        // Bootstrap @mattermost/calls-native: allocates the singleton
+        // PKPushRegistry + CXProvider on the main queue, synchronously,
+        // before any VoIP push delegate can fire.
+        CallsBridge.shared.bootstrap()
 
         #if canImport(mattermost_intune)
         // Initialize Intune MAM delegates BEFORE React Native

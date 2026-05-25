@@ -121,20 +121,10 @@ jest.mock('@actions/remote/session', () => ({
 
 jest.mock('@queries/servers/user', () => ({
     getCurrentUser: jest.fn(),
-    getUserById: jest.fn(),
 }));
 
 jest.mock('@queries/servers/channel', () => ({
     getChannelById: jest.fn(),
-}));
-
-jest.mock('@queries/servers/system', () => ({
-    getLicense: jest.fn(),
-    getConfig: jest.fn(),
-}));
-
-jest.mock('@queries/servers/preference', () => ({
-    queryDisplayNamePreferences: jest.fn(),
 }));
 
 const addFakeCall = (serverUrl: string, channelId: string) => {
@@ -1086,10 +1076,6 @@ describe('Actions.Calls', () => {
         });
 
         const getChannelById = require('@queries/servers/channel').getChannelById;
-        const getUserById = require('@queries/servers/user').getUserById;
-        const getLicense = require('@queries/servers/system').getLicense;
-        const getConfig = require('@queries/servers/system').getConfig;
-        const queryDisplayNamePreferences = require('@queries/servers/preference').queryDisplayNamePreferences;
 
         // Test when server cannot be found.
         const result1 = await CallsActions.getEndCallMessage('server2', 'channel-1', 'user1', intl);
@@ -1176,27 +1162,11 @@ describe('Actions.Calls', () => {
         getChannelById.mockResolvedValueOnce({
             id: 'channel-2',
             type: 'D',
-            name: 'user1__user2',
             displayName: 'User Two',
         });
 
-        getUserById.mockResolvedValueOnce({
-            id: 'user2',
-            username: 'user2',
-            firstName: 'User',
-            lastName: 'Two',
-        });
-
-        getLicense.mockResolvedValueOnce({});
-        getConfig.mockResolvedValueOnce({
-            TeammateNameDisplay: 'username',
-        });
-        queryDisplayNamePreferences.mockReturnValueOnce({
-            fetch: () => Promise.resolve([]),
-        });
-
         const result3 = await CallsActions.getEndCallMessage('server1', 'channel-2', 'user1', intl);
-        expect(result3).toBe('Are you sure you want to end the call with user2?');
+        expect(result3).toBe('Are you sure you want to end the call with User Two?');
     });
 
     it('endCall', async () => {

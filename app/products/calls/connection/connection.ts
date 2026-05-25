@@ -9,11 +9,7 @@ import InCallManager from 'react-native-incall-manager';
 import {mediaDevices, MediaStream, MediaStreamTrack, registerGlobals, RTCSessionDescription} from 'react-native-webrtc';
 
 import {setPreferredAudioRoute, setSpeakerphoneOn} from '@calls/actions/calls';
-import {
-    foregroundServiceStart,
-    foregroundServiceStop,
-    foregroundServiceSetup,
-} from '@calls/connection/foreground_service';
+import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/foreground_service';
 import {processMeanOpinionScore, setAudioDeviceInfo} from '@calls/state';
 import {AudioDevice, type AudioDeviceInfo, type AudioDeviceInfoRaw, type CallsConnection} from '@calls/types/calls';
 import {getICEServersConfigs} from '@calls/utils';
@@ -26,16 +22,12 @@ import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
 import type {EmojiData} from '@mattermost/calls/lib/types';
+import type {IntlShape} from 'react-intl';
 
 const peerConnectTimeout = 5000;
 const rtcMonitorInterval = 10000;
 
 const InCallManagerEmitter = new NativeEventEmitter(NativeModules.InCallManager);
-
-// Setup the foreground service channel
-if (Platform.OS === 'android') {
-    foregroundServiceSetup();
-}
 
 export async function newConnection(
     serverUrl: string,
@@ -43,6 +35,7 @@ export async function newConnection(
     closeCb: (err?: Error) => void,
     setScreenShareURL: (url: string) => void,
     hasMicPermission: boolean,
+    intl: IntlShape,
     title?: string,
     rootId?: string,
 ) {
@@ -359,7 +352,7 @@ export async function newConnection(
             });
 
             // To allow us to use microphone in the background
-            await foregroundServiceStart();
+            foregroundServiceStart(intl);
         }
 
         // We default to speakerphone, but not if the WiredHeadset is plugged in.

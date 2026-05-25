@@ -1,0 +1,58 @@
+buildscript {
+  ext.safeExtGet = {prop, fallback ->
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+  }
+  repositories {
+    google()
+    gradlePluginPortal()
+  }
+  def kotlin_version = rootProject.ext.has('kotlinVersion') ? rootProject.ext.get('kotlinVersion') : "2.2.21"
+  dependencies {
+    classpath("com.android.tools.build:gradle:8.7.2")
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+  }
+}
+
+def isNewArchitectureEnabled() {
+    return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+if (isNewArchitectureEnabled()) {
+    apply plugin: 'com.facebook.react'
+}
+
+android {
+  compileSdkVersion safeExtGet('compileSdkVersion', 36)
+  namespace "com.mattermost.callsnative"
+
+  defaultConfig {
+      minSdkVersion safeExtGet('minSdkVersion', 24)
+      targetSdkVersion safeExtGet('targetSdkVersion', 36)
+      buildConfigField("boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString())
+  }
+
+  sourceSets {
+    main {
+        if (isNewArchitectureEnabled()) {
+            java.srcDirs += ['src/newarch']
+        } else {
+            java.srcDirs += ['src/oldarch']
+        }
+    }
+  }
+}
+
+repositories {
+  maven {
+      // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+      url "$projectDir/../node_modules/react-native/android"
+  }
+  mavenCentral()
+  google()
+}
+
+dependencies {
+    implementation 'com.facebook.react:react-native'
+}

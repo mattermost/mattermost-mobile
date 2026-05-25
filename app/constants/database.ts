@@ -83,6 +83,7 @@ export const SYSTEM_IDENTIFIERS = {
 
 export const GLOBAL_IDENTIFIERS = {
     DEVICE_TOKEN: 'deviceToken',
+    VOIP_DEVICE_TOKEN: 'voipDeviceToken',
     DONT_ASK_FOR_REVIEW: 'dontAskForReview',
     FIRST_LAUNCH: 'firstLaunch',
     LAST_ASK_FOR_REVIEW: 'lastAskForReview',

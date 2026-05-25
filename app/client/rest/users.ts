@@ -40,7 +40,7 @@ export interface ClientUsersMix {
     autocompleteUsers: (name: string, teamId: string, channelId?: string, options?: Record<string, any>) => Promise<{users: UserProfile[]; out_of_channel?: UserProfile[]; agents?: UserProfile[]}>;
     getSessions: (userId: string) => Promise<Session[]>;
     checkUserMfa: (loginId: string) => Promise<{mfa_required: boolean}>;
-    setExtraSessionProps: (deviceId: string, notificationsEnabled: boolean, version: string | null, groupLabel?: RequestGroupLabel) => Promise<{}>;
+    setExtraSessionProps: (deviceId: string, notificationsEnabled: boolean, version: string | null, voipDeviceId?: string, groupLabel?: RequestGroupLabel) => Promise<{}>;
     searchUsers: (term: string, options: SearchUserOptions) => Promise<UserProfile[]>;
     getStatusesByIds: (userIds: string[]) => Promise<UserStatus[]>;
     getStatus: (userId: string, groupLabel?: RequestGroupLabel) => Promise<UserStatus>;
@@ -381,16 +381,20 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    setExtraSessionProps = async (deviceId: string, deviceNotificationDisabled: boolean, version: string | null, groupLabel?: RequestGroupLabel) => {
+    setExtraSessionProps = async (deviceId: string, deviceNotificationDisabled: boolean, version: string | null, voipDeviceId?: string, groupLabel?: RequestGroupLabel) => {
+        const body: Record<string, string> = {
+            device_id: deviceId,
+            device_notification_disabled: deviceNotificationDisabled ? 'true' : 'false',
+            mobile_version: version || '',
+        };
+        if (voipDeviceId) {
+            body.voip_device_id = voipDeviceId;
+        }
         return this.doFetch(
             `${this.getUsersRoute()}/sessions/device`,
             {
                 method: 'put',
-                body: {
-                    device_id: deviceId,
-                    device_notification_disabled: deviceNotificationDisabled ? 'true' : 'false',
-                    mobile_version: version || '',
-                },
+                body,
                 groupLabel,
             },
         );
