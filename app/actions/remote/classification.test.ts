@@ -27,6 +27,11 @@ jest.mock('@store/system_property_store', () => ({
     getGroupIdByName: jest.fn(),
 }));
 
+jest.mock('@actions/local/properties', () => ({
+    hydratePropertyStore: jest.fn().mockResolvedValue(undefined),
+}));
+
+const {hydratePropertyStore} = require('@actions/local/properties');
 const {registerGroupName, setPropertyFields, updatePropertyValues} = require('@store/system_property_store');
 const mockedGetConfigValue = jest.mocked(getConfigValue);
 
@@ -214,6 +219,26 @@ describe('fetchClassificationBanner', () => {
         expect(setPropertyFields).not.toHaveBeenCalled();
         expect(updatePropertyValues).not.toHaveBeenCalled();
     });
+
+    it('should call hydratePropertyStore as offline fallback when network client throws', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyFields.mockRejectedValueOnce(new Error('network failure'));
+
+        await fetchClassificationBanner(serverUrl);
+
+        expect(hydratePropertyStore).toHaveBeenCalledWith(serverUrl);
+    });
+
+    it('should not call hydratePropertyStore on the success path', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+        await fetchClassificationBanner(serverUrl);
+
+        expect(hydratePropertyStore).not.toHaveBeenCalled();
+    });
 });
 
 describe('fetchChannelClassificationValue', () => {
@@ -281,5 +306,23 @@ describe('fetchChannelClassificationValue', () => {
 
         expect(result).toEqual({error: networkError});
         expect(updatePropertyValues).not.toHaveBeenCalled();
+    });
+
+    it('should call hydratePropertyStore as offline fallback when network client throws', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyValues.mockRejectedValueOnce(new Error('network failure'));
+
+        await fetchChannelClassificationValue(serverUrl, channelId);
+
+        expect(hydratePropertyStore).toHaveBeenCalledWith(serverUrl);
+    });
+
+    it('should not call hydratePropertyStore on the success path', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]);
+
+        await fetchChannelClassificationValue(serverUrl, channelId);
+
+        expect(hydratePropertyStore).not.toHaveBeenCalled();
     });
 });

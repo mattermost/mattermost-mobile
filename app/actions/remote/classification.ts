@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {hydratePropertyStore} from '@actions/local/properties';
 import {
     CLASSIFICATIONS_CHANNEL_OBJECT_TYPE,
     CLASSIFICATIONS_FIELD_TARGET_ID,
@@ -56,6 +57,7 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
         return {};
     } catch (error) {
         logError('fetchClassificationBanner', 'Failed to fetch classification banner data', error);
+        await hydratePropertyStore(serverUrl);
         return {error};
     }
 }
@@ -86,6 +88,7 @@ export async function fetchChannelClassificationValue(serverUrl: string, channel
         return {};
     } catch (error) {
         logError('fetchChannelClassificationValue', 'Failed to fetch channel classification value', {serverUrl, channelId}, error);
+        await hydratePropertyStore(serverUrl);
         return {error};
     }
 }

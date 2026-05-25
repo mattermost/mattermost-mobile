@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {persistPropertyStoreSnapshot} from '@actions/local/properties';
 import {CallsManager} from '@calls/calls_manager';
 import DatabaseManager from '@database/manager';
 import {getAllServerCredentials} from '@init/credentials';
@@ -13,6 +14,7 @@ import SessionManager from '@managers/session_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import {registerPersistCallback} from '@store/system_property_store';
 
 // Controls whether the main initialization (database, etc...) is done, either on app launch
 // or on the Share Extension, for example.
@@ -42,6 +44,7 @@ export async function initialize() {
         await DatabaseManager.init(serverUrls);
         await NetworkManager.init(serverCredentials);
         await WebsocketManager.init(serverCredentials);
+        registerPersistCallback(persistPropertyStoreSnapshot);
     }
 
     NavigationStore.reset();
