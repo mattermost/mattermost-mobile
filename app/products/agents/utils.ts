@@ -54,16 +54,18 @@ export function isPendingToolResult(post: PostModel | Post): boolean {
 }
 
 /**
- * Determine the current tool approval stage for a post
+ * Determine the current tool approval stage for a post. Returns Done when
+ * there is no outstanding user decision (no pending tools and no redacted
+ * result flag).
  */
-export function getToolApprovalStage(post: PostModel | Post, toolCalls: ToolCall[]): ToolApprovalStage | null {
+export function getToolApprovalStage(post: PostModel | Post, toolCalls: ToolCall[]): ToolApprovalStage {
     if (isPendingToolResult(post)) {
         return ToolApprovalStage.Result;
     }
     if (toolCalls.some((tc) => tc.status === ToolCallStatus.Pending)) {
         return ToolApprovalStage.Call;
     }
-    return null;
+    return ToolApprovalStage.Done;
 }
 
 /**
