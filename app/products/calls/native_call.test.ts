@@ -30,28 +30,32 @@ jest.mock('@queries/servers/team', () => ({
     getTeamById: jest.fn(),
 }));
 
+const serverUrl = 'https://example.com';
+
 const clearAllMappings = () => {
     ['uuid-a', 'uuid-b', 'uuid-1', 'uuid-2', 'native-uuid'].forEach(clearNativeCallMapping);
 };
 
-beforeEach(() => {
+beforeEach(async () => {
     clearAllMappings();
     jest.clearAllMocks();
-    (DatabaseManager as any).serverDatabases = {
-        'https://example.com': {database: {} as any},
-    };
+    await DatabaseManager.init([serverUrl]);
+});
+
+afterEach(async () => {
+    await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
 describe('mapping store', () => {
     it('set + get round-trip', () => {
         setNativeCallMapping('uuid-a', {
-            serverUrl: 'https://example.com',
+            serverUrl,
             channelId: 'ch1',
             postId: 'p1',
             threadId: 't1',
         });
         expect(getNativeCallMapping('uuid-a')).toEqual({
-            serverUrl: 'https://example.com',
+            serverUrl,
             channelId: 'ch1',
             postId: 'p1',
             threadId: 't1',
@@ -83,7 +87,7 @@ describe('registerOutgoingNativeCall', () => {
         const originalOS = Platform.OS;
         Object.defineProperty(Platform, 'OS', {get: () => 'android'});
 
-        const result = await registerOutgoingNativeCall('https://example.com', 'ch1');
+        const result = await registerOutgoingNativeCall(serverUrl, 'ch1');
 
         Object.defineProperty(Platform, 'OS', {get: () => originalOS});
 
@@ -93,12 +97,12 @@ describe('registerOutgoingNativeCall', () => {
 
     it('skips when a mapping already exists (inbound-push case)', async () => {
         setNativeCallMapping('uuid-a', {
-            serverUrl: 'https://example.com',
+            serverUrl,
             channelId: 'ch1',
             postId: '',
             threadId: '',
         });
-        const result = await registerOutgoingNativeCall('https://example.com', 'ch1');
+        const result = await registerOutgoingNativeCall(serverUrl, 'ch1');
         expect(result).toBeUndefined();
         expect(CallsNative.reportOutgoingCall).not.toHaveBeenCalled();
     });
@@ -109,7 +113,7 @@ describe('registerOutgoingNativeCall', () => {
             teamId: '',
         });
 
-        await registerOutgoingNativeCall('https://example.com', 'ch1');
+        await registerOutgoingNativeCall(serverUrl, 'ch1');
 
         expect(CallsNative.reportOutgoingCall).toHaveBeenCalledWith({
             channelId: 'ch1',
@@ -126,7 +130,7 @@ describe('registerOutgoingNativeCall', () => {
             displayName: 'Engineering',
         });
 
-        await registerOutgoingNativeCall('https://example.com', 'ch1');
+        await registerOutgoingNativeCall(serverUrl, 'ch1');
 
         expect(CallsNative.reportOutgoingCall).toHaveBeenCalledWith({
             channelId: 'ch1',
@@ -145,7 +149,7 @@ describe('registerOutgoingNativeCall', () => {
             displayName: 'an-extremely-long-team-name-here!',
         });
 
-        await registerOutgoingNativeCall('https://example.com', 'ch1');
+        await registerOutgoingNativeCall(serverUrl, 'ch1');
 
         const call = (CallsNative.reportOutgoingCall as jest.Mock).mock.calls[0][0];
         expect(call.calleeName).toMatch(/^.{40} \(.{30}\)$/);
@@ -163,11 +167,11 @@ describe('registerOutgoingNativeCall', () => {
         });
         (CallsNative.reportOutgoingCall as jest.Mock).mockResolvedValueOnce({uuid: 'uuid-1'});
 
-        const uuid = await registerOutgoingNativeCall('https://example.com', 'ch1');
+        const uuid = await registerOutgoingNativeCall(serverUrl, 'ch1');
 
         expect(uuid).toBe('uuid-1');
         expect(getNativeCallMapping('uuid-1')).toEqual({
-            serverUrl: 'https://example.com',
+            serverUrl,
             channelId: 'ch1',
             postId: '',
             threadId: '',
@@ -181,7 +185,7 @@ describe('registerOutgoingNativeCall', () => {
         });
         (CallsNative.reportOutgoingCall as jest.Mock).mockRejectedValueOnce(new Error('boom'));
 
-        const uuid = await registerOutgoingNativeCall('https://example.com', 'ch1');
+        const uuid = await registerOutgoingNativeCall(serverUrl, 'ch1');
 
         expect(uuid).toBeUndefined();
         expect(getNativeCallMapping('native-uuid')).toBeUndefined();
@@ -190,7 +194,7 @@ describe('registerOutgoingNativeCall', () => {
     it('still reports the call with empty calleeName when channel lookup returns null', async () => {
         (getChannelById as jest.Mock).mockResolvedValueOnce(null);
 
-        await registerOutgoingNativeCall('https://example.com', 'ch1');
+        await registerOutgoingNativeCall(serverUrl, 'ch1');
 
         expect(CallsNative.reportOutgoingCall).toHaveBeenCalledWith({
             channelId: 'ch1',
@@ -205,7 +209,7 @@ describe('registerOutgoingNativeCall', () => {
         });
         (getTeamById as jest.Mock).mockResolvedValueOnce(null);
 
-        await registerOutgoingNativeCall('https://example.com', 'ch1');
+        await registerOutgoingNativeCall(serverUrl, 'ch1');
 
         expect(CallsNative.reportOutgoingCall).toHaveBeenCalledWith({
             channelId: 'ch1',
@@ -214,10 +218,10 @@ describe('registerOutgoingNativeCall', () => {
     });
 
     it('returns undefined when the server database is unavailable', async () => {
-        (DatabaseManager as any).serverDatabases = {};
+        // Destroy the DB initialized in beforeEach so getServerDatabaseAndOperator throws.
+        await DatabaseManager.destroyServerDatabase(serverUrl);
 
-        // getServerDatabaseAndOperator throws when there's no entry for the server.
-        const uuid = await registerOutgoingNativeCall('https://example.com', 'ch1');
+        const uuid = await registerOutgoingNativeCall(serverUrl, 'ch1');
         expect(uuid).toBeUndefined();
         expect(CallsNative.reportOutgoingCall).not.toHaveBeenCalled();
     });
@@ -238,18 +242,18 @@ describe('reportNativeCallConnected', () => {
 describe('endNativeCall', () => {
     it('clears mapping and reports ended', () => {
         setNativeCallMapping('uuid-a', {
-            serverUrl: 'https://example.com',
+            serverUrl,
             channelId: 'ch1',
             postId: '',
             threadId: '',
         });
-        endNativeCall('https://example.com', 'ch1', 'remoteEnded');
+        endNativeCall(serverUrl, 'ch1', 'remoteEnded');
         expect(getNativeCallMapping('uuid-a')).toBeUndefined();
         expect(CallsNative.reportEnded).toHaveBeenCalledWith('uuid-a', 'remoteEnded');
     });
 
     it('no-op when no mapping matches', () => {
-        endNativeCall('https://example.com', 'unknown', 'remoteEnded');
+        endNativeCall(serverUrl, 'unknown', 'remoteEnded');
         expect(CallsNative.reportEnded).not.toHaveBeenCalled();
     });
 
@@ -258,12 +262,12 @@ describe('endNativeCall', () => {
         Object.defineProperty(Platform, 'OS', {get: () => 'android'});
 
         setNativeCallMapping('uuid-a', {
-            serverUrl: 'https://example.com',
+            serverUrl,
             channelId: 'ch1',
             postId: '',
             threadId: '',
         });
-        endNativeCall('https://example.com', 'ch1', 'remoteEnded');
+        endNativeCall(serverUrl, 'ch1', 'remoteEnded');
 
         Object.defineProperty(Platform, 'OS', {get: () => originalOS});
 
@@ -274,11 +278,11 @@ describe('endNativeCall', () => {
 describe('mirrorMuteToNativeCall', () => {
     it('forwards to native when there is a current call with a mapping', () => {
         (getCurrentCall as jest.Mock).mockReturnValueOnce({
-            serverUrl: 'https://example.com',
+            serverUrl,
             channelId: 'ch1',
         });
         setNativeCallMapping('uuid-a', {
-            serverUrl: 'https://example.com',
+            serverUrl,
             channelId: 'ch1',
             postId: '',
             threadId: '',
@@ -297,7 +301,7 @@ describe('mirrorMuteToNativeCall', () => {
 
     it('no-op when the current call has no native mapping', () => {
         (getCurrentCall as jest.Mock).mockReturnValueOnce({
-            serverUrl: 'https://example.com',
+            serverUrl,
             channelId: 'unmapped',
         });
         mirrorMuteToNativeCall(false);

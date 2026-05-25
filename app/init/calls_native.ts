@@ -80,7 +80,7 @@ class CallsNativeSingleton {
         }
         const prefixed = `${prefix}:${token}`;
         await storeVoIPDeviceToken(prefixed);
-        logInfo('VoIP device token stored', prefixed);
+        logInfo('VoIP device token stored');
     };
 
     private onIncomingCall = async (payload: IncomingCallPayload) => {
@@ -165,7 +165,7 @@ class CallsNativeSingleton {
             if (activeServerUrl !== serverUrl) {
                 await DatabaseManager.setActiveServerDatabase(serverUrl);
             }
-            switchToChannelById(serverUrl, channelId);
+            await switchToChannelById(serverUrl, channelId);
         } catch (error) {
             logError('onCallAnswered failed', error);
             CallsNative.reportEnded(uuid, 'failed');

@@ -32,7 +32,7 @@ import Gekidou
             // If JS had previously attached and detached, drop the buffer
             // when a brand-new delegate takes over — the new event emitter
             // has no historical context.
-            if delegate == nil {
+            if oldValue !== delegate {
                 pendingLock.lock()
                 pendingEvents.removeAll()
                 hasJSListeners = false
