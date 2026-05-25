@@ -459,7 +459,7 @@ describe('persist callback', () => {
         expect(cb).toHaveBeenCalledWith(serverUrl);
     });
 
-    it('should fire once per unique server URL in a burst', async () => {
+    it('should persist only the latest server URL when called in rapid succession', async () => {
         const cb = jest.fn().mockResolvedValue(undefined);
         registerPersistCallback(cb);
         const server2 = 'other.test.com';
@@ -469,8 +469,7 @@ describe('persist callback', () => {
 
         await advanceTimers(300);
 
-        expect(cb).toHaveBeenCalledTimes(2);
-        expect(cb).toHaveBeenCalledWith(serverUrl);
+        expect(cb).toHaveBeenCalledTimes(1);
         expect(cb).toHaveBeenCalledWith(server2);
     });
 

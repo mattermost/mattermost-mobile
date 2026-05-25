@@ -3,6 +3,7 @@
 
 import {useEffect, useReducer} from 'react';
 
+import {debounce} from '@helpers/api/general';
 import {logError} from '@utils/log';
 
 export type PropertyStoreListener = (serverUrl: string, groupId: string) => void;
@@ -27,32 +28,31 @@ const groupNameToId: GroupNameIndex = Object.create(null) as GroupNameIndex;
 
 let persistCallback: PropertyPersistCallback | undefined;
 const PERSIST_DEBOUNCE_MS = 250;
-const pendingPersist = new Set<string>();
+let pendingServerUrl: string | undefined;
 const isHydrating = new Set<string>();
-let persistTimer: ReturnType<typeof setTimeout> | undefined;
 
 export function registerPersistCallback(cb: PropertyPersistCallback): void {
     persistCallback = cb;
 }
 
+function flushPersist(serverUrl: string): void {
+    if (!pendingServerUrl) {
+        return;
+    }
+    pendingServerUrl = undefined;
+    Promise.resolve(persistCallback?.(serverUrl)).catch((err) => {
+        logError('system_property_store.flushPersist', err);
+    });
+}
+
+const debouncedFlushPersist = debounce(flushPersist, PERSIST_DEBOUNCE_MS);
+
 function schedulePersist(serverUrl: string): void {
     if (!persistCallback || isHydrating.has(serverUrl)) {
         return;
     }
-    pendingPersist.add(serverUrl);
-    if (persistTimer !== undefined) {
-        return;
-    }
-    persistTimer = setTimeout(() => {
-        persistTimer = undefined;
-        const urls = [...pendingPersist];
-        pendingPersist.clear();
-        for (const url of urls) {
-            Promise.resolve(persistCallback?.(url)).catch((err) => {
-                logError('system_property_store.schedulePersist', err);
-            });
-        }
-    }, PERSIST_DEBOUNCE_MS);
+    pendingServerUrl = serverUrl;
+    debouncedFlushPersist(serverUrl);
 }
 
 export function setHydrating(serverUrl: string, value: boolean): void {
@@ -64,13 +64,11 @@ export function setHydrating(serverUrl: string, value: boolean): void {
 }
 
 export async function __flushPersistForTests(): Promise<void> {
-    if (persistTimer !== undefined) {
-        clearTimeout(persistTimer);
-        persistTimer = undefined;
+    if (pendingServerUrl) {
+        const url = pendingServerUrl;
+        pendingServerUrl = undefined;
+        await persistCallback?.(url);
     }
-    const urls = [...pendingPersist];
-    pendingPersist.clear();
-    await Promise.all(urls.map((url) => persistCallback?.(url)));
 }
 
 // --- Internal helpers ---
