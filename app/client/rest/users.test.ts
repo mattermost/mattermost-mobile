@@ -459,6 +459,38 @@ describe('ClientUsers', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
+    test('setExtraSessionProps includes voip_device_id when provided', async () => {
+        const voipDeviceId = 'apple_voip_rn:token123';
+        const expectedUrl = `${client.getUsersRoute()}/sessions/device`;
+
+        await client.setExtraSessionProps('device1', false, '1.0.0', voipDeviceId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, {
+            method: 'put',
+            body: {
+                device_id: 'device1',
+                device_notification_disabled: 'false',
+                mobile_version: '1.0.0',
+                voip_device_id: voipDeviceId,
+            },
+        });
+    });
+
+    test('setExtraSessionProps omits voip_device_id when undefined or empty', async () => {
+        const expectedUrl = `${client.getUsersRoute()}/sessions/device`;
+        const expectedBody = {
+            device_id: 'device1',
+            device_notification_disabled: 'false',
+            mobile_version: '1.0.0',
+        };
+
+        await client.setExtraSessionProps('device1', false, '1.0.0', undefined);
+        expect(client.doFetch).toHaveBeenLastCalledWith(expectedUrl, {method: 'put', body: expectedBody});
+
+        await client.setExtraSessionProps('device1', false, '1.0.0', '');
+        expect(client.doFetch).toHaveBeenLastCalledWith(expectedUrl, {method: 'put', body: expectedBody});
+    });
+
     test('searchUsers', async () => {
         const term = 'test';
         const options = {team_id: 'team_id'};
