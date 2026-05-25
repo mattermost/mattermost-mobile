@@ -37,16 +37,6 @@ describe('Autocomplete - Channel Mention', () => {
     let otherChannelMentionAutocomplete: any;
 
     beforeAll(async () => {
-        // Force clean app process. Same wedge pattern as the sibling
-        // channel_post_draft.e2e.ts: when a prior spec on this shard
-        // (typically user_attributes) fails its logout, Detox's WebSocket
-        // to the app is left in a state where the next ServerScreen.connectToServer
-        // hangs for 360s with "Detox can't seem to connect to the test app(s)!".
-        // CI run 26368981355 iOS shard 4 catastrophically failed this entire spec
-        // (testExecError, no tests even enumerated) — same shard as channel_post_draft.
-        // launchApp({newInstance: true}) gives us a fresh process before connectToServer.
-        await device.launchApp({newInstance: true});
-
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;
@@ -79,9 +69,37 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     afterAll(async () => {
-        // # Log out
-        await ChannelScreen.back();
-        await HomeScreen.logout();
+        // Resilient cleanup. Previous version awaited ChannelScreen.back() then
+        // HomeScreen.logout() unconditionally — if a prior test (e.g. MM-T4879_7
+        // in CI run 26368981355) left the UI wedged, the back/logout sequence
+        // hit jest's 240s testTimeout, causing testExecError on the whole suite
+        // and (combined with the 60-min step timeout) ending the entire shard
+        // mid-test-run, dropping junit XMLs for every spec on it.
+        //
+        // Now: each step is best-effort with its own short timeout. If both
+        // fail, force a clean simulator state via launchApp so the next spec
+        // on this shard starts fresh instead of inheriting our wedge.
+        try {
+            await Promise.race([
+                ChannelScreen.back(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('back() timed out')), 15000)),
+            ]);
+        } catch {
+            // continue to logout — back() failing is not a reason to skip cleanup
+        }
+        try {
+            await Promise.race([
+                HomeScreen.logout(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('logout() timed out')), 30000)),
+            ]);
+        } catch {
+            // Defensive: if logout wedged, relaunch to reset state for next spec.
+            try {
+                await device.launchApp({newInstance: true});
+            } catch {
+                // last-ditch — give up and let the next spec's beforeAll handle it
+            }
+        }
     });
 
     it('MM-T4879_1 - should suggest channel based on channel name', async () => {
