@@ -21,7 +21,7 @@ type ServerEntry =
     | {kind: 'zpm'}
     | {kind: 'mem'; thresholdMs: number; purgeThresholdMs: number};
 
-class OfflinePersistenceManagerSingleton {
+class EphemeralModeManagerSingleton {
     private offlineSubjects: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
     private disconnectionTimers: Record<string, NodeJS.Timeout> = {};
     private purgeTimers: Record<string, NodeJS.Timeout> = {};
@@ -38,7 +38,7 @@ class OfflinePersistenceManagerSingleton {
     private enqueueEval = (serverUrl: string, fn: () => Promise<void>): Promise<void> => {
         const previous = this.evalQueue[serverUrl] ?? Promise.resolve();
         const next = previous.then(fn).catch((error) => {
-            logError('OfflinePersistenceManager.enqueueEval', error);
+            logError('EphemeralModeManager.enqueueEval', error);
         });
         this.evalQueue[serverUrl] = next;
         return next;
@@ -60,7 +60,7 @@ class OfflinePersistenceManagerSingleton {
                 }
                 await this.addServer(serverUrl);
             } catch (error) {
-                logError('OfflinePersistenceManager.init', error);
+                logError('EphemeralModeManager.init', error);
             }
         }));
     };
@@ -82,7 +82,7 @@ class OfflinePersistenceManagerSingleton {
     // promise that serializes work for this server.
     private pauseSubscriptions = (serverUrl: string) => {
         if (this.trackedServers.get(serverUrl)?.kind === 'mem') {
-            this.deactivate(serverUrl, {silent: true});
+            this.untrack(serverUrl, {silent: true});
         }
         this.trackedServers.delete(serverUrl);
         this.configSubscriptions[serverUrl]?.unsubscribe();
@@ -95,7 +95,7 @@ class OfflinePersistenceManagerSingleton {
         return this.offlineSubjects[serverUrl]?.getValue() ?? false;
     };
 
-    private addServer = (serverUrl: string) => {
+    private addServer = async (serverUrl: string) => {
         if (this.configSubscriptions[serverUrl]) {
             return;
         }
@@ -132,15 +132,15 @@ class OfflinePersistenceManagerSingleton {
     ) => {
         const nextEnabled = enabledStr === 'true';
         const nextThresholdMs = Math.max(0, Number(timeoutStr ?? '0')) * 1000;
-        const nextPurgeThresholdMs = Math.max(0, Number(purgeHoursStr ?? '0')) * 3600 * 1000;
+        const nextPurgeThresholdMs = Math.max(0, Number(purgeHoursStr ?? '0')) * 1000;// 3600 * 1000;
         const wasActive = this.trackedServers.get(serverUrl)?.kind === 'mem';
 
         if (nextEnabled && !wasActive) {
-            this.activate(serverUrl, nextThresholdMs, nextPurgeThresholdMs);
+            this.track(serverUrl, nextThresholdMs, nextPurgeThresholdMs);
             return;
         }
         if (!nextEnabled && wasActive) {
-            this.deactivate(serverUrl);
+            this.untrack(serverUrl);
             return;
         }
         if (nextEnabled && wasActive) {
@@ -158,7 +158,7 @@ class OfflinePersistenceManagerSingleton {
         await setDisconnectedSince(serverUrl, null);
     };
 
-    private activate = (serverUrl: string, thresholdMs: number, purgeThresholdMs: number) => {
+    private track = (serverUrl: string, thresholdMs: number, purgeThresholdMs: number) => {
         this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs, purgeThresholdMs});
         this.ensureAppStateListener();
 
@@ -173,7 +173,7 @@ class OfflinePersistenceManagerSingleton {
         this.enqueueEval(serverUrl, () => this.evaluateServer(serverUrl, true));
     };
 
-    private deactivate = async (serverUrl: string, {silent = false}: {silent?: boolean} = {}) => {
+    private untrack = async (serverUrl: string, {silent = false}: {silent?: boolean} = {}) => {
         this.trackedServers.delete(serverUrl);
         this.wsSubscriptions[serverUrl]?.unsubscribe();
         delete this.wsSubscriptions[serverUrl];
@@ -191,9 +191,10 @@ class OfflinePersistenceManagerSingleton {
         if (appState === 'background') {
             for (const [url, entry] of this.trackedServers) {
                 if (entry.kind === 'zpm') {
-                    deleteFileCache(url).catch((error) => {
-                        logError('OfflinePersistenceManager.deleteFileCache', error);
-                    });
+                    const success = deleteFileCache(url)
+                    if (!success) {
+                        logError('EphemeralModeManager.deleteFileCache failed');
+                    };
                 }
             }
             return;
@@ -244,7 +245,7 @@ class OfflinePersistenceManagerSingleton {
         try {
             database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
         } catch (error) {
-            logError('OfflinePersistenceManager.evaluateServer', error);
+            logError('EphemeralModeManager.evaluateServer', error);
             return;
         }
 
@@ -324,7 +325,7 @@ class OfflinePersistenceManagerSingleton {
         try {
             database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
         } catch (error) {
-            logError('OfflinePersistenceManager.onTransitionToOffline', error);
+            logError('EphemeralModeManager.onTransitionToOffline', error);
             return;
         }
 
@@ -365,7 +366,7 @@ class OfflinePersistenceManagerSingleton {
         try {
             database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
         } catch (error) {
-            logError('OfflinePersistenceManager.evaluatePurge', error);
+            logError('EphemeralModeManager.evaluatePurge', error);
             return;
         }
 
@@ -426,11 +427,11 @@ class OfflinePersistenceManagerSingleton {
             this.pauseSubscriptions(serverUrl);
             const [{success}] = await this.wipeServerArtifacts(serverUrl);
             if (!success) {
-                logError('OfflinePersistenceManager.runWipe: wipe failed after retries, server re-added with stale data', serverUrl);
+                logError('EphemeralModeManager.runWipe: wipe failed after retries, server re-added with stale data', serverUrl);
             }
             this.addServer(serverUrl);
         } catch (error) {
-            logError('OfflinePersistenceManager.runWipe', error);
+            logError('EphemeralModeManager.runWipe', error);
         } finally {
             this.wipeInProgress.delete(serverUrl);
         }
@@ -444,5 +445,5 @@ class OfflinePersistenceManagerSingleton {
     };
 }
 
-const OfflinePersistenceManager = new OfflinePersistenceManagerSingleton();
-export default OfflinePersistenceManager;
+const EphemeralModeManager = new EphemeralModeManagerSingleton();
+export default EphemeralModeManager;
