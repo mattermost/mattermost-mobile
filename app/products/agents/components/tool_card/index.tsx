@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {Pressable, Text, View} from 'react-native';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {Platform, Pressable, Text, View} from 'react-native';
+import Animated, {FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import CompassIcon from '@components/compass_icon';
@@ -31,10 +31,11 @@ interface ToolCardProps {
     onToggleCollapse: (toolId: string) => void;
     onApprove?: (toolId: string) => void;
     onReject?: (toolId: string) => void;
-    approvalStage: ToolApprovalStage | null;
+    approvalStage: ToolApprovalStage;
     canExpand?: boolean;
     showArguments?: boolean;
     showResults?: boolean;
+    isAutoApproved?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -77,6 +78,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         responseLabelText: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
             ...typography('Body', 100),
+        },
+        autoApprovedLabel: {
+            color: changeOpacity(theme.centerChannelColor, 0.56),
+            ...typography('Body', 75),
         },
         resultContainer: {
             marginLeft: CONTENT_INDENT,
@@ -189,34 +194,35 @@ const ToolCard = ({
     canExpand = true,
     showArguments = true,
     showResults = true,
+    isAutoApproved = false,
 }: ToolCardProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const contentOpacity = useSharedValue(isCollapsed ? 0 : 1);
     const chevronRotation = useSharedValue(isCollapsed ? 0 : 90);
 
     useEffect(() => {
-        contentOpacity.value = isCollapsed ? 0 : 1;
-        chevronRotation.value = isCollapsed ? 0 : 90;
-    }, [isCollapsed, contentOpacity, chevronRotation]);
+        chevronRotation.value = withTiming(isCollapsed ? 0 : 90, {duration: 200});
+    }, [isCollapsed, chevronRotation]);
 
     const isPending = tool.status === ToolCallStatus.Pending;
     const hasLocalDecision = localDecision !== undefined && localDecision !== null;
-    const isSuccess = tool.status === ToolCallStatus.Success;
+    const isAutoApprovedStatus = tool.status === ToolCallStatus.AutoApproved || isAutoApproved;
+
+    // Treat auto-approved as success so the result affordances render.
+    const isSuccess = tool.status === ToolCallStatus.Success || isAutoApprovedStatus;
     const isError = tool.status === ToolCallStatus.Error;
     const isRejected = tool.status === ToolCallStatus.Rejected;
     const isResultPhase = approvalStage === ToolApprovalStage.Result;
 
-    // Convert underscores to spaces and capitalize first letter of each word
     const displayName = useMemo(() => {
         return tool.name.
             replace(/_/g, ' ').
             replace(/\b\w/g, (char) => char.toUpperCase());
     }, [tool.name]);
 
-    // Render arguments as JSON code block
     const argumentsMarkdown = useMemo(() => {
-        return `\`\`\`json\n${JSON.stringify(tool.arguments, null, 2)}\n\`\`\``;
+        const value = tool.arguments ?? {};
+        return `\`\`\`json\n${JSON.stringify(value, null, 2)}\n\`\`\``;
     }, [tool.arguments]);
 
     // Render result as code block - try to detect if it's JSON
@@ -236,11 +242,8 @@ const ToolCard = ({
         if (!canExpand) {
             return;
         }
-        const newCollapsed = !isCollapsed;
-        contentOpacity.value = withTiming(newCollapsed ? 0 : 1, {duration: 200});
-        chevronRotation.value = withTiming(newCollapsed ? 0 : 90, {duration: 200});
         onToggleCollapse(tool.id);
-    }, [canExpand, isCollapsed, contentOpacity, chevronRotation, onToggleCollapse, tool.id]);
+    }, [canExpand, onToggleCollapse, tool.id]);
 
     const handleApprove = usePreventDoubleTap(useCallback(() => {
         onApprove?.(tool.id);
@@ -252,10 +255,6 @@ const ToolCard = ({
 
     const chevronAnimatedStyle = useAnimatedStyle(() => ({
         transform: [{rotate: `${chevronRotation.value}deg`}],
-    }));
-
-    const contentAnimatedStyle = useAnimatedStyle(() => ({
-        opacity: contentOpacity.value,
     }));
 
     // Determine icon based on status
@@ -338,7 +337,10 @@ const ToolCard = ({
             </Pressable>
 
             {!isCollapsed && (
-                <Animated.View style={contentAnimatedStyle}>
+                <Animated.View
+                    entering={FadeIn.duration(200)}
+                    exiting={Platform.select({ios: FadeOut.duration(200)})}
+                >
                     {showArguments && (
                         <View
                             style={styles.argumentsContainer}
@@ -378,6 +380,13 @@ const ToolCard = ({
                                     defaultMessage='Response'
                                     style={styles.responseLabelText}
                                 />
+                                {isAutoApprovedStatus && (
+                                    <FormattedText
+                                        id='agents.tool_call.auto_approved'
+                                        defaultMessage='(Auto-approved)'
+                                        style={styles.autoApprovedLabel}
+                                    />
+                                )}
                             </View>
                             <View style={styles.resultContainer}>
                                 <Markdown
