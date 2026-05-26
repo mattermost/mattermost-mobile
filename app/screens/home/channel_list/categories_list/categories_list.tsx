@@ -6,7 +6,6 @@ import {DeviceEventEmitter, FlatList, useWindowDimensions} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
-import AgentsButton from '@agents/components/agents_button';
 import DraftsButton from '@components/drafts_buttton';
 import ThreadsButton from '@components/threads_button';
 import {Events, Screens} from '@constants';
@@ -44,7 +43,6 @@ type ChannelListProps = {
     scheduledPostHasError: boolean;
     lastChannelId?: ScreenType;
     scheduledPostsEnabled?: boolean;
-    agentsEnabled?: boolean;
     showPlaybooksButton?: boolean;
 };
 
@@ -64,7 +62,6 @@ const CategoriesList = ({
     scheduledPostHasError,
     lastChannelId,
     scheduledPostsEnabled,
-    agentsEnabled,
     showPlaybooksButton,
 }: ChannelListProps) => {
     const theme = useTheme();
@@ -135,18 +132,6 @@ const CategoriesList = ({
         return null;
     }, [activeScreen, draftsCount, isTablet, scheduledPostCount, scheduledPostHasError, scheduledPostsEnabled]);
 
-    const agentsButtonComponent = useMemo(() => {
-        if (!agentsEnabled) {
-            return null;
-        }
-
-        return (
-            <AgentsButton
-                shouldHighlightActive={activeScreen === Screens.AGENT_CHAT}
-            />
-        );
-    }, [agentsEnabled, activeScreen]);
-
     const playbooksButtonComponent = useMemo(() => {
         if (!showPlaybooksButton) {
             return null;
@@ -165,7 +150,7 @@ const CategoriesList = ({
             return (<LoadChannelsError/>);
         }
 
-        const components = [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent,
+        const components = [threadButtonComponent, draftsButtonComponent, playbooksButtonComponent,
             <Categories
                 key='categories'
                 isTablet={isTablet}
@@ -186,7 +171,7 @@ const CategoriesList = ({
                 />
             </SafeAreaView>
         );
-    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isTablet, playbooksButtonComponent, styles.flex, threadButtonComponent]);
+    }, [draftsButtonComponent, hasChannels, isTablet, playbooksButtonComponent, styles.flex, threadButtonComponent]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
