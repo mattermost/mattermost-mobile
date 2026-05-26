@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {persistPropertyStoreSnapshot} from '@actions/local/properties';
 import * as store from '@store/system_property_store';
 
 import {handlePropertyFieldCreatedOrUpdated, handlePropertyFieldDeleted, handlePropertyValuesUpdated} from './properties';
@@ -13,7 +14,7 @@ jest.mock('@actions/local/properties', () => ({
     persistPropertyStoreSnapshot: jest.fn().mockResolvedValue(undefined),
 }));
 
-const {persistPropertyStoreSnapshot} = require('@actions/local/properties');
+const mockedPersist = jest.mocked(persistPropertyStoreSnapshot);
 
 const serverUrl = 'ws-properties.test.com';
 const groupId = 'test_group';
@@ -68,7 +69,7 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
         const fields = store.getPropertyFields(serverUrl, groupId);
         expect(fields).toHaveLength(1);
         expect(fields[0].id).toBe('f1');
-        expect(persistPropertyStoreSnapshot).toHaveBeenCalledWith(serverUrl);
+        expect(mockedPersist).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should update an existing field in the store', () => {
@@ -87,7 +88,7 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
         const fields = store.getPropertyFields(serverUrl, groupId);
         expect(fields).toHaveLength(1);
         expect(fields[0].name).toBe('updated');
-        expect(persistPropertyStoreSnapshot).toHaveBeenCalledWith(serverUrl);
+        expect(mockedPersist).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should ignore events with no property_field data', () => {
@@ -100,7 +101,7 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
 
         handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
         expect(store.getPropertyFields(serverUrl, groupId)).toHaveLength(0);
-        expect(persistPropertyStoreSnapshot).not.toHaveBeenCalled();
+        expect(mockedPersist).not.toHaveBeenCalled();
     });
 
     it('should ignore events with invalid JSON', () => {
@@ -113,7 +114,7 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
 
         handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
         expect(store.getPropertyFields(serverUrl, groupId)).toHaveLength(0);
-        expect(persistPropertyStoreSnapshot).not.toHaveBeenCalled();
+        expect(mockedPersist).not.toHaveBeenCalled();
     });
 });
 
@@ -133,7 +134,7 @@ describe('handlePropertyFieldDeleted', () => {
         const fields = store.getPropertyFields(serverUrl, groupId);
         expect(fields).toHaveLength(1);
         expect(fields[0].id).toBe('f2');
-        expect(persistPropertyStoreSnapshot).toHaveBeenCalledWith(serverUrl);
+        expect(mockedPersist).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should do nothing when field_id is missing', () => {
@@ -148,7 +149,7 @@ describe('handlePropertyFieldDeleted', () => {
 
         handlePropertyFieldDeleted(serverUrl, msg);
         expect(store.getPropertyFields(serverUrl, groupId)).toHaveLength(1);
-        expect(persistPropertyStoreSnapshot).not.toHaveBeenCalled();
+        expect(mockedPersist).not.toHaveBeenCalled();
     });
 
     it('should do nothing when field_id does not match any stored field', () => {
@@ -187,7 +188,7 @@ describe('handlePropertyValuesUpdated', () => {
 
         const stored = store.getPropertyValuesForTarget(serverUrl, systemTargetId);
         expect(stored).toHaveLength(2);
-        expect(persistPropertyStoreSnapshot).toHaveBeenCalledWith(serverUrl);
+        expect(mockedPersist).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should update existing values in the store', () => {

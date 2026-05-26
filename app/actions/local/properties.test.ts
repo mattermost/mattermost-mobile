@@ -18,6 +18,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 
 jest.mock('@utils/log', () => ({
+    logDebug: jest.fn(),
     logError: jest.fn(),
 }));
 

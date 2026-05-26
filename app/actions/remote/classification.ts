@@ -53,14 +53,14 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
         if (values.length > 0) {
             updatePropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, groupId, values);
         }
-
-        await persistPropertyStoreSnapshot(serverUrl);
-        return {};
     } catch (error) {
         logError('fetchClassificationBanner', 'Failed to fetch classification banner data', error);
-        await hydratePropertyStore(serverUrl);
+        await hydratePropertyStore(serverUrl).catch((e) => logError('fetchClassificationBanner', 'Failed to hydrate property store', e));
         return {error};
     }
+
+    await persistPropertyStoreSnapshot(serverUrl).catch((e) => logError('fetchClassificationBanner', 'Failed to persist property store snapshot', e));
+    return {};
 }
 
 export async function fetchChannelClassificationValue(serverUrl: string, channelId: string): Promise<{error?: unknown}> {
@@ -86,11 +86,12 @@ export async function fetchChannelClassificationValue(serverUrl: string, channel
         }
 
         updatePropertyValues(serverUrl, channelId, groupId, values);
-        await persistPropertyStoreSnapshot(serverUrl);
-        return {};
     } catch (error) {
         logError('fetchChannelClassificationValue', 'Failed to fetch channel classification value', {serverUrl, channelId}, error);
-        await hydratePropertyStore(serverUrl);
+        await hydratePropertyStore(serverUrl).catch((e) => logError('fetchChannelClassificationValue', 'Failed to hydrate property store', e));
         return {error};
     }
+
+    await persistPropertyStoreSnapshot(serverUrl).catch((e) => logError('fetchChannelClassificationValue', 'Failed to persist property store snapshot', e));
+    return {};
 }

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {hydratePropertyStore, persistPropertyStoreSnapshot} from '@actions/local/properties';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getConfigValue} from '@queries/servers/system';
@@ -32,7 +33,8 @@ jest.mock('@actions/local/properties', () => ({
     persistPropertyStoreSnapshot: jest.fn().mockResolvedValue(undefined),
 }));
 
-const {hydratePropertyStore, persistPropertyStoreSnapshot} = require('@actions/local/properties');
+const mockedHydrate = jest.mocked(hydratePropertyStore);
+const mockedPersist = jest.mocked(persistPropertyStoreSnapshot);
 const {registerGroupName, setPropertyFields, updatePropertyValues} = require('@store/system_property_store');
 const mockedGetConfigValue = jest.mocked(getConfigValue);
 
@@ -135,7 +137,7 @@ describe('fetchClassificationBanner', () => {
         expect(registerGroupName).toHaveBeenCalledWith(serverUrl, 'classification_markings', 'classification_markings');
         expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', [systemField]);
         expect(updatePropertyValues).toHaveBeenCalledWith(serverUrl, 'system', 'classification_markings', [systemValue]);
-        expect(persistPropertyStoreSnapshot).toHaveBeenCalledWith(serverUrl);
+        expect(mockedPersist).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should return early when no fields are returned by the API', async () => {
@@ -182,7 +184,7 @@ describe('fetchClassificationBanner', () => {
         );
         expect(setPropertyFields.mock.calls[0][2]).toHaveLength(2);
         expect(updatePropertyValues).toHaveBeenCalledWith(serverUrl, 'system', 'classification_markings', [systemValue]);
-        expect(persistPropertyStoreSnapshot).toHaveBeenCalledWith(serverUrl);
+        expect(mockedPersist).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should exclude soft-deleted fields from the stored set', async () => {
@@ -229,7 +231,7 @@ describe('fetchClassificationBanner', () => {
 
         await fetchClassificationBanner(serverUrl);
 
-        expect(hydratePropertyStore).toHaveBeenCalledWith(serverUrl);
+        expect(mockedHydrate).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should not call hydratePropertyStore on the success path', async () => {
@@ -240,7 +242,7 @@ describe('fetchClassificationBanner', () => {
 
         await fetchClassificationBanner(serverUrl);
 
-        expect(hydratePropertyStore).not.toHaveBeenCalled();
+        expect(mockedHydrate).not.toHaveBeenCalled();
     });
 
     it('should not persist when network client throws', async () => {
@@ -249,7 +251,7 @@ describe('fetchClassificationBanner', () => {
 
         await fetchClassificationBanner(serverUrl);
 
-        expect(persistPropertyStoreSnapshot).not.toHaveBeenCalled();
+        expect(mockedPersist).not.toHaveBeenCalled();
     });
 });
 
@@ -286,7 +288,7 @@ describe('fetchChannelClassificationValue', () => {
 
         expect(result).toEqual({});
         expect(updatePropertyValues).toHaveBeenCalledWith(serverUrl, channelId, 'classification_markings', [channelValue]);
-        expect(persistPropertyStoreSnapshot).toHaveBeenCalledWith(serverUrl);
+        expect(mockedPersist).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should return early when API returns no values', async () => {
@@ -327,7 +329,7 @@ describe('fetchChannelClassificationValue', () => {
 
         await fetchChannelClassificationValue(serverUrl, channelId);
 
-        expect(hydratePropertyStore).toHaveBeenCalledWith(serverUrl);
+        expect(mockedHydrate).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should not call hydratePropertyStore on the success path', async () => {
@@ -336,7 +338,7 @@ describe('fetchChannelClassificationValue', () => {
 
         await fetchChannelClassificationValue(serverUrl, channelId);
 
-        expect(hydratePropertyStore).not.toHaveBeenCalled();
+        expect(mockedHydrate).not.toHaveBeenCalled();
     });
 
     it('should not persist when network client throws', async () => {
@@ -345,6 +347,6 @@ describe('fetchChannelClassificationValue', () => {
 
         await fetchChannelClassificationValue(serverUrl, channelId);
 
-        expect(persistPropertyStoreSnapshot).not.toHaveBeenCalled();
+        expect(mockedPersist).not.toHaveBeenCalled();
     });
 });

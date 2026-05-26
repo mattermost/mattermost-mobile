@@ -10,7 +10,7 @@ import {
     getValueStoreSnapshot,
     setAllPropertyData,
 } from '@store/system_property_store';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 /**
  * Writes the current ephemeral property store snapshot to the server's System table.
@@ -52,7 +52,7 @@ export async function hydratePropertyStore(serverUrl: string): Promise<void> {
         ]);
 
         if (fieldsByGroup === undefined || valuesByTarget === undefined || groupNames === undefined) {
-            logError('hydratePropertyStore', 'DB read failure, keeping in-memory state');
+            logDebug('hydratePropertyStore', 'No persisted property data found, keeping in-memory state');
             return;
         }
 
