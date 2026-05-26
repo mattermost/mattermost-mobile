@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {persistPropertyStoreSnapshot} from '@actions/local/properties';
 import {updatePropertyField, removePropertyFieldById, updatePropertyValues} from '@store/system_property_store';
 import {safeParseJSON} from '@utils/helpers';
 import {logDebug} from '@utils/log';
@@ -18,6 +19,7 @@ export function handlePropertyFieldCreatedOrUpdated(serverUrl: string, msg: WebS
     }
 
     updatePropertyField(serverUrl, field);
+    persistPropertyStoreSnapshot(serverUrl);
 }
 
 export function handlePropertyFieldDeleted(serverUrl: string, msg: WebSocketMessage) {
@@ -27,6 +29,7 @@ export function handlePropertyFieldDeleted(serverUrl: string, msg: WebSocketMess
     }
 
     removePropertyFieldById(serverUrl, data.field_id);
+    persistPropertyStoreSnapshot(serverUrl);
 }
 
 export function handlePropertyValuesUpdated(serverUrl: string, msg: WebSocketMessage) {
@@ -57,4 +60,6 @@ export function handlePropertyValuesUpdated(serverUrl: string, msg: WebSocketMes
     for (const entry of Object.values(byKey)) {
         updatePropertyValues(serverUrl, entry.targetId, entry.groupId, entry.values);
     }
+
+    persistPropertyStoreSnapshot(serverUrl);
 }

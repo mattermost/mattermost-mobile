@@ -140,10 +140,14 @@ describe('hydratePropertyStore', () => {
         expect(getGroupIdByName(serverUrl, 'classification_markings')).toBe(groupId);
     });
 
-    it('should gracefully handle partial DB data (only fields stored)', async () => {
+    it('should hydrate with empty values and group names when only fields are stored', async () => {
         const fields: Record<string, PropertyField[]> = {[groupId]: [makeField('f1')]};
         await operator.handleSystem({
-            systems: [{id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: fields}],
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: fields},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: {}},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: {}},
+            ],
             prepareRecordsOnly: false,
         });
 
@@ -151,13 +155,13 @@ describe('hydratePropertyStore', () => {
         expect(getPropertyFields(serverUrl, groupId)).toHaveLength(1);
     });
 
-    it('should not overwrite fresh data if called with empty DB', async () => {
+    it('should preserve in-memory data when DB has no persisted records', async () => {
         setPropertyFields(serverUrl, groupId, [makeField('fresh')]);
 
         await hydratePropertyStore(serverUrl);
 
-        // Empty DB clears the in-memory store (setAllPropertyData replaces it)
-        expect(getPropertyFields(serverUrl, groupId)).toHaveLength(0);
+        expect(getPropertyFields(serverUrl, groupId)).toHaveLength(1);
+        expect(getPropertyFields(serverUrl, groupId)[0].id).toBe('fresh');
     });
 
     it('should handle missing database gracefully without throwing', async () => {

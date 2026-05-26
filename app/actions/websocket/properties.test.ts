@@ -9,6 +9,12 @@ jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
 }));
 
+jest.mock('@actions/local/properties', () => ({
+    persistPropertyStoreSnapshot: jest.fn().mockResolvedValue(undefined),
+}));
+
+const {persistPropertyStoreSnapshot} = require('@actions/local/properties');
+
 const serverUrl = 'ws-properties.test.com';
 const groupId = 'test_group';
 
@@ -44,6 +50,7 @@ const systemTargetId = 'system';
 beforeEach(() => {
     store.setPropertyFields(serverUrl, groupId, []);
     store.setPropertyValues(serverUrl, systemTargetId, groupId, []);
+    jest.clearAllMocks();
 });
 
 describe('handlePropertyFieldCreatedOrUpdated', () => {
@@ -61,6 +68,7 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
         const fields = store.getPropertyFields(serverUrl, groupId);
         expect(fields).toHaveLength(1);
         expect(fields[0].id).toBe('f1');
+        expect(persistPropertyStoreSnapshot).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should update an existing field in the store', () => {
@@ -79,6 +87,7 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
         const fields = store.getPropertyFields(serverUrl, groupId);
         expect(fields).toHaveLength(1);
         expect(fields[0].name).toBe('updated');
+        expect(persistPropertyStoreSnapshot).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should ignore events with no property_field data', () => {
@@ -91,6 +100,7 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
 
         handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
         expect(store.getPropertyFields(serverUrl, groupId)).toHaveLength(0);
+        expect(persistPropertyStoreSnapshot).not.toHaveBeenCalled();
     });
 
     it('should ignore events with invalid JSON', () => {
@@ -103,6 +113,7 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
 
         handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
         expect(store.getPropertyFields(serverUrl, groupId)).toHaveLength(0);
+        expect(persistPropertyStoreSnapshot).not.toHaveBeenCalled();
     });
 });
 
@@ -122,6 +133,7 @@ describe('handlePropertyFieldDeleted', () => {
         const fields = store.getPropertyFields(serverUrl, groupId);
         expect(fields).toHaveLength(1);
         expect(fields[0].id).toBe('f2');
+        expect(persistPropertyStoreSnapshot).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should do nothing when field_id is missing', () => {
@@ -136,6 +148,7 @@ describe('handlePropertyFieldDeleted', () => {
 
         handlePropertyFieldDeleted(serverUrl, msg);
         expect(store.getPropertyFields(serverUrl, groupId)).toHaveLength(1);
+        expect(persistPropertyStoreSnapshot).not.toHaveBeenCalled();
     });
 
     it('should do nothing when field_id does not match any stored field', () => {
@@ -174,6 +187,7 @@ describe('handlePropertyValuesUpdated', () => {
 
         const stored = store.getPropertyValuesForTarget(serverUrl, systemTargetId);
         expect(stored).toHaveLength(2);
+        expect(persistPropertyStoreSnapshot).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should update existing values in the store', () => {

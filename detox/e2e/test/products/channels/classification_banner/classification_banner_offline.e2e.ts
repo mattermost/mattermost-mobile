@@ -95,7 +95,12 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
     });
 
     it('MM-T_CB_OFFLINE_3 - should not display the banner when there is no cached data and the API is blocked', async () => {
-        // # Block API calls before configuring anything
+        // # Reload while online so the app fetches the (now-empty) classification
+        // data and persists it, clearing any stale cache from prior tests.
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+
+        // # Block API calls before reloading again
         await device.setURLBlacklist([`.*${siteOneUrl}.*`]);
 
         // # Reload the app with no cached data and no API access

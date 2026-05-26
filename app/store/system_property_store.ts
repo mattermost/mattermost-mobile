@@ -3,11 +3,7 @@
 
 import {useEffect, useReducer} from 'react';
 
-import {debounce} from '@helpers/api/general';
-import {logError} from '@utils/log';
-
 export type PropertyStoreListener = (serverUrl: string, groupId: string) => void;
-export type PropertyPersistCallback = (serverUrl: string) => Promise<void> | void;
 
 // fieldStore[serverUrl][groupId][fieldId]
 type FieldStore = Record<string, Record<string, Record<string, PropertyField>>>;
@@ -23,53 +19,6 @@ const fieldStore: FieldStore = Object.create(null) as FieldStore;
 const valueStore: ValueStore = Object.create(null) as ValueStore;
 const listeners = new Set<PropertyStoreListener>();
 const groupNameToId: GroupNameIndex = Object.create(null) as GroupNameIndex;
-
-// --- Persist scheduler ---
-
-let persistCallback: PropertyPersistCallback | undefined;
-const PERSIST_DEBOUNCE_MS = 250;
-let pendingServerUrl: string | undefined;
-const isHydrating = new Set<string>();
-
-export function registerPersistCallback(cb: PropertyPersistCallback): void {
-    persistCallback = cb;
-}
-
-function flushPersist(serverUrl: string): void {
-    if (!pendingServerUrl) {
-        return;
-    }
-    pendingServerUrl = undefined;
-    Promise.resolve(persistCallback?.(serverUrl)).catch((err) => {
-        logError('system_property_store.flushPersist', err);
-    });
-}
-
-const debouncedFlushPersist = debounce(flushPersist, PERSIST_DEBOUNCE_MS);
-
-function schedulePersist(serverUrl: string): void {
-    if (!persistCallback || isHydrating.has(serverUrl)) {
-        return;
-    }
-    pendingServerUrl = serverUrl;
-    debouncedFlushPersist(serverUrl);
-}
-
-export function setHydrating(serverUrl: string, value: boolean): void {
-    if (value) {
-        isHydrating.add(serverUrl);
-    } else {
-        isHydrating.delete(serverUrl);
-    }
-}
-
-export async function __flushPersistForTests(): Promise<void> {
-    if (pendingServerUrl) {
-        const url = pendingServerUrl;
-        pendingServerUrl = undefined;
-        await persistCallback?.(url);
-    }
-}
 
 // --- Internal helpers ---
 
@@ -99,11 +48,9 @@ function notify(serverUrl: string, groupId: string) {
     }
 }
 
-/** Single internal path for all mutations: runs fn(), notifies, schedules persist. */
 function mutate(serverUrl: string, groupId: string, fn: () => void): void {
     fn();
     notify(serverUrl, groupId);
-    schedulePersist(serverUrl);
 }
 
 // --- Snapshot getters (used by persistPropertyStoreSnapshot) ---
@@ -143,9 +90,6 @@ export function registerGroupName(serverUrl: string, groupName: string, groupId:
         groupNameToId[serverUrl] = Object.create(null) as Record<string, string>;
     }
     groupNameToId[serverUrl][groupName] = groupId;
-
-    // No UI notification needed for group name changes, but persist the update.
-    schedulePersist(serverUrl);
 }
 
 export function getGroupIdByName(serverUrl: string, groupName: string): string | undefined {
@@ -242,8 +186,6 @@ export function getPropertyValueForField(serverUrl: string, targetId: string, fi
     return valueStore[serverUrl]?.[targetId]?.[fieldId];
 }
 
-// --- Bulk write (for hydration and future batch API) ---
-
 /**
  * Atomically replaces all property data for a server.
  * Used by hydratePropertyStore and future batch-fetch actions.
@@ -284,8 +226,6 @@ export function setAllPropertyData(serverUrl: string, data: {
     for (const groupId of Object.keys(data.fieldsByGroup)) {
         notify(serverUrl, groupId);
     }
-
-    schedulePersist(serverUrl);
 }
 
 // --- Subscription ---

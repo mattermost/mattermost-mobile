@@ -29,9 +29,9 @@ afterEach(async () => {
 });
 
 describe('getPersistedPropertyFields', () => {
-    it('should return empty object when no record exists', async () => {
+    it('should return undefined when no record exists', async () => {
         const result = await getPersistedPropertyFields(database);
-        expect(result).toEqual({});
+        expect(result).toBeUndefined();
     });
 
     it('should return stored fields grouped by groupId', async () => {
@@ -70,9 +70,9 @@ describe('getPersistedPropertyFields', () => {
 });
 
 describe('getPersistedPropertyValues', () => {
-    it('should return empty object when no record exists', async () => {
+    it('should return undefined when no record exists', async () => {
         const result = await getPersistedPropertyValues(database);
-        expect(result).toEqual({});
+        expect(result).toBeUndefined();
     });
 
     it('should return stored values grouped by targetId', async () => {
@@ -110,9 +110,9 @@ describe('getPersistedPropertyValues', () => {
 });
 
 describe('getPersistedPropertyGroupNames', () => {
-    it('should return empty object when no record exists', async () => {
+    it('should return undefined when no record exists', async () => {
         const result = await getPersistedPropertyGroupNames(database);
-        expect(result).toEqual({});
+        expect(result).toBeUndefined();
     });
 
     it('should return stored group name mapping', async () => {

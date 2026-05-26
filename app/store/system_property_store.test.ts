@@ -1,10 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {advanceTimers, enableFakeTimers, disableFakeTimers} from '@test/timer_helpers';
-
 import {
-    __flushPersistForTests,
     getFieldStoreSnapshot,
     getGroupIdByName,
     getGroupNameSnapshot,
@@ -13,11 +10,9 @@ import {
     getPropertyValuesForTarget,
     getValueStoreSnapshot,
     registerGroupName,
-    registerPersistCallback,
     removePropertyField,
     removePropertyFieldById,
     setAllPropertyData,
-    setHydrating,
     setPropertyFields,
     setPropertyValues,
     subscribe,
@@ -408,104 +403,5 @@ describe('setAllPropertyData', () => {
 
     it('should handle empty data without throwing', () => {
         expect(() => setAllPropertyData(serverUrl, {fieldsByGroup: {}, valuesByTarget: {}, groupNames: {}})).not.toThrow();
-    });
-});
-
-describe('persist callback', () => {
-    beforeEach(async () => {
-        enableFakeTimers();
-        setPropertyFields(serverUrl, groupId, []);
-        setPropertyValues(serverUrl, targetId, groupId, []);
-        await __flushPersistForTests();
-    });
-
-    afterEach(async () => {
-        registerPersistCallback(() => undefined);
-        await __flushPersistForTests();
-        disableFakeTimers();
-    });
-
-    it('should not crash when a no-op callback is registered', async () => {
-        registerPersistCallback(() => undefined);
-
-        setPropertyFields(serverUrl, groupId, [makeField('f1')]);
-        await expect(advanceTimers(300)).resolves.not.toThrow();
-    });
-
-    it('should invoke the callback after debounce delay', async () => {
-        const cb = jest.fn().mockResolvedValue(undefined);
-        registerPersistCallback(cb);
-
-        setPropertyFields(serverUrl, groupId, [makeField('f1')]);
-        expect(cb).not.toHaveBeenCalled();
-
-        await advanceTimers(300);
-
-        expect(cb).toHaveBeenCalledTimes(1);
-        expect(cb).toHaveBeenCalledWith(serverUrl);
-    });
-
-    it('should coalesce multiple mutations into one callback call per server', async () => {
-        const cb = jest.fn().mockResolvedValue(undefined);
-        registerPersistCallback(cb);
-
-        setPropertyFields(serverUrl, groupId, [makeField('f1')]);
-        setPropertyValues(serverUrl, targetId, groupId, [makeValue('f1', 'v1')]);
-        updatePropertyField(serverUrl, makeField('f1', {name: 'updated'}));
-
-        await advanceTimers(300);
-
-        expect(cb).toHaveBeenCalledTimes(1);
-        expect(cb).toHaveBeenCalledWith(serverUrl);
-    });
-
-    it('should persist only the latest server URL when called in rapid succession', async () => {
-        const cb = jest.fn().mockResolvedValue(undefined);
-        registerPersistCallback(cb);
-        const server2 = 'other.test.com';
-
-        setPropertyFields(serverUrl, groupId, [makeField('f1')]);
-        setPropertyFields(server2, groupId, [makeField('f2')]);
-
-        await advanceTimers(300);
-
-        expect(cb).toHaveBeenCalledTimes(1);
-        expect(cb).toHaveBeenCalledWith(server2);
-    });
-
-    it('should skip persist during hydration', async () => {
-        const cb = jest.fn().mockResolvedValue(undefined);
-        registerPersistCallback(cb);
-
-        setHydrating(serverUrl, true);
-        setPropertyFields(serverUrl, groupId, [makeField('f1')]);
-        await advanceTimers(300);
-
-        expect(cb).not.toHaveBeenCalled();
-
-        setHydrating(serverUrl, false);
-    });
-
-    it('should resume persisting after hydration ends', async () => {
-        const cb = jest.fn().mockResolvedValue(undefined);
-        registerPersistCallback(cb);
-
-        setHydrating(serverUrl, true);
-        setPropertyFields(serverUrl, groupId, [makeField('f1')]);
-        setHydrating(serverUrl, false);
-
-        setPropertyFields(serverUrl, groupId, [makeField('f2')]);
-        await advanceTimers(300);
-
-        expect(cb).toHaveBeenCalledTimes(1);
-        expect(cb).toHaveBeenCalledWith(serverUrl);
-    });
-
-    it('should catch and not rethrow errors from the callback', async () => {
-        const cb = jest.fn().mockRejectedValue(new Error('db failure'));
-        registerPersistCallback(cb);
-
-        setPropertyFields(serverUrl, groupId, [makeField('f1')]);
-        await expect(advanceTimers(300)).resolves.not.toThrow();
     });
 });

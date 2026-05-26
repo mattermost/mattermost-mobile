@@ -8,32 +8,29 @@ import type SystemModel from '@typings/database/models/servers/system';
 
 const {SERVER: {SYSTEM}} = MM_TABLES;
 
-export const getPersistedPropertyFields = async (database: Database): Promise<Record<string, PropertyField[]>> => {
+export const getPersistedPropertyFields = async (database: Database): Promise<Record<string, PropertyField[]> | undefined> => {
     try {
         const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.PROPERTY_FIELDS);
-        const value = record?.value as Record<string, PropertyField[]> | null;
-        return value ?? {};
+        return (record?.value as Record<string, PropertyField[]> | null) ?? {};
     } catch {
-        return {};
+        return undefined;
     }
 };
 
-export const getPersistedPropertyValues = async (database: Database): Promise<Record<string, Array<PropertyValue<string>>>> => {
+export const getPersistedPropertyValues = async (database: Database): Promise<Record<string, Array<PropertyValue<string>>> | undefined> => {
     try {
         const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.PROPERTY_VALUES);
-        const value = record?.value as Record<string, Array<PropertyValue<string>>> | null;
-        return value ?? {};
+        return (record?.value as Record<string, Array<PropertyValue<string>>> | null) ?? {};
     } catch {
-        return {};
+        return undefined;
     }
 };
 
-export const getPersistedPropertyGroupNames = async (database: Database): Promise<Record<string, string>> => {
+export const getPersistedPropertyGroupNames = async (database: Database): Promise<Record<string, string> | undefined> => {
     try {
         const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES);
-        const value = record?.value as Record<string, string> | null;
-        return value ?? {};
+        return (record?.value as Record<string, string> | null) ?? {};
     } catch {
-        return {};
+        return undefined;
     }
 };

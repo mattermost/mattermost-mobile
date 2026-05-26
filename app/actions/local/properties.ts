@@ -9,13 +9,12 @@ import {
     getGroupNameSnapshot,
     getValueStoreSnapshot,
     setAllPropertyData,
-    setHydrating,
 } from '@store/system_property_store';
 import {logError} from '@utils/log';
 
 /**
  * Writes the current ephemeral property store snapshot to the server's System table.
- * Called by the store's persist callback after mutations are debounced.
+ * Called by action callers after store mutations are complete.
  */
 export async function persistPropertyStoreSnapshot(serverUrl: string): Promise<void> {
     try {
@@ -40,24 +39,24 @@ export async function persistPropertyStoreSnapshot(serverUrl: string): Promise<v
 
 /**
  * Reads persisted property data from the server's System table and populates
- * the ephemeral property store. The hydrating flag prevents a write-back loop.
+ * the ephemeral property store.
  */
 export async function hydratePropertyStore(serverUrl: string): Promise<void> {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        setHydrating(serverUrl, true);
-        try {
-            const [fieldsByGroup, valuesByTarget, groupNames] = await Promise.all([
-                getPersistedPropertyFields(database),
-                getPersistedPropertyValues(database),
-                getPersistedPropertyGroupNames(database),
-            ]);
+        const [fieldsByGroup, valuesByTarget, groupNames] = await Promise.all([
+            getPersistedPropertyFields(database),
+            getPersistedPropertyValues(database),
+            getPersistedPropertyGroupNames(database),
+        ]);
 
-            setAllPropertyData(serverUrl, {fieldsByGroup, valuesByTarget, groupNames});
-        } finally {
-            setHydrating(serverUrl, false);
+        if (fieldsByGroup === undefined || valuesByTarget === undefined || groupNames === undefined) {
+            logError('hydratePropertyStore', 'DB read failure, keeping in-memory state');
+            return;
         }
+
+        setAllPropertyData(serverUrl, {fieldsByGroup, valuesByTarget, groupNames});
     } catch (error) {
         logError('hydratePropertyStore', error);
     }
