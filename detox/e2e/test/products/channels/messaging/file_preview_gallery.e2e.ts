@@ -20,30 +20,20 @@ import {
 import {
     ChannelListScreen,
     ChannelScreen,
-    HomeScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Dismiss the gallery and wait for the overlay to fully unmount before proceeding.
-// The gallery view sits on top of the channel navigation header — tapping Back
-// before it is fully gone causes a "not hittable" hit-test failure on iOS.
+// Dismiss the gallery overlay and wait for it to unmount.
+// iOS: RNGH Pressable exposes the same testID on wrapper and inner button, so atIndex(0).
 const dismissGallery = async () => {
     if (isAndroid()) {
         await device.pressBack();
     } else {
-        // react-native-gesture-handler's Pressable on iOS exposes the same testID
-        // on both the RNGestureHandlerButtonComponentView wrapper and its inner
-        // RNGestureHandlerButton, causing "Multiple elements found" if matched
-        // directly. Both target the same press, so atIndex(0) is safe.
         await element(by.id('gallery.header.close.button')).atIndex(0).tap();
     }
-
-    // Wait for the close button to disappear — confirms gallery is fully unmounted.
-    // We use the close button testID rather than by.text('1 of 1') because FormattedText
-    // inside AnimatedSafeAreaView is not reliably found by by.text() on Android.
     await waitFor(element(by.id('gallery.header.close.button'))).not.toExist().withTimeout(timeouts.TEN_SEC);
     await wait(isAndroid() ? timeouts.TWO_SEC : timeouts.ONE_SEC);
 };
@@ -57,15 +47,13 @@ describe('Messaging - File Preview Gallery', () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
 
-        // # Ensure clean state — reload to dismiss any open overlays (e.g. gallery left open
-        // from a previous run), then log out if already signed in
-        await device.reloadReactNative();
-        await wait(timeouts.TWO_SEC);
-        try {
-            await HomeScreen.logout();
-        } catch {
-            // Not logged in, or logout failed — proceed to connect
-        }
+        // # Fresh app install for clean state. iOS notifications permission
+        // is pre-granted so delete:true doesn't trigger the system prompt.
+        await device.launchApp({
+            newInstance: true,
+            delete: true,
+            ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES'}} : {}),
+        });
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -79,41 +67,27 @@ describe('Messaging - File Preview Gallery', () => {
     });
 
     afterEach(async () => {
-        // # Aggressive multi-step recovery so that a mid-test failure (e.g. gallery
-        // left open, view hierarchy corrupted after a swipe) does not cascade into
-        // the next test starting in a broken state.
-
-        // Step 1 — close the gallery if it is still open
+        // Recover from mid-test failures so the next test starts clean.
         try {
             await waitFor(element(by.id('gallery.header.close.button'))).toExist().withTimeout(timeouts.ONE_SEC);
             if (isAndroid()) {
                 await device.pressBack();
             } else {
-                await element(by.id('gallery.header.close.button')).tap();
+                await element(by.id('gallery.header.close.button')).atIndex(0).tap();
             }
             await wait(timeouts.ONE_SEC);
-        } catch {
-            // Gallery is not open — nothing to do
-        }
+        } catch { /* gallery not open */ }
 
-        // Step 2 — go back from the channel screen if we are still on it
         try {
             await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.ONE_SEC);
             await ChannelScreen.back();
-        } catch {
-            // Not on the channel screen — nothing to do
-        }
+        } catch { /* not on channel screen */ }
 
-        // Step 3 — ensure we are on the channel list screen; ChannelListScreen.toBeVisible()
-        // has built-in recovery (device.launchApp({newInstance: true})) so this handles
-        // the worst-case scenario where the view hierarchy is completely corrupted.
         await ChannelListScreen.toBeVisible();
     });
 
-    afterAll(async () => {
-        // # Log out
-        await HomeScreen.logout();
-    });
+    // No afterAll cleanup required: beforeAll resets state via
+    // device.launchApp({delete: true}) so the next describe starts clean.
 
     it('MM-T3462 - should render image preview for image file types', async () => {
         // # Upload an image and create a post via API
@@ -128,17 +102,13 @@ describe('Messaging - File Preview Gallery', () => {
 
         // * Verify the image file container thumbnail is displayed in the channel
         const fileContainer = element(by.id(`${fileId}-file-container`));
-        await waitFor(fileContainer).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Tap the image thumbnail to open the file preview gallery
-        await fileContainer.tap();
+        // # Tap the image thumbnail to open the file preview gallery.
+        await element(by.id(`${fileId}-file`)).tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify file preview gallery is open (close button appears when gallery is mounted)
-        // Use the close button testID rather than by.text('1 of 1') — FormattedText inside
-        // AnimatedSafeAreaView is not reliably found via by.text() on Android.
-        // Use polling waitForElementToExist on Android to avoid bridge-idle synchronization
-        // blocking waitFor().toExist() while the gallery animation keeps the bridge busy.
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
         if (isAndroid()) {
             await waitForElementToExist(galleryCloseButton, timeouts.HALF_MIN);
@@ -169,8 +139,10 @@ describe('Messaging - File Preview Gallery', () => {
 
         // # Tap the file container to open the file preview gallery
         const fileContainer = element(by.id(`${fileId}-file-container`));
-        await waitFor(fileContainer).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await fileContainer.tap();
+        await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
+        await element(by.id(`${fileId}-file`)).tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify file preview gallery is open
@@ -188,12 +160,6 @@ describe('Messaging - File Preview Gallery', () => {
     });
 
     it('MM-T3459_2 - should dismiss file preview when user swipes down (iOS) or presses Back (Android)', async () => {
-        // NOTE: On Android, a swipe-down gesture on the gallery causes view-hierarchy
-        // corruption (home tab disappears) that breaks subsequent tests in the suite.
-        // dismissGallery() therefore uses device.pressBack() on Android, which covers
-        // the same functional intent (dismissing the gallery) without the side-effects.
-        // The swipe-down gesture path is exercised on iOS only.
-
         // # Upload an image and create a post via API
         const {post, fileId} = await Post.apiCreatePostWithImageAttachment(siteOneUrl, testChannel.id);
 
@@ -206,8 +172,10 @@ describe('Messaging - File Preview Gallery', () => {
 
         // # Tap the file container to open the file preview gallery
         const fileContainer = element(by.id(`${fileId}-file-container`));
-        await waitFor(fileContainer).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await fileContainer.tap();
+        await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
+        await element(by.id(`${fileId}-file`)).tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify file preview gallery is open
@@ -225,10 +193,6 @@ describe('Messaging - File Preview Gallery', () => {
     });
 
     it('MM-T3463_1 - should open file preview gallery for a video file attachment', async () => {
-        // NOTE: This test uses the fixture image.png in place of a video fixture because no video fixture
-        // is available in detox/e2e/support/fixtures/. Add a video fixture (e.g. video.mp4) and use
-        // apiUploadFileToChannel with it to fully test the video player UI (play button, video frame).
-
         // # Upload an image file and create a post with it via API (simulating a file attachment)
         const {post, fileId} = await Post.apiCreatePostWithImageAttachment(siteOneUrl, testChannel.id);
 
@@ -241,8 +205,10 @@ describe('Messaging - File Preview Gallery', () => {
 
         // # Tap the file container thumbnail to open the file preview gallery
         const fileContainer = element(by.id(`${fileId}-file-container`));
-        await waitFor(fileContainer).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await fileContainer.tap();
+        await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
+        await element(by.id(`${fileId}-file`)).tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify file preview gallery is open (close button is present when gallery is mounted)
@@ -279,22 +245,26 @@ describe('Messaging - File Preview Gallery', () => {
 
         // # Tap the file container to open the file preview gallery
         const fileContainer = element(by.id(`${fileId}-file-container`));
-        await waitFor(fileContainer).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await fileContainer.tap();
+        await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
+        await element(by.id(`${fileId}-file`)).tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify file preview gallery is open
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
         await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Tap the copy public link button in the gallery footer
-        await element(by.id('gallery.footer.copy_public_link.button')).tap();
+        // # Tap the copy public link button in the gallery footer.
+        // .atIndex(0) for the same reason documented on dismissGallery() above:
+        // the underlying react-native-gesture-handler Pressable exposes the
+        // testID on both its outer ComponentView wrapper and inner Button on
+        // iOS, so direct .tap() throws "Multiple elements found". Both target
+        // the same press handler.
+        await element(by.id('gallery.footer.copy_public_link.button')).atIndex(0).tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify the copy public link toast message appears (testID='toast.message')
-        // Use toExist() instead of toBeVisible(): the toast uses position:absolute with a
-        // Reanimated animated opacity, so on Android the global visible rect may be < 75%
-        // even when fully rendered (absolute child clipped by parent bounds).
         const toastMessage = element(by.id('toast.message'));
         await waitFor(toastMessage).toExist().withTimeout(timeouts.TEN_SEC);
 
@@ -358,8 +328,10 @@ describe('Messaging - File Preview Gallery', () => {
 
         // # Tap the file container to open the file preview gallery
         const fileContainer = element(by.id(`${fileId}-file-container`));
-        await waitFor(fileContainer).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await fileContainer.tap();
+        await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
+        await element(by.id(`${fileId}-file`)).tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify file preview gallery is open

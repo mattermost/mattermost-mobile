@@ -196,7 +196,12 @@ describe('Server Login - Server List', () => {
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
         await wait(timeouts.ONE_SEC);
-        await ServerListScreen.getServerItemEditOption(serverOneDisplayName).tap();
+
+        // .atIndex(0): the Swipeable's revealed Edit option can render twice
+        // briefly on iOS during the swipe-pan animation (CI run 26368981355,
+        // MM-T4691_4: "Multiple elements found"). All sibling taps in this
+        // file already use .atIndex(0).
+        await ServerListScreen.getServerItemEditOption(serverOneDisplayName).atIndex(0).tap();
 
         // * Verify on edit server screen
         await EditServerScreen.toBeVisible();
@@ -220,7 +225,9 @@ describe('Server Login - Server List', () => {
         // # Revert back to original first server display name and go back to first server
         await ServerListScreen.getServerItemActive(newServerOneDisplayName).atIndex(0).swipe('left', 'slow');
         await wait(timeouts.ONE_SEC);
-        await ServerListScreen.getServerItemEditOption(newServerOneDisplayName).tap();
+
+        // .atIndex(0) for the same reason as the first tap above.
+        await ServerListScreen.getServerItemEditOption(newServerOneDisplayName).atIndex(0).tap();
         await EditServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
         await EditServerScreen.saveButton.tap();
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();

@@ -29,14 +29,12 @@ import {expect} from 'detox';
 
 const FIXTURES_DIR = path.resolve(__dirname, '../../../../support/fixtures');
 
-// Dismiss the gallery and wait for the overlay to fully unmount before proceeding.
-// Same pattern as file_preview_gallery.e2e.ts — gallery sits on top of channel nav header.
+// Dismiss the gallery and wait for the overlay to fully unmount.
 const dismissGallery = async () => {
     if (isAndroid()) {
         await device.pressBack();
     } else {
-        // react-native-gesture-handler's Pressable on iOS exposes the same testID
-        // on both the wrapper and inner button — use atIndex(0) to disambiguate.
+        // .atIndex(0) — RNGH Pressable exposes the same testID on wrapper + inner button.
         await element(by.id('gallery.header.close.button')).atIndex(0).tap();
     }
     await waitFor(element(by.id('gallery.header.close.button'))).not.toExist().withTimeout(timeouts.TEN_SEC);
@@ -76,13 +74,13 @@ describe('Messaging - File Type Preview', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, '');
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // * Verify the image thumbnail renders in the post
+        // * Verify the image thumbnail renders (iOS-26 wrapper-View quirk — use toExist).
         const fileContainer = element(by.id(`${fileId}-file-container`));
-        await waitFor(fileContainer).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(fileContainer).toBeVisible();
+        await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(fileContainer).toExist();
 
-        // # Tap the image thumbnail to open the gallery preview
-        await fileContainer.tap();
+        // # Tap inner `${fileId}-file` testID — outer wrapper has marginTop that fails Detox visibility.
+        await element(by.id(`${fileId}-file`)).tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify the gallery opens (close button appears when gallery is mounted)
@@ -115,12 +113,10 @@ describe('Messaging - File Type Preview', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, '');
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // * Verify the PDF attachment renders as a document card (file-container is present).
-        // DocumentFile renders the file icon + FileInfo row — no gallery opens on tap since
-        // tapping a document downloads it then opens the system document viewer (cross-process).
+        // * Verify the PDF attachment renders as a document card (iOS-26 quirk — use toExist).
         const fileContainer = element(by.id(`${fileId}-file-container`));
-        await waitFor(fileContainer).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(fileContainer).toBeVisible();
+        await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(fileContainer).toExist();
 
         // # Go back to channel list
         await ChannelScreen.back();
@@ -145,10 +141,7 @@ describe('Messaging - File Type Preview', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, '');
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // * Verify the audio attachment renders the file container.
-        // AudioFile renders an inline player (play/pause button + progress bar) rather than
-        // opening a gallery — no tap required; the presence of the container confirms the
-        // audio player component was mounted.
+        // * Verify the audio attachment renders the inline player file container.
         const fileContainer = element(by.id(`${fileId}-file-container`));
         await waitFor(fileContainer).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(fileContainer).toBeVisible();
@@ -176,9 +169,7 @@ describe('Messaging - File Type Preview', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, '');
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // * Verify the text file attachment renders as a generic file card (file-container present).
-        // Files with no dedicated renderer (text/plain, zip, etc.) render as a card showing
-        // the file icon + file name — the file-container testID is always present on all types.
+        // * Verify the text file attachment renders as a generic file card.
         const fileContainer = element(by.id(`${fileId}-file-container`));
         await waitFor(fileContainer).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(fileContainer).toBeVisible();

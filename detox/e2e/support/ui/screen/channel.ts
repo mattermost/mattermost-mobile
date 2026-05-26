@@ -150,12 +150,7 @@ class ChannelScreen {
     toBeVisible = async (timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC) => {
         await wait(timeouts.ONE_SEC);
 
-        // Use polling waitForElementToExist on both platforms to avoid bridge-idle sync stalls.
-        // On Android, channel navigation (DM/GM creation, Browse Channels tap) keeps the JS
-        // bridge (mqt_js) busy. On iOS, navigating from Browse Channels to a channel
-        // (especially archived channels) triggers concurrent modal dismissal + channel push +
-        // network fetches that keep the bridge busy, causing waitFor().toExist() to block for
-        // the full timeout waiting for bridge-idle that never arrives within 30s.
+        // Polling helper avoids bridge-idle sync stalls during channel navigation on both platforms.
         await waitForElementToExist(this.channelScreen, timeout);
 
         return this.channelScreen;
@@ -192,10 +187,7 @@ class ChannelScreen {
         return this.toBeVisible();
     };
 
-    /**
-     * Open a channel via Find Channels. Use for API-created private channels that may
-     * not appear in the sidebar immediately after login or between tests.
-     */
+    // Open a channel via Find Channels — for API-created private channels not in the sidebar yet.
     openViaFindChannels = async (channelName: string) => {
         await ChannelListScreen.toBeVisible();
         await FindChannelsScreen.open();
@@ -214,12 +206,7 @@ class ChannelScreen {
     back = async () => {
         await wait(isIos() ? timeouts.TWO_SEC : timeouts.ONE_SEC);
         await this.backButton.tap();
-
-        if (isAndroid()) {
-            await waitFor(this.channelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
-        } else {
-            await expect(this.channelScreen).not.toBeVisible();
-        }
+        await waitFor(this.channelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
     leaveChannel = async ({confirm = true} = {}) => {
@@ -247,22 +234,11 @@ class ChannelScreen {
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
 
-        // Poll for the post to exist in the hierarchy (not necessarily meeting the
-        // 75% visibility threshold). On iOS 26.x the most recent post often sits
-        // behind the post-input bar or under a transient keyboard, so toBeVisible()
-        // fails even though the post is present and will become hittable after the
-        // scroll-up on line ~252. Polling toExist() is sufficient — the subsequent
-        // longPressWithScrollRetry handles visibility on its own via scroll retries.
+        // Poll toExist — subsequent longPressWithScrollRetry handles visibility on its own.
         await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
 
-        // On Android, dismiss the keyboard before long-pressing. The soft keyboard
-        // stays open after postMessage() and intercepts the long-press gesture on
-        // API 35 — the post options bottom sheet never appears because Android's
-        // gesture system routes the touch to the keyboard's window instead of the
-        // post list. A swipe gesture on the post list triggers keyboardDismissMode
-        // 'on-drag' which reliably dismisses the keyboard. Detox's scroll() API
-        // may use programmatic scrolling that doesn't trigger on-drag dismissal,
-        // whereas swipe() performs a real touch gesture.
+        // Android: swipe (not scroll) to dismiss the soft keyboard via keyboardDismissMode='on-drag'
+        // — programmatic scroll() doesn't trigger it.
         if (isAndroid()) {
             try {
                 await this.postList.getFlatList().swipe('up', 'fast', 0.3);
@@ -270,14 +246,11 @@ class ChannelScreen {
             await wait(timeouts.TWO_SEC);
         }
 
-        // On iOS, the most-recent post can sit right at the bottom edge of the list,
-        // partially covered by the post-input bar. Its "hittable point" (the centre)
-        // lies behind the input, making long-press throw "View is not hittable at its
-        // visible point". Scroll the list up slightly to push the post away from the
-        // input area so the gesture lands cleanly.
+        // iOS: same swipe-dismiss-keyboard pattern — post-input bar + keyboard otherwise
+        // occlude the bottom post and fail the iOS-26 Fabric visibility-percent probe.
         if (isIos()) {
             try {
-                await this.postList.getFlatList().scroll(100, 'up');
+                await this.postList.getFlatList().swipe('up', 'fast', 0.3);
                 await wait(timeouts.ONE_SEC);
             } catch { /* ignore — list may be at the boundary */ }
         }
@@ -302,19 +275,8 @@ class ChannelScreen {
     };
 
     postMessage = async (message: string) => {
-        // # Post message
-        //
-        // Precondition: the channel screen must actually be the topmost screen
-        // before we touch postInput. Empirical analysis of CI run 25947506060
-        // showed many "View is not hittable" failures at this exact site were
-        // actually state-contamination from a prior test that left a modal open
-        // (e.g. Edit Channel Header). The postInput element is still discoverable
-        // by testID because the channel screen stays mounted underneath, but
-        // every interaction fails because the modal intercepts touches. We
-        // dismiss any known leftover modal once before falling through to the
-        // normal post flow. Cheap on the common (no-modal) path: a single
-        // 600 ms exists-probe per close button id, short-circuited at the first
-        // hit.
+        // # Post message — first dismiss any leftover modal from a prior test that
+        // would otherwise intercept touches even though postInput is still discoverable.
         try {
             const knownCloseIds = [
                 'close.create_or_edit_channel.button',
@@ -344,36 +306,15 @@ class ChannelScreen {
             // Best-effort recovery. Fall through.
         }
 
-        // On iOS the PasteInputTextView can fail Detox's 100% visibility threshold
-        // when the channel intro header pushes the input below the visible area or
-        // a tooltip overlay partially covers it. Dismiss any tooltip overlay first,
-        // then tap the input.
+        // # Dismiss the scheduled-post tooltip — it can overlay the PasteInputTextView.
         await this.dismissScheduledPostTooltip();
 
-        // On iOS 26, the keyboard can persist across channel navigation if the
-        // KeyboardController inset isn't properly reset between tests. When the
-        // keyboard is showing, the post input bar shifts behind it, making the
-        // PasteInputTextView fail hittability at {5,6}. Tapping the post list
-        // (above the keyboard) dismisses it so the subsequent tap on postInput
-        // gets the correct keyboard-aware layout.
-        // Guard with a short waitFor so we don't hang 60s if FlatList is absent
-        // (e.g. empty channel with intro view in place of a post list).
+        // # iOS: tap the FlatList top-corner to dismiss any persisting keyboard. Avoid the
+        // center because on an empty channel it lands on the IntroOptions row (SetHeaderBox)
+        // and opens the Edit Channel Header modal.
         if (isIos()) {
             try {
                 await waitFor(this.postList.getFlatList()).toExist().withTimeout(timeouts.ONE_SEC);
-
-                // Use a fixed top-corner coordinate instead of the default center
-                // tap. On a freshly opened channel with no posts, the FlatList's
-                // center sits exactly on the IntroOptions row (Set Header / Add
-                // Members / Favorite — see
-                // app/screens/channel/channel_post_list/intro/options/index.tsx).
-                // A default `.tap()` lands on `SetHeaderBox`, opens the Edit
-                // Channel Header modal, and the subsequent `postInput.tap()`
-                // then fails its 100% visibility check because the modal is
-                // sitting on top — symptom: PasteInput "not visible" with
-                // bounds 400x32. Tapping at (5,5) keeps us in the FlatList's
-                // top padding (channel-intro illustration / banner area) which
-                // has no touchables to accidentally trigger.
                 await this.postList.getFlatList().tap({x: 5, y: 5});
                 await wait(timeouts.HALF_SEC);
             } catch {
@@ -384,25 +325,12 @@ class ChannelScreen {
         try {
             await this.postInput.tap();
         } catch {
-            // Input not hittable (intro header covering it on iOS) — replaceText
-            // will still work and focus the field.
+            // Input not hittable — replaceText below will still focus the field.
         }
 
-        // Poll for hittability on the post input.
-        //
-        // On iOS the PasteInputTextView gets briefly occluded by the channel-intro
-        // header, the scheduled-post tooltip, an in-flight UITransitionView from
-        // the RNN-style navigation transition, or a keyboard inset that hasn't
-        // settled yet. The previous "single retry after a 1 s wait" was racing all
-        // of these on the slow macos-15 / iOS 26 CI runners (35 failures/run at
-        // this exact site). A bounded polling loop with a hittability probe per
-        // iteration lets the transient overlays clear without giving up too soon.
-        //
-        // Total budget is timeouts.TEN_SEC. Each iteration calls replaceText() and
-        // returns immediately on success; a hittability rejection is caught,
-        // a short wait amortises one frame + transition, and we retry. Any other
-        // failure (e.g. element not found) is re-thrown immediately so we don't
-        // mask real regressions.
+        // # Bounded polling loop: PasteInputTextView is briefly occluded on iOS by
+        // intro header / tooltip / UITransitionView / unsettled keyboard inset.
+        // Retry replaceText for TEN_SEC on hittability errors; re-throw anything else.
         const replaceDeadline = Date.now() + timeouts.TEN_SEC;
         let lastError: unknown;
         /* eslint-disable no-await-in-loop -- sequential retry on transient occlusion */
@@ -436,41 +364,22 @@ class ChannelScreen {
     };
 
     tapSendButton = async () => {
-        // # wait for Send button to be enabled
-        //
-        // Use polling (waitForElementToBeVisible) instead of waitFor().toBeVisible().
-        // Detox's bridge-sync visibility check requires a 75% on-screen area threshold
-        // AND an idle React/native bridge. On iOS 26 and Android API 35 the post-input
-        // React state update from replaceText() can keep the bridge busy long enough
-        // that the 2s bridge-sync window expires even though the send button is
-        // visually rendered (confirmed on CI failure screenshots for T4909_5/T4910_4/
-        // T4910_5 where the send button is clearly drawn at failure capture). This
-        // mirrors the rationale documented on longPressSendButton below.
+        // # Wait for Send button via polling — bridge-sync visibility can falsely fail when
+        // replaceText() keeps the bridge busy even though the button is rendered.
         await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
         await this.sendButton.tap();
         await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     longPressSendButton = async () => {
-        // # Dismiss the scheduled-post tooltip before long-pressing the send button.
-        // On Android the tooltip overlay intercepts the long-press gesture, preventing
-        // the scheduling sheet from opening. Dismissing it first ensures the press lands
-        // on the actual send button element.
+        // # Dismiss the scheduled-post tooltip — its overlay intercepts long-press on Android.
         await this.dismissScheduledPostTooltip();
 
-        // # Wait for the send button to be visible before attempting the long press.
-        // enterMessageToSchedule calls replaceText() which may not have triggered the
-        // React state update that renders the send button by the time we get here.
-        // Use polling (waitForElementToBeVisible) instead of waitFor().toBeVisible()
-        // so the wait does not depend on bridge-idle sync, which is permanently busy
-        // on both iOS 26.x (main run loop) and Android API 35 (JS bridge after input).
+        // # Poll for the send button (bridge can stay busy after replaceText on iOS 26 / API 35).
         await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
 
-        // # On Android, the soft keyboard stays open after replaceText(). Swipe the
-        // post list to trigger keyboardDismissMode='on-drag' and dismiss the keyboard
-        // BEFORE disabling sync. With sync disabled the gesture system is unrestricted,
-        // so the long-press must land on the actual send button — the keyboard must be
-        // gone by then or it will intercept the press.
+        // # Android: swipe to dismiss keyboard BEFORE disabling sync, otherwise the keyboard
+        // intercepts the long-press once sync is off.
         if (isAndroid()) {
             try {
                 await this.postList.getFlatList().swipe('up', 'fast', 0.3);
@@ -478,18 +387,12 @@ class ChannelScreen {
             await wait(timeouts.ONE_SEC);
         }
 
-        // # Disable Detox synchronization before the long press. On iOS 26 the main
-        // run loop never fully idles (the "Main Run Loop is awake" sync blocker),
-        // causing waitFor-based matchers and even longPress() to hang for 30s before
-        // timing out. On Android the JS bridge (mqt_js) stays busy after text input,
-        // producing the same effect. Disabling sync lets the gesture dispatch
-        // immediately; we then poll for the bottom sheet with waitForElementToExist.
+        // # Disable sync — iOS 26 main run loop / Android JS bridge stays busy and would
+        // otherwise hang longPress for 30s. Poll for the bottom sheet afterwards.
         await device.disableSynchronization();
         try {
             await this.sendButton.longPress();
 
-            // Wait for the schedule picker bottom sheet to appear using polling
-            // (does not depend on Detox idle-sync).
             await waitForElementToExist(
                 element(by.id(this.testID.scheduledPostOptionsBottomSheet)),
                 timeouts.HALF_MIN,
@@ -502,14 +405,11 @@ class ChannelScreen {
     hasPostMessage = async (postId: string, postMessage: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, postMessage);
 
-        // The post may not yet be present in the windowed FlatList immediately after
-        // a send + confirmation alert dismissal (the JS thread is still flushing the
-        // websocket POSTED event). Wait for the row to exist before asserting
-        // visibility, otherwise a one-shot toBeVisible can race the render.
+        // Wait for the row to exist first — windowed FlatList may not have rendered yet
+        // right after a send + WebSocket POSTED flush.
         await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // Use 50% threshold: on iOS 26.x the message input bar can clip the bottom
-        // post to ~50–74% visible, causing the default 75% check to fail intermittently.
+        // 50% threshold — the message input bar can clip the bottom post on iOS 26.x.
         await waitFor(postListPostItem).toBeVisible(50).withTimeout(timeouts.TEN_SEC);
     };
 
@@ -544,9 +444,7 @@ class ChannelScreen {
     };
 
     scheduleMessageForTomorrow = async () => {
-        // Use polling helper instead of waitFor().toExist() — the latter depends on
-        // Detox idle-sync which can block on both iOS (main run loop) and Android
-        // (JS bridge busy). Polling checks the hierarchy directly.
+        // Polling helper — avoids Detox idle-sync stalls on both iOS and Android.
         await waitForElementToExist(this.scheduleMessageTomorrowOption, timeouts.HALF_MIN);
         await this.scheduleMessageTomorrowOption.tap();
         await waitForElementToExist(this.scheduledPostOptionTomorrowSelected, timeouts.TEN_SEC);
@@ -566,22 +464,8 @@ class ChannelScreen {
         await waitForElementToExist(this.scheduledPostOptionNextMondaySelected, timeouts.TEN_SEC);
     };
 
-    /**
-     * Picks the first available schedule option regardless of the current day.
-     *
-     * The picker shows different options depending on the day of the week:
-     *   Sunday  (0): Monday (stable fallback)
-     *   Monday  (1): Next Monday
-     *   Tue–Thu (2–4): Monday (stable fallback)
-     *   Friday  (5): Monday
-     *   Saturday(6): Monday
-     *
-     * "Tomorrow" is intentionally skipped as a stable fallback — Monday is
-     * reliably present on all non-Monday weekdays and Sunday, so tests pass
-     * on any day without relying on "Tomorrow" label availability.
-     * Uses new Date().getDay() which returns 0–6 (Sunday–Saturday) regardless
-     * of locale.
-     */
+    // Picks a stable schedule option regardless of the current weekday.
+    // Monday: pick "Next Monday"; all other days: pick "Monday" (always present).
     scheduleMessageForAvailableOption = async () => {
         const day = new Date().getDay(); // 0 = Sunday … 6 = Saturday
         if (day === 1) {
@@ -634,10 +518,8 @@ class ChannelScreen {
             recent_mentions_page: 'recent_mentions.post_list.post',
         };
 
-        // Wait for the Edit Message modal to close before asserting on the underlying page.
-        // After EditPostScreen.saveButton.tap() the modal dismiss can lag a frame or two
-        // (RNN screen-replace race), so a one-shot assertion below races the underlying
-        // post item that is still occluded by the edit modal.
+        // Wait for the Edit Message modal to close — its dismiss can lag a frame or two
+        // after saveButton.tap() and would otherwise race the assertion below.
         await waitFor(element(by.id('edit_post.screen'))).
             not.toExist().
             withTimeout(timeouts.TEN_SEC);
@@ -654,11 +536,11 @@ class ChannelScreen {
             const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
             await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
         } else {
-            // On iOS, nested <Text> components share a single UITextView text container,
-            // so the combined regex matches both the message body and "Edited" in one view.
+            // iOS: nested <Text> shares one UITextView container so the regex matches the
+            // body + "Edited" in one view. toExist — intro card can push it below 75% visibility.
             const completeTextPattern = new RegExp(`${escapedMessage}.*Edited`, 'i');
             const completeTextMatcher = by.text(completeTextPattern).withAncestor(postItemMatcher);
-            await waitFor(element(completeTextMatcher)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(element(completeTextMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
         }
     };
 }

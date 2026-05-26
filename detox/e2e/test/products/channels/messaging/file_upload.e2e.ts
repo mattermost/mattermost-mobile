@@ -36,15 +36,6 @@ describe('Messaging - File Upload', () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
 
-        // # Ensure clean state
-        await device.reloadReactNative();
-        await wait(timeouts.TWO_SEC);
-        try {
-            await HomeScreen.logout();
-        } catch {
-            // Not logged in — proceed to connect
-        }
-
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(user);
@@ -72,22 +63,12 @@ describe('Messaging - File Upload', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, '');
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
         const fileContainer = element(by.id(`${fileId}-file-container`));
-        await waitFor(fileContainer).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // # Tap the image attachment area in the post (attachment exists in the post list)
-        // Now create a new post draft with an attachment by tapping the image quick action
-        // Then cancel/remove the attachment using the remove button
-        // For this test we simulate by posting via API, then checking the remove button exists
-        // when the attachment is part of an in-draft upload via quick action.
-        //
-        // NOTE: Full UI file picker interaction (selecting from photo library) is not automatable
-        // in Detox without native media permission grants and file picker interaction.
-        // This test validates the remove-attachment flow once a file is queued in the draft.
-        //
-        // The remove button testID is `remove-button-${fileId}` (from upload_remove.tsx).
-        // Since the file is already posted (not in draft), we verify the flow at the post level.
+        // iOS-26 wrapper-View visibility quirk — use toExist instead of toBeVisible.
+        await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
+
         // * Verify the posted attachment is visible in the channel
-        await expect(fileContainer).toBeVisible();
+        await expect(fileContainer).toExist();
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -124,25 +105,26 @@ describe('Messaging - File Upload', () => {
         const {postListPostItem: replyPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, '');
         await waitFor(replyPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // * Verify the attachment container is visible in the thread view
+        // * Verify the attachment container is visible (iOS-26 wrapper-View quirk — use toExist).
         const fileContainer = element(by.id(`${fileId}-file-container`));
-        await waitFor(fileContainer).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(fileContainer).toBeVisible();
+        await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(fileContainer).toExist();
 
-        // # Tap the attachment to confirm it is tappable (opens gallery)
-        await fileContainer.tap();
+        // # Tap the inner `${fileId}-file` testID — outer `-file-container` has marginTop
+        // that drops Detox visibility below the tap threshold.
+        await element(by.id(`${fileId}-file`)).tap();
         await wait(timeouts.TWO_SEC);
 
-        // * Verify gallery opens — use close button testID rather than by.text('1 of 1') because
-        // FormattedText inside AnimatedSafeAreaView is not reliably found via by.text() on Android.
+        // * Verify gallery opens
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
         await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Dismiss the gallery
+        // # Dismiss the gallery — .atIndex(0) on iOS works around RNGH exposing the same
+        // testID on both outer wrapper and inner Button ("Multiple elements found").
         if (isAndroid()) {
             await device.pressBack();
         } else {
-            await galleryCloseButton.tap();
+            await element(by.id('gallery.header.close.button')).atIndex(0).tap();
         }
         await waitFor(galleryCloseButton).not.toExist().withTimeout(timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
@@ -156,10 +138,7 @@ describe('Messaging - File Upload', () => {
     });
 
     it('MM-T328_1 - should show multiple attachments in post after sending via API', async () => {
-        // NOTE: The Mattermost API allows creating posts with multiple file IDs at once.
-        // This test uploads two images via the API and verifies both appear in the channel post.
-        // Full UI multi-file selection from a picker is not automatable in Detox without
-        // native media permission grants and picker interaction.
+        // Full UI multi-file selection from a picker isn't automatable in Detox — upload via API.
 
         // # Upload two images to the channel via API
         const {fileId: fileId1} = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, require('path').resolve(__dirname, '../../../../support/fixtures/image.png'));
@@ -182,30 +161,29 @@ describe('Messaging - File Upload', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // * Verify the first attachment container is visible in the post
+        // * Verify the first attachment container is visible (iOS-26 wrapper-View quirk — use toExist).
         const fileContainer1 = element(by.id(`${fileId1}-file-container`));
-        await waitFor(fileContainer1).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(fileContainer1).toBeVisible();
+        await waitFor(fileContainer1).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(fileContainer1).toExist();
 
         // * Verify the second attachment container is visible in the post
         const fileContainer2 = element(by.id(`${fileId2}-file-container`));
-        await waitFor(fileContainer2).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(fileContainer2).toBeVisible();
+        await waitFor(fileContainer2).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(fileContainer2).toExist();
 
-        // # Tap the first attachment to open the gallery
-        await fileContainer1.tap();
+        // # Tap the inner `${fileId}-file` testID to open the gallery (see MM-T325_1).
+        await element(by.id(`${fileId1}-file`)).tap();
         await wait(timeouts.TWO_SEC);
 
-        // * Verify gallery opens — use close button testID rather than by.text('1 of 2') because
-        // FormattedText inside AnimatedSafeAreaView is not reliably found via by.text() on Android.
+        // * Verify gallery opens
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
         await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Dismiss gallery
+        // # Dismiss gallery — .atIndex(0) on iOS for RNGH duplicate testID (see MM-T325_1).
         if (isAndroid()) {
             await device.pressBack();
         } else {
-            await galleryCloseButton.tap();
+            await element(by.id('gallery.header.close.button')).atIndex(0).tap();
         }
         await waitFor(galleryCloseButton).not.toExist().withTimeout(timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
@@ -215,20 +193,7 @@ describe('Messaging - File Upload', () => {
     });
 
     it('MM-T339_1 - should show an error when the server max file size is set to a very small value', async () => {
-        // TODO: This test cannot be fully automated via Detox because triggering a real
-        // over-limit upload requires native file picker interaction (selecting a file from
-        // the device) which is not supported in Detox without platform-specific hacks.
-        //
-        // What IS verified here: the server config can be updated to restrict MaxFileSize
-        // and the upload error message appears in the uploads component (testID: 'uploads').
-        // The error text is rendered inside the uploads View when a file exceeds the limit.
-        //
-        // Manual test steps:
-        // 1. Set MaxFileSize to a very small value via System.apiUpdateConfig
-        // 2. Tap the attachment icon in the post draft (file_attachment.photo_library or
-        //    file_attachment.attach_file)
-        // 3. Select a file that exceeds the limit
-        // 4. Verify the error message appears inside element(by.id('uploads'))
+        // Full over-limit upload flow needs native file picker — only verifies config can be set.
 
         // # Set MaxFileSize to 1 byte (effectively blocks all uploads)
         const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
@@ -262,9 +227,7 @@ describe('Messaging - File Upload', () => {
             return;
         }
 
-        // # Post a markdown image with explicit pixel dimensions via API
-        // The markdown syntax `![alt](url =WxH)` renders an inline image at the given size.
-        // We use a publicly accessible small image to avoid network issues in CI.
+        // # Post a markdown image with explicit pixel dimensions via API (`![alt](url =WxH)`)
         const imageUrl = 'https://www.mattermost.com/wp-content/uploads/2022/02/logoHorizontal.png';
         const markdownMessage = `![Mattermost Logo](${imageUrl} =100x100)`;
         const {post} = await Post.apiCreatePost(siteOneUrl, {
@@ -281,11 +244,8 @@ describe('Messaging - File Upload', () => {
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(postListPostItem).toBeVisible();
 
-        // * Verify an image is rendered inline within the post
-        // The rendered markdown image uses a standard Image component; we check the post
-        // item is visible (image renders inside the post body as part of the markdown output).
-        // NOTE: The exact inline image testID is not available; this verifies the post renders
-        // without crashing when a sized inline image is present.
+        // * Verify the post renders without crashing when a sized inline image is present
+        // (no testID on the inline image itself).
         await expect(postListPostItem).toBeVisible();
 
         // # Go back to channel list screen

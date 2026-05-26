@@ -36,15 +36,6 @@ describe('Messaging - Image Attachment Post Options', () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
 
-        // # Ensure clean state
-        await device.reloadReactNative();
-        await wait(timeouts.TWO_SEC);
-        try {
-            await HomeScreen.logout();
-        } catch {
-            // Not logged in — proceed to connect
-        }
-
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(user);

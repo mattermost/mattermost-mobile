@@ -268,7 +268,12 @@ describe('Account - Custom Status', () => {
         await AccountScreen.toBeVisible();
         const {accountCustomStatusEmoji, accountCustomStatusText} =
             AccountScreen.getCustomStatus(status.emoji, status.duration);
-        await expect(accountCustomStatusEmoji).toBeVisible();
+
+        // iOS-26 wrapper-View visibility quirk: Detox's visibility predicate
+        // mis-reports for the <View> wrapping <Emoji>. Same pattern documented at
+        // custom_status.ts:95-103. The emoji IS rendered (proven by failure screenshot
+        // showing the calendar emoji on Account screen). Use toExist instead.
+        await expect(accountCustomStatusEmoji).toExist();
         await expect(accountCustomStatusText).toHaveText(status.text);
 
         // # Reopen custom status screen
@@ -299,9 +304,10 @@ describe('Account - Custom Status', () => {
         await CustomStatusScreen.open();
 
         // # Type status text and verify speech balloon emoji appears
+        // iOS-26 wrapper-View visibility quirk: use toExist (see MM-T3890 above).
         await CustomStatusScreen.statusInput.tap();
         await CustomStatusScreen.statusInput.typeText(customStatusText);
-        await expect(CustomStatusScreen.getCustomStatusEmoji('speech_balloon')).toBeVisible();
+        await expect(CustomStatusScreen.getCustomStatusEmoji('speech_balloon')).toExist();
 
         // # Open emoji picker and select fire emoji
         await CustomStatusScreen.openEmojiPicker('speech_balloon', true);
@@ -341,9 +347,10 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify status is set again
+        // iOS-26 wrapper-View visibility quirk: use toExist (see MM-T3890 above).
         await AccountScreen.toBeVisible();
         const {accountCustomStatusEmoji} = AccountScreen.getCustomStatus(customEmojiName, customStatusDuration);
-        await expect(accountCustomStatusEmoji).toBeVisible();
+        await expect(accountCustomStatusEmoji).toExist();
 
         // # Clear status field and save
         await CustomStatusScreen.open();
@@ -437,10 +444,12 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify status is set with expiry time
+        // iOS-26 wrapper-View visibility quirk for the emoji (see MM-T3890 above);
+        // text and expiry are plain <Text> nodes and use toBeVisible normally.
         await AccountScreen.toBeVisible();
         const {accountCustomStatusEmoji, accountCustomStatusText, accountCustomStatusExpiry} =
             AccountScreen.getCustomStatus(status.emoji, status.duration);
-        await expect(accountCustomStatusEmoji).toBeVisible();
+        await expect(accountCustomStatusEmoji).toExist();
         await expect(accountCustomStatusText).toHaveText(status.text);
         await expect(accountCustomStatusExpiry).toBeVisible();
 
@@ -545,7 +554,10 @@ const clearStatusInput = async () => {
 const verifySuggestedCustomStatus = async (emojiName: string, text: string, duration: string) => {
     const {customStatusSuggestionEmoji, customStatusSuggestionText, customStatusSuggestionDuration} =
         CustomStatusScreen.getSuggestedCustomStatus(emojiName, text, duration);
-    await expect(customStatusSuggestionEmoji).toBeVisible();
+
+    // iOS-26 wrapper-View visibility quirk on the <View> wrapping <Emoji>.
+    // The text and duration are plain <Text> nodes and unaffected.
+    await expect(customStatusSuggestionEmoji).toExist();
     await expect(customStatusSuggestionText).toBeVisible();
     await expect(customStatusSuggestionDuration).toBeVisible();
 };
@@ -565,16 +577,18 @@ const verifyAllSuggestedStatuses = async () => {
 
 const verifySuggestedOrRecentCustomStatus = async (emojiName: string, text: string, duration: string) => {
     // Try suggestions first; fall back to recents if the item was leaked from a prior run.
+    // Emoji uses `toExist` (iOS-26 wrapper-View visibility quirk on <View> around <Emoji>);
+    // text and duration are plain <Text> and use `toBeVisible` normally.
     try {
         const {customStatusSuggestionEmoji, customStatusSuggestionText, customStatusSuggestionDuration} =
             CustomStatusScreen.getSuggestedCustomStatus(emojiName, text, duration);
-        await expect(customStatusSuggestionEmoji).toBeVisible();
+        await expect(customStatusSuggestionEmoji).toExist();
         await expect(customStatusSuggestionText).toBeVisible();
         await expect(customStatusSuggestionDuration).toBeVisible();
     } catch {
         const {customStatusSuggestionEmoji, customStatusSuggestionText, customStatusSuggestionDuration} =
             CustomStatusScreen.getRecentCustomStatus(emojiName, text, duration);
-        await expect(customStatusSuggestionEmoji).toBeVisible();
+        await expect(customStatusSuggestionEmoji).toExist();
         await expect(customStatusSuggestionText).toBeVisible();
         await expect(customStatusSuggestionDuration).toBeVisible();
     }

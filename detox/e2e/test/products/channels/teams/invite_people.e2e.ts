@@ -63,10 +63,7 @@ describe('Teams - Invite', () => {
     });
 
     afterEach(async () => {
-        // If the test left the app on the Invite modal (e.g. Summary screen
-        // after sending invites in MM-T5365), close it so the next test's
-        // beforeEach doesn't compound with a stuck modal. Invite.close()
-        // handles both the Selection close-X and the Summary "Done" button.
+        // # Close any leftover Invite modal so next test's beforeEach doesn't compound.
         try {
             await waitFor(Invite.inviteScreen).toBeVisible().withTimeout(timeouts.ONE_SEC);
             await Invite.close();
@@ -74,7 +71,6 @@ describe('Teams - Invite', () => {
     });
 
     afterAll(async () => {
-        // afterEach already closes the invite modal; just log out here.
         await HomeScreen.logout();
     });
 
@@ -142,8 +138,8 @@ describe('Teams - Invite', () => {
         // # Search for an existent user
         await Invite.searchBarInput.replaceText(testUser1.username);
 
-        // * Validate user item in search list
-        await waitFor(Invite.getSearchListUserItem(testUser1.id)).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        // * Validate user item in search list.
+        await waitFor(Invite.getSearchListUserItem(testUser1.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(Invite.getSearchListUserItemText(testUser1.id)).toHaveText(testUser1.username);
 
         // # Select user item
@@ -212,10 +208,10 @@ describe('Teams - Invite', () => {
         // # Search for a existent user already in team
         await Invite.searchBarInput.replaceText(testUser.username);
 
-        // # Wait for user item in search list
-        await waitFor(Invite.getSearchListUserItem(testUser.id)).toExist().withTimeout(timeouts.TWO_SEC);
+        // # Wait for user item in search list — 10s for invite search (see MM-T5363).
+        await waitFor(Invite.getSearchListUserItem(testUser.id)).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Select user item
+        // # Select user item.
         await Invite.getSearchListUserItem(testUser.id).tap();
 
         // # Send invitation

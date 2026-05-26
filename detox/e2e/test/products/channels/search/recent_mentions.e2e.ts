@@ -31,7 +31,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Search - Recent Mentions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -93,15 +93,16 @@ describe('Search - Recent Mentions', () => {
     });
 
     it('MM-T4909_2 - should be able to display a recent mention in recent mentions screen and navigate to message channel', async () => {
-        // # Open a channel screen and post a message with at-mention to current user
+        // # Post a message with at-mention to testUser. API session is the
+        // mentioner user (set up in beforeAll), so this is a real mention.
         const message = `@${testUser.username}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message});
 
         // * Verify message with at-mention to current user is posted
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen and open recent mentions screen
         await ChannelScreen.back();
@@ -130,11 +131,11 @@ describe('Search - Recent Mentions', () => {
     });
 
     it('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
-        // # Open a channel screen, post a message with at-mention to current user, go back to channel list screen, and open recent mentions screen
+        // # Post a message with at-mention to current user. Post via admin API
+        // (not UI) — see MM-T4909_2 comment above.
         const message = `@${testUser.username}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        await ChannelScreen.back();
+        await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message});
+        await wait(timeouts.TWO_SEC);
         await RecentMentionsScreen.open();
 
         // * Verify on recent mentions screen
@@ -198,11 +199,11 @@ describe('Search - Recent Mentions', () => {
     });
 
     it('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
-        // # Open a channel screen, post a message with at-mention to current user, go back to channel list screen, and open recent mentions screen
+        // # Post a message with at-mention to current user via admin API
+        // (self-mention via UI doesn't generate a recent mention — see MM-T4909_2).
         const message = `@${testUser.username}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        await ChannelScreen.back();
+        await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message});
+        await wait(timeouts.TWO_SEC);
         await RecentMentionsScreen.open();
 
         // * Verify on recent mentions screen
@@ -236,11 +237,11 @@ describe('Search - Recent Mentions', () => {
     });
 
     it('MM-T4909_5 - should be able to pin/unpin a recent mention from recent mentions screen', async () => {
-        // # Open a channel screen, post a message with at-mention to current user, go back to channel list screen, and open recent mentions screen
+        // # Post a message with at-mention to current user via admin API
+        // (self-mention via UI doesn't generate a recent mention — see MM-T4909_2).
         const message = `@${testUser.username}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        await ChannelScreen.back();
+        await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message});
+        await wait(timeouts.TWO_SEC);
         await RecentMentionsScreen.open();
 
         // * Verify on recent mentions screen

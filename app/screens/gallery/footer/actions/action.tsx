@@ -3,12 +3,12 @@
 
 import React from 'react';
 import {
-    Pressable,
     type PressableAndroidRippleConfig,
     type StyleProp,
     StyleSheet,
     type ViewStyle,
 } from 'react-native';
+import {Pressable} from 'react-native-gesture-handler';
 
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import usePressableOpacityStyle from '@hooks/use_pressable_opacity';

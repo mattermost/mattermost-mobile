@@ -20,7 +20,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Autocomplete - Search', () => {
@@ -64,6 +64,14 @@ describe('Autocomplete - Search', () => {
         if (isAndroid()) {
             await device.pressBack();
             await wait(timeouts.ONE_SEC);
+        }
+        if (isIos()) {
+            try {
+                await SearchMessagesScreen.searchModifierHeader.tap();
+            } catch {
+                // header may be off-screen after expansion; fall through
+            }
+            await wait(timeouts.HALF_SEC);
         }
         await ChannelListScreen.open();
     });
