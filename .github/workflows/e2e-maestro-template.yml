@@ -38,6 +38,8 @@ on:
         value: ${{ jobs.e2e-maestro-ios.outputs.PASSES || jobs.e2e-maestro-android.outputs.PASSES }}
       TOTAL:
         value: ${{ jobs.e2e-maestro-ios.outputs.TOTAL || jobs.e2e-maestro-android.outputs.TOTAL }}
+      SKIPPED:
+        value: ${{ jobs.e2e-maestro-ios.outputs.SKIPPED || jobs.e2e-maestro-android.outputs.SKIPPED }}
       PERCENTAGE:
         value: ${{ jobs.e2e-maestro-ios.outputs.PERCENTAGE || jobs.e2e-maestro-android.outputs.PERCENTAGE }}
 env:
@@ -61,6 +63,7 @@ jobs:
       FAILURES: ${{ steps.summary.outputs.FAILURES }}
       PASSES: ${{ steps.summary.outputs.PASSES }}
       TOTAL: ${{ steps.summary.outputs.TOTAL }}
+      SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
       PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
     steps:
       - name: Checkout Repository
@@ -465,6 +468,7 @@ jobs:
       FAILURES: ${{ steps.summary.outputs.FAILURES }}
       PASSES: ${{ steps.summary.outputs.PASSES }}
       TOTAL: ${{ steps.summary.outputs.TOTAL }}
+      SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
       PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
     steps:
       - name: Checkout Repository
