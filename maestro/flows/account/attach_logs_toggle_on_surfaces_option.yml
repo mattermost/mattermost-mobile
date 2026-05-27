@@ -1,0 +1,108 @@
+# MM-T67856_2: Enabling the "Attach app logs" toggle on the Report a Problem
+# screen surfaces an "Attach app logs" item in the channel post-draft's
+# attachment menu.
+#
+# PRE-CONDITIONS:
+#   - Trial license active, ReportAProblemType=default, AllowDownloadLogs=true
+#     (same as MM-T67856_1; see attach_logs_toggle_visible.yml).
+#   - The toggle persists locally per user, so this flow assumes a fresh
+#     session where the toggle starts disabled.
+#
+# Flow:
+#   1. Login.
+#   2. Account > Settings > Report a Problem.
+#   3. Tap the toggle to enable it.
+#   4. Back out to the channel.
+#   5. Tap the attachment quick action in the post draft.
+#   6. Assert `file_attachment.attach_logs` is visible in the attachment menu.
+#
+# Source-of-truth testIDs (all source-verified):
+#   - report_problem.enable_log_attachments  -> app/screens/report_a_problem/report_problem.tsx:192
+#   - file_attachment.attach_logs            -> app/screens/attachment_options/attachment_options.tsx:212
+#   - channel.post_draft.quick_actions.attachment_action — derived chain:
+#       CHANNEL_POST_DRAFT_TESTID = 'channel.post_draft'
+#         (app/screens/channel/channel_content.tsx:26, applied at line 67)
+#       -> DraftInput: quickActionsTestID = `${testID}.quick_actions`
+#         (app/components/post_draft/draft_input/draft_input.tsx:182)
+#       -> QuickActions: attachmentActionTestID = `${testID}.attachment_action`
+#         (app/components/post_draft/quick_actions/quick_actions.tsx:85)
+tags:
+  - MM-T67856_2
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+
+# Open Account > Settings > Report a Problem
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 10000
+- tapOn:
+    id: "account.settings.option"
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 10000
+- tapOn:
+    id: "settings.report_problem.option"
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.enable_log_attachments"
+    timeout: 10000
+
+# Tap the toggle switch to turn it ON. Use optional:true so if toggle
+# is already ON (from a prior run's saved preference), the tap is skipped.
+- tapOn:
+    id: "report_problem.enable_log_attachments.toggled.false.button"
+    optional: true
+
+# Wait for the toggle to confirm "on" state. This also gives the async
+# savePreference call time to complete (API + local DB write) before the
+# app is killed.
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.enable_log_attachments.toggled.true.button"
+    timeout: 10000
+
+# Give the async DB write a moment to flush.
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Navigate back to the Home tab, then into the test channel.
+# On iOS 26.3, Maestro's `back` doesn't dismiss modal-presented screens.
+# Re-launching the app (stopApp + clearState:false) kills and restarts the
+# app without wiping data — user stays logged in, app lands on Home tab.
+- launchApp:
+    stopApp: true
+    clearState: false
+
+# Wait for the app to relaunch and JS bundle to load.
+- waitForAnimationToEnd:
+    timeout: 30000
+
+# Confirm we're on the Home tab with tab bar visible.
+- extendedWaitUntil:
+    visible:
+      id: "tab_bar.home.tab"
+    timeout: 15000
+
+# Wait for the channel list to render before navigating into the test channel.
+- extendedWaitUntil:
+    visible:
+      id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+    timeout: 10000
+
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# Open the post-draft attachment menu. Adjust the id if `inspect_screen`
+# shows a different prefix on your build.
+- tapOn:
+    id: "channel.post_draft.quick_actions.attachment_action"
+
+# Assert the new option exists.
+- extendedWaitUntil:
+    visible:
+      id: "file_attachment.attach_logs"
+    timeout: 10000

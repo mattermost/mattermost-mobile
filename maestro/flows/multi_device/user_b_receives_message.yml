@@ -1,0 +1,20 @@
+# MM-T3056 (Device B): User B should see the message sent by User A
+# Run after user_a_sends_message.yml completes (poll API for sync)
+# Requires: TEST_USER_EMAIL, TEST_USER_PASSWORD, SITE_1_URL, SYNC_TOKEN,
+#           CHANNEL_NAME, TEST_CHANNEL_ID, ADMIN_TOKEN
+tags:
+  - MM-T3056
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# Poll the Mattermost API until the message from Device A appears
+# This ensures Device B does not assert before the message is delivered
+- runScript: ../../fixtures/poll_for_message.js
+
+# Verify the message from Device A is visible on Device B's screen
+- assertVisible:
+    text: "MM-T3055 sync test message ${SYNC_TOKEN}"
+    timeout: 30000
+- takeScreenshot: user-b-received-message

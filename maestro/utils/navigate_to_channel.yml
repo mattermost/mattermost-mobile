@@ -1,0 +1,26 @@
+# Sub-flow: Navigate to a channel
+# Usage: - runFlow: ../utils/navigate_to_channel.yml
+# Requires: TEST_CHANNEL_NAME env var
+#
+# NOTE: The "Schedule a message" tutorial tooltip may appear on the first channel visit.
+# Dismiss it via testID if present.
+appId: ${MAESTRO_APP_ID}
+---
+- tapOn:
+    id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+# Wait until the channel list item scrolls off-screen (confirms navigation started)
+- extendedWaitUntil:
+    notVisible:
+      id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+    timeout: 10000
+# Dismiss any "Schedule a message" tutorial tooltip if present
+- tapOn:
+    id: "scheduled_post.tooltip.close.button"
+    optional: true
+- tapOn:
+    id: "scheduled_post_tutorial_tooltip.close"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "channel.post_draft.post.input"
+    timeout: 10000

@@ -1,0 +1,72 @@
+# Sub-flow: Logout from Mattermost (called by login.yml when app is already logged in).
+# Usage: - runFlow: ../utils/logout.yml
+# Requires: MAESTRO_APP_ID env var
+appId: ${MAESTRO_APP_ID}
+---
+# Dismiss the scheduled-post tooltip if it's blocking the account tab
+- tapOn:
+    id: "scheduled_post.tooltip.close.button"
+    optional: true
+- tapOn:
+    id: "scheduled_post_tutorial_tooltip.close"
+    optional: true
+# Navigate to Account screen
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.screen"
+    timeout: 10000
+# Tap logout
+- tapOn:
+    id: "account.logout.option"
+# The app shows a confirmation dialog "Are you sure you want to log out of Server 1?"
+# with a "Log out" button.
+#
+# WHY point: instead of text/id — Maestro YAML uses fuzzy (substring) text matching by
+# default, so text: "Log out" matches many background elements in the account screen
+# (containers with accessibilityText containing "Log out"). With so many matches,
+# index: 1 does NOT reliably target the UIAlertController button.
+#
+# UIAlertController is a system-level overlay (no app testID). Using point: is
+# acceptable for system overlays per project conventions (CLAUDE.md).
+#
+# Wait for "Cancel" first — it ONLY exists in the alert dialog (not the account screen),
+# which confirms the dialog is fully rendered and the button bounds are stable.
+# Log out button is consistently at ~67%,57% on this device (center of [201,480][336,524]
+# on a 402x874 pt screen). Cancel is at ~33%,57%.
+- extendedWaitUntil:
+    visible:
+      text: "Cancel"
+    timeout: 10000
+# Tap the "Log out" button in the UIAlertController.
+# iOS 26 may layout buttons horizontally (Cancel left, Log out right) or
+# vertically. Try both positions with optional taps.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      # Tap the "Log out" button in UIAlertController.
+      # Bounds: [201,480][336,524] → center at 67%,57%.
+      # Coordinate tap bypasses account-screen "Log out" text matches.
+      - tapOn:
+          point: "70%,57%"
+# Android: AlertDialog IS in the app hierarchy. Tap positive button by resource-id.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "android:id/button1"
+# Wait for logout to complete — login form or server list.
+# On iOS, logout may navigate to the server list (multiple servers) or
+# directly to the login form (single server). Accept either.
+- runFlow:
+    when:
+      notVisible:
+        id: "login_form.username.input"
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "server_list.screen"
+          timeout: 60000

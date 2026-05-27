@@ -1,0 +1,100 @@
+# MM-T4829: Start a call in a channel
+#
+# Verifies that a user can start a call from the channel quick actions menu and
+# that the call screen appears with the user shown as the active participant.
+#
+# PRE-CONDITION: Run the calls seed script to create test data:
+#   tsx --tsconfig detox/tsconfig.json maestro/fixtures/calls_seed.ts
+#   source .maestro-test-env.sh
+#
+# Required env vars:
+#   SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#   MAESTRO_APP_ID (defaults to com.mattermost.rnbeta if not set)
+#
+# NOTE: The Calls plugin (com.mattermost.calls) must be installed and enabled
+# on the server before running this flow. calls_seed.ts handles this automatically.
+tags:
+  - MM-T4829
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# Wait for the WS-driven Calls config to propagate before opening Channel Info.
+# On first login doReconnect() runs entry() (a full server sync) before calling
+# loadConfigAndCalls(), so pluginEnabled starts as false and takes 10-30s to
+# flip to true on a cloud server.
+- waitForAnimationToEnd:
+    timeout: 25000
+
+# Open the channel quick actions sheet via the three-dots (⋮) button.
+# The Start/Join Call button lives in this sheet.
+- tapOn:
+    id: "channel_header.channel_quick_actions.button"
+
+# Wait for the Start/Join Call action.
+# 60s: WS first-connect triggers a full doReconnect() which can take 10-30s on
+# a cloud server before loadConfigAndCalls() fires and sets pluginEnabled=true.
+- extendedWaitUntil:
+    visible:
+      id: "channel_info.channel_actions.join_start_call.action"
+    timeout: 60000
+- takeScreenshot: calls-start-channel-info-open
+
+# Tap the Start Call button
+- tapOn:
+    id: "channel_info.channel_actions.join_start_call.action"
+
+# Grant microphone permission (first-time prompt)
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# Grant camera permission (first-time prompt, Android)
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# Starting the call dismisses the bottom sheet and returns to the channel view.
+# Wait for the minimized CurrentCallBar to appear (confirms WebRTC is connected).
+- extendedWaitUntil:
+    visible:
+      id: "calls.current_call_bar"
+    timeout: 20000
+
+# Brief wait after call bar appears to let the WebSocket session event arrive and
+# populate currentCall.sessions. Without this, mySession may be undefined when the
+# full call screen opens, causing it to render blank (null return at the guard check).
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Tap the CurrentCallBar to navigate to the full call screen.
+- tapOn:
+    id: "calls.current_call_bar"
+
+# Verify call screen is visible — mute-unmute is the reliable call-screen anchor
+- extendedWaitUntil:
+    visible:
+      id: "mute-unmute"
+    timeout: 30000
+- takeScreenshot: calls-call-screen-active
+
+# Verify the call controls are rendered (users list shows current user)
+- extendedWaitUntil:
+    visible:
+      id: "users-list"
+    timeout: 5000
+- takeScreenshot: calls-participants-visible
+
+# Clean up: leave the call.
+# Tapping Leave shows a confirmation dialog; confirm with "Leave call".
+- tapOn:
+    id: "leave"
+- tapOn:
+    text: "Leave call"
+    optional: true
+- extendedWaitUntil:
+    notVisible:
+      id: "mute-unmute"
+    timeout: 10000
+- takeScreenshot: calls-call-ended

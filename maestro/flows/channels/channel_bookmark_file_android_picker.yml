@@ -1,0 +1,24 @@
+appId: ${MAESTRO_APP_ID}
+---
+# Android document picker navigation: use search to find the file by name.
+# The file must be pushed to the emulator before the test:
+#   adb push detox/e2e/support/fixtures/image.png /sdcard/Download/test_bookmark.png
+#   adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE \
+#     -d file:///sdcard/Download/test_bookmark.png
+- extendedWaitUntil:
+    visible:
+      text: "Recent"
+    timeout: 15000
+- tapOn:
+    id: "com.google.android.documentsui:id/option_menu_search"
+- extendedWaitUntil:
+    visible:
+      id: "com.google.android.documentsui:id/search_src_text"
+    timeout: 10000
+- inputText: "test_bookmark"
+- extendedWaitUntil:
+    visible:
+      text: "test_bookmark.png"
+    timeout: 10000
+- tapOn:
+    text: "test_bookmark.png"

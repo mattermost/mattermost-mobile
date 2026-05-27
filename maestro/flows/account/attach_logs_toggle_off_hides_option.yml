@@ -1,0 +1,99 @@
+# MM-T67856_3: Disabling the "Attach app logs" toggle removes the
+# "Attach app logs" entry from the channel post-draft's attachment menu.
+#
+# PRE-CONDITIONS (same as MM-T67856_1):
+#   - Trial license active, ReportAProblemType=default, AllowDownloadLogs=true.
+#   - Each flow runs with clearState → toggle starts disabled (false).
+#   - Tap twice (off→on→off) for definitive off end-state.
+#
+# Flow:
+#   1. Login.
+#   2. Account > Settings > Report a Problem.
+#   3. Tap toggle switch twice — definitive "off" end-state.
+#   4. Relaunch app (iOS 26.3 back-nav workaround) → navigate to channel.
+#   5. Tap attachment quick action.
+#   6. Assert `file_attachment.attach_logs` is NOT visible.
+#
+# All testIDs are source-verified — see attach_logs_toggle_on_surfaces_option.yml
+# for the full `channel.post_draft.quick_actions.attachment_action` derivation.
+tags:
+  - MM-T67856_3
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+
+# Open Account > Settings > Report a Problem
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 10000
+- tapOn:
+    id: "account.settings.option"
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 10000
+- tapOn:
+    id: "settings.report_problem.option"
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.enable_log_attachments"
+    timeout: 10000
+
+# Tap the toggle switch to turn it OFF. The parent container is NOT
+# touchable for toggle type (TOGGLE ∉ TouchableOptionTypes at OptionItem:19).
+# Use optional:true so if toggle is already OFF, the tap is skipped.
+- tapOn:
+    id: "report_problem.enable_log_attachments.toggled.true.button"
+    optional: true
+
+# Confirm toggle is now OFF (either we just toggled it off, or it was
+# already off — either way, the false button should be visible).
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.enable_log_attachments.toggled.false.button"
+    timeout: 10000
+
+# Give the async savePreference call time to complete the API + DB write.
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Navigate back to the Home tab, then into the test channel.
+# On iOS 26.3, Maestro's `back` doesn't dismiss modal-presented screens.
+# Re-launching the app (stopApp + clearState:false) kills and restarts the
+# app without wiping data — user stays logged in, app lands on Home tab.
+- launchApp:
+    stopApp: true
+    clearState: false
+
+# Wait for the app to relaunch and JS bundle to load.
+- waitForAnimationToEnd:
+    timeout: 30000
+
+# Confirm we're on the Home tab with tab bar visible.
+- extendedWaitUntil:
+    visible:
+      id: "tab_bar.home.tab"
+    timeout: 15000
+
+# Wait for the channel list to render before navigating into the test channel.
+- extendedWaitUntil:
+    visible:
+      id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+    timeout: 10000
+
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# Open the post-draft attachment menu.
+- tapOn:
+    id: "channel.post_draft.quick_actions.attachment_action"
+
+# Give the bottom sheet a moment to render before negative-asserting.
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Assert the attach_logs option is NOT present in the menu.
+- assertNotVisible:
+    id: "file_attachment.attach_logs"
