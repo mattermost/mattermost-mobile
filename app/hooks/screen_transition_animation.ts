@@ -3,8 +3,8 @@
 
 import {useFocusEffect} from 'expo-router';
 import {useCallback, useEffect, useRef} from 'react';
-import {Platform} from 'react-native';
-import {useReducedMotion, useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {AppState, Platform} from 'react-native';
+import {cancelAnimation, useReducedMotion, useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import {useWindowDimensions} from './device';
 
@@ -17,6 +17,7 @@ export const useScreenTransitionAnimation = (animated: boolean = true) => {
     const reducedMotion = useReducedMotion();
     const shouldAnimate = animated && !reducedMotion;
     const translateX = useSharedValue(shouldAnimate ? width : 0);
+    const animationDuration = Platform.OS === 'android' ? 250 : 350;
 
     // Keep a ref so the useFocusEffect cleanup always reads the latest values
     // without adding them as dependencies (which would re-trigger cleanup on rotation/motion changes)
@@ -25,26 +26,33 @@ export const useScreenTransitionAnimation = (animated: boolean = true) => {
         latestRef.current = {width, shouldAnimate};
     }, [width, shouldAnimate]);
 
-    const animatedStyle = useAnimatedStyle(() => {
-        const duration = Platform.OS === 'android' ? 250 : 350;
-        return {
-            transform: [{translateX: withTiming(translateX.value, {duration})}],
-        };
-    }, []);
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{translateX: translateX.value}],
+    }), []);
 
-    // Use focus effect to handle screen appearing (similar to componentDidAppear)
     useFocusEffect(
         useCallback(() => {
-            // Screen is focused (appeared)
-            translateX.value = 0;
+            const {shouldAnimate: sa} = latestRef.current;
+            translateX.value = sa ? withTiming(0, {duration: animationDuration}) : 0;
+
+            const sub = AppState.addEventListener('change', (state) => {
+                if (state === 'inactive' || state === 'background') {
+                    // Freeze the animation at its current value so the UI thread doesn't
+                    // race to completion while the app is backgrounded.
+                    cancelAnimation(translateX);
+                } else if (state === 'active' && translateX.value !== 0) {
+                    translateX.value = latestRef.current.shouldAnimate
+                        ? withTiming(0, {duration: animationDuration})
+                        : 0;
+                }
+            });
 
             return () => {
-                // Screen is blurred (disappeared)
-                const {width: w, shouldAnimate: sa} = latestRef.current;
-                translateX.value = sa ? -w : 0;
+                sub.remove();
+                const {width: w, shouldAnimate: saBlur} = latestRef.current;
+                translateX.value = saBlur ? withTiming(-w, {duration: animationDuration}) : 0;
             };
-
-        }, [translateX]),
+        }, [translateX, animationDuration]),
     );
 
     useEffect(() => {
