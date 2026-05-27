@@ -5,11 +5,11 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {Alert, Text, View} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
-import BlockRenderer from '@components/post_list/post/body/content/interactive_messages/block_renderer';
-import {translateAdaptiveCards} from '@components/post_list/post/body/content/interactive_messages/translation/adaptive_cards';
-import {translateAttachments} from '@components/post_list/post/body/content/interactive_messages/translation/attachments';
-import {translateBlockKit} from '@components/post_list/post/body/content/interactive_messages/translation/block_kit';
-import {translateMMBlocks} from '@components/post_list/post/body/content/interactive_messages/translation/mm_block';
+import BlockRenderer from '@components/block_renderer/block_renderer';
+import {translateAdaptiveCards} from '@components/block_renderer/translation/adaptive_cards';
+import {translateAttachments} from '@components/block_renderer/translation/attachments';
+import {translateBlockKit} from '@components/block_renderer/translation/block_kit';
+import {translateMMBlocks} from '@components/block_renderer/translation/mm_block';
 import TextSetting from '@components/settings/text_setting';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';

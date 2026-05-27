@@ -6,10 +6,9 @@ import {useIntl} from 'react-intl';
 
 import {handleGotoLocation} from '@actions/remote/command';
 import {postActionWithCookie} from '@actions/remote/integrations';
+import BlockRenderer, {type ActionHandler} from '@components/block_renderer/block_renderer';
+import {getPostInteractiveIntegrationFormat, translatePostProps} from '@components/block_renderer/translation';
 import {useServerUrl} from '@context/server';
-
-import BlockRenderer, {type ActionHandler} from './block_renderer';
-import {getPostInteractiveIntegrationFormat, translatePostProps} from './translation';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
