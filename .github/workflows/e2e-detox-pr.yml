@@ -336,13 +336,17 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/detox-ios-tests
-          # Description rule: catastrophic fallback first (-1), then all-passing case,
-          # otherwise show pass/total + failure count.
+          # Description rule (order matters — GHA `'' == '0'` is TRUTHY because
+          # both sides are coerced to numeric 0, so a skipped upstream job with
+          # empty outputs would otherwise render as "All  tests passed" with
+          # an empty TOTAL. Check `result == 'skipped'` BEFORE comparing the
+          # numeric output fields).
           description: >-
-            ${{ needs.run-ios-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
+            ${{ needs.run-ios-tests.result == 'skipped' && 'Build failed — iOS detox tests did not run'
+              || needs.run-ios-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
               || needs.run-ios-tests.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-ios-tests.outputs.TOTAL)
               || format('{0}/{1} passed ({2} failures)', needs.run-ios-tests.outputs.PASSES || '?', needs.run-ios-tests.outputs.TOTAL || '?', needs.run-ios-tests.outputs.FAILURES || '?') }}
-          status: ${{ needs.run-ios-tests.outputs.STATUS || 'failure' }}
+          status: ${{ (needs.run-ios-tests.result == 'skipped' && 'failure') || needs.run-ios-tests.outputs.STATUS || 'failure' }}
           target_url: ${{ needs.run-ios-tests.outputs.TARGET_URL }}
 
   update-final-status-android:
@@ -358,11 +362,13 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/detox-android-tests
+          # See ios block above for why `result == 'skipped'` check must lead.
           description: >-
-            ${{ needs.run-android-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
+            ${{ needs.run-android-tests.result == 'skipped' && 'Build failed — Android detox tests did not run'
+              || needs.run-android-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
               || needs.run-android-tests.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-android-tests.outputs.TOTAL)
               || format('{0}/{1} passed ({2} failures)', needs.run-android-tests.outputs.PASSES || '?', needs.run-android-tests.outputs.TOTAL || '?', needs.run-android-tests.outputs.FAILURES || '?') }}
-          status: ${{ needs.run-android-tests.outputs.STATUS || 'failure' }}
+          status: ${{ (needs.run-android-tests.result == 'skipped' && 'failure') || needs.run-android-tests.outputs.STATUS || 'failure' }}
           target_url: ${{ needs.run-android-tests.outputs.TARGET_URL }}
 
   run-ios-ipad-tests:
@@ -397,11 +403,13 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/detox-ipad-tests
+          # See ios block above for why `result == 'skipped'` check must lead.
           description: >-
-            ${{ needs.run-ios-ipad-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
+            ${{ needs.run-ios-ipad-tests.result == 'skipped' && 'Build failed — iPad detox tests did not run'
+              || needs.run-ios-ipad-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
               || needs.run-ios-ipad-tests.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-ios-ipad-tests.outputs.TOTAL)
               || format('{0}/{1} passed ({2} failures)', needs.run-ios-ipad-tests.outputs.PASSES || '?', needs.run-ios-ipad-tests.outputs.TOTAL || '?', needs.run-ios-ipad-tests.outputs.FAILURES || '?') }}
-          status: ${{ needs.run-ios-ipad-tests.outputs.STATUS || 'failure' }}
+          status: ${{ (needs.run-ios-ipad-tests.result == 'skipped' && 'failure') || needs.run-ios-ipad-tests.outputs.STATUS || 'failure' }}
           target_url: ${{ needs.run-ios-ipad-tests.outputs.TARGET_URL }}
 
   run-maestro-ios:
@@ -452,11 +460,13 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/maestro-ios-tests
+          # See ios block above for why `result == 'skipped'` check must lead.
           description: >-
-            ${{ needs.run-maestro-ios.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
+            ${{ needs.run-maestro-ios.result == 'skipped' && 'Build failed — Maestro iOS tests did not run'
+              || needs.run-maestro-ios.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
               || needs.run-maestro-ios.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-maestro-ios.outputs.TOTAL)
               || format('{0}/{1} passed ({2} failures)', needs.run-maestro-ios.outputs.PASSES || '?', needs.run-maestro-ios.outputs.TOTAL || '?', needs.run-maestro-ios.outputs.FAILURES || '?') }}
-          status: ${{ needs.run-maestro-ios.outputs.STATUS || 'failure' }}
+          status: ${{ (needs.run-maestro-ios.result == 'skipped' && 'failure') || needs.run-maestro-ios.outputs.STATUS || 'failure' }}
           target_url: ${{ needs.run-maestro-ios.outputs.TARGET_URL }}
 
   update-final-status-maestro-android:
@@ -472,11 +482,13 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/maestro-android-tests
+          # See ios block above for why `result == 'skipped'` check must lead.
           description: >-
-            ${{ needs.run-maestro-android.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
+            ${{ needs.run-maestro-android.result == 'skipped' && 'Provisioning failed — Maestro Android tests did not run'
+              || needs.run-maestro-android.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
               || needs.run-maestro-android.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-maestro-android.outputs.TOTAL)
               || format('{0}/{1} passed ({2} failures)', needs.run-maestro-android.outputs.PASSES || '?', needs.run-maestro-android.outputs.TOTAL || '?', needs.run-maestro-android.outputs.FAILURES || '?') }}
-          status: ${{ needs.run-maestro-android.outputs.STATUS || 'failure' }}
+          status: ${{ (needs.run-maestro-android.result == 'skipped' && 'failure') || needs.run-maestro-android.outputs.STATUS || 'failure' }}
           target_url: ${{ needs.run-maestro-android.outputs.TARGET_URL }}
 
   e2e-remove-matterwick-label:
