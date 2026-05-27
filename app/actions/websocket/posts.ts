@@ -273,7 +273,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     await operator.batchRecords(models, 'handlePostEdited');
 
     if (isAgentPost(post)) {
-        streamingStore.removePost(post.id);
+        streamingStore.removePost(serverUrl, post.id);
     }
 }
 

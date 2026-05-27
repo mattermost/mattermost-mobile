@@ -32,7 +32,7 @@ export type KeyboardStateContextReturn = StateContext & {
     forceResetToIdle: () => void;
 };
 
-const DEFAULT_POST_INPUT_HEIGHT = 91;
+export const DEFAULT_POST_INPUT_HEIGHT = 95;
 
 export function useKeyboardStateContext(config: UseKeyboardStateContextConfig): KeyboardStateContextReturn {
     const safeAreaInsets = useSafeAreaInsets();
