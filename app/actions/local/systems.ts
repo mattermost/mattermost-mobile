@@ -27,7 +27,6 @@ import {isExpiredBoRPost} from '@utils/bor';
 import {logError} from '@utils/log';
 
 import {deletePostsForChannelsWithAutotranslation} from './channel';
-import {reconcilePersistenceFlag} from './ephemeral_mode/wipe';
 import {deletePosts} from './post';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
@@ -127,8 +126,6 @@ export async function storeConfigAndLicense(serverUrl: string, config: ClientCon
             }
 
             const result = await storeConfig(serverUrl, config);
-
-            await reconcilePersistenceFlag(serverUrl, config);
 
             return result;
         }

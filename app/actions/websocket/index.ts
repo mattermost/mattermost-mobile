@@ -35,7 +35,7 @@ import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
-import {setTeamLoading} from '@store/team_load_store';
+import {clearTeamLoading, setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 
@@ -64,16 +64,22 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
     try {
         const lastFullSync = await getLastFullSync(database);
+        logInfo('WS reconnect: lastFullSync', lastFullSync);
         const now = Date.now();
 
         const currentTeamId = await getCurrentTeamId(database);
         const currentChannelId = await getCurrentChannelId(database);
+
+        logInfo('WS reconnect: currentTeamId', currentTeamId);
+        logInfo('WS reconnect: currentChannelId', currentChannelId);
 
         setTeamLoading(serverUrl, true);
         const entryData = await entry(serverUrl, currentTeamId, currentChannelId, lastFullSync, groupLabel);
         if ('error' in entryData) {
             return entryData.error;
         }
+
+        logInfo('WS reconnect: entry data', entryData);
         const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted} = entryData;
 
         await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);
@@ -113,7 +119,8 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         AppsManager.refreshAppBindings(serverUrl, groupLabel);
         return undefined;
     } finally {
-        setTeamLoading(serverUrl, false);
+        logDebug('doReconnect: clearTeamLoading', serverUrl);
+        clearTeamLoading(serverUrl);
     }
 }
 
@@ -131,6 +138,8 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
         const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
         const isThreadScreenMounted = mountedScreens.includes(Screens.THREAD);
         const tabletDevice = isTablet();
+
+        logInfo('fetchPostDataIfNeeded: SYSTEM currentChannelId', currentChannelId, 'channelScreenMounted', isChannelScreenMounted, 'tablet', tabletDevice, 'willFetchPosts', Boolean(currentChannelId && (isChannelScreenMounted || tabletDevice)));
 
         if (isCRTEnabled && isThreadScreenMounted) {
             // Fetch new posts in the thread only when CRT is enabled,

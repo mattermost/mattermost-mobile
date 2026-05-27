@@ -15,3 +15,7 @@ export const setTeamLoading = (serverUrl: string, loading: boolean) => {
     const subject = getLoadingTeamChannelsSubject(serverUrl);
     subject.next(subject.value + (loading ? 1 : -1));
 };
+
+export const clearTeamLoading = (serverUrl: string) => {
+    getLoadingTeamChannelsSubject(serverUrl).next(0);
+};

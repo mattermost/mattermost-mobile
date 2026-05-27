@@ -64,6 +64,15 @@ export const storeFirstLaunch = async (prepareRecordsOnly = false) => {
     return storeGlobal(GLOBAL_IDENTIFIERS.FIRST_LAUNCH, Date.now(), prepareRecordsOnly);
 };
 
+export const storeLastViewedTeamIdAndServer = async (teamId: string) => {
+    const currentServerUrl = await getActiveServerUrl();
+
+    return storeGlobal(GLOBAL_IDENTIFIERS.LAST_VIEWED_TEAM, {
+        server_url: currentServerUrl,
+        team_id: teamId,
+    }, false);
+};
+
 export const storeLastViewedChannelIdAndServer = async (channelId: string) => {
     const currentServerUrl = await getActiveServerUrl();
 
@@ -80,6 +89,10 @@ export const storeLastViewedThreadIdAndServer = async (threadId: string) => {
         server_url: currentServerUrl,
         thread_id: threadId,
     }, false);
+};
+
+export const removeLastViewedTeamIdAndServer = async () => {
+    return storeGlobal(GLOBAL_IDENTIFIERS.LAST_VIEWED_TEAM, null, false);
 };
 
 export const removeLastViewedChannelIdAndServer = async () => {

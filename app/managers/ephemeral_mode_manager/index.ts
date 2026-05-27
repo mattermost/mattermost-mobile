@@ -95,6 +95,10 @@ class EphemeralModeManagerSingleton {
         return this.offlineSubjects[serverUrl]?.getValue() ?? false;
     };
 
+    public isZeroPersistenceMode = (serverUrl: string): boolean => {
+        return this.trackedServers.get(serverUrl)?.kind === 'zpm';
+    };
+
     private addServer = async (serverUrl: string) => {
         if (this.configSubscriptions[serverUrl]) {
             return;
@@ -191,10 +195,10 @@ class EphemeralModeManagerSingleton {
         if (appState === 'background') {
             for (const [url, entry] of this.trackedServers) {
                 if (entry.kind === 'zpm') {
-                    const success = deleteFileCache(url)
+                    const success = deleteFileCache(url);
                     if (!success) {
                         logError('EphemeralModeManager.deleteFileCache failed');
-                    };
+                    }
                 }
             }
             return;

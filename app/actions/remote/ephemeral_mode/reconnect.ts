@@ -3,17 +3,14 @@
 
 import NetInfo from '@react-native-community/netinfo';
 import {router} from 'expo-router';
-import {DeviceEventEmitter} from 'react-native';
 
 import {loginEntry} from '@actions/remote/entry';
-import {Events, Launch} from '@constants';
-import {HTTP_UNAUTHORIZED} from '@constants/network';
+import {fetchMe} from '@actions/remote/user';
+import {Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
-import NetworkManager from '@managers/network_manager';
 import {setCurrentUserId} from '@queries/servers/system';
-import {isErrorWithStatusCode} from '@utils/errors';
 
 type Result = {error?: unknown};
 
@@ -29,22 +26,19 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
             return {error: 'no_credentials'};
         }
 
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const client = NetworkManager.getClient(serverUrl);
-
         // Restore the current user before opening the WS so doReconnect can resolve them.
-        let user;
-        try {
-            user = await client.getMe();
-        } catch (error) {
-            return handleReconnectError(serverUrl, error);
+        const {user, error: fetchError} = await fetchMe(serverUrl);
+        if (!user) {
+            return {error: fetchError};
         }
-        await operator.handleUsers({users: [user], prepareRecordsOnly: false});
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await setCurrentUserId(operator, user.id);
 
         const {error: loginError} = await loginEntry({serverUrl});
         if (loginError) {
-            return handleReconnectError(serverUrl, loginError);
+            // when there is a login error ensure to wipe all data to reinforce security
+            await DatabaseManager.wipeServerData(serverUrl);
+            return {error: loginError};
         }
 
         // Update last_active_at so withServerDatabase picks up the new db instance after wipe.
@@ -57,13 +51,4 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
     } catch (error) {
         return {error};
     }
-};
-
-const handleReconnectError = async (serverUrl: string, error: unknown): Promise<Result> => {
-    if (isErrorWithStatusCode(error) && error.status_code === HTTP_UNAUTHORIZED) {
-        DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, removeServer: false});
-        return {};
-    }
-    await DatabaseManager.wipeServerData(serverUrl);
-    return {error};
 };

@@ -5,6 +5,7 @@ import {updateDmGmDisplayName} from '@actions/local/channel';
 import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
 import {storeConfig} from '@actions/local/systems';
 import {fetchCategories} from '@actions/remote/category';
+import {applyPersistenceModeChange} from '@actions/remote/ephemeral_mode/refresh';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getConfig, getCurrentTeamId, getLicense} from '@queries/servers/system';
@@ -49,7 +50,10 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
 
         // Run last: a flag transition can wipe and recreate the server DB, invalidating
         // the `database` reference captured above.
-        await reconcilePersistenceFlag(serverUrl, config);
+        const needsModeChange = await reconcilePersistenceFlag(serverUrl, config);
+        if (needsModeChange) {
+            await applyPersistenceModeChange(serverUrl);
+        }
     } catch {
         // do nothing
     }

@@ -398,6 +398,7 @@ class DatabaseManagerSingleton {
             config: {
                 dbName: serverUrl,
                 displayName: server.displayName,
+                identifier: server.identifier,
                 serverUrl,
             },
         });
