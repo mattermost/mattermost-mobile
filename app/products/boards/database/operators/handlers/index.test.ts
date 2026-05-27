@@ -3,6 +3,7 @@
 
 import {BOARDS_TABLES} from '@boards/constants/database';
 import {transformBoardViewRecord} from '@boards/database/operators/transformers';
+
 import DatabaseManager from '@database/manager';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';

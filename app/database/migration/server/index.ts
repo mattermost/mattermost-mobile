@@ -4,6 +4,7 @@
 // NOTE : To implement migration, please follow this document
 // https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html
 
+import {BOARDS_TABLES} from '@boards/constants/database';
 import {addColumns, createTable, schemaMigrations, unsafeExecuteSql} from '@nozbe/watermelondb/Schema/migrations';
 
 import {AGENTS_TABLES} from '@agents/constants/database';

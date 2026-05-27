@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {tableSchema} from '@nozbe/watermelondb';
-
 import {BOARDS_TABLES} from '@boards/constants/database';
+import {tableSchema} from '@nozbe/watermelondb';
 
 const {BOARD_VIEW} = BOARDS_TABLES;
 

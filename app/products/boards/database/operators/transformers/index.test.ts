@@ -3,6 +3,7 @@
 
 import {BOARDS_TABLES} from '@boards/constants/database';
 import {transformBoardViewRecord} from '@boards/database/operators/transformers';
+
 import {OperationType} from '@constants/database';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 

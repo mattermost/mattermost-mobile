@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AgentsHandler, {type AgentsHandlerMix} from '@agents/database/operators/handlers';
 import BoardsHandler, {type BoardsHandlerMix} from '@boards/database/operators/handlers';
+
+import AgentsHandler, {type AgentsHandlerMix} from '@agents/database/operators/handlers';
 import ServerDataOperatorBase from '@database/operator/server_data_operator/handlers';
 import CategoryHandler, {type CategoryHandlerMix} from '@database/operator/server_data_operator/handlers/category';
 import ChannelHandler, {type ChannelHandlerMix} from '@database/operator/server_data_operator/handlers/channel';

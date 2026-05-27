@@ -3,8 +3,9 @@
 
 /* eslint-disable max-lines */
 
-import {AGENTS_TABLES} from '@agents/constants/database';
 import {BOARDS_TABLES} from '@boards/constants/database';
+
+import {AGENTS_TABLES} from '@agents/constants/database';
 import {MM_TABLES} from '@constants/database';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 

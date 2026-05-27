@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {BOARDS_TABLES} from '@boards/constants/database';
+
 import {OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 

@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BOARDS_TABLES} from '@boards/constants/database';
 import {field, json} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
-import {BOARDS_TABLES} from '@boards/constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
 import type BoardViewModelInterface from '@boards/types/database/models/board_view';

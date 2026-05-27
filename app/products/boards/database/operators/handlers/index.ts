@@ -3,6 +3,7 @@
 
 import {BOARDS_TABLES} from '@boards/constants/database';
 import {transformBoardViewRecord} from '@boards/database/operators/transformers';
+
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {logWarning} from '@utils/log';
 
