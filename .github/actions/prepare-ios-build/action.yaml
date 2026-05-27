@@ -20,16 +20,23 @@ runs:
 
     - name: ci/ensure-ios-platform-installed
       # The macos-26 runner image ships Xcode 26.1.1 with the iOS SDK headers
-      # but does not pre-download the matching iOS 26.1 platform runtime.
-      # Without it, storyboard / asset compilation in the MattermostShare
-      # extension fails with "iOS 26.1 Platform Not Installed".
+      # but does not always pre-download the matching iOS 26.1 platform
+      # runtime. Without it, xcodebuild fails the build with:
+      #   "Ineligible destinations ... error:iOS 26.1 is not installed."
       #
-      # Skip when an iOS Simulator runtime is already present (no network
-      # call), and retry the download up to 3× when the CoreSimulator
-      # daemon isn't ready (xcodebuild -downloadPlatform exits 70 with
-      # "Unable to connect to simulator" on a freshly-booted macos-26
-      # runner before launchd has initialized the simulator services).
+      # The runner may have other iOS runtimes installed (e.g. iOS 18.6,
+      # iOS 26.0). Those are USELESS for an Xcode 26.1 build — we must
+      # check for iOS 26.1 SPECIFICALLY, not "any iOS runtime", or we'll
+      # skip the download and the build will then fail with the error
+      # above. (Previous version of this check used `grep "iOS [0-9]+\.[0-9]+ "`
+      # which matched any version and caused PR 9754 to fail; see
+      # run 26493331673 job 78015672474.)
+      #
+      # Keep version in sync with the `xcode-version:` input on the
+      # ci/setup-xcode step above.
       shell: bash
+      env:
+        REQUIRED_IOS_RUNTIME: "26.1"
       run: |
         # Wait up to 60s for CoreSimulator service to come up so the queries
         # below are reliable. Fresh macos-26 runners can lag past job start.
@@ -39,16 +46,23 @@ runs:
           sleep 5
         done
 
-        # No-op when a non-trivial iOS runtime is already installed.
-        if xcrun simctl list runtimes 2>/dev/null | grep -qE "iOS [0-9]+\.[0-9]+ "; then
-          echo "iOS Simulator runtime already installed; skipping -downloadPlatform."
+        # No-op only when the EXACT required iOS runtime is already installed.
+        # `iOS 26.1 ` with trailing space distinguishes "iOS 26.1" from
+        # "iOS 26.10" or "iOS 26.1.x" (none currently exist, but defensive).
+        if xcrun simctl list runtimes 2>/dev/null | grep -qE "iOS ${REQUIRED_IOS_RUNTIME}( |$)"; then
+          echo "iOS ${REQUIRED_IOS_RUNTIME} Simulator runtime already installed; skipping -downloadPlatform."
           exit 0
         fi
+
+        echo "iOS ${REQUIRED_IOS_RUNTIME} Simulator runtime not installed. Currently installed runtimes:"
+        xcrun simctl list runtimes 2>/dev/null | grep -E "^iOS " || echo "(none)"
 
         # Otherwise download with retry; daemon races still possible.
         for attempt in 1 2 3; do
           echo "xcodebuild -downloadPlatform iOS (attempt $attempt/3)..."
           if xcodebuild -downloadPlatform iOS; then
+            echo "Download succeeded. Installed iOS runtimes after download:"
+            xcrun simctl list runtimes 2>/dev/null | grep -E "^iOS " || echo "(none)"
             exit 0
           fi
           echo "Attempt $attempt failed; retrying in 30s..."
