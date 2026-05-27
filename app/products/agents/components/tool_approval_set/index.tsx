@@ -21,7 +21,7 @@ import ToolCard from '../tool_card';
 interface ToolApprovalSetProps {
     postId: string;
     toolCalls: ToolCall[];
-    approvalStage: ToolApprovalStage | null;
+    approvalStage: ToolApprovalStage;
     canApprove: boolean;
     canExpand: boolean;
     showArguments: boolean;
@@ -81,7 +81,11 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     useEffect(() => {
         const isActionable = (tool: ToolCall) => {
             if (approvalStage === ToolApprovalStage.Result) {
-                return tool.status === ToolCallStatus.Success || tool.status === ToolCallStatus.Error;
+                return (
+                    tool.status === ToolCallStatus.Success ||
+                    tool.status === ToolCallStatus.Error ||
+                    tool.status === ToolCallStatus.AutoApproved
+                );
             }
             return tool.status === ToolCallStatus.Pending;
         };
@@ -109,10 +113,19 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     }, [toolCalls, approvalStage]);
 
     const actionableTools = useMemo(() => {
-        if (approvalStage === ToolApprovalStage.Result) {
-            return toolCalls.filter((call) => call.status === ToolCallStatus.Success || call.status === ToolCallStatus.Error);
+        if (approvalStage === ToolApprovalStage.Call) {
+            return toolCalls.filter((call) => call.status === ToolCallStatus.Pending);
         }
-        return toolCalls.filter((call) => call.status === ToolCallStatus.Pending);
+        if (approvalStage === ToolApprovalStage.Result) {
+            return toolCalls.filter((call) =>
+                call.status === ToolCallStatus.Success ||
+                call.status === ToolCallStatus.Error ||
+                call.status === ToolCallStatus.AutoApproved,
+            );
+        }
+
+        // 'done' stage — server says no decision remains, render no buttons.
+        return [];
     }, [toolCalls, approvalStage]);
 
     const submitDecisions = useCallback(async (decisions: ToolDecision) => {
@@ -124,8 +137,6 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         const submit = approvalStage === ToolApprovalStage.Result ? submitToolResult : submitToolApproval;
         const {error} = await submit(serverUrl, postId, approvedToolIds);
 
-        // Reset submitting state regardless of success/error
-        // On error, user can try again. On success, backend updates via POST_EDITED
         setIsSubmitting(false);
 
         if (error) {
@@ -141,13 +152,14 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             return;
         }
 
-        const updatedDecisions = {
-            ...toolDecisions,
-            [toolId]: approved,
-        };
-        setToolDecisions((prev) => ({...prev, [toolId]: approved}));
+        // Capture the latest decisions via the functional setter so two rapid
+        // taps each see the previous tap's choice rather than a stale snapshot.
+        let updatedDecisions: ToolDecision = {};
+        setToolDecisions((prev) => {
+            updatedDecisions = {...prev, [toolId]: approved};
+            return updatedDecisions;
+        });
 
-        // Check if there are still undecided actionable tools
         const hasUndecided = actionableTools.some((tool) => {
             return !(tool.id in updatedDecisions) || updatedDecisions[tool.id] === null;
         });
@@ -155,7 +167,6 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         if (!hasUndecided) {
             await submitDecisions(updatedDecisions);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- toolDecisions is read for the submit check but setState uses functional form to avoid stale closure races
     }, [isSubmitting, actionableTools, submitDecisions]);
 
     const handleApprove = useCallback((toolId: string) => {
@@ -175,7 +186,6 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         }));
     }, [toolCalls, actionableTools]);
 
-    // Calculate how many actionable tools haven't been decided yet
     const undecidedCount = useMemo(() => {
         return actionableTools.filter(
             (tool) => !(tool.id in toolDecisions),
@@ -187,11 +197,21 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     }
 
     const actionableIds = new Set(actionableTools.map((t) => t.id));
-    const processedToolCalls = toolCalls.filter((call) => !actionableIds.has(call.id));
+    const isCallStage = approvalStage === ToolApprovalStage.Call;
+    const isResultStage = approvalStage === ToolApprovalStage.Result;
 
-    // Helper to compute if a tool should be collapsed
     const isToolCollapsed = (tool: ToolCall) => {
-        const defaultExpanded = actionableIds.has(tool.id);
+        // Auto-approved tools default collapsed; the user never interacted with them.
+        if (tool.status === ToolCallStatus.AutoApproved) {
+            return !(expandedTools[tool.id] ?? false);
+        }
+
+        let defaultExpanded = false;
+        if (isCallStage) {
+            defaultExpanded = tool.status === ToolCallStatus.Pending;
+        } else if (isResultStage) {
+            defaultExpanded = tool.status === ToolCallStatus.Success || tool.status === ToolCallStatus.Error;
+        }
         return !(expandedTools[tool.id] ?? defaultExpanded);
     };
 
@@ -200,38 +220,26 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             style={styles.container}
             testID='agents.tool_approval_set'
         >
-            {actionableTools.map((tool) => (
-                <ToolCard
-                    key={tool.id}
-                    tool={tool}
-                    isCollapsed={isToolCollapsed(tool)}
-                    isProcessing={isSubmitting}
-                    localDecision={toolDecisions[tool.id]}
-                    onToggleCollapse={toggleCollapse}
-                    onApprove={canApprove ? handleApprove : undefined}
-                    onReject={canApprove ? handleReject : undefined}
-                    approvalStage={approvalStage}
-                    canExpand={canExpand}
-                    showArguments={showArguments}
-                    showResults={showResults}
-                />
-            ))}
-
-            {processedToolCalls.map((tool) => (
-                <ToolCard
-                    key={tool.id}
-                    tool={tool}
-                    isCollapsed={isToolCollapsed(tool)}
-                    isProcessing={false}
-                    onToggleCollapse={toggleCollapse}
-                    onApprove={canApprove ? handleApprove : undefined}
-                    onReject={canApprove ? handleReject : undefined}
-                    approvalStage={approvalStage}
-                    canExpand={canExpand}
-                    showArguments={showArguments}
-                    showResults={showResults}
-                />
-            ))}
+            {toolCalls.map((tool) => {
+                const isActionable = actionableIds.has(tool.id);
+                return (
+                    <ToolCard
+                        key={tool.id}
+                        tool={tool}
+                        isCollapsed={isToolCollapsed(tool)}
+                        isProcessing={isActionable && isSubmitting}
+                        localDecision={isActionable ? toolDecisions[tool.id] : undefined}
+                        onToggleCollapse={toggleCollapse}
+                        onApprove={isActionable && canApprove ? handleApprove : undefined}
+                        onReject={isActionable && canApprove ? handleReject : undefined}
+                        approvalStage={approvalStage}
+                        canExpand={canExpand}
+                        showArguments={showArguments}
+                        showResults={showResults}
+                        isAutoApproved={tool.status === ToolCallStatus.AutoApproved}
+                    />
+                );
+            })}
 
             {actionableTools.length > 1 && isSubmitting && (
                 <View

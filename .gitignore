@@ -137,3 +137,4 @@ node_modules/@mattermost/intune
 .claude/settings.local.json
 .codex/
 .cursor/
+.planning/

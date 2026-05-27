@@ -428,19 +428,27 @@ function AppsFormComponent({
     }, [form, values, performLookupCall, intl]);
 
     useEffect(() => {
-        if (submitButtons) {
-            navigation.setOptions({
-                headerRight: () => (
-                    <NavigationButton
-                        onPress={handleSubmit}
-                        disabled={submitting}
-                        testID='interactive_dialog.submit.button'
-                        text={intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'})}
-                    />
-                ),
-            });
+        // Header Submit is the default submission affordance. When the form
+        // declares a custom submit_buttons field with at least one option, the
+        // inline buttons rendered at the bottom of the form replace the header
+        // Submit so the user picks an explicit button value. If the field has
+        // no options (nothing renders inline), keep the header Submit so the
+        // form remains submittable.
+        if (submitButtons?.options?.length) {
+            navigation.setOptions({headerRight: undefined});
+            return;
         }
-    }, [handleSubmit, intl, navigation, submitButtons, submitting]);
+        navigation.setOptions({
+            headerRight: () => (
+                <NavigationButton
+                    onPress={handleSubmit}
+                    disabled={submitting}
+                    testID='interactive_dialog.submit.button'
+                    text={form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'})}
+                />
+            ),
+        });
+    }, [form.submit_label, handleSubmit, intl, navigation, submitButtons, submitting]);
 
     // Cleanup on unmount to prevent memory leaks
     useEffect(() => {

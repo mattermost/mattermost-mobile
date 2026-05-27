@@ -9,17 +9,18 @@ import {switchToChannelById} from '@actions/remote/channel';
 import {appEntry, pushNotificationEntry} from '@actions/remote/entry';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import LocalConfig from '@assets/config.json';
-import {DeepLink, Events, Launch, PushNotification} from '@constants';
+import {DeepLink, Events, Launch, PushNotification, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getLastViewedChannelIdAndServer, getLastViewedThreadIdAndServer, getOnboardingViewed} from '@queries/app/global';
-import {getAllServers} from '@queries/app/servers';
+import {getActiveServer, getAllServers} from '@queries/app/servers';
 import {queryPostsByType} from '@queries/servers/post';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {queryMyTeams} from '@queries/servers/team';
+import {getExpoRouterPath} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {handleDeepLink, getLaunchPropsFromDeepLink} from '@utils/deep_link';
 import {logInfo} from '@utils/log';
@@ -43,6 +44,14 @@ const initialNotificationTypes = [PushNotification.NOTIFICATION_TYPE.MESSAGE, Pu
  * Determine initial route for Expo Router based on app launch conditions
  */
 export async function determineInitialExpoRoute(): Promise<ExpoRouterLaunchResult> {
+    const activeServer = await getActiveServer();
+    if (activeServer && activeServer.persistenceFlag === 'wiped') {
+        return {
+            route: getExpoRouterPath(Screens.DATA_ERASED)!,
+            params: {serverUrl: activeServer.url, displayName: activeServer.displayName || activeServer.url},
+        };
+    }
+
     // Check for deep link launch
     const deepLinkUrl = await Linking.getInitialURL();
     if (deepLinkUrl) {

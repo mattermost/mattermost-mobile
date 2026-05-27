@@ -15,7 +15,7 @@ import {getActiveServerUrl} from '@queries/app/servers';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
-import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, getLastTeam, getTeamById, removeTeamFromTeamHistory, queryMyTeams} from '@queries/servers/team';
+import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, getLastTeam, getTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
 import {navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
@@ -324,9 +324,8 @@ export async function fetchTeamsForComponent(
 export const updateCanJoinTeams = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const myTeams = await queryMyTeams(database).fetch();
+        const myTeams = await client.getMyTeams(groupLabel);
         const myTeamsIds = new Set(myTeams.map((m) => m.id));
 
         const canJoin = await recCanJoinTeams(client, myTeamsIds, 0, groupLabel);
@@ -334,8 +333,11 @@ export const updateCanJoinTeams = async (serverUrl: string, groupLabel?: Request
         EphemeralStore.setCanJoinOtherTeams(serverUrl, canJoin);
         return {};
     } catch (error) {
+        // Preserve the last known value on transient failures so a spotty
+        // connection doesn't hide the Join Team affordance for users who can
+        // legitimately join. The ephemeral store defaults to false, so this
+        // only retains a previously-computed value.
         logDebug('error on updateCanJoinTeams', getFullErrorMessage(error));
-        EphemeralStore.setCanJoinOtherTeams(serverUrl, false);
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

@@ -3,10 +3,12 @@
 
 /* eslint-disable max-lines */
 
+import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
+import EphemeralStore from '@store/ephemeral_store';
 
 import {fetchScheduledPosts} from './scheduled_post';
 import {
@@ -359,14 +361,83 @@ describe('teams', () => {
         expect(result.hasMore).toBeFalsy();
     });
 
-    it('updateCanJoinTeams - handle not found database', async () => {
-        const result = await updateCanJoinTeams('foo') as {error: unknown};
-        expect(result?.error).toBeDefined();
-    });
-
     it('updateCanJoinTeams - base case', async () => {
         const result = await updateCanJoinTeams(serverUrl);
         expect(result).toBeDefined();
+    });
+
+    describe('updateCanJoinTeams server membership (MM-68575)', () => {
+        let setCanJoinSpy: jest.SpiedFunction<typeof EphemeralStore.setCanJoinOtherTeams>;
+
+        const activeTeam = (id: string): Team => ({id, name: id, delete_at: 0} as Team);
+
+        beforeEach(() => {
+            setCanJoinSpy = jest.spyOn(EphemeralStore, 'setCanJoinOtherTeams');
+        });
+
+        afterEach(() => {
+            setCanJoinSpy.mockRestore();
+            mockClient.getMyTeams.mockImplementation(() => [{id: teamId, name: 'team1'}]);
+            mockClient.getTeams.mockImplementation(() => [{id: teamId, name: 'team1'}]);
+        });
+
+        it('should set canJoin false when getMyTeams lists full membership while getTeams returns all server teams', async () => {
+            (mockClient.getMyTeams as jest.Mock).mockResolvedValue([
+                activeTeam('t1'),
+                activeTeam('t2'),
+                activeTeam('t3'),
+            ]);
+            (mockClient.getTeams as jest.Mock).mockResolvedValue([
+                activeTeam('t1'),
+                activeTeam('t2'),
+                activeTeam('t3'),
+            ]);
+
+            await updateCanJoinTeams(serverUrl);
+
+            expect(setCanJoinSpy).toHaveBeenCalledWith(serverUrl, false);
+        });
+
+        it('should set canJoin true when an active server team is not in getMyTeams', async () => {
+            (mockClient.getMyTeams as jest.Mock).mockResolvedValue([activeTeam('t1')]);
+            (mockClient.getTeams as jest.Mock).mockResolvedValue([activeTeam('t1'), activeTeam('t2')]);
+
+            await updateCanJoinTeams(serverUrl);
+
+            expect(setCanJoinSpy).toHaveBeenCalledWith(serverUrl, true);
+        });
+
+        it('should pass groupLabel to getMyTeams and getTeams', async () => {
+            const groupLabel = 'Cold Start Deferred' as RequestGroupLabel;
+            (mockClient.getMyTeams as jest.Mock).mockResolvedValue([activeTeam('t1')]);
+            (mockClient.getTeams as jest.Mock).mockResolvedValue([activeTeam('t1')]);
+
+            await updateCanJoinTeams(serverUrl, groupLabel);
+
+            expect(mockClient.getMyTeams).toHaveBeenCalledWith(groupLabel);
+            expect(mockClient.getTeams).toHaveBeenCalledWith(0, PER_PAGE_DEFAULT, false, groupLabel);
+        });
+
+        it('should preserve the last known canJoin value when getMyTeams fails', async () => {
+            const err = new Error('network unavailable');
+            (mockClient.getMyTeams as jest.Mock).mockRejectedValue(err);
+
+            const result = await updateCanJoinTeams(serverUrl) as {error: unknown};
+
+            expect(result?.error).toBeDefined();
+            expect(setCanJoinSpy).not.toHaveBeenCalled();
+        });
+
+        it('should preserve the last known canJoin value when getTeams fails', async () => {
+            const err = new Error('server timeout');
+            (mockClient.getMyTeams as jest.Mock).mockResolvedValue([activeTeam('t1')]);
+            (mockClient.getTeams as jest.Mock).mockRejectedValue(err);
+
+            const result = await updateCanJoinTeams(serverUrl) as {error: unknown};
+
+            expect(result?.error).toBeDefined();
+            expect(setCanJoinSpy).not.toHaveBeenCalled();
+        });
     });
 
     it('fetchTeamsThreads - handle not found database', async () => {

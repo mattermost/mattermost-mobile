@@ -22,6 +22,7 @@ import {
     getLastBoRPostCleanupRun,
 } from '@queries/servers/system';
 import PostModel from '@typings/database/models/servers/post';
+import SystemModel from '@typings/database/models/servers/system';
 import {isExpiredBoRPost} from '@utils/bor';
 import {logError} from '@utils/log';
 
@@ -30,7 +31,78 @@ import {deletePosts} from './post';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
 
-const {SERVER: {POST}} = MM_TABLES;
+const {SERVER: {POST, SYSTEM}} = MM_TABLES;
+
+export async function setDisconnectedSince(serverUrl: string, value: number | null): Promise<void> {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        if (value === null) {
+            const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE).catch(() => null);
+            if (record) {
+                await database.write(async () => {
+                    await record.destroyPermanently();
+                });
+            }
+            return;
+        }
+
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE, value}],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('setDisconnectedSince', error);
+    }
+}
+
+export async function setOfflineSince(serverUrl: string, value: number): Promise<void> {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.OFFLINE_SINCE, value}],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('setOfflineSince', error);
+    }
+}
+
+export async function setLastSeenTime(serverUrl: string, value: number): Promise<void> {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LAST_SEEN_TIME, value}],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('setLastSeenTime', error);
+    }
+}
+
+export async function clearEphemeralModeState(serverUrl: string): Promise<void> {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const records = await database.get<SystemModel>(SYSTEM).query(
+            Q.where('id', Q.oneOf([
+                SYSTEM_IDENTIFIERS.OFFLINE_SINCE,
+                SYSTEM_IDENTIFIERS.LAST_SEEN_TIME,
+            ])),
+        ).fetch();
+
+        if (records.length === 0) {
+            return;
+        }
+
+        await database.write(async () => {
+            await database.batch(...records.map((r) => r.prepareDestroyPermanently()));
+        });
+    } catch (error) {
+        logError('clearEphemeralModeState', error);
+    }
+}
 
 export async function storeConfigAndLicense(serverUrl: string, config: ClientConfig, license: ClientLicense) {
     try {

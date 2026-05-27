@@ -164,6 +164,10 @@ interface ClientConfig {
     MobileAllowPdfLinkNavigation: string;
     MobileEnableBiometrics: string;
     MobileEnableSecureFilePreview: string;
+    MobileEphemeralModeEnabled?: string;
+    MobileEphemeralModeDisconnectionTimeoutSeconds?: string;
+    MobileEphemeralModeOfflinePersistenceTimerHours?: string;
+    MobileEphemeralModeAutoCacheCleanupDays?: string;
     MobileJailbreakProtection: string;
     MobilePreventScreenCapture: string;
     MobileExternalBrowser: string;

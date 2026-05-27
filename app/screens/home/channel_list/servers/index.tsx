@@ -3,7 +3,7 @@
 
 import React, {useCallback, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, type StyleProp, type ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ServerIcon from '@components/server_icon';
@@ -44,7 +44,19 @@ const styles = StyleSheet.create({
     },
 });
 
-const Servers = React.forwardRef<ServersRef>((_, ref) => {
+type Props = {
+    badgeBorderColor?: string;
+    iconColor?: string;
+    iconStyle?: StyleProp<ViewStyle>;
+    testID?: string;
+}
+
+const Servers = React.forwardRef<ServersRef, Props>(({
+    badgeBorderColor,
+    iconColor,
+    iconStyle = styles.icon,
+    testID = 'channel_list.servers.server_icon',
+}, ref) => {
     const intl = useIntl();
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
     const registeredServers = useRef<ServersModel[] | undefined>(undefined);
@@ -157,9 +169,10 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
             hasUnreads={total.unread}
             mentionCount={total.mentions}
             onPress={onPress}
-            style={styles.icon}
-            testID={'channel_list.servers.server_icon'}
-            badgeBorderColor={theme.sidebarBg}
+            style={iconStyle}
+            testID={testID}
+            iconColor={iconColor}
+            badgeBorderColor={badgeBorderColor ?? theme.sidebarBg}
             badgeBackgroundColor={theme.mentionBg}
             badgeColor={theme.mentionColor}
         />

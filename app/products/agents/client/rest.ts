@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {AIBotsResponse, AIThread, ToolCall} from '@agents/types';
+import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolCall} from '@agents/types';
 import type {Agent, AgentsResponse, AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, RewriteRequest, RewriteResponse} from '@agents/types/api';
 
 export type {Agent};
@@ -9,7 +9,7 @@ export type {Agent};
 export interface ClientAgentsMix {
     getAgentsRoute: () => string;
     getAIBots: () => Promise<AIBotsResponse>;
-    getAIThreads: () => Promise<AIThread[]>;
+    getAIThreads: () => Promise<RawAIThread[] | null>;
     getAgents: () => Promise<Agent[]>;
     stopGeneration: (postId: string) => Promise<void>;
     regenerateResponse: (postId: string) => Promise<void>;
@@ -20,9 +20,16 @@ export interface ClientAgentsMix {
         options?: ChannelAnalysisOptions,
     ) => Promise<ChannelAnalysisResponse>;
     submitToolApproval: (postId: string, acceptedToolIds: string[]) => Promise<void>;
+
+    // Legacy endpoints (plugin < 2.0): redaction fetched via dedicated routes.
+    // New plugin scopes privacy at the conversation-fetch / websocket layer.
     getToolCallPrivate: (postId: string) => Promise<ToolCall[]>;
     getToolResultPrivate: (postId: string) => Promise<ToolCall[]>;
     submitToolResult: (postId: string, acceptedToolIds: string[]) => Promise<void>;
+
+    // Conversation entity (plugin >= 2.0): source of truth for tool calls,
+    // reasoning, and annotations after a stream finalizes.
+    getConversation: (conversationId: string) => Promise<ConversationResponse>;
 
     // Rewrite methods
     getRewrittenMessage: (message: string, action?: string, customPrompt?: string, agentId?: string) => Promise<string>;
@@ -129,6 +136,13 @@ const ClientAgents = (superclass: any) => class extends superclass {
                 method: 'post',
                 body: {accepted_tool_ids: acceptedToolIds},
             },
+        );
+    };
+
+    getConversation = async (conversationId: string): Promise<ConversationResponse> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/conversations/${conversationId}`,
+            {method: 'get'},
         );
     };
 

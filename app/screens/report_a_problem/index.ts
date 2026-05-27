@@ -3,12 +3,11 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import {withObservables} from '@nozbe/watermelondb/react';
-import {of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {observeConfigBooleanValue, observeConfigValue, observeCurrentUserId, observeLicense, observeReportAProblemMetadata} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeConfigValue, observeCurrentUserId, observeIsFreeEdition, observeReportAProblemMetadata} from '@queries/servers/system';
 
 import ReportProblem from './report_problem';
 
@@ -19,7 +18,7 @@ const enhanced = withObservables([], ({database}) => {
         reportAProblemLink: observeConfigValue(database, 'ReportAProblemLink'),
         siteName: observeConfigValue(database, 'SiteName'),
         allowDownloadLogs: observeConfigBooleanValue(database, 'AllowDownloadLogs', true),
-        isLicensed: observeLicense(database).pipe(switchMap((license) => (license ? of$(license.IsLicensed) : of$(false)))),
+        isFreeEdition: observeIsFreeEdition(database),
         metadata: observeReportAProblemMetadata(database),
         currentUserId: observeCurrentUserId(database),
         attachLogsEnabled: queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.ADVANCED_SETTINGS, Preferences.ATTACH_APP_LOGS).
