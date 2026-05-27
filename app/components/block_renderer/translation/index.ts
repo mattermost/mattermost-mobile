@@ -34,6 +34,10 @@ export function translatePostProps(props: Record<string, unknown>): MmBlock[] | 
     return null;
 }
 
+/**
+ * Which `integration_format` the do-post-action API expects for this post's props,
+ * matching {@link translatePostProps} source priority (native mm_blocks vs translated inputs).
+ */
 export function getPostInteractiveIntegrationFormat(props: Record<string, unknown>): PostActionIntegrationFormat {
     if (Array.isArray(props.mm_blocks) && props.mm_blocks.length > 0) {
         return 'mm_block';

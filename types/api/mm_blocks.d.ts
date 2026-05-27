@@ -14,7 +14,8 @@
 // - Legacy attachments translated into mm_blocks: each control may carry `cookie` copied from
 //   `props.attachments[].actions[].cookie` (encrypted PostAction cookie per button/select).
 
-type MmButtonStyle = 'default' | 'primary' | 'danger';
+/** Semantic attachment / integration action colors. Hex colors use the same `style` field (`#RRGGBB`). */
+type MmButtonStyle = 'default' | 'primary' | 'danger' | 'good' | 'success' | 'warning';
 
 // ---------------------------------------------------------------------------
 // Interactive controls
@@ -29,7 +30,9 @@ type MmButtonBlock = {
     type: 'button';
     text: string;
     action_id: string;
-    style?: MmButtonStyle;
+
+    /** Semantic name (`MmButtonStyle`) or `#RRGGBB` hex (legacy attachment parity). */
+    style?: MmButtonStyle | string;
     tooltip?: string;
     disabled?: boolean;
     query?: Record<string, string>;
@@ -90,7 +93,7 @@ type MmImageBlock = {
     url: string;
 
     /** Block Kit `alt_text` / Adaptive Cards `altText`. */
-    alt_text: string;
+    alt_text?: string;
 
     /** Block Kit image `title` (plain text); surfaced as the HTML `title` attribute. */
     title?: string;
@@ -118,19 +121,25 @@ type MmDividerBlock = {
     type: 'divider';
 };
 
+/** Spacing between flex children (CSS `gap`) in containers, columns, and column sets. */
+type MmContainerGap = 'none' | 'small' | 'medium' | 'large' | 'xlarge';
+
 type MmColumnBlock = {
     type: 'column';
     items: MmBlock[];
     width?: 'auto' | 'stretch';
+
+    /** Space between items inside the column (via inner container). Defaults to `medium` when omitted in the renderer. */
+    gap?: MmContainerGap;
 };
 
 type MmColumnSetBlock = {
     type: 'column_set';
     columns: MmColumnBlock[];
-};
 
-/** Spacing between child blocks inside a container (CSS `gap`). Defaults to `none` when omitted. */
-type MmContainerGap = 'none' | 'small' | 'medium' | 'large' | 'xlarge';
+    /** Space between columns. Defaults to `medium` when omitted in the renderer. */
+    gap?: MmContainerGap;
+};
 
 type MmContainerBackground = 'none' | 'gray';
 
@@ -164,14 +173,13 @@ type MmContainerBlock = {
     background?: MmContainerBackground;
 
     /**
-     * When set, the container grows with its content up to this maximum height, then scrolls vertically.
-     * Preset pixel caps: `small` | `medium` | `large`.
+     * Maximum height preset for the container. `none` (default) has no cap; other presets scroll when content overflows.
      */
     max_height?: MmContainerMaxHeight;
 };
 
 /** Preset maximum heights for `MmContainerBlock.max_height`. */
-type MmContainerMaxHeight = 'small' | 'medium' | 'large';
+type MmContainerMaxHeight = 'none' | 'small' | 'medium' | 'large';
 
 type MmCollapsibleBlock = {
     type: 'collapsible';

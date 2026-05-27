@@ -5,16 +5,12 @@
 
 import truncate from 'lodash/truncate';
 
+import {MAX_ATTACHMENT_FOOTER_LENGTH} from '@constants/integrations';
 import {isUrlSafe} from '@utils/url';
 
-import {normaliseButtonStyle} from './shared';
+import {parseMmButtonStyle} from '../utils/button';
 
-const MAX_ATTACHMENT_FOOTER_LENGTH = 300;
-
-/** Matches legacy `.attachment__author-icon` in `_webhooks.scss` (14×14). */
-const AUTHOR_ICON_MAX_PX = 14;
-
-/** Matches legacy `.attachment__footer-icon` in `message_attachment.tsx` (16×16). */
+const AUTHOR_ICON_MAX_PX = 20;
 const FOOTER_ICON_MAX_PX = 16;
 
 /** Placeholder so the stretch column still exists when the body is otherwise empty (thumb-only attachment). */
@@ -368,22 +364,7 @@ function translateAttachmentActions(actions: unknown[]) {
             continue;
         }
         const act = action as Record<string, unknown>;
-        if (act.type === 'button') {
-            const text = typeof act.name === 'string' ? act.name : '';
-            const actionId = typeof act.id === 'string' ? act.id : '';
-            if (!text || !actionId) {
-                continue;
-            }
-            result.content.push({
-                type: 'button',
-                action_id: actionId,
-                text,
-                style: normaliseButtonStyle(typeof act.style === 'string' ? act.style : undefined),
-                tooltip: typeof act.tooltip === 'string' ? act.tooltip : undefined,
-                disabled: act.disabled === true ? true : undefined,
-                cookie: typeof act.cookie === 'string' ? act.cookie : undefined,
-            });
-        } else if (act.type === 'select') {
+        if (act.type === 'select') {
             const placeholder = typeof act.name === 'string' ? act.name : '';
             const actionId = typeof act.id === 'string' ? act.id : '';
             if (!actionId) {
@@ -407,6 +388,22 @@ function translateAttachmentActions(actions: unknown[]) {
                 disabled: act.disabled === true ? true : undefined,
                 cookie: typeof act.cookie === 'string' ? act.cookie : undefined,
                 data_source: typeof act.data_source === 'string' ? act.data_source : undefined,
+            });
+        } else {
+            // Legacy attachment actions without `type` render as buttons (see message_attachment.tsx).
+            const text = typeof act.name === 'string' ? act.name : '';
+            const actionId = typeof act.id === 'string' ? act.id : '';
+            if (!text || !actionId) {
+                continue;
+            }
+            result.content.push({
+                type: 'button',
+                action_id: actionId,
+                text,
+                style: parseMmButtonStyle(typeof act.style === 'string' ? act.style : undefined),
+                tooltip: typeof act.tooltip === 'string' ? act.tooltip : undefined,
+                disabled: act.disabled === true ? true : undefined,
+                cookie: typeof act.cookie === 'string' ? act.cookie : undefined,
             });
         }
     }

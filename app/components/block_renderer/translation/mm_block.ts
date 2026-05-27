@@ -4,7 +4,7 @@
 // Native `props.mm_blocks` entries → validated `MmBlock` (same schema; rejects invalid payloads).
 // Future: expand with composite block types (e.g. `actions`) that desugar into base blocks.
 
-import {normaliseButtonStyle} from './shared';
+import {parseMmButtonStyle} from '../utils/button';
 
 const TEXT_KEYS = new Set(['type', 'text', 'is_subtle', 'size']);
 const DIVIDER_KEYS = new Set(['type']);
@@ -31,8 +31,8 @@ const IMAGE_KEYS = new Set([
     'image_style',
     'horizontal_alignment',
 ]);
-const COLUMN_KEYS = new Set(['type', 'items', 'width']);
-const COLUMN_SET_KEYS = new Set(['type', 'columns']);
+const COLUMN_KEYS = new Set(['type', 'items', 'width', 'gap']);
+const COLUMN_SET_KEYS = new Set(['type', 'columns', 'gap']);
 const CONTAINER_KEYS = new Set([
     'type',
     'content',
@@ -48,7 +48,7 @@ const COLLAPSIBLE_KEYS = new Set(['type', 'header', 'content', 'collapsed']);
 const MM_IMAGE_SIZES = new Set<MmImageSize>(['auto', 'xsmall', 'small', 'medium', 'large', 'stretch']);
 const MM_CONTAINER_GAPS = new Set<MmContainerGap>(['none', 'small', 'medium', 'large', 'xlarge']);
 const MM_CONTAINER_BACKGROUNDS = new Set<MmContainerBackground>(['none', 'gray']);
-const MM_CONTAINER_MAX_HEIGHTS = new Set<MmContainerMaxHeight>(['small', 'medium', 'large']);
+const MM_CONTAINER_MAX_HEIGHTS = new Set<MmContainerMaxHeight>(['none', 'small', 'medium', 'large']);
 const MM_CONTAINER_ACCENT_SEMANTIC = new Set<MmContainerAccentSemantic>([
     'default',
     'primary',
@@ -182,15 +182,16 @@ function translateButtonBlock(raw: Record<string, unknown>): MmButtonBlock | nul
     if (!keysAreSubset(raw, BUTTON_KEYS)) {
         return null;
     }
-    if (typeof raw.text !== 'string' || typeof raw.action_id !== 'string') {
+    if (typeof raw.text !== 'string' || raw.text.trim() === '' ||
+        typeof raw.action_id !== 'string' || raw.action_id.trim() === '') {
         return null;
     }
     const styleRaw = raw.style;
-    let style: MmButtonStyle | undefined;
+    let style: MmButtonBlock['style'];
     if (styleRaw === undefined) {
         style = undefined;
     } else if (typeof styleRaw === 'string') {
-        style = normaliseButtonStyle(styleRaw);
+        style = parseMmButtonStyle(styleRaw);
     } else {
         return null;
     }
@@ -249,7 +250,8 @@ function translateStaticSelectBlock(raw: Record<string, unknown>): MmStaticSelec
     if (!keysAreSubset(raw, STATIC_SELECT_KEYS)) {
         return null;
     }
-    if (typeof raw.action_id !== 'string' || typeof raw.placeholder !== 'string') {
+    if (typeof raw.action_id !== 'string' || raw.action_id.trim() === '' ||
+        typeof raw.placeholder !== 'string' || raw.placeholder.trim() === '') {
         return null;
     }
     let options: MmStaticSelectOption[] | undefined;
@@ -430,11 +432,25 @@ function translateColumnBlock(raw: Record<string, unknown>): MmColumnBlock | nul
     } else {
         return null;
     }
-    return {
+    let gap: MmContainerGap | undefined;
+    if (raw.gap === undefined) {
+        gap = undefined;
+    } else if (typeof raw.gap === 'string' && MM_CONTAINER_GAPS.has(raw.gap as MmContainerGap)) {
+        gap = raw.gap as MmContainerGap;
+    } else {
+        return null;
+    }
+    const out: MmColumnBlock = {
         type: 'column',
         items,
-        ...(width ? {width} : {}),
     };
+    if (width) {
+        out.width = width;
+    }
+    if (gap) {
+        out.gap = gap;
+    }
+    return out;
 }
 
 function translateColumnSetBlock(raw: Record<string, unknown>): MmColumnSetBlock | null {
@@ -458,7 +474,19 @@ function translateColumnSetBlock(raw: Record<string, unknown>): MmColumnSetBlock
     if (columns.length === 0) {
         return null;
     }
-    return {type: 'column_set', columns};
+    let gap: MmContainerGap | undefined;
+    if (raw.gap === undefined) {
+        gap = undefined;
+    } else if (typeof raw.gap === 'string' && MM_CONTAINER_GAPS.has(raw.gap as MmContainerGap)) {
+        gap = raw.gap as MmContainerGap;
+    } else {
+        return null;
+    }
+    const out: MmColumnSetBlock = {type: 'column_set', columns};
+    if (gap) {
+        out.gap = gap;
+    }
+    return out;
 }
 
 function translateContainerBlock(raw: Record<string, unknown>): MmContainerBlock | null {
@@ -542,7 +570,7 @@ function translateContainerBlock(raw: Record<string, unknown>): MmContainerBlock
     if (background) {
         out.background = background;
     }
-    if (containerMaxHeight) {
+    if (containerMaxHeight !== undefined) {
         out.max_height = containerMaxHeight;
     }
     return out;
