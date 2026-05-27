@@ -503,9 +503,49 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      # Compute a hash of every file that affects the Android RELEASE build.
+      # Unlike detox debug (which Metro serves JS at runtime), the release APK
+      # bundles JS into the binary, so JS source ALSO triggers a rebuild —
+      # broader hash than build-android-apk's debug hash.
+      - name: Compute Android release-build hash
+        id: maestro-android-hash
+        shell: bash
+        run: |
+          HASH=$(git ls-tree -r HEAD -- \
+            android \
+            patches \
+            package-lock.json \
+            libraries/@mattermost/intune \
+            libraries/@mattermost/rnshare \
+            libraries/@mattermost/rnutils \
+            libraries/@mattermost/hardware-keyboard \
+            libraries/@mattermost/secure-pdf-viewer \
+            app \
+            share_extension \
+            index.js \
+            metro.config.js \
+            babel.config.js \
+            tsconfig.json \
+            assets \
+            | sha256sum | cut -d' ' -f1)
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+          echo "Android release-build hash: $HASH"
+
+      # Restore the prebuilt release APK keyed on the hash above. On a cache
+      # hit the APK lands at `android/app/build/outputs/apk/release/` and the
+      # downstream `find` step picks it up unchanged.
+      - name: Restore Android release APK cache
+        id: maestro-android-cache
+        uses: actions/cache@v4
+        with:
+          path: android/app/build/outputs/apk/release
+          key: android-maestro-release-${{ steps.maestro-android-hash.outputs.hash }}
+
       # Same key as e2e-detox-pr.yml's build-android-apk + e2e-detox-release.yml,
       # so the maestro self-build shares the cache populated by detox runs.
+      # Only needed on cache miss for the build-output cache above.
       - name: Cache Gradle dependencies
+        if: steps.maestro-android-cache.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: ~/.gradle/caches/modules-2/
@@ -513,9 +553,11 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle-
 
       - name: ci/jetify-android-libraries
+        if: steps.maestro-android-cache.outputs.cache-hit != 'true'
         run: ./node_modules/.bin/jetify
 
       - name: Build Android Release APK for Maestro
+        if: steps.maestro-android-cache.outputs.cache-hit != 'true'
         env:
           ORG_GRADLE_PROJECT_jvmargs: -Xmx6g
         run: |
