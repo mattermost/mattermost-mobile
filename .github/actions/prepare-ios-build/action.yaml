@@ -23,10 +23,39 @@ runs:
       # but does not pre-download the matching iOS 26.1 platform runtime.
       # Without it, storyboard / asset compilation in the MattermostShare
       # extension fails with "iOS 26.1 Platform Not Installed".
-      # `xcodebuild -downloadPlatform iOS` is idempotent: no-op when the
-      # platform is already installed.
+      #
+      # Skip when an iOS Simulator runtime is already present (no network
+      # call), and retry the download up to 3× when the CoreSimulator
+      # daemon isn't ready (xcodebuild -downloadPlatform exits 70 with
+      # "Unable to connect to simulator" on a freshly-booted macos-26
+      # runner before launchd has initialized the simulator services).
       shell: bash
-      run: xcodebuild -downloadPlatform iOS
+      run: |
+        # Wait up to 60s for CoreSimulator service to come up so the queries
+        # below are reliable. Fresh macos-26 runners can lag past job start.
+        for waited in 0 5 10 15 20 30 45 60; do
+          if xcrun simctl list runtimes >/dev/null 2>&1; then break; fi
+          echo "Waiting ${waited}s for CoreSimulator service..."
+          sleep 5
+        done
+
+        # No-op when a non-trivial iOS runtime is already installed.
+        if xcrun simctl list runtimes 2>/dev/null | grep -qE "iOS [0-9]+\.[0-9]+ "; then
+          echo "iOS Simulator runtime already installed; skipping -downloadPlatform."
+          exit 0
+        fi
+
+        # Otherwise download with retry; daemon races still possible.
+        for attempt in 1 2 3; do
+          echo "xcodebuild -downloadPlatform iOS (attempt $attempt/3)..."
+          if xcodebuild -downloadPlatform iOS; then
+            exit 0
+          fi
+          echo "Attempt $attempt failed; retrying in 30s..."
+          sleep 30
+        done
+        echo "::error::xcodebuild -downloadPlatform iOS failed after 3 attempts."
+        exit 1
 
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build

@@ -23,7 +23,7 @@ import {
     ChannelListScreen,
     ChannelScreen,
     EditPostScreen,
-    // HomeScreen,
+    HomeScreen,
     LoginScreen,
     PermalinkScreen,
     PinnedMessagesScreen,
@@ -66,6 +66,7 @@ describe('Search - Recent Mentions', () => {
             username: mentioner.username,
             password: mentioner.newUser.password,
         });
+
         // Unique suffix on mentionText so the matcher can't collide with
         // ownMentionPost (which also embeds @testUser.username). Without the
         // suffix, both posts share descendant text "@<username>", so a
@@ -111,7 +112,7 @@ describe('Search - Recent Mentions', () => {
 
     afterAll(async () => {
         // # Log out
-        // await HomeScreen.logout();
+        await HomeScreen.logout();
     });
 
     it('MM-T4909_2 - should be able to display a recent mention in recent mentions screen and navigate to message channel', async () => {

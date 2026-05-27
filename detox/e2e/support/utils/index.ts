@@ -410,17 +410,28 @@ export async function waitForElementToExist(
  * unconditionally and behaves identically on both platforms.
  */
 export async function safeEnableSynchronization(): Promise<void> {
-    try {
-        await device.enableSynchronization();
-
-    } catch (error) {
-        const message = (error as Error)?.message ?? String(error);
-        if (!message.includes('ReactContext is null')) {
-            throw error;
+    // Retry up to 3 times with backoff. CI Android emulator can hold the
+    // null-ReactContext window for longer than the original 500ms guess.
+    const delays = [timeouts.HALF_SEC, timeouts.ONE_SEC, timeouts.TWO_SEC];
+    /* eslint-disable no-await-in-loop */
+    for (let i = 0; i <= delays.length; i++) {
+        try {
+            await device.enableSynchronization();
+            return;
+        } catch (error) {
+            const message = (error as Error)?.message ?? String(error);
+            if (!message.includes('ReactContext is null') || i === delays.length) {
+                // Last attempt — leave sync disabled rather than failing the test.
+                // The next screen transition will re-attempt enable.
+                if (message.includes('ReactContext is null')) {
+                    return;
+                }
+                throw error;
+            }
+            await wait(delays[i]!);
         }
-        await wait(timeouts.HALF_SEC);
-        await device.enableSynchronization();
     }
+    /* eslint-enable no-await-in-loop */
 }
 
 /**
