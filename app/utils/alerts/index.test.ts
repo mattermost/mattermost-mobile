@@ -18,7 +18,7 @@ import {
     showNotSecuredAlert,
     showBiometricFailureAlert,
     messages,
-} from '.';
+} from './index';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database, Query} from '@nozbe/watermelondb';
@@ -151,7 +151,7 @@ describe('buildSecurityAlertOptions', () => {
 
         buttons[0].onPress?.();
 
-        expect(switchToServer).toHaveBeenCalledWith(otherServerUrl, expect.anything(), expect.anything());
+        expect(switchToServer).toHaveBeenCalledWith(otherServerUrl);
         expect(mockCallback).toHaveBeenCalledWith(true);
     });
 

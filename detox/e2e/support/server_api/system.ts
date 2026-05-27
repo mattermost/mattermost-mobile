@@ -64,6 +64,21 @@ export const apiGetClientLicense = async (baseUrl: string): Promise<any> => {
 };
 
 /**
+ * Get client config (old format), same shape as the mobile app uses for About.
+ * @param {string} baseUrl - the base server URL
+ * @return {Object} returns {config} on success or {error, status} on failure
+ */
+export const apiGetClientConfigOld = async (baseUrl: string): Promise<any> => {
+    try {
+        const response = await client.get(`${baseUrl}/api/v4/config/client?format=old`);
+
+        return {config: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Get configuration.
  * See https://api.mattermost.com/#operation/GetConfig
  * @param {string} baseUrl - the base server URL
@@ -106,6 +121,163 @@ export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<
         return {config: response.data};
     } catch (err) {
         return getResponseFromError(err);
+    }
+};
+
+/**
+ * Patch server configuration (partial update; server merges with current config).
+ * See https://api.mattermost.com/#operation/PatchConfig
+ * @param {string} baseUrl - the base server URL
+ * @param {Object} patchConfig - partial configuration object (same struct keys as server Config)
+ * @return {Object} returns {config} on success or {error, status} on error
+ */
+export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise<any> => {
+    try {
+        const response = await client.put(`${baseUrl}/api/v4/config/patch`, patchConfig);
+        return {config: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Get remote clusters (connected workspaces).
+ * See https://api.mattermost.com/#tag/remote_cluster
+ * Requires system admin. Use before tests that need "no connected workspaces" (e.g. TC-MOB-03).
+ * @param {string} baseUrl - the base server URL
+ * @param {Object} options - optional query (only_confirmed, etc.)
+ * @return {Object} returns {remotes: Array<{remote_id: string, ...}>} on success or {error, status} on error
+ */
+export const apiGetRemoteClusters = async (
+    baseUrl: string,
+    options: {onlyConfirmed?: boolean; excludePlugins?: boolean} = {},
+): Promise<{remotes?: Array<{remote_id: string}>; error?: {message: string}; status?: number}> => {
+    try {
+        const params = new URLSearchParams();
+        if (options.onlyConfirmed !== undefined) {
+            params.set('only_confirmed', String(options.onlyConfirmed));
+        }
+        if (options.excludePlugins !== undefined) {
+            params.set('exclude_plugins', String(options.excludePlugins));
+        }
+        const qs = params.toString() ? `?${params.toString()}` : '';
+        const response = await client.get(`${baseUrl}/api/v4/remotecluster${qs}`);
+        return {remotes: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Delete a remote cluster.
+ * See https://api.mattermost.com/#tag/remote_cluster
+ * Requires system admin.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} remoteId - the remote cluster id
+ * @return {Object} returns on success or {error, status} on error
+ */
+export const apiDeleteRemoteCluster = async (
+    baseUrl: string,
+    remoteId: string,
+): Promise<{error?: {message: string}; status?: number}> => {
+    try {
+        await client.delete(`${baseUrl}/api/v4/remotecluster/${encodeURIComponent(remoteId)}`);
+        return {};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Delete all remote clusters on the server.
+ * Call as admin (e.g. after User.apiAdminLogin) so tests can assert "No connected workspaces" (e.g. TC-MOB-03).
+ * @param {string} baseUrl - the base server URL
+ */
+export const apiDeleteAllRemoteClusters = async (baseUrl: string): Promise<void> => {
+    const result = await apiGetRemoteClusters(baseUrl, {});
+    if (result.error || !result.remotes) {
+        return;
+    }
+    for (const r of result.remotes) {
+        // eslint-disable-next-line no-await-in-loop
+        await apiDeleteRemoteCluster(baseUrl, r.remote_id);
+    }
+};
+
+/**
+ * Create a remote cluster (connected workspace). Requires system admin.
+ * See https://api.mattermost.com/#tag/remote_cluster
+ */
+export const apiCreateRemoteCluster = async (
+    baseUrl: string,
+    payload: {
+        name: string;
+        display_name: string;
+        default_team_id: string;
+        password: string;
+    },
+): Promise<Record<string, unknown> & {error?: {message: string}; status?: number}> => {
+    try {
+        const response = await client.post(`${baseUrl}/api/v4/remotecluster`, payload);
+        return response.data ?? {};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Ensures at least one confirmed remote cluster exists (matches web e2e ensureConfirmedRemote).
+ * Enables remote cluster service when creating. Call as admin after EnableSharedChannels is on.
+ */
+export const apiEnsureAtLeastOneConfirmedRemoteCluster = async (baseUrl: string, teamId: string): Promise<void> => {
+    const confirmed = await apiGetRemoteClusters(baseUrl, {
+        onlyConfirmed: true,
+        excludePlugins: true,
+    });
+    const list = Array.isArray(confirmed.remotes) ? confirmed.remotes : [];
+    if (list.length > 0) {
+        return;
+    }
+    await apiPatchConfig(baseUrl, {
+        ConnectedWorkspacesSettings: {
+            EnableRemoteClusterService: true,
+        },
+    });
+    const suffix = `${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+    const result = await apiCreateRemoteCluster(baseUrl, {
+        name: `e2e-remote-${suffix}`,
+        display_name: `E2E Remote ${suffix}`,
+        default_team_id: teamId,
+        password: `e2e-remote-pwd-${suffix}`,
+    });
+    if (result.error) {
+        throw new Error(`apiCreateRemoteCluster failed: ${result.error.message ?? 'unknown error'}`);
+    }
+};
+
+/**
+ * Deletes all remotes then creates exactly one (known name/display_name for e2e taps by text or id).
+ * Requires admin session.
+ */
+export const apiEnsureSingleRemoteCluster = async (
+    baseUrl: string,
+    teamId: string,
+    remote: {name: string; display_name: string; password: string},
+): Promise<void> => {
+    await apiDeleteAllRemoteClusters(baseUrl);
+    await apiPatchConfig(baseUrl, {
+        ConnectedWorkspacesSettings: {
+            EnableRemoteClusterService: true,
+        },
+    });
+    const result = await apiCreateRemoteCluster(baseUrl, {
+        name: remote.name,
+        display_name: remote.display_name,
+        default_team_id: teamId,
+        password: remote.password,
+    });
+    if (result.error) {
+        throw new Error(`apiEnsureSingleRemoteCluster failed: ${result.error.message ?? 'unknown error'}`);
     }
 };
 
@@ -229,9 +401,17 @@ export const getClientLicense = async (baseUrl: string): Promise<any> => {
 
 export const System = {
     apiCheckSystemHealth,
+    apiCreateRemoteCluster,
+    apiDeleteAllRemoteClusters,
+    apiEnsureSingleRemoteCluster,
+    apiDeleteRemoteCluster,
+    apiEnsureAtLeastOneConfirmedRemoteCluster,
     apiEmailTest,
+    apiGetClientConfigOld,
     apiGetClientLicense,
     apiGetConfig,
+    apiGetRemoteClusters,
+    apiPatchConfig,
     apiPingServerStatus,
     apiRequireLicense,
     apiRequireLicenseForFeature,

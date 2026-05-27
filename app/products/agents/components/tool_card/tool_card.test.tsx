@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import React, {type ComponentProps} from 'react';
 
+import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ToolCard from './index';
@@ -34,7 +34,7 @@ describe('ToolCard', () => {
         onToggleCollapse: jest.fn(),
         onApprove: jest.fn(),
         onReject: jest.fn(),
-        approvalStage: null,
+        approvalStage: ToolApprovalStage.Done,
     });
 
     describe('tool name display', () => {
@@ -196,6 +196,34 @@ describe('ToolCard', () => {
         });
     });
 
+    describe('arguments rendering', () => {
+        it('should fall back to an empty object when arguments is undefined so "undefined" never leaks into the code block', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({arguments: undefined as unknown as ToolCall['arguments']});
+            props.isCollapsed = false;
+            const {getAllByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            const markdowns = getAllByTestId('mock-markdown');
+            expect(markdowns).toHaveLength(1);
+            const argumentsText = markdowns[0].props.children;
+            expect(argumentsText).toContain('{}');
+            expect(argumentsText).not.toContain('undefined');
+        });
+
+        it('should fall back to an empty object when arguments is null (server redacted for non-requester)', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({arguments: null as unknown as ToolCall['arguments']});
+            props.isCollapsed = false;
+            const {getAllByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            const markdowns = getAllByTestId('mock-markdown');
+            expect(markdowns).toHaveLength(1);
+            const argumentsText = markdowns[0].props.children;
+            expect(argumentsText).toContain('{}');
+            expect(argumentsText).not.toContain('null');
+        });
+    });
+
     describe('collapse state', () => {
         it('should show content when not collapsed', () => {
             const props = getBaseProps();
@@ -251,7 +279,7 @@ describe('ToolCard', () => {
 
         it('should not show result phase buttons when not in result phase', () => {
             const props = getResultPhaseProps();
-            props.approvalStage = null;
+            props.approvalStage = ToolApprovalStage.Done;
             const {queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
             expect(queryByText('Share')).toBeNull();
@@ -293,7 +321,7 @@ describe('ToolCard', () => {
 
         it('should not show warning callout when not in result phase', () => {
             const props = getResultPhaseProps();
-            props.approvalStage = null;
+            props.approvalStage = ToolApprovalStage.Done;
             const {queryByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
             expect(queryByTestId('agents.tool_card.tool-123.warning')).toBeNull();

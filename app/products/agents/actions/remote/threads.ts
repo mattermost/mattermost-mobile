@@ -6,13 +6,29 @@ import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
-import type {AIThread} from '@agents/types';
+import type {AIThread, RawAIThread} from '@agents/types';
 
-/**
- * Fetch all AI threads (conversations with agent bots) from the server and store them in the database
- * @param serverUrl The server URL
- * @returns {threads, error} - Array of AI threads on success, error on failure
- */
+// plugin >= 2.0 carries root_post_id; plugin < 2.0 has the post id in `id`.
+// Returns null for threadless conversations so callers can filter them out.
+function normaliseThread(raw: RawAIThread): AIThread | null {
+    const hasRootPostField = 'root_post_id' in raw;
+    const postId = hasRootPostField ? raw.root_post_id : raw.id;
+    if (!postId) {
+        return null;
+    }
+
+    return {
+        id: postId,
+        message: raw.message ?? '',
+        title: raw.title ?? '',
+        channel_id: raw.channel_id ?? '',
+        reply_count: raw.reply_count ?? 0,
+        update_at: raw.update_at ?? 0,
+        root_post_id: raw.root_post_id ?? undefined,
+        bot_id: raw.bot_id,
+    };
+}
+
 export async function fetchAIThreads(
     serverUrl: string,
 ): Promise<{threads?: AIThread[]; error?: unknown}> {
@@ -20,10 +36,15 @@ export async function fetchAIThreads(
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAIThreads();
 
-        // Handle null/undefined response from API - treat as empty array
-        const threads = Array.isArray(response) ? response : [];
+        const rawThreads = response ?? [];
+        const threads: AIThread[] = [];
+        for (const raw of rawThreads) {
+            const normalised = normaliseThread(raw);
+            if (normalised) {
+                threads.push(normalised);
+            }
+        }
 
-        // Store threads in database and remove any that no longer exist on the server
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handleAIThreads({
             threads,

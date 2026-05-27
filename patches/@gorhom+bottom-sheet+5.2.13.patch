@@ -1,0 +1,54 @@
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/BottomSheetFlashList.d.ts b/node_modules/@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/BottomSheetFlashList.d.ts
+index 20cea05..856d400 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/BottomSheetFlashList.d.ts
++++ b/node_modules/@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/BottomSheetFlashList.d.ts
+@@ -10,8 +10,10 @@ import type { BottomSheetScrollableProps } from './types';
+ interface FlashListProps<T> extends FlatListProps<T> {
+     estimatedItemSize?: number;
+ }
+-export type BottomSheetFlashListProps<T> = Omit<AnimatedProps<FlashListProps<T>>, 'decelerationRate' | 'onScroll' | 'scrollEventThrottle'> & BottomSheetScrollableProps & {
++type RenderItemFn<T> = ((info: {item: T; index: number}) => React.ReactElement | React.JSX.Element | null) | null | undefined;
++export type BottomSheetFlashListProps<T> = Omit<AnimatedProps<FlashListProps<T>>, 'decelerationRate' | 'onScroll' | 'scrollEventThrottle' | 'renderItem'> & BottomSheetScrollableProps & {
+     ref?: Ref<React.FC>;
++    renderItem?: RenderItemFn<T>;
+ };
+ export declare const BottomSheetFlashList: React.MemoExoticComponent<React.ForwardRefExoticComponent<Omit<BottomSheetFlashListProps<any>, "ref"> & React.RefAttributes<React.FC<{}>>>>;
+ declare const _default: <T>(props: BottomSheetFlashListProps<T>) => ReturnType<typeof BottomSheetFlashList>;
+diff --git a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetHostingContainer/BottomSheetHostingContainer.tsx b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetHostingContainer/BottomSheetHostingContainer.tsx
+index 90047e8..853429a 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetHostingContainer/BottomSheetHostingContainer.tsx
++++ b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetHostingContainer/BottomSheetHostingContainer.tsx
+@@ -35,10 +35,10 @@ function BottomSheetHostingContainerComponent({
+       {
+         top: topInset,
+         bottom: bottomInset,
+-        overflow: detached ? 'visible' : 'hidden',
++        overflow: 'visible',
+       },
+     ],
+-    [style, detached, topInset, bottomInset]
++    [style, topInset, bottomInset]
+   );
+   //#endregion
+ 
+diff --git a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetScrollable/BottomSheetFlashList.tsx b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetScrollable/BottomSheetFlashList.tsx
+index 14238fc..4bd16e5 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetScrollable/BottomSheetFlashList.tsx
++++ b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetScrollable/BottomSheetFlashList.tsx
+@@ -25,12 +25,15 @@ try {
+   FlashList = require('@shopify/flash-list') as never;
+ } catch (_) {}
+ 
++type RenderItemFn<T> = ((info: {item: T; index: number}) => React.ReactElement | React.JSX.Element | null) | null | undefined;
++
+ export type BottomSheetFlashListProps<T> = Omit<
+   AnimatedProps<FlashListProps<T>>,
+-  'decelerationRate' | 'onScroll' | 'scrollEventThrottle'
++  'decelerationRate' | 'onScroll' | 'scrollEventThrottle' | 'renderItem'
+ > &
+   BottomSheetScrollableProps & {
+     ref?: Ref<React.FC>;
++    renderItem?: RenderItemFn<T>;
+   };
+ 
+ const BottomSheetFlashListComponent = forwardRef<

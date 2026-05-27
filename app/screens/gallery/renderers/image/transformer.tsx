@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
 });
 
 interface ImageTransformerProps extends Omit<GalleryPagerItem, 'index' | 'item' | 'isPagerInProgress'> {
+    autoplay?: boolean;
     cacheKey: string;
     enabled?: boolean;
     isSvg: boolean;
@@ -44,7 +45,7 @@ interface ImageTransformerProps extends Omit<GalleryPagerItem, 'index' | 'item' 
 
 const ImageTransformer = (
     {
-        cacheKey, enabled = true, height, isPageActive,
+        autoplay, cacheKey, enabled = true, height, isPageActive,
         onPageStateChange, source, isSvg,
         targetDimensions, width, pagerPanGesture, pagerTapGesture, lightboxPanGesture,
     }: ImageTransformerProps) => {
@@ -141,6 +142,7 @@ const ImageTransformer = (
         element = (
             <ExpoImage
                 id={cacheKey}
+                autoplay={autoplay}
                 onLoad={onLoadImageSuccess}
                 source={imageSource}
                 style={{width, height}}

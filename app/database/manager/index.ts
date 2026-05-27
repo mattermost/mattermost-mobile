@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AiBotModel, AiThreadModel} from '@agents/database/models';
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
 import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
-import {deleteAsync, documentDirectory, getInfoAsync, makeDirectoryAsync, moveAsync} from 'expo-file-system';
+import {Directory, File, Paths} from 'expo-file-system';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
+import {AiBotModel, AiThreadModel} from '@agents/database/models';
 import {Events} from '@constants';
 import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
@@ -28,12 +28,14 @@ import {beforeUpgrade} from '@helpers/database/upgrade';
 import {removePreauthSecret} from '@init/credentials';
 import {PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel} from '@playbooks/database/models';
 import {getActiveServer, getServer, getServerByIdentifier} from '@queries/app/servers';
+import {deleteFile} from '@utils/file';
 import {logDebug, logError} from '@utils/log';
 import {deleteIOSDatabase, getIOSAppGroupDetails, renameIOSDatabase} from '@utils/mattermost_managed';
 import {urlSafeBase64Encode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
+import type {PersistenceFlag} from '@typings/database/models/app/servers';
 
 const {SERVERS} = MM_TABLES.APP;
 const APP_DATABASE = 'app';
@@ -57,7 +59,7 @@ class DatabaseManagerSingleton {
             PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel,
         ];
 
-        this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : `${documentDirectory}/databases/`;
+        this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : `${Paths.document.uri}/databases/`;
     }
 
     /**
@@ -93,7 +95,7 @@ class DatabaseManagerSingleton {
             const databaseName = APP_DATABASE;
 
             if (Platform.OS === 'android') {
-                await makeDirectoryAsync(this.databaseDirectory!, {intermediates: true});
+                new Directory(this.databaseDirectory!).create({intermediates: true, idempotent: true});
             }
             const databaseFilePath = this.getDatabaseFilePath(databaseName);
             const modelClasses = this.appModels;
@@ -254,6 +256,18 @@ class DatabaseManagerSingleton {
         }
     };
 
+    public updatePersistenceFlag = async (serverUrl: string, persistenceFlag: PersistenceFlag) => {
+        const appDatabase = this.appDatabase?.database;
+        if (appDatabase) {
+            const server = await getServer(serverUrl);
+            await appDatabase.write(async () => {
+                await server?.update((record) => {
+                    record.persistenceFlag = persistenceFlag;
+                });
+            });
+        }
+    };
+
     /**
     * isServerPresent : Confirms if the current serverUrl does not already exist in the database
     * @param {String} serverUrl
@@ -354,17 +368,43 @@ class DatabaseManagerSingleton {
     };
 
     /**
+    * wipeServerData: Removes the *.db file from the App-Group directory for iOS or the files directory on Android,
+    * and drops the in-memory WatermelonDB client. The 'servers' row is left untouched so the wiped server
+    * keeps its place in the active-server selection (used by Mobile Ephemeral Mode purge).
+    * @param  {string} serverUrl
+    * @returns {Promise<void>}
+    */
+    public wipeServerData = async (serverUrl: string): Promise<void> => {
+        const server = await getServer(serverUrl);
+        if (!server) {
+            return;
+        }
+        delete this.serverDatabases[serverUrl];
+        await this.deleteServerDatabaseFiles(serverUrl);
+        const db = await this.createServerDatabase({
+            config: {
+                dbName: serverUrl,
+                displayName: server.displayName,
+                serverUrl,
+            },
+        });
+        if (!db) {
+            throw new Error(`wipeServerData: failed to re-create database for ${serverUrl}`);
+        }
+    };
+
+    /**
     * deleteServerDatabase: Removes the *.db file from the App-Group directory for iOS or the files directory on Android.
     * Also, it sets the last_active_at to '0' entry in the 'servers' table from the APP database
     * @param  {string} serverUrl
-    * @returns {Promise<boolean>}
+    * @returns {Promise<void>}
     */
     public deleteServerDatabase = async (serverUrl: string): Promise<void> => {
         const database = this.appDatabase?.database;
         if (database) {
             const server = await getServer(serverUrl);
             if (server) {
-                database.write(async () => {
+                await database.write(async () => {
                     await server.update((record) => {
                         record.lastActiveAt = 0;
                         record.identifier = '';
@@ -372,7 +412,7 @@ class DatabaseManagerSingleton {
                 });
 
                 delete this.serverDatabases[serverUrl];
-                this.deleteServerDatabaseFiles(serverUrl);
+                await this.deleteServerDatabaseFiles(serverUrl);
             }
         }
     };
@@ -381,7 +421,7 @@ class DatabaseManagerSingleton {
     * destroyServerDatabase: Removes the *.db file from the App-Group directory for iOS or the files directory on Android.
     * Also, removes the entry in the 'servers' table from the APP database
     * @param  {string} serverUrl
-    * @returns {Promise<boolean>}
+    * @returns {Promise<void>}
     */
     public destroyServerDatabase = async (serverUrl: string): Promise<void> => {
         const database = this.appDatabase?.database;
@@ -429,9 +469,9 @@ class DatabaseManagerSingleton {
         const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
         const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
 
-        await deleteAsync(databaseFile, {idempotent: true});
-        await deleteAsync(databaseShm, {idempotent: true});
-        await deleteAsync(databaseWal, {idempotent: true});
+        deleteFile(databaseFile);
+        deleteFile(databaseShm);
+        deleteFile(databaseWal);
     };
 
     /**
@@ -457,20 +497,20 @@ class DatabaseManagerSingleton {
         const newDatabaseShm = `${androidFilesDir}${newDBName}.db-shm`;
         const newDatabaseWal = `${androidFilesDir}${newDBName}.db-wal`;
 
-        if ((await getInfoAsync(newDatabaseFile)).exists) {
+        if (new File(newDatabaseFile).info().exists) {
             // Already renamed, do not try
             return;
         }
 
-        if (!(await getInfoAsync(databaseFile)).exists) {
+        if (!new File(databaseFile).info().exists) {
             // Nothing to rename, do not try
             return;
         }
 
         try {
-            await moveAsync({from: databaseFile, to: newDatabaseFile});
-            await moveAsync({from: databaseShm, to: newDatabaseShm});
-            await moveAsync({from: databaseWal, to: newDatabaseWal});
+            new File(databaseFile).move(new File(newDatabaseFile));
+            new File(databaseShm).move(new File(newDatabaseShm));
+            new File(databaseWal).move(new File(newDatabaseWal));
         } catch (error) {
             // Do nothing
         }
@@ -491,7 +531,7 @@ class DatabaseManagerSingleton {
 
             // On Android, we'll remove the databases folder under the Document Directory
             const androidFilesDir = `${this.databaseDirectory}databases/`;
-            await deleteAsync(androidFilesDir);
+            new Directory(androidFilesDir).delete();
             return true;
         } catch (e) {
             return false;

@@ -12,7 +12,9 @@ import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
-import {dismissAllModalsAndPopToRoot, dismissBottomSheet} from '@screens/navigation';
+import {navigateToRoot, navigateBack} from '@screens/navigation';
+
+import type {CompassIconName} from '@components/compass_icon';
 
 type Props = {
     isOptionItem?: boolean;
@@ -72,9 +74,9 @@ const LeaveChannelLabel = ({canLeave, channelId, displayName, isOptionItem, type
     const isTablet = useIsTablet();
 
     const close = async () => {
-        await dismissBottomSheet();
+        await navigateBack();
         if (!isTablet) {
-            await dismissAllModalsAndPopToRoot();
+            await navigateToRoot();
         }
     };
 
@@ -172,7 +174,7 @@ const LeaveChannelLabel = ({canLeave, channelId, displayName, isOptionItem, type
     }
 
     let leaveText;
-    let icon;
+    let icon: CompassIconName;
     switch (type) {
         case General.DM_CHANNEL:
             leaveText = intl.formatMessage(messages.closeDirectMessage);

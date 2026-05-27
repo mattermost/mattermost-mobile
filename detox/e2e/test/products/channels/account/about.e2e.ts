@@ -22,14 +22,74 @@ import {
 } from '@support/ui/screen';
 import {expect} from 'detox';
 
+/** Mirrors app/utils/subscription getSkuDisplayName for E2E learn-more expectations */
+const getSkuDisplayNameForTest = (skuShortName: string, isGovSku: boolean): string => {
+    let skuName = '';
+    switch (skuShortName) {
+        case 'E20':
+            skuName = 'Enterprise E20';
+            break;
+        case 'E10':
+            skuName = 'Enterprise E10';
+            break;
+        case 'professional':
+            skuName = 'Professional';
+            break;
+        case 'starter':
+            skuName = 'Starter';
+            break;
+        case 'enterprise':
+            skuName = 'Enterprise';
+            break;
+        case 'entry':
+            skuName = 'Entry';
+            break;
+        default:
+            skuName = 'Enterprise Advanced';
+            break;
+    }
+    skuName += isGovSku ? ' Gov' : '';
+    return skuName;
+};
+
+const getExpectedProductTitle = (license: Record<string, string | undefined>, buildEnterpriseReady: string | undefined): string => {
+    if (buildEnterpriseReady !== 'true') {
+        return 'Mattermost Team Edition';
+    }
+    if (license?.IsLicensed === 'true') {
+        return `Mattermost ${getSkuDisplayNameForTest(license.SkuShortName ?? '', license.IsGovSku === 'true')}`;
+    }
+    return 'Mattermost Enterprise Edition';
+};
+
+const getExpectedLearnMorePrefix = (license: Record<string, string | undefined>, buildEnterpriseReady: string | undefined): string => {
+    if (buildEnterpriseReady !== 'true') {
+        return 'Join the Mattermost community at ';
+    }
+    if (license?.IsLicensed === 'true') {
+        const planName = getSkuDisplayNameForTest(license.SkuShortName ?? '', license.IsGovSku === 'true');
+        return `Learn more about Mattermost ${planName} at `;
+    }
+    return 'Learn more about Enterprise Edition at ';
+};
+
 describe('Account - Settings - About', () => {
     const serverOneDisplayName = 'Server 1';
     let isLicensed: boolean;
+    let expectedLearnMorePrefix: string;
+    let expectedProductTitle: string;
     let testUser: any;
 
     beforeAll(async () => {
         const {license} = await System.apiGetClientLicense(siteOneUrl);
+        const configResponse = await System.apiGetClientConfigOld(siteOneUrl);
+        if (!configResponse.config || 'error' in configResponse) {
+            throw new Error('Failed to fetch client config: test cannot proceed without valid config');
+        }
+        const {config} = configResponse;
         isLicensed = license.IsLicensed === 'true';
+        expectedLearnMorePrefix = getExpectedLearnMorePrefix(license, config.BuildEnterpriseReady);
+        expectedProductTitle = getExpectedProductTitle(license, config.BuildEnterpriseReady);
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
@@ -57,8 +117,8 @@ describe('Account - Settings - About', () => {
         // * Verify basic elements on about screen
         await expect(AboutScreen.backButton).toBeVisible();
         await expect(AboutScreen.logo).toBeVisible();
-        await expect(AboutScreen.siteName).toBeVisible();
         await expect(AboutScreen.title).toBeVisible();
+        await expect(AboutScreen.title).toHaveText(expectedProductTitle);
         await expect(AboutScreen.subtitle).toBeVisible();
         await expect(AboutScreen.appVersionTitle).toHaveText('App Version:');
         await expect(AboutScreen.appVersionValue).toBeVisible();
@@ -88,7 +148,7 @@ describe('Account - Settings - About', () => {
             await expect(AboutScreen.licensee).not.toBeVisible();
             await expect(AboutScreen.licenseLoadMetricTitle).not.toBeVisible();
         }
-        await expect(AboutScreen.learnMoreText).toHaveText('Learn more about Enterprise Edition at ');
+        await expect(AboutScreen.learnMoreText).toHaveText(expectedLearnMorePrefix);
         await expect(AboutScreen.learnMoreUrl).toBeVisible();
         await expect(AboutScreen.copyright).toHaveText(`Copyright 2015-${new Date().getFullYear()} Mattermost, Inc. All rights reserved`);
         await expect(AboutScreen.termsOfService).toHaveText('Terms of Service');

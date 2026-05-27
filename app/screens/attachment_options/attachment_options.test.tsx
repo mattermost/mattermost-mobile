@@ -1,13 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import TurboLogger from '@mattermost/react-native-turbo-log';
+import RNUtils from '@mattermost/rnutils';
 import {fireEvent, waitFor} from '@testing-library/react-native';
+import {File} from 'expo-file-system';
 import {Alert} from 'react-native';
 
-import {Screens} from '@constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import PickerUtil from '@utils/file/file_picker';
+import {logError} from '@utils/log';
 
 import AttachmentOptions from './attachment_options';
 
@@ -20,6 +23,16 @@ jest.mock('@utils/file/file_picker');
 jest.mock('@utils/file', () => ({
     fileMaxWarning: jest.fn((...args) => `Maximum ${args[1]} files allowed`),
     uploadDisabledWarning: jest.fn(() => 'File uploads are disabled'),
+    pathWithPrefix: jest.fn((prefix, path) => `${prefix}${path}`),
+}));
+
+jest.mock('@utils/general', () => ({
+    ...jest.requireActual('@utils/general'),
+    generateId: jest.fn(() => 'generated-id'),
+}));
+
+jest.mock('@utils/log', () => ({
+    logError: jest.fn(),
 }));
 
 jest.mock('@hooks/device', () => ({
@@ -33,7 +46,6 @@ describe('AttachmentOptions', () => {
     const mockAttachFileFromFiles = jest.fn();
 
     const baseProps = {
-        componentId: 'Channel' as const,
         onUploadFiles: jest.fn(),
         maxFileCount: 10,
         fileCount: 0,
@@ -63,7 +75,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(photoLibraryItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(mockAttachFileFromPhotoGallery).toHaveBeenCalledWith(10);
             });
         });
@@ -77,7 +89,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(takePhotoItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(mockAttachFileFromCamera).toHaveBeenCalledWith({
                     quality: 0.8,
                     mediaType: 'photo',
@@ -95,7 +107,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(takeVideoItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(mockAttachFileFromCamera).toHaveBeenCalledWith({
                     quality: 0.8,
                     videoQuality: 'high',
@@ -114,7 +126,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(attachFileItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(mockAttachFileFromFiles).toHaveBeenCalledWith(undefined, true);
             });
         });
@@ -134,7 +146,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(photoLibraryItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'File uploads are disabled',
@@ -156,7 +168,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(takePhotoItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'File uploads are disabled',
@@ -178,7 +190,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(attachFileItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'File uploads are disabled',
@@ -203,7 +215,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(photoLibraryItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'Maximum 10 files allowed',
@@ -226,7 +238,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(takePhotoItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'Maximum 10 files allowed',
@@ -249,7 +261,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(attachFileItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'Maximum 10 files allowed',
@@ -272,7 +284,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(photoLibraryItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).not.toHaveBeenCalled();
                 expect(mockAttachFileFromPhotoGallery).toHaveBeenCalled();
             });
@@ -335,17 +347,6 @@ describe('AttachmentOptions', () => {
     });
 
     describe('edge cases', () => {
-        it('should use default closeButtonId when not provided', () => {
-            const props = {
-                ...baseProps,
-            };
-            delete (props as {closeButtonId?: string}).closeButtonId;
-
-            renderWithIntlAndTheme(<AttachmentOptions {...props}/>);
-
-            // Component should render without errors
-        });
-
         it('should use default fileCount when not provided', async () => {
             const props = {
                 ...baseProps,
@@ -403,8 +404,149 @@ describe('AttachmentOptions', () => {
         });
     });
 
+    describe('attach logs', () => {
+        it('should render attach logs option when showAttachLogs is true', () => {
+            const props = {...baseProps, showAttachLogs: true};
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            expect(getByTestId('file_attachment.attach_logs')).toBeTruthy();
+        });
+
+        it('should not render attach logs option when showAttachLogs is false', () => {
+            const props = {...baseProps, showAttachLogs: false};
+            const {queryByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            expect(queryByTestId('file_attachment.attach_logs')).toBeNull();
+        });
+
+        it('should call onUploadFiles with zip file info on successful attach', async () => {
+            jest.mocked(TurboLogger.getLogPaths).mockResolvedValue(['/path/to/log1.txt', '/path/to/log2.txt']);
+            jest.mocked(RNUtils.createZipFile).mockResolvedValue('/path/to/logs.zip');
+            jest.mocked(File).mockImplementation((uri: string) => ({
+                uri,
+                exists: true,
+                size: 1234,
+                delete: jest.fn(),
+                info: jest.fn(),
+                move: jest.fn(),
+                copy: jest.fn(),
+                create: jest.fn(),
+                write: jest.fn(),
+                text: jest.fn(() => Promise.resolve('')),
+            } as unknown as InstanceType<typeof File>));
+
+            const props = {...baseProps, showAttachLogs: true};
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            fireEvent.press(getByTestId('file_attachment.attach_logs'));
+
+            await waitFor(() => {
+                expect(baseProps.onUploadFiles).toHaveBeenCalledWith([
+                    expect.objectContaining({
+                        clientId: 'generated-id',
+                        name: expect.stringMatching(/^app-logs-\d+\.zip$/),
+                        mime_type: 'application/zip',
+                        extension: 'zip',
+                        size: 1234,
+                        localPath: 'file:///path/to/logs.zip',
+                    }),
+                ]);
+            });
+        });
+
+        it('should show alert when no log files available', async () => {
+            jest.mocked(TurboLogger.getLogPaths).mockResolvedValue([]);
+
+            const props = {...baseProps, showAttachLogs: true};
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            fireEvent.press(getByTestId('file_attachment.attach_logs'));
+
+            await waitFor(() => {
+                expect(Alert.alert).toHaveBeenCalledWith(
+                    'Error',
+                    'No log files available',
+                );
+                expect(baseProps.onUploadFiles).not.toHaveBeenCalled();
+            });
+        });
+
+        it('should show alert when createZipFile fails', async () => {
+            jest.mocked(TurboLogger.getLogPaths).mockResolvedValue(['/path/to/log1.txt']);
+            jest.mocked(RNUtils.createZipFile).mockRejectedValue(new Error('zip failed'));
+
+            const props = {...baseProps, showAttachLogs: true};
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            fireEvent.press(getByTestId('file_attachment.attach_logs'));
+
+            await waitFor(() => {
+                expect(logError).toHaveBeenCalledWith('[AttachmentOptions.onAttachLogs]', expect.any(Error));
+                expect(Alert.alert).toHaveBeenCalledWith(
+                    'Error',
+                    'Failed to attach app logs',
+                );
+                expect(baseProps.onUploadFiles).not.toHaveBeenCalled();
+            });
+        });
+
+        it('should show alert when createZipFile returns empty path', async () => {
+            jest.mocked(TurboLogger.getLogPaths).mockResolvedValue(['/path/to/log1.txt']);
+            jest.mocked(RNUtils.createZipFile).mockResolvedValue('');
+
+            const props = {...baseProps, showAttachLogs: true};
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            fireEvent.press(getByTestId('file_attachment.attach_logs'));
+
+            await waitFor(() => {
+                expect(logError).toHaveBeenCalledWith('[AttachmentOptions.onAttachLogs]', expect.any(Error));
+                expect(Alert.alert).toHaveBeenCalledWith(
+                    'Error',
+                    'Failed to attach app logs',
+                );
+                expect(baseProps.onUploadFiles).not.toHaveBeenCalled();
+            });
+        });
+
+        it('should prevent double-tap with ref guard', async () => {
+            jest.mocked(TurboLogger.getLogPaths).mockResolvedValue([]);
+
+            const props = {...baseProps, showAttachLogs: true};
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...props}/>,
+            );
+
+            const logsButton = getByTestId('file_attachment.attach_logs');
+
+            // Press twice rapidly - the ref guard should block the second call
+            fireEvent.press(logsButton);
+            fireEvent.press(logsButton);
+
+            await waitFor(() => {
+                expect(Alert.alert).toHaveBeenCalledTimes(1);
+            });
+
+            // dismissBottomSheet is called once for the first press,
+            // the second press is blocked by the ref guard
+            expect(mockDismissBottomSheet).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe('tablet rendering', () => {
-        it('should not render title when isTablet is true', () => {
+        it('should render title when isTablet is true', () => {
             const useIsTablet = require('@hooks/device').useIsTablet;
             useIsTablet.mockReturnValue(true);
 
@@ -412,7 +554,7 @@ describe('AttachmentOptions', () => {
                 <AttachmentOptions {...baseProps}/>,
             );
 
-            expect(queryByText('Files and media')).toBeNull();
+            expect(queryByText('Files and media')).toBeTruthy();
         });
 
         it('should render title when isTablet is false', () => {

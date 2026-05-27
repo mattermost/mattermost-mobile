@@ -4,12 +4,12 @@
 import React from 'react';
 import {type StyleProp, type TextStyle, View, type ViewStyle} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
-    name: string;
+    name: CompassIconName;
     size: number;
     style: StyleProp<TextStyle>;
     unavailable: boolean;

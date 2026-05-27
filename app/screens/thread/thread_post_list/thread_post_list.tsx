@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
-import {ActivityIndicator, type FlatList, type GestureResponderEvent, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {ActivityIndicator, StyleSheet, View} from 'react-native';
 
 import {fetchPostThread} from '@actions/remote/post';
 import {markThreadAsRead} from '@actions/remote/thread';
@@ -28,9 +28,6 @@ type Props = {
     teamId: string;
     thread?: ThreadModel;
     version?: string;
-    listRef: React.RefObject<FlatList<string | PostModel>>;
-    onTouchMove?: (event: GestureResponderEvent) => void;
-    onTouchEnd?: () => void;
 }
 
 const styles = StyleSheet.create({
@@ -42,12 +39,12 @@ const styles = StyleSheet.create({
 const ThreadPostList = ({
     channelLastViewedAt, isCRTEnabled,
     posts, rootPost, teamId, thread, version,
-    listRef, onTouchMove, onTouchEnd,
 }: Props) => {
     const appState = useAppState();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const isFetchingThread = useFetchingThreadState(rootPost.id);
+    const [showHeader, setShowHeader] = useState(false);
 
     const canLoadMorePosts = useRef(true);
     const onEndReached = useDebounce(useCallback(async () => {
@@ -91,10 +88,19 @@ const ThreadPostList = ({
 
     const lastViewedAt = isCRTEnabled ? (thread?.viewedAt ?? 0) : channelLastViewedAt;
 
-    let header;
-    if (isFetchingThread && threadPosts.length === 1) {
-        header = <ActivityIndicator color={theme.centerChannelColor}/>;
-    }
+    useEffect(() => {
+        const raf = requestAnimationFrame(() => {
+            setShowHeader(isFetchingThread && threadPosts.length === 1);
+        });
+        return () => cancelAnimationFrame(raf);
+    }, [isFetchingThread, threadPosts.length, theme.centerChannelColor]);
+
+    const header = useMemo(() => {
+        if (showHeader) {
+            return <ActivityIndicator color={theme.centerChannelColor}/>;
+        }
+        return undefined;
+    }, [showHeader, theme.centerChannelColor]);
 
     const postList = (
         <PostList
@@ -112,9 +118,6 @@ const ThreadPostList = ({
             header={header}
             footer={<View style={styles.footer}/>}
             testID='thread.post_list'
-            listRef={listRef}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
         />
     );
 

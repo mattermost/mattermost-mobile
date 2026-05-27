@@ -1,29 +1,30 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useAgents, useRewrite} from '@agents/hooks';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Alert, Keyboard, TextInput, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import CompassIcon from '@components/compass_icon';
+import {useAgents, useRewrite} from '@agents/hooks';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
+import {isEdgeToEdge} from '@constants/device';
+import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useIsTablet} from '@hooks/device';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import useDidMount from '@hooks/did_mount';
 import BottomSheet from '@screens/bottom_sheet';
-import {dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {Agent, RewriteAction} from '@agents/types';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const messages = defineMessages({
     errorTitle: {
@@ -80,17 +81,17 @@ const messages = defineMessages({
     },
 });
 
+export type updateValueFn = (value: string | ((prevValue: string) => string)) => void;
+
 type Props = {
-    closeButtonId: string;
-    componentId: AvailableScreens;
     originalMessage: string;
-    updateValue: (value: string | ((prevValue: string) => string)) => void;
+    updateValue?: updateValueFn;
 };
 
 const CUSTOM_PROMPT_INPUT_HEIGHT = 64;
 const OPTIONS_PADDING = 8;
 
-const options: Array<{action: RewriteAction; message: typeof messages.shorten; icon: string}> = [
+const options: Array<{action: RewriteAction; message: typeof messages.shorten; icon: CompassIconName}> = [
     {action: 'shorten', message: messages.shorten, icon: 'text-short'},
     {action: 'elaborate', message: messages.elaborate, icon: 'text-long'},
     {action: 'improve_writing', message: messages.improveWriting, icon: 'auto-fix'},
@@ -139,8 +140,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const RewriteOptions = ({
-    closeButtonId,
-    componentId,
     originalMessage,
     updateValue,
 }: Props) => {
@@ -163,15 +162,20 @@ const RewriteOptions = ({
         }
     }, [agents]);
 
+    useDidMount(() => {
+        return () => {
+            CallbackStore.removeCallback();
+        };
+    });
+
     const closeBottomSheet = useCallback(async () => {
-        await dismissBottomSheet(Screens.AGENTS_REWRITE_OPTIONS);
+        await dismissBottomSheet();
     }, []);
 
-    useNavButtonPressed(closeButtonId, componentId, closeBottomSheet, []);
-    useAndroidHardwareBackHandler(componentId, closeBottomSheet);
+    useAndroidHardwareBackHandler(Screens.AGENTS_REWRITE_OPTIONS, closeBottomSheet);
 
     const handleRewriteSuccess = useCallback((rewrittenText: string) => {
-        updateValue(rewrittenText);
+        updateValue?.(rewrittenText);
     }, [updateValue]);
 
     const handleRewriteError = useCallback((errorMsg: string) => {
@@ -247,26 +251,13 @@ const RewriteOptions = ({
         }
     }, [customPrompt, handleRewrite]);
 
-    const isTablet = useIsTablet();
-
     const handleOpenAgentSelector = useCallback(() => {
-        const title = isTablet ? intl.formatMessage(messages.agentSelectorTitle) : '';
-
-        openAsBottomSheet({
-            closeButtonId: 'close-agent-selector',
-            screen: Screens.AGENTS_SELECTOR,
-            theme,
-            title,
-            props: {
-                closeButtonId: 'close-agent-selector',
-                agents,
-                selectedAgentId: selectedAgent?.id || '',
-                onSelectAgent: (agent: Agent) => {
-                    setSelectedAgent(agent);
-                },
-            },
-        });
-    }, [theme, intl, agents, selectedAgent, isTablet]);
+        const onSelectAgent = (agent: Agent) => {
+            setSelectedAgent(agent);
+        };
+        CallbackStore.setCallback(onSelectAgent);
+        navigateToScreen(Screens.AGENTS_SELECTOR, {agents, selectedAgentId: selectedAgent?.id || ''});
+    }, [agents, selectedAgent]);
 
     const snapPoints = useMemo(() => {
         const paddingBottom = 10;
@@ -276,7 +267,8 @@ const RewriteOptions = ({
 
         // Use the same height for both generation and editing modes
         const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(6, ITEM_HEIGHT);
-        const COMPONENT_HEIGHT = agentSelectorHeight + CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + insets.bottom;
+        const bottom = isEdgeToEdge ? insets.bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
+        const COMPONENT_HEIGHT = agentSelectorHeight + CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + bottom;
 
         return [1, COMPONENT_HEIGHT];
     }, [agents.length, insets.bottom]);
@@ -338,11 +330,9 @@ const RewriteOptions = ({
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId={closeButtonId}
-            componentId={Screens.AGENTS_REWRITE_OPTIONS}
+            screen={Screens.AGENTS_REWRITE_OPTIONS}
             initialSnapIndex={1}
             snapPoints={snapPoints}
-            scrollable={true}
             keyboardBehavior='fillParent'
             keyboardBlurBehavior='none'
             testID='ai_rewrite_options'

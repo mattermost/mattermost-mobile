@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
 import {
     Text,
     TouchableOpacity,
@@ -62,8 +61,6 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const CLOSE_BUTTON_ID = 'announcement-close';
-
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
 const TITLE_HEIGHT = 30 + 12; // typography 600 line height
 const MARGINS = 12 + 24 + 10; // (after title + after text + after content) from ./expanded_announcement_banner.tsx
@@ -80,7 +77,6 @@ const AnnouncementBanner = ({
     bannerTextColor = '#000',
     allowDismissal,
 }: Props) => {
-    const intl = useIntl();
     const serverUrl = useServerUrl();
     const height = useSharedValue(0);
     const theme = useTheme();
@@ -95,24 +91,13 @@ const AnnouncementBanner = ({
     ), [allowDismissal, bannerText]);
 
     const handlePress = useCallback(() => {
-        const title = intl.formatMessage({
-            id: 'mobile.announcement_banner.title',
-            defaultMessage: 'Announcement',
-        });
-
         const snapPoint = bottomSheetSnapPoint(
             1,
             SNAP_POINT_WITHOUT_DISMISS + (allowDismissal ? DISMISS_BUTTON_HEIGHT : 0),
         );
 
-        bottomSheet({
-            closeButtonId: CLOSE_BUTTON_ID,
-            title,
-            renderContent,
-            snapPoints: [1, snapPoint],
-            theme,
-        });
-    }, [intl, allowDismissal, renderContent, theme]);
+        bottomSheet(renderContent, [1, snapPoint]);
+    }, [allowDismissal, renderContent]);
 
     const handleDismiss = useCallback(() => {
         dismissAnnouncement(serverUrl, bannerText);

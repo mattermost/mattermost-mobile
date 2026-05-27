@@ -4,6 +4,7 @@
 import {render} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
+import {Screens} from '@constants';
 import Preferences from '@constants/preferences';
 
 // Mock the child components to focus on testing Boolean checks
@@ -113,7 +114,7 @@ describe('MessageAttachment', () => {
         },
         channelId: 'channel-id',
         postId: 'post-id',
-        location: 'Channel',
+        location: Screens.CHANNEL,
         theme: Preferences.THEMES.denim,
         metadata: {
             images: {

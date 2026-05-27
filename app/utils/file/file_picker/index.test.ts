@@ -1,12 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable max-lines */
-
 import RNUtils from '@mattermost/rnutils';
+import {pick, keepLocalCopy, type DocumentPickerResponse} from '@react-native-documents/picker';
 import {applicationName} from 'expo-application';
 import {Alert, Platform} from 'react-native';
-import DocumentPicker, {type DocumentPickerResponse} from 'react-native-document-picker';
 import {launchCamera, launchImageLibrary, type Asset, type ImagePickerResponse} from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
@@ -16,13 +14,13 @@ import {extractFileInfo, lookupMimeType} from '@utils/file';
 import {getIntlShape} from '@utils/general';
 import {logWarning} from '@utils/log';
 
-import FilePickerUtil from '.';
+import FilePickerUtil from './index';
 
-jest.mock('expo-file-system');
 jest.mock('react-native-image-picker');
 
-jest.mock('react-native-document-picker', () => ({
+jest.mock('@react-native-documents/picker', () => ({
     pick: jest.fn(async () => []),
+    keepLocalCopy: jest.fn(async () => []),
 }));
 
 jest.mock('@screens/navigation', () => ({
@@ -328,41 +326,9 @@ describe('FilePickerUtil', () => {
             expect(result).toBe(false);
         });
 
-        test('should build URI correctly on Android', async () => {
-            Platform.OS = 'android';
-            const doc = {uri: 'file://test', fileCopyUri: 'file://copy_test'} as DocumentPickerResponse;
-
-            // @ts-expect-error buildUri is private
-            const result = await filePickerUtil.buildUri(doc);
-
-            expect(result).toEqual({doc: {uri: 'file://copy_test', fileCopyUri: 'file://copy_test'}});
-        });
-
-        test('should handle undefined new URI on Android', async () => {
-            Platform.OS = 'android';
-            const doc = {uri: 'file://test'} as DocumentPickerResponse;
-
-            (RNUtils.getRealFilePath as jest.Mock).mockResolvedValue(null);
-
-            // @ts-expect-error buildUri is private
-            const result = await filePickerUtil.buildUri(doc);
-
-            expect(result).toEqual({doc: undefined});
-        });
     });
 
     describe('attachFileFromCamera', () => {
-        test('should build URI correctly when fileCopyUri is undefined on Android', async () => {
-            Platform.OS = 'android';
-            const doc = {uri: 'file://test'} as DocumentPickerResponse;
-
-            (RNUtils.getRealFilePath as jest.Mock).mockResolvedValue('file://real_path');
-
-            // @ts-expect-error buildUri is private
-            const result = await filePickerUtil.buildUri(doc);
-
-            expect(result).toEqual({doc: {uri: 'file://real_path'}});
-        });
 
         test('should not launch camera if permission is denied', async () => {
             (Permissions.check as jest.Mock).mockResolvedValue(Permissions.RESULTS.DENIED);
@@ -491,24 +457,23 @@ describe('FilePickerUtil', () => {
 
             const result = await filePickerUtil.attachFileFromFiles();
 
-            expect(DocumentPicker.pick).not.toHaveBeenCalled();
+            expect(pick).not.toHaveBeenCalled();
             expect(result).toEqual({error: 'no permission'});
         });
 
         test('should pick files if permission is granted', async () => {
             (Permissions.check as jest.Mock).mockResolvedValue(Permissions.RESULTS.GRANTED);
 
-            const docResponse: DocumentPickerResponse[] = [
+            const docResponse = [
                 {
                     uri: 'file://document.pdf',
-                    fileCopyUri: 'file://copy_document.pdf',
                     name: 'document',
                     type: 'pdf',
                     size: 10,
-                },
+                } as DocumentPickerResponse,
             ];
 
-            (DocumentPicker.pick as jest.Mock).mockResolvedValue(docResponse);
+            (pick as jest.Mock).mockResolvedValue(docResponse);
 
             const mockExtractedFiles = [{uri: 'file://real_document.pdf'}];
 
@@ -516,10 +481,9 @@ describe('FilePickerUtil', () => {
 
             const result = await filePickerUtil.attachFileFromFiles();
 
-            expect(DocumentPicker.pick).toHaveBeenCalledWith({
+            expect(pick).toHaveBeenCalledWith({
                 allowMultiSelection: false,
                 type: ['public.item'],
-                copyTo: 'cachesDirectory',
             });
 
             await TestHelper.wait(100);
@@ -534,11 +498,11 @@ describe('FilePickerUtil', () => {
             (Permissions.check as jest.Mock).mockResolvedValue(Permissions.RESULTS.GRANTED);
             const pickerError = new Error('Picker failed');
 
-            (DocumentPicker.pick as jest.Mock).mockRejectedValue(pickerError);
+            (pick as jest.Mock).mockRejectedValue(pickerError);
 
             const result = await filePickerUtil.attachFileFromFiles();
 
-            expect(DocumentPicker.pick).toHaveBeenCalled();
+            expect(pick).toHaveBeenCalled();
             expect(result).toEqual({error: pickerError});
         });
 
@@ -557,20 +521,21 @@ describe('FilePickerUtil', () => {
                 {uri: 'file://document2.pdf'},
             ];
 
-            (DocumentPicker.pick as jest.Mock).mockResolvedValue(docResponse);
+            (pick as jest.Mock).mockResolvedValue(docResponse);
+            (keepLocalCopy as jest.Mock).mockResolvedValue([
+                {status: 'success', sourceUri: 'file://document1.pdf', localUri: 'file://local_document1.pdf'},
+                {status: 'success', sourceUri: 'file://document2.pdf', localUri: 'file://local_document2.pdf'},
+            ]);
 
             const result = await filePickerUtil.attachFileFromFiles(undefined, true);
 
-            expect(DocumentPicker.pick).toHaveBeenCalledWith({
+            expect(pick).toHaveBeenCalledWith({
                 allowMultiSelection: true,
                 type: ['public.item'],
-                copyTo: 'cachesDirectory',
             });
+            expect(keepLocalCopy).toHaveBeenCalledWith(expect.objectContaining({destination: 'cachesDirectory'}));
 
-            expect(mockUploadFiles).toHaveBeenCalledWith([
-                {uri: 'file://real_document1.pdf'},
-                {uri: 'file://real_document2.pdf'},
-            ]);
+            expect(mockUploadFiles).toHaveBeenCalledWith(mockExtractedFiles);
 
             expect(result).toEqual({error: undefined});
         });
@@ -582,21 +547,22 @@ describe('FilePickerUtil', () => {
 
             (extractFileInfo as jest.Mock).mockResolvedValue(mockExtractedFiles);
 
-            const docResponse = [{uri: 'file://image.jpg', fileCopyUri: 'file://copy_image.jpg'}];
+            const docResponse = [{uri: 'file://image.jpg'}];
 
-            (DocumentPicker.pick as jest.Mock).mockResolvedValue(docResponse);
+            (pick as jest.Mock).mockResolvedValue(docResponse);
+            (keepLocalCopy as jest.Mock).mockResolvedValue([
+                {status: 'success', sourceUri: 'file://image.jpg', localUri: 'file://local_image.jpg'},
+            ]);
 
             const result = await filePickerUtil.attachFileFromFiles('image/*');
 
-            expect(DocumentPicker.pick).toHaveBeenCalledWith({
+            expect(pick).toHaveBeenCalledWith({
                 allowMultiSelection: false,
                 type: ['image/*'],
-                copyTo: 'cachesDirectory',
             });
+            expect(keepLocalCopy).toHaveBeenCalledWith(expect.objectContaining({destination: 'cachesDirectory'}));
 
-            expect(mockUploadFiles).toHaveBeenCalledWith([
-                {uri: 'file://real_image.jpg'},
-            ]);
+            expect(mockUploadFiles).toHaveBeenCalledWith(mockExtractedFiles);
 
             expect(result).toEqual({error: undefined});
         });
@@ -611,19 +577,20 @@ describe('FilePickerUtil', () => {
 
             (extractFileInfo as jest.Mock).mockResolvedValue(mockExtractedFiles);
 
-            (DocumentPicker.pick as jest.Mock).mockResolvedValue(docResponse);
+            (pick as jest.Mock).mockResolvedValue(docResponse);
+            (keepLocalCopy as jest.Mock).mockResolvedValue([
+                {status: 'success', sourceUri: 'file://document.pdf', localUri: 'file://local_document.pdf'},
+            ]);
 
             const result = await filePickerUtil.attachFileFromFiles();
 
-            expect(DocumentPicker.pick).toHaveBeenCalledWith({
+            expect(pick).toHaveBeenCalledWith({
                 allowMultiSelection: false,
                 type: ['*/*'],
-                copyTo: 'cachesDirectory',
             });
+            expect(keepLocalCopy).toHaveBeenCalledWith(expect.objectContaining({destination: 'cachesDirectory'}));
 
-            expect(mockUploadFiles).toHaveBeenCalledWith([
-                {uri: 'file://real_document.pdf'},
-            ]);
+            expect(mockUploadFiles).toHaveBeenCalledWith(mockExtractedFiles);
 
             expect(result).toEqual({error: undefined});
         });

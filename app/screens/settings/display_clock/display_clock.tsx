@@ -9,13 +9,10 @@ import SettingBlock from '@components/settings/block';
 import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
-import {Preferences} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
-import {popTopScreen} from '@screens/navigation';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const CLOCK_TYPE = {
     NORMAL: 'NORMAL',
@@ -23,11 +20,10 @@ const CLOCK_TYPE = {
 } as const;
 
 type DisplayClockProps = {
-    componentId: AvailableScreens;
     currentUserId: string;
     hasMilitaryTimeFormat: boolean;
 }
-const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: DisplayClockProps) => {
+const DisplayClock = ({currentUserId, hasMilitaryTimeFormat}: DisplayClockProps) => {
     const [isMilitaryTimeFormat, setIsMilitaryTimeFormat] = useState(hasMilitaryTimeFormat);
     const serverUrl = useServerUrl();
     const intl = useIntl();
@@ -47,13 +43,11 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
 
             savePreference(serverUrl, [timePreference]);
         }
-
-        popTopScreen(componentId);
-    }, [componentId, currentUserId, hasMilitaryTimeFormat, isMilitaryTimeFormat, serverUrl]);
+    }, [currentUserId, hasMilitaryTimeFormat, isMilitaryTimeFormat, serverUrl]);
 
     useBackNavigation(saveClockDisplayPreference);
 
-    useAndroidHardwareBackHandler(componentId, saveClockDisplayPreference);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_DISPLAY_CLOCK, saveClockDisplayPreference);
 
     return (
         <SettingContainer testID='clock_display_settings'>

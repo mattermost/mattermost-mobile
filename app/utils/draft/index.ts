@@ -205,7 +205,7 @@ export function deleteDraftConfirmation({intl, serverUrl, channelId, rootId, swi
     serverUrl: string;
     channelId: string;
     rootId: string;
-    swipeable?: React.RefObject<SwipeableMethods>;
+    swipeable?: React.RefObject<SwipeableMethods | null>;
 }) {
     const deleteDraft = async () => {
         removeDraft(serverUrl, channelId, rootId);

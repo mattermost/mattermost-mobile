@@ -8,6 +8,7 @@ import {cancelSessionNotification, findSession} from '@actions/local/session';
 import {doPing} from '@actions/remote/general';
 import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {HTTP_UNAUTHORIZED} from '@constants/network';
 import DatabaseManager from '@database/manager';
 import IntuneManager from '@managers/intune_manager';
 import NetworkManager from '@managers/network_manager';
@@ -16,7 +17,6 @@ import {getDeviceToken} from '@queries/app/global';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
-import {resetToHome} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage, isErrorWithStatusCode, isErrorWithUrl} from '@utils/errors';
 import {getIntlShape} from '@utils/general';
@@ -31,8 +31,6 @@ import {loginEntry} from './entry';
 
 import type {Client} from '@client/rest';
 import type {LoginArgs} from '@typings/database/database';
-
-const HTTP_UNAUTHORIZED = 401;
 
 const logoutMessages = defineMessages({
     title: {
@@ -398,9 +396,9 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
         // Step 4: Enroll in MAM if not already enrolled (if 412 was not triggered)
         if (result && !result.failed) {
             try {
-                const isManaged = await IntuneManager.isManagedServer(serverUrl);
+                const isManaged = IntuneManager.isManagedServer(serverUrl);
                 if (!isManaged) {
-                    await IntuneManager.enrollServer(serverUrl, identity);
+                    IntuneManager.enrollServer(serverUrl, identity);
                 }
             } catch (error) {
                 logWarning('Intune MAM enrollment failed, MAM protection may not be configured properly', error);
@@ -492,7 +490,6 @@ export const magicLinkLogin = async (serverUrl: string, token: string): Promise<
         await addPushProxyVerificationStateFromLogin(serverUrlToUse);
         const {error} = await loginEntry({serverUrl: serverUrlToUse});
         await DatabaseManager.setActiveServerDatabase(serverUrlToUse);
-        await resetToHome();
         return {error, failed: false};
     } catch (error) {
         return {error, failed: false};

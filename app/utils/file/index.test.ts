@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getInfoAsync, deleteAsync} from 'expo-file-system';
-import {Platform} from 'react-native';
+import {Directory} from 'expo-file-system';
 import Permissions from 'react-native-permissions';
 
 import {getIntlShape} from '@utils/general';
@@ -12,7 +11,6 @@ import {urlSafeBase64Encode} from '@utils/security';
 import {
     deleteFileCache,
     deleteFileCacheByDir,
-    deleteV1Data,
     extractFileInfo,
     fileExists,
     fileMaxWarning,
@@ -25,6 +23,7 @@ import {
     getFileType,
     getFormattedFileSize,
     getLocalFilePathFromFile,
+    getUploadErrorMessage,
     hasWriteStoragePermission,
     isDocument,
     isGif,
@@ -33,9 +32,8 @@ import {
     lookupMimeType,
     pathWithPrefix,
     uploadDisabledWarning,
-} from '.';
+} from './index';
 
-jest.mock('expo-file-system');
 jest.mock('react-native', () => {
     const RN = jest.requireActual('react-native');
     return {
@@ -113,28 +111,17 @@ describe('Image utils', () => {
         });
     });
 
-    describe('deleteV1Data', () => {
-        it('should delete V1 data', async () => {
-            await deleteV1Data();
-            expect(deleteAsync).toHaveBeenCalled();
-            Platform.OS = 'android';
-            await deleteV1Data();
-            expect(deleteAsync).toHaveBeenCalled();
-            Platform.OS = 'ios';
-        });
-    });
-
     describe('deleteFileCache', () => {
-        it('should delete file cache', async () => {
-            await deleteFileCache('http://server.com');
-            expect(deleteAsync).toHaveBeenCalled();
+        it('should delete file cache', () => {
+            deleteFileCache('http://server.com');
+            expect(jest.mocked(Directory).mock.instances.length).toBeGreaterThan(0);
         });
     });
 
     describe('deleteFileCacheByDir', () => {
-        it('should delete file cache by dir', async () => {
-            await deleteFileCacheByDir('someDir');
-            expect(deleteAsync).toHaveBeenCalled();
+        it('should delete file cache by dir', () => {
+            deleteFileCacheByDir('someDir');
+            expect(jest.mocked(Directory).mock.instances.length).toBeGreaterThan(0);
         });
     });
 
@@ -272,11 +259,27 @@ describe('Image utils', () => {
         });
     });
 
+    describe('getUploadErrorMessage', () => {
+        it('should map iOS network errors to user-friendly message', () => {
+            const msg = getUploadErrorMessage(intl, 'URLSessionTask failed with error: The Internet connection appears to be offline.');
+            expect(msg).toBe("File couldn't be uploaded. Check your connection and try again.");
+        });
+
+        it('should map Android network errors to user-friendly message', () => {
+            const msg = getUploadErrorMessage(intl, 'Network error', 'java.net.UnknownHostException');
+            expect(msg).toBe("File couldn't be uploaded. Check your connection and try again.");
+        });
+
+        it('should return original message for non-network errors', () => {
+            const originalMessage = 'Some other error occurred';
+            const msg = getUploadErrorMessage(intl, originalMessage);
+            expect(msg).toBe(originalMessage);
+        });
+    });
+
     describe('fileExists', () => {
-        it('should check if file exists', async () => {
-            // @ts-expect-error type def
-            getInfoAsync.mockResolvedValue({exists: true});
-            const exists = await fileExists('somePath');
+        it('should check if file exists', () => {
+            const exists = fileExists('somePath');
             expect(exists).toBe(true);
         });
     });
@@ -291,8 +294,8 @@ describe('Image utils', () => {
     });
 
     describe('getAllFilesInCachesDirectory', () => {
-        it('should get all files in caches directory', async () => {
-            const result = await getAllFilesInCachesDirectory('http://server.com');
+        it('should get all files in caches directory', () => {
+            const result = getAllFilesInCachesDirectory('http://server.com');
             expect(result.files).toEqual(expect.any(Array));
         });
     });

@@ -1,10 +1,9 @@
 {
-  "about.teamEditiont1": "Enpresarako Bertsioa",
-  "about.teamEditionLearn": "Batu Mattermost komunetateari hemen ",
-  "about.enterpriseEditione1": "Enpresarako Bertsioa",
-  "about.hashee": "EE Konpilazioaren batuketa:",
-  "about.hash": "Konpilazioaren egiaztatze batuketa:",
-  "about.enterpriseEditionSt": "Komunikazio modernoa zure suebakiaren atzetik.",
+  "about.date": "Konpilatze data:",
   "about.enterpriseEditionLearn": "Enpresarako bertsioari buruz informazio gehiago hemen ",
-  "about.date": "Konpilatze data:"
+  "about.enterpriseEditionSt": "Komunikazio modernoa zure suebakiaren atzetik.",
+  "about.hash": "Konpilazioaren egiaztatze batuketa:",
+  "about.hashee": "EE Konpilazioaren batuketa:",
+  "about.teamEditionLearn": "Batu Mattermost komunetateari hemen ",
+  "about.teamEditiont1": "Enpresarako Bertsioa"
 }

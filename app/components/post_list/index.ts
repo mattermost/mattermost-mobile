@@ -12,7 +12,6 @@ import {observeSavedPostsByIds, observeIsPostAcknowledgementsEnabled} from '@que
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
-import {getTimezone} from '@utils/user';
 
 import PostList from './post_list';
 
@@ -24,18 +23,14 @@ type OwnProps = {
 } & WithDatabaseArgs;
 
 const enhancedWithoutPosts = withObservables(['channelId'], ({database, channelId}: OwnProps) => {
-    const currentUser = observeCurrentUser(database);
-    const isChannelAutotranslated = observeIsChannelAutotranslated(database, channelId);
     return {
         appsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
-        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
-        currentUserId: currentUser.pipe((switchMap((user) => of$(user?.id)))),
-        currentUsername: currentUser.pipe((switchMap((user) => of$(user?.username)))),
+        currentUser: observeCurrentUser(database),
         customEmojiNames: queryAllCustomEmojis(database).observeWithColumns(['name']).pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
         ),
         isPostAcknowledgementEnabled: observeIsPostAcknowledgementsEnabled(database),
-        isChannelAutotranslated,
+        isChannelAutotranslated: observeIsChannelAutotranslated(database, channelId),
     };
 });
 

@@ -178,3 +178,14 @@ type ChannelBannerInfo = {
 }
 
 type ChannelAccessControlAttributes = Record<string, string[]>;
+
+/** Connected workspace (remote cluster) for shared channels */
+type RemoteClusterInfo = {
+    remote_id: string;
+    name: string;
+    display_name: string;
+    create_at: number;
+    delete_at: number;
+    last_ping_at: number;
+    site_url?: string;
+};

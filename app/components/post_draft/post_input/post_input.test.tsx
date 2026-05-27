@@ -3,6 +3,7 @@
 
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
+import {Platform} from 'react-native';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
@@ -13,6 +14,35 @@ const mockSetNativeProps = jest.fn();
 
 jest.mock('@agents/hooks', () => ({
     useRewrite: jest.fn(() => ({isProcessing: false})),
+}));
+
+jest.mock('@actions/local/draft', () => ({
+    updateDraftMessage: jest.fn(),
+}));
+
+jest.mock('@actions/websocket/users', () => ({
+    userTyping: jest.fn(),
+}));
+
+jest.mock('@context/keyboard_state', () => ({
+    useKeyboardState: jest.fn(() => ({
+        showInputAccessoryView: false,
+        isEmojiSearchFocused: false,
+        setCursorPosition: jest.fn(),
+        registerPostInputCallbacks: jest.fn(),
+        inputRef: {current: null},
+        stateMachine: {
+            onUserFocusInput: jest.fn(),
+            onUserOpenEmoji: jest.fn(),
+            onUserCloseEmoji: jest.fn(),
+            onUserFocusEmojiSearch: jest.fn(),
+            onUserBlurEmojiSearch: jest.fn(),
+            isEmojiPickerActive: jest.fn(() => false),
+        },
+        stateContext: {
+            hasZeroKeyboardHeight: {value: false},
+        },
+    })),
 }));
 
 jest.mock('@mattermost/hardware-keyboard', () => ({
@@ -36,6 +66,17 @@ jest.mock('@mattermost/react-native-paste-input', () => {
     };
 });
 
+jest.mock('@store/navigation_store', () => ({
+    useCurrentScreen: jest.fn(() => undefined),
+}));
+
+jest.mock('react-native-keyboard-controller', () => ({
+    useAnimatedKeyboard: jest.fn(() => ({
+        height: {value: 0},
+        state: {value: 0},
+    })),
+}));
+
 describe('PostInput', () => {
     const baseProps: Parameters<typeof PostInput>[0] = {
         testID: 'post.input',
@@ -52,12 +93,15 @@ describe('PostInput', () => {
         cursorPosition: 5,
         updateCursorPosition: jest.fn(),
         sendMessage: jest.fn(),
-        inputRef: {current: undefined},
         setIsFocused: jest.fn(),
     };
 
     beforeEach(() => {
         jest.clearAllMocks();
+        Object.defineProperty(Platform, 'OS', {
+            configurable: true,
+            value: 'ios',
+        });
     });
 
     it('should keep the iOS input native-owned while processing native text changes', () => {

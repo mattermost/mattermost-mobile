@@ -124,7 +124,6 @@ function DialogElement({
                     helpText={helpText}
                     errorText={errorText}
                     placeholder={placeholder}
-                    showRequiredAsterisk={true}
                     selected={getStringValue(value)}
                     roundedBorders={false}
                     testID={testID}

@@ -32,6 +32,6 @@ describe('components/custom_status/clear_button', () => {
         );
 
         fireEvent.press(getByTestId(baseProps.testID));
-        expect(baseProps.handlePress).toBeCalled();
+        expect(baseProps.handlePress).toHaveBeenCalled();
     });
 });

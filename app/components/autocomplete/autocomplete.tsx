@@ -136,7 +136,7 @@ const Autocomplete = ({
     }, [growDown, position]);
 
     const containerStyles = useMemo(() => {
-        const s: StyleProp<ViewStyle> = [style.base, {left: horizontalPadding, right: horizontalPadding}, containerAnimatedStyle];
+        const s: Array<StyleProp<ViewStyle>> = [style.base, {left: horizontalPadding, right: horizontalPadding}];
         if (hasElements) {
             s.push(style.borders);
         }
@@ -147,12 +147,12 @@ const Autocomplete = ({
             s.push(containerStyle);
         }
         return s;
-    }, [style.base, style.borders, style.shadow, horizontalPadding, containerAnimatedStyle, hasElements, containerStyle]);
+    }, [style.base, style.borders, style.shadow, horizontalPadding, hasElements, containerStyle]);
 
     const component = (
         <Animated.View
             testID='autocomplete'
-            style={containerStyles}
+            style={[containerStyles, containerAnimatedStyle]}
         >
             {isAppsEnabled && channelId && autocompleteProviders.slash && (
                 <AppSlashSuggestion

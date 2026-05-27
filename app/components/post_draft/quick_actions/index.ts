@@ -1,14 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {observeIsAgentsEnabled} from '@agents/queries/agents';
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
+import {combineLatest} from 'rxjs';
+import {map} from 'rxjs/operators';
 
+import {observeIsAgentsEnabled} from '@agents/queries/agents';
+import {Preferences} from '@constants';
 import {withServerUrl} from '@context/server';
 import {observeIsBoREnabled, observeIsPostPriorityEnabled} from '@queries/servers/post';
+import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCanUploadFiles} from '@queries/servers/security';
-import {observeMaxFileCount} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeMaxFileCount} from '@queries/servers/system';
 
 import QuickActions from './quick_actions';
 
@@ -21,6 +25,10 @@ type EnhancedProps = WithDatabaseArgs & {
 const enhanced = withObservables([], ({database, serverUrl}: EnhancedProps) => {
     const canUploadFiles = observeCanUploadFiles(database);
     const maxFileCount = observeMaxFileCount(database);
+    const allowDownloadLogs = observeConfigBooleanValue(database, 'AllowDownloadLogs', true);
+    const attachLogsEnabled = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.ADVANCED_SETTINGS, Preferences.ATTACH_APP_LOGS).
+        observeWithColumns(['value']).
+        pipe(map((prefs) => prefs[0]?.value === 'true'));
 
     return {
         canUploadFiles,
@@ -28,6 +36,9 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhancedProps) => {
         isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
         isBoREnabled: observeIsBoREnabled(database),
         maxFileCount,
+        showAttachLogs: combineLatest([allowDownloadLogs, attachLogsEnabled]).pipe(
+            map(([allowed, enabled]) => allowed && enabled),
+        ),
     };
 });
 

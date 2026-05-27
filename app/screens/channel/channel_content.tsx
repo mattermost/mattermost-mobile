@@ -9,6 +9,9 @@ import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_d
 import PostDraft from '@components/post_draft';
 import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {Screens} from '@constants';
+import {BOTTOM_TAB_HEIGHT} from '@constants/view';
+import {KeyboardStateProvider} from '@context/keyboard_state';
+import {useIsTablet} from '@hooks/device';
 
 import ChannelPostList from './channel_post_list';
 
@@ -18,7 +21,6 @@ type ChannelContentProps = {
     scheduledPostCount: number;
     containerHeight: number;
     enabled?: boolean;
-    onEmojiSearchFocusChange?: (focused: boolean) => void;
 }
 
 const CHANNEL_POST_DRAFT_TESTID = 'channel.post_draft';
@@ -38,37 +40,39 @@ const ChannelContent = ({
     scheduledPostCount,
     containerHeight,
     enabled = true,
-    onEmojiSearchFocusChange,
 }: ChannelContentProps) => {
+    const isTablet = useIsTablet();
+    const tabBarHeight = isTablet ? BOTTOM_TAB_HEIGHT : 0;
+
     return (
-        <PortalProvider>
-            <KeyboardAwarePostDraftContainer
-                textInputNativeID={CHANNEL_POST_INPUT_NATIVE_ID}
-                containerStyle={[styles.flex, {marginTop}]}
-                enabled={enabled}
-                onEmojiSearchFocusChange={onEmojiSearchFocusChange}
-                renderList={({listRef, onTouchMove, onTouchEnd}) => (
-                    <ChannelPostList
+        <KeyboardStateProvider
+            tabBarHeight={tabBarHeight}
+            enabled={enabled}
+        >
+            <PortalProvider>
+                <KeyboardAwarePostDraftContainer
+                    textInputNativeID={CHANNEL_POST_INPUT_NATIVE_ID}
+                    containerStyle={[styles.flex, {marginTop}]}
+                    renderList={() => (
+                        <ChannelPostList
+                            channelId={channelId}
+                        />
+                    )}
+                >
+                    {scheduledPostCount > 0 &&
+                        <ScheduledPostIndicator scheduledPostCount={scheduledPostCount}/>
+                    }
+                    <PostDraft
                         channelId={channelId}
-                        listRef={listRef}
-                        onTouchMove={onTouchMove}
-                        onTouchEnd={onTouchEnd}
+                        testID={CHANNEL_POST_DRAFT_TESTID}
+                        containerHeight={containerHeight}
+                        isChannelScreen={true}
+                        canShowPostPriority={true}
+                        location={Screens.CHANNEL}
                     />
-                )}
-            >
-                {scheduledPostCount > 0 &&
-                <ScheduledPostIndicator scheduledPostCount={scheduledPostCount}/>
-                }
-                <PostDraft
-                    channelId={channelId}
-                    testID={CHANNEL_POST_DRAFT_TESTID}
-                    containerHeight={containerHeight}
-                    isChannelScreen={true}
-                    canShowPostPriority={true}
-                    location={Screens.CHANNEL}
-                />
-            </KeyboardAwarePostDraftContainer>
-        </PortalProvider>
+                </KeyboardAwarePostDraftContainer>
+            </PortalProvider>
+        </KeyboardStateProvider>
     );
 };
 

@@ -5,6 +5,8 @@ import NetInfo from '@react-native-community/netinfo';
 import {Platform} from 'react-native';
 
 import {removePushDisabledInServerAcknowledged} from '@actions/app/global';
+import {clearConversationCacheForServer} from '@agents/actions/remote/conversation';
+import streamingStore from '@agents/store/streaming_store';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {resetMomentLocale} from '@i18n';
@@ -15,6 +17,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getExpiredSession} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logError, logWarning} from '@utils/log';
 import {clearCookiesForServer, getCSRFFromCookie, urlSafeBase64Encode} from '@utils/security';
@@ -138,9 +141,20 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     // Remove push notifications (synchronous, no error handling needed)
     PushNotifications.removeServerNotifications(serverUrl);
 
-    // Invalidate clients (synchronous, no error handling needed)
-    NetworkManager.invalidateClient(serverUrl);
-    WebsocketManager.invalidateClient(serverUrl);
+    // Invalidate clients (websocket waits for close event before destroying)
+    await safeExecute('invalidateNetworkClient', async () => {
+        NetworkManager.invalidateClient(serverUrl);
+    });
+    await safeExecute('invalidateWebsocketClient', async () => {
+        await WebsocketManager.invalidateClient(serverUrl);
+    });
+
+    EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);
+
+    // Drop ephemeral agents caches for this server only; other connected
+    // servers must keep their cached conversations and in-flight streams.
+    clearConversationCacheForServer(serverUrl);
+    streamingStore.removeServer(serverUrl);
 
     // Remove push disabled acknowledgment (non-critical)
     if (removeServer) {
@@ -169,18 +183,10 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     // Clear cookies (synchronous)
     clearCookiesForServer(serverUrl);
 
-    // Delete file caches (critical - we need to wipe local data)
-    await safeExecute('deleteFileCache', async () => {
-        await deleteFileCache(serverUrl);
-    });
-
-    await safeExecute('deleteFileCacheMmPasteInput', async () => {
-        await deleteFileCacheByDir('mmPasteInput');
-    });
-
-    await safeExecute('deleteFileCacheThumbnails', async () => {
-        await deleteFileCacheByDir('thumbnails');
-    });
+    // Delete file caches (synchronous, no error handling needed)
+    deleteFileCache(serverUrl);
+    deleteFileCacheByDir('mmPasteInput');
+    deleteFileCacheByDir('thumbnails');
 
     if (errors.length > 0) {
         return {error: errors};

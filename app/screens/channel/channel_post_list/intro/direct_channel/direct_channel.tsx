@@ -178,7 +178,6 @@ const DirectChannel = ({
                     containerStyle={{height: 96}}
                     member={teammate}
                     size={96}
-                    theme={theme}
                 />
             );
         }

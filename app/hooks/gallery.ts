@@ -3,10 +3,11 @@
 
 import {useCallback} from 'react';
 import {
-    Easing, runOnJS, useAnimatedRef, useAnimatedStyle,
+    Easing, useAnimatedRef, useAnimatedStyle,
     useSharedValue,
     withTiming, type WithTimingConfig,
 } from 'react-native-reanimated';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import {useGallery} from '@context/gallery';
 
@@ -56,6 +57,7 @@ export function useGalleryControls(bottomInset = 0) {
     }));
 
     const footerStyles = useAnimatedStyle(() => ({
+        backgroundColor: '#000',
         opacity: headerAndFooterHidden.value ? withTiming(0) : withTiming(1),
         transform: [
             {
@@ -116,7 +118,7 @@ export function useGalleryItem(
 
         activeIndex.value = index;
 
-        runOnJS(onPress)(identifier, index);
+        scheduleOnRN(onPress, identifier, index);
     };
 
     return {

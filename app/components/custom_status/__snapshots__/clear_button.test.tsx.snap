@@ -41,15 +41,29 @@ exports[`components/custom_status/clear_button should match snapshot 1`] = `
   }
   testID="clear_custom_status.button"
 >
-  <Icon
-    name="close-circle"
-    size={20}
+  <Text
+    allowFontScaling={false}
+    selectable={false}
     style={
-      {
-        "borderRadius": 1000,
-        "color": "rgba(63,67,80,0.52)",
-      }
+      [
+        {
+          "color": "black",
+          "fontSize": 20,
+        },
+        {
+          "borderRadius": 1000,
+          "color": "rgba(63,67,80,0.52)",
+        },
+        {
+          "fontFamily": "compass-icons",
+          "fontStyle": "normal",
+          "fontWeight": "normal",
+        },
+        undefined,
+      ]
     }
-  />
+  >
+    󰅙
+  </Text>
 </View>
 `;

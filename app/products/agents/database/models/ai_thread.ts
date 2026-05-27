@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AGENTS_TABLES} from '@agents/constants/database';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
+import {AGENTS_TABLES} from '@agents/constants/database';
 import {MM_TABLES} from '@constants/database';
 
 import type AiThreadModelInterface from '@agents/types/database/models/ai_thread';

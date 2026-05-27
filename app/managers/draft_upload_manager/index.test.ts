@@ -9,7 +9,7 @@ import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
 import TestHelper from '@test/test_helper';
 
-import {exportedForTesting} from '.';
+import {exportedForTesting} from './index';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
@@ -160,7 +160,7 @@ describe('draft upload manager', () => {
         AppState.currentState = 'active';
         const manager = new DraftEditPostUploadManagerSingleton();
 
-        const progressFunc: {[fileUrl: string] : ((fractionCompleted: number, bytesRead?: number | null | undefined) => void)} = {};
+        const progressFunc: {[fileUrl: string]: ((fractionCompleted: number, bytesRead?: number | null | undefined) => void)} = {};
         const cancel = jest.fn();
 
         let promise: ProgressPromise<ClientResponse>;
@@ -391,7 +391,7 @@ describe('draft upload manager', () => {
         // Wait for other promises (on complete write) to finish
         await new Promise(process.nextTick);
 
-        expect(errorHandler).toHaveBeenCalledWith('error');
+        expect(errorHandler).toHaveBeenCalledWith('error', undefined);
 
         // Make sure cancelling after error does not create any problem.
         cancelErrorHandler!();

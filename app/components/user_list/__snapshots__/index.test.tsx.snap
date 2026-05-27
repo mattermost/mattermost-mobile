@@ -667,6 +667,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
               "backgroundColor": "rgba(63,67,80,0.08)",
               "height": 24,
               "justifyContent": "center",
+              "marginHorizontal": 12,
               "paddingLeft": 16,
             }
           }
@@ -804,6 +805,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
               onLoadStart={[Function]}
               onProgress={[Function]}
               placeholder={[]}
+              sfEffect={null}
               source={
                 [
                   {
@@ -822,6 +824,8 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
                   "width": 24,
                 }
               }
+              symbolSize={null}
+              symbolWeight={null}
               transition={null}
               width={24}
             />
@@ -876,11 +880,27 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
                   }
                 }
               >
-                <Icon
-                  color="rgba(63,67,80,0.32)"
-                  name="circle-outline"
-                  size={28}
-                />
+                <Text
+                  allowFontScaling={false}
+                  selectable={false}
+                  style={
+                    [
+                      {
+                        "color": "rgba(63,67,80,0.32)",
+                        "fontSize": 28,
+                      },
+                      undefined,
+                      {
+                        "fontFamily": "compass-icons",
+                        "fontStyle": "normal",
+                        "fontWeight": "normal",
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  󰝦
+                </Text>
               </View>
             </View>
           </View>
@@ -1011,6 +1031,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
               "backgroundColor": "rgba(63,67,80,0.08)",
               "height": 24,
               "justifyContent": "center",
+              "marginHorizontal": 12,
               "paddingLeft": 16,
             }
           }
@@ -1148,6 +1169,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
               onLoadStart={[Function]}
               onProgress={[Function]}
               placeholder={[]}
+              sfEffect={null}
               source={
                 [
                   {
@@ -1166,6 +1188,8 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
                   "width": 24,
                 }
               }
+              symbolSize={null}
+              symbolWeight={null}
               transition={null}
               width={24}
             />
@@ -1220,11 +1244,27 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
                   }
                 }
               >
-                <Icon
-                  color="rgba(63,67,80,0.32)"
-                  name="circle-outline"
-                  size={28}
-                />
+                <Text
+                  allowFontScaling={false}
+                  selectable={false}
+                  style={
+                    [
+                      {
+                        "color": "rgba(63,67,80,0.32)",
+                        "fontSize": 28,
+                      },
+                      undefined,
+                      {
+                        "fontFamily": "compass-icons",
+                        "fontStyle": "normal",
+                        "fontWeight": "normal",
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  󰝦
+                </Text>
               </View>
             </View>
           </View>
@@ -1393,6 +1433,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               "backgroundColor": "rgba(63,67,80,0.08)",
               "height": 24,
               "justifyContent": "center",
+              "marginHorizontal": 12,
               "paddingLeft": 16,
             }
           }
@@ -1530,6 +1571,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               onLoadStart={[Function]}
               onProgress={[Function]}
               placeholder={[]}
+              sfEffect={null}
               source={
                 [
                   {
@@ -1548,6 +1590,8 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
                   "width": 24,
                 }
               }
+              symbolSize={null}
+              symbolWeight={null}
               transition={null}
               width={24}
             />
@@ -1602,11 +1646,27 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
                   }
                 }
               >
-                <Icon
-                  color="rgba(63,67,80,0.32)"
-                  name="circle-outline"
-                  size={28}
-                />
+                <Text
+                  allowFontScaling={false}
+                  selectable={false}
+                  style={
+                    [
+                      {
+                        "color": "rgba(63,67,80,0.32)",
+                        "fontSize": 28,
+                      },
+                      undefined,
+                      {
+                        "fontFamily": "compass-icons",
+                        "fontStyle": "normal",
+                        "fontWeight": "normal",
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  󰝦
+                </Text>
               </View>
             </View>
           </View>
@@ -1636,6 +1696,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               "backgroundColor": "rgba(63,67,80,0.08)",
               "height": 24,
               "justifyContent": "center",
+              "marginHorizontal": 12,
               "paddingLeft": 16,
             }
           }
@@ -1773,6 +1834,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               onLoadStart={[Function]}
               onProgress={[Function]}
               placeholder={[]}
+              sfEffect={null}
               source={
                 [
                   {
@@ -1791,6 +1853,8 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
                   "width": 24,
                 }
               }
+              symbolSize={null}
+              symbolWeight={null}
               transition={null}
               width={24}
             />
@@ -1845,11 +1909,27 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
                   }
                 }
               >
-                <Icon
-                  color="rgba(63,67,80,0.32)"
-                  name="circle-outline"
-                  size={28}
-                />
+                <Text
+                  allowFontScaling={false}
+                  selectable={false}
+                  style={
+                    [
+                      {
+                        "color": "rgba(63,67,80,0.32)",
+                        "fontSize": 28,
+                      },
+                      undefined,
+                      {
+                        "fontFamily": "compass-icons",
+                        "fontStyle": "normal",
+                        "fontWeight": "normal",
+                      },
+                      undefined,
+                    ]
+                  }
+                >
+                  󰝦
+                </Text>
               </View>
             </View>
           </View>

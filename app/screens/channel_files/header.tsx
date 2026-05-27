@@ -89,14 +89,8 @@ const Header = ({
                 />
             );
         };
-        bottomSheet({
-            closeButtonId: 'close-search-filters',
-            renderContent,
-            snapPoints,
-            theme,
-            title,
-        });
-    }, [onFilterChanged, selectedFilter, snapPoints, theme, title]);
+        bottomSheet(renderContent, snapPoints);
+    }, [onFilterChanged, selectedFilter, snapPoints, title]);
 
     return (
         <View style={styles.container}>

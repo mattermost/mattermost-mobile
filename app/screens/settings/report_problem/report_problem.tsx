@@ -6,13 +6,16 @@ import {defineMessages, useIntl} from 'react-intl';
 
 import SettingItem from '@components/settings/item';
 import {Screens} from '@constants';
-import {goToScreen} from '@screens/navigation';
-import {emailLogs} from '@utils/share_logs';
+import {DEFAULT_REPORT_A_PROBLEM_EMAIL} from '@constants/report_a_problem';
+import {navigateToSettingsScreen} from '@screens/navigation';
+import {emailLogs, getDefaultReportAProblemLink} from '@utils/share_logs';
+import {tryOpenURL} from '@utils/url';
 
 import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
 
 type ReportProblemProps = {
     allowDownloadLogs?: boolean;
+    isFreeEdition?: boolean;
     reportAProblemMail?: string;
     reportAProblemType?: string;
     siteName?: string;
@@ -26,6 +29,7 @@ const messages = defineMessages({
 
 const ReportProblem = ({
     allowDownloadLogs,
+    isFreeEdition,
     reportAProblemMail,
     reportAProblemType,
     siteName,
@@ -33,17 +37,25 @@ const ReportProblem = ({
 }: ReportProblemProps) => {
     const intl = useIntl();
     const onlyAllowLogs = allowDownloadLogs && reportAProblemType === 'hidden';
-    const skipReportAProblemScreen = reportAProblemType === 'email' && !allowDownloadLogs;
+    const skipReportAProblemScreen =
+        (reportAProblemType === 'email' && !allowDownloadLogs) ||
+        (reportAProblemType === 'default' && isFreeEdition === true) ||
+        (reportAProblemType === 'default' && isFreeEdition === false && !allowDownloadLogs);
 
     const onPress = useCallback(() => {
         if (skipReportAProblemScreen) {
-            emailLogs(metadata, siteName, reportAProblemMail, true);
-        } else {
-            const message = onlyAllowLogs ? messages.downloadLogs : messages.reportProblem;
-            const title = intl.formatMessage(message);
-            goToScreen(Screens.REPORT_PROBLEM, title);
+            if (reportAProblemType === 'default' && isFreeEdition) {
+                tryOpenURL(getDefaultReportAProblemLink(false));
+            } else {
+                const mail = reportAProblemType === 'default' ? DEFAULT_REPORT_A_PROBLEM_EMAIL : reportAProblemMail;
+                emailLogs(metadata, siteName, mail, !allowDownloadLogs);
+            }
+            return;
         }
-    }, [intl, metadata, onlyAllowLogs, reportAProblemMail, siteName, skipReportAProblemScreen]);
+        const message = onlyAllowLogs ? messages.downloadLogs : messages.reportProblem;
+        const title = intl.formatMessage(message);
+        navigateToSettingsScreen(Screens.REPORT_PROBLEM, {title});
+    }, [allowDownloadLogs, intl, isFreeEdition, metadata, onlyAllowLogs, reportAProblemMail, reportAProblemType, siteName, skipReportAProblemScreen]);
 
     if (onlyAllowLogs) {
         return (

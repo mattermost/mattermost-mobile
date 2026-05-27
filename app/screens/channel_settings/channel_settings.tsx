@@ -7,19 +7,16 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
 import ConvertToChannelLabel from '@components/channel_actions/convert_to_channel/convert_to_channel_label';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {dismissModal} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Archive from './archive';
-import ChannelAutotranslation from './channel_autotranslation';
+import ChannelConfigurationOption from './channel_configuration_option';
 import ChannelInfoOption from './channel_info';
 import ConvertPrivate from './convert_private';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     canArchive: boolean;
@@ -28,12 +25,11 @@ type Props = {
     canManageSettings: boolean;
     canUnarchive: boolean;
     channelId: string;
-    closeButtonId?: string;
-    componentId: AvailableScreens;
     convertGMOptionAvailable: boolean;
     displayName: string;
     isCallsEnabledInChannel: boolean;
     canManageAutotranslations: boolean;
+    canManageSharedChannel: boolean;
     type?: ChannelType;
 }
 
@@ -61,79 +57,72 @@ const ChannelSettings = ({
     canManageSettings,
     canUnarchive,
     channelId,
-    closeButtonId,
-    componentId,
     convertGMOptionAvailable,
     displayName,
     isCallsEnabledInChannel,
     canManageAutotranslations,
+    canManageSharedChannel,
     type,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const onPressed = useCallback(() => {
-        return dismissModal({componentId});
-    }, [componentId]);
+        return navigateBack();
+    }, []);
 
-    if (closeButtonId) {
-        useNavButtonPressed(closeButtonId, componentId, onPressed, [onPressed]);
-    }
-    useAndroidHardwareBackHandler(componentId, onPressed);
+    useAndroidHardwareBackHandler(Screens.CHANNEL_SETTINGS, onPressed);
 
     return (
-        <View
+        <SafeAreaView
+            edges={edges}
             style={styles.flex}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
+            testID='channel_settings.screen'
         >
-            <SafeAreaView
-                edges={edges}
-                style={styles.flex}
-                testID='channel_settings.screen'
+            <ScrollView
+                bounces={true}
+                alwaysBounceVertical={false}
+                contentContainerStyle={styles.content}
+                testID='channel_settings.scroll_view'
             >
-                <ScrollView
-                    bounces={true}
-                    alwaysBounceVertical={false}
-                    contentContainerStyle={styles.content}
-                    testID='channel_settings.scroll_view'
-                >
-                    {canManageSettings &&
-                        <ChannelInfoOption channelId={channelId}/>
-                    }
-                    {canConvert &&
-                        <ConvertPrivate
-                            canConvert={canConvert}
-                            channelId={channelId}
-                            displayName={displayName}
-                        />
-                    }
-                    {canEnableDisableCalls &&
-                        <ChannelInfoEnableCalls
-                            channelId={channelId}
-                            enabled={isCallsEnabledInChannel}
-                        />
-                    }
-                    {convertGMOptionAvailable &&
-                        <ConvertToChannelLabel channelId={channelId}/>
-                    }
-                    {canManageAutotranslations &&
-                        <ChannelAutotranslation channelId={channelId}/>
-                    }
-                    {(canArchive || canUnarchive) &&
-                        <>
-                            <View style={styles.separator}/>
-                            <Archive
-                                canArchive={canArchive}
-                                canUnarchive={canUnarchive}
-                                channelId={channelId}
-                                componentId={componentId}
-                                type={type}
-                            />
-                        </>
-                    }
-                </ScrollView>
-            </SafeAreaView>
-        </View>
+                {canManageSettings &&
+                <ChannelInfoOption channelId={channelId}/>
+                }
+                {canConvert &&
+                <ConvertPrivate
+                    canConvert={canConvert}
+                    channelId={channelId}
+                    displayName={displayName}
+                />
+                }
+                {canEnableDisableCalls &&
+                <ChannelInfoEnableCalls
+                    channelId={channelId}
+                    enabled={isCallsEnabledInChannel}
+                />
+                }
+                {convertGMOptionAvailable &&
+                <ConvertToChannelLabel channelId={channelId}/>
+                }
+                {(canManageAutotranslations || canManageSharedChannel) &&
+                <ChannelConfigurationOption
+                    channelId={channelId}
+                    channelDisplayName={displayName}
+                />
+                }
+                {(canArchive || canUnarchive) &&
+                <>
+                    <View style={styles.separator}/>
+                    <Archive
+                        canArchive={canArchive}
+                        canUnarchive={canUnarchive}
+                        channelId={channelId}
+                        type={type}
+                    />
+                </>
+                }
+            </ScrollView>
+        </SafeAreaView>
     );
 };
 

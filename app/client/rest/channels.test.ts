@@ -222,6 +222,16 @@ describe('ClientChannels', () => {
         expect(client.doFetch).toHaveBeenCalledWith(`${client.getTeamRoute(teamId)}/channels?page=0&per_page=${PER_PAGE_DEFAULT}`, expectedOptions);
     });
 
+    test('getManagedCategories', async () => {
+        const teamId = 'team1';
+        const expectedUrl = `${client.getTeamRoute(teamId)}/channels/managed_categories`;
+        const expectedOptions = {method: 'get'};
+
+        await client.getManagedCategories(teamId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
     test('getArchivedChannels', async () => {
         const teamId = 'team1';
         const page = 1;
@@ -252,6 +262,59 @@ describe('ClientChannels', () => {
         // Test with default values
         await client.getSharedChannels(teamId);
         expect(client.doFetch).toHaveBeenCalledWith(`${client.getSharedChannelsRoute()}/${teamId}?page=0&per_page=${PER_PAGE_DEFAULT}`, expectedOptions);
+    });
+
+    test('getRemoteClusters', async () => {
+        const options = {excludePlugins: true, onlyConfirmed: true};
+        const expectedUrl = `${client.getRemoteClustersRoute()}?exclude_plugins=true&only_confirmed=true`;
+        const expectedOptions = {method: 'get'};
+
+        await client.getRemoteClusters(options);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+
+        // Test with notInChannel
+        await client.getRemoteClusters({...options, notInChannel: 'channel1'});
+        expect(client.doFetch).toHaveBeenCalledWith(
+            `${client.getRemoteClustersRoute()}?exclude_plugins=true&not_in_channel=channel1&only_confirmed=true`,
+            expectedOptions,
+        );
+
+        // Test with empty options
+        await client.getRemoteClusters({});
+        expect(client.doFetch).toHaveBeenCalledWith(client.getRemoteClustersRoute(), expectedOptions);
+    });
+
+    test('getChannelSharedRemotes', async () => {
+        const channelId = 'channel1';
+        const expectedUrl = client.getChannelRemotesRoute(channelId);
+        const expectedOptions = {method: 'get'};
+
+        await client.getChannelSharedRemotes(channelId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('shareChannelWithRemote', async () => {
+        const channelId = 'channel1';
+        const remoteId = 'remote1';
+        const expectedUrl = `${client.getRemoteClusterChannelRoute(remoteId, channelId)}/invite`;
+        const expectedOptions = {method: 'post'};
+
+        await client.shareChannelWithRemote(channelId, remoteId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('unshareChannelFromRemote', async () => {
+        const channelId = 'channel1';
+        const remoteId = 'remote1';
+        const expectedUrl = `${client.getRemoteClusterChannelRoute(remoteId, channelId)}/uninvite`;
+        const expectedOptions = {method: 'post'};
+
+        await client.unshareChannelFromRemote(channelId, remoteId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
     test('getMyChannels', async () => {

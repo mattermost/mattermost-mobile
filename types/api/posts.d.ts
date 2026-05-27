@@ -27,6 +27,7 @@ type PostType = PostTypesUserCreatable
     | 'system_leave_team'
     | 'system_remove_from_team'
     | 'system_combined_user_activity'
+    | 'system_shared_chan_state'
     | 'add_bot_teams_channels'
     | 'system_auto_responder'
     | 'custom_calls'
@@ -48,6 +49,20 @@ type PostPriority = {
     requested_ack?: boolean;
     persistent_notifications?: boolean;
 };
+
+// Matches the web client's PostInfo type (GET /api/v4/posts/{post_id}/info).
+// Returns channel/team metadata for a post without requiring channel membership,
+// unlike GET /api/v4/posts/{post_id} which requires ReadChannelContent permission.
+type PostInfo = {
+    channel_id: string;
+    channel_type: ChannelType;
+    channel_display_name: string;
+    has_joined_channel: boolean;
+    team_id: string;
+    team_type: string;
+    team_display_name: string;
+    has_joined_team: boolean;
+}
 
 type PermalinkEmbedData = {
     post_id: string;

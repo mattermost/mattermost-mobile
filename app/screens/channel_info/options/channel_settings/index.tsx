@@ -8,19 +8,21 @@ import {Platform} from 'react-native';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {goToScreen} from '@screens/navigation';
+import {navigateToChannelInfoScreen} from '@screens/navigation';
 
 type Props = {
     channelId: string;
+    channelDisplayName: string;
 }
 
-const ChannelSettings = ({channelId}: Props) => {
+const ChannelSettings = ({channelId, channelDisplayName}: Props) => {
     const {formatMessage} = useIntl();
+
     const title = formatMessage({id: 'channel_info.channel_settings', defaultMessage: 'Channel Settings'});
 
     const goToChannelSettings = usePreventDoubleTap(useCallback(async () => {
-        goToScreen(Screens.CHANNEL_SETTINGS, title, {channelId});
-    }, [channelId, title]));
+        navigateToChannelInfoScreen(Screens.CHANNEL_SETTINGS, {channelId, subtitle: channelDisplayName});
+    }, [channelId, channelDisplayName]));
 
     return (
         <OptionItem
