@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup} from '@support/server_api';
+import {Setup, System} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -24,6 +24,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
+import {isAndroid} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - Settings - Notification Settings', () => {
@@ -33,6 +34,9 @@ describe('Account - Settings - Notification Settings', () => {
     beforeAll(async () => {
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
+
+        // # Enable ExperimentalEnableAutomaticReplies so the auto-responder option appears
+        await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalEnableAutomaticReplies: true}});
 
         // # Log in to server, open account screen, open settings screen, and go to notification settings screen
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -56,10 +60,17 @@ describe('Account - Settings - Notification Settings', () => {
 
     it('MM-T5101_1 - should match elements on notification settings screen', async () => {
         // * Verify basic elements on notification settings screen
-        await expect(NotificationSettingsScreen.backButton).toBeVisible();
+        // The notifications screen uses useAndroidHardwareBackHandler — on Android the
+        // back navigation is handled by the hardware back button, not a React Native
+        // NavigationHeader component. The navigation.header.back testID is never
+        // rendered on Android for this screen, so skip the check there.
+        if (!isAndroid()) {
+            await expect(NotificationSettingsScreen.backButton).toBeVisible();
+        }
         await expect(NotificationSettingsScreen.mentionsOption).toBeVisible();
         await expect(NotificationSettingsScreen.pushNotificationsOption).toBeVisible();
         await expect(NotificationSettingsScreen.emailNotificationsOption).toBeVisible();
+
         await expect(NotificationSettingsScreen.automaticRepliesOption).toBeVisible();
     });
 

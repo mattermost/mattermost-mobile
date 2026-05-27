@@ -20,6 +20,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
+import {isAndroid} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - Settings - Advanced Settings', () => {
@@ -54,5 +55,29 @@ describe('Account - Settings - Advanced Settings', () => {
         // * Verify basic elements on advanced settings screen
         await expect(AdvancedSettingsScreen.backButton).toBeVisible();
         await expect(AdvancedSettingsScreen.deleteDataOption).toBeVisible();
+    });
+
+    it('MM-T3262 - should show confirmation dialog for delete local files and dismiss on cancel', async () => {
+        // # Tap on delete data option
+        await AdvancedSettingsScreen.deleteDataOption.tap();
+
+        // * Verify confirmation alert is displayed with Cancel and Delete options
+        const cancelButton = isAndroid() ? element(by.text('Cancel')) : element(by.label('Cancel')).atIndex(1);
+        const deleteButton = isAndroid() ? element(by.text('Delete')) : element(by.label('Delete')).atIndex(0);
+        await expect(cancelButton).toBeVisible();
+        await expect(deleteButton).toBeVisible();
+
+        // # Tap Cancel
+        await cancelButton.tap();
+
+        // * Verify still on advanced settings screen
+        await AdvancedSettingsScreen.toBeVisible();
+
+        // # Tap on delete data option again and confirm delete
+        await AdvancedSettingsScreen.deleteDataOption.tap();
+        await deleteButton.tap();
+
+        // * Verify still on advanced settings screen after deletion
+        await AdvancedSettingsScreen.toBeVisible();
     });
 });

@@ -12,7 +12,7 @@ import CategoryHeader from './header';
 import type CategoryModel from '@typings/database/models/servers/category';
 
 const enhanced = withObservables(['category'], ({category}: {category: CategoryModel}) => {
-    const canViewArchived = observeConfigBooleanValue(category.database, 'ExperimentalViewArchivedChannels');
+    const canViewArchived = observeConfigBooleanValue(category.database, 'ExperimentalViewArchivedChannels', true);
     const currentChannelId = observeCurrentChannelId(category.database);
 
     return {

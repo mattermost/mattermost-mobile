@@ -13,7 +13,24 @@ env.d.ts
 .tsbuildinfo.precommit
 
 */**/compass-icons.ttf
+mobile-artifacts/*
 
+# Local MCP and IDE config
+.mcp.json
+.cursor/
+
+# Maestro local env (contains test server credentials)
+.maestro-test-env.sh
+maestro/.maestro-test-env.sh
+
+# Debug screenshots captured during local Maestro runs
+/*.png
+
+# Maestro TypeScript build output
+maestro/dist/
+
+# Detox test output directory
+detox/e2e/e2e/
 # OSX
 #
 .DS_Store
@@ -134,6 +151,8 @@ libraries/@mattermost/intune/*
 node_modules/@mattermost/intune
 # Claude Code
 .claude/settings.local.json
+.worktrees
+.pi/
 .codex/
 .cursor/
 .planning/

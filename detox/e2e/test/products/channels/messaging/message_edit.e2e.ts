@@ -25,7 +25,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Edit', () => {
@@ -63,11 +63,15 @@ describe('Messaging - Message Edit', () => {
         const {postListPostItem: originalPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(originalPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
-        // # Scroll to post to dismiss keyboard and ensure post is visible
-        await originalPostListPostItem.scrollTo('top');
+        // # Scroll the post list (not the post item) to dismiss the keyboard and ensure post is tappable
+        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);
+
+        // # Wait for the bottom-sheet edit option to fully slide in before tapping
+        // (iOS 26.x can leave the row clipped mid-animation and fail with "not hittable").
+        await waitFor(PostOptionsScreen.editPostOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await PostOptionsScreen.editPostOption.tap();
 
         // * Verify on edit post screen
@@ -80,8 +84,15 @@ describe('Messaging - Message Edit', () => {
 
         await expect(EditPostScreen.editPostScreen).not.toBeVisible();
 
+        // # Dismiss the keyboard — try/catch because empty channel has no scroll overflow.
+        // Use toExist below since channel-intro card pushes a single post under 75% visibility.
+        try {
+            await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        } catch { /* list at boundary — nothing to scroll */ }
+        await wait(timeouts.ONE_SEC);
+
         const {postListPostItem: updatedPostListPostItem} = ChannelScreen.getPostListPostItem(post.id);
-        await expect(updatedPostListPostItem).toBeVisible();
+        await expect(updatedPostListPostItem).toExist();
 
         await ChannelScreen.assertPostMessageEdited(post.id, updatedMessage);
 
@@ -100,11 +111,14 @@ describe('Messaging - Message Edit', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
-        // # Scroll to post to dismiss keyboard and ensure post is visible
-        await postListPostItem.scrollTo('top');
+        // # Scroll the post list (not the post item) to dismiss the keyboard and ensure post is tappable
+        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);
+
+        // # Wait for the bottom-sheet edit option to fully slide in before tapping.
+        await waitFor(PostOptionsScreen.editPostOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await PostOptionsScreen.editPostOption.tap();
 
         // * Verify on edit post screen
@@ -115,8 +129,14 @@ describe('Messaging - Message Edit', () => {
         await EditPostScreen.messageInput.replaceText(updatedMessage);
         await EditPostScreen.closeButton.tap();
 
+        // # Dismiss the keyboard (see MM-T4783_1 for try/catch + toExist rationale).
+        try {
+            await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        } catch { /* list at boundary */ }
+        await wait(timeouts.ONE_SEC);
+
         // * Verify post message is not updated
-        await expect(postListPostItem).toBeVisible();
+        await expect(postListPostItem).toExist();
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -130,8 +150,12 @@ describe('Messaging - Message Edit', () => {
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);
 
-        // # Scroll to post to dismiss keyboard before tapping
-        await parentPostListPostItem.scrollTo('top');
+        // # Swipe (not scroll) to dismiss keyboard — only real touch gestures trigger
+        // keyboardDismissMode='on-drag'.
+        try {
+            await ChannelScreen.getFlatPostList().swipe('up', 'fast', 0.3);
+        } catch { /* ignore — list may be at the boundary */ }
+        await wait(timeouts.ONE_SEC);
         await parentPostListPostItem.tap();
 
         // * Verify on thread screen
@@ -141,11 +165,15 @@ describe('Messaging - Message Edit', () => {
         const replyMessage = `${message} reply`;
         await ThreadScreen.postMessage(replyMessage);
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
 
-        // # Scroll to reply post to dismiss keyboard before long press
-        await replyPostListPostItem.scrollTo('top');
+        // # Dismiss keyboard before long press (try/catch — thread may have no scroll overflow).
+        try {
+            await ThreadScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        } catch { /* list at boundary */ }
         await ThreadScreen.openPostOptionsFor(replyPost.id, replyMessage);
+
+        // # Wait for the bottom-sheet edit option to fully slide in.
+        await waitFor(PostOptionsScreen.editPostOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await PostOptionsScreen.editPostOption.tap();
 
         // * Verify on edit post screen
@@ -158,9 +186,15 @@ describe('Messaging - Message Edit', () => {
 
         await expect(EditPostScreen.editPostScreen).not.toBeVisible();
 
-        // * Verify reply post message is updated and displays edited indicator '(edited)'
+        // # Dismiss keyboard (see above for try/catch + toExist rationale).
+        try {
+            await ThreadScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        } catch { /* list at boundary */ }
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify reply post exists and displays edited indicator '(edited)'
         const {postListPostItem: updatedReplyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id);
-        await expect(updatedReplyPostListPostItem).toBeVisible();
+        await expect(updatedReplyPostListPostItem).toExist();
 
         await ChannelScreen.assertPostMessageEdited(replyPost.id, updatedReplyMessage, 'thread_page');
 

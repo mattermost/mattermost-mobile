@@ -21,7 +21,7 @@ import {
     observePushVerificationStatus, observeConfig, observeConfigValue, observeMaxFileCount,
     observeIsCustomStatusExpirySupported, observeConfigBooleanValue, observeConfigIntValue,
     observeLicense, observeAllowedThemesKeys, observeOnlyUnreads,
-    observeIsFreeEdition, observeIsMinimumLicenseTier, observeReportAProblemMetadata,
+    observeIsFreeEdition, observeIsMinimumLicenseTier, observeReportAProblemMetadata, getConfigBooleanValue,
 } from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -361,6 +361,45 @@ describe('observeIsMinimumLicenseTier', () => {
                 });
             });
         });
+    });
+});
+
+describe('getConfigBooleanValue', () => {
+    const serverUrl = 'getConfigBooleanValue.test.com';
+    let database: Database;
+    let operator: ServerDataOperator;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = serverDatabaseAndOperator.database;
+        operator = serverDatabaseAndOperator.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    const setConfig = (key: string, value: string) =>
+        operator.handleConfigs({configs: [{id: key, value}], prepareRecordsOnly: false, configsToDelete: []});
+
+    it('should return true when config value is "true"', async () => {
+        await setConfig('ExperimentalViewArchivedChannels', 'true');
+        expect(await getConfigBooleanValue(database, 'ExperimentalViewArchivedChannels')).toBe(true);
+    });
+
+    it('should return false when config value is "false"', async () => {
+        await setConfig('ExperimentalViewArchivedChannels', 'false');
+        expect(await getConfigBooleanValue(database, 'ExperimentalViewArchivedChannels')).toBe(false);
+    });
+
+    it('should return the defaultValue when the key is missing', async () => {
+        expect(await getConfigBooleanValue(database, 'ExperimentalViewArchivedChannels', true)).toBe(true);
+        expect(await getConfigBooleanValue(database, 'ExperimentalViewArchivedChannels', false)).toBe(false);
+    });
+
+    it('should default to false when key is missing and no defaultValue provided', async () => {
+        expect(await getConfigBooleanValue(database, 'ExperimentalViewArchivedChannels')).toBe(false);
     });
 });
 

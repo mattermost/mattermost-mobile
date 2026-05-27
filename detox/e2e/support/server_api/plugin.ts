@@ -53,6 +53,17 @@ export const apiGetLatestPluginVersion = async (repo: string): Promise<string> =
     }
 };
 
+// Agents Plugin Constants
+export const AgentsPlugin = {
+    id: 'mattermost-ai',
+} as const;
+
+// Calls Plugin Constants
+export const CallsPlugin = {
+    id: 'com.mattermost.calls',
+    url: 'https://github.com/mattermost/mattermost-plugin-calls/releases/download/v1.5.0/com.mattermost.calls-1.5.0.tar.gz',
+} as const;
+
 // Demo Plugin Constants
 export const DemoPlugin = {
     id: 'com.mattermost.demo-plugin',
@@ -431,13 +442,72 @@ export const apiUploadAndEnablePlugin = async (options: {
     }
 };
 
+/**
+ * Install a plugin from the Marketplace.
+ * See https://api.mattermost.com/#operation/InstallMarketplacePlugin
+ * @param {string} baseUrl - the base server URL
+ * @param {string} pluginId - the plugin ID to install from Marketplace
+ * @return {Object} returns {plugin} on success or {error, status} on error
+ */
+export const apiInstallPluginFromMarketplace = async (baseUrl: string, pluginId: string): Promise<any> => {
+    try {
+        const response = await client.post(`${baseUrl}/api/v4/plugins/marketplace`, {id: pluginId});
+        return {plugin: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Ensure a plugin is installed and active, installing from Marketplace if needed.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} pluginId - the plugin ID
+ * @return {Object} returns {isInstalled, isActive} status
+ */
+export const apiEnsurePluginInstalled = async (baseUrl: string, pluginId: string): Promise<any> => {
+    // Check if already installed
+    const status = await apiGetPluginStatus(baseUrl, pluginId);
+    if (status.isActive) {
+        return status;
+    }
+
+    if (status.isInstalled && !status.isActive) {
+        // eslint-disable-next-line no-console
+        console.log(`[apiEnsurePluginInstalled] Plugin ${pluginId} installed but inactive, enabling...`);
+        await apiEnablePluginById(baseUrl, pluginId);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        return apiGetPluginStatus(baseUrl, pluginId);
+    }
+
+    // Not installed — try Marketplace
+    // eslint-disable-next-line no-console
+    console.log(`[apiEnsurePluginInstalled] Plugin ${pluginId} not installed, installing from Marketplace...`);
+    const installResult = await apiInstallPluginFromMarketplace(baseUrl, pluginId);
+    if (installResult.error) {
+        // eslint-disable-next-line no-console
+        console.warn(`[apiEnsurePluginInstalled] Marketplace install failed for ${pluginId}:`, installResult.error.message || installResult.error);
+        return {isInstalled: false, isActive: false};
+    }
+
+    // Enable after install
+    await apiEnablePluginById(baseUrl, pluginId);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const finalStatus = await apiGetPluginStatus(baseUrl, pluginId);
+    // eslint-disable-next-line no-console
+    console.log(`[apiEnsurePluginInstalled] Plugin ${pluginId}: installed=${finalStatus.isInstalled}, active=${finalStatus.isActive}`);
+    return finalStatus;
+};
+
 export const Plugin = {
     apiDisableNonPrepackagedPlugins,
     apiDisablePluginById,
     apiEnablePluginById,
+    apiEnsurePluginInstalled,
     apiGetAllPlugins,
     apiGetLatestPluginVersion,
     apiGetPluginStatus,
+    apiInstallPluginFromMarketplace,
     apiInstallPluginFromUrl,
     apiRemovePluginById,
     apiUploadPlugin,

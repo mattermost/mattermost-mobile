@@ -106,7 +106,10 @@ const ChannelBookmark = ({
     }
 
     return (
-        <Animated.View ref={ref}>
+        <Animated.View
+            ref={ref}
+            testID={`channel_bookmark.${bookmark.id}`}
+        >
             <Button
                 containerStyle={styles.container}
                 buttonStyle={styles.button}

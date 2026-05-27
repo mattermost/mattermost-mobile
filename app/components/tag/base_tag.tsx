@@ -124,10 +124,7 @@ const Tag = ({
     let textComponent;
     if (typeof message === 'string') {
         textComponent = (
-            <Text
-                style={textStyle}
-                testID={testID}
-            >
+            <Text style={textStyle}>
                 {message}
             </Text>
         );
@@ -136,13 +133,15 @@ const Tag = ({
             <FormattedText
                 {...message}
                 style={textStyle}
-                testID={testID}
             />
         );
     }
 
     return (
-        <View style={containerStyle}>
+        <View
+            style={containerStyle}
+            testID={testID}
+        >
             {/* We wrap the icon and text in a Text component to avoid
             the ellipsis to go out of the box on iOS */}
             <Text

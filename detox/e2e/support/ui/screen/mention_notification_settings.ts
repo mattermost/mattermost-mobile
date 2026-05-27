@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {NotificationSettingsScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 class MentionNotificationSettingsScreen {
     testID = {
         mentionNotificationSettingsScreen: 'mention_notification_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'mention_notification_settings.scroll_view',
         caseSensitiveFirstNameOptionToggledOff: 'mention_notification_settings.case_sensitive_first_name.option.toggled.false.button',
         caseSensitiveFirstNameOptionToggledOn: 'mention_notification_settings.case_sensitive_first_name.option.toggled.true.button',
@@ -27,7 +27,17 @@ class MentionNotificationSettingsScreen {
     };
 
     mentionNotificationSettingsScreen = element(by.id(this.testID.mentionNotificationSettingsScreen));
-    backButton = element(by.id(this.testID.backButton));
+
+    // expo-router native stack screen — the custom NavigationHeader's
+    // 'navigation.header.back' testID is not rendered here. iOS uses
+    // `accessibilityLabel="Back"`, Android uses the Toolbar's default
+    // navigation-icon contentDescription "Navigate up".
+    get backButton(): Detox.NativeElement {
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.label('Navigate up')).atIndex(0);
+    }
+
     scrollView = element(by.id(this.testID.scrollView));
     caseSensitiveFirstNameOptionToggledOff = element(by.id(this.testID.caseSensitiveFirstNameOptionToggledOff));
     caseSensitiveFirstNameOptionToggledOn = element(by.id(this.testID.caseSensitiveFirstNameOptionToggledOn));
@@ -58,8 +68,11 @@ class MentionNotificationSettingsScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
-        await expect(this.mentionNotificationSettingsScreen).not.toBeVisible();
+        // Use platform-native back chevron: Android via device.pressBack(),
+        // iOS via by.label('Back'). The custom NavigationHeader's testID
+        // does not exist on this screen (expo-router native stack).
+        await tapNativeBackButton();
+        await waitFor(this.mentionNotificationSettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
     getKeywordTriggerElement = async (keyword: string) => {
