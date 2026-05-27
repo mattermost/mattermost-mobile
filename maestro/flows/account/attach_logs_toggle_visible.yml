@@ -1,0 +1,58 @@
+# MM-T67856_1: Toggle "Show an option to attach app logs" is visible on the
+# Report a Problem screen.
+#
+# PRE-CONDITION (server config — set by maestro/scripts/setup_local.sh or
+# the CI provision-servers job; verify with curl below if running ad-hoc):
+#   - Trial Enterprise license active (isFreeEdition = false)
+#   - ServiceSettings.ReportAProblemType = "default" (default; unset is OK)
+#   - ServiceSettings.AllowDownloadLogs   = true     (default)
+#
+# Together these make `skipReportAProblemScreen` false in
+# app/screens/settings/report_problem/report_problem.tsx:40-43, so tapping
+# the settings entry opens the in-app Report a Problem screen (instead of
+# silently sending an email or opening an external browser).
+#
+# Verify the relevant config from a shell:
+#   curl -s -H "Authorization: Bearer $ADMIN_TOKEN" \
+#     "$SITE_1_URL/api/v4/config" \
+#   | jq '{type: .ServiceSettings.ReportAProblemType,
+#          allow: .ServiceSettings.AllowDownloadLogs,
+#          licensed: (.License // "missing")}'
+#
+# Source-of-truth testIDs used in this flow (verified in repo):
+#   - settings.report_problem.option         -> app/screens/settings/report_problem/report_problem.tsx:81
+#   - report_problem.screen                  -> app/screens/report_a_problem/report_problem.tsx:157
+#   - report_problem.enable_log_attachments  -> app/screens/report_a_problem/report_problem.tsx:192
+#   - tab_bar.account.tab                    -> app/routes/(authenticated)/(home)/_layout.tsx:79
+#   - account.settings.option                -> app/screens/home/account/components/options/settings/index.tsx:24
+tags:
+  - MM-T67856_1
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+
+# Go to Account tab > Settings > Report a Problem
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 10000
+- tapOn:
+    id: "account.settings.option"
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 10000
+- tapOn:
+    id: "settings.report_problem.option"
+
+# In-app screen must render (NOT the external-browser/email shortcut path).
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.screen"
+    timeout: 10000
+
+# Assert the toggle is rendered on this screen.
+- assertVisible:
+    id: "report_problem.enable_log_attachments"

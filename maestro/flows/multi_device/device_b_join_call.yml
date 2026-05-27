@@ -1,0 +1,60 @@
+# MM-T4831 (Device B): User B sees the JoinCallBanner and joins the active call
+#
+# Run AFTER Device A has posted the sync message (polled by run_calls_two_device.sh).
+#
+# Required env vars:
+#   SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#   MAESTRO_APP_ID
+tags:
+  - MM-T4831
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# The JoinCallBanner should appear at the top of the channel since Device A
+# started a call while Device B was logged in.
+- extendedWaitUntil:
+    visible:
+      id: "calls.join_call_banner.join"
+    timeout: 120000
+- takeScreenshot: calls-device-b-join-banner-visible
+
+# Grant microphone permission before tapping Join (system dialog appears after tap)
+- tapOn:
+    id: "calls.join_call_banner.join"
+
+# Grant permissions
+- tapOn:
+    text: "Allow"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# Joining keeps the app on the channel view with a call bar overlay (same as starting
+# a call). Tap the call bar to open the full call screen so mute-unmute is accessible.
+- extendedWaitUntil:
+    visible:
+      id: "calls.current_call_bar"
+    timeout: 15000
+- tapOn:
+    id: "calls.current_call_bar"
+
+# Verify Device B is now on the call screen
+- extendedWaitUntil:
+    visible:
+      id: "mute-unmute"
+    timeout: 15000
+- takeScreenshot: calls-device-b-joined-call
+
+# Verify participants list shows both users (users-list renders one card per participant)
+- extendedWaitUntil:
+    visible:
+      id: "users-list"
+    timeout: 5000
+- takeScreenshot: calls-device-b-participants-visible
+
+# Leave intentionally omitted here for two-device orchestration:
+# device_a_verify_joined.yml runs on Device A while Device B is still on the call
+# screen, showing both participants. device_b_leave_call.yml handles cleanup after.

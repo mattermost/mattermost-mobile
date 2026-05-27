@@ -1,0 +1,72 @@
+# MM-T3260: Tapping Help in Settings opens the help URL in a browser
+# iOS 26+: SFSafariViewController uses a "breadcrumb" back-to-app button (resource-id: breadcrumb,
+#   accessibilityText: "Return to <AppName>"). Older iOS used a "Done" button top-left.
+# Android: opens Chrome Custom Tab (cross-process); dismissed with Back key.
+# Note: assert on settings.help.option (child element) rather than the root screen id
+# because Maestro 2.x on Android does not match partial resource-id regexes against
+# the SettingContainer's SafeAreaView testID ("settings.screen").
+tags:
+  - MM-T3260
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+
+# Open Account screen
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.screen"
+    timeout: 10000
+
+# Open Settings — wait for a known child element so the screen is fully rendered
+- tapOn:
+    id: "account.settings.option"
+- extendedWaitUntil:
+    visible:
+      id: "settings.help.option"
+    timeout: 10000
+
+# Tap Help
+- tapOn:
+    id: "settings.help.option"
+
+# iOS: dismiss SFSafariViewController.
+# iOS 26+: uses a breadcrumb button (resource-id "breadcrumb", text "Return to <AppName>").
+# iOS ≤ 18: uses a "Done" button in the top-left corner.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "breadcrumb"
+          timeout: 8000
+      - takeScreenshot: help-browser-opened
+      - tapOn:
+          id: "breadcrumb"
+          optional: true
+      - tapOn:
+          text: "Done"
+          optional: true
+
+# Android: Chrome Custom Tab opens in foreground (settings.help.option leaves the tree).
+# Wait for the settings option to disappear (Chrome is now in front), screenshot, then
+# press Back to return to the app.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          notVisible:
+            id: "settings.help.option"
+          timeout: 8000
+      - takeScreenshot: help-browser-opened
+      - pressKey: Back
+
+# Verify settings screen is visible again
+- extendedWaitUntil:
+    visible:
+      id: "settings.help.option"
+    timeout: 10000
+- takeScreenshot: help-browser-dismissed

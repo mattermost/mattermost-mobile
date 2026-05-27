@@ -1,0 +1,103 @@
+# MM-T67856: Report a Problem opens the report form for the test user.
+#
+# On the local Detox/Maestro server (no enterprise license applied), the
+# settings code in `app/screens/settings/report_problem/report_problem.tsx`
+# treats this as a free-edition install:
+#   skipReportAProblemScreen = (reportAProblemType === 'default' && isFreeEdition)
+# so tapping "Report a Problem" calls `tryOpenURL(getDefaultReportAProblemLink(false))`
+# and the OS opens an external browser (Chrome Custom Tab on Android,
+# SFSafariViewController on iOS). This is the *intended* user-facing behaviour
+# on unlicensed servers, which is why this flow lives in Maestro rather than
+# Detox — Detox would have to override `ReportAProblemType` via apiUpdateConfig
+# to force the in-app screen, which doesn't reflect how users hit this path.
+#
+# The original Detox spec at `detox/e2e/test/products/channels/account/attach_logs.e2e.ts`
+# is `describe.skip(...)`'d and points here.
+#
+# Sub-tests in the Detox spec that still need Maestro coverage when the
+# in-app screen path becomes reachable (licensed server config or future
+# fixture changes):
+#   - MM-T67856_1: toggle visible on Report a Problem screen
+#   - MM-T67856_2: enabling toggle surfaces "Attach app logs" in attachment menu
+#   - MM-T67856_3: disabling toggle hides "Attach app logs"
+#   - MM-T67856_4: toggle hidden when AllowDownloadLogs is disabled
+# Implementing those will require a seed step that uploads an enterprise
+# trial license and sets ReportAProblemType so the in-app screen mounts.
+tags:
+  - MM-T67856
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+
+# Open Account screen
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.screen"
+    timeout: 10000
+
+# Open Settings — wait for a known child element so the screen is fully rendered.
+# The Report-a-Problem item is rendered via WatermelonDB observables for
+# AllowDownloadLogs / ReportAProblemType / Version / BuildNumber. On a fresh
+# iOS first-login the server config sync can lag, so the SettingItem appears
+# only after the observables emit. Allow up to 30s.
+- tapOn:
+    id: "account.settings.option"
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 30000
+
+# Tap Report a Problem. On a free-edition server this calls tryOpenURL(...) and
+# the OS-level browser opens; on a licensed server with default config it
+# navigates to the in-app `report_problem.screen`. The flow asserts only that
+# the in-app option leaves the foreground — that is true in both cases.
+- tapOn:
+    id: "settings.report_problem.option"
+
+# iOS: On free-edition servers, SFSafariViewController hosts the report form,
+# showing a breadcrumb back-to-app pill (iOS 26+) or Done button (older).
+# On Enterprise servers, the in-app report_problem.screen opens instead.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: "breadcrumb"
+          commands:
+            - takeScreenshot: report-problem-opened
+            - tapOn:
+                id: "breadcrumb"
+            - tapOn:
+                text: "Done"
+                optional: true
+      - runFlow:
+          when:
+            visible:
+              id: "report_problem.screen"
+          commands:
+            - takeScreenshot: report-problem-in-app
+            - back
+
+# Android: Chrome Custom Tab opens in foreground; the settings option leaves
+# the tree. Wait for that, screenshot, then press Back to return.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          notVisible:
+            id: "settings.report_problem.option"
+          timeout: 8000
+      - takeScreenshot: report-problem-opened
+      - pressKey: Back
+
+# Verify the Settings screen is visible again
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 10000
+- takeScreenshot: report-problem-dismissed

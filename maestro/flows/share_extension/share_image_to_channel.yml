@@ -1,0 +1,85 @@
+# MM-T2862: Share an image to a Mattermost channel via the share extension
+tags:
+  - MM-T2862
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# Open Photos app fresh (stopApp resets it to Library grid, avoiding photo-detail resume state)
+- stopApp:
+    appId: "com.apple.mobileslideshow"
+- launchApp:
+    appId: "com.apple.mobileslideshow"
+# Wait for Photos to finish launching before checking for onboarding.
+# Without this wait, the optional "Continue" tap fires before the
+# "What's New in Photos" screen has rendered and Photos remains stuck
+# on the onboarding overlay (confirmed via failing iOS run screenshot).
+- waitForAnimationToEnd:
+    timeout: 5000
+# Dismiss "What's New in Photos" onboarding if present.
+# Loop the tap until the Continue button is gone or Select is visible.
+- runFlow:
+    when:
+      visible:
+        text: "Continue"
+    commands:
+      - tapOn:
+          text: "Continue"
+      - extendedWaitUntil:
+          notVisible:
+            text: "Continue"
+          timeout: 10000
+# iOS 26 Photos: "Select" button text IS accessible from the Library grid.
+# Wait for it (not all simulator runs land directly on the grid).
+- extendedWaitUntil:
+    visible:
+      text: "Select"
+    timeout: 15000
+- tapOn:
+    text: "Select"
+# Tap second photo in the grid to select it (~50%, ~25% for row 1, col 2 in 3-col grid)
+- tapOn:
+    point: "50%, 25%"
+- takeScreenshot: photo-selected
+# iOS 26: share icon in selection toolbar is at bottom-left.
+# Coordinate: ~8% x, ~96% y (within the safe area zone on iPhone 17 Pro Max).
+# No text label accessible for this icon; use coordinate tap.
+# TODO: Revisit once Photos share icon is accessible via text/id in Maestro on iOS 26.
+- tapOn:
+    point: "8%, 96%"
+
+- takeScreenshot: share-sheet-open
+- tapOn:
+    text: "Mattermost Beta"
+
+# Share extension opens: tap Channel option to open channel picker
+- extendedWaitUntil:
+    visible:
+      id: "share_extension.channel.option"
+    timeout: 10000
+- tapOn:
+    id: "share_extension.channel.option"
+
+# Select the test channel from the channel list
+- extendedWaitUntil:
+    visible:
+      id: "channel_item.${TEST_CHANNEL_NAME}"
+    timeout: 10000
+- tapOn:
+    id: "channel_item.${TEST_CHANNEL_NAME}"
+
+# Post the shared content
+- tapOn:
+    id: "share_extension.post.button"
+
+# Return to Mattermost and verify the image post appeared in the channel
+- launchApp:
+    appId: "${MAESTRO_APP_ID}"
+- extendedWaitUntil:
+    visible:
+      id: "channel.post_list.post"
+    timeout: 20000
+- assertVisible:
+    id: "channel.post_list.post"
+- takeScreenshot: share-image-success

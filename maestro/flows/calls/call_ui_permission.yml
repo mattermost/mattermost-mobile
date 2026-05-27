@@ -1,0 +1,76 @@
+# MM-T1411: Call UI - permission dialog, initiate call, verify call screen
+# NOTE: Audio/video stream quality is manually tested; this flow covers UI only
+# Requires a channel with the Calls plugin enabled on the server
+# TODO: install Calls plugin (com.mattermost.calls) on the test server before running this flow
+tags:
+  - MM-T1411
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../utils/login.yml
+- runFlow: ../../utils/navigate_to_channel.yml
+
+# Wait for the WS-driven Calls config to propagate before opening Channel Info.
+# On first login doReconnect() runs entry() (a full server sync) before calling
+# loadConfigAndCalls(), so pluginEnabled starts as false and takes 10-30s to
+# flip to true on a cloud server.
+- waitForAnimationToEnd:
+    timeout: 25000
+
+# Open the channel quick actions sheet via the three-dots (⋮) button.
+# The Start/Join Call button lives in this sheet.
+- tapOn:
+    id: "channel_header.channel_quick_actions.button"
+
+# Wait for the Start/Join Call action (60s: WS first-connect can take 10-30s).
+- extendedWaitUntil:
+    visible:
+      id: "channel_info.channel_actions.join_start_call.action"
+    timeout: 60000
+
+# Tap the Start/Join Call button
+- tapOn:
+    id: "channel_info.channel_actions.join_start_call.action"
+
+# Handle microphone permission dialog (first-time prompt)
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# Handle camera permission dialog (first-time prompt)
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# Starting the call dismisses the bottom sheet and returns to the channel view.
+# Wait for the minimized CurrentCallBar to appear (confirms WebRTC is connected).
+- extendedWaitUntil:
+    visible:
+      id: "calls.current_call_bar"
+    timeout: 20000
+
+# Brief wait after call bar appears to let the WebSocket session event arrive and
+# populate currentCall.sessions. Without this, mySession may be undefined when the
+# full call screen opens, causing it to render blank (null return at the guard check).
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Tap the CurrentCallBar to navigate to the full call screen.
+- tapOn:
+    id: "calls.current_call_bar"
+
+# Verify the full call screen is visible (mute-unmute button is the reliable call-screen indicator)
+- extendedWaitUntil:
+    visible:
+      id: "mute-unmute"
+    timeout: 30000
+- takeScreenshot: call-screen-visible
+
+# Leave the call to clean up state.
+# Tapping Leave shows a confirmation dialog; confirm with "Leave call".
+- tapOn:
+    id: "leave"
+    optional: true
+- tapOn:
+    text: "Leave call"
+    optional: true
+- takeScreenshot: call-ended
