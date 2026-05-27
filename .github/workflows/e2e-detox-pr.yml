@@ -138,22 +138,65 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      # Compute a hash of every file that affects the iOS native build. JS-only
+      # changes (app/**, detox/**, *.md) do NOT touch this hash, so iterations
+      # on tests reuse the same simulator .app via the cache step below.
+      #
+      # If you add a new native-dep source — e.g. a Swift module under
+      # libraries/@mattermost/something/ios/ — also list it here, otherwise
+      # changes to it won't trigger a rebuild.
+      - name: Compute iOS native-build hash
+        id: ios-hash
+        shell: bash
+        run: |
+          HASH=$(git ls-tree -r HEAD -- \
+            ios \
+            patches \
+            package-lock.json \
+            Gemfile.lock \
+            libraries/@mattermost/intune \
+            libraries/@mattermost/rnshare \
+            libraries/@mattermost/rnutils \
+            libraries/@mattermost/hardware-keyboard \
+            libraries/@mattermost/secure-pdf-viewer \
+            .github/actions/prepare-ios-build \
+            fastlane \
+            | sha256sum | cut -d' ' -f1)
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+          echo "iOS native-build hash: $HASH"
+
+      # Try to restore a prebuilt .app.zip keyed on the hash above. On a cache
+      # hit the file lands in the repo root with the same name the build step
+      # would have produced, and we skip the expensive build job.
+      - name: Restore iOS Simulator build cache
+        id: ios-cache
+        uses: actions/cache@v4
+        with:
+          path: Mattermost-simulator-*.app.zip
+          key: ios-sim-app-${{ steps.ios-hash.outputs.hash }}-intune-${{ env.INTUNE_ENABLED }}
+
       - name: Prepare iOS Build
+        if: steps.ios-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/prepare-ios-build
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: Set .env with RUNNING_E2E=true
+        if: steps.ios-cache.outputs.cache-hit != 'true'
         run: echo "RUNNING_E2E=true" > .env
 
       - name: Build iOS Simulator
+        if: steps.ios-cache.outputs.cache-hit != 'true'
         env:
           TAG: ${{ inputs.MOBILE_VERSION }}
           GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
         run: bundle exec fastlane ios simulator --env ios.simulator
         working-directory: ./fastlane
 
+      # Always upload the artifact tagged with this run_id — downstream
+      # detox/maestro shards reference it by name and don't care whether
+      # it came from a cache hit or a fresh build.
       - name: Upload iOS Simulator Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -176,7 +219,45 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      # Compute a hash of every file that affects the Android native build.
+      # JS-only changes (app/**, detox/**, *.md) do NOT touch this hash, so
+      # iterations on tests reuse the same debug APK via the cache step below.
+      - name: Compute Android native-build hash
+        id: android-hash
+        shell: bash
+        run: |
+          HASH=$(git ls-tree -r HEAD -- \
+            android \
+            patches \
+            package-lock.json \
+            libraries/@mattermost/intune \
+            libraries/@mattermost/rnshare \
+            libraries/@mattermost/rnutils \
+            libraries/@mattermost/hardware-keyboard \
+            libraries/@mattermost/secure-pdf-viewer \
+            .github/actions/prepare-android-build \
+            | sha256sum | cut -d' ' -f1)
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+          echo "Android native-build hash: $HASH"
+
+      # Restore a prebuilt build tree keyed on the native hash. On a cache
+      # hit we skip prepare + gradle + detox build and just re-upload the
+      # cached artifact for downstream shards.
+      #
+      # Path matches what's currently uploaded (android/app/build/**/*) so
+      # downstream `download-artifact` → `path: android/app/build` works
+      # unchanged. Detox itself only reads `outputs/apk/debug/app-debug.apk`
+      # but we keep the broader path for compatibility with the existing
+      # consumer.
+      - name: Restore Android build cache
+        id: android-cache
+        uses: actions/cache@v4
+        with:
+          path: android/app/build
+          key: android-build-${{ steps.android-hash.outputs.hash }}
+
       - name: Prepare Android Build
+        if: steps.android-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/prepare-android-build
         env:
           STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
@@ -187,7 +268,9 @@ jobs:
       # Cache Gradle dependencies — same key as e2e-detox-release.yml so the
       # PR + release workflows share cache. Saves 3-5 min on warm runs by
       # skipping gradle plugin resolution + Maven dep downloads.
+      # Still useful on cache MISSES for the build-output cache above.
       - name: Cache Gradle dependencies
+        if: steps.android-cache.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: ~/.gradle/caches/modules-2/
@@ -195,12 +278,15 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle-
 
       - name: Detox build
+        if: steps.android-cache.outputs.cache-hit != 'true'
         run: |
           cd detox
           npm ci --prefer-offline --no-audit --no-fund
           npm install -g detox-cli
           npm run e2e:android-build
 
+      # Always upload — downstream detox shards reference by run_id and
+      # don't care whether it came from cache or fresh build.
       - name: Upload Android Build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
