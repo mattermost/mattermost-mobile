@@ -250,16 +250,11 @@ describe('Search - Recents and Input', () => {
         // * Verify on search messages screen
         await SearchMessagesScreen.toBeVisible();
 
-        // # Clear any stale search input from a previous test (typeText appends, not replaces)
-        try {
-            await SearchMessagesScreen.searchClearButton.tap();
-            await wait(timeouts.ONE_SEC);
-        } catch {
-            // Already empty — no action needed
-        }
-
-        // # Type a search term and submit search
-        await SearchMessagesScreen.searchInput.typeText(searchTerm);
+        // # Type a search term and submit search.
+        // Use replaceText (not typeText) — typeText appends, so any stale text
+        // left by a previous test would concatenate with `searchTerm` and the
+        // server-side search would return 0 results.
+        await SearchMessagesScreen.searchInput.replaceText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
 

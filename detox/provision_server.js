@@ -177,13 +177,6 @@ async function ensureTrialLicense(token) {
 
 async function configureTestServer(token) {
     // Fetch current config, then update plugin + rate-limit settings in a single PUT.
-    //
-    // Rate limiting is disabled on test servers because Mattermost's default
-    // RateLimitSettings (Enable=true, PerSec=10, MaxBurst=100, VaryByRemoteAddr=true)
-    // throttles burst traffic that E2E shards generate during apiInit (login,
-    // team/channel/user creation, plugin enable, WebSocket connect). Verified
-    // empirically: 100 concurrent login requests from one IP get 71x HTTP 429.
-    // Disabling on ephemeral test workspaces removes a load-related variable.
     const configRes = await request('GET', '/api/v4/config', null, token);
     if (configRes.status >= 400) {
         console.warn('[provision] Could not read server config.');
@@ -196,94 +189,38 @@ async function configureTestServer(token) {
     config.PluginSettings.EnableUploads = true;
     config.PluginSettings.EnableMarketplace = true;
     config.PluginSettings.EnableRemoteMarketplace = true;
-
     config.RateLimitSettings = config.RateLimitSettings || {};
     config.RateLimitSettings.Enable = false;
-
-    // Bump the maximum active users limit so parallel test shards never hit
-    // "user_limits_exceeded" / ERROR_SAFETY_LIMITS_EXCEEDED. Each test file
-    // calls apiInit() → apiCreateUser(), and with 20 shards × ~6 test files
-    // per run (~120 users/run), accumulated users from repeated CI runs on
-    // the same provisioned server can exhaust the default trial-license limit.
     config.ServiceSettings = config.ServiceSettings || {};
     config.ServiceSettings.MaximumActiveUsers = 999999; // effectively unlimited
-
-    // Raise the failed-login lockout threshold. Default is 10 attempts; on parallel
-    // CI runs with 20 shards retrying logins, the admin user can get locked out
-    // mid-suite, surfacing as the "Your account is locked because of too many failed
-    // password attempts" screen — every subsequent test then fails on adminLogin.
     config.ServiceSettings.MaximumLoginAttempts = 999999;
-
-    // Ensure the password-policy minimum matches what our test helpers generate.
-    // generateRandomUser produces 17-char passwords, so 8 (default) is fine, but
-    // we set it explicitly here so a server with FIPS mode on (min 14) doesn't
-    // reject creates differently than a normal server.
     config.PasswordSettings = config.PasswordSettings || {};
     config.PasswordSettings.MinimumLength = 8;
     config.TeamSettings = config.TeamSettings || {};
     config.TeamSettings.MaxUsersPerTeam = 999999;
-
-    // Keep the user on the archived channel after archive/unarchive (mobile
-    // archive/unarchive flow tests depend on this — without it, archiveChannel
-    // takes the "removeCurrentUserFromChannel" branch in
-    // app/actions/remote/channel.ts:1394 and never renders the post_draft.archived
-    // banner that MM-T4932/T3208/T1703/T4944/T3197/T5725 assert on. Several test
-    // specs already call apiUpdateConfig in beforeAll to flip this on, but the
-    // client config can be stale at archive-time because config is fetched once
-    // at login and not refreshed; setting it here makes it persistent on the
-    // server so login-time fetch always sees it.).
     config.TeamSettings.ExperimentalViewArchivedChannels = true;
-
-    // Enable bot account creation. Default is false in mattermost server's
-    // SetDefaults (server/public/model/config.go), and trial-licensed cloud
-    // test servers ship with it off, so `POST /api/v4/bots` returns 403 with
-    // an HTML error page from the edge proxy. The Detox setup that runs in
-    // `beforeAll` for ~7 test files calls `Bot.apiCreateBot` and fails the
-    // JSON parse on the HTML response. Reference: bot.go createBot guard
-    // `if !*c.App.Config().ServiceSettings.EnableBotAccountCreation`.
     config.ServiceSettings.EnableBotAccountCreation = true;
-
-    // Enable shared channels + remote cluster service so MM-T5780 /
-    // share_with_connected_workspaces tests can call
-    // `Channel.apiEnsureSingleRemoteCluster`. Default in SetDefaults
-    // (server/public/model/config.go) is false; without this toggle the
-    // remote cluster service is not registered and the test bails with
-    // "remote cluster service is not enabled".
-    //
-    // The flags moved from ExperimentalSettings to ConnectedWorkspacesSettings
-    // on master (old paths are marked Deprecated). Set both so this provisioner
-    // works against either server version.
     config.ConnectedWorkspacesSettings = config.ConnectedWorkspacesSettings || {};
     config.ConnectedWorkspacesSettings.EnableSharedChannels = true;
     config.ConnectedWorkspacesSettings.EnableRemoteClusterService = true;
     config.ExperimentalSettings = config.ExperimentalSettings || {};
     config.ExperimentalSettings.EnableSharedChannels = true;
     config.ExperimentalSettings.EnableRemoteClusterService = true;
-
-    // Enable the Custom Profile Attributes feature flag. The mobile client reads
-    // FeatureFlagCustomProfileAttributes via observeConfigBooleanValue
-    // (see app/screens/edit_profile/index.ts) and gates the entire custom-fields
-    // form on it. Admin-only field-definition APIs succeed regardless of the flag,
-    // so e2e tests that probe the feature by creating fields can wrongly conclude
-    // it's available — they then fail when the user-facing form renders no rows.
-    // Forcing the flag on here makes MM-T5781 deterministic.
     config.FeatureFlags = config.FeatureFlags || {};
     config.FeatureFlags.CustomProfileAttributes = true;
-
-    // Enable Calls plugin by default on all teams/channels. Without this the
-    // Calls plugin installs but stays disabled, so maestro/flows/calls/* time
-    // out waiting for the call bar to render. Enterprise feature; works with
-    // the trial license ensureTrialLicense() activates above.
     config.PluginSettings.Plugins = config.PluginSettings.Plugins || {};
     config.PluginSettings.Plugins['com.mattermost.calls'] = {
         ...(config.PluginSettings.Plugins['com.mattermost.calls'] || {}),
         DefaultEnabled: true,
     };
-
-    // Enable Channel Bookmarks — exercised by maestro/flows/channels/* and
-    // detox channel-bookmark tests. The menu option silently disappears when
-    // this is false.
     config.ServiceSettings.EnableChannelBookmarks = true;
+
+    // Required by maestro/flows/account/attach_logs_*.yml: keep the in-app
+    // Report a Problem screen reachable (not redirected to email/browser) and
+    // make the log-attachment toggle visible. These match server defaults but
+    // set explicitly so a previously-toggled-off config can't break the flow.
+    config.ServiceSettings.ReportAProblemType = 'default';
+    config.ServiceSettings.AllowDownloadLogs = true;
 
     console.log('[provision] Updating plugin uploads, Marketplace, disabling rate limiting, and removing user caps...');
     const updateRes = await request('PUT', '/api/v4/config', config, token);
