@@ -244,17 +244,26 @@ const EditProfile = ({
         if (!isTablet) {
             navigation.setOptions({
                 headerRight: () => (
-                    <Pressable
-                        onPress={submitUser}
-                        disabled={!canSave}
-                        testID={'edit_profile.save.button'}
-                    >
-                        <FormattedText
-                            id='mobile.account.settings.save'
-                            defaultMessage='Save'
-                            style={{color: canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.32), fontSize: 16}}
-                        />
-                    </Pressable>
+
+                    // Wrapper View with the testID constrains the hit area so
+                    // Detox doesn't report the full header width as the
+                    // Pressable's bounds (MM-T4989_2 / MM-T3250). On iOS,
+                    // React Navigation's native bar button item stretches
+                    // the child to fill the right slot, causing .tap() at
+                    // the center (193, 24) to land on the "Your Profile"
+                    // title instead of the "Save" text.
+                    <View testID='edit_profile.save.button'>
+                        <Pressable
+                            onPress={submitUser}
+                            disabled={!canSave}
+                        >
+                            <FormattedText
+                                id='mobile.account.settings.save'
+                                defaultMessage='Save'
+                                style={{color: canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.32), fontSize: 16}}
+                            />
+                        </Pressable>
+                    </View>
                 ),
             });
         }

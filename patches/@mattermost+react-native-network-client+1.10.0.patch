@@ -1,0 +1,20 @@
+diff --git a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt
+index b8df3e0..60b5087 100644
+--- a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt
++++ b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt
+@@ -551,7 +551,14 @@ internal class NetworkClient(private val context: Context, private val baseUrl:
+         chain: Array<X509Certificate>? = null,
+         cause: CertificateException? = null
+     ) {
+-        val host = URI(baseUrlString).host
++        // java.net.URI parses authority more strictly than okhttp3.HttpUrl; for some
++        // valid baseUrlStrings (notably wss:// schemes or hostnames containing chars
++        // URI rejects) `URI(...).host` returns null. Adding null to MutableSet<String>
++        // throws NPE on the OkHttp Dispatcher thread, crashing the whole app while we
++        // were trying to *report* a TLS error. Fall back to baseUrlString as the
++        // dedup key + display value when host can't be extracted — non-null by
++        // construction (see constructor line 66).
++        val host = URI(baseUrlString).host ?: baseUrlString
+         // Emit only once per client instance — retries would otherwise flood the JS layer (#7658).
+         if (!emittedCertErrorHosts.add(host)) return
+ 

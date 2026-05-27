@@ -210,7 +210,7 @@ export default function Summary({
             <View style={styles.summaryButtonContainerStyle}>
                 <Button
                     onPress={onPress}
-                    testID={`invite.summary_button.${SummaryButtonType.RETRY}`}
+                    testID={`invite.summary_button.${type}`}
                     text={formatMessage(text)}
                     iconName={iconName}
                     emphasis={emphasis}
