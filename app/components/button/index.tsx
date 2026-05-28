@@ -3,11 +3,13 @@
 
 import {Button as ElementButton, type ButtonProps} from '@rneui/base';
 import React, {useMemo, type ReactNode} from 'react';
-import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle, type Insets} from 'react-native';
+import {type StyleProp, StyleSheet, type TextStyle, View, type ViewStyle, type Insets} from 'react-native';
 
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import Loading from '@components/loading';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+
+import ButtonMarkdownText from './button_markdown_text';
 
 type Props = Omit<ButtonProps, 'size'> & {
     theme: Theme;
@@ -117,6 +119,15 @@ const Button = ({
         );
     }
 
+    const label = (
+        <ButtonMarkdownText
+            value={text}
+            baseStyle={txtStyleToUse}
+            theme={theme}
+            testID={`${testID}-label`}
+        />
+    );
+
     return (
         <ElementButton
             buttonStyle={bgStyle}
@@ -133,12 +144,7 @@ const Button = ({
             >
                 {showLoader && !isIconOnTheRight && loadingComponent}
                 {!isIconOnTheRight && icon}
-                <Text
-                    style={txtStyleToUse}
-                    numberOfLines={1}
-                >
-                    {text}
-                </Text>
+                {label}
                 {showLoader && isIconOnTheRight && loadingComponent}
                 {isIconOnTheRight && icon}
             </View>
