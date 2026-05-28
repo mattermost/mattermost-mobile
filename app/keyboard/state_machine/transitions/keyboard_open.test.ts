@@ -112,8 +112,37 @@ describe('keyboardOpenTransitions', () => {
         });
     });
 
-    describe('[3] KEYBOARD_OPEN → KEYBOARD_EVENT_END → KEYBOARD_OPEN (isRotating guard)', () => {
+    describe('[3] KEYBOARD_OPEN → KEYBOARD_EVENT_START → KEYBOARD_OPEN', () => {
         const t = keyboardOpenTransitions[3];
+
+        it('should have correct from/event/to', () => {
+            expect(t.from).toBe(InputContainerStateType.KEYBOARD_OPEN);
+            expect(t.event).toBe(StateMachineEventType.KEYBOARD_EVENT_START);
+            expect(t.to).toBe(InputContainerStateType.KEYBOARD_OPEN);
+        });
+
+        it('action calls calculateKeyboardUpdates with event.height when rawHeight is defined', () => {
+            const snapshot = makeSnapshot();
+            const event = makeEvent({type: StateMachineEventType.KEYBOARD_EVENT_START, height: 280, rawHeight: 330});
+            t.action!(snapshot, event);
+            expect(calculateKeyboardUpdates).toHaveBeenCalledWith(snapshot, 280, 330);
+        });
+
+        it('action falls back to snapshot.keyboardEventHeight when event.height is undefined', () => {
+            const snapshot = makeSnapshot({keyboardEventHeight: 300});
+            const event = makeEvent({type: StateMachineEventType.KEYBOARD_EVENT_START, height: undefined, rawHeight: 330});
+            t.action!(snapshot, event);
+            expect(calculateKeyboardUpdates).toHaveBeenCalledWith(snapshot, 300, 330);
+        });
+
+        it('action returns undefined when rawHeight is undefined', () => {
+            const result = t.action!(makeSnapshot(), makeEvent({type: StateMachineEventType.KEYBOARD_EVENT_START, height: 280, rawHeight: undefined}));
+            expect(result).toBeUndefined();
+        });
+    });
+
+    describe('[4] KEYBOARD_OPEN → KEYBOARD_EVENT_END → KEYBOARD_OPEN (isRotating guard)', () => {
+        const t = keyboardOpenTransitions[4];
 
         it('should have correct from/event/to', () => {
             expect(t.from).toBe(InputContainerStateType.KEYBOARD_OPEN);

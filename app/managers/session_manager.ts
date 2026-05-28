@@ -153,7 +153,9 @@ export class SessionManagerSingleton {
                 }
                 const launchRoute = await determineRouteFromLaunchProps({launchType, serverUrl, displayName});
 
-                router.replace({pathname: launchRoute.route, params: launchRoute.params});
+                requestAnimationFrame(() => {
+                    router.replace({pathname: launchRoute.route, params: launchRoute.params});
+                });
             }
         } finally {
             this.terminatingSessionUrl.delete(serverUrl);
