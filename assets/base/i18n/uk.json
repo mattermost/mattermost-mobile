@@ -1069,6 +1069,7 @@
   "playbook_run.out_of_date_header.message": "Не вдалося з'єднатися з сервером. Вміст може бути застарілим. Останнє оновлення {lastUpdated}.",
   "playbooks.checklist.rename.button": "Зберегти",
   "playbooks.checklist.rename.label": "Назва секції",
+  "playbooks.checklist.rename.title": "Переіменувати чекліст",
   "playbooks.checklist_item.add.button": "Нове",
   "playbooks.checklist_item.add.description_label": "Опис",
   "playbooks.checklist_item.add.label": "Назва завдання",
