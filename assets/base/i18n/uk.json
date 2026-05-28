@@ -20,6 +20,7 @@
   "agents.channel_summary.option.14d": "Пудсумувати за останні 14 діб",
   "agents.channel_summary.option.7d": "Підбити підсумки за останні 7 днів",
   "agents.channel_summary.option.custom": "Обрати діапазон дат для підбиття підсумків",
+  "agents.channel_summary.range_error": "Оберіть дійсний діапазон дат",
   "agents.citations.title": "Джерела ({count})",
   "agents.controls.regenerate": "Перегенерувати",
   "agents.controls.stop": "Припинити генерування",
