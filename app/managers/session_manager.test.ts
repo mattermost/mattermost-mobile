@@ -67,7 +67,7 @@ jest.mock('@managers/intune_manager', () => ({
     },
 }));
 jest.mock('@managers/network_manager');
-jest.mock('@managers/offline_persistence_manager');
+jest.mock('@managers/ephemeral_mode_manager');
 jest.mock('@managers/security_manager');
 jest.mock('@managers/websocket_manager');
 jest.mock('@queries/app/global', () => ({

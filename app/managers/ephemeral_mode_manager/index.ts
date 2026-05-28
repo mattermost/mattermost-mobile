@@ -89,6 +89,7 @@ class EphemeralModeManagerSingleton {
         delete this.configSubscriptions[serverUrl];
         delete this.offlineSubjects[serverUrl];
         delete this.evalQueue[serverUrl];
+        this.maybeRemoveAppStateListener();
     };
 
     public isOffline = (serverUrl: string): boolean => {
@@ -136,7 +137,7 @@ class EphemeralModeManagerSingleton {
     ) => {
         const nextEnabled = enabledStr === 'true';
         const nextThresholdMs = Math.max(0, Number(timeoutStr ?? '0')) * 1000;
-        const nextPurgeThresholdMs = Math.max(0, Number(purgeHoursStr ?? '0')) * 1000;// 3600 * 1000;
+        const nextPurgeThresholdMs = Math.max(0, Number(purgeHoursStr ?? '0')) * 3600 * 1000;
         const wasActive = this.trackedServers.get(serverUrl)?.kind === 'mem';
 
         if (nextEnabled && !wasActive) {
