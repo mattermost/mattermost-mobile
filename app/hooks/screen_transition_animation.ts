@@ -40,10 +40,10 @@ export const useScreenTransitionAnimation = (animated: boolean = true) => {
                     // Freeze the animation at its current value so the UI thread doesn't
                     // race to completion while the app is backgrounded.
                     cancelAnimation(translateX);
-                } else if (state === 'active' && translateX.value !== 0) {
-                    translateX.value = latestRef.current.shouldAnimate
-                        ? withTiming(0, {duration: animationDuration})
-                        : 0;
+                } else if (state === 'active') {
+                    cancelAnimation(translateX);
+                    translateX.value = latestRef.current.width;
+                    translateX.value = latestRef.current.shouldAnimate ? withTiming(0, {duration: animationDuration}) : 0;
                 }
             });
 
