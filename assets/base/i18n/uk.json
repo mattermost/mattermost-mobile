@@ -1175,6 +1175,7 @@
   "playbooks.playbook_run.status_update_due": "Оновлення очікується\n{time}",
   "playbooks.playbook_run.status_update_finished": "Завершено о\n{time}",
   "playbooks.playbook_run.status_update_overdue": "Оновлення запізнилося\n{time}",
+  "playbooks.playbook_run.tasks": "Завдання",
   "playbooks.playbook_run.title": "Контрольний список Playbook",
   "playbooks.playbooks_runs.title": "Контрольні списки з Playbook",
   "playbooks.post_update.confirm.cancel": "Скасувати",
