@@ -42,7 +42,6 @@ export const useScreenTransitionAnimation = (animated: boolean = true) => {
                     cancelAnimation(translateX);
                 } else if (state === 'active') {
                     cancelAnimation(translateX);
-                    translateX.value = latestRef.current.width;
                     translateX.value = latestRef.current.shouldAnimate ? withTiming(0, {duration: animationDuration}) : 0;
                 }
             });
