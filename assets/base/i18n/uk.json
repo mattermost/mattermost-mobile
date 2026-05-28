@@ -40,6 +40,7 @@
   "agents.tool_call.processing": "Обробка...",
   "agents.tool_call.reject": "Відхилити",
   "agents.tool_call.response": "Відповіcти",
+  "agents.tool_call.review_tool_response": "Переглянути відповідь інструмента",
   "agents.tool_call.status.rejected": "Відхилено",
   "agents.tool_call.submitting": "Відправлення...",
   "alert.channel_deleted.description": "Канал {displayName} було заархівовано.",
