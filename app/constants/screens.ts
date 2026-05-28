@@ -82,6 +82,7 @@ const SETTINGS_NOTIFICATION_PUSH = 'settings_notification_push';
 const SETTINGS_NOTIFICATION_CALL = 'settings_notification_call';
 const SSO = 'sso';
 const TABLE = 'table';
+const MM_BLOCKS_CONTENT = 'mm_blocks_content';
 const TEAM_SELECTOR_LIST = 'team_selector_list';
 const TERMS_OF_SERVICE = 'terms_of_service';
 const THREAD = 'thread';
@@ -169,6 +170,7 @@ export default {
     SETTINGS_NOTIFICATION_CALL,
     SSO,
     TABLE,
+    MM_BLOCKS_CONTENT,
     TEAM_SELECTOR_LIST,
     TERMS_OF_SERVICE,
     THREAD,

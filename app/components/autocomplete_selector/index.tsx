@@ -48,6 +48,11 @@ type AutoCompleteSelectorProps = {
     isMultiselect?: boolean;
     testID: string;
     location: AvailableScreens;
+
+    // Interim solution not to rewrite this component nor
+    // break any existing features that rely on it, until
+    // we apply blocks in all integration surfaces.
+    omitMargins?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -169,6 +174,7 @@ function AutoCompleteSelector({
     isMultiselect = false,
     testID,
     location,
+    omitMargins = false,
 }: AutoCompleteSelectorProps) {
     const intl = useIntl();
     const theme = useTheme();
@@ -231,7 +237,7 @@ function AutoCompleteSelector({
     }, [dataSource, teammateNameDisplay, intl, options, selected, serverUrl]);
 
     return (
-        <View style={style.container}>
+        <View style={[style.container, omitMargins && {marginBottom: 0, marginRight: 0, marginTop: 0}]}>
             {Boolean(label) && (
                 <Label
                     label={label!}

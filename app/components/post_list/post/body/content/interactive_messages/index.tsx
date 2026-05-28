@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 
 import {handleGotoLocation} from '@actions/remote/command';
 import {postActionWithCookie} from '@actions/remote/integrations';
-import BlockRenderer, {type ActionHandler} from '@components/block_renderer/block_renderer';
+import {BlockRenderer, type ActionHandler} from '@components/block_renderer';
 import {getPostInteractiveIntegrationFormat, translatePostProps} from '@components/block_renderer/translation';
 import {useServerUrl} from '@context/server';
 
@@ -15,30 +15,29 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     channelId: string;
-    layoutWidth?: number;
     location: AvailableScreens;
     post: PostModel;
     theme: Theme;
 };
 
-const InteractiveMessages = ({channelId, layoutWidth, location, post, theme}: Props) => {
+const InteractiveMessages = ({channelId, location, post, theme}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const props = post.props as Record<string, unknown> | undefined;
     const mmBlocksActionsProp = props?.mm_blocks_actions;
-    const mmBlocksActionsCookie = typeof mmBlocksActionsProp === 'string' ? mmBlocksActionsProp : undefined;
+    const mmBlocksActionCookie = typeof mmBlocksActionsProp === 'string' ? mmBlocksActionsProp : undefined;
+    const integrationFormat = getPostInteractiveIntegrationFormat(props ?? {});
 
     const blocks = useMemo(() => {
         return translatePostProps(props ?? {});
     }, [props]);
 
     const handleAction: ActionHandler = useCallback(async (actionId, selectedOption, query, attachmentCookie) => {
-        const integrationFormat = getPostInteractiveIntegrationFormat(props ?? {});
         let actionCookie = '';
         if (integrationFormat === 'attachment') {
             actionCookie = attachmentCookie ?? '';
         } else {
-            actionCookie = mmBlocksActionsCookie ?? '';
+            actionCookie = mmBlocksActionCookie ?? '';
         }
         const {data, error} = await postActionWithCookie(
             serverUrl,
@@ -52,7 +51,7 @@ const InteractiveMessages = ({channelId, layoutWidth, location, post, theme}: Pr
         if (!error && data?.goto_location) {
             handleGotoLocation(serverUrl, intl, data.goto_location);
         }
-    }, [intl, mmBlocksActionsCookie, post.id, props, serverUrl]);
+    }, [intl, integrationFormat, mmBlocksActionCookie, post.id, serverUrl]);
 
     if (!blocks || blocks.length === 0) {
         return null;
@@ -63,7 +62,10 @@ const InteractiveMessages = ({channelId, layoutWidth, location, post, theme}: Pr
             blocks={blocks}
             channelId={channelId}
             imagesMetadata={post.metadata?.images as Record<string, PostImage> | undefined}
-            layoutWidth={layoutWidth}
+            inlineMarkdownActions={{
+                mmBlocksActionCookie,
+                integrationFormat,
+            }}
             location={location}
             onAction={handleAction}
             postId={post.id}

@@ -1,7 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isMmButtonHexColor, isMmButtonSemanticStyle, parseMmButtonStyle} from './button';
+import {isMmButtonHexColor, isMmButtonSemanticStyle, parseMmButtonStyle, resolveMmButtonColors} from './button';
+
+const theme = {
+    buttonBg: '#145dbf',
+    buttonColor: '#ffffff',
+    centerChannelColor: '#3f4350',
+    errorTextColor: '#d24b4e',
+    onlineIndicator: '#06d6a0',
+} as Theme;
 
 describe('parseMmButtonStyle', () => {
     it('returns undefined when style is omitted', () => {
@@ -39,5 +47,26 @@ describe('isMmButtonHexColor', () => {
     it('identifies hex colors only', () => {
         expect(isMmButtonHexColor('#28a745')).toBe(true);
         expect(isMmButtonHexColor('good')).toBe(false);
+    });
+});
+
+describe('resolveMmButtonColors', () => {
+    it('uses theme button bg for default style (btn-tertiary)', () => {
+        const colors = resolveMmButtonColors(undefined, theme);
+        expect(colors.color).toBe(theme.buttonBg);
+        expect(colors.backgroundColor).toBe('rgba(20,93,191,0.08)');
+    });
+
+    it('uses solid button bg for primary style', () => {
+        const colors = resolveMmButtonColors('primary', theme);
+        expect(colors).toEqual({
+            backgroundColor: theme.buttonBg,
+            color: theme.buttonColor,
+        });
+    });
+
+    it('uses web good color for good style', () => {
+        const colors = resolveMmButtonColors('good', theme);
+        expect(colors.color).toBe('#339970');
     });
 });

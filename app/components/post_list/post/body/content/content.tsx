@@ -42,7 +42,6 @@ const Content = ({isReplyPost, layoutWidth, location, mmBlocksEnabled, post, the
         return (
             <InteractiveMessages
                 channelId={post.channelId}
-                layoutWidth={layoutWidth}
                 location={location}
                 post={post}
                 theme={theme}
