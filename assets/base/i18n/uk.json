@@ -48,6 +48,8 @@
   "ai_rewrite.custom_prompt": "Попросіть ШІ відредагувати повідомлення...",
   "ai_rewrite.error.ok": "Так",
   "ai_rewrite.error.title": "Помилка перезапису ШІ",
+  "ai_rewrite.fix_spelling": "Виправити вимову та написання",
+  "ai_rewrite.generate_prompt": "Попросіть агентів створити повідомлення",
   "alert.channel_deleted.description": "Канал {displayName} було заархівовано.",
   "alert.channel_deleted.title": "Архівний канал",
   "alert.push_proxy.button": "Гаразд",
