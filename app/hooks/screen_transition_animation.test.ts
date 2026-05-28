@@ -219,7 +219,7 @@ describe('useScreenTransitionAnimation', () => {
             expect(mockWithTiming).toHaveBeenCalledWith(0, {duration: expect.any(Number)});
         });
 
-        it('does not restart animation when app returns to active with the screen already at rest', () => {
+        it('does restart animation even when app returns to active with the screen already at rest', () => {
             renderHook(() => useScreenTransitionAnimation(true));
             const focusEffectCallback = mockUseFocusEffect.mock.calls[0][0];
             focusEffectCallback();
@@ -230,7 +230,7 @@ describe('useScreenTransitionAnimation', () => {
             expect(capturedAppStateCallback).toBeDefined();
             capturedAppStateCallback?.('active');
 
-            expect(mockWithTiming).not.toHaveBeenCalled();
+            expect(mockWithTiming).toHaveBeenCalled();
         });
 
         it('removes AppState listener on blur', () => {
