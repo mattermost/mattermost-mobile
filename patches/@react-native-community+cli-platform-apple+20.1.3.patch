@@ -1,11 +1,12 @@
 diff --git a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/getBuildSettings.js b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/getBuildSettings.js
-index df09405..2c81e5d 100644
+index df09405..0efb061 100644
 --- a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/getBuildSettings.js
 +++ b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/getBuildSettings.js
-@@ -48,7 +48,7 @@ async function getBuildSettings(xcodeProject, mode, buildOutput, scheme, target)
+@@ -47,8 +47,7 @@ async function getBuildSettings(xcodeProject, mode, buildOutput, scheme, target)
+       selectedTarget = target;
      }
    }
-   const targetIndex = applicationTargets.indexOf(selectedTarget);
+-  const targetIndex = applicationTargets.indexOf(selectedTarget);
 -  return settings[targetIndex].buildSettings;
 +  return settings.find(s => s.target === selectedTarget).buildSettings;
  }
