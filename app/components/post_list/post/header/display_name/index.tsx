@@ -8,6 +8,7 @@ import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {openUserProfile} from '@utils/navigation';
+import {nonBreakingString} from '@utils/strings';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -112,7 +113,7 @@ const HeaderDisplayName = ({
                         numberOfLines={1}
                         testID='post_header.display_name'
                     >
-                        {displayName}
+                        {nonBreakingString(displayName)}
                     </Text>
                 </View>
                 {showCustomStatusEmoji && (
