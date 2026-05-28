@@ -198,7 +198,8 @@ describe('useScreenTransitionAnimation', () => {
 
             sharedValue.value = 150;
 
-            capturedAppStateCallback!('background');
+            expect(capturedAppStateCallback).toBeDefined();
+            capturedAppStateCallback?.('background');
 
             expect(mockCancelAnimation).toHaveBeenCalledWith(sharedValue);
         });
@@ -209,10 +210,11 @@ describe('useScreenTransitionAnimation', () => {
             focusEffectCallback();
 
             sharedValue.value = 150;
-            capturedAppStateCallback!('background');
+            expect(capturedAppStateCallback).toBeDefined();
+            capturedAppStateCallback?.('background');
             mockWithTiming.mockClear();
 
-            capturedAppStateCallback!('active');
+            capturedAppStateCallback?.('active');
 
             expect(mockWithTiming).toHaveBeenCalledWith(0, {duration: expect.any(Number)});
         });
@@ -225,7 +227,8 @@ describe('useScreenTransitionAnimation', () => {
             sharedValue.value = 0;
             mockWithTiming.mockClear();
 
-            capturedAppStateCallback!('active');
+            expect(capturedAppStateCallback).toBeDefined();
+            capturedAppStateCallback?.('active');
 
             expect(mockWithTiming).not.toHaveBeenCalled();
         });
