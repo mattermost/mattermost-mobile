@@ -12,6 +12,18 @@ import {
     type StateEvent,
 } from '@keyboard/state_machine/types';
 
+const moveStartAction = (snapshot: StateSnapshot, event: StateEvent): ActionUpdates | undefined => {
+    'worklet';
+
+    const height = event.height ?? snapshot.keyboardEventHeight;
+
+    if (event.rawHeight !== undefined) {
+        return calculateKeyboardUpdates(snapshot, height, event.rawHeight);
+    }
+
+    return undefined;
+};
+
 export const keyboardOpenTransitions: StateTransition[] = [
     {
         from: InputContainerStateType.KEYBOARD_OPEN,
@@ -44,33 +56,13 @@ export const keyboardOpenTransitions: StateTransition[] = [
         from: InputContainerStateType.KEYBOARD_OPEN,
         event: StateMachineEventType.KEYBOARD_EVENT_MOVE,
         to: InputContainerStateType.KEYBOARD_OPEN,
-        action: (snapshot: StateSnapshot, event: StateEvent): ActionUpdates | void => {
-            'worklet';
-
-            const height = event.height ?? snapshot.keyboardEventHeight;
-
-            if (event.rawHeight !== undefined) {
-                return calculateKeyboardUpdates(snapshot, height, event.rawHeight);
-            }
-
-            return undefined;
-        },
+        action: moveStartAction,
     },
     {
         from: InputContainerStateType.KEYBOARD_OPEN,
         event: StateMachineEventType.KEYBOARD_EVENT_START,
         to: InputContainerStateType.KEYBOARD_OPEN,
-        action: (snapshot: StateSnapshot, event: StateEvent): ActionUpdates | void => {
-            'worklet';
-
-            const height = event.height ?? snapshot.keyboardEventHeight;
-
-            if (event.rawHeight !== undefined) {
-                return calculateKeyboardUpdates(snapshot, height, event.rawHeight);
-            }
-
-            return undefined;
-        },
+        action: moveStartAction,
     },
     {
         from: InputContainerStateType.KEYBOARD_OPEN,
