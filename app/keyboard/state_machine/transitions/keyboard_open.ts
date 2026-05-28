@@ -58,6 +58,22 @@ export const keyboardOpenTransitions: StateTransition[] = [
     },
     {
         from: InputContainerStateType.KEYBOARD_OPEN,
+        event: StateMachineEventType.KEYBOARD_EVENT_START,
+        to: InputContainerStateType.KEYBOARD_OPEN,
+        action: (snapshot: StateSnapshot, event: StateEvent): ActionUpdates | void => {
+            'worklet';
+
+            const height = event.height ?? snapshot.keyboardEventHeight;
+
+            if (event.rawHeight !== undefined) {
+                return calculateKeyboardUpdates(snapshot, height, event.rawHeight);
+            }
+
+            return undefined;
+        },
+    },
+    {
+        from: InputContainerStateType.KEYBOARD_OPEN,
         event: StateMachineEventType.KEYBOARD_EVENT_END,
         to: InputContainerStateType.KEYBOARD_OPEN,
         guard: (_: StateSnapshot, event: StateEvent): boolean => {
