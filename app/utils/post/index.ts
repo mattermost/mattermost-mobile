@@ -48,6 +48,14 @@ export function isFromWebhook(post: PostModel | Post): boolean {
     return post.props?.from_webhook === 'true';
 }
 
+export function isFromBot(post: PostModel | Post): boolean {
+    return post.props?.from_bot === 'true';
+}
+
+export function isFromPlugin(post: PostModel | Post): boolean {
+    return post.props?.from_plugin === 'true';
+}
+
 export function isEdited(post: PostModel): boolean {
     return post.editAt > 0;
 }

@@ -126,7 +126,6 @@ const AgentChatContent = ({error, loading}: Props) => {
 
     const {panGesture: emojiPickerGesture} = useInputAccessoryViewGesture();
 
-    // eslint-disable-next-line new-cap
     const nativeGesture = Gesture.Native();
     const composedGesture = useMemo(() => {
         if (emojiPickerGesture) {
