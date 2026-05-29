@@ -14,14 +14,13 @@ import {getStyleSheet} from './styles';
 
 type ImageBlockProps = {
     block: MmImageBlock;
-    postId: string;
     theme: Theme;
 };
 
-export const ImageBlock = ({block, postId, theme}: ImageBlockProps) => {
+export const ImageBlock = ({block, theme}: ImageBlockProps) => {
     const style = getStyleSheet(theme);
     const imagesMetadata = useContext(MmBlocksImagesMetadataContext);
-    const url = typeof block.url === 'string' ? block.url.trim() : '';
+    const url = block.url.trim();
     const metadataKey = removeImageProxyForKey(url);
     const imageMetadata = secureGetFromRecord(imagesMetadata, metadataKey) ?? secureGetFromRecord(imagesMetadata, url);
     const caps = resolveMmImageCaps(block);
@@ -41,12 +40,12 @@ export const ImageBlock = ({block, postId, theme}: ImageBlockProps) => {
     return (
         <View style={[style.imageRow, alignStyle]}>
             <MmBlocksImage
+                key={url}
                 altText={block.alt_text}
                 caps={caps}
                 imageMetadata={imageMetadata}
                 imageStyle={block.image_style}
                 imageUrl={url}
-                postId={postId}
                 theme={theme}
             />
         </View>

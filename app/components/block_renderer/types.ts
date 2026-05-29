@@ -15,7 +15,6 @@ export type ActionHandler = (
 export type BlockSwitchProps = {
     block: MmBlock;
     onAction: ActionHandler;
-    postId: string;
     theme: Theme;
 };
 

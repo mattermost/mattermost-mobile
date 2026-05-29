@@ -18,6 +18,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 export type MmBlocksContextProviderProps = {
     channelId: string;
     location: AvailableScreens;
+    postId: string;
     children: ReactNode;
     childLayout?: 'column' | 'row';
     imagesMetadata?: Record<string, PostImage>;
@@ -29,6 +30,7 @@ export type MmBlocksContextProviderProps = {
 export const MmBlocksContextProvider = ({
     channelId,
     location,
+    postId,
     children,
     childLayout = 'column',
     imagesMetadata,
@@ -42,8 +44,8 @@ export const MmBlocksContextProvider = ({
         [inlineMarkdownActions],
     );
     const renderContextValue = useMemo(
-        () => ({channelId, location}),
-        [channelId, location],
+        () => ({channelId, location, postId}),
+        [channelId, location, postId],
     );
 
     return (
@@ -66,6 +68,7 @@ export const MmBlocksContextProvider = ({
 export type MmBlocksExpandedContentPayload = {
     channelId: string;
     location: AvailableScreens;
+    postId: string;
     childLayout: 'column' | 'row';
     renderContent: () => ReactNode;
     imagesMetadata?: Record<string, PostImage>;

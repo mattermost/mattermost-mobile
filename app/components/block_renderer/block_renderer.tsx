@@ -24,6 +24,7 @@ export const BlockRenderer = ({
             imagesMetadata={imagesMetadata}
             inlineMarkdownActions={inlineMarkdownActions}
             location={location}
+            postId={postId}
         >
             <ContainerBlock
                 block={{
@@ -31,7 +32,6 @@ export const BlockRenderer = ({
                     content: blocks,
                 }}
                 onAction={onAction}
-                postId={postId}
                 theme={theme}
             />
         </MmBlocksContextProvider>

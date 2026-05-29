@@ -13,16 +13,14 @@ import {useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint, isEmail} from '@utils/helpers';
-import {parseMmActionMarkdownHref} from '@utils/mm_action_markdown';
 import {openLink} from '@utils/url/links';
 
 type MarkdownLinkProps = {
     children: ReactElement;
-    experimentalNormalizeMarkdownLinks?: string;
+    experimentalNormalizeMarkdownLinks: string;
     href: string;
-    siteURL?: string;
+    siteURL: string;
     onLinkLongPress?: (url?: string) => void;
-    onMmBlocksMarkdownAction?: (actionId: string, query: Record<string, string>) => void;
 }
 
 const messages = defineMessages({
@@ -55,19 +53,14 @@ const parseLinkLiteral = (literal: string) => {
     return parsed.href;
 };
 
-const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL, onLinkLongPress, onMmBlocksMarkdownAction}: MarkdownLinkProps) => {
+const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL, onLinkLongPress}: MarkdownLinkProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const serverUrl = useServerUrl();
-    const mmAction = onMmBlocksMarkdownAction ? parseMmActionMarkdownHref(href) : null;
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
-        if (mmAction && onMmBlocksMarkdownAction) {
-            onMmBlocksMarkdownAction(mmAction.actionId, mmAction.query);
-            return;
-        }
         openLink(href, serverUrl, siteURL ?? '', intl);
-    }, [href, intl, mmAction, onMmBlocksMarkdownAction, serverUrl, siteURL]));
+    }, [href, intl, serverUrl, siteURL]));
 
     const handleLongPress = useCallback(() => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {

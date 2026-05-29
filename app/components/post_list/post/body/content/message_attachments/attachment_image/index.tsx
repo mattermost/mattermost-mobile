@@ -49,11 +49,10 @@ export type Props = {
     layoutWidth?: number;
     location: string;
     postId: string;
-    imageStyle?: 'default' | 'person';
     theme: Theme;
 }
 
-const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId, imageStyle, theme}: Props) => {
+const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId, theme}: Props) => {
     const galleryIdentifier = `${postId}-AttachmentImage-${location}`;
     const [error, setError] = useState(false);
     const fileId = useRef<string | null>(null);
@@ -111,7 +110,7 @@ const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId
                         <ProgressiveImage
                             forwardRef={ref}
                             id={fileId.current}
-                            imageStyle={[style.attachmentMargin, imageStyle === 'person' && {borderRadius: width / 2}]}
+                            imageStyle={[style.attachmentMargin]}
                             imageUri={imageUrl}
                             onError={onError}
                             contentFit='contain'

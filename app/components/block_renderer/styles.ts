@@ -7,7 +7,7 @@ import {getStatusColors} from '@utils/message_attachment';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-export const MM_CONTAINER_GAP_PX: Record<'small' | 'medium' | 'large' | 'xlarge', number> = {
+const MM_CONTAINER_GAP_PX: Record<'small' | 'medium' | 'large' | 'xlarge', number> = {
     small: 8,
     medium: 12,
     large: 16,
@@ -43,9 +43,6 @@ export function containerGapStyle(gap: MmContainerBlock['gap'] | undefined): Vie
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const STATUS_COLORS = getStatusColors(theme);
     return {
-        root: {
-            gap: 12,
-        },
         textSubtle: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
         },

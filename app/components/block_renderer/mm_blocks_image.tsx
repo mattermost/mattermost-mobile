@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {type ImageLoadEventData} from 'expo-image';
-import React, {useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useContext, useMemo, useRef, useState} from 'react';
 import {Pressable, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SvgUri} from 'react-native-svg';
@@ -36,7 +36,6 @@ export type MmBlocksImageProps = {
     imageMetadata?: PostImage;
     imageStyle?: 'default' | 'person';
     imageUrl: string;
-    postId: string;
     theme: Theme;
 };
 
@@ -52,10 +51,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderWidth: 1,
         justifyContent: 'center',
     },
-    svg: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
-        borderRadius: 8,
-    },
 }));
 
 const MmBlocksImageContent = ({
@@ -65,26 +60,33 @@ const MmBlocksImageContent = ({
     imageMetadata,
     imageStyle = 'default',
     imageUrl,
-    postId,
     theme,
 }: MmBlocksImageContentProps) => {
     const layoutWidth = useContext(MmBlocksLayoutWidthContext);
-    const {location} = useContext(MmBlocksRenderContext)!;
+    const {location, postId} = useContext(MmBlocksRenderContext)!;
     const interactionsEnabled = useContext(MmBlocksInteractionContext);
     const galleryIdentifier = `${postId}-MmBlocksImage-${location}`;
     const isTablet = useIsTablet();
     const viewPortWidth = getViewPortWidth(false, isTablet);
     const style = getStyleSheet(theme);
     const [loadError, setLoadError] = useState(false);
-    const [layout, setLayout] = useState<MmBlocksImageLayout>(() => (
-        computeMmBlocksImageLayout(caps, layoutWidth, imageMetadata, viewPortWidth)
-    ));
+    const [intrinsicSize, setIntrinsicSize] = useState<{width: number; height: number} | undefined>(undefined);
 
     const isSvg = isSVGImage(imageMetadata, imageUrl);
 
-    useEffect(() => {
-        setLayout(computeMmBlocksImageLayout(caps, layoutWidth, imageMetadata, viewPortWidth));
-    }, [caps, imageMetadata, layoutWidth, viewPortWidth]);
+    const layout = useMemo((): MmBlocksImageLayout => {
+        if (intrinsicSize && !imageMetadata?.width && !imageMetadata?.height) {
+            return refineMmBlocksImageLayoutFromIntrinsic(
+                intrinsicSize.width,
+                intrinsicSize.height,
+                caps,
+                layoutWidth,
+                viewPortWidth,
+            );
+        }
+
+        return computeMmBlocksImageLayout(caps, layoutWidth, imageMetadata, viewPortWidth);
+    }, [caps, imageMetadata, intrinsicSize, layoutWidth, viewPortWidth]);
 
     const fileId = useRef(`uid-mm-blocks-image-${urlSafeBase64Encode(imageUrl)}`);
 
@@ -130,14 +132,8 @@ const MmBlocksImageContent = ({
         if (imageMetadata?.width && imageMetadata?.height) {
             return;
         }
-        setLayout(refineMmBlocksImageLayoutFromIntrinsic(
-            intrinsicWidth,
-            intrinsicHeight,
-            caps,
-            layoutWidth,
-            viewPortWidth,
-        ));
-    }, [caps, imageMetadata?.height, imageMetadata?.width, layoutWidth, viewPortWidth]);
+        setIntrinsicSize({width: intrinsicWidth, height: intrinsicHeight});
+    }, [imageMetadata?.height, imageMetadata?.width]);
 
     if (!isValidUrl(imageUrl) || !displaySrc || loadError || (imageMetadata && isGifTooLarge(imageMetadata))) {
         return (
@@ -154,7 +150,7 @@ const MmBlocksImageContent = ({
                     uri={displaySrc}
                     width={layout.width}
                     height={layout.height}
-                    style={[style.svg, dimensionsStyle, {borderRadius: imageBorderRadius}]}
+                    style={[dimensionsStyle, {borderRadius: imageBorderRadius}]}
                     onError={onError}
                 />
             );
@@ -186,16 +182,6 @@ const MmBlocksImageContent = ({
     ) : (
         renderImage()
     );
-
-    if (isSvg) {
-        return (
-            <GalleryInit galleryIdentifier={galleryIdentifier}>
-                <View style={dimensionsStyle}>
-                    {imageContent}
-                </View>
-            </GalleryInit>
-        );
-    }
 
     return (
         <GalleryInit galleryIdentifier={galleryIdentifier}>

@@ -82,7 +82,6 @@ export type MarkdownProps = {
     theme: Theme;
     value?: string;
     onLinkLongPress?: (url?: string) => void;
-    onMmBlocksMarkdownAction?: (actionId: string, query: Record<string, string>) => void;
 
     /** Encrypted mm_blocks_actions cookie from post.props; used with allowInlineActions for mmaction:// links. */
     mmBlocksActionCookie?: string;
@@ -195,7 +194,6 @@ const Markdown = ({
     value = '',
     baseParagraphStyle,
     onLinkLongPress,
-    onMmBlocksMarkdownAction,
     mmBlocksActionCookie,
     integrationFormat,
     isUnsafeLinksPost,
@@ -523,17 +521,6 @@ const Markdown = ({
                     </InlineActionButton>
                 );
             }
-            if (onMmBlocksMarkdownAction) {
-                return (
-                    <MarkdownLink
-                        href={href}
-                        onLinkLongPress={onLinkLongPress}
-                        onMmBlocksMarkdownAction={onMmBlocksMarkdownAction}
-                    >
-                        {children}
-                    </MarkdownLink>
-                );
-            }
             return <Text>{children}</Text>;
         }
 
@@ -541,12 +528,11 @@ const Markdown = ({
             <MarkdownLink
                 href={href}
                 onLinkLongPress={onLinkLongPress}
-                onMmBlocksMarkdownAction={onMmBlocksMarkdownAction}
             >
                 {children}
             </MarkdownLink>
         );
-    }, [allowInlineActions, baseTextStyle, disableLinks, integrationFormat, isUnsafeLinksPost, mmBlocksActionCookie, onLinkLongPress, onMmBlocksMarkdownAction, postId, renderText]);
+    }, [allowInlineActions, baseTextStyle, disableLinks, integrationFormat, isUnsafeLinksPost, mmBlocksActionCookie, onLinkLongPress, postId, renderText]);
 
     const renderList = useCallback(({children, start, tight, type}: any) => {
         return (

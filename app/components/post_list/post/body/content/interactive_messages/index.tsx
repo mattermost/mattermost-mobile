@@ -32,6 +32,13 @@ const InteractiveMessages = ({channelId, location, post, theme}: Props) => {
         return translatePostProps(props ?? {});
     }, [props]);
 
+    const inlineMarkdownActions = useMemo(() => {
+        return {
+            mmBlocksActionCookie,
+            integrationFormat,
+        };
+    }, [mmBlocksActionCookie, integrationFormat]);
+
     const handleAction: ActionHandler = useCallback(async (actionId, selectedOption, query, attachmentCookie) => {
         let actionCookie = '';
         if (integrationFormat === 'attachment') {
@@ -62,10 +69,7 @@ const InteractiveMessages = ({channelId, location, post, theme}: Props) => {
             blocks={blocks}
             channelId={channelId}
             imagesMetadata={post.metadata?.images as Record<string, PostImage> | undefined}
-            inlineMarkdownActions={{
-                mmBlocksActionCookie,
-                integrationFormat,
-            }}
+            inlineMarkdownActions={inlineMarkdownActions}
             location={location}
             onAction={handleAction}
             postId={post.id}

@@ -22,25 +22,27 @@ export const ButtonElement = ({element, onAction, theme}: ButtonElementProps) =>
     const [isExecuting, setIsExecuting] = useState(false);
     const interactionsEnabled = useContext(MmBlocksInteractionContext);
     const isPrimary = element.style === 'primary';
+    const isDisabled = element.disabled === true || !interactionsEnabled || isExecuting;
     const buttonColors = resolveMmButtonColors(element.style, theme);
+    const useStyledTertiary = !isPrimary && !isDisabled;
 
     const backgroundStyle = useMemo((): StyleProp<ViewStyle> => {
-        if (isPrimary) {
+        if (!useStyledTertiary) {
             return {};
         }
 
         return [
             {backgroundColor: buttonColors.backgroundColor},
         ];
-    }, [buttonColors.backgroundColor, isPrimary]);
+    }, [buttonColors.backgroundColor, useStyledTertiary]);
 
     const textStyle = useMemo((): StyleProp<TextStyle> => {
-        if (isPrimary) {
+        if (!useStyledTertiary) {
             return undefined;
         }
 
         return {color: buttonColors.color};
-    }, [buttonColors.color, isPrimary]);
+    }, [buttonColors.color, useStyledTertiary]);
 
     const handlePress = usePreventDoubleTap(useCallback(async () => {
         if (!element.text || !element.action_id) {
@@ -64,10 +66,10 @@ export const ButtonElement = ({element, onAction, theme}: ButtonElementProps) =>
             text={element.text}
             testID={`mm_blocks.button.${element.action_id}`}
             onPress={handlePress}
-            disabled={element.disabled === true || !interactionsEnabled || isExecuting}
+            disabled={isDisabled}
             showLoader={isExecuting}
             size='m'
-            emphasis={isPrimary ? 'primary' : 'tertiary'}
+            emphasis={isPrimary || isDisabled ? 'primary' : 'tertiary'}
             backgroundStyle={backgroundStyle}
             textStyle={textStyle}
         />

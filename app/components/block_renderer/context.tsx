@@ -8,6 +8,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 export type MmBlocksRenderContextValue = {
     channelId: string;
     location: AvailableScreens;
+    postId: string;
 };
 
 /** Channel and screen location for MM blocks children (markdown, gallery, autocomplete). */

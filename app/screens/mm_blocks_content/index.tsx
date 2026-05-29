@@ -77,6 +77,7 @@ const MmBlocksContent = () => {
             <MmBlocksContextProvider
                 channelId={payload.channelId}
                 location={payload.location}
+                postId={payload.postId}
                 imagesMetadata={payload.imagesMetadata}
                 inlineMarkdownActions={payload.inlineMarkdownActions}
                 layoutWidth={layoutWidth}

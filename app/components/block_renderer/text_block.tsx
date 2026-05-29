@@ -10,13 +10,12 @@ import {getStyleSheet} from './styles';
 
 type TextBlockProps = {
     block: MmTextBlock;
-    postId: string;
     theme: Theme;
 };
 
-export const TextBlock = ({block, postId, theme}: TextBlockProps) => {
+export const TextBlock = ({block, theme}: TextBlockProps) => {
     const style = getStyleSheet(theme);
-    const {channelId, location} = useContext(MmBlocksRenderContext)!;
+    const {channelId, location, postId} = useContext(MmBlocksRenderContext)!;
     const {mmBlocksActionCookie, integrationFormat} = useContext(MmBlocksInlineMarkdownActionsContext);
     const interactionsEnabled = useContext(MmBlocksInteractionContext);
 

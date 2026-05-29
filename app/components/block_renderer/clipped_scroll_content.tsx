@@ -5,11 +5,12 @@ import {LinearGradient} from 'expo-linear-gradient';
 import React, {useCallback, useContext, useMemo, useState, type ReactNode} from 'react';
 import {type LayoutChangeEvent, Platform, Pressable, ScrollView, View} from 'react-native';
 
-import {MmBlocksInteractionContext} from '@components/block_renderer/context';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import {MmBlocksInteractionContext} from './context';
 
 type ClippedScrollContentProps = {
     children: ReactNode;

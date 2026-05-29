@@ -4,7 +4,6 @@
 import React, {useCallback, useContext, useMemo, useState} from 'react';
 import {Pressable, View, type LayoutChangeEvent, type ViewStyle} from 'react-native';
 
-import ClippedScrollContent from '@components/clipped_scroll_content';
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {usePreventDoubleTap} from '@hooks/utils';
@@ -12,6 +11,7 @@ import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 
 import {ButtonElement} from './button_element';
+import ClippedScrollContent from './clipped_scroll_content';
 import {MmBlocksChildLayoutContext, MmBlocksImagesMetadataContext, MmBlocksInlineMarkdownActionsContext, MmBlocksInteractionContext, MmBlocksLayoutWidthContext, MmBlocksRenderContext} from './context';
 import {DividerBlock} from './divider_block';
 import {ImageBlock} from './image_block';
@@ -27,13 +27,12 @@ import {TextBlock} from './text_block';
 
 import type {BlockSwitchProps} from './types';
 
-export const BlockSwitch = ({block, onAction, postId, theme}: BlockSwitchProps) => {
+export const BlockSwitch = ({block, onAction, theme}: BlockSwitchProps) => {
     switch (block.type) {
         case 'text':
             return (
                 <TextBlock
                     block={block}
-                    postId={postId}
                     theme={theme}
                 />
             );
@@ -41,7 +40,6 @@ export const BlockSwitch = ({block, onAction, postId, theme}: BlockSwitchProps) 
             return (
                 <ImageBlock
                     block={block}
-                    postId={postId}
                     theme={theme}
                 />
             );
@@ -52,7 +50,6 @@ export const BlockSwitch = ({block, onAction, postId, theme}: BlockSwitchProps) 
                 <ColumnSetBlock
                     block={block}
                     onAction={onAction}
-                    postId={postId}
                     theme={theme}
                 />
             );
@@ -61,7 +58,6 @@ export const BlockSwitch = ({block, onAction, postId, theme}: BlockSwitchProps) 
                 <ContainerBlock
                     block={block}
                     onAction={onAction}
-                    postId={postId}
                     theme={theme}
                 />
             );
@@ -70,7 +66,6 @@ export const BlockSwitch = ({block, onAction, postId, theme}: BlockSwitchProps) 
                 <CollapsibleBlock
                     block={block}
                     onAction={onAction}
-                    postId={postId}
                     theme={theme}
                 />
             );
@@ -175,40 +170,29 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
             return;
         }
 
-        const items = block.content.map((item, i) => (
-            <BlockSwitch
-                key={i}
-                block={item}
-                {...switchProps}
-            />
-        ));
+        const expandedBlock: MmContainerBlock = {
+            ...block,
+            max_height: undefined,
+        };
 
         const payload: MmBlocksExpandedContentPayload = {
             channelId: renderContext.channelId,
             location: renderContext.location,
+            postId: renderContext.postId,
             imagesMetadata,
             inlineMarkdownActions,
             childLayout: containerChildLayout,
             renderContent: () => (
-                <View style={[style.container, flowStyle, gapStyle]}>
-                    {items}
-                </View>
+                <ContainerBlock
+                    block={expandedBlock}
+                    {...switchProps}
+                />
             ),
         };
 
         CallbackStore.setCallback(payload);
         navigateToScreen(Screens.MM_BLOCKS_CONTENT);
-    }, [
-        block.content,
-        containerChildLayout,
-        flowStyle,
-        gapStyle,
-        imagesMetadata,
-        inlineMarkdownActions,
-        renderContext,
-        style.container,
-        switchProps,
-    ]));
+    }, [block, containerChildLayout, imagesMetadata, inlineMarkdownActions, renderContext, switchProps]));
 
     if (!block.content || block.content.length === 0) {
         return null;
