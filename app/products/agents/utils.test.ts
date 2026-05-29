@@ -227,9 +227,9 @@ describe('getToolApprovalStage', () => {
         expect(getToolApprovalStage(post, [pendingToolCall])).toBe(ToolApprovalStage.Call);
     });
 
-    it('should return null when no pending tools and no pending result', () => {
+    it('should return Done when no pending tools and no pending result', () => {
         const post = TestHelper.fakePost({props: {}});
-        expect(getToolApprovalStage(post, [acceptedToolCall])).toBeNull();
+        expect(getToolApprovalStage(post, [acceptedToolCall])).toBe(ToolApprovalStage.Done);
     });
 
     it('should return Result even when there are pending tool calls', () => {

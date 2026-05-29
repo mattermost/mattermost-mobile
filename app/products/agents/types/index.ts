@@ -10,17 +10,21 @@ export const ToolCallStatus = {
     Rejected: 2,
     Error: 3,
     Success: 4,
+    AutoApproved: 5,
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
 export type ToolCallStatus = typeof ToolCallStatus[keyof typeof ToolCallStatus];
 
 /**
- * Tool approval stage values
+ * Tool approval stage values. Mirrors the server-computed approval state for
+ * a post. 'done' means no user decision remains (auto-run, keep private, all
+ * rejected, or no tool_use blocks at all) — render no buttons.
  */
 export const ToolApprovalStage = {
     Call: 'call',
     Result: 'result',
+    Done: 'done',
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
@@ -78,17 +82,31 @@ export interface StreamingState {
     annotations: Annotation[]; // Citations/annotations for the post
 }
 
-/**
- * AI thread data structure from the server
- */
+// Normalised mobile shape: `id` is always the root post id (see fetchAIThreads).
 export interface AIThread {
-    id: string; // Post ID
-    message: string; // Preview text
-    title: string; // Thread title
-    channel_id: string; // DM channel with bot
-    reply_count: number; // Number of replies
-    update_at: number; // Last update timestamp
+    id: string;
+    message: string;
+    title: string;
+    channel_id: string;
+    reply_count: number;
+    update_at: number;
+
+    // Raw plugin >= 2.0 fields, surfaced for callers that need them.
+    root_post_id?: string | null;
+    bot_id?: string;
 }
+
+// Wire-format AI thread before normalisation. plugin < 2.0 omits root_post_id.
+export type RawAIThread = {
+    id: string;
+    message?: string;
+    title?: string;
+    channel_id?: string | null;
+    reply_count?: number;
+    update_at?: number;
+    root_post_id?: string | null;
+    bot_id?: string;
+};
 
 /**
  * Channel access level values
@@ -139,13 +157,17 @@ export interface AIBotsResponse {
     allowUnsafeLinks: boolean;
 }
 
-// ============================================================================
-// Rewrite Types
-// ============================================================================
+export {
+    BlockType,
+    ToolCallStatusString,
+    type Citation,
+    type ContentBlock,
+    type ConversationResponse,
+    type Turn,
+    type TurnRole,
+    type WebSearchContext,
+} from './conversation';
 
 export type {Agent} from './api';
 
-/**
- * Available rewrite action types
- */
 export type RewriteAction = 'shorten' | 'elaborate' | 'improve_writing' | 'fix_spelling' | 'simplify' | 'summarize' | 'custom';

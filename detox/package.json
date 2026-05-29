@@ -31,7 +31,7 @@
     "jest-cli": "29.7.0",
     "jest-html-reporters": "3.1.7",
     "jest-junit": "16.0.0",
-    "jest-stare": "2.5.2",
+    "jest-stare": "2.5.3",
     "junit-report-merger": "7.0.0",
     "moment-timezone": "0.5.46",
     "recursive-readdir": "2.2.3",

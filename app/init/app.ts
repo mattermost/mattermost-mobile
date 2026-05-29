@@ -9,6 +9,7 @@ import ManagedApp from '@init/managed_app';
 import PushNotifications from '@init/push_notifications';
 import GlobalEventHandler from '@managers/global_event_handler';
 import NetworkManager from '@managers/network_manager';
+import OfflinePersistenceManager from '@managers/offline_persistence_manager';
 import SecurityManager from '@managers/security_manager';
 import SessionManager from '@managers/session_manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -42,6 +43,10 @@ export async function initialize() {
 
         await DatabaseManager.init(serverUrls);
         await NetworkManager.init(serverCredentials);
+
+        // OfflinePersistenceManager init runs before WS init so any pending wipes
+        // complete before WebSocket clients start populating server databases.
+        await OfflinePersistenceManager.init(serverCredentials);
         await WebsocketManager.init(serverCredentials);
     }
 
@@ -68,4 +73,5 @@ export function cleanup() {
     CallsManager.cleanup();
     CallsNative.cleanup();
     PushNotifications.cleanup();
+    OfflinePersistenceManager.cleanup();
 }

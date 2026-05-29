@@ -112,24 +112,6 @@ const SSO = ({
         setLoginError(errorMessage);
     }, [intl]);
 
-    const doSSOLogin = async (bearerToken: string, csrfToken: string) => {
-        const result: LoginActionResponse = await ssoLogin(serverUrl, serverDisplayName, config.DiagnosticId!, bearerToken, csrfToken, serverPreauthSecret);
-        if (result?.error && result.failed) {
-            onLoadEndError(result.error);
-            return;
-        }
-        goToHome(result.error);
-    };
-
-    const doSSOCodeExchange = async (loginCode: string, samlChallenge: {codeVerifier: string; state: string}) => {
-        const result: LoginActionResponse = await ssoLoginWithCodeExchange(serverUrl, serverDisplayName, config.DiagnosticId!, loginCode, samlChallenge, serverPreauthSecret);
-        if (result?.error && result.failed) {
-            onLoadEndError(result.error);
-            return;
-        }
-        goToHome(result.error);
-    };
-
     const goToHome = useCallback((error?: unknown) => {
         const hasError = launchError || Boolean(error);
         navigateToScreen(Screens.HOME, {extra, launchError: hasError, launchType, serverUrl}, true);
@@ -150,6 +132,24 @@ const SSO = ({
         goToHome();
         return true;
     }, [serverUrl, serverDisplayName, config.DiagnosticId, config.IntuneScope, goToHome, onLoadEndError]);
+
+    const doSSOLogin = useCallback(async (bearerToken: string, csrfToken: string) => {
+        const result: LoginActionResponse = await ssoLogin(serverUrl, serverDisplayName, config.DiagnosticId!, bearerToken, csrfToken, serverPreauthSecret);
+        if (result?.error && result.failed) {
+            onLoadEndError(result.error);
+            return;
+        }
+        goToHome(result.error);
+    }, [config.DiagnosticId, goToHome, onLoadEndError, serverDisplayName, serverPreauthSecret, serverUrl]);
+
+    const doSSOCodeExchange = useCallback(async (loginCode: string, samlChallenge: {codeVerifier: string; state: string}) => {
+        const result: LoginActionResponse = await ssoLoginWithCodeExchange(serverUrl, serverDisplayName, config.DiagnosticId!, loginCode, samlChallenge, serverPreauthSecret);
+        if (result?.error && result.failed) {
+            onLoadEndError(result.error);
+            return;
+        }
+        goToHome(result.error);
+    }, [config.DiagnosticId, goToHome, onLoadEndError, serverDisplayName, serverPreauthSecret, serverUrl]);
 
     const animatedStyles = useScreenTransitionAnimation(!isModal);
 
