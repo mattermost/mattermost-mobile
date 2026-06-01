@@ -20,6 +20,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {logError} from '@utils/log';
 import {changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {isCustomFieldSamlLinked} from '@utils/user';
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
@@ -41,6 +42,12 @@ const styles = StyleSheet.create({
         marginVertical: 32,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    saveText: {
+        ...typography('Body', 200),
+    },
+    pressed: {
+        opacity: 0.7,
     },
 });
 
@@ -256,11 +263,12 @@ const EditProfile = ({
                         <Pressable
                             onPress={submitUser}
                             disabled={!canSave}
+                            style={({pressed}) => pressed && styles.pressed}
                         >
                             <FormattedText
                                 id='mobile.account.settings.save'
                                 defaultMessage='Save'
-                                style={{color: canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.32), fontSize: 16}}
+                                style={[styles.saveText, {color: canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.32)}]}
                             />
                         </Pressable>
                     </View>

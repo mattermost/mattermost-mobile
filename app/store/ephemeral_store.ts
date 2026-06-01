@@ -209,11 +209,25 @@ class EphemeralStoreSingleton {
             const nextState = new Set(stateSubject.value);
             nextState.delete(postId);
             stateSubject.next(nextState);
+            this.removeRecentlyUnsavedSavedPostSubject(serverUrl, postId);
             delete serverPosts[postId];
             if (!Object.keys(serverPosts).length) {
                 delete this.recentlyUnsavedSavedPosts[serverUrl];
             }
         }, TIME_TO_CLEAR_RECENTLY_UNSAVED_SAVED_POSTS);
+    };
+
+    private removeRecentlyUnsavedSavedPostSubject = (serverUrl: string, postId: string) => {
+        const serverSubjects = this.recentlyUnsavedSavedPostSubjects[serverUrl];
+        if (!serverSubjects?.[postId]) {
+            return;
+        }
+
+        serverSubjects[postId]!.complete();
+        delete serverSubjects[postId];
+        if (!Object.keys(serverSubjects).length) {
+            delete this.recentlyUnsavedSavedPostSubjects[serverUrl];
+        }
     };
 
     clearRecentlyUnsavedSavedPost = (serverUrl: string, postId: string) => {
@@ -233,6 +247,8 @@ class EphemeralStoreSingleton {
                 delete this.recentlyUnsavedSavedPosts[serverUrl];
             }
         }
+
+        this.removeRecentlyUnsavedSavedPostSubject(serverUrl, postId);
     };
 
     isRecentlyUnsavedSavedPost = (serverUrl: string, postId: string) => {

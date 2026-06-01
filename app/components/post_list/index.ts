@@ -36,7 +36,7 @@ const enhancedWithoutPosts = withObservables(['channelId'], ({database, channelI
     };
 });
 
-const enhanced = withObservables(['posts'], ({database, posts, serverUrl}: {posts: PostModel[]; serverUrl?: string} & WithDatabaseArgs) => {
+const enhanced = withObservables(['posts', 'serverUrl'], ({database, posts, serverUrl}: {posts: PostModel[]; serverUrl?: string} & WithDatabaseArgs) => {
     const postIds = posts.map((p) => p.id);
     return {
         savedPostIds: observeSavedPostsByIds(database, postIds, serverUrl),
