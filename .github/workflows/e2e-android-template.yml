@@ -32,6 +32,16 @@ on:
         description: "Run Android tests"
         required: true
         type: boolean
+      tests-search-path:
+        description: "Directory to search for *.e2e.ts specs; point at a subdir (e.g. the smoke_test dir) to run a subset"
+        required: false
+        type: string
+        default: "detox/e2e/test"
+      parallelism:
+        description: "Number of parallel spec groups to split tests into (must be <= number of spec files)"
+        required: false
+        type: number
+        default: 10
       run-type:
         type: string
         required: false
@@ -129,8 +139,8 @@ jobs:
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
-          parallelism: 10
-          search_path: detox/e2e/test
+          parallelism: ${{ inputs.parallelism }}
+          search_path: ${{ inputs.tests-search-path }}
           device_name: ${{ env.AVD_NAME }}
           device_os_version: ${{ env.SDK_VERSION }}
 

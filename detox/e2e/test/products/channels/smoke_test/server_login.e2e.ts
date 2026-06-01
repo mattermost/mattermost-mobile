@@ -28,6 +28,12 @@ import {
 import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
+// MM-T4675_2 adds and logs into a second server. Some single-server environments (e.g.
+// Compatibility Matrix Testing, which provisions one server per run) don't provide a distinct
+// SITE_2_URL, so skip that test there. The single-server tests still run.
+const hasSecondServer = Boolean(process.env.SITE_2_URL) && process.env.SITE_2_URL !== process.env.SITE_1_URL;
+const itWithSecondServer = hasSecondServer ? it : it.skip;
+
 describe('Smoke Test - Server Login', () => {
     const serverOneDisplayName = 'Server 1';
     const serverTwoDisplayName = 'Server 2';
@@ -57,7 +63,7 @@ describe('Smoke Test - Server Login', () => {
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
     });
 
-    it('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
+    itWithSecondServer('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
         // # Open server list screen
         await ServerListScreen.open();
         await ServerListScreen.closeTutorial();
