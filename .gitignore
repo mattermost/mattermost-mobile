@@ -154,5 +154,7 @@ node_modules/@mattermost/intune
 .worktrees
 .pi/
 .codex/
-.cursor/
 .planning/
+
+# Editor/backup files
+*.bak

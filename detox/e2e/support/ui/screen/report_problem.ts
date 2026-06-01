@@ -7,7 +7,6 @@ import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
 class ReportProblemScreen {
     testID = {
         reportProblemScreen: 'report_problem.screen',
-        backButton: 'navigation.header.back',
         enableLogAttachmentsToggleOff: 'report_problem.enable_log_attachments.toggled.false.button',
         enableLogAttachmentsToggleOn: 'report_problem.enable_log_attachments.toggled.true.button',
     };

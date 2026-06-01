@@ -44,16 +44,21 @@ function generateUnifiedHtml(platforms) {
                 <td colspan="6" class="not-run-cell">NOT RUN</td>
             </tr>`;
         }
-        const pct = p.tests > 0 ? ((p.passes / p.tests) * 100).toFixed(2) : '0.00';
-        const rowClass = p.failures > 0 ? 'failed' : 'passed';
+        const tests = p.tests ?? 0;
+        const passes = p.passes ?? 0;
+        const failures = p.failures ?? 0;
+        const skipped = p.skipped ?? 0;
+        const errors = p.errors ?? 0;
+        const pct = tests > 0 ? ((passes / tests) * 100).toFixed(2) : '0.00';
+        const rowClass = (failures > 0 || errors > 0) ? 'failed' : 'passed';
         const link = p.reportUrl ? `<a href="${escapeHtml(p.reportUrl)}">${pct}%</a>` : `${pct}%`;
         return `<tr class="${rowClass}">
             <td>${escapeHtml(p.name)}</td>
-            <td>${p.tests}</td>
-            <td>${p.passes}</td>
-            <td>${p.failures}</td>
-            <td>${p.skipped}</td>
-            <td>${p.errors}</td>
+            <td>${tests}</td>
+            <td>${passes}</td>
+            <td>${failures}</td>
+            <td>${skipped}</td>
+            <td>${errors}</td>
             <td>${link}</td>
         </tr>`;
     }).join('\n');
@@ -129,6 +134,10 @@ function main() {
         platforms = JSON.parse(platformDataJson);
     } catch (err) {
         console.error('PLATFORM_DATA is not valid JSON:', err.message);
+        process.exit(1);
+    }
+    if (!Array.isArray(platforms)) {
+        console.error('PLATFORM_DATA must be a JSON array of platform objects');
         process.exit(1);
     }
     const html = generateUnifiedHtml(platforms);

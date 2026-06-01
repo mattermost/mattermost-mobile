@@ -179,7 +179,7 @@ jobs:
         uses: ./.github/actions/prepare-node-deps
 
       - name: Cache Homebrew packages
-        uses: actions/cache@v4
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: |
             ~/Library/Caches/Homebrew
@@ -220,7 +220,7 @@ jobs:
           latency: "500"
 
       - name: Cache detox node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: detox/node_modules
           key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
@@ -235,7 +235,7 @@ jobs:
 
       - name: Cache Detox Framework
         id: detox-framework-cache
-        uses: actions/cache@v4
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ~/Library/Detox/ios
           key: ${{ runner.os }}-${{ runner.arch }}-detox-framework-${{ hashFiles('detox/package-lock.json') }}-xcode-${{ steps.xcode-version.outputs.version }}

@@ -188,7 +188,7 @@ jobs:
       # PR + release workflows share cache. Saves 3-5 min on warm runs by
       # skipping gradle plugin resolution + Maven dep downloads.
       - name: Cache Gradle dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ~/.gradle/caches/modules-2/
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}

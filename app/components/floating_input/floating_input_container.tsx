@@ -199,7 +199,7 @@ const FloatingInputContainer = ({
             style={styles.container}
         >
             <Pressable
-                accessible={Platform.OS === 'ios' ? false : undefined}
+                accessible={Platform.select({ios: false})}
                 onPress={handlePressOnContainer}
                 style={({pressed}) => (pressed ? {opacity: 0.72} : undefined)}
             >
