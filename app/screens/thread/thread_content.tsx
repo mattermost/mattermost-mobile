@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {PortalProvider} from '@gorhom/portal';
+import {PortalHost} from '@gorhom/portal';
 import React from 'react';
 import {StyleSheet} from 'react-native';
 
@@ -49,41 +49,40 @@ const ThreadContent = ({
             tabBarHeight={0}
             enabled={enabled}
         >
-            <PortalProvider>
-                <KeyboardAwarePostDraftContainer
-                    textInputNativeID={THREAD_POST_INPUT_NATIVE_ID}
-                    containerStyle={styles.flex}
-                    renderList={() => (
-                        <>
-                            {includeChannelBanner &&
-                                <ChannelBanner
-                                    channelId={rootPost.channelId}
-                                    isTopItem={true}
-                                    skipHeaderOffset={true}
-                                />
-                            }
-                            <ThreadPostList
-                                rootPost={rootPost}
-                            />
-                        </>
-                    )}
-                >
-                    {scheduledPostCount > 0 &&
+            <KeyboardAwarePostDraftContainer
+                textInputNativeID={THREAD_POST_INPUT_NATIVE_ID}
+                containerStyle={styles.flex}
+                renderList={() => (
+                    <>
+                        {includeChannelBanner &&
+                        <ChannelBanner
+                            channelId={rootPost.channelId}
+                            isTopItem={true}
+                            skipHeaderOffset={true}
+                        />
+                        }
+                        <ThreadPostList
+                            rootPost={rootPost}
+                        />
+                    </>
+                )}
+            >
+                {scheduledPostCount > 0 &&
                     <ScheduledPostIndicator
                         isThread={true}
                         scheduledPostCount={scheduledPostCount}
                     />
-                    }
-                    <PostDraft
-                        channelId={rootPost.channelId}
-                        rootId={rootId}
-                        testID={THREAD_POST_DRAFT_TESTID}
-                        containerHeight={containerHeight}
-                        isChannelScreen={false}
-                        location={Screens.THREAD}
-                    />
-                </KeyboardAwarePostDraftContainer>
-            </PortalProvider>
+                }
+                <PostDraft
+                    channelId={rootPost.channelId}
+                    rootId={rootId}
+                    testID={THREAD_POST_DRAFT_TESTID}
+                    containerHeight={containerHeight}
+                    isChannelScreen={false}
+                    location={Screens.THREAD}
+                />
+            </KeyboardAwarePostDraftContainer>
+            <PortalHost name='autocomplete'/>
         </KeyboardStateProvider>
     );
 };

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PortalHost} from '@gorhom/portal';
 import React, {useState, useRef, useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -354,6 +355,7 @@ export default function ChannelInfoForm({
                         </View>
                     </View>
                 </TouchableWithoutFeedback>
+                <PortalHost name='autocomplete'/>
             </KeyboardAwareScrollView>
             <Autocomplete
                 position={animatedAutocompletePosition}
@@ -364,6 +366,7 @@ export default function ChannelInfoForm({
                 availableSpace={animatedAutocompleteAvailableSpace}
                 shouldDirectlyReact={false}
                 growDown={growDown}
+                usePortal={true}
             />
         </View>
     );

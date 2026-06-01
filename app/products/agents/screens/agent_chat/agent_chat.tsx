@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {PortalProvider} from '@gorhom/portal';
+import {PortalHost} from '@gorhom/portal';
 import {useIsFocused} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
@@ -229,27 +229,26 @@ const AgentChat = ({bots}: Props) => {
                 tabBarHeight={tabBarHeight}
                 enabled={isFocused}
             >
-                <PortalProvider>
-                    <KeyboardAwarePostDraftContainer
-                        textInputNativeID={AGENT_CHAT_INPUT_NATIVE_ID}
-                        containerStyle={[styles.flex, {marginTop}]}
-                        renderList={() => (
-                            <AgentChatContent
-                                loading={loading && bots.length === 0}
-                                error={error}
-                            />
-                        )}
-                    >
-                        <PostDraft
-                            channelId={channelId}
-                            testID={AGENT_CHAT_TESTID}
-                            containerHeight={containerHeight}
-                            isChannelScreen={false}
-                            location={Screens.AGENT_CHAT}
-                            onPostCreated={handlePostCreated}
+                <KeyboardAwarePostDraftContainer
+                    textInputNativeID={AGENT_CHAT_INPUT_NATIVE_ID}
+                    containerStyle={[styles.flex, {marginTop}]}
+                    renderList={() => (
+                        <AgentChatContent
+                            loading={loading && bots.length === 0}
+                            error={error}
                         />
-                    </KeyboardAwarePostDraftContainer>
-                </PortalProvider>
+                    )}
+                >
+                    <PostDraft
+                        channelId={channelId}
+                        testID={AGENT_CHAT_TESTID}
+                        containerHeight={containerHeight}
+                        isChannelScreen={false}
+                        location={Screens.AGENT_CHAT}
+                        onPostCreated={handlePostCreated}
+                    />
+                </KeyboardAwarePostDraftContainer>
+                <PortalHost name='autocomplete'/>
             </KeyboardStateProvider>
         </SafeAreaView>
     );

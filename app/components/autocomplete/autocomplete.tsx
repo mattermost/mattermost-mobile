@@ -230,7 +230,7 @@ const Autocomplete = ({
 
     if (usePortal && Platform.OS === 'android') {
         return (
-            <Portal>
+            <Portal hostName='autocomplete'>
                 {component}
             </Portal>
         );
