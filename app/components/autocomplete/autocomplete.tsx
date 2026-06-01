@@ -132,9 +132,10 @@ const Autocomplete = ({
     }, [defaultMaxHeight, useAllAvailableSpace, availableSpace]);
 
     const containerAnimatedStyle = useAnimatedStyle(() => {
-        return growDown ?
-            {top: position.value, bottom: Platform.OS === 'ios' ? 'auto' : undefined, maxHeight: maxHeight.value} :
-            {top: Platform.OS === 'ios' ? 'auto' : undefined, bottom: position.value, maxHeight: maxHeight.value};
+        if (growDown) {
+            return {top: position.value, bottom: 'auto', maxHeight: maxHeight.value};
+        }
+        return {top: 'auto', bottom: position.value, maxHeight: maxHeight.value};
     }, [growDown, position]);
 
     const containerStyles = useMemo(() => {

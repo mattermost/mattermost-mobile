@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {PortalHost} from '@gorhom/portal';
 import React, {useState, useRef, useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -38,7 +37,6 @@ const MAKE_PRIVATE_MARGIN_BOTTOM = 32;
 const BOTTOM_AUTOCOMPLETE_SEPARATION = Platform.select({ios: 10, default: 10});
 const LIST_PADDING = 32;
 const AUTOCOMPLETE_ADJUST = 5;
-const PORTAL_NAME = 'channel_info_form_autocomplete';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
@@ -356,7 +354,6 @@ export default function ChannelInfoForm({
                         </View>
                     </View>
                 </TouchableWithoutFeedback>
-                <PortalHost name={PORTAL_NAME}/>
             </KeyboardAwareScrollView>
             <Autocomplete
                 position={animatedAutocompletePosition}
@@ -367,8 +364,7 @@ export default function ChannelInfoForm({
                 availableSpace={animatedAutocompleteAvailableSpace}
                 shouldDirectlyReact={false}
                 growDown={growDown}
-                usePortal={true}
-                portalName={PORTAL_NAME}
+                usePortal={false}
             />
         </View>
     );

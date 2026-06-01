@@ -70,6 +70,7 @@ const ChannelContent = ({
                     isChannelScreen={true}
                     canShowPostPriority={true}
                     location={Screens.CHANNEL}
+                    portalName={PORTAL_NAME}
                 />
             </KeyboardAwarePostDraftContainer>
             <PortalHost name={PORTAL_NAME}/>

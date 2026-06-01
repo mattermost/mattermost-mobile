@@ -82,6 +82,7 @@ const ThreadContent = ({
                     containerHeight={containerHeight}
                     isChannelScreen={false}
                     location={Screens.THREAD}
+                    portalName={PORTAL_NAME}
                 />
             </KeyboardAwarePostDraftContainer>
             <PortalHost name={PORTAL_NAME}/>
