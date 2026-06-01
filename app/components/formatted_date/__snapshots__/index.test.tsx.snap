@@ -374,13 +374,13 @@ exports[`<FormattedDate/> should match snapshot for 'ko' locale and '{"dateStyle
 
 exports[`<FormattedDate/> should match snapshot for 'ko' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
 <Text>
-  2024년 10월 26일 AM 10:01
+  2024년 10월 26일 오전 10:01
 </Text>
 `;
 
 exports[`<FormattedDate/> should match snapshot for 'ko' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
 <Text>
-  10월 26일 AM 10:01
+  10월 26일 오전 10:01
 </Text>
 `;
 
