@@ -4,13 +4,22 @@
 import {useLocalSearchParams, useNavigation} from 'expo-router';
 import {useCallback, useEffect} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Platform, Pressable} from 'react-native';
+import {Platform, Pressable, StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import NavigationHeaderTitle from '@components/navigation_header_title';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import ThreadScreen from '@screens/thread';
+
+const styles = StyleSheet.create({
+    backButton: {
+        paddingHorizontal: 16,
+    },
+    pressed: {
+        opacity: 0.6,
+    },
+});
 
 const threadMessages = defineMessages({
     thread: {
@@ -48,7 +57,7 @@ export default function ThreadRoute() {
                 <Pressable
                     onPress={handleBack}
                     testID='thread.navigation.back.button'
-                    style={{paddingHorizontal: 16}}
+                    style={({pressed}) => [styles.backButton, pressed && styles.pressed]}
                 >
                     <CompassIcon
                         name={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'})!}

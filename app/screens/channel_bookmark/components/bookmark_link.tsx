@@ -271,7 +271,7 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark, se
         if (!isEditing && url && linkChangedFromInitialRef.current) {
             queueFetch(url);
         }
-    }, [isEditing, url]);
+    }, [isEditing, queueFetch, url]);
 
     const onFocus = useCallback(() => {
         linkFieldFocusedRef.current = true;

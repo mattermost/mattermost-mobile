@@ -19,7 +19,7 @@ export type ThreadOptionsProps = {
 
 type Props = ThreadOptionsProps & WithDatabaseArgs & {serverUrl?: string};
 
-const enhanced = withObservables(['threadId'], ({database, serverUrl, threadId}: Props) => {
+const enhanced = withObservables(['threadId', 'serverUrl'], ({database, serverUrl, threadId}: Props) => {
     return {
         isSaved: observePostSaved(database, threadId, serverUrl),
         post: observePost(database, threadId),
