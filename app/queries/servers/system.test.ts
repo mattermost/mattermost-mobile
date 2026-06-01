@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 
 import {
     getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getPushVerificationStatus,
-    getCommonSystemValues, getConfig, getConfigValue, getDisconnectedSince, getLastGlobalDataRetentionRun,
+    getCommonSystemValues, getConfig, getConfigValue, getConfigBooleanValue, getDisconnectedSince, getLastGlobalDataRetentionRun,
     getLastBoRPostCleanupRun, getGlobalDataRetentionPolicy, getGranularDataRetentionPolicies,
     getIsDataRetentionEnabled, getLicense, getRecentCustomStatuses, getExpandedLinks,
     getRecentReactions, getLastFullSync, setLastFullSync, resetLastFullSync,
@@ -21,7 +21,7 @@ import {
     observePushVerificationStatus, observeConfig, observeConfigValue, observeMaxFileCount,
     observeIsCustomStatusExpirySupported, observeConfigBooleanValue, observeConfigIntValue,
     observeLicense, observeAllowedThemesKeys, observeOnlyUnreads,
-    observeIsFreeEdition, observeIsMinimumLicenseTier, observeReportAProblemMetadata, getConfigBooleanValue,
+    observeIsFreeEdition, observeIsMinimumLicenseTier, observeReportAProblemMetadata,
 } from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';

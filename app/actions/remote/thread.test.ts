@@ -5,6 +5,7 @@ import {ActionType} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {getThreadById} from '@queries/servers/thread';
 import TestHelper from '@test/test_helper';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
@@ -285,11 +286,6 @@ describe('thread remote actions', () => {
         });
 
         it('markThreadAsUnread - uses unread_replies and unread_mentions from API response', async () => {
-            (mockClient.markThreadAsUnread as jest.Mock).mockResolvedValueOnce({
-                unread_replies: 5,
-                unread_mentions: 2,
-            });
-
             await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
             await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: team.id});
             await operator.handlePosts({
@@ -299,18 +295,21 @@ describe('thread remote actions', () => {
                 prepareRecordsOnly: false,
             });
 
+            // The server response carries the authoritative unread counts; the action
+            // must write those into the local thread record (not the defaults).
+            jest.mocked(mockClient.markThreadAsUnread).mockResolvedValueOnce({unread_replies: 5, unread_mentions: 2});
+
             const result = await markThreadAsUnread(serverUrl, '', thread1.id, post1.id);
             expect(result.error).toBeUndefined();
 
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const {getThreadById} = require('@queries/servers/thread');
             const savedThread = await getThreadById(database, thread1.id);
             expect(savedThread?.unreadReplies).toBe(5);
             expect(savedThread?.unreadMentions).toBe(2);
         });
 
         it('markThreadAsUnread - falls back to defaults when API response has no unread counts', async () => {
-            (mockClient.markThreadAsUnread as jest.Mock).mockResolvedValueOnce(undefined);
+            jest.mocked(mockClient.markThreadAsUnread).mockResolvedValueOnce(undefined);
 
             await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
             await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: team.id});
@@ -325,7 +324,6 @@ describe('thread remote actions', () => {
             expect(result.error).toBeUndefined();
 
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const {getThreadById} = require('@queries/servers/thread');
             const savedThread = await getThreadById(database, thread1.id);
             expect(savedThread?.unreadReplies).toBe(1);
             expect(savedThread?.unreadMentions).toBe(0);
