@@ -14,6 +14,8 @@ on:
   schedule:
     - cron: "0 0 * * *" # Every day at midnight UTC
 
+permissions: {}
+
 jobs:
   signal:
     runs-on: ubuntu-22.04
