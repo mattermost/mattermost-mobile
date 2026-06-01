@@ -23,6 +23,13 @@ import {
 jest.mock('@calls/state', () => ({
     getCurrentCall: jest.fn(),
 }));
+jest.mock('@managers/websocket_manager', () => ({
+    __esModule: true,
+    default: {
+        scheduleBackgroundCloseIfNeeded: jest.fn(),
+        initializeClient: jest.fn(),
+    },
+}));
 jest.mock('@queries/servers/channel', () => ({
     getChannelById: jest.fn(),
 }));
@@ -80,6 +87,22 @@ describe('mapping store', () => {
         expect(getNativeCallUUIDForCall('sA', 'cOther')).toBeUndefined();
         expect(getNativeCallUUIDForCall('sOther', 'cA')).toBeUndefined();
     });
+});
+
+describe('clearNativeCallMapping wrapper', () => {
+    const WebsocketManager = require('@managers/websocket_manager').default;
+
+    it('schedules background close only after the last mapping is cleared', () => {
+        setNativeCallMapping('uuid-1', {serverUrl: 'sA', channelId: 'c1', postId: '', threadId: ''});
+        setNativeCallMapping('uuid-2', {serverUrl: 'sA', channelId: 'c2', postId: '', threadId: ''});
+
+        clearNativeCallMapping('uuid-1');
+        expect(WebsocketManager.scheduleBackgroundCloseIfNeeded).not.toHaveBeenCalled();
+
+        clearNativeCallMapping('uuid-2');
+        expect(WebsocketManager.scheduleBackgroundCloseIfNeeded).toHaveBeenCalledTimes(1);
+    });
+
 });
 
 describe('registerOutgoingNativeCall', () => {

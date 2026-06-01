@@ -26,7 +26,6 @@ struct IncomingCallRequest {
 private struct CallInfo {
     let request: IncomingCallRequest
     var isAnswered: Bool
-    let silentForeground: Bool
 }
 
 @objc public final class CallKitProvider: NSObject, CXProviderDelegate {
@@ -70,27 +69,26 @@ private struct CallInfo {
     // MARK: - Inbound (PushKit-triggered)
 
     func reportIncomingCall(_ request: IncomingCallRequest,
-                            silentForeground: Bool,
                             pushCompletion: @escaping () -> Void) {
         // channelID + serverID are the minimum needed for the JS layer to
         // resolve which server and which channel to join. Without them we
-        // can't drive doJoinCall. Satisfy iOS's "you must report" rule
-        // without showing the user a broken incoming-call UI.
+        // satisfy iOS's "must report" rule and end immediately so the
+        // entitlement isn't revoked.
         if request.channelID.isEmpty || request.serverID.isEmpty {
             GekidouLogger.shared.log(.warning,
                 "CallKitProvider: incomplete VoIP payload, bailing (channelID=\(request.channelID) serverID=\(request.serverID))")
             let uuid = UUID()
             let update = CXCallUpdate()
             update.remoteHandle = CXHandle(type: .generic, value: "unknown")
-            provider.reportNewIncomingCall(with: uuid, update: update) { [weak self] _ in
-                self?.provider.reportCall(with: uuid, endedAt: nil, reason: .failed)
+            provider.reportNewIncomingCall(with: uuid, update: update) { _ in
                 pushCompletion()
             }
+            provider.reportCall(with: uuid, endedAt: Date(), reason: .answeredElsewhere)
             return
         }
 
         let uuid = UUID()
-        let info = CallInfo(request: request, isAnswered: false, silentForeground: silentForeground)
+        let info = CallInfo(request: request, isAnswered: false)
         setCallInfo(info, for: uuid)
 
         let update = CXCallUpdate()
@@ -109,14 +107,8 @@ private struct CallInfo {
         update.supportsDTMF = false
 
         GekidouLogger.shared.log(.info,
-            "CallKitProvider: reportNewIncomingCall uuid=\(uuid.uuidString) silent=\(silentForeground)")
+            "CallKitProvider: reportNewIncomingCall uuid=\(uuid.uuidString)")
 
-        // For foreground pushes we suppress the system UI by ending the
-        // just-reported call synchronously on the same runloop. Calling
-        // reportCall(endedAt:) immediately after reportNewIncomingCall —
-        // rather than waiting for the async completion handler — gives
-        // iOS the end signal before it has a chance to render the
-        // incoming-call UI, eliminating the brief flash on foreground.
         provider.reportNewIncomingCall(with: uuid, update: update) { [weak self] error in
             guard let self = self else {
                 pushCompletion()
@@ -130,27 +122,18 @@ private struct CallInfo {
                 return
             }
 
-            if !silentForeground {
-                self.bridge?.send(event: .IncomingCall, body: [
-                    "uuid": uuid.uuidString,
-                    "channelId": request.channelID,
-                    "serverId": request.serverID,
-                    "postId": request.postID,
-                    "threadId": request.threadID,
-                    "callerId": request.callerID,
-                    "callerName": request.callerName,
-                    "channelName": request.channelName,
-                ])
-                self.ackAndRefreshName(uuid: uuid, userInfo: request.rawUserInfo)
-            }
+            self.bridge?.send(event: .IncomingCall, body: [
+                "uuid": uuid.uuidString,
+                "channelId": request.channelID,
+                "serverId": request.serverID,
+                "postId": request.postID,
+                "threadId": request.threadID,
+                "callerId": request.callerID,
+                "callerName": request.callerName,
+                "channelName": request.channelName,
+            ])
+            self.ackAndRefreshName(uuid: uuid, userInfo: request.rawUserInfo)
             pushCompletion()
-        }
-
-        if silentForeground {
-            provider.reportCall(with: uuid, endedAt: Date(), reason: .answeredElsewhere)
-            clearCallInfo(for: uuid)
-            GekidouLogger.shared.log(.info,
-                "CallKitProvider: app foreground, suppressed CallKit UI uuid=\(uuid.uuidString)")
         }
     }
 
@@ -190,7 +173,7 @@ private struct CallInfo {
                                           callerName: calleeName,
                                           channelName: "",
                                           rawUserInfo: [:])
-        let info = CallInfo(request: request, isAnswered: true, silentForeground: false)
+        let info = CallInfo(request: request, isAnswered: true)
         setCallInfo(info, for: uuid)
 
         let handle = CXHandle(type: .generic, value: calleeName.isEmpty ? channelID : calleeName)

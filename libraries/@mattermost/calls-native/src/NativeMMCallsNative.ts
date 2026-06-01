@@ -47,7 +47,9 @@ export type EndCallReason =
   | 'remoteEnded'
   | 'failed'
   | 'unanswered'
-  | 'declined';
+  | 'declined'
+  | 'answeredElsewhere'
+  | 'declinedElsewhere';
 
 // Event names — values must match the native Event enum
 export const CallsNativeEvents = {

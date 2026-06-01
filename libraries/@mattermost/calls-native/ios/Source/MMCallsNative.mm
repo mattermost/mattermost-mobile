@@ -193,8 +193,10 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(foregroundServiceStop) {
     }
 
     CXCallEndedReason cxReason = CXCallEndedReasonRemoteEnded;
-    if ([reason isEqualToString:@"declined"]) {
+    if ([reason isEqualToString:@"declined"] || [reason isEqualToString:@"declinedElsewhere"]) {
         cxReason = CXCallEndedReasonDeclinedElsewhere;
+    } else if ([reason isEqualToString:@"answeredElsewhere"]) {
+        cxReason = CXCallEndedReasonAnsweredElsewhere;
     } else if ([reason isEqualToString:@"unanswered"]) {
         cxReason = CXCallEndedReasonUnanswered;
     } else if ([reason isEqualToString:@"failed"]) {

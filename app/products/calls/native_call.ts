@@ -6,40 +6,39 @@ import {Platform} from 'react-native';
 
 import {getCurrentCall} from '@calls/state';
 import DatabaseManager from '@database/manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getTeamById} from '@queries/servers/team';
 import {logDebug} from '@utils/log';
 
+import {
+    clearNativeCallMapping as clearMapping,
+    type NativeCallMapping,
+    getNativeCallMapping,
+    getNativeCallUUIDForCall,
+    hasActiveNativeCall,
+    setNativeCallMapping,
+} from './native_call_mappings';
+
 import type {Database} from '@nozbe/watermelondb';
 
-export type NativeCallMapping = {
-    serverUrl: string;
-    channelId: string;
-    postId: string;
-    threadId: string;
+// Local re-imports used below.
+export {
+    type NativeCallMapping,
+    getNativeCallMapping,
+    getNativeCallUUIDForCall,
+    hasActiveNativeCall,
+    setNativeCallMapping,
 };
 
-const mappings = new Map<string, NativeCallMapping>();
-
-export const setNativeCallMapping = (uuid: string, info: NativeCallMapping) => {
-    mappings.set(uuid, info);
-};
-
-export const getNativeCallMapping = (uuid: string): NativeCallMapping | undefined => {
-    return mappings.get(uuid);
-};
-
+// Wraps the mapping-store clear so we can notify the WS manager when the
+// last call ends — it held the WS open through the call's background time
+// and now can resume the standard background-close grace period.
 export const clearNativeCallMapping = (uuid: string) => {
-    mappings.delete(uuid);
-};
-
-export const getNativeCallUUIDForCall = (serverUrl: string, channelId: string): string | undefined => {
-    for (const [uuid, mapping] of mappings) {
-        if (mapping.serverUrl === serverUrl && mapping.channelId === channelId) {
-            return uuid;
-        }
+    clearMapping(uuid);
+    if (!hasActiveNativeCall()) {
+        WebsocketManager.scheduleBackgroundCloseIfNeeded();
     }
-    return undefined;
 };
 
 // Single-char ellipsis truncation — preserves the leading portion which
@@ -125,7 +124,11 @@ export const reportNativeCallConnected = (uuid: string | undefined) => {
 // Tears down the system call UI when the RTC connection closes — covers
 // the remote-end-hangs-up case, where no JS code explicitly ended the
 // call but the system UI overlay would otherwise remain "in progress."
-export const endNativeCall = (serverUrl: string, channelId: string, reason: 'remoteEnded' | 'failed') => {
+export const endNativeCall = (
+    serverUrl: string,
+    channelId: string,
+    reason: 'unanswered' | 'answeredElsewhere' | 'declinedElsewhere' | 'remoteEnded' | 'failed',
+) => {
     if (Platform.OS !== 'ios') {
         return;
     }

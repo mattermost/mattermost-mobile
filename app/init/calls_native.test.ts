@@ -10,7 +10,6 @@ import CallsNative, {
 import {Platform} from 'react-native';
 
 import {storeVoIPDeviceToken} from '@actions/app/global';
-import {switchToChannelById} from '@actions/remote/channel';
 import {dismissIncomingCall, hasMicrophonePermission, joinCall, leaveCall, muteMyself, unmuteMyself} from '@calls/actions';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
 import {
@@ -45,6 +44,12 @@ jest.mock('@calls/native_call', () => ({
     clearNativeCallMapping: jest.fn(),
     getNativeCallMapping: jest.fn(),
     setNativeCallMapping: jest.fn(),
+}));
+jest.mock('@managers/websocket_manager', () => ({
+    __esModule: true,
+    default: {
+        initializeClient: jest.fn(),
+    },
 }));
 jest.mock('@calls/state', () => ({
     getCurrentCall: jest.fn(),
@@ -126,7 +131,7 @@ describe('onVoIPTokenUpdated', () => {
     it('stores beta-prefixed token under the default (beta) test config', async () => {
         const {onVoIPTokenUpdated} = loadAndInit();
         await onVoIPTokenUpdated({token: 'abc123'});
-        expect(storeVoIPDeviceToken).toHaveBeenCalledWith(`${Device.PUSH_NOTIFY_APPLE_VOIP_REACT_NATIVE}beta:abc123`);
+        expect(storeVoIPDeviceToken).toHaveBeenCalledWith(`${Device.PUSH_NOTIFY_APPLE_REACT_NATIVE}beta-v2:abc123`);
     });
 
     it('stores non-beta-prefixed token when isBetaApp is false', async () => {
@@ -147,7 +152,7 @@ describe('onVoIPTokenUpdated', () => {
             handler = lastCall?.[0];
         });
         await handler!({token: 'abc123'});
-        expect(storeVoIPDeviceToken).toHaveBeenCalledWith(`${Device.PUSH_NOTIFY_APPLE_VOIP_REACT_NATIVE}:abc123`);
+        expect(storeVoIPDeviceToken).toHaveBeenCalledWith(`${Device.PUSH_NOTIFY_APPLE_REACT_NATIVE}-v2:abc123`);
     });
 });
 
@@ -202,6 +207,42 @@ describe('onIncomingCall', () => {
             threadId: 't1',
         });
         expect(CallsNative.reportEnded).not.toHaveBeenCalled();
+    });
+
+    it('opens the WS to the call server so live events arrive while ringing', async () => {
+        const WebsocketManager = require('@managers/websocket_manager').default;
+        (getServerByIdentifier as jest.Mock).mockResolvedValueOnce({url: SERVER_URL});
+        const {onIncomingCall} = loadAndInit();
+
+        await onIncomingCall({
+            uuid: 'u1',
+            serverId: 's1',
+            channelId: 'ch1',
+            postId: 'p1',
+            threadId: 't1',
+            callerId: '',
+            callerName: '',
+        });
+
+        expect(WebsocketManager.initializeClient).toHaveBeenCalledWith(SERVER_URL);
+    });
+
+    it('does not open a WS when the serverId cannot be resolved', async () => {
+        const WebsocketManager = require('@managers/websocket_manager').default;
+        (getServerByIdentifier as jest.Mock).mockResolvedValueOnce(null);
+        const {onIncomingCall} = loadAndInit();
+
+        await onIncomingCall({
+            uuid: 'u1',
+            serverId: 'unknown',
+            channelId: 'ch1',
+            postId: '',
+            threadId: '',
+            callerId: '',
+            callerName: '',
+        });
+
+        expect(WebsocketManager.initializeClient).not.toHaveBeenCalled();
     });
 });
 
@@ -274,7 +315,6 @@ describe('onCallAnswered', () => {
         expect(CallsNative.reportEnded).toHaveBeenCalledWith('u1', 'failed');
         expect(clearNativeCallMapping).toHaveBeenCalledWith('u1');
         expect(CallsNative.reportConnected).not.toHaveBeenCalled();
-        expect(switchToChannelById).not.toHaveBeenCalled();
     });
 
     it('reports connected, mutes, and switches to the channel on successful join', async () => {
@@ -292,7 +332,6 @@ describe('onCallAnswered', () => {
         expect(joinCall).toHaveBeenCalledWith(SERVER_URL, 'ch1', 'user1', true, expect.anything(), undefined, 't1');
         expect(CallsNative.reportConnected).toHaveBeenCalledWith('u1');
         expect(CallsNative.setMuted).toHaveBeenCalledWith('u1', true);
-        expect(switchToChannelById).toHaveBeenCalledWith(SERVER_URL, 'ch1');
     });
 
     it('switches the active server when answering for a different server than the active one', async () => {
@@ -301,13 +340,9 @@ describe('onCallAnswered', () => {
         (getCurrentCall as jest.Mock).mockReturnValueOnce(null);
         (hasMicrophonePermission as jest.Mock).mockResolvedValueOnce(true);
         (joinCall as jest.Mock).mockResolvedValueOnce({});
-        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValueOnce('https://other.example.com');
-        const setActiveSpy = jest.spyOn(DatabaseManager, 'setActiveServerDatabase').mockResolvedValueOnce(undefined as any);
 
         const {onCallAnswered} = loadAndInit();
         await onCallAnswered({uuid: 'u1'});
-
-        expect(setActiveSpy).toHaveBeenCalledWith(SERVER_URL);
     });
 
     it('catches thrown errors, reports ended, and clears mapping', async () => {

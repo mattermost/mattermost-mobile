@@ -79,6 +79,9 @@ import TestHelper from '@test/test_helper';
 import type {CallJobState, LiveCaptionData} from '@mattermost/calls/lib/types';
 
 jest.mock('@calls/alerts');
+jest.mock('@calls/native_call', () => ({
+    endNativeCall: jest.fn(),
+}));
 
 jest.mock('@constants/calls', () => ({
     ...jest.requireActual('@constants/calls'),
@@ -452,6 +455,40 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[0].calls, expectedCallsState);
         assert.deepEqual(result.current[1], expectedChannelsWithCallsState);
         assert.deepEqual(result.current[2], expectedCurrentCallState);
+    });
+
+    it('userLeftCall ends the native overlay when the last session leaves', () => {
+        const {endNativeCall} = require('@calls/native_call');
+        jest.clearAllMocks();
+
+        const soloCall = {
+            ...call1,
+            sessions: {
+                session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0},
+            },
+        };
+        act(() => {
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': soloCall}});
+            setChannelsWithCalls('server1', {'channel-1': true});
+        });
+
+        act(() => userLeftCall('server1', 'channel-1', 'session1'));
+
+        expect(endNativeCall).toHaveBeenCalledWith('server1', 'channel-1', 'remoteEnded');
+    });
+
+    it('userLeftCall does not end the native overlay when other sessions remain', () => {
+        const {endNativeCall} = require('@calls/native_call');
+        jest.clearAllMocks();
+
+        act(() => {
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1}});
+            setChannelsWithCalls('server1', {'channel-1': true});
+        });
+
+        act(() => userLeftCall('server1', 'channel-1', 'session1'));
+
+        expect(endNativeCall).not.toHaveBeenCalled();
     });
 
     it('callStarted', async () => {

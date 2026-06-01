@@ -29,10 +29,9 @@ import Gekidou
 
     @objc public weak var delegate: CallsBridgeDelegate? {
         didSet {
-            // If JS had previously attached and detached, drop the buffer
-            // when a brand-new delegate takes over — the new event emitter
-            // has no historical context.
-            if oldValue !== delegate {
+            // Reset on RN reload (delegate replaced). The initial nil →
+            // delegate transition must preserve the cold-launch buffer.
+            if oldValue != nil && oldValue !== delegate {
                 pendingLock.lock()
                 pendingEvents.removeAll()
                 hasJSListeners = false

@@ -5,7 +5,6 @@ import CallKit
 import Foundation
 import Gekidou
 import PushKit
-import UIKit
 
 /// Owns the single `PKPushRegistry` for VoIP pushes. The delegate callback
 /// MUST call `reportNewIncomingCall` synchronously inside its body — iOS
@@ -60,15 +59,11 @@ final class PushKitController: NSObject, PKPushRegistryDelegate {
                                     postID: "", threadID: "",
                                     callerID: "", callerName: "",
                                     channelName: "", rawUserInfo: [:]),
-                silentForeground: false,
                 pushCompletion: completion
             )
             return
         }
 
-        let pushType = (dict["type"] as? String) ?? ""
-        let subType = (dict["sub_type"] as? String) ?? ""
-        let category = (dict["category"] as? String) ?? ""
         let channelID = (dict["channel_id"] as? String) ?? ""
         let serverID = (dict["server_id"] as? String) ?? ""
         let postID = (dict["post_id"] as? String) ?? ""
@@ -77,46 +72,11 @@ final class PushKitController: NSObject, PKPushRegistryDelegate {
         let senderName = (dict["sender_name"] as? String) ?? ""
         let channelName = (dict["channel_name"] as? String) ?? ""
 
-        // Cancel-ring path: covers both "caller hung up before we answered"
-        // (default, .unanswered) and "user answered on another device"
-        // (category=answered_elsewhere, .answeredElsewhere — silent dismiss
-        // matching how CallKit treats a call accepted on another device).
-        if pushType == "clear" && subType == "calls" {
-            GekidouLogger.shared.log(.info,
-                "PushKitController: VoIP clear received serverID=\(serverID) channelID=\(channelID) category=\(category)")
-
-            let reason: CXCallEndedReason = category == "answered_elsewhere" ? .answeredElsewhere : .unanswered
-            let ended = bridge.callKitProvider.endCall(serverID: serverID,
-                                                       channelID: channelID,
-                                                       reason: reason)
-            if ended {
-                completion()
-            } else {
-                // No matching active call — typically a cancel that arrived
-                // after the user already declined. Report + end a throwaway
-                // to satisfy the rule without showing UI.
-                bridge.callKitProvider.reportIncomingCall(
-                    IncomingCallRequest(channelID: "", serverID: "",
-                                        postID: "", threadID: "",
-                                        callerID: "", callerName: "",
-                                        channelName: "", rawUserInfo: [:]),
-                    silentForeground: false,
-                    pushCompletion: completion
-                )
-            }
-            return
-        }
-
-        let appWasActive = UIApplication.shared.applicationState == .active
         GekidouLogger.shared.log(.info,
-            "PushKitController: VoIP push received channelID=\(channelID) appActive=\(appWasActive)")
+            "PushKitController: VoIP push received channelID=\(channelID)")
 
         // SYNCHRONOUS report — iOS 13+ enforces that this call happens
         // before `pushRegistry:didReceiveIncomingPush:...` returns.
-        // When the app is foreground, the CallKit provider immediately
-        // ends the just-reported call with .answeredElsewhere so the
-        // system UI doesn't take over from the in-app incoming-call UI
-        // (driven by the main WebSocket's call_start event).
         bridge.callKitProvider.reportIncomingCall(
             IncomingCallRequest(
                 channelID: channelID,
@@ -128,7 +88,6 @@ final class PushKitController: NSObject, PKPushRegistryDelegate {
                 channelName: channelName,
                 rawUserInfo: dict
             ),
-            silentForeground: appWasActive,
             pushCompletion: completion
         )
     }

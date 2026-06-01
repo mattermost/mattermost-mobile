@@ -104,12 +104,14 @@ describe('ClientUsers', () => {
         const password = 'password';
         const token = 'token';
         const deviceId = 'deviceId';
+        const voipDeviceId = 'voipDeviceId';
         const ldapOnly = true;
         const expectedUrl = `${client.getUsersRoute()}/login`;
         const expectedOptions = {
             method: 'post',
             body: {
                 device_id: deviceId,
+                voip_device_id: voipDeviceId,
                 login_id: loginId,
                 password,
                 token,
@@ -118,7 +120,7 @@ describe('ClientUsers', () => {
             headers: {'Cache-Control': 'no-store'},
         };
 
-        await client.login(loginId, password, token, deviceId, ldapOnly);
+        await client.login(loginId, password, token, deviceId, voipDeviceId, ldapOnly);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions, false);
 
@@ -127,6 +129,7 @@ describe('ClientUsers', () => {
             method: 'post',
             body: {
                 device_id: '',
+                voip_device_id: '',
                 login_id: loginId,
                 password,
                 token: '',
@@ -143,11 +146,13 @@ describe('ClientUsers', () => {
         const password = 'password';
         const token = 'token';
         const deviceId = 'deviceId';
+        const voipDeviceId = 'voipDeviceId';
         const expectedUrl = `${client.getUsersRoute()}/login`;
         const expectedOptions = {
             method: 'post',
             body: {
                 device_id: deviceId,
+                voip_device_id: voipDeviceId,
                 id,
                 password,
                 token,
@@ -155,7 +160,7 @@ describe('ClientUsers', () => {
             headers: {'Cache-Control': 'no-store'},
         };
 
-        await client.loginById(id, password, token, deviceId);
+        await client.loginById(id, password, token, deviceId, voipDeviceId);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions, false);
 
@@ -164,6 +169,7 @@ describe('ClientUsers', () => {
             method: 'post',
             body: {
                 device_id: '',
+                voip_device_id: '',
                 id,
                 password,
                 token: '',
@@ -178,25 +184,28 @@ describe('ClientUsers', () => {
     test('loginByIntune', async () => {
         const accessToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...';
         const deviceId = 'deviceId';
+        const voipDeviceId = 'voipDeviceId';
         const expectedUrl = '/oauth/intune';
         const expectedOptions = {
             method: 'post',
             body: {
                 device_id: deviceId,
+                voip_device_id: voipDeviceId,
                 access_token: accessToken,
             },
             headers: {'Cache-Control': 'no-store'},
         };
 
-        await client.loginByIntune(accessToken, deviceId);
+        await client.loginByIntune(accessToken, deviceId, voipDeviceId);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions, false);
 
-        // Test with default deviceId
+        // Test with default deviceId/voipDeviceId
         const defaultExpectedOptions = {
             method: 'post',
             body: {
                 device_id: '',
+                voip_device_id: '',
                 access_token: accessToken,
             },
             headers: {'Cache-Control': 'no-store'},
@@ -460,7 +469,7 @@ describe('ClientUsers', () => {
     });
 
     test('setExtraSessionProps includes voip_device_id when provided', async () => {
-        const voipDeviceId = 'apple_voip_rn:token123';
+        const voipDeviceId = 'apple_rn:token123';
         const expectedUrl = `${client.getUsersRoute()}/sessions/device`;
 
         await client.setExtraSessionProps('device1', false, '1.0.0', voipDeviceId);

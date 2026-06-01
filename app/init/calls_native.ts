@@ -18,7 +18,6 @@ defineMessages({
 });
 
 import {storeVoIPDeviceToken} from '@actions/app/global';
-import {switchToChannelById} from '@actions/remote/channel';
 import {dismissIncomingCall, hasMicrophonePermission, joinCall, leaveCall, muteMyself, unmuteMyself} from '@calls/actions';
 import {hasBluetoothPermission} from '@calls/actions/permissions';
 import {
@@ -32,6 +31,7 @@ import {
 } from '@calls/state';
 import {Device} from '@constants';
 import DatabaseManager from '@database/manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {getServerByIdentifier} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
 import {getIntlShape, isBetaApp} from '@utils/general';
@@ -72,13 +72,11 @@ class CallsNativeSingleton {
             return;
         }
 
-        // apple_voip_rn / apple_voip_rnbeta — same beta detection as the
-        // standard push token in push_notifications.ts.
-        let prefix = Device.PUSH_NOTIFY_APPLE_VOIP_REACT_NATIVE;
+        let prefix = Device.PUSH_NOTIFY_APPLE_REACT_NATIVE;
         if (isBetaApp) {
             prefix = `${prefix}beta`;
         }
-        const prefixed = `${prefix}:${token}`;
+        const prefixed = `${prefix}-v2:${token}`;
         await storeVoIPDeviceToken(prefixed);
         logInfo('VoIP device token stored');
     };
@@ -106,6 +104,12 @@ class CallsNativeSingleton {
             postId,
             threadId,
         });
+
+        // Open WS to the call's server so user_dismissed_notification /
+        // call_end / answered_elsewhere events arrive live while CallKit is
+        // ringing. Fire-and-forget: idempotent if already connected, and we
+        // don't want to delay the handler on a slow first-connect sync.
+        WebsocketManager.initializeClient(server.url);
     };
 
     private onCallAnswered = async (event: CallActionPayload) => {
@@ -160,12 +164,6 @@ class CallsNativeSingleton {
             // permission. Sync Native so its lock-screen mic icon matches
             // the JS-side mute state from the moment the call connects.
             CallsNative.setMuted(uuid, true);
-
-            const activeServerUrl = await DatabaseManager.getActiveServerUrl();
-            if (activeServerUrl !== serverUrl) {
-                await DatabaseManager.setActiveServerDatabase(serverUrl);
-            }
-            await switchToChannelById(serverUrl, channelId);
         } catch (error) {
             logError('onCallAnswered failed', error);
             CallsNative.reportEnded(uuid, 'failed');

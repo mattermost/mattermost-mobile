@@ -7,6 +7,7 @@ import InCallManager from 'react-native-incall-manager';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {needsRecordingAlert} from '@calls/alerts';
+import {endNativeCall} from '@calls/native_call';
 import {
     getCallsConfig,
     getCallsState,
@@ -152,7 +153,7 @@ export const processIncomingCalls = async (serverUrl: string, calls: Call[], kee
     setIncomingCalls({...getIncomingCalls(), incomingCalls: newIncoming});
 };
 
-const getChannelIdFromCallId = (serverUrl: string, callId: string) => {
+export const getChannelIdFromCallId = (serverUrl: string, callId: string) => {
     const callsState = getCallsState(serverUrl);
     for (const call of Object.values(callsState.calls)) {
         if (call.id === callId) {
@@ -395,6 +396,7 @@ export const userLeftCall = (serverUrl: string, channelId: string, sessionId: st
 
         const callId = callsState.calls[channelId].id;
         removeIncomingCall(serverUrl, callId, channelId);
+        endNativeCall(serverUrl, channelId, 'remoteEnded');
 
         const channelsWithCalls = getChannelsWithCalls(serverUrl);
         const nextChannelsWithCalls = {...channelsWithCalls};
