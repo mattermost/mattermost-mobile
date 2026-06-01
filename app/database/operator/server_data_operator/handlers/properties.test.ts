@@ -16,16 +16,13 @@ describe('*** Operator: Properties Handlers tests ***', () => {
     let operator: ServerDataOperator;
     const serverUrl = `propertiesHandler.test.${Date.now()}.com`;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
+        jest.clearAllMocks();
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
     });
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
-    afterAll(async () => {
+    afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
