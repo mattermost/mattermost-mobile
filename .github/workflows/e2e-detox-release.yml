@@ -142,6 +142,28 @@ jobs:
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 
+  run-maestro-ios-on-release:
+    name: Maestro iOS on Release
+    needs:
+      - build-ios-simulator
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    with:
+      platform: ios
+      run-type: "RELEASE"
+      MOBILE_VERSION: ${{ github.ref }}
+    secrets: inherit
+
+  run-maestro-android-on-release:
+    name: Maestro Android on Release
+    needs:
+      - build-android-apk
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    with:
+      platform: android
+      run-type: "RELEASE"
+      MOBILE_VERSION: ${{ github.ref }}
+    secrets: inherit
+
   update-final-status-ios:
     runs-on: ubuntu-22.04
     needs:

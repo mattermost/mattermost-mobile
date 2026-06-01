@@ -113,12 +113,47 @@ jobs:
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
 
+  maestro-ios-e2e:
+    name: mobile-cmt-maestro-ios-${{ matrix.server.version }}
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    needs:
+      - build-ios-simulator
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
+    secrets: inherit
+    with:
+      platform: ios
+      run-type: "RELEASE"
+      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+
+  # NOTE: maestro android builds its own JS-bundled APK via `assembleRelease`
+  # inside the template (see e2e-maestro-template.yml), so it does not depend on
+  # any separate build job — it only needs to run after the initial status is set.
+  maestro-android-e2e:
+    name: mobile-cmt-maestro-android-${{ matrix.server.version }}
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    needs:
+      - update-initial-status
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
+    secrets: inherit
+    with:
+      platform: android
+      run-type: "RELEASE"
+      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+
   update-final-status:
     runs-on: ubuntu-22.04
     if: always()
     needs:
       - calculate-commit-hash
       - detox-e2e
+      - maestro-ios-e2e
+      - maestro-android-e2e
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:

@@ -193,3 +193,27 @@ jobs:
           description: Completed with ${{ needs.run-android-tests-on-main-scheduled.outputs.FAILURES }} failures
           status: ${{ needs.run-android-tests-on-main-scheduled.outputs.STATUS }}
           target_url: ${{ needs.run-android-tests-on-main-scheduled.outputs.TARGET_URL }}
+
+  run-maestro-ios:
+    name: Maestro iOS Tests (Scheduled)
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    needs:
+      - build-ios-simulator
+    with:
+      platform: ios
+      run-type: "MAIN"
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION || github.ref }}
+      MM_TEST_SERVER_URL: ${{ inputs.MM_TEST_SERVER_URL_3 }}
+    secrets: inherit
+
+  run-maestro-android:
+    name: Maestro Android Tests (Scheduled)
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    needs:
+      - build-android-apk
+    with:
+      platform: android
+      run-type: "MAIN"
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION || github.ref }}
+      MM_TEST_SERVER_URL: ${{ inputs.MM_TEST_SERVER_URL_3 }}
+    secrets: inherit
