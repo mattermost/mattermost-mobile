@@ -13,17 +13,13 @@ on:
         type: string
 
 env:
-  INTUNE_ENABLED: 'false'
+  INTUNE_ENABLED: 'true'
 
 jobs:
   update-initial-status-ios:
     runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      statuses: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: ./.github/actions/update-commit-status
+      - uses: mattermost/actions/delivery/update-commit-status@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -35,12 +31,8 @@ jobs:
 
   update-initial-status-android:
     runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      statuses: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: ./.github/actions/update-commit-status
+      - uses: mattermost/actions/delivery/update-commit-status@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -56,7 +48,7 @@ jobs:
       - update-initial-status-ios
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
@@ -72,7 +64,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip
@@ -92,7 +84,7 @@ jobs:
           rm -rf ~/.npm/_cacache
 
       - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -108,9 +100,9 @@ jobs:
         run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
 
       - name: Cache Gradle dependencies
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@v4
         with:
-          path: /home/runner/.gradle/caches/modules-2/
+          path: ~/.gradle/caches/modules-2/
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: ${{ runner.os }}-gradle-
 
@@ -122,7 +114,7 @@ jobs:
           npm run e2e:android-build
 
       - name: Upload Android Build
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/**/*"
@@ -134,7 +126,7 @@ jobs:
       - build-ios-simulator
     with:
       run-type: "RELEASE"
-      record_tests_in_zephyr: true
+      record_tests_in_zephyr: 'true'
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 
@@ -146,64 +138,60 @@ jobs:
     with:
       run-android-tests: true
       run-type: "RELEASE"
-      record_tests_in_zephyr: true
+      record_tests_in_zephyr: 'true'
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 
-  run-ios-ipad-tests-on-release:
-    name: iPad Tests on Release
+  run-maestro-ios-on-release:
+    name: Maestro iOS on Release
     needs:
       - build-ios-simulator
-    uses: ./.github/workflows/e2e-ios-template.yml
+    uses: ./.github/workflows/e2e-maestro-template.yml
     with:
+      platform: ios
       run-type: "RELEASE"
-      record_tests_in_zephyr: true
       MOBILE_VERSION: ${{ github.ref }}
-      ios_device_os_name: "iOS 26.2"
-      search_path: "detox/e2e/test/products/channels/ipad"
-      parallelism: "1"
-      detox_config: "ios.ipad.debug"
+    secrets: inherit
+
+  run-maestro-android-on-release:
+    name: Maestro Android on Release
+    needs:
+      - build-android-apk
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    with:
+      platform: android
+      run-type: "RELEASE"
+      MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 
   update-final-status-ios:
     runs-on: ubuntu-22.04
-    if: always()
-    permissions:
-      contents: read
-      statuses: write
     needs:
       - run-ios-tests-on-release
-      - run-ios-ipad-tests-on-release
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: ./.github/actions/update-commit-status
+      - uses: mattermost/actions/delivery/update-commit-status@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ github.sha }}
           context: e2e/detox-ios-tests
-          description: iOS+iPad release detox completed
-          status: ${{ needs.run-ios-tests-on-release.outputs.STATUS == 'success' && needs.run-ios-ipad-tests-on-release.outputs.STATUS == 'success' && 'success' || 'failure' }}
+          description: Completed with ${{ needs.run-ios-tests-on-release.outputs.FAILURES }} failures
+          status: ${{ needs.run-ios-tests-on-release.outputs.STATUS }}
           target_url: ${{ needs.run-ios-tests-on-release.outputs.TARGET_URL }}
 
   update-final-status-android:
     runs-on: ubuntu-22.04
-    if: always()
-    permissions:
-      contents: read
-      statuses: write
     needs:
       - run-android-tests-on-release
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: ./.github/actions/update-commit-status
+      - uses: mattermost/actions/delivery/update-commit-status@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ github.sha }}
           context: e2e/detox-android-tests
-          description: Completed with ${{ needs.run-android-tests-on-release.outputs.FAILURES || '?' }} failures
-          status: ${{ needs.run-android-tests-on-release.outputs.STATUS || 'failure' }}
+          description: Completed with ${{ needs.run-android-tests-on-release.outputs.FAILURES }} failures
+          status: ${{ needs.run-android-tests-on-release.outputs.STATUS }}
           target_url: ${{ needs.run-android-tests-on-release.outputs.TARGET_URL }}

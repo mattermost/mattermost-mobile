@@ -186,6 +186,21 @@ jobs:
       parallelism: "1"
       detox_config: "ios.ipad.debug"
 
+  maestro-ios-e2e:
+    name: mobile-cmt-maestro-ios-${{ matrix.server.version }}
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    needs:
+      - build-ios-simulator
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
+    secrets: inherit
+    with:
+      platform: ios
+      run-type: "RELEASE"
+      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+
   detox-android-e2e:
     name: mobile-cmt-android-${{ matrix.server.version }}
     uses: ./.github/workflows/e2e-android-template.yml
@@ -205,6 +220,21 @@ jobs:
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
       run-android-tests: true
+
+  # NOTE: maestro android builds its own JS-bundled APK via `assembleRelease`
+  # inside the template (see e2e-maestro-template.yml), so it does not depend on
+  # any separate build job — it only needs to run after the initial status is set.
+  maestro-android-e2e:
+    name: mobile-cmt-maestro-android-${{ matrix.server.version }}
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    needs:
+      - update-initial-status
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
+    secrets: inherit
+    with:
+      platform: android
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
@@ -220,6 +250,8 @@ jobs:
       - detox-e2e
       - detox-android-e2e
       - detox-ipad-e2e
+      - maestro-ios-e2e
+      - maestro-android-e2e
     steps:
       - name: Determine overall status
         id: status
