@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
 import {refetchCurrentUser} from '@actions/remote/user';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
@@ -11,6 +12,7 @@ import {applyPersistenceModeChange} from './refresh';
 
 jest.mock('@actions/local/ephemeral_mode/wipe', () => ({
     wipeServerFiles: jest.fn(),
+    wipeServerDatabaseWithRetry: jest.fn(),
 }));
 jest.mock('@actions/local/session', () => ({
     cancelSessionNotification: jest.fn(),
@@ -35,7 +37,6 @@ jest.mock('@utils/log');
 
 describe('applyPersistenceModeChange', () => {
     const serverUrl = 'https://server.test';
-    let wipeServerDataSpy: jest.SpyInstance;
     let setActiveServerDatabaseSpy: jest.SpyInstance;
     const mockOperator = {
         batchRecords: jest.fn().mockResolvedValue(undefined),
@@ -43,7 +44,7 @@ describe('applyPersistenceModeChange', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        wipeServerDataSpy = jest.spyOn(DatabaseManager, 'wipeServerData').mockResolvedValue(undefined);
+        jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValue({success: true});
         setActiveServerDatabaseSpy = jest.spyOn(DatabaseManager, 'setActiveServerDatabase').mockResolvedValue(undefined);
         jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockReturnValue({
             database: {} as never,
@@ -70,7 +71,7 @@ describe('applyPersistenceModeChange', () => {
         const result = await applyPersistenceModeChange(serverUrl);
 
         expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(serverUrl);
-        expect(wipeServerDataSpy).toHaveBeenCalledWith(serverUrl);
+        expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverUrl);
         expect(refetchCurrentUser).toHaveBeenCalledWith(serverUrl, undefined);
         expect(WebsocketManager.createClient).toHaveBeenCalledWith(serverUrl, 'tok', 'preauth');
         expect(WebsocketManager.initializeClient).toHaveBeenCalledWith(serverUrl);
@@ -90,7 +91,7 @@ describe('applyPersistenceModeChange', () => {
 
     it('returns the error and skips active-DB update when the wipe throws', async () => {
         const wipeError = new Error('disk full');
-        wipeServerDataSpy.mockRejectedValue(wipeError);
+        jest.mocked(wipeServerDatabaseWithRetry).mockRejectedValue(wipeError);
 
         const result = await applyPersistenceModeChange(serverUrl);
 

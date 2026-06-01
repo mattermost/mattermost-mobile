@@ -3,6 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {getServer} from '@queries/app/servers';
+import {getHasEverStartedSyncSubject, setTeamLoading} from '@store/team_load_store';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logError, logInfo, logWarning} from '@utils/log';
@@ -71,6 +72,32 @@ describe('wipeServerDatabaseWithRetry', () => {
         expect(deleteSpy).toHaveBeenCalledTimes(6);
         expect(logWarning).toHaveBeenCalledTimes(6);
         expect(logError).toHaveBeenCalledWith('wipeServerDatabaseWithRetry: wipe exhausted retries', serverUrl);
+    });
+
+    it('resets the hasEverStartedSync latch on successful wipe', async () => {
+        jest.spyOn(DatabaseManager, 'wipeServerData').mockResolvedValue();
+        setTeamLoading(serverUrl, true);
+        expect(getHasEverStartedSyncSubject(serverUrl).getValue()).toBe(true);
+
+        await wipeServerDatabaseWithRetry(serverUrl);
+
+        expect(getHasEverStartedSyncSubject(serverUrl).getValue()).toBe(false);
+    });
+
+    it('does not reset the hasEverStartedSync latch when retries are exhausted', async () => {
+        jest.spyOn(DatabaseManager, 'wipeServerData').mockRejectedValue(new Error('fs broken'));
+        setTeamLoading(serverUrl, true);
+
+        const wipePromise = wipeServerDatabaseWithRetry(serverUrl);
+        for (let i = 0; i < 6; i++) {
+            // eslint-disable-next-line no-await-in-loop
+            await advanceTimers(1000);
+            // eslint-disable-next-line no-await-in-loop
+            await advanceTimers(0);
+        }
+        await wipePromise;
+
+        expect(getHasEverStartedSyncSubject(serverUrl).getValue()).toBe(true);
     });
 });
 

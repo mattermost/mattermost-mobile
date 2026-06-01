@@ -435,7 +435,7 @@ class EphemeralModeManagerSingleton {
             if (!success) {
                 logError('EphemeralModeManager.runWipe: wipe failed after retries, server re-added with stale data', serverUrl);
             }
-            this.addServer(serverUrl);
+            await this.addServer(serverUrl);
         } catch (error) {
             logError('EphemeralModeManager.runWipe', error);
         } finally {

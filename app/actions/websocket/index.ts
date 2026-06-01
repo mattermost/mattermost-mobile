@@ -79,7 +79,6 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
             return entryData.error;
         }
 
-        logInfo('WS reconnect: entry data', entryData);
         const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted} = entryData;
 
         await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);

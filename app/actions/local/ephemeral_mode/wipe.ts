@@ -3,6 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {getServer} from '@queries/app/servers';
+import {resetHasEverStartedSync} from '@store/team_load_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logError, logInfo, logWarning} from '@utils/log';
@@ -20,6 +21,7 @@ export const wipeServerDatabaseWithRetry = async (serverUrl: string): Promise<{s
             // eslint-disable-next-line no-await-in-loop
             await DatabaseManager.wipeServerData(serverUrl);
             logInfo('wipeServerDatabaseWithRetry: wipe complete', serverUrl, `attempts=${attempt + 1}`);
+            resetHasEverStartedSync(serverUrl);
             return {success: true};
         } catch (error) {
             logWarning('wipeServerDatabaseWithRetry: wipe attempt failed', serverUrl, `attempt=${attempt + 1}`, getFullErrorMessage(error));

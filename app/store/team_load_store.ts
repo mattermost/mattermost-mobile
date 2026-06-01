@@ -29,3 +29,7 @@ export const setTeamLoading = (serverUrl: string, loading: boolean) => {
         }
     }
 };
+
+export const resetHasEverStartedSync = (serverUrl: string) => {
+    getHasEverStartedSyncSubject(serverUrl).next(false);
+};

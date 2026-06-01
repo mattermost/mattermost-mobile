@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {wipeServerFiles} from '@actions/local/ephemeral_mode/wipe';
+import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephemeral_mode/wipe';
 import {cancelSessionNotification} from '@actions/local/session';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
@@ -32,7 +32,7 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
         }
 
         await WebsocketManager.invalidateClient(serverUrl);
-        await DatabaseManager.wipeServerData(serverUrl);
+        await wipeServerDatabaseWithRetry(serverUrl);
 
         logInfo('restartSession: wipedServerData');
 

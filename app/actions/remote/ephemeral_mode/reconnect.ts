@@ -4,6 +4,7 @@
 import NetInfo from '@react-native-community/netinfo';
 import {router} from 'expo-router';
 
+import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
 import {loginEntry} from '@actions/remote/entry';
 import {fetchMe} from '@actions/remote/user';
 import {Launch} from '@constants';
@@ -37,7 +38,7 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
         const {error: loginError} = await loginEntry({serverUrl});
         if (loginError) {
             // when there is a login error ensure to wipe all data to reinforce security
-            await DatabaseManager.wipeServerData(serverUrl);
+            await wipeServerDatabaseWithRetry(serverUrl);
             return {error: loginError};
         }
 
