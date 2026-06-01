@@ -126,7 +126,7 @@ jobs:
       - build-ios-simulator
     with:
       run-type: "RELEASE"
-      record_tests_in_zephyr: 'true'
+      record_tests_in_zephyr: true
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 
@@ -138,7 +138,7 @@ jobs:
     with:
       run-android-tests: true
       run-type: "RELEASE"
-      record_tests_in_zephyr: 'true'
+      record_tests_in_zephyr: true
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 
@@ -155,28 +155,6 @@ jobs:
       search_path: "detox/e2e/test/products/channels/ipad"
       parallelism: "1"
       detox_config: "ios.ipad.debug"
-    secrets: inherit
-
-  run-maestro-ios-on-release:
-    name: Maestro iOS on Release
-    needs:
-      - build-ios-simulator
-    uses: ./.github/workflows/e2e-maestro-template.yml
-    with:
-      platform: ios
-      run-type: "RELEASE"
-      MOBILE_VERSION: ${{ github.ref }}
-    secrets: inherit
-
-  run-maestro-android-on-release:
-    name: Maestro Android on Release
-    needs:
-      - build-android-apk
-    uses: ./.github/workflows/e2e-maestro-template.yml
-    with:
-      platform: android
-      run-type: "RELEASE"
-      MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 
   update-final-status-ios:

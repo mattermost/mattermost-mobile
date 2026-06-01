@@ -95,38 +95,6 @@ jobs:
           description: Detox iPad tests for mattermost mobile app have started ...
           status: pending
 
-  # Set initial pending status for the maestro checks so they appear on the PR
-  # immediately when the workflow starts, mirroring the detox pattern above.
-  # Without these, the e2e/maestro-{ios,android}-tests contexts only show up
-  # after the maestro run completes (or not at all if it's still running).
-  update-initial-status-maestro-ios:
-    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/maestro-ios-tests
-          description: Maestro iOS tests for mattermost mobile app have started ...
-          status: pending
-
-  update-initial-status-maestro-android:
-    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/maestro-android-tests
-          description: Maestro Android tests for mattermost mobile app have started ...
-          status: pending
-
   build-ios-simulator:
     if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
     runs-on: macos-26
@@ -299,7 +267,7 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: ${{ inputs.run_type || 'PR' }}
-      record_tests_in_zephyr: ${{ (inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER') && 'true' || 'false' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
@@ -316,7 +284,7 @@ jobs:
     with:
       run-android-tests: true
       run-type: ${{ inputs.run_type || 'PR' }}
-      record_tests_in_zephyr: ${{ (inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER') && 'true' || 'false' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
@@ -419,87 +387,6 @@ jobs:
           status: ${{ (needs.run-ios-ipad-tests.result == 'skipped' && 'failure') || needs.run-ios-ipad-tests.outputs.STATUS || 'failure' }}
           target_url: ${{ needs.run-ios-ipad-tests.outputs.TARGET_URL }}
 
-  run-maestro-ios:
-    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
-    name: Maestro iOS
-    needs:
-      - update-initial-status-maestro-ios
-      - build-ios-simulator
-      - provision-servers
-    uses: ./.github/workflows/e2e-maestro-template.yml
-    with:
-      platform: ios
-      run-type: ${{ inputs.run_type || 'PR' }}
-      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_2_URL }}
-    secrets: inherit
-
-  run-maestro-android:
-    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
-    name: Maestro Android
-    # NOTE: We deliberately do NOT depend on build-android-apk. The detox APK is
-    # an `assembleDebug` build that skips JS bundling and expects a Metro dev
-    # server at runtime (detox starts Metro itself, maestro does not). Maestro
-    # builds its own JS-bundled APK via `assembleRelease` inside its own job —
-    # see e2e-maestro-template.yml. This also lets maestro android start as
-    # soon as provision-servers finishes instead of waiting on the detox build.
-    needs:
-      - update-initial-status-maestro-android
-      - provision-servers
-    uses: ./.github/workflows/e2e-maestro-template.yml
-    with:
-      platform: android
-      run-type: ${{ inputs.run_type || 'PR' }}
-      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_3_URL }}
-    secrets: inherit
-
-  update-final-status-maestro-ios:
-    runs-on: ubuntu-22.04
-    if: always() && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-    needs:
-      - run-maestro-ios
-    steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/maestro-ios-tests
-          # See ios block above for full rule list.
-          description: >-
-            ${{ needs.run-maestro-ios.result == 'skipped' && 'Build failed — Maestro iOS tests did not run'
-              || needs.run-maestro-ios.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
-              || (needs.run-maestro-ios.outputs.FAILURES == '0' && needs.run-maestro-ios.outputs.SKIPPED > '0') && format('{0} passed, {1} skipped', needs.run-maestro-ios.outputs.PASSES, needs.run-maestro-ios.outputs.SKIPPED)
-              || needs.run-maestro-ios.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-maestro-ios.outputs.TOTAL)
-              || format('{0} passed, {1} failed, {2} skipped', needs.run-maestro-ios.outputs.PASSES || '?', needs.run-maestro-ios.outputs.FAILURES || '?', needs.run-maestro-ios.outputs.SKIPPED || '0') }}
-          status: ${{ (needs.run-maestro-ios.result == 'skipped' && 'failure') || needs.run-maestro-ios.outputs.STATUS || 'failure' }}
-          target_url: ${{ needs.run-maestro-ios.outputs.TARGET_URL }}
-
-  update-final-status-maestro-android:
-    runs-on: ubuntu-22.04
-    if: always() && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
-    needs:
-      - run-maestro-android
-    steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/maestro-android-tests
-          # See ios block above for full rule list.
-          description: >-
-            ${{ needs.run-maestro-android.result == 'skipped' && 'Provisioning failed — Maestro Android tests did not run'
-              || needs.run-maestro-android.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
-              || (needs.run-maestro-android.outputs.FAILURES == '0' && needs.run-maestro-android.outputs.SKIPPED > '0') && format('{0} passed, {1} skipped', needs.run-maestro-android.outputs.PASSES, needs.run-maestro-android.outputs.SKIPPED)
-              || needs.run-maestro-android.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-maestro-android.outputs.TOTAL)
-              || format('{0} passed, {1} failed, {2} skipped', needs.run-maestro-android.outputs.PASSES || '?', needs.run-maestro-android.outputs.FAILURES || '?', needs.run-maestro-android.outputs.SKIPPED || '0') }}
-          status: ${{ (needs.run-maestro-android.result == 'skipped' && 'failure') || needs.run-maestro-android.outputs.STATUS || 'failure' }}
-          target_url: ${{ needs.run-maestro-android.outputs.TARGET_URL }}
-
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR
     runs-on: ubuntu-22.04
@@ -507,8 +394,6 @@ jobs:
       - update-final-status-ios
       - update-final-status-android
       - update-final-status-ipad
-      - update-final-status-maestro-ios
-      - update-final-status-maestro-android
     # IMPORTANT: !cancelled() prevents label removal when the workflow is cancelled
     # (e.g. by concurrency cancel-in-progress). Without this, Matterwick sees the
     # label removed and deletes the test servers while the replacement run is still

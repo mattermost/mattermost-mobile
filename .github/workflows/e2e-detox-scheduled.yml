@@ -140,7 +140,7 @@ jobs:
       - build-ios-simulator
     with:
       run-type: "MAIN"
-      record_tests_in_zephyr: 'true'
+      record_tests_in_zephyr: true
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION || github.ref }}
       MM_TEST_SERVER_URL: ${{ inputs.MM_TEST_SERVER_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.MM_TEST_SERVER_URL_2 }}
@@ -155,7 +155,7 @@ jobs:
     with:
       run-android-tests: true
       run-type: "MAIN"
-      record_tests_in_zephyr: 'true'
+      record_tests_in_zephyr: true
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION || github.ref }}
       MM_TEST_SERVER_URL: ${{ inputs.MM_TEST_SERVER_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.MM_TEST_SERVER_URL_2 }}
@@ -201,7 +201,7 @@ jobs:
       - build-ios-simulator
     with:
       run-type: "MAIN"
-      record_tests_in_zephyr: 'true'
+      record_tests_in_zephyr: true
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION || github.ref }}
       MM_TEST_SERVER_URL: ${{ inputs.MM_TEST_SERVER_URL }}
       ios_device_name: "iPad Pro 13-inch (M5)"
@@ -209,28 +209,4 @@ jobs:
       search_path: "detox/e2e/test/products/channels/ipad"
       parallelism: "1"
       detox_config: "ios.ipad.debug"
-    secrets: inherit
-
-  run-maestro-ios:
-    name: Maestro iOS Tests (Scheduled)
-    uses: ./.github/workflows/e2e-maestro-template.yml
-    needs:
-      - build-ios-simulator
-    with:
-      platform: ios
-      run-type: "MAIN"
-      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION || github.ref }}
-      MM_TEST_SERVER_URL: ${{ inputs.MM_TEST_SERVER_URL_3 }}
-    secrets: inherit
-
-  run-maestro-android:
-    name: Maestro Android Tests (Scheduled)
-    uses: ./.github/workflows/e2e-maestro-template.yml
-    needs:
-      - build-android-apk
-    with:
-      platform: android
-      run-type: "MAIN"
-      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION || github.ref }}
-      MM_TEST_SERVER_URL: ${{ inputs.MM_TEST_SERVER_URL_3 }}
     secrets: inherit

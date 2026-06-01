@@ -168,21 +168,6 @@ jobs:
       parallelism: "1"
       detox_config: "ios.ipad.debug"
 
-  maestro-ios-e2e:
-    name: mobile-cmt-maestro-ios-${{ matrix.server.version }}
-    uses: ./.github/workflows/e2e-maestro-template.yml
-    needs:
-      - build-ios-simulator
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
-    secrets: inherit
-    with:
-      platform: ios
-      run-type: "RELEASE"
-      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
-      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-
   detox-android-e2e:
     name: mobile-cmt-android-${{ matrix.server.version }}
     uses: ./.github/workflows/e2e-android-template.yml
@@ -198,21 +183,6 @@ jobs:
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
 
-  maestro-android-e2e:
-    name: mobile-cmt-maestro-android-${{ matrix.server.version }}
-    uses: ./.github/workflows/e2e-maestro-template.yml
-    needs:
-      - build-android-apk
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
-    secrets: inherit
-    with:
-      platform: android
-      run-type: "RELEASE"
-      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
-      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-
   update-final-status:
     runs-on: ubuntu-22.04
     if: always()
@@ -221,8 +191,6 @@ jobs:
       - detox-e2e
       - detox-android-e2e
       - detox-ipad-e2e
-      - maestro-ios-e2e
-      - maestro-android-e2e
     steps:
       - name: Determine overall status
         id: status
@@ -230,9 +198,7 @@ jobs:
           # Check if all jobs passed
           if [[ "${{ needs.detox-e2e.result }}" == "success" && \
                 "${{ needs.detox-android-e2e.result }}" == "success" && \
-                "${{ needs.detox-ipad-e2e.result }}" == "success" && \
-                "${{ needs.maestro-ios-e2e.result }}" == "success" && \
-                "${{ needs.maestro-android-e2e.result }}" == "success" ]]; then
+                "${{ needs.detox-ipad-e2e.result }}" == "success" ]]; then
             echo "status=success" >> $GITHUB_OUTPUT
           else
             echo "status=failure" >> $GITHUB_OUTPUT

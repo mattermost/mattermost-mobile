@@ -40,8 +40,8 @@ on:
       record_tests_in_zephyr:
         description: "Record test results in Zephyr, typically for nightly and release runs"
         required: false
-        type: string
-        default: 'false'
+        type: boolean
+        default: false
       ios_device_name:
         description: "iPhone simulator name"
         required: false
