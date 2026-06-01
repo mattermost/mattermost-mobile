@@ -38,6 +38,7 @@ const MAKE_PRIVATE_MARGIN_BOTTOM = 32;
 const BOTTOM_AUTOCOMPLETE_SEPARATION = Platform.select({ios: 10, default: 10});
 const LIST_PADDING = 32;
 const AUTOCOMPLETE_ADJUST = 5;
+const PORTAL_NAME = 'channel_info_form_autocomplete';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
@@ -355,7 +356,7 @@ export default function ChannelInfoForm({
                         </View>
                     </View>
                 </TouchableWithoutFeedback>
-                <PortalHost name='autocomplete'/>
+                <PortalHost name={PORTAL_NAME}/>
             </KeyboardAwareScrollView>
             <Autocomplete
                 position={animatedAutocompletePosition}
@@ -367,6 +368,7 @@ export default function ChannelInfoForm({
                 shouldDirectlyReact={false}
                 growDown={growDown}
                 usePortal={true}
+                portalName={PORTAL_NAME}
             />
         </View>
     );

@@ -30,6 +30,8 @@ const THREAD_POST_DRAFT_TESTID = 'thread.post_draft';
 // This follows the same pattern as draft_input.tsx: `${testID}.post.input`
 const THREAD_POST_INPUT_NATIVE_ID = `${THREAD_POST_DRAFT_TESTID}.post.input`;
 
+const PORTAL_NAME = 'thread_autocomplete';
+
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
@@ -82,7 +84,7 @@ const ThreadContent = ({
                     location={Screens.THREAD}
                 />
             </KeyboardAwarePostDraftContainer>
-            <PortalHost name='autocomplete'/>
+            <PortalHost name={PORTAL_NAME}/>
         </KeyboardStateProvider>
     );
 };

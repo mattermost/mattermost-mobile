@@ -28,6 +28,8 @@ const CHANNEL_POST_DRAFT_TESTID = 'channel.post_draft';
 // This follows the same pattern as draft_input.tsx: `${testID}.post.input`
 const CHANNEL_POST_INPUT_NATIVE_ID = `${CHANNEL_POST_DRAFT_TESTID}.post.input`;
 
+const PORTAL_NAME = 'channel_autocomplete';
+
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
@@ -70,7 +72,7 @@ const ChannelContent = ({
                     location={Screens.CHANNEL}
                 />
             </KeyboardAwarePostDraftContainer>
-            <PortalHost name='autocomplete'/>
+            <PortalHost name={PORTAL_NAME}/>
         </KeyboardStateProvider>
     );
 };

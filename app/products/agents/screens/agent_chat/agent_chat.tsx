@@ -51,6 +51,8 @@ const AGENT_CHAT_TESTID = 'agent_chat.post_draft';
 // This follows the same pattern as draft_input.tsx: `${testID}.post.input`
 const AGENT_CHAT_INPUT_NATIVE_ID = `${AGENT_CHAT_TESTID}.post.input`;
 
+const PORTAL_NAME = 'agent_chat_autocomplete';
+
 const AgentChat = ({bots}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -246,9 +248,10 @@ const AgentChat = ({bots}: Props) => {
                         isChannelScreen={false}
                         location={Screens.AGENT_CHAT}
                         onPostCreated={handlePostCreated}
+                        portalName={PORTAL_NAME}
                     />
                 </KeyboardAwarePostDraftContainer>
-                <PortalHost name='autocomplete'/>
+                <PortalHost name={PORTAL_NAME}/>
             </KeyboardStateProvider>
         </SafeAreaView>
     );
