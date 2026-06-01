@@ -6,15 +6,21 @@ import React from 'react';
 import {DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
+import {useIsInitialSync} from '@hooks/is_initial_sync';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {renderWithEverything, act, waitFor, screen, waitForElementToBeRemoved} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+
+import RawCategories from './categories';
 
 import Categories from './index';
 
 import type Database from '@nozbe/watermelondb/Database';
 
 jest.mock('@managers/performance_metrics_manager');
+jest.mock('@hooks/is_initial_sync', () => ({
+    useIsInitialSync: jest.fn(),
+}));
 
 describe('Categories', () => {
     describe('components/channel_list/categories', () => {
@@ -44,6 +50,44 @@ describe('Categories', () => {
             await waitFor(() => {
                 expect(wrapper.toJSON()).toBeTruthy();
             });
+        });
+    });
+
+    describe('cold start gate', () => {
+        let database: Database;
+        const serverUrl = 'http://www.coldstart-categories.com';
+        beforeAll(async () => {
+            const server = await TestHelper.setupServerDatabase(serverUrl);
+            database = server.database;
+        });
+
+        afterEach(async () => {
+            cleanup();
+            (useIsInitialSync as jest.Mock).mockReset();
+
+            // Allow observables to settle before next test
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+
+        afterAll(async () => {
+            await TestHelper.tearDown();
+        });
+
+        it('should show the loader and suppress the error while initial sync is in progress', () => {
+            (useIsInitialSync as jest.Mock).mockReturnValue(true);
+
+            renderWithEverything(
+                <RawCategories
+                    flattenedItems={[]}
+                    unreadChannelIds={new Set()}
+                    onlyUnreads={false}
+                    isTablet={false}
+                />,
+                {database, serverUrl},
+            );
+
+            expect(screen.getByTestId('categories.loading')).toBeVisible();
+            expect(screen.queryByText('There was a problem loading content for this server.')).toBeNull();
         });
     });
 

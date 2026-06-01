@@ -35,7 +35,7 @@ import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
-import {clearTeamLoading, setTeamLoading} from '@store/team_load_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 
@@ -119,8 +119,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         AppsManager.refreshAppBindings(serverUrl, groupLabel);
         return undefined;
     } finally {
-        logDebug('doReconnect: clearTeamLoading', serverUrl);
-        clearTeamLoading(serverUrl);
+        setTeamLoading(serverUrl, false);
     }
 }
 

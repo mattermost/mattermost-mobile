@@ -14,7 +14,6 @@ import {PostTypes} from '@constants/post';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
-import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getLastViewedChannelIdAndServer, getLastViewedTeamIdAndServer, getLastViewedThreadIdAndServer, getOnboardingViewed} from '@queries/app/global';
 import {getActiveServer, getAllServers} from '@queries/app/servers';
@@ -23,7 +22,6 @@ import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {queryMyTeams} from '@queries/servers/team';
 import {getExpoRouterPath} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {setTeamLoading} from '@store/team_load_store';
 import {handleDeepLink, getLaunchPropsFromDeepLink} from '@utils/deep_link';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
@@ -266,10 +264,6 @@ async function determineAuthenticatedRoute(props: LaunchProps): Promise<ExpoRout
 
     const lastViewedTeam = await getLastViewedTeamIdAndServer();
     if (lastViewedTeam?.server_url === props.serverUrl && lastViewedTeam.team_id) {
-        if (EphemeralModeManager.isZeroPersistenceMode(props.serverUrl!)) {
-            logInfo('determineAuthenticatedRoute: ZPM cold start with lastViewedTeam, suppressing LoadChannelsError during initial load');
-            setTeamLoading(props.serverUrl!, true);
-        }
         return {route: '/(authenticated)/(home)', params: props};
     }
 

@@ -88,7 +88,6 @@ class EphemeralModeManagerSingleton {
         this.configSubscriptions[serverUrl]?.unsubscribe();
         delete this.configSubscriptions[serverUrl];
         delete this.offlineSubjects[serverUrl];
-        delete this.evalQueue[serverUrl];
         this.maybeRemoveAppStateListener();
     };
 
@@ -204,9 +203,11 @@ class EphemeralModeManagerSingleton {
             }
             return;
         }
+
         if (appState !== 'active') {
             return;
         }
+
         for (const [url, entry] of this.trackedServers) {
             if (entry.kind !== 'mem') {
                 continue;
@@ -254,9 +255,9 @@ class EphemeralModeManagerSingleton {
             return;
         }
 
-        const persisted = await getDisconnectedSince(database);
+        const currentDisconnectedSince = await getDisconnectedSince(database);
 
-        if (persisted === undefined) {
+        if (currentDisconnectedSince === undefined) {
             // Fresh timers only start on foreground transitions, not on init-resume or while backgrounded.
             if (isResume || AppState.currentState !== 'active') {
                 return;
@@ -267,7 +268,7 @@ class EphemeralModeManagerSingleton {
             return;
         }
 
-        const elapsed = Date.now() - persisted;
+        const elapsed = Date.now() - currentDisconnectedSince;
         const threshold = entry.thresholdMs;
         if (elapsed >= threshold) {
             this.clearDisconnectionTimer(serverUrl);

@@ -13,6 +13,7 @@ import {Events, Screens} from '@constants';
 import {HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsInitialSync} from '@hooks/is_initial_sync';
 import {useTeamSwitch} from '@hooks/team_switch';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {isDMorGM} from '@utils/channel';
@@ -65,6 +66,7 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
     const listRef = useRef<FlashListRef<FlattenedItem> | null>(null);
     const serverUrl = useServerUrl();
     const switchingTeam = useTeamSwitch();
+    const isInitialSync = useIsInitialSync(serverUrl);
     const [initialLoad, setInitialLoad] = useState(flattenedItems.length === 0);
     const [isChannelScreenActive, setChannelScreenActive] = useState(true);
     const [listHeight, setListHeight] = useState(0);
@@ -218,13 +220,15 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
         return undefined;
     }, [showEmptyState, listHeight]);
 
-    if (flattenedItems.length === 0 && !switchingTeam && !initialLoad && !onlyUnreads) {
+    if (flattenedItems.length === 0 && !switchingTeam && !initialLoad && !onlyUnreads && !isInitialSync) {
         return <LoadCategoriesError/>;
     }
 
+    const showLoading = switchingTeam || initialLoad || (isInitialSync && flattenedItems.length === 0);
+
     return (
         <>
-            {!switchingTeam && !initialLoad && (
+            {!showLoading && (
                 <FlashList<FlattenedItem>
                     ref={listRef}
                     data={flattenedItems}
@@ -240,7 +244,7 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
                     viewabilityConfig={VIEWABILITY_CONFIG}
                 />
             )}
-            {(switchingTeam || initialLoad) && (
+            {showLoading && (
                 <View style={styles.loadingView}>
                     <Loading
                         size='large'
