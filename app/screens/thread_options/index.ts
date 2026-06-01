@@ -2,9 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import React from 'react';
 
-import {useServerUrl} from '@context/server';
+import {withServerUrl} from '@context/server';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeThreadById} from '@queries/servers/thread';
@@ -17,7 +16,7 @@ export type ThreadOptionsProps = {
     threadId: string;
 };
 
-type Props = ThreadOptionsProps & WithDatabaseArgs & {serverUrl?: string};
+type Props = ThreadOptionsProps & WithDatabaseArgs & {serverUrl: string};
 
 const enhanced = withObservables(['threadId', 'serverUrl'], ({database, serverUrl, threadId}: Props) => {
     return {
@@ -28,14 +27,4 @@ const enhanced = withObservables(['threadId', 'serverUrl'], ({database, serverUr
     };
 });
 
-const EnhancedThreadOptions = withDatabase(enhanced(ThreadOptions));
-
-type EnhancedThreadOptionsProps = React.ComponentProps<typeof EnhancedThreadOptions>;
-
-export default function ThreadOptionsWithServerUrl(props: Omit<EnhancedThreadOptionsProps, 'serverUrl'>) {
-    const serverUrl = useServerUrl();
-    return React.createElement(EnhancedThreadOptions, {
-        ...props,
-        serverUrl,
-    });
-}
+export default withDatabase(withServerUrl(enhanced(ThreadOptions)));
