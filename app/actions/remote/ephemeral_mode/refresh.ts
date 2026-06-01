@@ -53,8 +53,8 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
 
         if (credentials?.token) {
             logInfo('restartSession: creating websocket client');
-            const client = await WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
-            await client.initialize();
+            await WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
+            await WebsocketManager.initializeClient(serverUrl);
         }
 
         // Touch lastActiveAt so withServerDatabase's subscribeActiveServers observer fires and

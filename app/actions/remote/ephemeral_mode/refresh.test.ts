@@ -23,7 +23,7 @@ jest.mock('@init/credentials', () => ({
 }));
 jest.mock('@managers/websocket_manager', () => ({
     __esModule: true,
-    default: {invalidateClient: jest.fn(), createClient: jest.fn()},
+    default: {invalidateClient: jest.fn(), createClient: jest.fn(), initializeClient: jest.fn()},
 }));
 jest.mock('@queries/servers/system', () => ({
     getCurrentChannelId: jest.fn(),
@@ -40,7 +40,6 @@ describe('applyPersistenceModeChange', () => {
     const mockOperator = {
         batchRecords: jest.fn().mockResolvedValue(undefined),
     };
-    const mockWsClient = {initialize: jest.fn().mockResolvedValue(undefined)};
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -61,7 +60,6 @@ describe('applyPersistenceModeChange', () => {
             token: 'tok',
             preauthSecret: 'preauth',
         });
-        jest.mocked(WebsocketManager.createClient).mockResolvedValue(mockWsClient as never);
     });
 
     afterEach(() => {
@@ -75,6 +73,7 @@ describe('applyPersistenceModeChange', () => {
         expect(wipeServerDataSpy).toHaveBeenCalledWith(serverUrl);
         expect(refetchCurrentUser).toHaveBeenCalledWith(serverUrl, undefined);
         expect(WebsocketManager.createClient).toHaveBeenCalledWith(serverUrl, 'tok', 'preauth');
+        expect(WebsocketManager.initializeClient).toHaveBeenCalledWith(serverUrl);
         expect(setActiveServerDatabaseSpy).toHaveBeenCalledWith(serverUrl);
         expect(result).toEqual({});
     });
@@ -86,6 +85,7 @@ describe('applyPersistenceModeChange', () => {
 
         expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(serverUrl);
         expect(WebsocketManager.createClient).not.toHaveBeenCalled();
+        expect(WebsocketManager.initializeClient).not.toHaveBeenCalled();
     });
 
     it('returns the error and skips active-DB update when the wipe throws', async () => {
