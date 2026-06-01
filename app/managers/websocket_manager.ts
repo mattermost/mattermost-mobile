@@ -323,8 +323,13 @@ class WebsocketManagerSingleton {
         }
         this.isBackgroundTimerRunning = true;
         this.backgroundTimerId = BackgroundTimer.setTimeout(() => {
-            this.closeAll();
             this.isBackgroundTimerRunning = false;
+
+            if (hasActiveNativeCall()) {
+                return;
+            }
+
+            this.closeAll();
         }, WAIT_TO_CLOSE);
     };
 

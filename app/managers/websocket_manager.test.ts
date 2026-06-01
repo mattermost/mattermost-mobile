@@ -294,6 +294,46 @@ describe('WebsocketManager', () => {
             expect(BackgroundTimer.setTimeout).not.toHaveBeenCalled();
         });
 
+        it('skips closeAll if a new native call started during the grace window', () => {
+            const mockAppStateChange = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
+            mockAppStateChange('active');
+            mockAppStateChange('background');
+
+            let capturedCallback: (() => void) | undefined;
+            jest.spyOn(BackgroundTimer, 'setTimeout').mockImplementation((cb) => {
+                capturedCallback = cb;
+                return 99;
+            });
+            (manager as any).isBackgroundTimerRunning = false;
+            manager.scheduleBackgroundCloseIfNeeded();
+
+            jest.clearAllMocks();
+            jest.mocked(hasActiveNativeCall).mockReturnValue(true);
+            capturedCallback!();
+
+            expect(mockWebSocketClient.close).not.toHaveBeenCalled();
+        });
+
+        it('closes connections when no native call is active at timer fire', () => {
+            const mockAppStateChange = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
+            mockAppStateChange('active');
+            mockAppStateChange('background');
+
+            let capturedCallback: (() => void) | undefined;
+            jest.spyOn(BackgroundTimer, 'setTimeout').mockImplementation((cb) => {
+                capturedCallback = cb;
+                return 100;
+            });
+            (manager as any).isBackgroundTimerRunning = false;
+            manager.scheduleBackgroundCloseIfNeeded();
+
+            jest.clearAllMocks();
+            jest.mocked(hasActiveNativeCall).mockReturnValue(false);
+            capturedCallback!();
+
+            expect(mockWebSocketClient.close).toHaveBeenCalledWith(true);
+        });
+
         it('should handle network state changes', () => {
             const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
             mockNetInfoCallback({isConnected: false, type: 'none'});
