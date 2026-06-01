@@ -279,9 +279,17 @@ jobs:
 
       - name: Resolve flow path
         id: resolve-flow-path
+        env:
+          FLOW_PATH_INPUT: ${{ inputs.flow-path }}
         run: |
-          if [ -n "${{ inputs.flow-path }}" ]; then
-            echo "flow_path=${{ inputs.flow-path }}" >> $GITHUB_OUTPUT
+          if [ -n "$FLOW_PATH_INPUT" ]; then
+            # Reject anything outside a safe whitelist (paths, spaces, dashes)
+            # to prevent command injection via the workflow input.
+            if ! printf '%s' "$FLOW_PATH_INPUT" | grep -Eq '^[A-Za-z0-9_./ -]+$'; then
+              echo "Invalid flow-path input: $FLOW_PATH_INPUT"
+              exit 1
+            fi
+            printf 'flow_path=%s\n' "$FLOW_PATH_INPUT" >> "$GITHUB_OUTPUT"
           else
             # iOS: run single-device flows. seed.ts now enables Calls in the
             # test channel (POST /plugins/com.mattermost.calls/{channelId}),
@@ -289,17 +297,21 @@ jobs:
             # separate calls_seed.ts step.
             # Excluded: file_type_preview.yml (requires seed_file_preview.ts for file IDs)
             #           channel_bookmark_file_android_picker.yml (Android-only picker)
-            echo "flow_path=maestro/flows/account maestro/flows/calls maestro/flows/channels/channel_bookmark_file.yml maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/share_extension maestro/flows/timezone" >> $GITHUB_OUTPUT
+            printf 'flow_path=%s\n' "maestro/flows/account maestro/flows/calls maestro/flows/channels/channel_bookmark_file.yml maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/share_extension maestro/flows/timezone" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run Maestro Flows (iOS)
+        env:
+          FLOW_PATH: ${{ steps.resolve-flow-path.outputs.flow_path }}
         run: |
           set -a
           source maestro/.maestro-test-env.sh
           set +a
 
           mkdir -p build
-          FLOW_PATH="${{ steps.resolve-flow-path.outputs.flow_path }}"
+          # Split the (already validated) space-separated path list into an
+          # array so it expands as distinct args without re-globbing/injection.
+          read -r -a FLOW_PATH_ARR <<< "$FLOW_PATH"
 
           # Exclude MM-T67856_4 from the main run — it requires
           # AllowDownloadLogs=false on the server, set in the dedicated step
@@ -317,7 +329,7 @@ jobs:
             --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
-            $FLOW_PATH
+            "${FLOW_PATH_ARR[@]}"
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (iOS)
         # Isolated step: patch the server config to AllowDownloadLogs=false,
@@ -539,9 +551,17 @@ jobs:
 
       - name: Resolve flow path
         id: resolve-flow-path
+        env:
+          FLOW_PATH_INPUT: ${{ inputs.flow-path }}
         run: |
-          if [ -n "${{ inputs.flow-path }}" ]; then
-            echo "flow_path=${{ inputs.flow-path }}" >> $GITHUB_OUTPUT
+          if [ -n "$FLOW_PATH_INPUT" ]; then
+            # Reject anything outside a safe whitelist (paths, spaces, dashes)
+            # to prevent command injection via the workflow input.
+            if ! printf '%s' "$FLOW_PATH_INPUT" | grep -Eq '^[A-Za-z0-9_./ -]+$'; then
+              echo "Invalid flow-path input: $FLOW_PATH_INPUT"
+              exit 1
+            fi
+            printf 'flow_path=%s\n' "$FLOW_PATH_INPUT" >> "$GITHUB_OUTPUT"
           else
             # Android: skip share_extension (cross-app) and multi_device.
             # The two-device orchestration flows that only work via
@@ -553,7 +573,7 @@ jobs:
             # `platform:` clauses. File fixture is pushed via `adb push` in
             # the "Install APK" step. channel_bookmark_link_external is
             # also cross-platform.
-            echo "flow_path=maestro/flows/account maestro/flows/calls maestro/flows/channels/channel_bookmark_file.yml maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/timezone" >> $GITHUB_OUTPUT
+            printf 'flow_path=%s\n' "maestro/flows/account maestro/flows/calls maestro/flows/channels/channel_bookmark_file.yml maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/timezone" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Enable KVM
@@ -678,13 +698,17 @@ jobs:
           fi
 
       - name: Run Maestro Flows (Android)
+        env:
+          FLOW_PATH: ${{ steps.resolve-flow-path.outputs.flow_path }}
         run: |
           set -a
           source maestro/.maestro-test-env.sh
           set +a
 
           mkdir -p build
-          FLOW_PATH="${{ steps.resolve-flow-path.outputs.flow_path }}"
+          # Split the (already validated) space-separated path list into an
+          # array so it expands as distinct args without re-globbing/injection.
+          read -r -a FLOW_PATH_ARR <<< "$FLOW_PATH"
 
           # Exclude MM-T67856_4 from the main run (requires
           # AllowDownloadLogs=false; handled by the dedicated step below).
@@ -702,7 +726,7 @@ jobs:
             --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
-            $FLOW_PATH
+            "${FLOW_PATH_ARR[@]}"
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (Android)
         # Isolated step: patch server config to AllowDownloadLogs=false, run
