@@ -6,6 +6,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {querySavedPostsPreferences, queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -153,12 +154,22 @@ describe('preferences', () => {
         (querySavedPostsPreferences as jest.Mock).mockReturnValueOnce({fetch: jest.fn(() => [prefModel])});
         const batchSpy = jest.spyOn(operator, 'batchRecords').mockResolvedValueOnce(undefined);
 
+        // Mock out the real implementation: it schedules a 2-minute timer that
+        // would otherwise leak across tests. We only need to assert it is called.
+        const unsavedSpy = jest.spyOn(EphemeralStore, 'addRecentlyUnsavedSavedPost').mockImplementation(() => {});
+
         const result = await deleteSavedPost(serverUrl, post1.id);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.preference).toBeDefined();
         expect(prefModel.prepareDestroyPermanently).toHaveBeenCalledTimes(1);
         expect(batchSpy).toHaveBeenCalledWith([preparedRecord], 'deleteSavedPost');
+
+        // The unsave must be recorded so the echoed websocket re-save is ignored.
+        expect(unsavedSpy).toHaveBeenCalledTimes(1);
+        expect(unsavedSpy).toHaveBeenCalledWith(serverUrl, post1.id);
+
+        unsavedSpy.mockRestore();
     });
 
     it('openChannelIfNeeded - handle not found database', async () => {

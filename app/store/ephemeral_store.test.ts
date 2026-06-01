@@ -148,11 +148,13 @@ describe('EphemeralStore', () => {
 
             const calls = mockCallback.mock.calls;
             const lastSet = calls[calls.length - 1][0] as Set<string>;
+            expect(lastSet.size).toBe(2);
             expect(lastSet.has(postId)).toBe(true);
             expect(lastSet.has('post-id-2')).toBe(true);
 
             EphemeralStore.clearRecentlyUnsavedSavedPost(serverUrl, 'post-id-2');
             const afterClearSet = calls[calls.length - 1][0] as Set<string>;
+            expect(afterClearSet.size).toBe(1);
             expect(afterClearSet.has(postId)).toBe(true);
             expect(afterClearSet.has('post-id-2')).toBe(false);
 
