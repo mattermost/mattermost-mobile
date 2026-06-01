@@ -253,23 +253,7 @@ jobs:
       - maestro-ios-e2e
       - maestro-android-e2e
     steps:
-      - name: Determine overall status
-        id: status
-        run: |
-          # Check if all jobs passed
-          if [[ "${{ needs.detox-e2e.result }}" == "success" && \
-                "${{ needs.detox-android-e2e.result }}" == "success" && \
-                "${{ needs.detox-ipad-e2e.result }}" == "success" ]]; then
-            echo "status=success" >> $GITHUB_OUTPUT
-          else
-            echo "status=failure" >> $GITHUB_OUTPUT
-          fi
-
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-
-      - uses: ./.github/actions/update-commit-status
+      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -277,8 +261,11 @@ jobs:
           commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
           context: e2e/compatibility-matrix-testing
           description: Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version
-          status: ${{ steps.status.outputs.status }}
-          target_url: ${{ needs.detox-e2e.outputs.TARGET_URL }}
+          # Aggregate all three E2E suites: report success only when detox AND
+          # both maestro suites succeed, otherwise failure. target_url points at
+          # the first suite that produced a report.
+          status: ${{ (needs.detox-e2e.outputs.STATUS == 'success' && needs.maestro-ios-e2e.outputs.STATUS == 'success' && needs.maestro-android-e2e.outputs.STATUS == 'success') && 'success' || 'failure' }}
+          target_url: ${{ needs.detox-e2e.outputs.TARGET_URL || needs.maestro-ios-e2e.outputs.TARGET_URL || needs.maestro-android-e2e.outputs.TARGET_URL }}
 
       - name: cmt/cleanup-instances
         if: ${{ inputs.cmt_run_id != '0' && inputs.cmt_run_id != '' }}
