@@ -4,11 +4,13 @@ name: E2E Nightly Trigger
 # Matterwick receives the workflow_run:requested event, provisions 3 Mattermost cloud
 # instances, and dispatches e2e-detox-pr.yml with the instance URLs.
 # When e2e-detox-pr.yml completes, Matterwick destroys the provisioned instances.
+#
+# Schedule-only. Pushes to main and release-* are handled by Matterwick's push-event handler
+# directly (E2EAutoTriggerOnMaster / E2EAutoTriggerOnRelease in the deployed config). Keeping a
+# push trigger here would make both Matterwick paths fire for every push — producing 2x cloud
+# instances and 2x e2e-detox-pr.yml runs per commit. The native push handler is the single
+# canonical driver for push runs.
 on:
-  push:
-    branches:
-      - main
-      - 'release-*'
   schedule:
     - cron: "0 0 * * *" # Every day at midnight UTC
 
