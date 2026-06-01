@@ -56,7 +56,7 @@ jobs:
     if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
     runs-on: ubuntu-22.04
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -70,7 +70,7 @@ jobs:
     if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
     runs-on: ubuntu-22.04
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -88,7 +88,7 @@ jobs:
     if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
     runs-on: ubuntu-22.04
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -102,7 +102,7 @@ jobs:
     if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
     runs-on: ubuntu-22.04
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -303,7 +303,7 @@ jobs:
     needs:
       - run-ios-tests
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -320,7 +320,7 @@ jobs:
     needs:
       - run-android-tests
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -343,7 +343,9 @@ jobs:
       platform: ios
       run-type: ${{ inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_2_URL }}
+      # SITE_2_URL is optional; fall back to the required SITE_1_URL so the job
+      # never runs against an empty server URL when only SITE_1_URL is provided.
+      MM_TEST_SERVER_URL: ${{ inputs.SITE_2_URL || inputs.SITE_1_URL }}
     secrets: inherit
 
   run-maestro-android:
@@ -363,7 +365,9 @@ jobs:
       platform: android
       run-type: ${{ inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_3_URL }}
+      # SITE_3_URL is optional; fall back to the required SITE_1_URL so the job
+      # never runs against an empty server URL when only SITE_1_URL is provided.
+      MM_TEST_SERVER_URL: ${{ inputs.SITE_3_URL || inputs.SITE_1_URL }}
     secrets: inherit
 
   update-final-status-maestro-ios:
@@ -372,7 +376,7 @@ jobs:
     needs:
       - run-maestro-ios
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -395,7 +399,7 @@ jobs:
     needs:
       - run-maestro-android
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:

@@ -42,6 +42,12 @@ on:
         value: ${{ jobs.e2e-maestro-ios.outputs.SKIPPED || jobs.e2e-maestro-android.outputs.SKIPPED }}
       PERCENTAGE:
         value: ${{ jobs.e2e-maestro-ios.outputs.PERCENTAGE || jobs.e2e-maestro-android.outputs.PERCENTAGE }}
+
+# Least-privilege token: maestro jobs only check out code and talk to the test
+# server / AWS via dedicated secrets — they never use GITHUB_TOKEN for writes.
+# Setting this here caps the token for every caller of this reusable workflow.
+permissions:
+  contents: read
 env:
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
