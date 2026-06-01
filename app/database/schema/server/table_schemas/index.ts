@@ -23,6 +23,8 @@ export {default as PostInThreadSchema} from './posts_in_thread';
 export {default as PostSchema} from './post';
 export {default as PostsInChannelSchema} from './posts_in_channel';
 export {default as PreferenceSchema} from './preference';
+export {default as PropertyFieldSchema} from './property_field';
+export {default as PropertyValueSchema} from './property_value';
 export {default as ReactionSchema} from './reaction';
 export {default as RoleSchema} from './role';
 export {default as ScheduledPostSchema} from './scheduled_post';
