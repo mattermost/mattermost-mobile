@@ -263,6 +263,10 @@ export const queryPinnedPostsInChannel = (database: Database, channelId: string)
             Q.where('channel_id', channelId),
             Q.where('is_pinned', Q.eq(true)),
         ),
+
+        // Newest-first, matching queryPostsInChannel. selectOrderedPosts (the
+        // consumer via observePinnedPostsInChannel) walks the array from the end
+        // backwards expecting oldest->newest, so it requires descending input.
         Q.sortBy('create_at', Q.desc),
     );
 };

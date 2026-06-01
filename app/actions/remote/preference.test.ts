@@ -55,6 +55,7 @@ const mockClient = {
 };
 
 beforeAll(() => {
+
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;
 });
@@ -142,6 +143,8 @@ describe('preferences', () => {
     it('deleteSavedPost - base case', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
 
+        // deleteSavedPost removes the local row via prepareDestroyPermanently() +
+        // operator.batchRecords (the codebase convention), not destroyPermanently().
         const preparedDeletion = {id: 'prepared-deletion'};
         const prefModel = {
             user_id: user1.id,
@@ -153,10 +156,15 @@ describe('preferences', () => {
         (querySavedPostsPreferences as jest.Mock).mockReturnValueOnce({fetch: jest.fn(() => [prefModel])});
         const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockResolvedValue();
 
+        // EphemeralStore is auto-mocked (jest.mock above), so addRecentlyUnsavedSavedPost
+        // is a no-op jest.fn() that never schedules the real 2-minute timer.
         const result = await deleteSavedPost(serverUrl, post1.id);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.preference).toBeDefined();
+
+        // The unsave must be recorded so the echoed websocket re-save is ignored.
+        expect(EphemeralStore.addRecentlyUnsavedSavedPost).toHaveBeenCalledTimes(1);
         expect(EphemeralStore.addRecentlyUnsavedSavedPost).toHaveBeenCalledWith(serverUrl, post1.id);
         expect(prefModel.prepareDestroyPermanently).toHaveBeenCalledTimes(1);
         expect(batchRecordsSpy).toHaveBeenCalledWith([preparedDeletion], 'deleteSavedPost');
