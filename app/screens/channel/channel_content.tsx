@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {PortalProvider} from '@gorhom/portal';
+import {PortalHost} from '@gorhom/portal';
 import React from 'react';
 import {StyleSheet} from 'react-native';
 
@@ -28,6 +28,8 @@ const CHANNEL_POST_DRAFT_TESTID = 'channel.post_draft';
 // This follows the same pattern as draft_input.tsx: `${testID}.post.input`
 const CHANNEL_POST_INPUT_NATIVE_ID = `${CHANNEL_POST_DRAFT_TESTID}.post.input`;
 
+const PORTAL_NAME = 'channel_autocomplete';
+
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
@@ -49,29 +51,29 @@ const ChannelContent = ({
             tabBarHeight={tabBarHeight}
             enabled={enabled}
         >
-            <PortalProvider>
-                <KeyboardAwarePostDraftContainer
-                    textInputNativeID={CHANNEL_POST_INPUT_NATIVE_ID}
-                    containerStyle={[styles.flex, {marginTop}]}
-                    renderList={() => (
-                        <ChannelPostList
-                            channelId={channelId}
-                        />
-                    )}
-                >
-                    {scheduledPostCount > 0 &&
-                        <ScheduledPostIndicator scheduledPostCount={scheduledPostCount}/>
-                    }
-                    <PostDraft
+            <KeyboardAwarePostDraftContainer
+                textInputNativeID={CHANNEL_POST_INPUT_NATIVE_ID}
+                containerStyle={[styles.flex, {marginTop}]}
+                renderList={() => (
+                    <ChannelPostList
                         channelId={channelId}
-                        testID={CHANNEL_POST_DRAFT_TESTID}
-                        containerHeight={containerHeight}
-                        isChannelScreen={true}
-                        canShowPostPriority={true}
-                        location={Screens.CHANNEL}
                     />
-                </KeyboardAwarePostDraftContainer>
-            </PortalProvider>
+                )}
+            >
+                {scheduledPostCount > 0 &&
+                <ScheduledPostIndicator scheduledPostCount={scheduledPostCount}/>
+                }
+                <PostDraft
+                    channelId={channelId}
+                    testID={CHANNEL_POST_DRAFT_TESTID}
+                    containerHeight={containerHeight}
+                    isChannelScreen={true}
+                    canShowPostPriority={true}
+                    location={Screens.CHANNEL}
+                    portalName={PORTAL_NAME}
+                />
+            </KeyboardAwarePostDraftContainer>
+            <PortalHost name={PORTAL_NAME}/>
         </KeyboardStateProvider>
     );
 };
