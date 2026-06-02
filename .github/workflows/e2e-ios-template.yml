@@ -74,6 +74,23 @@ on:
         value: ${{ jobs.generate-report.outputs.TARGET_URL }}
       FAILURES:
         value: ${{ jobs.generate-report.outputs.FAILURES }}
+    secrets:
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
+        required: false
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
+        required: false
+      MM_MOBILE_E2E_ADMIN_EMAIL:
+        required: false
+      MM_MOBILE_E2E_ADMIN_PASSWORD:
+        required: false
+      MM_MOBILE_E2E_ADMIN_USERNAME:
+        required: false
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX:
+        required: false
+      MM_MOBILE_E2E_WEBHOOK_URL:
+        required: false
+      MM_MOBILE_E2E_ZEPHYR_API_KEY:
+        required: false
 
 env:
   AWS_REGION: "us-east-1"
