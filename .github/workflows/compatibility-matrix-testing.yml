@@ -102,6 +102,11 @@ jobs:
   # iOS smoke run, one job per server version (reuses the single simulator build above).
   detox-e2e:
     name: mobile-cmt-ios-${{ matrix.server.version }}
+    # Least-privilege token for the reusable workflow: checkout (read) + the PR-comment
+    # report step (issues:write). No pull-requests:* needed for issues.createComment.
+    permissions:
+      contents: read
+      issues: write
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
@@ -164,6 +169,11 @@ jobs:
   # Android smoke run, one job per server version (reuses the single APK build above).
   detox-e2e-android:
     name: mobile-cmt-android-${{ matrix.server.version }}
+    # Least-privilege token for the reusable workflow: checkout (read) + the PR-comment
+    # report step (issues:write). No pull-requests:* needed for issues.createComment.
+    permissions:
+      contents: read
+      issues: write
     uses: ./.github/workflows/e2e-android-template.yml
     needs:
       - build-android-apk
