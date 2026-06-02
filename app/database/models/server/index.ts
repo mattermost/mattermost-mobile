@@ -24,6 +24,8 @@ export {default as PostModel} from './post';
 export {default as PostsInChannelModel} from './posts_in_channel';
 export {default as PostsInThreadModel} from './posts_in_thread';
 export {default as PreferenceModel} from './preference';
+export {default as PropertyFieldModel} from './property_field';
+export {default as PropertyValueModel} from './property_value';
 export {default as ReactionModel} from './reaction';
 export {default as RoleModel} from './role';
 export {default as ScheduledPostModel} from './scheduled_post';
