@@ -29,6 +29,10 @@ export async function runWithBackgroundTask<T>(name: string, task: () => Promise
         logDebug('runWithBackgroundTask: failed to begin background task', name, e);
     }
 
+    // TEMP (device verification, remove before merge): confirms the background
+    // task actually wrapped the write. Grep MMLogs for "runWithBackgroundTask".
+    logDebug('runWithBackgroundTask: begin', name, 'taskId', taskId);
+
     try {
         return await task();
     } finally {
@@ -39,5 +43,8 @@ export async function runWithBackgroundTask<T>(name: string, task: () => Promise
                 logDebug('runWithBackgroundTask: failed to end background task', name, e);
             }
         }
+
+        // TEMP (device verification, remove before merge)
+        logDebug('runWithBackgroundTask: end', name, 'taskId', taskId);
     }
 }
