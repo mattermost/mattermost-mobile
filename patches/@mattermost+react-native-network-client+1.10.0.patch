@@ -1,12 +1,17 @@
 diff --git a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt
-index b8df3e0..60b5087 100644
+index 472d7b4..60b5087 100644
 --- a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt
 +++ b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt
-@@ -551,7 +551,14 @@ internal class NetworkClient(private val context: Context, private val baseUrl:
+@@ -551,12 +551,14 @@ internal class NetworkClient(private val context: Context, private val baseUrl:
          chain: Array<X509Certificate>? = null,
          cause: CertificateException? = null
      ) {
--        val host = URI(baseUrlString).host
+-        // Prefer the host from HttpUrl (non-null by contract). Fall back to URI parsing
+-        // and then to the raw baseUrlString so the message never contains "null" and
+-        // emittedCertErrorHosts.add() never gets a null key (#9789).
+-        val host = baseUrl?.host
+-            ?: runCatching { URI(baseUrlString).host }.getOrNull()
+-            ?: baseUrlString
 +        // java.net.URI parses authority more strictly than okhttp3.HttpUrl; for some
 +        // valid baseUrlStrings (notably wss:// schemes or hostnames containing chars
 +        // URI rejects) `URI(...).host` returns null. Adding null to MutableSet<String>
@@ -18,3 +23,69 @@ index b8df3e0..60b5087 100644
          // Emit only once per client instance — retries would otherwise flood the JS layer (#7658).
          if (!emittedCertErrorHosts.add(host)) return
  
+diff --git a/node_modules/@mattermost/react-native-network-client/ios/patches/apply_patches.rb b/node_modules/@mattermost/react-native-network-client/ios/patches/apply_patches.rb
+index 7951108..99ceebf 100644
+--- a/node_modules/@mattermost/react-native-network-client/ios/patches/apply_patches.rb
++++ b/node_modules/@mattermost/react-native-network-client/ios/patches/apply_patches.rb
+@@ -7,6 +7,45 @@ module Pod
+             return Dir["ios/patches/*.diff"]
+         end
+         
++        # Returns true if the patch's added lines are already present in the
++        # target file. `git apply --check` can report a patch as appliable even
++        # when it has already been applied, because an inserted hunk may re-match
++        # its own trailing context at a new offset (the Alamofire diff inserts a
++        # block that itself ends in `downloadRequest.updateDownloadProgress(...)`,
++        # which re-matches the hunk context). Applying a second time duplicates
++        # the inserted lines — e.g. a second `let allHeaders` — which Swift 6 /
++        # Xcode 26 reject as a hard "invalid redeclaration" error.
++        #
++        # This is a content-based idempotency guard. It only consults the FIRST
++        # target file in the diff (every patch here touches a single file) and is
++        # wrapped so any parsing failure falls through to the normal apply path —
++        # it can only ADD a skip, never block a legitimate first application.
++        def patch_additions_present?(file, repo_root, directory_arg)
++            diff = File.read(file)
++            target_rel = diff[/^\+\+\+\sb\/(.+?)\s*$/, 1]
++            return false unless target_rel
++
++            # `-p2` strips the 2 leading path components (e.g. "b/Pods/"); the
++            # remainder is resolved relative to --directory (the Pods dir).
++            stripped = target_rel.split('/')[2..]&.join('/')
++            return false if stripped.nil? || stripped.empty?
++
++            target = File.join(repo_root, directory_arg, stripped)
++            return false unless File.exist?(target)
++
++            added = diff.each_line
++                        .select { |l| l.start_with?('+') && !l.start_with?('+++') }
++                        .map { |l| l[1..].to_s.strip }
++                        .reject(&:empty?)
++            return false if added.empty?
++
++            signature = added.max_by(&:length)
++            File.read(target).include?(signature)
++        rescue StandardError => e
++            Pod::UI.warn "Idempotency check skipped for #{file}: #{e}"
++            false
++        end
++
+         def apply_patch(file)
+             repo_root = `git rev-parse --show-toplevel`.strip
+             directory_arg = Dir.glob(Pathname(repo_root).join("**/**/Pods")).first.sub("#{repo_root}/", "")
+@@ -22,6 +61,15 @@ module Pod
+ 
+                 can_apply = system("git apply --check #{base_args}")
+                 if can_apply
++                    # Guard against re-applying a patch whose additions are already
++                    # present (git can still report it appliable — see comment on
++                    # patch_additions_present?). Prevents duplicate declarations
++                    # that break the Swift 6 / Xcode 26 build.
++                    if patch_additions_present?(file, repo_root, directory_arg)
++                        Pod::UI.puts "Skipping #{file} (additions already present)"
++                        next
++                    end
++
+                     did_apply = system("git apply #{base_args}")
+                     if did_apply
+                         Pod::UI.puts "Successfully applied #{file}"
