@@ -215,17 +215,17 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
         );
         if (message) {
             postBody = (
-                <Text numberOfLines={2}>
-                    <RemoveMarkdown
-                        enableCodeSpan={true}
-                        enableEmoji={true}
-                        enableChannelLink={true}
-                        enableHardBreak={true}
-                        enableSoftBreak={true}
-                        baseStyle={styles.message}
-                        value={message.substring(0, 100)} // This substring helps to avoid ANR's
-                    />
-                </Text>
+                <RemoveMarkdown
+                    enableCodeSpan={true}
+                    enableEmoji={true}
+                    enableChannelLink={true}
+                    enableHardBreak={true}
+                    enableSoftBreak={true}
+                    baseStyle={styles.message}
+                    numberOfLines={2}
+                    separateHeading={true}
+                    value={message.substring(0, 150)} // This substring helps to avoid ANR's
+                />
             );
         }
     }

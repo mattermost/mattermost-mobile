@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BoardViewModel} from '@boards/database/models';
 import {Database, Q} from '@nozbe/watermelondb';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import logger from '@nozbe/watermelondb/utils/common/logger';
@@ -15,7 +16,7 @@ import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
 import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel, ChannelInfoModel, ChannelMembershipModel, ConfigModel, CustomEmojiModel, CustomProfileFieldModel, CustomProfileAttributeModel, DraftModel, FileModel,
     GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
-    PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
+    PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, PropertyFieldModel, PropertyValueModel, ReactionModel, RoleModel,
     SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
     ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
     ScheduledPostModel,
@@ -53,9 +54,9 @@ class DatabaseManagerSingleton {
         this.serverModels = [
             CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel, ChannelInfoModel, ChannelMembershipModel, ConfigModel, CustomEmojiModel, CustomProfileFieldModel, CustomProfileAttributeModel, DraftModel, FileModel,
             GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
-            PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
+            PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, PropertyFieldModel, PropertyValueModel, ReactionModel, RoleModel,
             ScheduledPostModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-            ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
+            ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel, BoardViewModel,
             PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel,
             AiBotModel, AiThreadModel,
         ];
