@@ -116,12 +116,16 @@ jobs:
       # CMT provisions one server per version, so run the single-server smoke suite only.
       tests-search-path: "detox/e2e/test/products/channels/smoke_test"
       parallelism: 1
+      # Make test failures fail the run so the rollup gate below reflects real results.
+      testcase_failure_fatal: true
 
   # Build the Android APK once; the per-version Android detox jobs below reuse it.
   build-android-apk:
     runs-on: ubuntu-latest-8-cores
     needs:
       - update-initial-status
+    permissions:
+      contents: read
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -132,6 +136,8 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          # Don't leave the GITHUB_TOKEN on disk for the subsequent npm/Gradle build steps.
+          persist-credentials: false
 
       - name: Prepare Android Build
         uses: ./.github/actions/prepare-android-build
@@ -173,6 +179,8 @@ jobs:
       # CMT provisions one server per version, so run the single-server smoke suite only.
       tests-search-path: "detox/e2e/test/products/channels/smoke_test"
       parallelism: 1
+      # Make test failures fail the run so the rollup gate below reflects real results.
+      testcase_failure_fatal: true
 
   update-final-status:
     runs-on: ubuntu-22.04
@@ -190,7 +198,11 @@ jobs:
           commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
           context: e2e/compatibility-matrix-testing
           description: Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version
-          status: ${{ (needs.detox-e2e.outputs.STATUS == 'success' && needs.detox-e2e-android.outputs.STATUS == 'success') && 'success' || 'failure' }}
+          # detox-e2e / detox-e2e-android are matrix jobs over CMT_MATRIX; their .outputs are
+          # not aggregated across legs, so gate on the job result instead. testcase_failure_fatal
+          # makes any version leg with test failures fail its run, so .result is 'failure' if any
+          # iOS or Android version leg failed.
+          status: ${{ (needs.detox-e2e.result == 'success' && needs.detox-e2e-android.result == 'success') && 'success' || 'failure' }}
           target_url: ${{ needs.detox-e2e.outputs.TARGET_URL }}
 
       # Instance cleanup is handled by Matterwick: when this workflow completes, GitHub sends a

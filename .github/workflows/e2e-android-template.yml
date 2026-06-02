@@ -372,3 +372,12 @@ jobs:
           MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
           MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
           TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
+
+      # When testcase_failure_fatal is true (e.g. CMT/release), make test failures fail the
+      # run so callers can gate on the job result. With the default (false), STATUS is always
+      # "success" and this step is skipped, so existing callers are unaffected.
+      - name: Fail run when failures are fatal
+        if: ${{ steps.determine-status.outputs.STATUS == 'failure' }}
+        run: |
+          echo "::error::Android E2E reported failures and testcase_failure_fatal=true; failing the run."
+          exit 1
