@@ -36,6 +36,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {setTeamLoading} from '@store/team_load_store';
+import {runWithBackgroundTask} from '@utils/background_task';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 
@@ -80,7 +81,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
         const dt = Date.now();
         if (models?.length) {
-            await operator.batchRecords(models, 'doReconnect');
+            await runWithBackgroundTask('doReconnect', () => operator.batchRecords(models, 'doReconnect'));
         }
 
         logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);

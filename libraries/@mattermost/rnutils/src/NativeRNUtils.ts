@@ -62,6 +62,13 @@ export interface Spec extends TurboModule {
     getHasRegisteredLoad: () => HasRegisteredLoadResponse;
     setHasRegisteredLoad: () => void;
 
+    // iOS only: request extra background execution time so an in-flight write
+    // (e.g. the App Group SQLite write lock) can finish before suspension and
+    // avoid a 0xdead10cc termination. Returns a task id to pass back to
+    // endBackgroundTask. No-op on Android (returns -1).
+    beginBackgroundTask: () => number;
+    endBackgroundTask: (taskId: number) => void;
+
     deleteDatabaseDirectory: (databaseName: string, shouldRemoveDirectory: boolean) => DatabaseOperationResult;
     renameDatabase: (databaseName: string, newDatabaseName: string) => DatabaseOperationResult;
     deleteEntitiesFile: () => boolean;

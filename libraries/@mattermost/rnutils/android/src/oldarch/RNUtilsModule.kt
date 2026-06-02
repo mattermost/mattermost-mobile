@@ -56,6 +56,16 @@ class RNUtilsModule(context: ReactApplicationContext) :
         return implementation.getHasRegisteredLoad()
     }
 
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun beginBackgroundTask(): Double {
+        return implementation.beginBackgroundTask()
+    }
+
+    @ReactMethod
+    fun endBackgroundTask(taskId: Double) {
+        implementation.endBackgroundTask(taskId)
+    }
+
     @ReactMethod
     fun unlockOrientation() {
         implementation.unlockOrientation()

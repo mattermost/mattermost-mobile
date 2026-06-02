@@ -84,6 +84,14 @@ RCT_REMAP_METHOD(setHasRegisteredLoad, setLoad) {
     [wrapper setHasRegisteredLoad];
 }
 
+RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(beginBackgroundTask, NSNumber*, beginBgTask) {
+    return [wrapper beginBackgroundTask];
+}
+
+RCT_REMAP_METHOD(endBackgroundTask, taskId:(double)taskId) {
+    [wrapper endBackgroundTask:@(taskId)];
+}
+
 RCT_REMAP_METHOD(unlockOrientation, unlock) {
     [wrapper unlockOrientation];
 }
@@ -194,6 +202,14 @@ RCT_EXPORT_METHOD(createZipFile:(NSArray<NSString *> *)paths
 
 - (void)setHasRegisteredLoad {
     [wrapper setHasRegisteredLoad];
+}
+
+- (NSNumber *)beginBackgroundTask {
+    return [wrapper beginBackgroundTask];
+}
+
+- (void)endBackgroundTask:(double)taskId {
+    [wrapper endBackgroundTask:@(taskId)];
 }
 
 - (void)lockPortrait {

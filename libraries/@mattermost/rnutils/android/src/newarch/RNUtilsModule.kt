@@ -33,6 +33,9 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
     override fun setHasRegisteredLoad() = implementation.setHasRegisteredLoad()
     override fun getHasRegisteredLoad(): WritableMap = implementation.getHasRegisteredLoad()
 
+    override fun beginBackgroundTask(): Double = implementation.beginBackgroundTask()
+    override fun endBackgroundTask(taskId: Double) = implementation.endBackgroundTask(taskId)
+
     override fun unlockOrientation() {
         implementation.unlockOrientation()
     }

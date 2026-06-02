@@ -171,6 +171,14 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
         return map
     }
 
+    // iOS-only background-task assertion to avoid 0xdead10cc during DB writes.
+    // Android has no equivalent suspension lock-kill, so these are no-ops.
+    fun beginBackgroundTask(): Double = -1.0
+
+    fun endBackgroundTask(taskId: Double) {
+        // No-op on Android
+    }
+
     fun unlockOrientation() {
         val activity = reactContext.currentActivity ?: return
         activity.runOnUiThread {

@@ -19,6 +19,7 @@ import {getCurrentTeamId} from '@queries/servers/system';
 import {getMyTeamById, prepareMyTeams} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
+import {runWithBackgroundTask} from '@utils/background_task';
 import {logWarning} from '@utils/log';
 import {emitNotificationError} from '@utils/notification';
 import {processPostsFetched} from '@utils/post';
@@ -203,7 +204,7 @@ export const backgroundNotification = async (serverUrl: string, notification: No
             }
 
             if (models.length) {
-                await operator.batchRecords(models, 'backgroundNotification');
+                await runWithBackgroundTask('backgroundNotification', () => operator.batchRecords(models, 'backgroundNotification'));
             }
             return {models};
         }

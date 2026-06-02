@@ -381,6 +381,30 @@ import React
             ]
         }
     }
+
+    // Requests extra background execution time so an in-flight operation (e.g. a
+    // WatermelonDB write holding the App Group SQLite lock) can complete and
+    // release the lock before the app suspends, preventing 0xdead10cc kills.
+    // `beginBackgroundTask`/`endBackgroundTask` are documented as safe to call
+    // from any thread, so we don't hop to the main queue (which may be blocked).
+    @objc public func beginBackgroundTask() -> NSNumber {
+        var taskId: UIBackgroundTaskIdentifier = .invalid
+        taskId = UIApplication.shared.beginBackgroundTask(withName: "MMDatabaseWrite") {
+            // Expiration handler: must end the task or the OS terminates the app.
+            if taskId != .invalid {
+                UIApplication.shared.endBackgroundTask(taskId)
+                taskId = .invalid
+            }
+        }
+        return NSNumber(value: taskId.rawValue)
+    }
+
+    @objc public func endBackgroundTask(_ taskId: NSNumber) {
+        let identifier = UIBackgroundTaskIdentifier(rawValue: taskId.intValue)
+        if identifier != .invalid {
+            UIApplication.shared.endBackgroundTask(identifier)
+        }
+    }
 }
 
 
