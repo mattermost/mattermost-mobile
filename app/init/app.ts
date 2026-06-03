@@ -35,6 +35,8 @@ Promise.allSettled = Promise.allSettled || (<T>(promises: Array<Promise<T>>) => 
 ));
 
 export async function initialize() {
+    // eslint-disable-next-line no-console
+    console.log('[MMNotifTest] initialize() called, baseAppInitialized=' + baseAppInitialized);
     if (!baseAppInitialized) {
         baseAppInitialized = true;
         serverCredentials = await getAllServerCredentials();
@@ -49,6 +51,8 @@ export async function initialize() {
         await WebsocketManager.init(serverCredentials);
     }
 
+    // eslint-disable-next-line no-console
+    console.log('[MMNotifTest] initialize() resetting NavigationStore');
     NavigationStore.reset();
     EphemeralStore.setCurrentThreadId('');
     EphemeralStore.setProcessingNotification('');
@@ -64,6 +68,8 @@ export async function initialize() {
 }
 
 export function cleanup() {
+    // eslint-disable-next-line no-console
+    console.log('[MMNotifTest] cleanup() called');
     ManagedApp.cleanup();
     GlobalEventHandler.cleanup();
     SecurityManager.cleanup();

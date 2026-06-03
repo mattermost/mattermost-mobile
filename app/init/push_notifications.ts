@@ -240,6 +240,9 @@ class PushNotificationsSingleton {
         const notification = convertToNotificationData(incoming, false);
         notification.userInteraction = true;
 
+        // eslint-disable-next-line no-console
+        console.log('[MMNotifTest] onNotificationOpened, appState=' + AppState.currentState + ' identifier=' + notification.identifier);
+
         this.processNotification(notification);
         completion();
     };
@@ -251,6 +254,8 @@ class PushNotificationsSingleton {
             return;
         }
         const notification = convertToNotificationData(incoming, false);
+        // eslint-disable-next-line no-console
+        console.log('[MMNotifTest] onNotificationReceivedBackground, appState=' + AppState.currentState + ' identifier=' + notification.identifier);
         this.processNotification(notification);
 
         completion(NotificationBackgroundFetchResult.NEW_DATA);
@@ -264,6 +269,8 @@ class PushNotificationsSingleton {
             return;
         }
         const notification = convertToNotificationData(incoming, false);
+        // eslint-disable-next-line no-console
+        console.log('[MMNotifTest] onNotificationReceivedForeground, appState=' + AppState.currentState + ' userInteraction=' + notification.userInteraction + ' identifier=' + notification.identifier);
         if (AppState.currentState !== 'inactive') {
             notification.foreground = AppState.currentState === 'active' && isMainActivity();
 
