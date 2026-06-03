@@ -289,10 +289,14 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
         databaseLockBackgroundTask = UIApplication.shared.beginBackgroundTask(withName: "MMDatabaseLockProtection") { [weak self] in
             self?.endDatabaseLockProtection()
         }
+        // TEMP (device verification, remove before merge): grep MMLogs for "MMDatabaseLockProtection".
+        TurboLogger.write(level: .info, message: "MMDatabaseLockProtection: begin taskId \(databaseLockBackgroundTask.rawValue)")
     }
 
     private func endDatabaseLockProtection() {
         guard databaseLockBackgroundTask != .invalid else { return }
+        // TEMP (device verification, remove before merge)
+        TurboLogger.write(level: .info, message: "MMDatabaseLockProtection: end taskId \(databaseLockBackgroundTask.rawValue)")
         UIApplication.shared.endBackgroundTask(databaseLockBackgroundTask)
         databaseLockBackgroundTask = .invalid
     }
