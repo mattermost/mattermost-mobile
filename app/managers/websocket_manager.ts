@@ -18,7 +18,7 @@ import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 import {toMilliseconds} from '@utils/datetime';
 import {isMainActivity} from '@utils/helpers';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 const WAIT_TO_CLOSE = toMilliseconds({seconds: 15});
 const WAIT_UNTIL_NEXT = toMilliseconds({seconds: 5});
@@ -172,6 +172,11 @@ class WebsocketManagerSingleton {
         }
         if (!client.isConnected()) {
             const hasSynced = this.firstConnectionSynced[serverUrl];
+
+            // TEMP INSTRUMENTATION (session device label bug): if hasSynced is already
+            // true here, handleFirstConnect (and thus setExtraSessionProps) is skipped.
+            logDebug('initializeClient', `group=${groupLabel}`, `hasSynced=${Boolean(hasSynced)}`, `willCallFirstConnect=${!hasSynced}`);
+
             client.initialize({}, !hasSynced);
             if (!hasSynced) {
                 const error = await handleFirstConnect(serverUrl, groupLabel);

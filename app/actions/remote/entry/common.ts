@@ -297,6 +297,13 @@ export const setExtraSessionProps = async (serverUrl: string, groupLabel?: Reque
         const serverVersion = await getConfigValue(database, 'Version');
         const deviceToken = await getDeviceToken();
 
+        // TEMP INSTRUMENTATION (session device label bug): logs whether this fires,
+        // on which entry path (groupLabel), and the device token state. Only the
+        // non-sensitive prefix + length are logged, never the raw push token.
+        const tokenPrefix = deviceToken ? deviceToken.split(':')[0] : '<empty>';
+        const passesGuard = isMinimumServerVersion(serverVersion, 10, 1, 0) || Boolean(deviceToken);
+        logDebug('setExtraSessionProps:enter', `group=${groupLabel ?? 'none'}`, `serverVersion=${serverVersion || '<empty>'}`, `tokenEmpty=${!deviceToken}`, `tokenPrefix=${tokenPrefix}`, `tokenLen=${deviceToken.length}`, `passesGuard=${passesGuard}`);
+
         // For new servers, we want to send all the information.
         // For old servers, we only want to send the information when there
         // is a device token. Sending the rest of the information should not
@@ -305,7 +312,18 @@ export const setExtraSessionProps = async (serverUrl: string, groupLabel?: Reque
             const res = await checkNotifications();
             const granted = res.status === RESULTS.GRANTED || res.status === RESULTS.LIMITED;
             const client = NetworkManager.getClient(serverUrl);
-            client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion, groupLabel);
+
+            // TEMP INSTRUMENTATION: awaited so the PUT outcome is captured. The server
+            // only attaches the device id when device_id is non-empty, so an empty
+            // token here means the session stays labeled "iPhone".
+            try {
+                await client.setExtraSessionProps(deviceToken, !granted, nativeApplicationVersion, groupLabel);
+                logDebug('setExtraSessionProps:PUT ok', `group=${groupLabel ?? 'none'}`, `sentTokenEmpty=${!deviceToken}`);
+            } catch (putError) {
+                logDebug('setExtraSessionProps:PUT failed', `group=${groupLabel ?? 'none'}`, getFullErrorMessage(putError));
+            }
+        } else {
+            logDebug('setExtraSessionProps:skipped (guard failed)', `group=${groupLabel ?? 'none'}`);
         }
         return {};
     } catch (error) {
