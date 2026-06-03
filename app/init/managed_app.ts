@@ -10,6 +10,7 @@ import {Alert, type AlertButton, AppState, type AppStateStatus, type EventSubscr
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {toMilliseconds} from '@utils/datetime';
 import {isMainActivity} from '@utils/helpers';
+import {logDebug} from '@utils/log';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 const PROMPT_IN_APP_PIN_CODE_AFTER = toMilliseconds({minutes: 5});
@@ -79,6 +80,7 @@ class ManagedAppSingleton {
     }
 
     init() {
+        logDebug('ManagedApp: Initializing');
         this.cacheConfig = Emm.getManagedConfig<ManagedConfig>();
         this.processConfig(this.cacheConfig);
     }

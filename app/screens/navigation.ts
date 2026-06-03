@@ -132,31 +132,38 @@ export async function dismissBottomSheet() {
 export async function navigateToRoot() {
     if (router) {
         router.dismissTo(getExpoRouterPath(Screens.CHANNEL_LIST)!);
+
+        if (router.canDismiss()) {
+            router.dismissAll();
+        }
+
         await new Promise((resolve) => setTimeout(resolve, 250));
     }
 }
 
 export async function dismissAllRoutesAndPopToScreen(screenId: AvailableScreens, passProps = {}) {
     try {
-        if (router) {
-            const route = getExpoRouterPath(screenId);
+        if (!router) {
+            return;
+        }
+        const route = getExpoRouterPath(screenId);
+        if (!route) {
+            return;
+        }
 
-            if (!route) {
-                return;
-            }
-
-            const params = propsToParams(passProps);
-
-            if (NavigationStore.isScreenInStack(screenId)) {
-                // Screen is in stack - pop back to it across all navigator boundaries
-                router.dismissTo(route);
-                router.setParams(params);
-                await new Promise((resolve) => setTimeout(resolve, 250));
-            } else {
-                // Screen not in stack - reset to root then push target
-                await navigateToRoot();
-                navigateToScreen(screenId, passProps);
-            }
+        if (NavigationStore.isScreenInStack(screenId)) {
+            // dismissTo only resolves divergence at the outermost navigator level
+            // it finds. With our nesting (root Stack -> (authenticated) Stack), one
+            // call only peels outer routes (modals, bottom sheets). A second call
+            // then operates on the inner stack and pops down to the target.
+            router.dismissTo(route);
+            router.dismissTo(route);
+            router.setParams(propsToParams(passProps));
+            await new Promise((resolve) => setTimeout(resolve, 250));
+        } else {
+            // Screen not in stack - reset to root then push target
+            await navigateToRoot();
+            navigateToScreen(screenId, passProps);
         }
     } catch (e) {
         logError('dismissAllRoutesAndPopToScreen: Expo Router navigation failed', e);
