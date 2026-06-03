@@ -77,8 +77,6 @@ export default function RootLayout() {
     });
 
     useDidMount(() => {
-        // eslint-disable-next-line no-console
-        console.log('[MMNotifTest] RootLayout MOUNTED, AppState=' + Platform.OS);
         async function initializeApp() {
             try {
                 await initialize();
@@ -93,8 +91,6 @@ export default function RootLayout() {
         initializeApp();
 
         return () => {
-            // eslint-disable-next-line no-console
-            console.log('[MMNotifTest] RootLayout UNMOUNT cleanup running');
             cleanup();
         };
     });
