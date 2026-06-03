@@ -1,10 +1,8 @@
 package com.mattermost.rnbeta
 
-import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import androidx.core.view.WindowCompat
 import com.facebook.react.ReactActivity
@@ -36,7 +34,6 @@ class MainActivity : ReactActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d("MMNotifTest", "MainActivity.onCreate intent=" + intent + " extras=" + intent?.extras?.keySet())
         super.onCreate(savedInstanceState)
 
         setHWKeyboardConnected()
@@ -45,35 +42,17 @@ class MainActivity : ReactActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
     }
 
-    override fun onNewIntent(intent: Intent) {
-        Log.d("MMNotifTest", "MainActivity.onNewIntent intent=" + intent + " extras=" + intent.extras?.keySet())
-        super.onNewIntent(intent)
-    }
-
-    override fun onResume() {
-        Log.d("MMNotifTest", "MainActivity.onResume")
-        super.onResume()
-    }
-
-    override fun onPause() {
-        Log.d("MMNotifTest", "MainActivity.onPause")
-        super.onPause()
-    }
-
     override fun onStart() {
-        Log.d("MMNotifTest", "MainActivity.onStart")
         super.onStart()
         foldableObserver.onStart()
     }
 
     override fun onStop() {
-        Log.d("MMNotifTest", "MainActivity.onStop")
         super.onStop()
         foldableObserver.onStop()
     }
 
     override fun onDestroy() {
-        Log.d("MMNotifTest", "MainActivity.onDestroy isFinishing=" + isFinishing + " isChangingConfigurations=" + isChangingConfigurations)
         super.onDestroy()
         foldableObserver.onDestroy()
     }
