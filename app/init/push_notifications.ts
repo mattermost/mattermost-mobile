@@ -56,6 +56,7 @@ class PushNotificationsSingleton {
     subscriptions?: EmitterSubscription[];
 
     init(register: boolean) {
+        logDebug('PushNotifications: Initializing');
         this.subscriptions?.forEach((v) => v.remove());
         this.subscriptions = [
             Notifications.events().registerNotificationOpened(this.onNotificationOpened),
