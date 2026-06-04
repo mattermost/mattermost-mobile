@@ -137,9 +137,16 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
             minWidth: 0,
         },
+        collapsibleContentClip: {
+            width: '100%',
+        },
         collapsibleContent: {
+            left: 0,
             paddingBottom: 10,
             paddingHorizontal: 10,
+            position: 'absolute',
+            right: 0,
+            top: 0,
         },
         message: {
             color: theme.centerChannelColor,

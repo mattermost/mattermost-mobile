@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useContext, useMemo, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {Pressable, View, type LayoutChangeEvent, type ViewStyle} from 'react-native';
+import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
@@ -26,6 +27,8 @@ import {
 import {TextBlock} from './text_block';
 
 import type {BlockSwitchProps} from './types';
+
+const COLLAPSIBLE_ANIMATION_MS = 250;
 
 export const BlockSwitch = ({block, onAction, theme}: BlockSwitchProps) => {
     switch (block.type) {
@@ -281,9 +284,40 @@ const CollapsibleBlock = ({block, ...switchProps}: CollapsibleBlockProps) => {
     const style = getStyleSheet(theme);
     const interactionsEnabled = useContext(MmBlocksInteractionContext);
     const [collapsed, setCollapsed] = useState(block.collapsed !== false);
+    const contentHeight = useSharedValue(0);
+    const isExpanded = useSharedValue(!(block.collapsed !== false));
     const toggleCollapsed = usePreventDoubleTap(useCallback(() => {
         setCollapsed((prev) => !prev);
     }, []));
+
+    useEffect(() => {
+        isExpanded.value = !collapsed;
+    }, [collapsed, isExpanded]);
+
+    const onContentLayout = useCallback((event: LayoutChangeEvent) => {
+        contentHeight.value = event.nativeEvent.layout.height;
+    }, [contentHeight]);
+
+    const chevronAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{
+            rotate: withTiming(isExpanded.value ? '90deg' : '0deg', {
+                duration: COLLAPSIBLE_ANIMATION_MS,
+                easing: Easing.out(Easing.cubic),
+            }),
+        }],
+    }));
+
+    const contentAnimatedStyle = useAnimatedStyle(() => ({
+        height: withTiming(isExpanded.value ? contentHeight.value : 0, {
+            duration: COLLAPSIBLE_ANIMATION_MS,
+            easing: Easing.out(Easing.cubic),
+        }),
+        opacity: withTiming(isExpanded.value ? 1 : 0, {
+            duration: COLLAPSIBLE_ANIMATION_MS,
+            easing: Easing.out(Easing.cubic),
+        }),
+        overflow: 'hidden',
+    }));
 
     const innerHeaderBlock = useMemo(() => ({
         type: 'container' as const,
@@ -310,11 +344,13 @@ const CollapsibleBlock = ({block, ...switchProps}: CollapsibleBlockProps) => {
                 accessibilityRole='button'
                 accessibilityState={{expanded: !collapsed}}
             >
-                <CompassIcon
-                    name={collapsed ? 'chevron-right' : 'chevron-down'}
-                    size={18}
-                    style={style.collapsibleChevron}
-                />
+                <Animated.View style={chevronAnimatedStyle}>
+                    <CompassIcon
+                        name='chevron-right'
+                        size={18}
+                        style={style.collapsibleChevron}
+                    />
+                </Animated.View>
                 <View style={style.collapsibleHeaderBody}>
                     <ContainerBlock
                         block={innerHeaderBlock}
@@ -322,14 +358,20 @@ const CollapsibleBlock = ({block, ...switchProps}: CollapsibleBlockProps) => {
                     />
                 </View>
             </Pressable>
-            {!collapsed && (
-                <View style={style.collapsibleContent}>
+            <Animated.View
+                pointerEvents={collapsed ? 'none' : 'auto'}
+                style={[style.collapsibleContentClip, contentAnimatedStyle]}
+            >
+                <View
+                    style={style.collapsibleContent}
+                    onLayout={onContentLayout}
+                >
                     <ContainerBlock
                         block={innerContentBlock}
                         {...switchProps}
                     />
                 </View>
-            )}
+            </Animated.View>
         </View>
     );
 };
