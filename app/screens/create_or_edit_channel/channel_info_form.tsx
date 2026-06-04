@@ -364,6 +364,7 @@ export default function ChannelInfoForm({
                 availableSpace={animatedAutocompleteAvailableSpace}
                 shouldDirectlyReact={false}
                 growDown={growDown}
+                usePortal={false}
             />
         </View>
     );
