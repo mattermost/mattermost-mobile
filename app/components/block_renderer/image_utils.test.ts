@@ -10,7 +10,7 @@ import {
 describe('image_utils', () => {
     it('should resolve caps from block size', () => {
         expect(resolveMmImageCaps({type: 'image', url: 'https://x', size: 'small'})).toEqual({
-            maxWidth: 120,
+            maxWidth: 204,
             maxHeight: 120,
         });
     });

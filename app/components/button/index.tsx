@@ -3,7 +3,7 @@
 
 import {Button as ElementButton, type ButtonProps} from '@rneui/base';
 import React, {useMemo, type ReactNode} from 'react';
-import {type StyleProp, StyleSheet, type TextStyle, View, type ViewStyle, type Insets} from 'react-native';
+import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle, type Insets} from 'react-native';
 
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import Loading from '@components/loading';
@@ -29,6 +29,7 @@ type Props = Omit<ButtonProps, 'size'> & {
     showLoader?: boolean;
     isInverted?: boolean;
     isDestructive?: boolean;
+    renderLabelAsMarkdown?: boolean;
 };
 
 const styles = StyleSheet.create({
@@ -64,6 +65,7 @@ const Button = ({
     showLoader = false,
     isInverted = false,
     isDestructive = false,
+    renderLabelAsMarkdown = false,
 }: Props) => {
     let buttonType: ButtonType = 'default';
     if (isDestructive) {
@@ -119,13 +121,23 @@ const Button = ({
         );
     }
 
-    const label = (
+    const labelTestID = testID ?`${testID}-label` : undefined;
+
+    const label = renderLabelAsMarkdown ? (
         <ButtonMarkdownText
             value={text}
             baseStyle={txtStyleToUse}
             theme={theme}
-            testID={`${testID}-label`}
+            testID={labelTestID}
         />
+    ) : (
+        <Text
+            style={txtStyleToUse}
+            numberOfLines={1}
+            testID={labelTestID}
+        >
+            {text}
+        </Text>
     );
 
     return (

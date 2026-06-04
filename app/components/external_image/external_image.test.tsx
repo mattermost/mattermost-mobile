@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import {renderWithEverything} from '@test/intl-test-helper';
+import {renderWithIntl} from '@test/intl-test-helper';
 
 import ExternalImage from './external_image';
 
@@ -39,7 +39,7 @@ describe('ExternalImage', () => {
     });
 
     it('should pass through src when proxy is disabled', () => {
-        renderWithEverything(
+        renderWithIntl(
             <ExternalImage {...baseProps}/>,
         );
 
@@ -47,7 +47,7 @@ describe('ExternalImage', () => {
     });
 
     it('should pass empty src for svg when svgs are disabled', () => {
-        renderWithEverything(
+        renderWithIntl(
             <ExternalImage
                 {...baseProps}
                 enableSVGs={false}
@@ -60,7 +60,7 @@ describe('ExternalImage', () => {
     });
 
     it('should proxy src when image proxy is enabled', () => {
-        renderWithEverything(
+        renderWithIntl(
             <ExternalImage
                 {...baseProps}
                 hasImageProxy={true}

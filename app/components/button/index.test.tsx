@@ -72,9 +72,18 @@ describe('components/button', () => {
         expect(within(container.children[1] as any).getByTestId('test-button-icon')).toBeVisible();
     });
 
-    it('should render bold markdown in button text', () => {
+    it('should render markdown syntax literally by default', () => {
         const props = getBaseProps();
         props.text = '**Test Button**';
+        const {getByText} = render(<Button {...props}/>);
+
+        expect(getByText('**Test Button**')).toBeTruthy();
+    });
+
+    it('should render bold markdown in button text when renderLabelAsMarkdown is true', () => {
+        const props = getBaseProps();
+        props.text = '**Test Button**';
+        props.renderLabelAsMarkdown = true;
         const {getByText} = render(<Button {...props}/>);
 
         expect(getByText('Test Button')).toBeTruthy();

@@ -72,6 +72,7 @@ export const ButtonElement = ({element, onAction, theme}: ButtonElementProps) =>
             emphasis={isPrimary || isDisabled ? 'primary' : 'tertiary'}
             backgroundStyle={backgroundStyle}
             textStyle={textStyle}
+            renderLabelAsMarkdown={true}
         />
     );
 };
