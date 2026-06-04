@@ -366,6 +366,36 @@ describe('PushNotifications', () => {
             expect(processSpy).toHaveBeenCalled();
             expect(completion).toHaveBeenCalledWith('new-data');
         });
+
+        it('should not signal completion until processing (and its DB write) has finished', async () => {
+            const notification = {
+                payload: {
+                    verified: 'true',
+                    channel_id: 'channel1',
+                },
+            };
+            const completion = jest.fn();
+
+            // Control when processing resolves so we can assert the ordering:
+            // completion must not be called while the DB write is still in
+            // flight, or iOS can re-suspend the app while the App Group SQLite
+            // lock is held (RUNNINGBOARD 0xdead10cc).
+            let resolveProcessing: () => void = () => {};
+            const processing = new Promise<void>((resolve) => {
+                resolveProcessing = resolve;
+            });
+            jest.spyOn(pushNotifications, 'processNotification').mockReturnValueOnce(processing);
+
+            const handled = pushNotifications.onNotificationReceivedBackground(notification as any, completion);
+
+            await Promise.resolve();
+            expect(completion).not.toHaveBeenCalled();
+
+            resolveProcessing();
+            await handled;
+
+            expect(completion).toHaveBeenCalledWith('new-data');
+        });
     });
 
     describe('onNotificationReceivedForeground', () => {

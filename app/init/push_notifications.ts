@@ -124,10 +124,10 @@ class PushNotificationsSingleton {
                             unread_replies: 0,
                             last_viewed_at: Date.now(),
                         };
-                        updateThread(serverUrl, payload.root_id, data);
+                        await updateThread(serverUrl, payload.root_id, data);
                     }
                 } else {
-                    markChannelAsViewed(serverUrl, payload.channel_id);
+                    await markChannelAsViewed(serverUrl, payload.channel_id);
                 }
             }
         }
@@ -194,7 +194,9 @@ class PushNotificationsSingleton {
                 // Handle notification tapped
                 openNotification(serverUrl, notification);
             } else {
-                backgroundNotification(serverUrl, notification);
+                // Awaited so the caller can keep the app alive until the DB write
+                // completes (see onNotificationReceivedBackground).
+                await backgroundNotification(serverUrl, notification);
             }
         }
     };
@@ -219,13 +221,13 @@ class PushNotificationsSingleton {
         if (payload) {
             switch (payload.type) {
                 case PushNotification.NOTIFICATION_TYPE.CLEAR:
-                    this.handleClearNotification(notification);
+                    await this.handleClearNotification(notification);
                     break;
                 case PushNotification.NOTIFICATION_TYPE.MESSAGE:
-                    this.handleMessageNotification(notification);
+                    await this.handleMessageNotification(notification);
                     break;
                 case PushNotification.NOTIFICATION_TYPE.SESSION:
-                    this.handleSessionNotification(notification);
+                    await this.handleSessionNotification(notification);
                     break;
             }
         }
@@ -251,7 +253,14 @@ class PushNotificationsSingleton {
             return;
         }
         const notification = convertToNotificationData(incoming, false);
-        this.processNotification(notification);
+
+        // Wait until the notification is fully processed (including its DB
+        // read/write) before signaling completion. iOS keeps the app alive
+        // until the fetch completion handler is called; calling it early lets
+        // the OS re-suspend the app while a WatermelonDB statement still holds
+        // the shared App Group SQLite lock, which triggers a RUNNINGBOARD
+        // 0xdead10cc termination.
+        await this.processNotification(notification);
 
         completion(NotificationBackgroundFetchResult.NEW_DATA);
     };
