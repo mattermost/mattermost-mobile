@@ -4,7 +4,7 @@
 import CallsNative from '@mattermost/calls-native';
 import {Platform} from 'react-native';
 
-import {getCurrentCall} from '@calls/state';
+import {getCurrentCall} from '@calls/state/current_call';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getTeamById} from '@queries/servers/team';
@@ -20,7 +20,7 @@ import {
     setNativeCallMapping,
 } from './native_call';
 
-jest.mock('@calls/state', () => ({
+jest.mock('@calls/state/current_call', () => ({
     getCurrentCall: jest.fn(),
 }));
 jest.mock('@managers/websocket_manager', () => ({
