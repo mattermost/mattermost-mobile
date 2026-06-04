@@ -33,7 +33,7 @@ import InAppNotificationStore from '@store/in_app_notification_store';
 import {NavigationStore} from '@store/navigation_store';
 import {isBetaApp} from '@utils/general';
 import {isMainActivity, isTablet} from '@utils/helpers';
-import {logDebug, logInfo} from '@utils/log';
+import {logDebug, logInfo, logWarning} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 
 const messages = defineMessages({
@@ -250,6 +250,10 @@ class PushNotificationsSingleton {
     onNotificationReceivedBackground = async (incoming: Notification, completion: (response: NotificationBackgroundFetchResult) => void) => {
         if (incoming.payload.verified === 'false') {
             logDebug('not handling background notification because it was not verified, ackId=', incoming.payload.ackId);
+
+            // Always finish the iOS background completion handler, or the OS
+            // keeps the app awake until it times out and then terminates it.
+            completion(NotificationBackgroundFetchResult.NO_DATA);
             return;
         }
         const notification = convertToNotificationData(incoming, false);
@@ -259,10 +263,15 @@ class PushNotificationsSingleton {
         // until the fetch completion handler is called; calling it early lets
         // the OS re-suspend the app while a WatermelonDB statement still holds
         // the shared App Group SQLite lock, which triggers a RUNNINGBOARD
-        // 0xdead10cc termination.
-        await this.processNotification(notification);
-
-        completion(NotificationBackgroundFetchResult.NEW_DATA);
+        // 0xdead10cc termination. completion() must run on every path,
+        // including failures, for the same reason.
+        try {
+            await this.processNotification(notification);
+            completion(NotificationBackgroundFetchResult.NEW_DATA);
+        } catch (error) {
+            logWarning('onNotificationReceivedBackground', error);
+            completion(NotificationBackgroundFetchResult.FAILED);
+        }
     };
 
     // This triggers when the app was in the foreground (Android and iOS)

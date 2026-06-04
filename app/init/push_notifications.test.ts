@@ -349,6 +349,7 @@ describe('PushNotifications', () => {
             await pushNotifications.onNotificationReceivedBackground(notification as any, completion);
 
             expect(processSpy).not.toHaveBeenCalled();
+            expect(completion).toHaveBeenCalledWith('no-data');
         });
 
         it('should process verified notification', async () => {
@@ -395,6 +396,21 @@ describe('PushNotifications', () => {
             await handled;
 
             expect(completion).toHaveBeenCalledWith('new-data');
+        });
+
+        it('should still signal completion (FAILED) when processing rejects', async () => {
+            const notification = {
+                payload: {
+                    verified: 'true',
+                    channel_id: 'channel1',
+                },
+            };
+            const completion = jest.fn();
+            jest.spyOn(pushNotifications, 'processNotification').mockRejectedValueOnce(new Error('boom'));
+
+            await pushNotifications.onNotificationReceivedBackground(notification as any, completion);
+
+            expect(completion).toHaveBeenCalledWith('failed');
         });
     });
 
