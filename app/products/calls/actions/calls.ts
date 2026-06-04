@@ -261,6 +261,7 @@ export const joinCall = async (
             }
         }, setScreenShareURL, hasMicPermission, intl, title, rootId);
     } catch (error) {
+        endNativeCall(serverUrl, channelId, 'failed');
         await forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

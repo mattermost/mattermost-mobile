@@ -36,12 +36,12 @@ private struct CallInfo {
     private var calls: [UUID: CallInfo] = [:]
     private let callsLock = NSLock()
 
-    /// UUIDs whose next `CXSetMutedCallAction` we expect to handle without
-    /// re-emitting a `CallMuted` event back to JS — because JS itself is
-    /// what just requested the mute change. Prevents a feedback loop
-    /// where in-app toggleMute → setMuted (JS→native) → CallKit delegate
-    /// → CallMuted event → muteMyself (back to JS) → ad infinitum.
-    private var jsOriginatedMutes: Set<UUID> = []
+    /// Per-call set of action UUIDs of `CXSetMutedCallAction`s we issued
+    /// ourselves on behalf of JS. The delegate consumes the matching action
+    /// UUID and skips the echo to JS, breaking the in-app toggleMute →
+    /// setMuted → delegate → CallMuted → muteMyself loop. Grouping by call
+    /// UUID lets `clearCallInfo` drop all pending markers when a call ends.
+    private var jsOriginatedMuteActions: [UUID: Set<UUID>] = [:]
 
     init(bridge: CallsBridge) {
         self.bridge = bridge
@@ -223,47 +223,35 @@ private struct CallInfo {
             "CallKitProvider: reportEnded uuid=\(uuid.uuidString) reason=\(reason.rawValue)")
     }
 
-    /// End any active CallKit call that matches the given route. Used when
-    /// a `type=clear sub_type=calls` VoIP push arrives (the caller hung up
-    /// before the callee answered) — the WebSocket call_end event can't
-    /// reach us when the app is backgrounded, so the push is the only way
-    /// to clear the ringing UI. A no-op if no matching call is tracked.
-    /// Returns true if a matching call was found and ended, false if no
-    /// tracked call matched the route (e.g. cancel arrived after the user
-    /// already declined). The caller uses the return value to decide
-    /// whether the iOS 13+ "must report on every VoIP push" rule was
-    /// satisfied by the reportCall(endedAt:) we just made, or whether it
-    /// needs to report-then-end a dummy call to stay compliant.
-    @objc public func endCall(serverID: String, channelID: String, reason: CXCallEndedReason) -> Bool {
-        guard !serverID.isEmpty, !channelID.isEmpty else { return false }
-        callsLock.lock()
-        let match = calls.first { _, info in
-            info.request.serverID == serverID && info.request.channelID == channelID
-        }
-        callsLock.unlock()
-        guard let (uuid, _) = match else {
-            GekidouLogger.shared.log(.info,
-                "CallKitProvider: endCall no match for serverID=\(serverID) channelID=\(channelID)")
-            return false
-        }
-        reportEnded(uuid: uuid, reason: reason)
-        return true
-    }
-
     @objc public func setMuted(uuid: UUID, muted: Bool, completion: @escaping (Error?) -> Void) {
-        callsLock.lock()
-        jsOriginatedMutes.insert(uuid)
-        callsLock.unlock()
+        // Mark this specific action so the delegate skips its echo. Tracking
+        // by action.uuid (not call uuid) ensures concurrent lock-screen
+        // taps for the same call still produce delegate events JS can react
+        // to — only this exact request gets silently consumed.
         let action = CXSetMutedCallAction(call: uuid, muted: muted)
+        callsLock.lock()
+        jsOriginatedMuteActions[uuid, default: []].insert(action.uuid)
+        callsLock.unlock()
         let transaction = CXTransaction(action: action)
         controller.request(transaction) { [weak self] error in
             if error != nil {
-                self?.callsLock.lock()
-                self?.jsOriginatedMutes.remove(uuid)
-                self?.callsLock.unlock()
+                self?.consumeJSOriginatedMuteAction(callUUID: uuid, actionUUID: action.uuid)
             }
             completion(error)
         }
+    }
+
+    /// Removes an action UUID from the per-call marker set and drops the
+    /// outer entry once empty. Returns whether the marker was present.
+    @discardableResult
+    private func consumeJSOriginatedMuteAction(callUUID: UUID, actionUUID: UUID) -> Bool {
+        callsLock.lock()
+        defer { callsLock.unlock() }
+        let removed = jsOriginatedMuteActions[callUUID]?.remove(actionUUID) != nil
+        if jsOriginatedMuteActions[callUUID]?.isEmpty == true {
+            jsOriginatedMuteActions.removeValue(forKey: callUUID)
+        }
+        return removed
     }
 
     // MARK: - CXProviderDelegate
@@ -271,6 +259,7 @@ private struct CallInfo {
     public func providerDidReset(_ provider: CXProvider) {
         callsLock.lock()
         calls.removeAll()
+        jsOriginatedMuteActions.removeAll()
         callsLock.unlock()
         GekidouLogger.shared.log(.info, "CallKitProvider: providerDidReset")
     }
@@ -298,9 +287,7 @@ private struct CallInfo {
     }
 
     public func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
-        callsLock.lock()
-        let jsOriginated = jsOriginatedMutes.remove(action.callUUID) != nil
-        callsLock.unlock()
+        let jsOriginated = consumeJSOriginatedMuteAction(callUUID: action.callUUID, actionUUID: action.uuid)
         if !jsOriginated {
             bridge?.send(event: .CallMuted, body: [
                 "uuid": action.callUUID.uuidString,
@@ -351,6 +338,7 @@ private struct CallInfo {
     private func clearCallInfo(for uuid: UUID) {
         callsLock.lock()
         calls.removeValue(forKey: uuid)
+        jsOriginatedMuteActions.removeValue(forKey: uuid)
         callsLock.unlock()
     }
 

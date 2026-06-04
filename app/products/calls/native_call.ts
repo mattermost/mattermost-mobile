@@ -4,7 +4,7 @@
 import CallsNative from '@mattermost/calls-native';
 import {Platform} from 'react-native';
 
-import {getCurrentCall} from '@calls/state';
+import {getCurrentCall} from '@calls/state/current_call';
 import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getChannelById} from '@queries/servers/channel';

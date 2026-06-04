@@ -298,38 +298,31 @@ class WebsocketManagerSingleton {
             return;
         }
 
-        if (wentBackground && !this.isBackgroundTimerRunning) {
-            this.isBackgroundTimerRunning = true;
-            this.backgroundTimerId = BackgroundTimer.setTimeout(() => {
-                this.isBackgroundTimerRunning = false;
-
-                // Keep WS open while CallKit is ringing or a call is active so
-                // the app receives call_end / user_dismissed_notification /
-                // answered_elsewhere events live. iOS's `voip` background mode
-                // allows the extended network use. When the call ends, the
-                // calls product calls scheduleBackgroundCloseIfNeeded() to
-                // start the close timer.
-                if (hasActiveNativeCall()) {
-                    return;
-                }
-
-                this.closeAll();
-            }, WAIT_TO_CLOSE);
+        if (wentBackground) {
+            this.startBackgroundCloseTimer();
         }
     };
 
     public scheduleBackgroundCloseIfNeeded = () => {
-        if (this.previousActiveState || this.isBackgroundTimerRunning) {
+        if (this.previousActiveState) {
+            return;
+        }
+        this.startBackgroundCloseTimer();
+    };
+
+    private startBackgroundCloseTimer = () => {
+        if (this.isBackgroundTimerRunning) {
             return;
         }
         this.isBackgroundTimerRunning = true;
         this.backgroundTimerId = BackgroundTimer.setTimeout(() => {
             this.isBackgroundTimerRunning = false;
 
+            // Skip closing while a native call is active; closeAll would drop
+            // the WS that's carrying call lifecycle events.
             if (hasActiveNativeCall()) {
                 return;
             }
-
             this.closeAll();
         }, WAIT_TO_CLOSE);
     };

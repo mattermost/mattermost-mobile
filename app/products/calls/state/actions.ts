@@ -50,6 +50,17 @@ import {logDebug, logError} from '@utils/log';
 import type {CallJobState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
 
 export const setCalls = async (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
+    // Reconcile native overlays: any previously-tracked call that's no longer
+    // in the authoritative server snapshot has ended (typically because we
+    // missed its call_end event while the WS was disconnected). End the
+    // CallKit overlay so the user isn't stuck on a phantom ringing screen.
+    const previousCalls = getCallsState(serverUrl).calls;
+    for (const channelId of Object.keys(previousCalls)) {
+        if (!calls[channelId]) {
+            endNativeCall(serverUrl, channelId, 'remoteEnded');
+        }
+    }
+
     const channelsWithCalls = Object.keys(calls).reduce(
         (accum, next) => {
             accum[next] = true;

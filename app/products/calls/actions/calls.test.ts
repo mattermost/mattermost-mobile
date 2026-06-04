@@ -93,6 +93,13 @@ jest.mock('@calls/connection/connection', () => ({
     })),
 }));
 
+jest.mock('@calls/native_call', () => ({
+    endNativeCall: jest.fn(),
+    registerOutgoingNativeCall: jest.fn(),
+    reportNativeCallConnected: jest.fn(),
+    mirrorMuteToNativeCall: jest.fn(),
+}));
+
 jest.mock('@actions/remote/thread', () => ({
     updateThreadFollowing: jest.fn(() => Promise.resolve({})),
 }));
@@ -266,6 +273,8 @@ describe('Actions.Calls', () => {
         });
 
         // Test error case
+        const {endNativeCall} = require('@calls/native_call');
+        endNativeCall.mockClear();
         newConnection.mockRejectedValueOnce(forceLogoutError);
         await act(async () => {
             await expect(CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
@@ -273,6 +282,7 @@ describe('Actions.Calls', () => {
                 messages: {},
             }))).resolves.toStrictEqual({error: forceLogoutError});
             expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
+            expect(endNativeCall).toHaveBeenCalledWith('server1', 'channel-id', 'failed');
         });
 
         // Test failure to connect case

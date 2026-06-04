@@ -491,6 +491,38 @@ describe('useCallsState', () => {
         expect(endNativeCall).not.toHaveBeenCalled();
     });
 
+    it('setCalls ends the native overlay for calls that disappeared from the server snapshot', async () => {
+        const {endNativeCall} = require('@calls/native_call');
+        jest.clearAllMocks();
+
+        // Pre-existing state: two calls tracked locally.
+        act(() => {
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1, 'channel-2': call2}});
+            setChannelsWithCalls('server1', {'channel-1': true, 'channel-2': true});
+        });
+
+        // Server now reports only channel-1; channel-2's call vanished while
+        // we were disconnected (caller cancelled, or we missed call_end).
+        await act(async () => setCalls('server1', 'myId', {'channel-1': call1}, {}));
+
+        expect(endNativeCall).toHaveBeenCalledWith('server1', 'channel-2', 'remoteEnded');
+        expect(endNativeCall).not.toHaveBeenCalledWith('server1', 'channel-1', expect.anything());
+    });
+
+    it('setCalls does not end the native overlay for calls still present', async () => {
+        const {endNativeCall} = require('@calls/native_call');
+        jest.clearAllMocks();
+
+        act(() => {
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1}});
+            setChannelsWithCalls('server1', {'channel-1': true});
+        });
+
+        await act(async () => setCalls('server1', 'myId', {'channel-1': call1, 'channel-2': call2}, {}));
+
+        expect(endNativeCall).not.toHaveBeenCalled();
+    });
+
     it('callStarted', async () => {
         const initialCurrentCallState: CurrentCall = {
             ...DefaultCurrentCall,
