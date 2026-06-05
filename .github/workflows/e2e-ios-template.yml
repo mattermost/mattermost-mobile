@@ -480,7 +480,19 @@ jobs:
       - name: Determine Status
         id: determine-status
         run: |
-          if [[ ${{ steps.summary.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
+          # Resolve report stats defensively. A non-numeric/empty value — e.g. an empty merged
+          # report produced when a runner crashed before writing any JUnit XML — must not be
+          # read as 0 (which would look like "0 failures" and report green).
+          FAILURES="${{ steps.summary.outputs.failures }}"
+          ERRORS="${{ steps.summary.outputs.errors }}"
+          TOTAL="${{ steps.summary.outputs.total }}"
+          [[ "$FAILURES" =~ ^[0-9]+$ ]] || FAILURES=1
+          [[ "$ERRORS" =~ ^[0-9]+$ ]] || ERRORS=0
+          [[ "$TOTAL" =~ ^[0-9]+$ ]] || TOTAL=0
+          # When failures are fatal (CMT/release), fail on real failures, errors, OR a run that
+          # executed zero tests — the zero-tests case would otherwise report green even though
+          # nothing actually ran. Non-fatal callers are unaffected (STATUS is always success).
+          if [[ "${{ inputs.testcase_failure_fatal }}" == "true" && ( "$FAILURES" -gt 0 || "$ERRORS" -gt 0 || "$TOTAL" -eq 0 ) ]]; then
             echo "STATUS=failure" >> ${GITHUB_OUTPUT}
           else
             echo "STATUS=success" >> ${GITHUB_OUTPUT}
