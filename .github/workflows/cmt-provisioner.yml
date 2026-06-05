@@ -10,11 +10,25 @@ name: CMT Provisioner
 # instances (cleanup is keyed off the completed workflow_run, matched by commit SHA).
 #
 # The server-version set lives in Matterwick config (managed via gitops), so this workflow
-# takes no inputs. Run it manually from the Actions tab, or let the monthly schedule fire it.
+# takes no inputs. Run it manually from the Actions tab, or let it fire automatically when a
+# release branch is cut (below).
+#
+# Mobile runs CMT only on the release branch *cut* (not on subsequent pushes — that wiring is a
+# later change). `create` is the only creation-specific GitHub trigger and cannot be filtered by
+# ref name here, so it fires for every branch/tag creation; the job `if` below skips non-release
+# creations, and Matterwick is the authoritative gate (it only provisions when head_branch is a
+# release-v* branch or the run was a manual workflow_dispatch).
+#
+# NOTE (intentional duplicate coverage): a release-v* cut/push also triggers Matterwick's normal
+# release E2E flow (whole suite against the single latest server). CMT mobile additionally runs
+# the SMOKE suite against its multi-version matrix (one runner per version, iOS + Android), whose
+# set includes the latest server — so the latest server gets smoke-tested by CMT in addition to
+# the normal release suite. This is expected and accepted.
 
 on:
-  schedule:
-    - cron: "0 0 1 * *" # 00:00 UTC on the 1st of every month
+  # Release branch cut only (creation). Subsequent pushes do not re-run CMT for mobile.
+  create:
+  # Manual runs from the Actions tab.
   workflow_dispatch: {}
 
 # This workflow does not use GITHUB_TOKEN. Its only purpose is to emit a workflow_run event
@@ -24,6 +38,10 @@ permissions: {}
 
 jobs:
   signal:
+    # `create` fires for every branch and tag; only act on release-v* branch creations (manual
+    # dispatch always runs). This skips the runner for unrelated creations; note that the
+    # workflow_run webhook still reaches Matterwick, which independently gates on the branch.
+    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release-v'))
     runs-on: ubuntu-22.04
     steps:
       - name: Signal Matterwick to provision CMT servers
