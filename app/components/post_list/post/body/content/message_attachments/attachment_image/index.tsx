@@ -110,7 +110,7 @@ const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId
                         <ProgressiveImage
                             forwardRef={ref}
                             id={fileId.current}
-                            imageStyle={[style.attachmentMargin]}
+                            imageStyle={style.attachmentMargin}
                             imageUri={imageUrl}
                             onError={onError}
                             contentFit='contain'

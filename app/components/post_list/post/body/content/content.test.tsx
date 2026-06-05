@@ -3,11 +3,14 @@
 
 import React from 'react';
 
+import {MM_BLOCKS_SIMPLE} from '@components/block_renderer/translation/test_fixtures';
 import {Preferences} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import Content from './content';
+import InteractiveMessages from './interactive_messages';
+import MessageAttachments from './message_attachments';
 import PermalinkPreview from './permalink_preview';
 
 import type {PermalinkPreviewProps} from './permalink_preview/permalink_preview';
@@ -43,9 +46,241 @@ jest.mock('./embedded_bindings', () => ({
     default: jest.fn(),
 }));
 
+jest.mock('./interactive_messages', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+
 jest.mocked(PermalinkPreview).mockImplementation((props: PermalinkPreviewProps) =>
     React.createElement('div', {testID: 'permalink-preview', ...props}),
 );
+
+jest.mocked(InteractiveMessages).mockImplementation((props) =>
+    React.createElement('div', {testID: 'interactive-messages', ...props}),
+);
+
+jest.mocked(MessageAttachments).mockImplementation((props) =>
+    React.createElement('div', {testID: 'message-attachments', ...props}),
+);
+
+describe('components/post_list/post/body/content/Content - hasInteractivePostContent', () => {
+    const baseProps = {
+        isReplyPost: false,
+        layoutWidth: 350,
+        location: 'Channel' as AvailableScreens,
+        mmBlocksEnabled: true,
+        theme: Preferences.THEMES.denim,
+        showPermalinkPreviews: true,
+    };
+
+    const channelId = 'channel-interactive';
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should render InteractiveMessages when mm_blocks are present and mmBlocksEnabled is true', () => {
+        const post = TestHelper.fakePostModel({
+            id: 'post-mm-blocks',
+            channelId,
+            props: {
+                mm_blocks: [...MM_BLOCKS_SIMPLE],
+            },
+        });
+
+        const {getByTestId} = renderWithIntlAndTheme(
+            <Content
+                {...baseProps}
+                post={post}
+            />,
+        );
+
+        const interactiveMessages = getByTestId('interactive-messages');
+        expect(interactiveMessages.props.post).toBe(post);
+        expect(interactiveMessages.props.channelId).toBe(channelId);
+        expect(interactiveMessages.props.location).toBe(baseProps.location);
+        expect(interactiveMessages.props.theme).toBe(baseProps.theme);
+        expect(PermalinkPreview).not.toHaveBeenCalled();
+    });
+
+    it('should render InteractiveMessages when blocks are present and mmBlocksEnabled is true', () => {
+        const post = TestHelper.fakePostModel({
+            id: 'post-blocks',
+            channelId,
+            props: {
+                blocks: [{type: 'section', text: {type: 'mrkdwn', text: 'Block content'}}],
+            },
+        });
+
+        const {getByTestId} = renderWithIntlAndTheme(
+            <Content
+                {...baseProps}
+                post={post}
+            />,
+        );
+
+        expect(getByTestId('interactive-messages').props.post).toBe(post);
+    });
+
+    it('should render InteractiveMessages when cards are present and mmBlocksEnabled is true', () => {
+        const post = TestHelper.fakePostModel({
+            id: 'post-cards',
+            channelId,
+            props: {
+                cards: [{header: {title: 'Card title'}, sections: []}],
+            },
+        });
+
+        const {getByTestId} = renderWithIntlAndTheme(
+            <Content
+                {...baseProps}
+                post={post}
+            />,
+        );
+
+        expect(getByTestId('interactive-messages').props.post).toBe(post);
+    });
+
+    it('should render InteractiveMessages when attachments are present and mmBlocksEnabled is true', () => {
+        const post = TestHelper.fakePostModel({
+            id: 'post-attachments',
+            channelId,
+            props: {
+                attachments: [{text: 'Attachment body'}],
+            },
+        });
+
+        const {getByTestId} = renderWithIntlAndTheme(
+            <Content
+                {...baseProps}
+                post={post}
+            />,
+        );
+
+        expect(getByTestId('interactive-messages').props.post).toBe(post);
+    });
+
+    it('should prefer InteractiveMessages over permalink embeds when mmBlocksEnabled is true', () => {
+        const post = TestHelper.fakePostModel({
+            id: 'post-interactive-over-permalink',
+            channelId,
+            metadata: {
+                embeds: [
+                    {
+                        type: 'permalink',
+                        url: '',
+                        data: {
+                            post_id: 'linked-post',
+                            post: TestHelper.fakePost({id: 'linked-post', message: 'Linked post'}),
+                            team_name: 'team',
+                            channel_display_name: 'Channel',
+                            channel_type: 'O',
+                            channel_id: 'linked-channel',
+                        },
+                    },
+                ],
+            },
+            props: {
+                mm_blocks: [...MM_BLOCKS_SIMPLE],
+            },
+        });
+
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
+            <Content
+                {...baseProps}
+                post={post}
+            />,
+        );
+
+        expect(getByTestId('interactive-messages').props.post).toBe(post);
+        expect(queryByTestId('permalink-preview')).toBeNull();
+    });
+
+    it('should not render InteractiveMessages when mmBlocksEnabled is false', () => {
+        const post = TestHelper.fakePostModel({
+            id: 'post-mm-blocks-disabled',
+            channelId,
+            metadata: {
+                embeds: [
+                    {
+                        type: 'permalink',
+                        url: '',
+                        data: {
+                            post_id: 'linked-post',
+                            post: TestHelper.fakePost({id: 'linked-post', message: 'Linked post'}),
+                            team_name: 'team',
+                            channel_display_name: 'Channel',
+                            channel_type: 'O',
+                            channel_id: 'linked-channel',
+                        },
+                    },
+                ],
+            },
+            props: {
+                mm_blocks: [...MM_BLOCKS_SIMPLE],
+            },
+        });
+
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
+            <Content
+                {...baseProps}
+                mmBlocksEnabled={false}
+                post={post}
+            />,
+        );
+
+        expect(queryByTestId('interactive-messages')).toBeNull();
+        expect(getByTestId('permalink-preview')).toBeTruthy();
+    });
+
+    it('should not render InteractiveMessages when interactive arrays are empty', () => {
+        const post = TestHelper.fakePostModel({
+            id: 'post-empty-interactive',
+            channelId,
+            props: {
+                mm_blocks: [],
+                blocks: [],
+                cards: [],
+                attachments: [],
+            },
+        });
+
+        const result = renderWithIntlAndTheme(
+            <Content
+                {...baseProps}
+                post={post}
+            />,
+        );
+
+        expect(result.toJSON()).toBeNull();
+        expect(InteractiveMessages).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to message attachments when mmBlocksEnabled is false', () => {
+        const attachments = [{text: 'Legacy attachment'}];
+        const post = TestHelper.fakePostModel({
+            id: 'post-legacy-attachments',
+            channelId,
+            metadata: {
+                embeds: [{type: 'message_attachment', url: '', data: {}}],
+            },
+            props: {
+                attachments,
+            },
+        });
+
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
+            <Content
+                {...baseProps}
+                mmBlocksEnabled={false}
+                post={post}
+            />,
+        );
+
+        expect(queryByTestId('interactive-messages')).toBeNull();
+        expect(getByTestId('message-attachments').props.attachments).toEqual(attachments);
+    });
+});
 
 describe('components/post_list/post/body/content/Content - PermalinkPreview', () => {
     const baseProps = {

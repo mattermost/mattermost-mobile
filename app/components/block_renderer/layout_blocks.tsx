@@ -232,44 +232,37 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
         </MmBlocksLayoutWidthContext.Provider>
     );
 
-    const containerStyle = [block.border && style.containerBorder, block.background === 'gray' && style.containerBgGray];
-    if (!accent) {
-        return (
-            <View
-                style={containerStyle}
-                onLayout={handleLayout}
-            >
-                {inner}
-            </View>
-        );
-    }
-
-    let accentStyle: ViewStyle = {};
-    if (isMmContainerSemanticAccent(accent)) {
-        switch (accent) {
-            case 'primary':
-                accentStyle = style.accentPrimary;
-                break;
-            case 'good':
-                accentStyle = style.accentGood;
-                break;
-            case 'warning':
-                accentStyle = style.accentWarning;
-                break;
-            case 'danger':
-                accentStyle = style.accentDanger;
-                break;
-            default:
-                accentStyle = style.accentDefault;
-                break;
+    const containerBaseStyle = [block.border && style.containerBorder, block.background === 'gray' && style.containerBgGray];
+    let accentStyles: ViewStyle[] = [];
+    if (accent) {
+        let accentStyle: ViewStyle = {};
+        if (isMmContainerSemanticAccent(accent)) {
+            switch (accent) {
+                case 'primary':
+                    accentStyle = style.accentPrimary;
+                    break;
+                case 'good':
+                    accentStyle = style.accentGood;
+                    break;
+                case 'warning':
+                    accentStyle = style.accentWarning;
+                    break;
+                case 'danger':
+                    accentStyle = style.accentDanger;
+                    break;
+                default:
+                    accentStyle = style.accentDefault;
+                    break;
+            }
+        } else {
+            accentStyle = {borderLeftColor: accent};
         }
-    } else {
-        accentStyle = {borderLeftColor: accent};
+        accentStyles = [style.containerAccent, accentStyle];
     }
 
     return (
         <View
-            style={[containerStyle, style.containerAccent, accentStyle]}
+            style={[containerBaseStyle, accentStyles]}
             onLayout={handleLayout}
         >
             {inner}

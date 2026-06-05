@@ -4,12 +4,14 @@
 import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
+import {handleGotoLocation} from '@actions/remote/command';
 import * as integrationActions from '@actions/remote/integrations';
 import * as serverContext from '@context/server';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import InlineActionButton from './inline_action_button';
 
+jest.mock('@actions/remote/command');
 jest.mock('@actions/remote/integrations');
 jest.mock('@context/server', () => ({
     ...jest.requireActual('@context/server'),
@@ -128,7 +130,10 @@ describe('InlineActionButton', () => {
             SERVER_URL,
             POST_ID,
             'MxPlan',
+            '',
+            '',
             {row: '12', col: 'A'},
+            'mm_block',
         );
     });
 
@@ -172,6 +177,35 @@ describe('InlineActionButton', () => {
         });
 
         expect(getByText('Action failed to execute.')).toBeTruthy();
+    });
+
+    it('should call handleGotoLocation when dispatch returns goto_location', async () => {
+        const gotoLocation = 'https://server.com/team/channels/town-square';
+        jest.mocked(integrationActions.postActionWithCookie).mockResolvedValue({
+            data: {goto_location: gotoLocation},
+        });
+
+        const {getByTestId} = renderWithIntlAndTheme(
+            <InlineActionButton
+                href={VALID_HREF}
+                postId={POST_ID}
+                baseTextStyle={null}
+            >
+                {'Click me'}
+            </InlineActionButton>,
+        );
+
+        fireEvent.press(getByTestId('inline_action_button'));
+
+        await act(async () => {
+            await new Promise((resolve) => process.nextTick(resolve));
+        });
+
+        expect(handleGotoLocation).toHaveBeenCalledWith(
+            SERVER_URL,
+            expect.anything(),
+            gotoLocation,
+        );
     });
 
     it('should render timeout error when dispatch hangs past 15s', async () => {

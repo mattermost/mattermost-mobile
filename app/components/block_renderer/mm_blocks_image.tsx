@@ -138,7 +138,10 @@ const MmBlocksImageContent = ({
     if (!isValidUrl(imageUrl) || !displaySrc || loadError || (imageMetadata && isGifTooLarge(imageMetadata))) {
         return (
             <View style={[style.errorFrame, dimensionsStyle]}>
-                <FileIcon failed={true}/>
+                <FileIcon
+                    failed={true}
+                    testID='mm_blocks_image.error'
+                />
             </View>
         );
     }
