@@ -48,7 +48,7 @@ function installGemsAndPodsM1() {
     echo "Installing Gems"
     npm run ios-gems-m1
     echo "Getting Cocoapods dependencies"
-    npm run pod-install-m1
+    npm run pod-install
 }
 
 function setup() {

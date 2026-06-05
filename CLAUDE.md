@@ -31,7 +31,7 @@ When testing features that require mobile device interaction:
 
 ```bash
 # Setup
-npm run pod-install           # iOS CocoaPods (or pod-install-m1 for M1 Macs)
+npm run pod-install           # iOS CocoaPods
 npm run ios-gems              # Ruby gems for iOS (or ios-gems-m1 for M1 Macs)
 
 # Development
