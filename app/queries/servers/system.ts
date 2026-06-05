@@ -287,6 +287,26 @@ export const observeConfigIntValue = (database: Database, key: keyof ClientConfi
     );
 };
 
+// The deprecated ExperimentalViewArchivedChannels setting was the last gate on viewing archived
+// channels. It is always enabled on servers newer than v10.11, which stopped sending it in the client
+// config, so an absent value means the feature is on. Supported older servers (down to v5.26.2) still
+// send it and may have explicitly disabled it, so only an explicit 'false' turns archived channels off.
+//
+// TODO: once we drop support for servers <= v10.11 the field is never sent, so these helpers and all of
+// their callers can be removed and archived channels treated as always viewable.
+const archivedChannelsViewable = (value?: string) => value !== 'false';
+
+export const canViewArchivedChannels = async (database: Database) => {
+    return archivedChannelsViewable(await getConfigValue(database, 'ExperimentalViewArchivedChannels'));
+};
+
+export const observeCanViewArchivedChannels = (database: Database) => {
+    return observeConfigValue(database, 'ExperimentalViewArchivedChannels').pipe(
+        switchMap((value) => of$(archivedChannelsViewable(value))),
+        distinctUntilChanged(),
+    );
+};
+
 export const observeLicense = (database: Database): Observable<ClientLicense | undefined> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.LICENSE).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: undefined}))),
