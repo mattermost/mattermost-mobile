@@ -336,6 +336,21 @@ describe('PushNotifications', () => {
     });
 
     describe('onNotificationReceivedBackground', () => {
+        it('emits server logout for silent session notification received in background', async () => {
+            jest.spyOn(DeviceEventEmitter, 'emit');
+            const notification = {
+                payload: {
+                    type: PushNotification.NOTIFICATION_TYPE.SESSION,
+                    server_url: 'http://test.com',
+                },
+            };
+            const completion = jest.fn();
+
+            await pushNotifications.onNotificationReceivedBackground(notification as any, completion);
+
+            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl: 'http://test.com'});
+        });
+
         it('should not process unverified notification', async () => {
             const notification = {
                 payload: {

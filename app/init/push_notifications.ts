@@ -96,12 +96,8 @@ class PushNotificationsSingleton {
     getServerUrlFromNotification = async (notification: NotificationWithData) => {
         const {payload} = notification;
 
-        if (!payload?.channel_id && (!payload?.server_url || !payload.server_id)) {
-            return payload?.server_url;
-        }
-
-        let serverUrl = payload.server_url;
-        if (!serverUrl && payload.server_id) {
+        let serverUrl = payload?.server_url;
+        if (!serverUrl && payload?.server_id) {
             serverUrl = await DatabaseManager.getServerUrlFromIdentifier(payload.server_id);
         }
 

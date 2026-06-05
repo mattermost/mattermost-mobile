@@ -22,6 +22,7 @@ import mattermost_intune
 #endif
 
 private let notificationClearAction = "clear"
+private let notificationSessionAction = "session"
 private let notificationTestAction = "test"
 
 @main
@@ -158,6 +159,7 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
         let action = userInfo["type"] as? String
         let isClearAction = action == notificationClearAction
         let isTestAction = action == notificationTestAction
+        let isSessionAction = action == notificationSessionAction
 
         if isTestAction {
             completionHandler(.noData)
@@ -173,6 +175,12 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
 
         if isClearAction {
             NotificationHelper.default.clearChannelOrThreadNotifications(userInfo: userInfo as NSDictionary)
+            GekidouWrapper.default.postNotificationReceipt(userInfo)
+            RNNotifications.didReceiveBackgroundNotification(userInfo, withCompletionHandler: completionHandler)
+            return
+        }
+
+        if isSessionAction {
             GekidouWrapper.default.postNotificationReceipt(userInfo)
             RNNotifications.didReceiveBackgroundNotification(userInfo, withCompletionHandler: completionHandler)
             return
