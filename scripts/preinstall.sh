@@ -2,12 +2,7 @@
 
 function cocoapods() {
     echo "Installing Cocoapods"
-    if [[ $(uname -p) == 'arm' ]]; then
-      npm run ios-gems-m1 &> /dev/null || exit 1
-    else
-      npm run ios-gems &> /dev/null  || exit 1
-    fi
-    
+    npm run ios-gems &> /dev/null || exit 1
 }
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
