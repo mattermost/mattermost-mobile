@@ -1,5 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See LICENSE.txt for license xxx i nformationxxxss.
+// See LICENSE.txt for license informationxx.
+
+
 
 import {RUNNING_E2E} from '@env';
 import TurboLogger from '@mattermost/react-native-turbo-log';
