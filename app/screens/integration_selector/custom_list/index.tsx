@@ -84,7 +84,7 @@ function CustomList({
 
     const renderListItem = useCallback(({item}: any): React.ReactElement | null => {
         const props: ListItemProps = {
-            id: item.key,
+            id: item.id || item.key || item.value,
             item,
             selected: item.selected,
             selectable,

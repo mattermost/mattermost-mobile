@@ -84,6 +84,10 @@ function setup() {
             exit 1
         fi
 
+        echo "Configuring Compass Icons font"
+        cp "$COMPASS_ICONS" "assets/fonts/"
+        cp "$COMPASS_ICONS" "android/app/src/main/assets/fonts"
+
         if [ ! -f "$GENERATE_GLYPH_MAP_SCRIPT" ]; then
             echo "Compass glyph map script not found at: $GENERATE_GLYPH_MAP_SCRIPT"
             exit 1

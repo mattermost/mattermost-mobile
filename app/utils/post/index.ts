@@ -64,6 +64,27 @@ export function isPostEphemeral(post: PostModel): boolean {
     return post.type === Post.POST_TYPES.EPHEMERAL || post.type === Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL || post.deleteAt > 0;
 }
 
+type EphemeralIdentityFields = {
+    create_at?: number;
+    root_id?: string;
+    user_id?: string;
+};
+
+// Integration update payloads are partial posts (often create_at=0). Preserve identity from the stored post.
+export function restoreEphemeralIdentityFieldsForEdit(incoming: Post, stored: EphemeralIdentityFields): Post {
+    const out: Post = {...incoming};
+    if (!out.create_at && stored.create_at) {
+        out.create_at = stored.create_at;
+    }
+    if (!out.root_id && stored.root_id) {
+        out.root_id = stored.root_id;
+    }
+    if (!out.user_id && stored.user_id) {
+        out.user_id = stored.user_id;
+    }
+    return out;
+}
+
 export function isPostFailed(post: PostModel): boolean {
     return Boolean(post.props?.failed) || ((post.pendingPostId === post.id) && (Date.now() > post.updateAt + POST_TIME_TO_FAIL));
 }

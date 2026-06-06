@@ -69,6 +69,24 @@ server.post('/mm_blocks_integration_static_select', postMmBlocksIntegrationStati
 server.post('/mm_blocks_integration_echo_query', postMmBlocksIntegrationEchoQuery);
 server.post('/mm_blocks_integration_echo_context', postMmBlocksIntegrationEchoContext);
 
+// Catch-all route for unmatched requests
+server.use((req, res) => {
+    res.status(404).json({
+        error: 'Not Found',
+        method: req.method,
+        url: req.originalUrl,
+        message: 'This endpoint does not exist on the webhook server',
+    });
+});
+
+server.listen(port, (err) => {
+    if (err) {
+        console.error('Error starting webhook server:', err);
+        process.exit(1);
+    }
+    console.log(`Webhook test server listening on port ${port}!`);
+});
+
 function ping(req, res) {
     const baseUrl = SITE_URL || 'http://localhost:8065';
     const webhookBaseUrl = WEBHOOK_BASE_URL || 'http://localhost:3000';
@@ -79,8 +97,6 @@ function ping(req, res) {
         webhookBaseUrl,
     });
 }
-
-server.listen(port, () => console.log(`Webhook test server listening on port ${port}!`));
 
 let appID;
 let appSecret;
@@ -752,17 +768,3 @@ function onFieldRefreshDialogSubmit(req, res) {
 
     res.status(200).json(response);
 }
-
-// Catch-all route for unmatched requests
-server.use((req, res) => {
-    res.status(404).json({
-        error: 'Not Found',
-        method: req.method,
-        url: req.originalUrl,
-        message: 'This endpoint does not exist on the webhook server',
-    });
-});
-
-server.listen(port, () => {
-    console.log(`Webhook test server listening on port ${port}!`);
-});
