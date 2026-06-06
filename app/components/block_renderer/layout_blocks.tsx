@@ -202,6 +202,8 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
     }
 
     const blockItems = block.content.map((item, i) => (
+
+        // Index keys are safe: block content is static and not reordered at runtime.
         <BlockSwitch
             key={i}
             block={item}

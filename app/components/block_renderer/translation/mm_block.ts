@@ -121,6 +121,8 @@ function translateAccentColor(v: unknown): MmContainerBlock['accent_color'] | un
     return v;
 }
 
+const STATIC_SELECT_OPTION_KEYS = new Set(['text', 'value']);
+
 function translateStaticSelectOptions(raw: unknown): MmStaticSelectOption[] | undefined | null {
     if (raw === undefined) {
         return undefined;
@@ -133,7 +135,7 @@ function translateStaticSelectOptions(raw: unknown): MmStaticSelectOption[] | un
         if (!isRecord(el)) {
             return null;
         }
-        if (!keysAreSubset(el, new Set(['text', 'value']))) {
+        if (!keysAreSubset(el, STATIC_SELECT_OPTION_KEYS)) {
             return null;
         }
         if (typeof el.text !== 'string' || typeof el.value !== 'string') {

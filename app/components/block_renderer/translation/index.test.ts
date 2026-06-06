@@ -21,12 +21,12 @@ import {getPostInteractiveIntegrationFormat, translatePostProps} from './index';
 
 describe('translatePostProps', () => {
     describe('empty and missing content', () => {
-        it('returns null when props have no interactive content', () => {
+        it('should return null when props have no interactive content', () => {
             expect(translatePostProps({})).toBeNull();
             expect(translatePostProps({message: 'plain post'})).toBeNull();
         });
 
-        it('returns null when interactive arrays are empty', () => {
+        it('should return null when interactive arrays are empty', () => {
             expect(translatePostProps({
                 mm_blocks: [],
                 blocks: [],
@@ -37,7 +37,7 @@ describe('translatePostProps', () => {
     });
 
     describe('format priority', () => {
-        it('prefers mm_blocks over blocks, cards, and attachments', () => {
+        it('should prefer mm_blocks over blocks, cards, and attachments', () => {
             expect(translatePostProps({
                 mm_blocks: [...MM_BLOCKS_SIMPLE],
                 blocks: [...BLOCK_KIT_SIMPLE],
@@ -46,7 +46,7 @@ describe('translatePostProps', () => {
             })).toMatchSnapshot();
         });
 
-        it('prefers blocks over cards and attachments when mm_blocks is absent', () => {
+        it('should prefer blocks over cards and attachments when mm_blocks is absent', () => {
             expect(translatePostProps({
                 blocks: [...BLOCK_KIT_SIMPLE],
                 cards: [...ADAPTIVE_CARDS_SIMPLE],
@@ -54,7 +54,7 @@ describe('translatePostProps', () => {
             })).toMatchSnapshot();
         });
 
-        it('prefers cards over attachments when mm_blocks and blocks are absent', () => {
+        it('should prefer cards over attachments when mm_blocks and blocks are absent', () => {
             expect(translatePostProps({
                 cards: [...ADAPTIVE_CARDS_SIMPLE],
                 attachments: [...ATTACHMENTS_SIMPLE],
@@ -63,50 +63,50 @@ describe('translatePostProps', () => {
     });
 
     describe('simple payloads', () => {
-        it('translates native mm_blocks', () => {
+        it('should translate native mm_blocks', () => {
             expect(translatePostProps({mm_blocks: [...MM_BLOCKS_SIMPLE]})).toMatchSnapshot();
         });
 
-        it('translates Block Kit blocks', () => {
+        it('should translate Block Kit blocks', () => {
             expect(translatePostProps({blocks: [...BLOCK_KIT_SIMPLE]})).toMatchSnapshot();
         });
 
-        it('translates Adaptive Cards', () => {
+        it('should translate Adaptive Cards', () => {
             expect(translatePostProps({cards: [...ADAPTIVE_CARDS_SIMPLE]})).toMatchSnapshot();
         });
 
-        it('translates legacy attachments', () => {
+        it('should translate legacy attachments', () => {
             expect(translatePostProps({attachments: [...ATTACHMENTS_SIMPLE]})).toMatchSnapshot();
         });
     });
 
     describe('complex payloads', () => {
-        it('translates rich mm_blocks (container, column_set, collapsible, select)', () => {
+        it('should translate rich mm_blocks (container, column_set, collapsible, select)', () => {
             expect(translatePostProps({mm_blocks: [...MM_BLOCKS_COMPLEX]})).toMatchSnapshot();
         });
 
-        it('translates rich attachments (fields, media, footer, actions, multiple cards)', () => {
+        it('should translate rich attachments (fields, media, footer, actions, multiple cards)', () => {
             expect(translatePostProps({attachments: [...ATTACHMENTS_COMPLEX]})).toMatchSnapshot();
         });
 
-        it('translates rich Block Kit (accessory, fields, image, select)', () => {
+        it('should translate rich Block Kit (accessory, fields, image, select)', () => {
             expect(translatePostProps({blocks: [...BLOCK_KIT_COMPLEX]})).toMatchSnapshot();
         });
 
-        it('translates rich Adaptive Cards (columns, image, action set)', () => {
+        it('should translate rich Adaptive Cards (columns, image, action set)', () => {
             expect(translatePostProps({cards: [...ADAPTIVE_CARDS_COMPLEX]})).toMatchSnapshot();
         });
     });
 
     describe('malformed inputs', () => {
-        it('falls through when mm_blocks is not an array and uses attachments', () => {
+        it('should fall through when mm_blocks is not an array and uses attachments', () => {
             expect(translatePostProps({
                 mm_blocks: 'not-an-array' as unknown,
                 attachments: [{text: 'fallback attachment'}],
             })).toMatchSnapshot();
         });
 
-        it('does not fall through when mm_blocks is a non-empty array but every entry is invalid', () => {
+        it('should not fall through when mm_blocks is a non-empty array but every entry is invalid', () => {
             const result = translatePostProps({mm_blocks: [...MALFORMED_MM_BLOCKS_ONLY_INVALID]});
             expect(result).toEqual([]);
             expect(translatePostProps({
@@ -115,31 +115,31 @@ describe('translatePostProps', () => {
             })).toEqual([]);
         });
 
-        it('keeps valid mm_blocks and drops invalid siblings', () => {
+        it('should keep valid mm_blocks and drop invalid siblings', () => {
             expect(translatePostProps({mm_blocks: [...MALFORMED_MM_BLOCKS_MIXED]})).toMatchSnapshot();
         });
 
-        it('skips invalid attachment entries and keeps partial attachment content', () => {
+        it('should skip invalid attachment entries and keep partial attachment content', () => {
             expect(translatePostProps({attachments: [...MALFORMED_ATTACHMENTS]})).toMatchSnapshot();
         });
 
-        it('returns empty array when every attachment entry is unusable', () => {
+        it('should return empty array when every attachment entry is unusable', () => {
             expect(translatePostProps({attachments: [null, {}, 'x']})).toEqual([]);
         });
 
-        it('skips invalid Block Kit blocks and keeps valid sections', () => {
+        it('should skip invalid Block Kit blocks and keep valid sections', () => {
             expect(translatePostProps({blocks: [...MALFORMED_BLOCK_KIT]})).toMatchSnapshot();
         });
 
-        it('skips non-AdaptiveCard entries and partial invalid card bodies', () => {
+        it('should skip non-AdaptiveCard entries and partial invalid card bodies', () => {
             expect(translatePostProps({cards: [...MALFORMED_ADAPTIVE_CARDS]})).toMatchSnapshot();
         });
 
-        it('returns empty array when cards array has no translatable AdaptiveCard', () => {
+        it('should return empty array when cards array has no translatable AdaptiveCard', () => {
             expect(translatePostProps({cards: [null, {type: 'NotACard'}]})).toEqual([]);
         });
 
-        it('treats non-array interactive props as absent for format detection', () => {
+        it('should treat non-array interactive props as absent for format detection', () => {
             expect(translatePostProps({
                 mm_blocks: {type: 'text', text: 'object not array'} as unknown,
                 blocks: null as unknown,
@@ -151,27 +151,27 @@ describe('translatePostProps', () => {
 });
 
 describe('getPostInteractiveIntegrationFormat', () => {
-    it('returns mm_block when mm_blocks is non-empty', () => {
+    it('should return mm_block when mm_blocks is non-empty', () => {
         expect(getPostInteractiveIntegrationFormat({mm_blocks: [...MM_BLOCKS_SIMPLE]})).toBe('mm_block');
     });
 
-    it('returns block when blocks is non-empty and mm_blocks is not used', () => {
+    it('should return block when blocks is non-empty and mm_blocks is not used', () => {
         expect(getPostInteractiveIntegrationFormat({blocks: [...BLOCK_KIT_SIMPLE]})).toBe('block');
     });
 
-    it('returns card when cards is non-empty and higher-priority formats are absent', () => {
+    it('should return card when cards is non-empty and higher-priority formats are absent', () => {
         expect(getPostInteractiveIntegrationFormat({cards: [...ADAPTIVE_CARDS_SIMPLE]})).toBe('card');
     });
 
-    it('returns attachment when only attachments are present', () => {
+    it('should return attachment when only attachments are present', () => {
         expect(getPostInteractiveIntegrationFormat({attachments: [...ATTACHMENTS_SIMPLE]})).toBe('attachment');
     });
 
-    it('defaults to attachment when no interactive arrays are present', () => {
+    it('should default to attachment when no interactive arrays are present', () => {
         expect(getPostInteractiveIntegrationFormat({})).toBe('attachment');
     });
 
-    it('matches translatePostProps source priority', () => {
+    it('should match translatePostProps source priority', () => {
         const allFormats = {
             mm_blocks: [...MM_BLOCKS_SIMPLE],
             blocks: [...BLOCK_KIT_SIMPLE],
@@ -194,20 +194,20 @@ describe('getPostInteractiveIntegrationFormat', () => {
     });
 
     describe('malformed inputs', () => {
-        it('ignores non-array mm_blocks when choosing integration format', () => {
+        it('should ignore non-array mm_blocks when choosing integration format', () => {
             expect(getPostInteractiveIntegrationFormat({
                 mm_blocks: 'invalid' as unknown,
                 blocks: [...BLOCK_KIT_SIMPLE],
             })).toBe('block');
         });
 
-        it('returns mm_block when mm_blocks is a non-empty array even if translation yields no blocks', () => {
+        it('should return mm_block when mm_blocks is a non-empty array even if translation yields no blocks', () => {
             expect(getPostInteractiveIntegrationFormat({
                 mm_blocks: [...MALFORMED_MM_BLOCKS_ONLY_INVALID],
             })).toBe('mm_block');
         });
 
-        it('returns attachment for empty arrays', () => {
+        it('should return attachment for empty arrays', () => {
             expect(getPostInteractiveIntegrationFormat({
                 mm_blocks: [],
                 blocks: [],

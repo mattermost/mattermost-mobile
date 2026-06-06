@@ -45,16 +45,13 @@ export const ButtonElement = ({element, onAction, theme}: ButtonElementProps) =>
     }, [buttonColors.color, useStyledTertiary]);
 
     const handlePress = usePreventDoubleTap(useCallback(async () => {
-        if (!element.text || !element.action_id) {
-            return;
-        }
         try {
             setIsExecuting(true);
             await onAction(element.action_id, undefined, element.query, element.cookie);
         } finally {
             setIsExecuting(false);
         }
-    }, [element.action_id, element.cookie, element.query, element.text, onAction]));
+    }, [element.action_id, element.cookie, element.query, onAction]));
 
     if (!element.text || !element.action_id) {
         return null;

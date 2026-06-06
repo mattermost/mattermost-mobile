@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {render} from '@testing-library/react-native';
 import React from 'react';
 
 import {Preferences} from '@constants';
+import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ButtonMarkdownText from './button_markdown_text';
 
@@ -13,7 +13,7 @@ describe('ButtonMarkdownText', () => {
     const baseStyle = {color: theme.centerChannelColor, fontSize: 15};
 
     it('should render plain text', () => {
-        const {getByText} = render(
+        const {getByText} = renderWithIntlAndTheme(
             <ButtonMarkdownText
                 value='Approve'
                 baseStyle={baseStyle}
@@ -25,7 +25,7 @@ describe('ButtonMarkdownText', () => {
     });
 
     it('should render bold markdown', () => {
-        const {getByText} = render(
+        const {getByText} = renderWithIntlAndTheme(
             <ButtonMarkdownText
                 value='**Approve**'
                 baseStyle={baseStyle}
@@ -37,7 +37,7 @@ describe('ButtonMarkdownText', () => {
     });
 
     it('should render link text without making it a link', () => {
-        const {getByText} = render(
+        const {getByText} = renderWithIntlAndTheme(
             <ButtonMarkdownText
                 value='[Docs](https://example.com)'
                 baseStyle={baseStyle}

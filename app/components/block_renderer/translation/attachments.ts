@@ -6,7 +6,7 @@
 import truncate from 'lodash/truncate';
 
 import {MAX_ATTACHMENT_FOOTER_LENGTH} from '@constants/integrations';
-import {isUrlSafe} from '@utils/url';
+import {isUrlSafe, isValidUrl} from '@utils/url';
 
 import {parseMmButtonStyle} from '../utils/button';
 
@@ -31,7 +31,7 @@ export function translateAttachments(attachments: unknown[]): MmBlock[] {
         const a = attachment as Record<string, unknown>;
 
         const colorRaw = typeof a.color === 'string' ? a.color.trim() : '';
-        const accentColor = colorRaw.length > 0 ? colorRaw : 'rgba(var(--link-color-rgb), 0.5)';
+        const accentColor = colorRaw.length > 0 ? colorRaw : 'default';
         const pretext =
             typeof a.pretext === 'string' && a.pretext.length > 0 ? a.pretext : undefined;
         const thumbUrl =
@@ -193,6 +193,13 @@ function buildAttachmentAuthorBlocks(
     return blocks;
 }
 
+function isSafeAttachmentLink(link: string): boolean {
+    if (!isUrlSafe(link)) {
+        return false;
+    }
+    return isValidUrl(link) || link.startsWith('/') || link.startsWith('#');
+}
+
 function buildAttachmentAuthorNameMarkdown(
     authorName: string | undefined,
     authorLink: string | undefined,
@@ -200,7 +207,7 @@ function buildAttachmentAuthorNameMarkdown(
     if (!authorName) {
         return null;
     }
-    if (authorLink && isUrlSafe(authorLink)) {
+    if (authorLink && isSafeAttachmentLink(authorLink)) {
         return `[${authorName}](${authorLink})`;
     }
     return authorName;
@@ -236,7 +243,7 @@ function wrapHorizontalFooterRow(blocks: MmBlock[]): MmBlock {
 }
 
 function buildAttachmentTitleMarkdown(title: string, titleLink: string | undefined): string {
-    if (titleLink && isUrlSafe(titleLink)) {
+    if (titleLink && isSafeAttachmentLink(titleLink)) {
         return `**[${title}](${titleLink})**`;
     }
     return `**${title}**`;

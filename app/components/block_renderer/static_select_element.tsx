@@ -17,7 +17,7 @@ type StaticSelectElementProps = {
 };
 
 export const StaticSelectElement = ({element, onAction}: StaticSelectElementProps) => {
-    const {location} = useContext(MmBlocksRenderContext)!;
+    const renderContext = useContext(MmBlocksRenderContext);
     const interactionsEnabled = useContext(MmBlocksInteractionContext);
     const filteredOptions = useMemo(() => filterOptions(element.options), [element.options]);
     const [selected, setSelected] = useState(() => {
@@ -39,7 +39,7 @@ export const StaticSelectElement = ({element, onAction}: StaticSelectElementProp
         setSelected(selectedItem.value);
     }, [element.action_id, element.cookie, element.query, onAction]));
 
-    if (!isValid) {
+    if (!isValid || !renderContext) {
         return null;
     }
 
@@ -53,7 +53,7 @@ export const StaticSelectElement = ({element, onAction}: StaticSelectElementProp
             onSelected={handleSelect}
             disabled={element.disabled || !interactionsEnabled}
             testID={`mm_blocks.static_select.${element.action_id}`}
-            location={location}
+            location={renderContext.location}
             omitMargins={true}
         />
     );

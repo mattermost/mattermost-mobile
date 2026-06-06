@@ -15,13 +15,15 @@ type TextBlockProps = {
 
 export const TextBlock = ({block, theme}: TextBlockProps) => {
     const style = getStyleSheet(theme);
-    const {channelId, location, postId} = useContext(MmBlocksRenderContext)!;
+    const renderContext = useContext(MmBlocksRenderContext);
     const {mmBlocksActionCookie, integrationFormat} = useContext(MmBlocksInlineMarkdownActionsContext);
     const interactionsEnabled = useContext(MmBlocksInteractionContext);
 
-    if (!block.text) {
+    if (!block.text || !renderContext) {
         return null;
     }
+
+    const {channelId, location, postId} = renderContext;
 
     const textStyle = [
         style.message,

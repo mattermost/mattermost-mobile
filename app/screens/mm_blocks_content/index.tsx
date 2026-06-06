@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {ScrollView, Text, View, type LayoutChangeEvent} from 'react-native';
+import {ScrollView, View, type LayoutChangeEvent} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {MmBlocksContextProvider, type MmBlocksExpandedContentPayload} from '@components/block_renderer/mm_blocks_context_provider';
+import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -36,7 +36,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const MmBlocksContent = () => {
     const payload = CallbackStore.getCallback<MmBlocksExpandedContentPayload>();
-    const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const [layoutWidth, setLayoutWidth] = useState<number | undefined>(undefined);
@@ -59,12 +58,11 @@ const MmBlocksContent = () => {
     if (!payload) {
         return (
             <View style={styles.noContentContainer}>
-                <Text style={styles.noContentText}>
-                    {intl.formatMessage({
-                        id: 'mm_blocks_content.cannot_display',
-                        defaultMessage: 'Cannot display content',
-                    })}
-                </Text>
+                <FormattedText
+                    id='mm_blocks_content.cannot_display'
+                    defaultMessage='Cannot display content'
+                    style={styles.noContentText}
+                />
             </View>
         );
     }

@@ -121,7 +121,7 @@ const Button = ({
         );
     }
 
-    const labelTestID = testID ?`${testID}-label` : undefined;
+    const labelTestID = testID ? `${testID}-label` : undefined;
 
     const label = renderLabelAsMarkdown ? (
         <ButtonMarkdownText

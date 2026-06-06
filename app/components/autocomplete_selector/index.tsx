@@ -96,6 +96,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         disabled: {
             opacity: 0.5,
         },
+        noMargins: {
+            marginBottom: 0,
+            marginRight: 0,
+            marginTop: 0,
+        },
     };
 });
 
@@ -237,7 +242,7 @@ function AutoCompleteSelector({
     }, [dataSource, teammateNameDisplay, intl, options, selected, serverUrl]);
 
     return (
-        <View style={[style.container, omitMargins && {marginBottom: 0, marginRight: 0, marginTop: 0}]}>
+        <View style={[style.container, omitMargins && style.noMargins]}>
             {Boolean(label) && (
                 <Label
                     label={label!}

@@ -12,11 +12,11 @@ const theme = {
 } as Theme;
 
 describe('parseMmButtonStyle', () => {
-    it('returns undefined when style is omitted', () => {
+    it('should return undefined when style is omitted', () => {
         expect(parseMmButtonStyle(undefined)).toBeUndefined();
     });
 
-    it('preserves semantic attachment styles', () => {
+    it('should preserve semantic attachment styles', () => {
         expect(parseMmButtonStyle('good')).toBe('good');
         expect(parseMmButtonStyle('success')).toBe('success');
         expect(parseMmButtonStyle('warning')).toBe('warning');
@@ -25,39 +25,39 @@ describe('parseMmButtonStyle', () => {
         expect(parseMmButtonStyle('default')).toBe('default');
     });
 
-    it('preserves hex colors', () => {
+    it('should preserve hex colors', () => {
         expect(parseMmButtonStyle('#2d81ff')).toBe('#2d81ff');
         expect(parseMmButtonStyle('#abc')).toBe('#abc');
     });
 
-    it('returns undefined for invalid values', () => {
+    it('should return undefined for invalid values', () => {
         expect(parseMmButtonStyle('onlineIndicator')).toBeUndefined();
         expect(parseMmButtonStyle('#wrong')).toBeUndefined();
     });
 });
 
 describe('isMmButtonSemanticStyle', () => {
-    it('identifies semantic styles only', () => {
+    it('should identify semantic styles only', () => {
         expect(isMmButtonSemanticStyle('warning')).toBe(true);
         expect(isMmButtonSemanticStyle('#28a745')).toBe(false);
     });
 });
 
 describe('isMmButtonHexColor', () => {
-    it('identifies hex colors only', () => {
+    it('should identify hex colors only', () => {
         expect(isMmButtonHexColor('#28a745')).toBe(true);
         expect(isMmButtonHexColor('good')).toBe(false);
     });
 });
 
 describe('resolveMmButtonColors', () => {
-    it('uses theme button bg for default style (btn-tertiary)', () => {
+    it('should use theme button bg for default style (btn-tertiary)', () => {
         const colors = resolveMmButtonColors(undefined, theme);
         expect(colors.color).toBe(theme.buttonBg);
         expect(colors.backgroundColor).toBe('rgba(20,93,191,0.08)');
     });
 
-    it('uses solid button bg for primary style', () => {
+    it('should use solid button bg for primary style', () => {
         const colors = resolveMmButtonColors('primary', theme);
         expect(colors).toEqual({
             backgroundColor: theme.buttonBg,
@@ -65,7 +65,7 @@ describe('resolveMmButtonColors', () => {
         });
     });
 
-    it('uses web good color for good style', () => {
+    it('should use web good color for good style', () => {
         const colors = resolveMmButtonColors('good', theme);
         expect(colors.color).toBe('#339970');
     });

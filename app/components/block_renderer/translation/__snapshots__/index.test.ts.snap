@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`translatePostProps complex payloads translates rich Adaptive Cards (columns, image, action set) 1`] = `
+exports[`translatePostProps complex payloads should translate rich Adaptive Cards (columns, image, action set) 1`] = `
 [
   {
     "is_subtle": undefined,
@@ -61,7 +61,7 @@ exports[`translatePostProps complex payloads translates rich Adaptive Cards (col
 ]
 `;
 
-exports[`translatePostProps complex payloads translates rich Block Kit (accessory, fields, image, select) 1`] = `
+exports[`translatePostProps complex payloads should translate rich Block Kit (accessory, fields, image, select) 1`] = `
 [
   {
     "columns": [
@@ -156,7 +156,7 @@ exports[`translatePostProps complex payloads translates rich Block Kit (accessor
 ]
 `;
 
-exports[`translatePostProps complex payloads translates rich attachments (fields, media, footer, actions, multiple cards) 1`] = `
+exports[`translatePostProps complex payloads should translate rich attachments (fields, media, footer, actions, multiple cards) 1`] = `
 [
   {
     "text": "First attachment pretext",
@@ -331,7 +331,7 @@ Longer explanation spanning lines",
     "type": "container",
   },
   {
-    "accent_color": "rgba(var(--link-color-rgb), 0.5)",
+    "accent_color": "default",
     "border": true,
     "content": [
       {
@@ -348,7 +348,7 @@ Longer explanation spanning lines",
 ]
 `;
 
-exports[`translatePostProps complex payloads translates rich mm_blocks (container, column_set, collapsible, select) 1`] = `
+exports[`translatePostProps complex payloads should translate rich mm_blocks (container, column_set, collapsible, select) 1`] = `
 [
   {
     "accent_color": "good",
@@ -436,7 +436,7 @@ exports[`translatePostProps complex payloads translates rich mm_blocks (containe
 ]
 `;
 
-exports[`translatePostProps format priority prefers blocks over cards and attachments when mm_blocks is absent 1`] = `
+exports[`translatePostProps format priority should prefer blocks over cards and attachments when mm_blocks is absent 1`] = `
 [
   {
     "text": "*Hello* from Block Kit",
@@ -460,7 +460,7 @@ exports[`translatePostProps format priority prefers blocks over cards and attach
 ]
 `;
 
-exports[`translatePostProps format priority prefers cards over attachments when mm_blocks and blocks are absent 1`] = `
+exports[`translatePostProps format priority should prefer cards over attachments when mm_blocks and blocks are absent 1`] = `
 [
   {
     "is_subtle": undefined,
@@ -470,7 +470,7 @@ exports[`translatePostProps format priority prefers cards over attachments when 
 ]
 `;
 
-exports[`translatePostProps format priority prefers mm_blocks over blocks, cards, and attachments 1`] = `
+exports[`translatePostProps format priority should prefer mm_blocks over blocks, cards, and attachments 1`] = `
 [
   {
     "text": "Hello **from** mm blocks",
@@ -485,10 +485,10 @@ exports[`translatePostProps format priority prefers mm_blocks over blocks, cards
 ]
 `;
 
-exports[`translatePostProps malformed inputs falls through when mm_blocks is not an array and uses attachments 1`] = `
+exports[`translatePostProps malformed inputs should fall through when mm_blocks is not an array and uses attachments 1`] = `
 [
   {
-    "accent_color": "rgba(var(--link-color-rgb), 0.5)",
+    "accent_color": "default",
     "border": true,
     "content": [
       {
@@ -501,7 +501,7 @@ exports[`translatePostProps malformed inputs falls through when mm_blocks is not
 ]
 `;
 
-exports[`translatePostProps malformed inputs keeps valid mm_blocks and drops invalid siblings 1`] = `
+exports[`translatePostProps malformed inputs should keep valid mm_blocks and drop invalid siblings 1`] = `
 [
   {
     "text": "Valid block",
@@ -510,7 +510,7 @@ exports[`translatePostProps malformed inputs keeps valid mm_blocks and drops inv
 ]
 `;
 
-exports[`translatePostProps malformed inputs skips invalid Block Kit blocks and keeps valid sections 1`] = `
+exports[`translatePostProps malformed inputs should skip invalid Block Kit blocks and keep valid sections 1`] = `
 [
   {
     "text": "Kept section",
@@ -519,10 +519,10 @@ exports[`translatePostProps malformed inputs skips invalid Block Kit blocks and 
 ]
 `;
 
-exports[`translatePostProps malformed inputs skips invalid attachment entries and keeps partial attachment content 1`] = `
+exports[`translatePostProps malformed inputs should skip invalid attachment entries and keep partial attachment content 1`] = `
 [
   {
-    "accent_color": "rgba(var(--link-color-rgb), 0.5)",
+    "accent_color": "default",
     "border": true,
     "content": [
       {
@@ -557,7 +557,7 @@ exports[`translatePostProps malformed inputs skips invalid attachment entries an
 ]
 `;
 
-exports[`translatePostProps malformed inputs skips non-AdaptiveCard entries and partial invalid card bodies 1`] = `
+exports[`translatePostProps malformed inputs should skip non-AdaptiveCard entries and partial invalid card bodies 1`] = `
 [
   {
     "is_subtle": undefined,
@@ -567,10 +567,10 @@ exports[`translatePostProps malformed inputs skips non-AdaptiveCard entries and 
 ]
 `;
 
-exports[`translatePostProps malformed inputs treats non-array interactive props as absent for format detection 1`] = `
+exports[`translatePostProps malformed inputs should treat non-array interactive props as absent for format detection 1`] = `
 [
   {
-    "accent_color": "rgba(var(--link-color-rgb), 0.5)",
+    "accent_color": "default",
     "border": true,
     "content": [
       {
@@ -583,7 +583,7 @@ exports[`translatePostProps malformed inputs treats non-array interactive props 
 ]
 `;
 
-exports[`translatePostProps simple payloads translates Adaptive Cards 1`] = `
+exports[`translatePostProps simple payloads should translate Adaptive Cards 1`] = `
 [
   {
     "is_subtle": undefined,
@@ -593,7 +593,7 @@ exports[`translatePostProps simple payloads translates Adaptive Cards 1`] = `
 ]
 `;
 
-exports[`translatePostProps simple payloads translates Block Kit blocks 1`] = `
+exports[`translatePostProps simple payloads should translate Block Kit blocks 1`] = `
 [
   {
     "text": "*Hello* from Block Kit",
@@ -617,7 +617,7 @@ exports[`translatePostProps simple payloads translates Block Kit blocks 1`] = `
 ]
 `;
 
-exports[`translatePostProps simple payloads translates legacy attachments 1`] = `
+exports[`translatePostProps simple payloads should translate legacy attachments 1`] = `
 [
   {
     "text": "Optional pretext",
@@ -645,7 +645,7 @@ exports[`translatePostProps simple payloads translates legacy attachments 1`] = 
 ]
 `;
 
-exports[`translatePostProps simple payloads translates native mm_blocks 1`] = `
+exports[`translatePostProps simple payloads should translate native mm_blocks 1`] = `
 [
   {
     "text": "Hello **from** mm blocks",

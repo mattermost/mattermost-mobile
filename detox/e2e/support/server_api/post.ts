@@ -103,6 +103,10 @@ export const apiPatchPost = async (baseUrl: string, postId: string, postData: st
 /**
  * Create an ephemeral post visible only to the given user.
  * See https://api.mattermost.com/#operation/CreatePostEphemeral
+ * @param {string} baseUrl - base server URL
+ * @param {string} userId - user ID that can see the ephemeral post
+ * @param {{channel_id: string, message: string, root_id?: string, props?: Record<string, unknown>}} post - ephemeral post payload
+ * @return {Object} returns {post} on success or {error, status} on error
  */
 export const apiCreatePostEphemeral = async (
     baseUrl: string,
@@ -123,6 +127,9 @@ export const apiCreatePostEphemeral = async (
 /**
  * Create an incoming webhook.
  * See https://api.mattermost.com/#operation/CreateIncomingWebhook
+ * @param {string} baseUrl - base server URL
+ * @param {{channel_id: string, display_name: string}} hook - incoming webhook payload
+ * @return {Object} returns {hook} on success or {error, status} on error
  */
 export const apiCreateIncomingWebhook = async (
     baseUrl: string,
@@ -138,6 +145,10 @@ export const apiCreateIncomingWebhook = async (
 
 /**
  * POST a payload to an incoming webhook URL path (`/hooks/{id}`).
+ * @param {string} baseUrl - base server URL
+ * @param {string} hookId - incoming webhook id/path
+ * @param {Record<string, unknown>} payload - body sent to the webhook
+ * @return {Object} returns {data} on success or {error, status} on error
  */
 export const apiPostIncomingWebhook = async (
     baseUrl: string,
