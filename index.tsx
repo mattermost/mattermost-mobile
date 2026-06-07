@@ -6,10 +6,7 @@
 //hdsafnas
 
 
-// hfhaskfdhnas
-
-// fdhodiasfhiudsa6eqw87ey7
-
+// hfhaskfdhnas1234
 
 import {RUNNING_E2E} from '@env';
 import TurboLogger from '@mattermost/react-native-turbo-log';
