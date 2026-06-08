@@ -18,6 +18,10 @@ runs:
       with:
         xcode-version: '26.1'
 
+    - name: ci/install-ios-simulator-runtime
+      shell: bash
+      run: xcodebuild -downloadPlatform iOS
+
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
 
