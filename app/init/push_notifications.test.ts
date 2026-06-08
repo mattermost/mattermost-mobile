@@ -347,6 +347,7 @@ describe('PushNotifications', () => {
             const completion = jest.fn();
 
             await pushNotifications.onNotificationReceivedBackground(notification as any, completion);
+            await new Promise((resolve) => setImmediate(resolve));
 
             expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl: 'http://test.com'});
         });
