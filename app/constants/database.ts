@@ -33,6 +33,8 @@ export const MM_TABLES = {
         POSTS_IN_CHANNEL: 'PostsInChannel',
         POSTS_IN_THREAD: 'PostsInThread',
         PREFERENCE: 'Preference',
+        PROPERTY_FIELD: 'PropertyField',
+        PROPERTY_VALUE: 'PropertyValue',
         REACTION: 'Reaction',
         ROLE: 'Role',
         SCHEDULED_POST: 'ScheduledPost',

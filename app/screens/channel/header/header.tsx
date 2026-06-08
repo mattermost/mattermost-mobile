@@ -66,12 +66,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     customStatusContainer: {
         flexDirection: 'row',
         height: 15,
+        alignItems: 'center',
         left: Platform.select({ios: undefined, default: -2}),
         marginTop: Platform.select({ios: undefined, default: 1}),
     },
     customStatusEmoji: {
         marginRight: 5,
-        marginTop: Platform.select({ios: undefined, default: -2}),
     },
     customStatusText: {
         alignItems: 'center',

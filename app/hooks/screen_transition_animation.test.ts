@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {renderHook} from '@testing-library/react-native';
-import {Platform} from 'react-native';
+import {AppState, Platform} from 'react-native';
 
 import {useScreenTransitionAnimation} from './screen_transition_animation';
 
@@ -11,6 +11,7 @@ const mockUseReducedMotion = jest.fn();
 const mockUseSharedValue = jest.fn();
 const mockUseAnimatedStyle = jest.fn();
 const mockWithTiming = jest.fn();
+const mockCancelAnimation = jest.fn();
 const mockUseWindowDimensions = jest.fn();
 
 jest.mock('expo-router', () => ({
@@ -18,6 +19,7 @@ jest.mock('expo-router', () => ({
 }));
 
 jest.mock('react-native-reanimated', () => ({
+    cancelAnimation: (sv: {value: number}) => mockCancelAnimation(sv),
     useReducedMotion: () => mockUseReducedMotion(),
     useSharedValue: (value: number) => mockUseSharedValue(value),
     useAnimatedStyle: (callback: () => any) => mockUseAnimatedStyle(callback),
@@ -30,12 +32,17 @@ jest.mock('./device', () => ({
 
 describe('useScreenTransitionAnimation', () => {
     let sharedValue: {value: number};
+    let mockSubRemove: jest.Mock;
+    let capturedAppStateCallback: ((state: string) => void) | undefined;
 
     beforeEach(() => {
         jest.clearAllMocks();
 
         // Setup default mock implementations
         sharedValue = {value: 0};
+        mockSubRemove = jest.fn();
+        capturedAppStateCallback = undefined;
+
         mockUseSharedValue.mockReturnValue(sharedValue);
         mockUseAnimatedStyle.mockImplementation((callback) => {
             const style = callback();
@@ -44,6 +51,15 @@ describe('useScreenTransitionAnimation', () => {
         mockWithTiming.mockImplementation((value) => value);
         mockUseReducedMotion.mockReturnValue(false);
         mockUseWindowDimensions.mockReturnValue({width: 375, height: 812});
+
+        jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, callback) => {
+            capturedAppStateCallback = callback as (state: string) => void;
+            return {remove: mockSubRemove} as any;
+        });
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
     });
 
     describe('initialization', () => {
@@ -87,8 +103,10 @@ describe('useScreenTransitionAnimation', () => {
             // Get the callback that was passed to useAnimatedStyle
             const animatedStyleCallback = mockUseAnimatedStyle.mock.calls[0][0];
             const style = animatedStyleCallback();
+            const focusEffectCallback = mockUseFocusEffect.mock.calls[0][0];
+            focusEffectCallback();
 
-            expect(mockWithTiming).toHaveBeenCalledWith(sharedValue.value, {duration: 250});
+            expect(mockWithTiming).toHaveBeenCalledWith(0, {duration: 250});
             expect(style).toHaveProperty('transform');
         });
 
@@ -100,8 +118,10 @@ describe('useScreenTransitionAnimation', () => {
             // Get the callback that was passed to useAnimatedStyle
             const animatedStyleCallback = mockUseAnimatedStyle.mock.calls[0][0];
             const style = animatedStyleCallback();
+            const focusEffectCallback = mockUseFocusEffect.mock.calls[0][0];
+            focusEffectCallback();
 
-            expect(mockWithTiming).toHaveBeenCalledWith(sharedValue.value, {duration: 350});
+            expect(mockWithTiming).toHaveBeenCalledWith(0, {duration: 350});
             expect(style).toHaveProperty('transform');
         });
 
@@ -167,6 +187,60 @@ describe('useScreenTransitionAnimation', () => {
             cleanup();
 
             expect(sharedValue.value).toBe(0);
+        });
+    });
+
+    describe('AppState resume', () => {
+        it('cancels the in-flight animation when going to background so it does not race to completion', () => {
+            renderHook(() => useScreenTransitionAnimation(true));
+            const focusEffectCallback = mockUseFocusEffect.mock.calls[0][0];
+            focusEffectCallback();
+
+            sharedValue.value = 150;
+
+            expect(capturedAppStateCallback).toBeDefined();
+            capturedAppStateCallback?.('background');
+
+            expect(mockCancelAnimation).toHaveBeenCalledWith(sharedValue);
+        });
+
+        it('resumes the slide-in animation on active when the value is still mid-flight', () => {
+            renderHook(() => useScreenTransitionAnimation(true));
+            const focusEffectCallback = mockUseFocusEffect.mock.calls[0][0];
+            focusEffectCallback();
+
+            sharedValue.value = 150;
+            expect(capturedAppStateCallback).toBeDefined();
+            capturedAppStateCallback?.('background');
+            mockWithTiming.mockClear();
+
+            capturedAppStateCallback?.('active');
+
+            expect(mockWithTiming).toHaveBeenCalledWith(0, {duration: expect.any(Number)});
+        });
+
+        it('does restart animation even when app returns to active with the screen already at rest', () => {
+            renderHook(() => useScreenTransitionAnimation(true));
+            const focusEffectCallback = mockUseFocusEffect.mock.calls[0][0];
+            focusEffectCallback();
+
+            sharedValue.value = 0;
+            mockWithTiming.mockClear();
+
+            expect(capturedAppStateCallback).toBeDefined();
+            capturedAppStateCallback?.('active');
+
+            expect(mockWithTiming).toHaveBeenCalled();
+        });
+
+        it('removes AppState listener on blur', () => {
+            renderHook(() => useScreenTransitionAnimation(true));
+            const focusEffectCallback = mockUseFocusEffect.mock.calls[0][0];
+            const cleanup = focusEffectCallback();
+
+            cleanup();
+
+            expect(mockSubRemove).toHaveBeenCalled();
         });
     });
 
@@ -282,8 +356,8 @@ describe('useScreenTransitionAnimation', () => {
 
             renderHook(() => useScreenTransitionAnimation(true));
 
-            const animatedStyleCallback = mockUseAnimatedStyle.mock.calls[0][0];
-            animatedStyleCallback();
+            const focusEffectCallback = mockUseFocusEffect.mock.calls[0][0];
+            focusEffectCallback();
 
             expect(mockWithTiming).toHaveBeenCalledWith(
                 expect.any(Number),
@@ -296,8 +370,8 @@ describe('useScreenTransitionAnimation', () => {
 
             renderHook(() => useScreenTransitionAnimation(true));
 
-            const animatedStyleCallback = mockUseAnimatedStyle.mock.calls[0][0];
-            animatedStyleCallback();
+            const focusEffectCallback = mockUseFocusEffect.mock.calls[0][0];
+            focusEffectCallback();
 
             expect(mockWithTiming).toHaveBeenCalledWith(
                 expect.any(Number),
