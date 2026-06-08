@@ -33,7 +33,7 @@ import InAppNotificationStore from '@store/in_app_notification_store';
 import {NavigationStore} from '@store/navigation_store';
 import {isBetaApp} from '@utils/general';
 import {isMainActivity, isTablet} from '@utils/helpers';
-import {logDebug, logInfo, logWarning} from '@utils/log';
+import {logDebug, logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 
 const messages = defineMessages({
@@ -125,10 +125,10 @@ class PushNotificationsSingleton {
                             unread_replies: 0,
                             last_viewed_at: Date.now(),
                         };
-                        await updateThread(serverUrl, payload.root_id, data);
+                        updateThread(serverUrl, payload.root_id, data);
                     }
                 } else {
-                    await markChannelAsViewed(serverUrl, payload.channel_id);
+                    markChannelAsViewed(serverUrl, payload.channel_id);
                 }
             }
         }
@@ -195,9 +195,7 @@ class PushNotificationsSingleton {
                 // Handle notification tapped
                 openNotification(serverUrl, notification);
             } else {
-                // Awaited so the caller can keep the app alive until the DB write
-                // completes (see onNotificationReceivedBackground).
-                await backgroundNotification(serverUrl, notification);
+                backgroundNotification(serverUrl, notification);
             }
         }
     };
@@ -222,13 +220,13 @@ class PushNotificationsSingleton {
         if (payload) {
             switch (payload.type) {
                 case PushNotification.NOTIFICATION_TYPE.CLEAR:
-                    await this.handleClearNotification(notification);
+                    this.handleClearNotification(notification);
                     break;
                 case PushNotification.NOTIFICATION_TYPE.MESSAGE:
-                    await this.handleMessageNotification(notification);
+                    this.handleMessageNotification(notification);
                     break;
                 case PushNotification.NOTIFICATION_TYPE.SESSION:
-                    await this.handleSessionNotification(notification);
+                    this.handleSessionNotification(notification);
                     break;
             }
         }
@@ -251,37 +249,12 @@ class PushNotificationsSingleton {
     onNotificationReceivedBackground = async (incoming: Notification, completion: (response: NotificationBackgroundFetchResult) => void) => {
         if (incoming.payload.verified === 'false') {
             logDebug('not handling background notification because it was not verified, ackId=', incoming.payload.ackId);
-
-            // Always finish the iOS background completion handler, or the OS
-            // keeps the app awake until it times out and then terminates it.
-            completion(NotificationBackgroundFetchResult.NO_DATA);
             return;
         }
         const notification = convertToNotificationData(incoming, false);
+        this.processNotification(notification);
 
-        // TEMP (device verification, remove before merge — MM-69124): grep MMLogs
-        // for "onNotificationReceivedBackground". A "processing" line followed by a
-        // "processed" line (no truncation between) means the DB work finished before
-        // completion, i.e. the fix held.
-        logDebug('onNotificationReceivedBackground: processing', notification.payload?.ack_id);
-
-        // Wait until the notification is fully processed (including its DB
-        // read/write) before signaling completion. iOS keeps the app alive
-        // until the fetch completion handler is called; calling it early lets
-        // the OS re-suspend the app while a WatermelonDB statement still holds
-        // the shared App Group SQLite lock, which triggers a RUNNINGBOARD
-        // 0xdead10cc termination. completion() must run on every path,
-        // including failures, for the same reason.
-        try {
-            await this.processNotification(notification);
-
-            // TEMP (device verification, remove before merge — MM-69124)
-            logDebug('onNotificationReceivedBackground: processed → completion(NEW_DATA)');
-            completion(NotificationBackgroundFetchResult.NEW_DATA);
-        } catch (error) {
-            logWarning('onNotificationReceivedBackground', error);
-            completion(NotificationBackgroundFetchResult.FAILED);
-        }
+        completion(NotificationBackgroundFetchResult.NEW_DATA);
     };
 
     // This triggers when the app was in the foreground (Android and iOS)
