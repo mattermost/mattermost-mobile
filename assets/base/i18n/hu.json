@@ -54,6 +54,7 @@
   "agents.threads_list.empty_title": "Nem található beszélgetés",
   "agents.threads_list.error_loading": "A beszélgetések betöltése sikertelen. Próbálja újra.",
   "agents.threads_list.error_title": "Nem lehet betölteni a beszélgetéseket",
+  "agents.threads_list.title": "Ügynök beszélgetéselőzmények",
   "agents.tool_call.processing": "Feldolgozás...",
   "agents.tool_call.response": "Válasz",
   "agents.tool_call.share": "Megosztás",
