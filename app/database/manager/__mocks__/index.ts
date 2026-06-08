@@ -336,7 +336,7 @@ class DatabaseManagerSingleton {
         const androidFilesDir = `${this.databaseDirectory}databases/`;
         const databaseFile = `${androidFilesDir}${databaseName}.db`;
         const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
-        const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;        
+        const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
         const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
 
         try {
