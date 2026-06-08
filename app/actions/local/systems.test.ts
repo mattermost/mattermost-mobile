@@ -21,6 +21,7 @@ import {
     setGlobalThreadsTab,
     dismissAnnouncement,
     expiredBoRPostCleanup,
+    setDisconnectedSince,
 } from './systems';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
@@ -252,6 +253,37 @@ describe('dismissAnnouncement', () => {
     it('base case', async () => {
         const {error} = await dismissAnnouncement(serverUrl, 'text');
         expect(error).toBeUndefined();
+    });
+});
+
+describe('setDisconnectedSince', () => {
+    it('should swallow when server database is not found', async () => {
+        await expect(setDisconnectedSince('unknown-server', 1719400000000)).resolves.toBeUndefined();
+    });
+
+    it('should write a timestamp to the system table', async () => {
+        const timestamp = 1719400000000;
+        await setDisconnectedSince(serverUrl, timestamp);
+
+        const records = await operator.database.get<SystemModel>('System').
+            query().
+            fetch();
+        const row = records.find((r) => r.id === SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE);
+        expect(row?.value).toBe(timestamp);
+    });
+
+    it('should delete the row when passed null', async () => {
+        await setDisconnectedSince(serverUrl, 1719400000000);
+        await setDisconnectedSince(serverUrl, null);
+
+        const records = await operator.database.get<SystemModel>('System').
+            query().
+            fetch();
+        expect(records.find((r) => r.id === SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE)).toBeUndefined();
+    });
+
+    it('should be a no-op when deleting a non-existent row', async () => {
+        await expect(setDisconnectedSince(serverUrl, null)).resolves.toBeUndefined();
     });
 });
 

@@ -179,6 +179,33 @@ export const getLastGlobalDataRetentionRun = async (database: Database) => {
     }
 };
 
+export const getDisconnectedSince = async (database: Database): Promise<number | undefined> => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE);
+        return data?.value as number | undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+export const getOfflineSince = async (database: Database): Promise<number | undefined> => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.OFFLINE_SINCE);
+        return data?.value as number | undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+export const getLastSeenTime = async (database: Database): Promise<number | undefined> => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_SEEN_TIME);
+        return data?.value as number | undefined;
+    } catch {
+        return undefined;
+    }
+};
+
 export const getLastBoRPostCleanupRun = async (database: Database) => {
     try {
         const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN);

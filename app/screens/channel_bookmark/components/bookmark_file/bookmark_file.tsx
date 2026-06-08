@@ -238,11 +238,19 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
     }, [file, startUpload]);
 
     useDidMount(() => {
+        // Defer opening the document picker until after the host modal has
+        // finished its presentation animation. Presenting a UIViewController
+        // (the picker) while another modal is mid-animation causes UIKit to
+        // silently drop the presentation.
+        let timer: ReturnType<typeof setTimeout> | undefined;
         if (!initialFile) {
-            browseFile();
+            timer = setTimeout(browseFile, 500);
         }
 
         return () => {
+            if (timer) {
+                clearTimeout(timer);
+            }
             cancelUpload.current?.();
         };
     });

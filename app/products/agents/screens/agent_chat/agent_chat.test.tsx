@@ -18,20 +18,18 @@ const SERVER_URL = 'https://test-server.com';
 
 // --- Context-enforcing mock for @gorhom/portal ---
 // Mirrors the real library: Portal throws without PortalProvider ancestor.
-// PortalProvider sets a flag so we can assert it was rendered — Autocomplete's
-// Portal is conditional (focused + Android) so the context check alone isn't
-// enough to catch a missing PortalProvider in all test runs.
-// We must mock because the package isn't in transformIgnorePatterns.
-let portalProviderRendered = false;
+// AgentChat itself renders a named PortalHost (not a PortalProvider) — the
+// provider lives at the root layout in production. We must mock the package
+// because it isn't in transformIgnorePatterns.
 jest.mock('@gorhom/portal', () => {
     const ReactMock = require('react');
     const {View} = require('react-native');
     const PortalContext = ReactMock.createContext(null);
     return {
-        PortalProvider: ({children}: {children: React.ReactNode}) => {
-            portalProviderRendered = true;
-            return <PortalContext.Provider value={{}}>{children}</PortalContext.Provider>;
-        },
+        PortalProvider: ({children}: {children: React.ReactNode}) => (
+            <PortalContext.Provider value={{}}>{children}</PortalContext.Provider>
+        ),
+        PortalHost: () => <View testID='portal-host'/>,
         Portal: ({children}: {children: React.ReactNode}) => {
             const ctx = ReactMock.useContext(PortalContext);
             if (!ctx) {
@@ -150,10 +148,6 @@ describe('AgentChat', () => {
         NetworkManager.invalidateClient(SERVER_URL);
     });
 
-    beforeEach(() => {
-        portalProviderRendered = false;
-    });
-
     it('should render PostDraft without error when channel is available', async () => {
         const {getByTestId} = renderWithEverything(
             <AgentChat bots={[mockBot]}/>,
@@ -163,15 +157,15 @@ describe('AgentChat', () => {
         // Wait for async channel creation (createDirectChannel in useEffect)
         // then PostDraft mounts inside the full provider tree.
         // This exercises the real PostDraft → DraftHandler → SendHandler chain.
-        // If any required provider (e.g. PortalProvider, DatabaseProvider,
-        // ExtraKeyboardProvider) is missing or breaks, this test fails.
+        // If any required provider (DatabaseProvider, ExtraKeyboardProvider, etc.)
+        // is missing or breaks, this test fails.
         await waitFor(() => {
             expect(getByTestId('agent_chat.post_draft')).toBeTruthy();
         });
 
-        // PortalProvider must wrap PostDraft so that Autocomplete's Portal
-        // (used on Android when input is focused) has a context to render into.
-        expect(portalProviderRendered).toBe(true);
+        // AgentChat renders a named PortalHost for autocomplete; the PortalProvider
+        // itself lives at the root layout in production.
+        expect(getByTestId('portal-host')).toBeTruthy();
 
         // Flush any remaining async state updates (e.g. fetchAIBots resolving after
         // the waitFor assertion passes) to prevent act() warnings.

@@ -17,6 +17,7 @@ import {getActiveServerUrl} from '@queries/app/servers';
 import {queryTeamDefaultChannel} from '@queries/servers/channel';
 import {getCommonSystemValues} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
+import {logDebug} from '@utils/log';
 
 const splitViewEmitter = new NativeEventEmitter(RNUtils);
 
@@ -47,6 +48,7 @@ class GlobalEventHandlerSingleton {
     }
 
     init = () => {
+        logDebug('GlobalEventHandler: Initializing');
         this.JavascriptAndNativeErrorHandler = require('@utils/error_handling').default;
         this.JavascriptAndNativeErrorHandler?.initializeErrorHandling();
     };

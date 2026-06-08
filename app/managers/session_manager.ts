@@ -14,12 +14,14 @@ import DatabaseManager from '@database/manager';
 import {getAllServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
 import IntuneManager from '@managers/intune_manager';
+import OfflinePersistenceManager from '@managers/offline_persistence_manager';
 import SecurityManager from '@managers/security_manager';
 import {queryGlobalValue} from '@queries/app/global';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
+import {logDebug} from '@utils/log';
 import {addNewServer} from '@utils/server';
 
 import type {LaunchType} from '@typings/launch';
@@ -58,6 +60,7 @@ export class SessionManagerSingleton {
     }
 
     init() {
+        logDebug('SessionManager: Initializing');
         cancelAllSessionNotifications();
 
         let updateToMigrationDone = false;
@@ -131,6 +134,7 @@ export class SessionManagerSingleton {
             await IntuneManager.unenrollServer(serverUrl, false);
             await terminateSession(serverUrl, removeServer);
             SecurityManager.removeServer(serverUrl);
+            OfflinePersistenceManager.removeServer(serverUrl);
 
             if (activeServerUrl === serverUrl) {
                 let displayName = '';
@@ -151,7 +155,9 @@ export class SessionManagerSingleton {
                 }
                 const launchRoute = await determineRouteFromLaunchProps({launchType, serverUrl, displayName});
 
-                router.replace({pathname: launchRoute.route, params: launchRoute.params});
+                requestAnimationFrame(() => {
+                    router.replace({pathname: launchRoute.route, params: launchRoute.params});
+                });
             }
         } finally {
             this.terminatingSessionUrl.delete(serverUrl);
@@ -168,6 +174,7 @@ export class SessionManagerSingleton {
 
             await terminateSession(serverUrl, false);
             SecurityManager.removeServer(serverUrl);
+            OfflinePersistenceManager.removeServer(serverUrl);
             await IntuneManager.unenrollServer(serverUrl, true);
 
             const activeServerUrl = await DatabaseManager.getActiveServerUrl();
