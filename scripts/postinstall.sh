@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  if [ "$INTUNE_ENABLED" = "1" ]; then
+  if [ "${INTUNE_ENABLED:-}" = "1" ]; then
     echo "🔐 INTUNE_ENABLED detected"
     npm run intune:init
   else
