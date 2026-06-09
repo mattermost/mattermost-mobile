@@ -121,11 +121,21 @@ post_install do |installer|
 
   end
 
-  # make sure the main app is NOT extension-only
-  app_target = installer.aggregate_targets.flat_map(&:user_project).flat_map(&:targets).find { |t| t.name == 'Mattermost' }
-  if app_target
-    app_target.build_configurations.each do |c|
-      c.build_settings.delete('APPLICATION_EXTENSION_API_ONLY')
+    # ensure stdlib is embedded for Gekidou to work correctly in extensions
+    %w[NotificationService MattermostShare].each do |ext_name|
+      target = installer.aggregate_targets.flat_map(&:user_project).flat_map(&:targets).find { |x| x.name == ext_name }
+      next unless target
+      target.build_configurations.each do |c|
+        c.build_settings['APPLICATION_EXTENSION_API_ONLY'] = 'YES'
+        c.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
+      end
     end
-  end
+
+    # make sure the main app is NOT extension-only
+    app_target = installer.aggregate_targets.flat_map(&:user_project).flat_map(&:targets).find { |t| t.name == 'Mattermost' }
+    if app_target
+      app_target.build_configurations.each do |c|
+        c.build_settings.delete('APPLICATION_EXTENSION_API_ONLY')
+      end
+    end
 end

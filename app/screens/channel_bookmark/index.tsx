@@ -175,6 +175,17 @@ const ChannelBookmarkScreen = ({
         setEnabled(Boolean(displayName));
     }, [bookmark]);
 
+    const setBookmarkLinkUrl = useCallback((linkUrl: string) => {
+        if (bookmark) {
+            setBookmark((prev) => ({
+                ...(prev!),
+                link_url: linkUrl,
+            }));
+
+            setEnabled(Boolean(bookmark.display_name && linkUrl));
+        }
+    }, [bookmark, setEnabled]);
+
     const setBookmarkEmoji = useCallback((emoji?: string) => {
         if (bookmark) {
             setBookmark((prev) => ({
@@ -279,6 +290,7 @@ const ChannelBookmarkScreen = ({
                     disabled={isSaving}
                     initialUrl={original?.link_url}
                     setBookmark={setLinkBookmark}
+                    setBookmarkLinkUrl={setBookmarkLinkUrl}
                     resetBookmark={resetBookmark}
                 />
             }
