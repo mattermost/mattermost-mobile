@@ -6,7 +6,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeChannel} from '@queries/servers/channel';
-import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeCanViewArchivedChannels} from '@queries/servers/system';
 
 import Archive from './archive';
 
@@ -18,7 +18,7 @@ type Props = WithDatabaseArgs & {
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
     const channel = observeChannel(database, channelId);
-    const canViewArchivedChannels = observeConfigBooleanValue(database, 'ExperimentalViewArchivedChannels', true);
+    const canViewArchivedChannels = observeCanViewArchivedChannels(database);
 
     return {
         canViewArchivedChannels,

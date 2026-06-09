@@ -8,7 +8,7 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 import {Permissions} from '@constants';
 import {queryAllMyChannel} from '@queries/servers/channel';
 import {observePermissionForTeam} from '@queries/servers/role';
-import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeCanViewArchivedChannels, observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 
@@ -18,7 +18,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const sharedChannelsEnabled = observeConfigBooleanValue(database, 'ExperimentalSharedChannels');
-    const canShowArchivedChannels = observeConfigBooleanValue(database, 'ExperimentalViewArchivedChannels', true);
+    const canShowArchivedChannels = observeCanViewArchivedChannels(database);
 
     const currentTeam = observeCurrentTeam(database);
     const currentUser = observeCurrentUser(database);
