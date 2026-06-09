@@ -9,8 +9,8 @@ import {logDebug} from '@utils/log';
 let appStateChangeListener: NativeEventSubscription | undefined;
 let appStateBlurListener: NativeEventSubscription | undefined;
 let appStateFocusListener: NativeEventSubscription | undefined;
-
 const initialize = () => {
+    cleanup();
     logDebug('CallsManager: Initializing');
     if (Platform.OS === 'android') {
         appStateBlurListener = AppState.addEventListener('blur', () => {
@@ -28,6 +28,9 @@ const cleanup = () => {
     appStateChangeListener?.remove();
     appStateBlurListener?.remove();
     appStateFocusListener?.remove();
+    appStateChangeListener = undefined;
+    appStateBlurListener = undefined;
+    appStateFocusListener = undefined;
 };
 
 export const CallsManager = {

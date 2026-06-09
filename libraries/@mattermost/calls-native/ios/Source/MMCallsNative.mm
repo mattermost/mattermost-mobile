@@ -91,17 +91,6 @@ RCT_EXPORT_METHOD(setMuted:(NSString *)uuidString
     [self setMutedImpl:uuidString muted:muted resolve:resolve reject:reject];
 }
 
-// iOS no-ops. The Android foreground service keeps the mic alive during a
-// backgrounded call; on iOS the `audio` background mode + AVAudioSession
-// configuration owned by CallKitProvider serves the same purpose without
-// needing a foreground service.
-RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(foregroundServiceStart:(NSDictionary *)config) {
-    return nil;
-}
-
-RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(foregroundServiceStop) {
-    return nil;
-}
 #endif
 
 #ifdef RCT_NEW_ARCH_ENABLED
@@ -139,13 +128,6 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(foregroundServiceStop) {
     [self setMutedImpl:uuid muted:muted resolve:resolve reject:reject];
 }
 
-- (void)foregroundServiceStart:(JS::NativeMMCallsNative::ForegroundNotificationConfig &)config {
-    // no-op
-}
-
-- (void)foregroundServiceStop {
-    // no-op
-}
 #endif
 
 #pragma mark - Private impls (shared between Old & New Arch)

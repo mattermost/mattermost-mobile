@@ -68,3 +68,9 @@ export function App() {
 
 // Register with the name that iOS AppDelegate expects
 AppRegistry.registerComponent('Mattermost', () => App);
+
+// Android-only: register the headless task that boots the JS runtime when
+// `MMCallsBootTaskService` starts (incoming-call FCM arrives while killed).
+if (Platform.OS === 'android') {
+    require('./app/init/headless_boot');
+}

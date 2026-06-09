@@ -36,3 +36,15 @@ export const getNativeCallUUIDForCall = (serverUrl: string, channelId: string): 
 };
 
 export const hasActiveNativeCall = (): boolean => mappings.size > 0;
+
+// Returns the channelIds of every native call currently tracked for a given
+// server.
+export const getNativeCallChannelIdsForServer = (serverUrl: string): string[] => {
+    const channelIds: string[] = [];
+    for (const mapping of mappings.values()) {
+        if (mapping.serverUrl === serverUrl) {
+            channelIds.push(mapping.channelId);
+        }
+    }
+    return channelIds;
+};

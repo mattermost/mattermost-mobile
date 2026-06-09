@@ -4,12 +4,15 @@ import android.app.PendingIntent
 import android.content.Context
 import android.os.Bundle
 import androidx.core.app.NotificationCompat
+import com.mattermost.callsnative.managers.IncomingCallEntry
 import com.mattermost.helpers.CustomPushNotificationHelper
 import com.mattermost.helpers.DatabaseHelper
 import com.mattermost.helpers.Network
 import com.mattermost.helpers.PushNotificationDataHelper
 import com.mattermost.helpers.database_extension.getServerUrlForIdentifier
 import com.mattermost.rnutils.helpers.NotificationHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.mattermost.turbolog.TurboLog
 import com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME
 import com.wix.reactnativenotifications.core.AppLaunchHelper
@@ -50,14 +53,104 @@ class CustomPushNotification(
         val isIdLoaded = initialData.getString("id_loaded") == "true"
         val notificationId = NotificationHelper.getNotificationId(initialData)
         val serverUrl = addServerUrlToBundle(initialData)
+        val isVoip = initialData.getString("voip") == "true"
         Network.init(mContext)
 
         GlobalScope.launch {
             try {
-                handlePushNotificationInCoroutine(serverUrl, type, channelId, ackId, isIdLoaded, notificationId, postId, signature)
+                if (isVoip) {
+                    handleVoipCallInCoroutine(serverUrl, channelId, ackId, isIdLoaded, postId, signature, initialData)
+                } else {
+                    handlePushNotificationInCoroutine(serverUrl, type, channelId, ackId, isIdLoaded, notificationId, postId, signature)
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    private suspend fun handleVoipCallInCoroutine(
+            serverUrl: String?,
+            channelId: String?,
+            ackId: String?,
+            isIdLoaded: Boolean,
+            postId: String?,
+            signature: String?,
+            initialData: Bundle
+    ) {
+        // VoIP path: verify signature FIRST. We never ring on a forged push.
+        if (!CustomPushNotificationHelper.verifySignature(mContext, signature, serverUrl, ackId)) {
+            return
+        }
+        if (serverUrl.isNullOrEmpty() || channelId.isNullOrEmpty()) {
+            TurboLog.w("Mattermost Notifications Signature verification", "VoIP push missing serverUrl or channelId. Skipping notification.")
+            return
+        }
+
+        // If MainActivity is foreground, the in-app RN screen owns the
+        // ringing UX via its existing WS connection. We do nothing native
+        // beyond acking the receipt so the server knows delivery succeeded.
+        if (com.mattermost.callsnative.managers.CallSurfaceCoordinator.isMainActivityForeground()) {
+            if (ackId != null) {
+                ReceiptDelivery.send(ackId, serverUrl, postId, CustomPushNotificationHelper.PUSH_TYPE_MESSAGE, isIdLoaded)
+            }
+            return
+        }
+
+        val serverId = initialData.getString("server_id").orEmpty()
+        val callerId = initialData.getString("sender_id").orEmpty()
+        val initialCallerName = initialData.getString("sender_name").orEmpty()
+        val threadId = initialData.getString("root_id").orEmpty()
+
+        // Post the ringing surface immediately with whatever names the push
+        // carries — for id_loaded:true that's just IDs, otherwise full names.
+        val uuid = IncomingCallEntry.report(
+            mContext,
+            IncomingCallEntry.Params(
+                channelId = channelId,
+                serverId = serverId,
+                serverUrl = serverUrl,
+                callerName = initialCallerName,
+                callerId = callerId,
+                postId = postId.orEmpty(),
+                threadId = threadId,
+            ),
+        )
+
+        if (uuid == null) {
+            return
+        }
+
+        if (callerId.isNotEmpty()) {
+            GlobalScope.launch {
+                try {
+                    val bitmap = withContext(Dispatchers.IO) {
+                        CustomPushNotificationHelper.userAvatar(mContext, serverUrl, callerId, null)
+                    }
+                    if (bitmap != null) {
+                        IncomingCallEntry.updateAvatar(mContext, uuid, bitmap)
+                    }
+                } catch (e: Exception) {
+                    TurboLog.w("Mattermost Notifications VoIP", "avatar fetch failed: ${e.message}")
+                }
+            }
+        }
+
+        // ack-and-refresh: for id_loaded notifications, /notifications/ack
+        // returns the enriched sender_name / channel_name. Update the
+        // ringing notification when the response arrives.
+        if (isIdLoaded && ackId != null) {
+            val response = ReceiptDelivery.send(ackId, serverUrl, postId, CustomPushNotificationHelper.PUSH_TYPE_MESSAGE, true)
+            if (response != null) {
+                val enrichedName = response.getString("sender_name").orEmpty()
+                if (enrichedName.isNotEmpty()) {
+                    IncomingCallEntry.updateCallerName(mContext, uuid, enrichedName)
+                }
+            }
+        } else if (ackId != null) {
+            // Non-id-loaded: still send the ack receipt so the server knows
+            // delivery succeeded. We don't need the response.
+            ReceiptDelivery.send(ackId, serverUrl, postId, CustomPushNotificationHelper.PUSH_TYPE_MESSAGE, false)
         }
     }
 

@@ -945,6 +945,8 @@ platform :android do
     end
     sh 'mkdir -p ../android/app/src/main/res/raw/'
     sh 'cp -R ../assets/sounds/* ../android/app/src/main/res/raw/'
+
+    generate_android_native_strings
   end
 
   lane :pinned_certificates do
@@ -1047,6 +1049,52 @@ platform :android do
       new_aab_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{app_name_sub}.aab"
       sh "mv #{aab} #{new_aab_path}"
       UI.message("AAB PATH \"#{new_aab_path}\"")
+    end
+  end
+
+  # Generate localized strings.xml overrides in the main app for the
+  # @mattermost/calls-native Android library — counterpart to the iOS
+  # Localizable.strings step. Reads `mobile.android.calls.*` entries from
+  # each dist/assets/i18n/<lang>.json and writes Android resource files
+  # into the app's res tree (e.g. values-es/calls_native_strings.xml).
+  # AGP merges these with the library's English defaults at build time, so
+  # the library code can keep referencing R.string.mobile_android_calls_*
+  # and at runtime the right locale wins. English is omitted — those
+  # defaults live in the library's own values/strings.xml.
+  def generate_android_native_strings
+    app_name = ENV['APP_NAME'] || 'Mattermost Beta'
+    i18n_base = '../dist/assets/i18n/'
+    res_base = '../android/app/src/main/res/'
+
+    Dir.glob('*.json', base: i18n_base) do |item|
+      lang = item.sub(/\.json$/, '')
+      next if lang == 'en'
+
+      # Android wants `-r` between language and region (e.g.
+      # `pt-BR` → `pt-rBR`, `en_AU` → `en-rAU`).
+      values_dir = 'values-' + lang.gsub(/[-_]/, '-r')
+
+      json = JSON.parse(File.read(i18n_base + item))
+      entries = json.select { |k, v| k.start_with?('mobile.android.') && v && !v.empty? }
+      next if entries.empty?
+
+      xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n"
+      entries.each do |key, value|
+        # Resource key: dots → underscores so it's a valid Android name.
+        res_name = key.gsub('.', '_')
+        localized = value
+          .gsub('{applicationName}', app_name)
+          .gsub('\\', '\\\\\\\\') # backslash escape (see iOS lane for reference)
+          .gsub('"', '\\"')        # double-quote
+          .gsub("'", "\\\\'")     # apostrophe (mandatory in Android strings.xml)
+          .gsub('&', '&amp;')
+          .gsub('<', '&lt;')
+        xml << "    <string name=\"#{res_name}\">#{localized}</string>\n"
+      end
+      xml << "</resources>\n"
+
+      FileUtils.mkdir_p(res_base + values_dir)
+      File.write("#{res_base}#{values_dir}/calls_native_strings.xml", xml)
     end
   end
 end

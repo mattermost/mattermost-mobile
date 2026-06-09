@@ -3,7 +3,7 @@
 
 import {AppState, DeviceEventEmitter, Platform} from 'react-native';
 
-import {storeDeviceToken} from '@actions/app/global';
+import {storeDeviceToken, storeVoIPDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {updateThread} from '@actions/local/thread';
 import {openNotification} from '@actions/remote/notifications';
@@ -118,7 +118,7 @@ describe('PushNotifications', () => {
     });
 
     describe('onRemoteNotificationsRegistered', () => {
-        it('should store device token with correct prefix for iOS', async () => {
+        it('should store device token with correct prefix for iOS and not mirror it into the VoIP slot', async () => {
             Platform.OS = 'ios';
             const deviceToken = 'test-token';
 
@@ -127,18 +127,22 @@ describe('PushNotifications', () => {
             expect(storeDeviceToken).toHaveBeenCalledWith(
                 `apple_rnbeta-v2:${deviceToken}`,
             );
+
+            // iOS's VoIP token is a separate PushKit token written by
+            // calls_native.ts's onVoIPTokenUpdated, not this handler.
+            expect(storeVoIPDeviceToken).not.toHaveBeenCalled();
         });
 
-        it('should store device token with correct prefix for Android', async () => {
+        it('should store device token with correct prefix for Android and mirror it into the VoIP slot', async () => {
             pushNotifications.configured = false;
             Platform.OS = 'android';
             const deviceToken = 'test-token';
 
             await pushNotifications.onRemoteNotificationsRegistered({deviceToken});
 
-            expect(storeDeviceToken).toHaveBeenCalledWith(
-                `${Device.PUSH_NOTIFY_ANDROID_REACT_NATIVE}-v2:${deviceToken}`,
-            );
+            const expected = `${Device.PUSH_NOTIFY_ANDROID_REACT_NATIVE}-v2:${deviceToken}`;
+            expect(storeDeviceToken).toHaveBeenCalledWith(expected);
+            expect(storeVoIPDeviceToken).toHaveBeenCalledWith(expected);
         });
     });
 

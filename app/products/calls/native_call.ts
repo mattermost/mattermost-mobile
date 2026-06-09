@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import CallsNative from '@mattermost/calls-native';
-import {Platform} from 'react-native';
+import {DeviceEventEmitter} from 'react-native';
 
 import {getCurrentCall} from '@calls/state/current_call';
+import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getChannelById} from '@queries/servers/channel';
@@ -14,6 +15,7 @@ import {logDebug} from '@utils/log';
 import {
     clearNativeCallMapping as clearMapping,
     type NativeCallMapping,
+    getNativeCallChannelIdsForServer,
     getNativeCallMapping,
     getNativeCallUUIDForCall,
     hasActiveNativeCall,
@@ -25,6 +27,7 @@ import type {Database} from '@nozbe/watermelondb';
 // Local re-imports used below.
 export {
     type NativeCallMapping,
+    getNativeCallChannelIdsForServer,
     getNativeCallMapping,
     getNativeCallUUIDForCall,
     hasActiveNativeCall,
@@ -38,6 +41,7 @@ export const clearNativeCallMapping = (uuid: string) => {
     clearMapping(uuid);
     if (!hasActiveNativeCall()) {
         WebsocketManager.scheduleBackgroundCloseIfNeeded();
+        DeviceEventEmitter.emit(Calls.ALL_NATIVE_CALLS_ENDED_EVENT);
     }
 };
 
@@ -80,9 +84,6 @@ const buildDisplayName = async (database: Database, channelId: string): Promise<
 // caller drives reportConnected once RTC handshakes — only the path that
 // registered should call it.
 export const registerOutgoingNativeCall = async (serverUrl: string, channelId: string, threadId = ''): Promise<string | undefined> => {
-    if (Platform.OS !== 'ios') {
-        return undefined;
-    }
     if (getNativeCallUUIDForCall(serverUrl, channelId)) {
         return undefined;
     }
@@ -129,9 +130,6 @@ export const endNativeCall = (
     channelId: string,
     reason: 'unanswered' | 'answeredElsewhere' | 'declinedElsewhere' | 'remoteEnded' | 'failed',
 ) => {
-    if (Platform.OS !== 'ios') {
-        return;
-    }
     const uuid = getNativeCallUUIDForCall(serverUrl, channelId);
     if (!uuid) {
         return;
@@ -147,9 +145,6 @@ export const endNativeCall = (
 // No-op when there's no UUID for the current call (foreground-only
 // call that was never registered).
 export const mirrorMuteToNativeCall = (muted: boolean) => {
-    if (Platform.OS !== 'ios') {
-        return;
-    }
     const currentCall = getCurrentCall();
     if (!currentCall) {
         return;

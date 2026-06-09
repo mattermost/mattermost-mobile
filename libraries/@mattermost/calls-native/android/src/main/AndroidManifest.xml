@@ -1,19 +1,56 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.mattermost.callsnative">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Required by the Mattermost Calls foreground service. Declared here
-         so anyone consuming this library inherits them via manifest merge;
-         duplicates in the host app's manifest are deduped by android:name. -->
+    <!-- Permissions for the Mattermost Calls foreground service that keeps
+         the microphone alive while a call is in progress and the app is
+         backgrounded. Declared here so consumers inherit them via manifest
+         merge. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- androidx.core.telecom uses self-managed Telecom under the hood. -->
+    <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
 
     <application>
-        <!-- Keeps the microphone alive while a Mattermost call is in
-             progress and the app is backgrounded. -->
         <service
-            android:name="com.mattermost.callsnative.MMCallsForegroundService"
-            android:foregroundServiceType="microphone"
+            android:name="com.mattermost.callsnative.services.MMCallsForegroundService"
+            android:foregroundServiceType="phoneCall|microphone"
             android:exported="false" />
+
+        <service
+            android:name="com.mattermost.callsnative.services.MMCallsBootTaskService"
+            android:exported="false" />
+
+        <receiver
+            android:name="com.mattermost.callsnative.receivers.HangupReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name="com.mattermost.callsnative.receivers.MuteReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name="com.mattermost.callsnative.receivers.AnswerReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name="com.mattermost.callsnative.receivers.DeclineReceiver"
+            android:exported="false" />
+
+        <activity
+            android:name="com.mattermost.callsnative.ui.CallActivity"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.MMCallsNative.CallActivity"
+            tools:targetApi="27" />
     </application>
 </manifest>

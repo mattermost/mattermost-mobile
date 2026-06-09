@@ -30,10 +30,6 @@ jest.mock('react-native-webrtc', () => ({
         }),
     },
 }));
-jest.mock('@calls/connection/foreground_service', () => ({
-    foregroundServiceStart: jest.fn(),
-    foregroundServiceStop: jest.fn(),
-}));
 
 describe('newConnection', () => {
     const mockClient = {

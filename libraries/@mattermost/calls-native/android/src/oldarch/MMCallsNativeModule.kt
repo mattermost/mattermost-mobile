@@ -5,6 +5,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
+import com.mattermost.callsnative.managers.CallsBridge
 
 class MMCallsNativeModule(context: ReactApplicationContext) : ReactContextBaseJavaModule(context) {
     private val implementation = MMCallsNativeModuleImpl(context)
@@ -13,41 +14,33 @@ class MMCallsNativeModule(context: ReactApplicationContext) : ReactContextBaseJa
 
     @ReactMethod
     fun addListener(eventType: String?) {
-        // Keep: Required for RN built in Event Emitter Calls
+        CallsBridge.markJSListenersReady()
     }
 
     @ReactMethod
     fun removeListeners(count: Double) {
-        // Keep: Required for RN built in Event Emitter Calls
+        if (count <= 0.0) {
+            CallsBridge.markJSListenersGone()
+        }
     }
 
     @ReactMethod
     fun reportOutgoingCall(params: ReadableMap?, promise: Promise?) {
-        implementation.reportOutgoingCall(promise)
+        implementation.reportOutgoingCall(params, promise)
     }
 
     @ReactMethod
     fun reportConnected(uuid: String?, promise: Promise?) {
-        implementation.reportConnected(promise)
+        implementation.reportConnected(uuid, promise)
     }
 
     @ReactMethod
     fun reportEnded(uuid: String?, reason: String?, promise: Promise?) {
-        implementation.reportEnded(promise)
+        implementation.reportEnded(uuid, reason, promise)
     }
 
     @ReactMethod
     fun setMuted(uuid: String?, muted: Boolean, promise: Promise?) {
-        implementation.setMuted(promise)
-    }
-
-    @ReactMethod(isBlockingSynchronousMethod = true)
-    fun foregroundServiceStart(config: ReadableMap?) {
-        implementation.foregroundServiceStart(config)
-    }
-
-    @ReactMethod(isBlockingSynchronousMethod = true)
-    fun foregroundServiceStop() {
-        implementation.foregroundServiceStop()
+        implementation.setMuted(uuid, muted, promise)
     }
 }

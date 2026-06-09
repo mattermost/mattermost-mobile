@@ -17,7 +17,7 @@ import {
 } from 'react-native-notifications';
 import {requestNotifications} from 'react-native-permissions';
 
-import {storeDeviceToken} from '@actions/app/global';
+import {storeDeviceToken, storeVoIPDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {updateThread} from '@actions/local/thread';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
@@ -296,6 +296,15 @@ class PushNotificationsSingleton {
 
             const token = `${prefix}-v2:${deviceToken}`;
             storeDeviceToken(token);
+
+            // Android reuses the FCM token for VoIP — the VoIP wake is a
+            // high-priority data message on the same transport, so a single
+            // token populates both Session.DeviceId and Session.VoIPDeviceId.
+            // iOS keeps a separate PushKit token, handled in calls_native.ts.
+            if (Platform.OS === 'android') {
+                storeVoIPDeviceToken(token);
+            }
+
             logDebug('Notification token registered', token);
 
             // Store the device token in the default database

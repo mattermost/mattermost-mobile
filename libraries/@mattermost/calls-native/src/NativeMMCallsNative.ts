@@ -31,16 +31,6 @@ export type OutgoingCallParams = Readonly<{
   calleeName: string;
 }>
 
-// Configuration for the Android foreground-service notification that keeps
-// the microphone alive during a call.
-export type ForegroundNotificationConfig = Readonly<{
-  channelId: string;
-  channelName: string;
-  channelDescription: string;
-  title: string;
-  text: string;
-}>
-
 // JS → native call-end reasons. The native side maps these to the matching
 // CXCallEndedReason where applicable.
 export type EndCallReason =
@@ -81,11 +71,6 @@ export interface Spec extends TurboModule {
     // JS → native: reflect in-app mute toggles into native (the reverse
     // direction arrives via the CallMuted event).
     setMuted: (uuid: string, muted: boolean) => Promise<void>;
-
-    // JS → native: start/stop the Android foreground service that keeps the
-    // microphone alive while the app is backgrounded.
-    foregroundServiceStart: (config: ForegroundNotificationConfig) => void;
-    foregroundServiceStop: () => void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MMCallsNative');

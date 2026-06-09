@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="call_green">#5DE85D</color>
+    <color name="call_red">#FF3B3B</color>
+    <color name="call_activity_background">#090A0B</color>
+</resources>

@@ -8,12 +8,60 @@ import CallsNative, {
     type VoIPTokenUpdated,
 } from '@mattermost/calls-native';
 import {defineMessages} from 'react-intl';
-import {Platform, type EmitterSubscription} from 'react-native';
+import {type EmitterSubscription} from 'react-native';
 
 defineMessages({
     incomingCallPlaceholder: {
         id: 'mobile.ios.calls.incoming_call_placeholder',
         defaultMessage: '{applicationName} call',
+    },
+    androidCallsAnswer: {
+        id: 'mobile.android.calls.answer',
+        defaultMessage: 'Answer',
+    },
+    androidCallsCallFailed: {
+        id: 'mobile.android.calls.call_failed',
+        defaultMessage: 'Call failed',
+    },
+    androidCallsConnected: {
+        id: 'mobile.android.calls.connected',
+        defaultMessage: 'Connected',
+    },
+    androidCallsConnecting: {
+        id: 'mobile.android.calls.connecting',
+        defaultMessage: 'Connecting…',
+    },
+    androidCallsDecline: {
+        id: 'mobile.android.calls.decline',
+        defaultMessage: 'Decline',
+    },
+    androidCallsHangUp: {
+        id: 'mobile.android.calls.hang_up',
+        defaultMessage: 'Hang up',
+    },
+    androidCallsIncomingCallPlaceholder: {
+        id: 'mobile.android.calls.incoming_call_placeholder',
+        defaultMessage: '{applicationName} call',
+    },
+    androidCallsIncomingVoiceCall: {
+        id: 'mobile.android.calls.incoming_voice_call',
+        defaultMessage: 'Incoming voice call',
+    },
+    androidCallsMute: {
+        id: 'mobile.android.calls.mute',
+        defaultMessage: 'Mute',
+    },
+    androidCallsUnmute: {
+        id: 'mobile.android.calls.unmute',
+        defaultMessage: 'Unmute',
+    },
+    androidOngoingCall: {
+        id: 'mobile.android.calls.ongoing',
+        defaultMessage: 'Ongoing call',
+    },
+    androidOngoingCallMuted: {
+        id: 'mobile.android.calls.ongoing.muted',
+        defaultMessage: 'Ongoing call · Muted',
     },
 });
 
@@ -35,18 +83,12 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getServerByIdentifier} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
 import {getIntlShape, isBetaApp} from '@utils/general';
-import {logDebug, logError, logInfo} from '@utils/log';
+import {logError, logInfo} from '@utils/log';
 
 class CallsNativeSingleton {
     subscriptions?: EmitterSubscription[];
 
     init() {
-        if (Platform.OS !== 'ios') {
-            // The Android side of @mattermost/calls-native is a no-op
-            // stub for Phase 1.
-            return;
-        }
-
         this.subscriptions?.forEach((s) => s.remove());
         this.subscriptions = [
             CallsNative.onVoIPTokenUpdated(this.onVoIPTokenUpdated),
@@ -85,14 +127,11 @@ class CallsNativeSingleton {
         const {uuid, serverId, channelId, postId, threadId} = payload;
 
         if (!serverId || !channelId) {
-            logDebug('onIncomingCall received without serverId/channelId; ignoring', payload);
             return;
         }
 
         const server = await getServerByIdentifier(serverId);
         if (!server?.url) {
-            logDebug('onIncomingCall could not resolve serverId to a known server', serverId);
-
             // Tell native to clear the Native UI so the user isn't stuck.
             CallsNative.reportEnded(uuid, 'failed');
             return;
@@ -105,10 +144,9 @@ class CallsNativeSingleton {
             threadId,
         });
 
-        // Open WS to the call's server so user_dismissed_notification /
-        // call_end / answered_elsewhere events arrive live while CallKit is
-        // ringing. Fire-and-forget: idempotent if already connected, and we
-        // don't want to delay the handler on a slow first-connect sync.
+        // Open WS to the call's server so call lifecycle events arrive live
+        // while the native ring is showing. Fire-and-forget — idempotent if
+        // already connected.
         WebsocketManager.initializeClient(server.url);
     };
 
@@ -116,9 +154,8 @@ class CallsNativeSingleton {
         const {uuid} = event;
         const mapping = getNativeCallMapping(uuid);
         if (!mapping) {
-            // No mapping means we can't route the answer anywhere; tell
-            // Native to close the UI so the user isn't stuck in
-            // "Connecting…" forever.
+            // No mapping → can't route the answer anywhere; close the
+            // native UI so the user isn't stuck on "Connecting…".
             CallsNative.reportEnded(uuid, 'failed');
             return;
         }

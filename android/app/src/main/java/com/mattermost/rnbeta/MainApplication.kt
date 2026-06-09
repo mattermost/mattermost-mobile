@@ -15,6 +15,7 @@ import com.facebook.react.common.ReleaseLevel
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.modules.network.OkHttpClientProvider
 import com.mattermost.networkclient.RCTOkHttpClientFactory
+import com.mattermost.callsnative.managers.CallsBridge
 import com.mattermost.rnshare.helpers.RealPathUtil
 import com.mattermost.turbolog.TurboLog
 import com.mattermost.turbolog.ConfigureOptions
@@ -68,6 +69,10 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
 
         loadReactNative(this)
         ApplicationLifecycleDispatcher.onApplicationCreate(this)
+
+        // Register the self-managed Telecom PhoneAccount before any call
+        // attempt or FCM-driven incoming ring can fire.
+        CallsBridge.bootstrap(this)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

@@ -98,6 +98,7 @@ jest.mock('@calls/native_call', () => ({
     registerOutgoingNativeCall: jest.fn(),
     reportNativeCallConnected: jest.fn(),
     mirrorMuteToNativeCall: jest.fn(),
+    getNativeCallChannelIdsForServer: jest.fn(() => []),
 }));
 
 jest.mock('@actions/remote/thread', () => ({
