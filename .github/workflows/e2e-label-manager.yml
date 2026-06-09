@@ -1,0 +1,97 @@
+# Manages the E2E test approval lifecycle on pull requests.
+#
+# Flow:
+#   1. PR opened        → add "NEED-TO-RUN-E2E" label (signal: E2E tests needed)
+#   2. Reviewer removes "NEED-TO-RUN-E2E" → add "E2E/Run" (approval — triggers Matterwick)
+#   3. New push while "NEED-TO-RUN-E2E" present     → do nothing (still awaiting approval)
+#   4. New push while "NEED-TO-RUN-E2E" absent        → add "E2E/Run" (re-trigger after prior approval)
+#
+name: E2E label manager
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - unlabeled
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  # Job 1: Add NEED-TO-RUN-E2E on PR open, or re-trigger E2E/Run on push after prior approval
+  manage-label:
+    if: github.event.action == 'opened' || github.event.action == 'synchronize'
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Manage E2E labels
+        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+            const action = context.payload.action;
+
+            const {data: labels} = await github.rest.issues.listLabelsOnIssue({
+              owner, repo, issue_number: prNumber,
+            });
+            const labelNames = labels.map(l => l.name);
+            const hasNeedToRun = labelNames.includes('NEED-TO-RUN-E2E');
+            const hasE2ERun = labelNames.includes('E2E/Run');
+
+            if (action === 'opened') {
+              if (!hasNeedToRun) {
+                core.info('PR opened — adding NEED-TO-RUN-E2E label');
+                await github.rest.issues.addLabels({
+                  owner, repo, issue_number: prNumber,
+                  labels: ['NEED-TO-RUN-E2E'],
+                });
+              } else {
+                core.info('PR opened — NEED-TO-RUN-E2E already present');
+              }
+              return;
+            }
+
+            // synchronize (new push)
+            if (hasNeedToRun) {
+              core.info('New push but NEED-TO-RUN-E2E present — awaiting approval, skipping');
+              return;
+            }
+            if (hasE2ERun) {
+              core.info('New push after approval but E2E/Run already present — skipping');
+              return;
+            }
+
+            core.info('New push after prior approval — adding E2E/Run label');
+            await github.rest.issues.addLabels({
+              owner, repo, issue_number: prNumber,
+              labels: ['E2E/Run'],
+            });
+
+  # Job 2: Convert NEED-TO-RUN-E2E removal into E2E/Run (reviewer approval)
+  approve-e2e:
+    if: github.event.action == 'unlabeled' && github.event.label.name == 'NEED-TO-RUN-E2E'
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Add E2E/Run label
+        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+
+            core.info(`NEED-TO-RUN-E2E removed from PR #${prNumber} — adding E2E/Run label`);
+
+            await github.rest.issues.addLabels({
+              owner, repo, issue_number: prNumber,
+              labels: ['E2E/Run'],
+            });
+
+            await github.rest.issues.createComment({
+              owner, repo, issue_number: prNumber,
+              body: '✅ E2E tests triggered by reviewer approval (removed `NEED-TO-RUN-E2E` label). ' +
+                    'Matterwick will provision test servers and run the Detox suite.',
+            });
