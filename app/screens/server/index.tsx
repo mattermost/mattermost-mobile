@@ -172,9 +172,14 @@ const Server = ({
             return false;
         });
 
-        PushNotifications.registerIfNeeded();
+        const registerTimeout = setTimeout(() => {
+            PushNotifications.registerIfNeeded();
+        }, 500);
 
-        return () => backHandler.remove();
+        return () => {
+            backHandler.remove();
+            clearTimeout(registerTimeout);
+        };
     });
 
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {

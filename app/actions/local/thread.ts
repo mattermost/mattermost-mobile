@@ -107,7 +107,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             }
         }
 
-        await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
+        await NavigationStore.waitUntilScreenHasLoaded(Screens.CHANNEL_LIST);
         navigateToScreen(Screens.THREAD, {rootId, channelName: channel.displayName});
         DeviceEventEmitter.emit(Events.CLOSE_INPUT_ACCESSORY_VIEW);
 

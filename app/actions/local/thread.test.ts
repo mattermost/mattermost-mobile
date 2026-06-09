@@ -43,6 +43,7 @@ jest.mock('@store/navigation_store', () => {
             ...original.NavigationStore,
             waitUntilScreenIsTop: jest.fn(() => Promise.resolve()),
             waitUntilScreenHasLoaded: jest.fn(() => Promise.resolve()),
+            waitUntilScreenIsTop: jest.fn(() => Promise.resolve()),
             getScreensInStack: jest.fn(() => []),
             getRootRouteInfo: jest.fn(() => {
                 return {

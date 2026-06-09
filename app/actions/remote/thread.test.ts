@@ -285,21 +285,22 @@ describe('thread remote actions', () => {
             expect(result.error).toBeUndefined();
         });
 
-        it('markThreadAsUnread - uses unread_replies and unread_mentions from API response', async () => {
+        it('markThreadAsUnread - persists unread_replies/unread_mentions from API response', async () => {
             await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
-            await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: team.id});
             await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
                 order: [post1.id],
                 posts: [post1],
                 prepareRecordsOnly: false,
             });
+            await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: team.id});
 
             // The server response carries the authoritative unread counts; the action
             // must write those into the local thread record (not the defaults).
             jest.mocked(mockClient.markThreadAsUnread).mockResolvedValueOnce({unread_replies: 5, unread_mentions: 2});
 
             const result = await markThreadAsUnread(serverUrl, '', thread1.id, post1.id);
+            expect(result).toBeDefined();
             expect(result.error).toBeUndefined();
 
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -312,19 +313,19 @@ describe('thread remote actions', () => {
             jest.mocked(mockClient.markThreadAsUnread).mockResolvedValueOnce(undefined);
 
             await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
-            await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: team.id});
             await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
                 order: [post1.id],
                 posts: [post1],
                 prepareRecordsOnly: false,
             });
+            await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: team.id});
 
             const result = await markThreadAsUnread(serverUrl, '', thread1.id, post1.id);
             expect(result.error).toBeUndefined();
 
-            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const savedThread = await getThreadById(database, thread1.id);
+            const {database: db} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const savedThread = await getThreadById(db, thread1.id);
             expect(savedThread?.unreadReplies).toBe(1);
             expect(savedThread?.unreadMentions).toBe(0);
         });

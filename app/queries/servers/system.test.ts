@@ -500,6 +500,21 @@ describe('system query functions', () => {
         expect(await getConfigValue(database, 'SiteName')).toBe('Test');
     });
 
+    it("getConfigBooleanValue returns true only for the string 'true'", async () => {
+        await operator.handleConfigs({configs: [{id: 'EnableCustomEmoji', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
+        expect(await getConfigBooleanValue(database, 'EnableCustomEmoji')).toBe(true);
+    });
+
+    it("getConfigBooleanValue returns false for a non-'true' string value", async () => {
+        await operator.handleConfigs({configs: [{id: 'EnableCustomEmoji', value: 'false'}], configsToDelete: [], prepareRecordsOnly: false});
+        expect(await getConfigBooleanValue(database, 'EnableCustomEmoji')).toBe(false);
+    });
+
+    it('getConfigBooleanValue returns the default value when the key is missing', async () => {
+        expect(await getConfigBooleanValue(database, 'EnableCustomEmoji')).toBe(false);
+        expect(await getConfigBooleanValue(database, 'EnableCustomEmoji', true)).toBe(true);
+    });
+
     it('getLastGlobalDataRetentionRun returns undefined when not set', async () => {
         expect(await getLastGlobalDataRetentionRun(database)).toBeUndefined();
     });

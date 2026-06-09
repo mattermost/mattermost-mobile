@@ -4,22 +4,14 @@
 import {useLocalSearchParams, useNavigation} from 'expo-router';
 import {useCallback, useEffect} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Platform, Pressable, StyleSheet} from 'react-native';
+import {Platform} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import NavigationButton from '@components/navigation_button';
 import NavigationHeaderTitle from '@components/navigation_header_title';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import ThreadScreen from '@screens/thread';
 
-const styles = StyleSheet.create({
-    backButton: {
-        paddingHorizontal: 16,
-    },
-    pressed: {
-        opacity: 0.6,
-    },
-});
 
 const threadMessages = defineMessages({
     thread: {
@@ -54,17 +46,13 @@ export default function ThreadRoute() {
                 backgroundColor: theme.sidebarBg,
             },
             headerLeft: () => (
-                <Pressable
+                <NavigationButton
                     onPress={handleBack}
+                    iconName={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'})!}
+                    iconSize={24}
+                    color={theme.sidebarHeaderTextColor}
                     testID='thread.navigation.back.button'
-                    style={({pressed}) => [styles.backButton, pressed && styles.pressed]}
-                >
-                    <CompassIcon
-                        name={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'})!}
-                        size={24}
-                        color={theme.sidebarHeaderTextColor}
-                    />
-                </Pressable>
+                />
             ),
             headerTitle: () => {
                 return (

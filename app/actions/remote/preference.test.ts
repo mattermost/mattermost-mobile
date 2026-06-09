@@ -145,29 +145,33 @@ describe('preferences', () => {
 
         // deleteSavedPost removes the local row via prepareDestroyPermanently() +
         // operator.batchRecords (the codebase convention), not destroyPermanently().
-        const preparedDeletion = {id: 'prepared-deletion'};
+        const preparedRecord = {} as PreferenceModel;
         const prefModel = {
             user_id: user1.id,
             name: post1.id,
             category: Preferences.CATEGORIES.SAVED_POST,
             value: 'true',
-            prepareDestroyPermanently: jest.fn().mockReturnValue(preparedDeletion),
+            prepareDestroyPermanently: jest.fn(() => preparedRecord),
         } as unknown as PreferenceModel;
         (querySavedPostsPreferences as jest.Mock).mockReturnValueOnce({fetch: jest.fn(() => [prefModel])});
-        const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockResolvedValue();
+        const batchSpy = jest.spyOn(operator, 'batchRecords').mockResolvedValueOnce(undefined);
 
-        // EphemeralStore is auto-mocked (jest.mock above), so addRecentlyUnsavedSavedPost
-        // is a no-op jest.fn() that never schedules the real 2-minute timer.
+        // Mock out the real implementation: it schedules a 2-minute timer that
+        // would otherwise leak across tests. We only need to assert it is called.
+        const unsavedSpy = jest.spyOn(EphemeralStore, 'addRecentlyUnsavedSavedPost').mockImplementation(() => {});
+
         const result = await deleteSavedPost(serverUrl, post1.id);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.preference).toBeDefined();
+        expect(prefModel.prepareDestroyPermanently).toHaveBeenCalledTimes(1);
+        expect(batchSpy).toHaveBeenCalledWith([preparedRecord], 'deleteSavedPost');
 
         // The unsave must be recorded so the echoed websocket re-save is ignored.
-        expect(EphemeralStore.addRecentlyUnsavedSavedPost).toHaveBeenCalledTimes(1);
-        expect(EphemeralStore.addRecentlyUnsavedSavedPost).toHaveBeenCalledWith(serverUrl, post1.id);
-        expect(prefModel.prepareDestroyPermanently).toHaveBeenCalledTimes(1);
-        expect(batchRecordsSpy).toHaveBeenCalledWith([preparedDeletion], 'deleteSavedPost');
+        expect(unsavedSpy).toHaveBeenCalledTimes(1);
+        expect(unsavedSpy).toHaveBeenCalledWith(serverUrl, post1.id);
+
+        unsavedSpy.mockRestore();
     });
 
     it('deleteSavedPost - does not mark ephemeral store when API call fails', async () => {
@@ -185,6 +189,7 @@ describe('preferences', () => {
 
         const result = await deleteSavedPost(serverUrl, post1.id);
         expect(result.error).toBeDefined();
+        // EphemeralStore.addRecentlyUnsavedSavedPost must NOT be called on failure
         expect(EphemeralStore.addRecentlyUnsavedSavedPost).not.toHaveBeenCalled();
         expect(prefModel.prepareDestroyPermanently).not.toHaveBeenCalled();
     });

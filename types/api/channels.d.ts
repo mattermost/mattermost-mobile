@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-type ChannelType = 'O' | 'P' | 'D' | 'G';
+type ChannelType = 'O' | 'P' | 'D' | 'G' | 'BO' | 'BP';
 type ChannelStats = {
     channel_id: string;
     guest_count: number;

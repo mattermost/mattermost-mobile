@@ -153,6 +153,7 @@ post_install do |installer|
       end
     end
 
+
     # ensure stdlib is embedded for Gekidou to work correctly in extensions
     %w[NotificationService MattermostShare].each do |ext_name|
       target = installer.aggregate_targets.flat_map(&:user_project).flat_map(&:targets).find { |x| x.name == ext_name }
