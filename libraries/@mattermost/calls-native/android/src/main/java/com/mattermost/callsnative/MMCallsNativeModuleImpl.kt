@@ -92,9 +92,10 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
                 callsManager.addCall(
                     attrs,
                     onAnswer = { /* outbound — not invoked */ },
-                    onDisconnect = { /* delivered through disconnectSignal */ },
-                    onSetActive = { /* delivered through setActiveSignal */ },
-                    onSetInactive = { /* future: hold */ },
+                    onDisconnect = { handle.disconnectSignal.trySend(CallRegistry.Reason.LocalHangup) },
+                    onSetActive = { handle.setActiveSignal.trySend(Unit) },
+                    // We don't support hold; treat as end.
+                    onSetInactive = { handle.disconnectSignal.trySend(CallRegistry.Reason.LocalHangup) },
                 ) {
                     val callControlScope = this
                     callControlScope.launch {
@@ -118,7 +119,7 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
                 TurboLogger.e(TAG, "outgoing call coroutine failed: ${e.message}")
                 terminalReason = CallRegistry.Reason.Failed
             } finally {
-                MMCallsForegroundService.stop(context)
+                MMCallsForegroundService.stop(context, uuid)
                 handle.endReason = terminalReason
                 handle.ended = true
                 CallRegistry.remove(uuid)

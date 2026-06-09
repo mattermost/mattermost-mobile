@@ -132,6 +132,9 @@ internal object CallRegistry {
 
     fun firstActiveUuid(): String? = handles.keys.firstOrNull()
 
+    fun otherActiveUuid(excludingUuid: String): String? =
+        handles.entries.firstOrNull { it.key != excludingUuid && !it.value.ended }?.key
+
     fun remove(uuid: String) {
         handles.remove(uuid)
     }

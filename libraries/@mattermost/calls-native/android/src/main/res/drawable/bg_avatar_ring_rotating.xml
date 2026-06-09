@@ -5,11 +5,11 @@
     <shape android:shape="oval">
         <stroke
             android:width="2dp"
-            android:color="#16A34A" />
+            android:color="#22D85B" />
         <gradient
             android:type="sweep"
-            android:startColor="#0016A34A"
-            android:centerColor="#7016A34A"
-            android:endColor="#16A34A" />
+            android:startColor="#0022D85B"
+            android:centerColor="#7022D85B"
+            android:endColor="#22D85B" />
     </shape>
 </rotate>

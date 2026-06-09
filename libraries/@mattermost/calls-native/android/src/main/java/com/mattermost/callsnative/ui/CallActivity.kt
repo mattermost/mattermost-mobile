@@ -52,7 +52,6 @@ class CallActivity : ComponentActivity() {
     private lateinit var root: ConstraintLayout
     private lateinit var statusIcon: ImageView
     private lateinit var statusLabel: TextView
-    private lateinit var timer: TextView
     private lateinit var avatarFrame: View
     private lateinit var avatarGlow: View
     private lateinit var avatarRingStatic: View
@@ -81,8 +80,8 @@ class CallActivity : ComponentActivity() {
             val elapsed = (SystemClock.elapsedRealtime() - connectedAtElapsedRealtime) / 1000L
             val mm = elapsed / 60
             val ss = elapsed % 60
-            timer.text = String.format(Locale.ENGLISH, "%02d:%02d", mm, ss)
-            timer.postDelayed(this, 1000L)
+            statusLabel.text = String.format(Locale.ENGLISH, "%02d:%02d", mm, ss)
+            statusLabel.postDelayed(this, 1000L)
         }
     }
 
@@ -139,7 +138,7 @@ class CallActivity : ComponentActivity() {
         val newUuid = intent.getStringExtra(EXTRA_UUID).orEmpty()
         if (newUuid.isNotEmpty() && newUuid != uuid) {
             uuid = newUuid
-            observeCallState()
+            observeCallState(playEnterAnimation = false)
         }
         if (intent.getBooleanExtra(EXTRA_AUTO_ANSWER, false)) {
             onAnswerTapped()
@@ -148,7 +147,7 @@ class CallActivity : ComponentActivity() {
 
     override fun onDestroy() {
         stopAnimations()
-        timer.removeCallbacks(timerTicker)
+        statusLabel.removeCallbacks(timerTicker)
         super.onDestroy()
     }
 
@@ -156,7 +155,12 @@ class CallActivity : ComponentActivity() {
         root = findViewById(R.id.root)
         statusIcon = findViewById(R.id.status_icon)
         statusLabel = findViewById(R.id.status_label)
-        timer = findViewById(R.id.timer)
+        androidx.core.widget.ImageViewCompat.setImageTintList(
+            statusIcon,
+            android.content.res.ColorStateList.valueOf(
+                androidx.core.content.ContextCompat.getColor(this, R.color.call_green)
+            ),
+        )
         avatarFrame = findViewById(R.id.avatar_frame)
         avatarGlow = findViewById(R.id.avatar_glow)
         avatarRingStatic = findViewById(R.id.avatar_ring_static)
@@ -189,11 +193,17 @@ class CallActivity : ComponentActivity() {
             setTileModeXY(null, null)
         }
 
+        val globalDim = androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_global_dim)
+        val greenGlow = androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_avatar_glow_halo)
+        val spotlight = androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_spotlight)
         val vignette = androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_vignette)
         val layers = android.graphics.drawable.LayerDrawable(
             listOfNotNull(
                 0xFF090A0B.toInt().toDrawable(),
                 bitmapDrawable,
+                globalDim,
+                greenGlow,
+                spotlight,
                 vignette,
             ).toTypedArray()
         )
@@ -228,7 +238,9 @@ class CallActivity : ComponentActivity() {
         CallSurfaceCoordinator.launchMainActivity()
     }
 
-    private fun observeCallState() {
+    private var observeJob: kotlinx.coroutines.Job? = null
+
+    private fun observeCallState(playEnterAnimation: Boolean = true) {
         val handle = CallRegistry.get(uuid)
         if (handle == null) {
             TurboLogger.w(TAG, "no registry entry; finishing")
@@ -236,10 +248,12 @@ class CallActivity : ComponentActivity() {
             return
         }
 
-        // Initial enter animation runs once, on first bind.
-        runIncomingEnterAnimation()
+        if (playEnterAnimation) {
+            runIncomingEnterAnimation()
+        }
 
-        lifecycleScope.launch {
+        observeJob?.cancel()
+        observeJob = lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 handle.snapshot.collectLatest { snap ->
                     if (endingDown) return@collectLatest
@@ -249,8 +263,32 @@ class CallActivity : ComponentActivity() {
         }
     }
 
+    private fun swapToCall(newUuid: String) {
+        avatar.cameraDistance = 8000f * resources.displayMetrics.density
+        callerName.animate().alpha(0f).setDuration(180L).start()
+        avatarRingStatic.animate().alpha(0f).setDuration(180L).start()
+        avatarRingRotating.animate().alpha(0f).setDuration(180L).start()
+
+        avatar.animate().rotationY(90f).setDuration(180L).withEndAction {
+            uuid = newUuid
+            avatarRingStatic.alpha = 1f
+            avatarRingRotating.alpha = 0f
+            observeCallState(playEnterAnimation = false)
+            avatar.rotationY = -90f
+            avatar.animate().rotationY(0f).setDuration(180L).start()
+            callerName.animate().alpha(1f).setDuration(180L).start()
+            avatarRingRotating.animate().alpha(1f).setDuration(180L).start()
+        }.start()
+    }
+
     private fun bindSnapshot(snap: CallRegistry.CallSnapshot) {
         if (snap.ended) {
+            // If another call is still live, swap to it instead of dismissing.
+            val nextUuid = CallRegistry.otherActiveUuid(uuid)
+            if (nextUuid != null) {
+                swapToCall(nextUuid)
+                return
+            }
             runEndingTransition(snap.endReason)
             return
         }
@@ -265,6 +303,7 @@ class CallActivity : ComponentActivity() {
         } else {
             avatar.setImageResource(HostAppIcons.launcher(this))
         }
+        (avatar.drawable as? android.graphics.drawable.BitmapDrawable)?.isFilterBitmap = true
 
         when {
             snap.connected -> applyConnectedState()
@@ -277,9 +316,9 @@ class CallActivity : ComponentActivity() {
 
     private fun applyIncomingState() {
         statusLabel.setText(R.string.mobile_android_calls_incoming_voice_call)
-        timer.visibility = View.GONE
+        statusIcon.clearColorFilter()
         connectedAtElapsedRealtime = 0L
-        timer.removeCallbacks(timerTicker)
+        statusLabel.removeCallbacks(timerTicker)
 
         incomingActions.visibility = View.VISIBLE
         activeActions.visibility = View.GONE
@@ -292,9 +331,9 @@ class CallActivity : ComponentActivity() {
 
     private fun applyConnectingState() {
         crossfadeStatusLabel(R.string.mobile_android_calls_connecting)
-        timer.visibility = View.GONE
+        statusIcon.clearColorFilter()
         connectedAtElapsedRealtime = 0L
-        timer.removeCallbacks(timerTicker)
+        statusLabel.removeCallbacks(timerTicker)
 
         incomingActions.visibility = View.GONE
         activeActions.visibility = View.VISIBLE
@@ -307,12 +346,11 @@ class CallActivity : ComponentActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun applyConnectedState() {
-        crossfadeStatusLabel(R.string.mobile_android_calls_connected)
+        statusIcon.clearColorFilter()
         if (connectedAtElapsedRealtime == 0L) {
             connectedAtElapsedRealtime = SystemClock.elapsedRealtime()
-            timer.text = "00:00"
-            timer.visibility = View.VISIBLE
-            timer.post(timerTicker)
+            crossfadeStatusLabelText("00:00")
+            statusLabel.post(timerTicker)
         }
 
         incomingActions.visibility = View.GONE
@@ -406,6 +444,13 @@ class CallActivity : ComponentActivity() {
         statusLabel.animate().alpha(0f).setDuration(75L).withEndAction {
             statusLabel.setText(resId)
             if (color != null) statusLabel.setTextColor(color)
+            statusLabel.animate().alpha(1f).setDuration(75L).start()
+        }.start()
+    }
+
+    private fun crossfadeStatusLabelText(text: String) {
+        statusLabel.animate().alpha(0f).setDuration(75L).withEndAction {
+            statusLabel.text = text
             statusLabel.animate().alpha(1f).setDuration(75L).start()
         }.start()
     }

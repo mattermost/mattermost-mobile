@@ -107,15 +107,11 @@ object IncomingCallEntry {
             try {
                 callsManager.addCall(
                     attrs,
-                    onAnswer = {
-                        // System-initiated answer (e.g. Bluetooth headset
-                        // pickup). App-internal paths drive answerSignal
-                        // directly and don't loop through here.
-                        announceAnswered(context, handle, uuid)
-                    },
-                    onDisconnect = { /* delivered through disconnectSignal */ },
-                    onSetActive = { /* delivered through setActiveSignal */ },
-                    onSetInactive = { /* future: hold */ },
+                    onAnswer = { announceAnswered(context, handle, uuid) },
+                    onDisconnect = { handle.disconnectSignal.trySend(CallRegistry.Reason.LocalHangup) },
+                    onSetActive = { handle.setActiveSignal.trySend(Unit) },
+                    // We don't support hold; treat as end.
+                    onSetInactive = { handle.disconnectSignal.trySend(CallRegistry.Reason.LocalHangup) },
                 ) {
                     val callControlScope = this
 
@@ -160,7 +156,7 @@ object IncomingCallEntry {
                 TurboLogger.e(TAG, "incoming call coroutine failed: ${e.message}")
                 terminalReason = CallRegistry.Reason.Failed
             } finally {
-                MMCallsForegroundService.stop(context)
+                MMCallsForegroundService.stop(context, uuid)
                 handle.endReason = terminalReason
                 handle.ended = true
                 CallRegistry.remove(uuid)

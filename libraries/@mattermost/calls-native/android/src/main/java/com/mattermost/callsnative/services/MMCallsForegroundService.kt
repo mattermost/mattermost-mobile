@@ -35,7 +35,6 @@ import com.mattermost.callsnative.utils.TurboLogger
 class MMCallsForegroundService : Service() {
     companion object {
         private const val TAG = "MMCalls/MMCallsForegroundService"
-        private const val NOTIFICATION_ID = 345678
         private const val CHANNEL_ID = "calls"
         private const val CHANNEL_NAME = "Calls"
         private const val RING_CHANNEL_ID = "calls_incoming"
@@ -43,54 +42,54 @@ class MMCallsForegroundService : Service() {
         private const val ACTION_START = "com.mattermost.callsnative.action.START_CALL"
         private const val ACTION_REFRESH = "com.mattermost.callsnative.action.REFRESH"
         private const val ACTION_RING = "com.mattermost.callsnative.action.RING"
+        private const val ACTION_STOP = "com.mattermost.callsnative.action.STOP"
         private const val EXTRA_UUID = "com.mattermost.callsnative.extra.UUID"
         private const val EXTRA_CALLEE_NAME = "com.mattermost.callsnative.extra.CALLEE_NAME"
 
-        fun start(context: Context, uuid: String, calleeName: String) {
+        // Positive Int derived from the uuid. NotificationManager rejects negatives on some OEMs.
+        internal fun notificationIdFor(uuid: String): Int = uuid.hashCode() and 0x7FFFFFFF
+
+        fun start(context: Context, uuid: String, calleeName: String) =
+            startServiceWith(context, ACTION_START, uuid, calleeName)
+
+        fun ring(context: Context, uuid: String, callerName: String) =
+            startServiceWith(context, ACTION_RING, uuid, callerName)
+
+        fun refresh(context: Context, uuid: String) =
+            startServiceWith(context, ACTION_REFRESH, uuid, null)
+
+        fun stop(context: Context, uuid: String) =
+            startServiceWith(context, ACTION_STOP, uuid, null)
+
+        private fun startServiceWith(context: Context, action: String, uuid: String, name: String?) {
             val intent = Intent(context, MMCallsForegroundService::class.java).apply {
-                action = ACTION_START
+                this.action = action
                 putExtra(EXTRA_UUID, uuid)
-                putExtra(EXTRA_CALLEE_NAME, calleeName)
+                if (name != null) putExtra(EXTRA_CALLEE_NAME, name)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)
             } else {
                 context.startService(intent)
             }
-        }
-
-        fun ring(context: Context, uuid: String, callerName: String) {
-            val intent = Intent(context, MMCallsForegroundService::class.java).apply {
-                action = ACTION_RING
-                putExtra(EXTRA_UUID, uuid)
-                putExtra(EXTRA_CALLEE_NAME, callerName)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
-        }
-
-        fun refresh(context: Context, uuid: String) {
-            val intent = Intent(context, MMCallsForegroundService::class.java).apply {
-                action = ACTION_REFRESH
-                putExtra(EXTRA_UUID, uuid)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
-        }
-
-        fun stop(context: Context) {
-            context.stopService(Intent(context, MMCallsForegroundService::class.java))
         }
     }
 
     private var ringtone: android.media.Ringtone? = null
     private var vibrator: android.os.Vibrator? = null
+    private var toneGen: android.media.ToneGenerator? = null
+    private val toneHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val toneLoop: Runnable = object : Runnable {
+        override fun run() {
+            try { toneGen?.startTone(android.media.ToneGenerator.TONE_SUP_CALL_WAITING, 300) } catch (_: Exception) {}
+            toneHandler.postDelayed(this, 5000L)
+        }
+    }
+    private var callWaitingUuid: String? = null
+    // The uuid currently promoted to the FGS notification. Android only allows
+    // one foreground notification per service; secondaries are posted via
+    // NotificationManager.notify with their own ids.
+    private var primaryUuid: String? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -99,8 +98,12 @@ class MMCallsForegroundService : Service() {
 
         val uuid = intent?.getStringExtra(EXTRA_UUID).orEmpty()
         if (uuid.isEmpty()) {
-            TurboLogger.w(TAG, "start without uuid — stopping")
             stopSelf()
+            return START_NOT_STICKY
+        }
+
+        if (intent?.action == ACTION_STOP) {
+            handleStop(uuid)
             return START_NOT_STICKY
         }
 
@@ -121,22 +124,128 @@ class MMCallsForegroundService : Service() {
             buildOngoingNotification(uuid, displayName, muted)
         }
 
-        if (isRinging) {
+        val isSecondaryRing = isRinging && primaryUuid != null && uuid != primaryUuid
+        if (isRinging && primaryUuid == null) {
             startRingerAndVibration()
-        } else {
+        } else if (isSecondaryRing) {
+            startCallWaitingTone(uuid)
+        } else if (!isRinging && uuid == primaryUuid) {
             stopRingerAndVibration()
         }
+        // If a secondary stops ringing (answered, declined, timed out), kill the tone.
+        if (!isRinging && uuid == callWaitingUuid) {
+            stopCallWaitingTone()
+        }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            // phoneCall: CallStyle prominence, no mic-service timeout.
-            // MICROPHONE: Core-Telecom doesn't capture mic for us — RTC does.
-            val type = ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL or
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
-            startForeground(NOTIFICATION_ID, notification, type)
+        // Secondary call just got answered → it owns the audio focus now,
+        // swap it in as primary immediately. The old primary remains visible
+        // (re-posted as a standalone notification) until JS tears it down via
+        // leaveCall; this avoids the "stale primary visible alongside the
+        // call you just answered" window.
+        val isSecondaryAnswered = !isRinging &&
+            primaryUuid != null && uuid != primaryUuid &&
+            CallRegistry.isAnswered(uuid)
+        if (isSecondaryAnswered) {
+            swapPrimary(newPrimary = uuid, newPrimaryNotification = notification)
+            return START_NOT_STICKY
+        }
+
+        if (primaryUuid == null || uuid == primaryUuid) {
+            primaryUuid = uuid
+            promoteToForeground(uuid, notification)
         } else {
-            startForeground(NOTIFICATION_ID, notification)
+            val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            nm.notify(notificationIdFor(uuid), notification)
         }
         return START_NOT_STICKY
+    }
+
+    // Promotes a new primary while preserving the old primary's notification
+    // as a standalone (it stays visible until JS tears it down).
+    private fun swapPrimary(newPrimary: String, newPrimaryNotification: Notification) {
+        val oldPrimary = primaryUuid ?: return
+        val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val oldHandle = CallRegistry.get(oldPrimary)
+        // CallStyle notifications must be FGS-hosted OR carry a fullScreenIntent.
+        // The old primary is about to become standalone, so build it with the
+        // fullScreenIntent variant.
+        val oldNotification = if (oldHandle != null) {
+            buildOngoingNotification(oldPrimary, oldHandle.displayName, oldHandle.muted, withFullScreenIntent = true)
+        } else null
+
+        // Cancel the secondary copy of the new primary before promoting it.
+        nm.cancel(notificationIdFor(newPrimary))
+        primaryUuid = newPrimary
+        promoteToForeground(newPrimary, newPrimaryNotification)
+
+        if (oldNotification != null) {
+            nm.notify(notificationIdFor(oldPrimary), oldNotification)
+        }
+    }
+
+    private fun promoteToForeground(uuid: String, notification: Notification) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val type = ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL or
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+            startForeground(notificationIdFor(uuid), notification, type)
+        } else {
+            startForeground(notificationIdFor(uuid), notification)
+        }
+    }
+
+    private fun handleStop(uuid: String) {
+        val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        nm.cancel(notificationIdFor(uuid))
+
+        if (uuid == callWaitingUuid) {
+            stopCallWaitingTone()
+        }
+
+        if (uuid != primaryUuid) return
+
+        stopRingerAndVibration()
+        primaryUuid = null
+
+        // Promote a surviving call if any. Registry is the source of truth.
+        val nextUuid = CallRegistry.firstActiveUuid()
+        if (nextUuid != null) {
+            promoteCall(nextUuid)
+            return
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            @Suppress("DEPRECATION")
+            stopForeground(true)
+        }
+        stopSelf()
+    }
+
+    // Promotes `uuid` to primary: clears any prior secondary notification,
+    // resets call-waiting state, and starts the full ringer if it's still
+    // ringing (the call-waiting tone was for it being secondary, no longer
+    // applicable now that it's the top call).
+    private fun promoteCall(uuid: String) {
+        val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val handle = CallRegistry.get(uuid)
+        val displayName = handle?.displayName.orEmpty()
+        val muted = handle?.muted ?: false
+        val isRinging = handle?.direction == CallRegistry.Direction.Incoming &&
+            !CallRegistry.isAnswered(uuid)
+        val notification = if (isRinging) {
+            buildIncomingNotification(uuid, displayName)
+        } else {
+            buildOngoingNotification(uuid, displayName, muted)
+        }
+
+        stopCallWaitingTone()
+        nm.cancel(notificationIdFor(uuid))
+        primaryUuid = uuid
+        if (isRinging) {
+            startRingerAndVibration()
+        }
+        promoteToForeground(uuid, notification)
     }
 
     @SuppressLint("FullScreenIntentPolicy")
@@ -228,7 +337,13 @@ class MMCallsForegroundService : Service() {
         )
     }
 
-    private fun buildOngoingNotification(uuid: String, calleeName: String, muted: Boolean): Notification {
+    @SuppressLint("FullScreenIntentPolicy")
+    private fun buildOngoingNotification(
+        uuid: String,
+        calleeName: String,
+        muted: Boolean,
+        withFullScreenIntent: Boolean = false,
+    ): Notification {
         val displayName = calleeName.ifBlank {
             getString(R.string.mobile_android_calls_incoming_call_placeholder)
                 .replace("{applicationName}", HostAppIcons.appLabel(this))
@@ -269,7 +384,7 @@ class MMCallsForegroundService : Service() {
             muteTogglePendingIntent(uuid, !muted),
         ).build()
 
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(HostAppIcons.notificationSmall(this))
             .setContentTitle(displayName)
             .setContentText(contentText)
@@ -289,7 +404,20 @@ class MMCallsForegroundService : Service() {
                 )
             )
             .addAction(muteAction)
-            .build()
+
+        // CallStyle requires either FGS hosting or a fullScreenIntent. When
+        // this notification is being posted standalone (not FGS-promoted),
+        // attach the intent to satisfy the platform check.
+        if (withFullScreenIntent) {
+            val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            val canFsi = Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+                nm.canUseFullScreenIntent()
+            if (canFsi) {
+                builder.setFullScreenIntent(fullScreenIntent(uuid), false)
+            }
+        }
+
+        return builder.build()
     }
 
     private fun muteTogglePendingIntent(uuid: String, targetMuted: Boolean): PendingIntent {
@@ -381,8 +509,32 @@ class MMCallsForegroundService : Service() {
         vibrator = null
     }
 
+    private fun startCallWaitingTone(uuid: String) {
+        if (callWaitingUuid == uuid) return
+        callWaitingUuid = uuid
+        if (toneGen == null) {
+            try {
+                @Suppress("DEPRECATION")
+                toneGen = android.media.ToneGenerator(android.media.AudioManager.STREAM_VOICE_CALL, 80)
+            } catch (_: Exception) {
+                return
+            }
+        }
+        toneHandler.removeCallbacks(toneLoop)
+        toneHandler.post(toneLoop)
+    }
+
+    private fun stopCallWaitingTone() {
+        callWaitingUuid = null
+        toneHandler.removeCallbacks(toneLoop)
+        try { toneGen?.stopTone() } catch (_: Exception) {}
+        try { toneGen?.release() } catch (_: Exception) {}
+        toneGen = null
+    }
+
     override fun onDestroy() {
         stopRingerAndVibration()
+        stopCallWaitingTone()
         super.onDestroy()
     }
 

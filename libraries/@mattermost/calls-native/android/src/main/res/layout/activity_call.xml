@@ -19,9 +19,8 @@
          on either side regardless of locale text direction. -->
     <ImageView
         android:id="@+id/status_icon"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="72dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:src="@drawable/ic_call_up"
         app:tint="@color/call_green"
         android:contentDescription="@null"
@@ -36,7 +35,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="72dp"
         android:textColor="@color/call_green"
-        android:textSize="16sp"
+        android:textSize="20sp"
         android:maxLines="1"
         android:ellipsize="end"
         tools:text="Incoming voice call"
@@ -45,26 +44,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <TextView
-        android:id="@+id/timer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textColor="#A8C0DA"
-        android:textSize="14sp"
-        android:visibility="gone"
-        tools:visibility="visible"
-        tools:text="00:42"
-        app:layout_constraintTop_toBottomOf="@id/status_label"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
     <!-- Avatar block centered between status row (top) and caller_name (bottom).
          Vertical chain with bias keeps it visually anchored at ~38% of the screen. -->
     <FrameLayout
         android:id="@+id/avatar_frame"
-        android:layout_width="240dp"
-        android:layout_height="240dp"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
         android:clipChildren="false"
         android:clipToPadding="false"
         app:layout_constraintTop_toBottomOf="@id/status_label"
@@ -76,8 +61,8 @@
 
         <ImageView
             android:id="@+id/avatar_glow"
-            android:layout_width="360dp"
-            android:layout_height="360dp"
+            android:layout_width="270dp"
+            android:layout_height="270dp"
             android:layout_gravity="center"
             android:scaleType="fitCenter"
             android:src="@drawable/glow_answer"
@@ -86,23 +71,23 @@
 
         <View
             android:id="@+id/avatar_ring_static"
-            android:layout_width="220dp"
-            android:layout_height="220dp"
+            android:layout_width="165dp"
+            android:layout_height="165dp"
             android:layout_gravity="center"
             android:background="@drawable/bg_avatar_ring" />
 
         <View
             android:id="@+id/avatar_ring_rotating"
-            android:layout_width="220dp"
-            android:layout_height="220dp"
+            android:layout_width="165dp"
+            android:layout_height="165dp"
             android:layout_gravity="center"
             android:background="@drawable/bg_avatar_ring_rotating"
             android:visibility="gone" />
 
         <ImageView
             android:id="@+id/avatar"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_gravity="center"
             android:scaleType="centerCrop"
             android:src="@android:drawable/sym_def_app_icon"
@@ -148,6 +133,8 @@
         android:gravity="center"
         android:paddingHorizontal="16dp"
         android:layout_marginBottom="96dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -157,7 +144,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center">
+            android:gravity="center"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <FrameLayout
                 android:id="@+id/decline_stack"
@@ -218,7 +207,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center">
+            android:gravity="center"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <FrameLayout
                 android:id="@+id/answer_stack"
@@ -285,6 +276,8 @@
         android:gravity="center"
         android:paddingHorizontal="56dp"
         android:layout_marginBottom="96dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:visibility="gone"
         tools:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -296,7 +289,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center">
+            android:gravity="center"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ImageView
                 android:id="@+id/mute_button"
@@ -326,7 +321,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center">
+            android:gravity="center"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ImageView
                 android:id="@+id/hangup_button"
