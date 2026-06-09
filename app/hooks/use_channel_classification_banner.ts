@@ -1,20 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect, useMemo, useReducer} from 'react';
+import {useEffect, useMemo, useState} from 'react';
+import {combineLatest} from 'rxjs';
 
 import {fetchChannelClassificationValue} from '@actions/remote/classification';
 import {
     CLASSIFICATIONS_CHANNEL_FIELD_NAME,
-    CLASSIFICATIONS_CHANNEL_OBJECT_TYPE,
     CLASSIFICATIONS_GROUP_NAME,
+    CLASSIFICATIONS_SYSTEM_FIELD_NAME,
 } from '@constants/classification';
-import {
-    getGroupIdByName,
-    getPropertyFields,
-    getPropertyValueForField,
-    subscribe,
-} from '@store/system_property_store';
+import DatabaseManager from '@database/manager';
+import {observePropertyFields, observePropertyGroupNames, observePropertyValues} from '@queries/servers/properties';
+import {logError} from '@utils/log';
 
 export type ChannelClassificationBannerState = {
     hasClassification: boolean;
@@ -26,12 +24,23 @@ const noClassification: ChannelClassificationBannerState = {
     classificationBanner: undefined,
 };
 
+type DbSnapshot = {
+    fieldsByGroup: Record<string, PropertyField[]>;
+    valuesByTarget: Record<string, Array<PropertyValue<string>>>;
+    groupNames: Record<string, string>;
+};
+
+const emptySnapshot: DbSnapshot = {fieldsByGroup: {}, valuesByTarget: {}, groupNames: {}};
+
+const isClassificationField = (f: PropertyField) =>
+    f.name === CLASSIFICATIONS_SYSTEM_FIELD_NAME || f.name === CLASSIFICATIONS_CHANNEL_FIELD_NAME;
+
 /**
  * Resolves the effective classification banner for a channel.
  *
  * If a classification property value exists for this channel, returns
  * a ChannelBannerInfo derived from the classification level (color and
- * name from the channel field's linked options, text from the channel's
+ * name resolved from available field options, text from the channel's
  * banner_info or falling back to the level name).
  *
  * Consumers merge this with the native banner_info to decide what to render.
@@ -41,50 +50,68 @@ export function useChannelClassificationBanner(
     channelId: string,
     nativeBannerInfo?: ChannelBannerInfo,
 ): ChannelClassificationBannerState {
-    const [, forceRender] = useReducer((x: number) => x + 1, 0);
+    const [snapshot, setSnapshot] = useState<DbSnapshot>(emptySnapshot);
 
     useEffect(() => {
-        const unsub = subscribe((url, _groupId) => {
-            if (url !== serverUrl) {
-                return;
-            }
-            const resolvedId = getGroupIdByName(serverUrl, CLASSIFICATIONS_GROUP_NAME);
-            if (resolvedId && resolvedId === _groupId) {
-                forceRender();
-            }
+        let database;
+        try {
+            ({database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
+        } catch {
+            return undefined;
+        }
+
+        const sub = combineLatest([
+            observePropertyFields(database),
+            observePropertyValues(database),
+            observePropertyGroupNames(database),
+        ]).subscribe({
+            next: ([fieldsByGroup, valuesByTarget, groupNames]) =>
+                setSnapshot({fieldsByGroup, valuesByTarget, groupNames}),
+            error: (e) => logError('useChannelClassificationBanner', e),
         });
-        return unsub;
+
+        return () => sub.unsubscribe();
     }, [serverUrl]);
 
-    const groupId = getGroupIdByName(serverUrl, CLASSIFICATIONS_GROUP_NAME) ?? '';
-    const fields = groupId ? getPropertyFields(serverUrl, groupId) : [];
+    const fields = useMemo(() => {
+        const mappedId = snapshot.groupNames[CLASSIFICATIONS_GROUP_NAME] ?? '';
+        if (mappedId) {
+            return snapshot.fieldsByGroup[mappedId] ?? [];
+        }
+        for (const gfields of Object.values(snapshot.fieldsByGroup)) {
+            if (gfields.some(isClassificationField)) {
+                return gfields;
+            }
+        }
+        return [] as PropertyField[];
+    }, [snapshot.groupNames, snapshot.fieldsByGroup]);
 
-    const channelField = fields.find(
-        (f) => f.object_type === CLASSIFICATIONS_CHANNEL_OBJECT_TYPE && f.name === CLASSIFICATIONS_CHANNEL_FIELD_NAME && f.linked_field_id && f.delete_at === 0,
-    );
+    const channelValues = channelId ? (snapshot.valuesByTarget[channelId] ?? []) : [];
+    const channelValue = channelValues.length > 0 ? channelValues[0] : undefined;
 
-    const propertyValue = channelField && channelId ? getPropertyValueForField(serverUrl, channelId, channelField.id) : undefined;
+    const hasFields = fields.length > 0;
 
     useEffect(() => {
-        if (!channelId || !channelField) {
+        if (!channelId || !hasFields) {
             return;
         }
-        if (!propertyValue) {
+        if (!channelValue) {
             fetchChannelClassificationValue(serverUrl, channelId);
         }
-    }, [serverUrl, channelId, channelField, propertyValue]);
+    }, [serverUrl, channelId, hasFields, channelValue]);
 
     return useMemo((): ChannelClassificationBannerState => {
-        if (!propertyValue?.value || propertyValue.delete_at !== 0 || !channelField) {
+        if (!channelValue?.value || channelValue.delete_at !== 0) {
             return noClassification;
         }
 
-        const classificationId = propertyValue.value;
+        const classificationId = channelValue.value;
         if (typeof classificationId !== 'string') {
             return noClassification;
         }
 
-        const options = (channelField.attrs?.options as PropertyFieldOption[]) ?? [];
+        const fieldWithOptions = fields.find((f) => (f.attrs?.options as PropertyFieldOption[] | undefined)?.length);
+        const options = (fieldWithOptions?.attrs?.options as PropertyFieldOption[]) ?? [];
         const level = options.find((o) => o.id === classificationId);
         if (!level) {
             return noClassification;
@@ -100,5 +127,5 @@ export function useChannelClassificationBanner(
                 background_color: level.color,
             },
         };
-    }, [propertyValue, channelField, nativeBannerInfo]);
+    }, [channelValue, fields, nativeBannerInfo]);
 }

@@ -18,7 +18,7 @@
 // ---------------------------------------------------------------------------
 
 // Property-field group identifying all classification-markings entities.
-export const CLASSIFICATIONS_GROUP_NAME = 'classification_markings';
+export const CLASSIFICATIONS_GROUP_NAME = 'access_control';
 
 // Field-level target attributes shared by system and channel fields.
 // `target_type` is always 'system'; `target_id` is empty for system-scoped

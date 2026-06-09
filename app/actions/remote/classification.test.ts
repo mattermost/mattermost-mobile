@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {hydratePropertyStore, persistPropertyStoreSnapshot} from '@actions/local/properties';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {getPersistedPropertyFields, getPersistedPropertyGroupNames, getPersistedPropertyValues} from '@queries/servers/properties';
 import {getConfigValue} from '@queries/servers/system';
 
 import {fetchClassificationBanner, fetchChannelClassificationValue} from './classification';
@@ -17,25 +18,6 @@ jest.mock('@queries/servers/system', () => ({
     getConfigValue: jest.fn(),
 }));
 
-jest.mock('@store/system_property_store', () => ({
-    registerGroupName: jest.fn(),
-    setPropertyFields: jest.fn(),
-    updatePropertyValues: jest.fn(),
-    getPropertyFields: jest.fn(() => []),
-    getPropertyValuesForTarget: jest.fn(() => []),
-    subscribe: jest.fn(() => jest.fn()),
-    usePropertyStoreGroup: jest.fn(() => ({fields: []})),
-    getGroupIdByName: jest.fn(),
-}));
-
-jest.mock('@actions/local/properties', () => ({
-    hydratePropertyStore: jest.fn().mockResolvedValue(undefined),
-    persistPropertyStoreSnapshot: jest.fn().mockResolvedValue(undefined),
-}));
-
-const mockedHydrate = jest.mocked(hydratePropertyStore);
-const mockedPersist = jest.mocked(persistPropertyStoreSnapshot);
-const {registerGroupName, setPropertyFields, updatePropertyValues} = require('@store/system_property_store');
 const mockedGetConfigValue = jest.mocked(getConfigValue);
 
 const serverUrl = 'classification.test.com';
@@ -120,24 +102,89 @@ describe('fetchClassificationBanner', () => {
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({});
-        expect(setPropertyFields).not.toHaveBeenCalled();
-        expect(updatePropertyValues).not.toHaveBeenCalled();
         expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
     });
 
-    it('should store system field when channel field is missing', async () => {
+    it('should clear stale classification data when feature flag is turned off', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {classification_markings: [systemField]}},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: {system: [systemValue]}},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: {classification_markings: 'classification_markings'}},
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        mockedGetConfigValue.mockResolvedValueOnce('false');
+        await fetchClassificationBanner(serverUrl);
+
+        const fields = await getPersistedPropertyFields(database);
+        const values = await getPersistedPropertyValues(database);
+        const groupNames = await getPersistedPropertyGroupNames(database);
+        expect(fields.classification_markings).toBeUndefined();
+        expect(values.system).toBeUndefined();
+        expect(groupNames.classification_markings).toBeUndefined();
+    });
+
+    it('should clear stale classification data when API returns zero fields', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {classification_markings: [systemField]}},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: {system: [systemValue]}},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: {classification_markings: 'classification_markings'}},
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+
+        await fetchClassificationBanner(serverUrl);
+
+        const fields = await getPersistedPropertyFields(database);
+        const values = await getPersistedPropertyValues(database);
+        const groupNames = await getPersistedPropertyGroupNames(database);
+        expect(fields.classification_markings).toBeUndefined();
+        expect(values.system).toBeUndefined();
+        expect(groupNames.classification_markings).toBeUndefined();
+    });
+
+    it('should persist fields and values to DB on happy path', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+        const result = await fetchClassificationBanner(serverUrl);
+
+        expect(result).toEqual({});
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const fields = await getPersistedPropertyFields(database);
+        const values = await getPersistedPropertyValues(database);
+        const groupNames = await getPersistedPropertyGroupNames(database);
+
+        expect(fields.classification_markings).toHaveLength(2);
+        expect(fields.classification_markings).toEqual(expect.arrayContaining([systemField, channelField]));
+        expect(values.system).toEqual([systemValue]);
+        expect(groupNames.classification_markings).toBe('classification_markings');
+    });
+
+    it('should persist system field when channel field is missing', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
 
         const result = await fetchClassificationBanner(serverUrl);
-
         expect(result).toEqual({});
-        expect(registerGroupName).toHaveBeenCalledWith(serverUrl, 'classification_markings', 'classification_markings');
-        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', [systemField]);
-        expect(updatePropertyValues).toHaveBeenCalledWith(serverUrl, 'system', 'classification_markings', [systemValue]);
-        expect(mockedPersist).toHaveBeenCalledWith(serverUrl);
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const fields = await getPersistedPropertyFields(database);
+        expect(fields.classification_markings).toEqual([systemField]);
     });
 
     it('should return early when no fields are returned by the API', async () => {
@@ -148,43 +195,10 @@ describe('fetchClassificationBanner', () => {
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({});
-        expect(registerGroupName).not.toHaveBeenCalled();
-        expect(setPropertyFields).not.toHaveBeenCalled();
-        expect(updatePropertyValues).not.toHaveBeenCalled();
-    });
 
-    it('should store channel field when system field is missing', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
-        mockClient.getPropertyFields.mockResolvedValueOnce([]);
-        mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
-        mockClient.getSystemPropertyValues.mockResolvedValueOnce([]);
-
-        const result = await fetchClassificationBanner(serverUrl);
-
-        expect(result).toEqual({});
-        expect(registerGroupName).toHaveBeenCalledWith(serverUrl, 'classification_markings', 'classification_markings');
-        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', [channelField]);
-        expect(updatePropertyValues).not.toHaveBeenCalled();
-    });
-
-    it('should store all active fields and values on happy path', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
-        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
-        mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
-        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
-
-        const result = await fetchClassificationBanner(serverUrl);
-
-        expect(result).toEqual({});
-        expect(registerGroupName).toHaveBeenCalledWith(serverUrl, 'classification_markings', 'classification_markings');
-        expect(setPropertyFields).toHaveBeenCalledWith(
-            serverUrl,
-            'classification_markings',
-            expect.arrayContaining([systemField, channelField]),
-        );
-        expect(setPropertyFields.mock.calls[0][2]).toHaveLength(2);
-        expect(updatePropertyValues).toHaveBeenCalledWith(serverUrl, 'system', 'classification_markings', [systemValue]);
-        expect(mockedPersist).toHaveBeenCalledWith(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const fields = await getPersistedPropertyFields(database);
+        expect(Object.keys(fields)).toHaveLength(0);
     });
 
     it('should exclude soft-deleted fields from the stored set', async () => {
@@ -195,9 +209,11 @@ describe('fetchClassificationBanner', () => {
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([]);
 
         const result = await fetchClassificationBanner(serverUrl);
-
         expect(result).toEqual({});
-        expect(setPropertyFields).toHaveBeenCalledWith(serverUrl, 'classification_markings', [channelField]);
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const fields = await getPersistedPropertyFields(database);
+        expect(fields.classification_markings).toEqual([channelField]);
     });
 
     it('should return early when fields have mismatched group_ids', async () => {
@@ -207,13 +223,14 @@ describe('fetchClassificationBanner', () => {
         mockClient.getPropertyFields.mockResolvedValueOnce([differentGroupField]);
 
         const result = await fetchClassificationBanner(serverUrl);
-
         expect(result).toEqual({});
-        expect(setPropertyFields).not.toHaveBeenCalled();
-        expect(updatePropertyValues).not.toHaveBeenCalled();
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const fields = await getPersistedPropertyFields(database);
+        expect(Object.keys(fields)).toHaveLength(0);
     });
 
-    it('should return error without modifying store when network client throws', async () => {
+    it('should return error when network client throws', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         const networkError = new Error('network failure');
         mockClient.getPropertyFields.mockRejectedValueOnce(networkError);
@@ -221,20 +238,28 @@ describe('fetchClassificationBanner', () => {
         const result = await fetchClassificationBanner(serverUrl);
 
         expect(result).toEqual({error: networkError});
-        expect(setPropertyFields).not.toHaveBeenCalled();
-        expect(updatePropertyValues).not.toHaveBeenCalled();
     });
 
-    it('should call hydratePropertyStore as offline fallback when network client throws', async () => {
+    it('should not write to DB when network client throws', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockRejectedValueOnce(new Error('network failure'));
 
         await fetchClassificationBanner(serverUrl);
 
-        expect(mockedHydrate).toHaveBeenCalledWith(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const fields = await getPersistedPropertyFields(database);
+        expect(Object.keys(fields)).toHaveLength(0);
     });
 
-    it('should not call hydratePropertyStore on the success path', async () => {
+    it('should preserve WS-received channel field when API only returns system fields', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {classification_markings: [channelField]}},
+            ],
+            prepareRecordsOnly: false,
+        });
+
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
@@ -242,16 +267,58 @@ describe('fetchClassificationBanner', () => {
 
         await fetchClassificationBanner(serverUrl);
 
-        expect(mockedHydrate).not.toHaveBeenCalled();
+        const fields = await getPersistedPropertyFields(database);
+        expect(fields.classification_markings).toHaveLength(2);
+        expect(fields.classification_markings).toEqual(expect.arrayContaining([systemField, channelField]));
     });
 
-    it('should not persist when network client throws', async () => {
+    it('should remove soft-deleted fields from DB even when they were previously persisted', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {classification_markings: [systemField, channelField]}},
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        const deletedChannel = {...channelField, delete_at: 5000};
         mockedGetConfigValue.mockResolvedValueOnce('true');
-        mockClient.getPropertyFields.mockRejectedValueOnce(new Error('network failure'));
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([deletedChannel]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([]);
 
         await fetchClassificationBanner(serverUrl);
 
-        expect(mockedPersist).not.toHaveBeenCalled();
+        const fields = await getPersistedPropertyFields(database);
+        expect(fields.classification_markings).toEqual([systemField]);
+    });
+
+    it('should merge with existing DB data on subsequent calls', async () => {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {existing_group: [{id: 'existing-field'}]}},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: {}},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: {existing: 'existing_group'}},
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+        await fetchClassificationBanner(serverUrl);
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const fields = await getPersistedPropertyFields(database);
+        const groupNames = await getPersistedPropertyGroupNames(database);
+
+        expect(fields.existing_group).toEqual([{id: 'existing-field'}]);
+        expect(fields.classification_markings).toEqual([systemField]);
+        expect(groupNames.existing).toBe('existing_group');
+        expect(groupNames.classification_markings).toBe('classification_markings');
     });
 });
 
@@ -277,18 +344,18 @@ describe('fetchChannelClassificationValue', () => {
 
         expect(result).toEqual({});
         expect(mockClient.getPropertyValues).not.toHaveBeenCalled();
-        expect(updatePropertyValues).not.toHaveBeenCalled();
     });
 
-    it('should store channel values on happy path', async () => {
+    it('should persist channel values to DB on happy path', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]);
 
         const result = await fetchChannelClassificationValue(serverUrl, channelId);
-
         expect(result).toEqual({});
-        expect(updatePropertyValues).toHaveBeenCalledWith(serverUrl, channelId, 'classification_markings', [channelValue]);
-        expect(mockedPersist).toHaveBeenCalledWith(serverUrl);
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const values = await getPersistedPropertyValues(database);
+        expect(values[channelId]).toEqual([channelValue]);
     });
 
     it('should return early when API returns no values', async () => {
@@ -296,9 +363,7 @@ describe('fetchChannelClassificationValue', () => {
         mockClient.getPropertyValues.mockResolvedValueOnce([]);
 
         const result = await fetchChannelClassificationValue(serverUrl, channelId);
-
         expect(result).toEqual({});
-        expect(updatePropertyValues).not.toHaveBeenCalled();
     });
 
     it('should return early when group_id is empty', async () => {
@@ -307,9 +372,7 @@ describe('fetchChannelClassificationValue', () => {
         mockClient.getPropertyValues.mockResolvedValueOnce([noGroupValue]);
 
         const result = await fetchChannelClassificationValue(serverUrl, channelId);
-
         expect(result).toEqual({});
-        expect(updatePropertyValues).not.toHaveBeenCalled();
     });
 
     it('should return error when network client throws', async () => {
@@ -318,35 +381,26 @@ describe('fetchChannelClassificationValue', () => {
         mockClient.getPropertyValues.mockRejectedValueOnce(networkError);
 
         const result = await fetchChannelClassificationValue(serverUrl, channelId);
-
         expect(result).toEqual({error: networkError});
-        expect(updatePropertyValues).not.toHaveBeenCalled();
     });
 
-    it('should call hydratePropertyStore as offline fallback when network client throws', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
-        mockClient.getPropertyValues.mockRejectedValueOnce(new Error('network failure'));
+    it('should merge with existing DB values on subsequent calls', async () => {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: {system: [systemValue]}},
+            ],
+            prepareRecordsOnly: false,
+        });
 
-        await fetchChannelClassificationValue(serverUrl, channelId);
-
-        expect(mockedHydrate).toHaveBeenCalledWith(serverUrl);
-    });
-
-    it('should not call hydratePropertyStore on the success path', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]);
 
         await fetchChannelClassificationValue(serverUrl, channelId);
 
-        expect(mockedHydrate).not.toHaveBeenCalled();
-    });
-
-    it('should not persist when network client throws', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
-        mockClient.getPropertyValues.mockRejectedValueOnce(new Error('network failure'));
-
-        await fetchChannelClassificationValue(serverUrl, channelId);
-
-        expect(mockedPersist).not.toHaveBeenCalled();
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const values = await getPersistedPropertyValues(database);
+        expect(values.system).toEqual([systemValue]);
+        expect(values[channelId]).toEqual([channelValue]);
     });
 });

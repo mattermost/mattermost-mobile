@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {markChannelAsViewed} from '@actions/local/channel';
-import {hydratePropertyStore} from '@actions/local/properties';
 import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchClassificationBanner} from '@actions/remote/classification';
@@ -101,7 +100,6 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
     }
 
     checkIsAgentsPluginEnabled(serverUrl);
-    hydratePropertyStore(serverUrl);
     fetchClassificationBanner(serverUrl);
 
     await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);

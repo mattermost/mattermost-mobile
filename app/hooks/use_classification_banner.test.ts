@@ -2,14 +2,32 @@
 // See LICENSE.txt for license information.
 
 import {renderHook, act} from '@testing-library/react-native';
+import {BehaviorSubject} from 'rxjs';
 
 import {CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID} from '@constants/classification';
-import {registerGroupName, setPropertyFields, setPropertyValues} from '@store/system_property_store';
 
 import {useClassificationBannerState} from './use_classification_banner';
 
 jest.mock('@actions/remote/classification', () => ({
     fetchClassificationBanner: jest.fn(),
+}));
+
+const mockFieldsSubject = new BehaviorSubject<Record<string, PropertyField[]>>({});
+const mockValuesSubject = new BehaviorSubject<Record<string, Array<PropertyValue<string>>>>({});
+const mockGroupNamesSubject = new BehaviorSubject<Record<string, string>>({});
+
+jest.mock('@queries/servers/properties', () => ({
+    observePropertyFields: jest.fn(() => mockFieldsSubject.asObservable()),
+    observePropertyValues: jest.fn(() => mockValuesSubject.asObservable()),
+    observePropertyGroupNames: jest.fn(() => mockGroupNamesSubject.asObservable()),
+}));
+
+jest.mock('@database/manager', () => ({
+    getServerDatabaseAndOperator: jest.fn(() => ({database: {}})),
+}));
+
+jest.mock('@utils/log', () => ({
+    logError: jest.fn(),
 }));
 
 const serverUrl = 'hook-classification.test.com';
@@ -49,50 +67,49 @@ const systemValue: PropertyValue<string> = {
 };
 
 beforeEach(() => {
-    registerGroupName(serverUrl, GROUP, GROUP);
-    setPropertyFields(serverUrl, GROUP, []);
-    setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, []);
+    mockFieldsSubject.next({});
+    mockValuesSubject.next({});
+    mockGroupNamesSubject.next({});
+    jest.clearAllMocks();
 });
 
 describe('useClassificationBannerState', () => {
     it('should return default state when group name is not registered', () => {
-        const unknownServer = 'unknown-server.test.com';
-        const {result} = renderHook(() => useClassificationBannerState(unknownServer));
-
+        const {result} = renderHook(() => useClassificationBannerState(serverUrl));
         expect(result.current).toEqual({visible: false, levelName: '', color: ''});
     });
 
     it('should return default state when store is empty', () => {
-        const {result} = renderHook(() => useClassificationBannerState(serverUrl));
+        mockGroupNamesSubject.next({[GROUP]: GROUP});
 
+        const {result} = renderHook(() => useClassificationBannerState(serverUrl));
         expect(result.current).toEqual({visible: false, levelName: '', color: ''});
     });
 
     it('should return default state when DISPLAY_BANNER_TOP action is missing', () => {
+        mockGroupNamesSubject.next({classification_markings: GROUP});
         const noActionField = {...systemField, attrs: {...systemField.attrs, actions: []}} as PropertyField;
-        setPropertyFields(serverUrl, GROUP, [noActionField]);
-        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
+        mockFieldsSubject.next({[GROUP]: [noActionField]});
+        mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [systemValue]});
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
-
         expect(result.current).toEqual({visible: false, levelName: '', color: ''});
     });
 
     it('should return default state when no system value is set', () => {
-        setPropertyFields(serverUrl, GROUP, [systemField]);
-        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, []);
+        mockGroupNamesSubject.next({classification_markings: GROUP});
+        mockFieldsSubject.next({[GROUP]: [systemField]});
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
-
         expect(result.current).toEqual({visible: false, levelName: '', color: ''});
     });
 
     it('should return visible state with correct level on happy path', () => {
-        setPropertyFields(serverUrl, GROUP, [systemField]);
-        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
+        mockGroupNamesSubject.next({classification_markings: GROUP});
+        mockFieldsSubject.next({[GROUP]: [systemField]});
+        mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [systemValue]});
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
-
         expect(result.current).toEqual({
             visible: true,
             levelName: 'TOP SECRET',
@@ -100,16 +117,17 @@ describe('useClassificationBannerState', () => {
         });
     });
 
-    it('should re-derive when store values change', () => {
-        setPropertyFields(serverUrl, GROUP, [systemField]);
-        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
+    it('should re-derive when observable values change', () => {
+        mockGroupNamesSubject.next({classification_markings: GROUP});
+        mockFieldsSubject.next({[GROUP]: [systemField]});
+        mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [systemValue]});
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
         expect(result.current.visible).toBe(true);
 
         act(() => {
             const updatedValue = {...systemValue, value: 'opt-s'};
-            setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [updatedValue]);
+            mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [updatedValue]});
         });
 
         expect(result.current).toEqual({
@@ -119,14 +137,15 @@ describe('useClassificationBannerState', () => {
         });
     });
 
-    it('should re-derive when store fields change', () => {
-        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
+    it('should re-derive when observable fields change', () => {
+        mockGroupNamesSubject.next({classification_markings: GROUP});
+        mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [systemValue]});
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
         expect(result.current.visible).toBe(false);
 
         act(() => {
-            setPropertyFields(serverUrl, GROUP, [systemField]);
+            mockFieldsSubject.next({[GROUP]: [systemField]});
         });
 
         expect(result.current).toEqual({
@@ -137,27 +156,35 @@ describe('useClassificationBannerState', () => {
     });
 
     it('should return default state when option_id does not match any option', () => {
+        mockGroupNamesSubject.next({classification_markings: GROUP});
+        mockFieldsSubject.next({[GROUP]: [systemField]});
         const badValue = {...systemValue, value: 'non-existent-opt'};
-        setPropertyFields(serverUrl, GROUP, [systemField]);
-        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [badValue]);
+        mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [badValue]});
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
-
         expect(result.current).toEqual({visible: false, levelName: '', color: ''});
     });
 
-    it('should auto-register group name and re-render when field arrives for unregistered group', () => {
-        const unregisteredServer = 'unregistered.test.com';
-        const groupUuid = 'uuid-new-group';
-        const field = {...systemField, group_id: groupUuid};
-        const value = {...systemValue, group_id: groupUuid};
+    it('should discover group ID from field names when group names mapping is absent', () => {
+        mockFieldsSubject.next({[GROUP]: [systemField]});
+        mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [systemValue]});
 
-        const {result} = renderHook(() => useClassificationBannerState(unregisteredServer));
-        expect(result.current).toEqual({visible: false, levelName: '', color: ''});
+        const {result} = renderHook(() => useClassificationBannerState(serverUrl));
+
+        expect(result.current).toEqual({
+            visible: true,
+            levelName: 'TOP SECRET',
+            color: '#FCE83A',
+        });
+    });
+
+    it('should show banner when fields arrive via WS before group names are populated', () => {
+        const {result} = renderHook(() => useClassificationBannerState(serverUrl));
+        expect(result.current.visible).toBe(false);
 
         act(() => {
-            setPropertyFields(unregisteredServer, groupUuid, [field]);
-            setPropertyValues(unregisteredServer, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, groupUuid, [value]);
+            mockFieldsSubject.next({[GROUP]: [systemField]});
+            mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [systemValue]});
         });
 
         expect(result.current).toEqual({
@@ -178,8 +205,9 @@ describe('useClassificationBannerState', () => {
 
     it('should not bootstrap fetch when all data is present', () => {
         const {fetchClassificationBanner} = require('@actions/remote/classification');
-        setPropertyFields(serverUrl, GROUP, [systemField]);
-        setPropertyValues(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, GROUP, [systemValue]);
+        mockGroupNamesSubject.next({classification_markings: GROUP});
+        mockFieldsSubject.next({[GROUP]: [systemField]});
+        mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [systemValue]});
         fetchClassificationBanner.mockClear();
 
         renderHook(() => useClassificationBannerState(serverUrl));

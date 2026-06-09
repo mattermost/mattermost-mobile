@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect, useMemo, useReducer} from 'react';
+import {useEffect, useRef, useState} from 'react';
+import {combineLatest} from 'rxjs';
+import {distinctUntilChanged, map} from 'rxjs/operators';
 
 import {fetchClassificationBanner} from '@actions/remote/classification';
 import {
@@ -12,7 +14,9 @@ import {
     CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
     DISPLAY_BANNER_TOP,
 } from '@constants/classification';
-import {getGroupIdByName, getPropertyFields, getPropertyValuesForTarget, registerGroupName, subscribe} from '@store/system_property_store';
+import DatabaseManager from '@database/manager';
+import {observePropertyFields, observePropertyGroupNames, observePropertyValues} from '@queries/servers/properties';
+import {logError} from '@utils/log';
 
 export type ClassificationBannerState = {
     visible: boolean;
@@ -22,72 +26,108 @@ export type ClassificationBannerState = {
 
 const hiddenState: ClassificationBannerState = {visible: false, levelName: '', color: ''};
 
-const isClassificationField = (f: {name: string}) => f.name === CLASSIFICATIONS_SYSTEM_FIELD_NAME || f.name === CLASSIFICATIONS_CHANNEL_FIELD_NAME;
+const isClassificationField = (f: PropertyField) =>
+    f.name === CLASSIFICATIONS_SYSTEM_FIELD_NAME || f.name === CLASSIFICATIONS_CHANNEL_FIELD_NAME;
 
-export function useClassificationBannerState(serverUrl: string): ClassificationBannerState {
-    const [renderCount, forceRender] = useReducer((x: number) => x + 1, 0);
+function resolveGroupId(
+    fieldsByGroup: Record<string, PropertyField[]>,
+    groupNames: Record<string, string>,
+): [string, PropertyField[]] {
+    const mappedId = groupNames[CLASSIFICATIONS_GROUP_NAME] ?? '';
+    if (mappedId) {
+        return [mappedId, fieldsByGroup[mappedId] ?? []];
+    }
 
-    useEffect(() => {
-        const unsub = subscribe((url, _groupId) => {
-            if (url !== serverUrl) {
-                return;
-            }
+    for (const [gid, gfields] of Object.entries(fieldsByGroup)) {
+        if (gfields.some(isClassificationField)) {
+            return [gid, gfields];
+        }
+    }
 
-            const resolvedId = getGroupIdByName(serverUrl, CLASSIFICATIONS_GROUP_NAME);
-            if (resolvedId && resolvedId === _groupId) {
-                forceRender();
-                return;
-            }
+    return ['', []];
+}
 
-            if (!resolvedId) {
-                const fields = getPropertyFields(serverUrl, _groupId);
-                if (fields.some(isClassificationField)) {
-                    registerGroupName(serverUrl, CLASSIFICATIONS_GROUP_NAME, _groupId);
-                    forceRender();
-                }
-            }
-        });
-        return unsub;
-    }, [serverUrl]);
-
-    const groupId = getGroupIdByName(serverUrl, CLASSIFICATIONS_GROUP_NAME) ?? '';
-    const fields = groupId ? getPropertyFields(serverUrl, groupId) : [];
-    const values = groupId ? getPropertyValuesForTarget(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID) : [];
+function deriveState(
+    fieldsByGroup: Record<string, PropertyField[]>,
+    valuesByTarget: Record<string, Array<PropertyValue<string>>>,
+    groupNames: Record<string, string>,
+): ClassificationBannerState {
+    const [groupId, fields] = resolveGroupId(fieldsByGroup, groupNames);
+    if (!groupId) {
+        return hiddenState;
+    }
 
     const systemField = fields.find(
-        (f) => f.object_type === CLASSIFICATIONS_SYSTEM_OBJECT_TYPE && f.name === CLASSIFICATIONS_SYSTEM_FIELD_NAME && f.linked_field_id && f.delete_at === 0,
+        (f) => f.object_type === CLASSIFICATIONS_SYSTEM_OBJECT_TYPE &&
+               f.name === CLASSIFICATIONS_SYSTEM_FIELD_NAME &&
+               f.linked_field_id &&
+               f.delete_at === 0,
     );
-    const systemValue = systemField ? values.find((v) => v.field_id === systemField.id && v.delete_at === 0) : undefined;
+
+    if (!systemField) {
+        return hiddenState;
+    }
+
+    const actions = (systemField.attrs?.actions as string[] | undefined) ?? [];
+    if (!actions.includes(DISPLAY_BANNER_TOP)) {
+        return hiddenState;
+    }
+
+    const values = valuesByTarget[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID] ?? [];
+    const systemValue = values.find((v) => v.field_id === systemField.id && v.delete_at === 0);
+    const optionId = systemValue?.value ?? '';
+    if (!optionId) {
+        return hiddenState;
+    }
+
+    const options = (systemField.attrs?.options as PropertyFieldOption[]) ?? [];
+    const levelOption = options.find((o) => o.id === optionId);
+
+    return {
+        visible: Boolean(levelOption?.name),
+        levelName: levelOption?.name ?? '',
+        color: levelOption?.color ?? '',
+    };
+}
+
+export function useClassificationBannerState(serverUrl: string): ClassificationBannerState {
+    const [state, setState] = useState(hiddenState);
+    const visibleRef = useRef(false);
 
     useEffect(() => {
-        if (!systemField || !systemValue) {
+        let database;
+        try {
+            ({database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
+        } catch {
+            return undefined;
+        }
+
+        const sub = combineLatest([
+            observePropertyFields(database),
+            observePropertyValues(database),
+            observePropertyGroupNames(database),
+        ]).pipe(
+            map(([fields, values, groupNames]) => deriveState(fields, values, groupNames)),
+            distinctUntilChanged((a, b) => a.visible === b.visible && a.levelName === b.levelName && a.color === b.color),
+        ).subscribe({
+            next: (derived) => {
+                visibleRef.current = derived.visible;
+                setState(derived);
+            },
+            error: (e) => logError('useClassificationBannerState', e),
+        });
+
+        return () => sub.unsubscribe();
+    }, [serverUrl]);
+
+    // visibleRef is updated synchronously by the subscription, so the guard
+    // sees the latest value even before React processes setState.
+    const {visible} = state;
+    useEffect(() => {
+        if (!visibleRef.current) {
             fetchClassificationBanner(serverUrl);
         }
-    }, [serverUrl, systemField, systemValue]);
+    }, [serverUrl, visible]);
 
-    return useMemo(() => {
-        if (!groupId || !systemField) {
-            return hiddenState;
-        }
-
-        const actions = (systemField.attrs?.actions as string[] | undefined) ?? [];
-        if (!actions.includes(DISPLAY_BANNER_TOP)) {
-            return hiddenState;
-        }
-
-        const optionId = systemValue?.value ?? '';
-        if (!optionId) {
-            return hiddenState;
-        }
-
-        const options = (systemField.attrs?.options as PropertyFieldOption[]) ?? [];
-        const levelOption = options.find((o) => o.id === optionId);
-
-        return {
-            visible: Boolean(levelOption?.name),
-            levelName: levelOption?.name ?? '',
-            color: levelOption?.color ?? '',
-        };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [serverUrl, renderCount, groupId, systemField, systemValue]);
+    return state;
 }
