@@ -29,9 +29,9 @@ afterEach(async () => {
 });
 
 describe('getPersistedPropertyFields', () => {
-    it('should return undefined when no record exists', async () => {
+    it('should return empty object when no record exists', async () => {
         const result = await getPersistedPropertyFields(database);
-        expect(result).toBeUndefined();
+        expect(result).toEqual({});
     });
 
     it('should return stored fields grouped by groupId', async () => {
@@ -70,9 +70,9 @@ describe('getPersistedPropertyFields', () => {
 });
 
 describe('getPersistedPropertyValues', () => {
-    it('should return undefined when no record exists', async () => {
+    it('should return empty object when no record exists', async () => {
         const result = await getPersistedPropertyValues(database);
-        expect(result).toBeUndefined();
+        expect(result).toEqual({});
     });
 
     it('should return stored values grouped by targetId', async () => {
@@ -110,13 +110,13 @@ describe('getPersistedPropertyValues', () => {
 });
 
 describe('getPersistedPropertyGroupNames', () => {
-    it('should return undefined when no record exists', async () => {
+    it('should return empty object when no record exists', async () => {
         const result = await getPersistedPropertyGroupNames(database);
-        expect(result).toBeUndefined();
+        expect(result).toEqual({});
     });
 
     it('should return stored group name mapping', async () => {
-        const groupNames = {classification_markings: 'group-uuid-1'};
+        const groupNames = {access_control: 'group-uuid-1'};
         await operator.handleSystem({
             systems: [{id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: groupNames}],
             prepareRecordsOnly: false,

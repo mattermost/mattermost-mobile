@@ -4,7 +4,7 @@
 import {renderHook, act} from '@testing-library/react-native';
 import {BehaviorSubject} from 'rxjs';
 
-import {CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID} from '@constants/classification';
+import {CLASSIFICATIONS_GROUP_NAME, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID} from '@constants/classification';
 
 import {useClassificationBannerState} from './use_classification_banner';
 
@@ -31,7 +31,7 @@ jest.mock('@utils/log', () => ({
 }));
 
 const serverUrl = 'hook-classification.test.com';
-const GROUP = 'classification_markings';
+const GROUP = CLASSIFICATIONS_GROUP_NAME;
 
 const systemField: PropertyField = {
     id: 'sys-1',
@@ -87,7 +87,7 @@ describe('useClassificationBannerState', () => {
     });
 
     it('should return default state when DISPLAY_BANNER_TOP action is missing', () => {
-        mockGroupNamesSubject.next({classification_markings: GROUP});
+        mockGroupNamesSubject.next({[CLASSIFICATIONS_GROUP_NAME]: GROUP});
         const noActionField = {...systemField, attrs: {...systemField.attrs, actions: []}} as PropertyField;
         mockFieldsSubject.next({[GROUP]: [noActionField]});
         mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [systemValue]});
@@ -97,7 +97,7 @@ describe('useClassificationBannerState', () => {
     });
 
     it('should return default state when no system value is set', () => {
-        mockGroupNamesSubject.next({classification_markings: GROUP});
+        mockGroupNamesSubject.next({[CLASSIFICATIONS_GROUP_NAME]: GROUP});
         mockFieldsSubject.next({[GROUP]: [systemField]});
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
@@ -105,7 +105,7 @@ describe('useClassificationBannerState', () => {
     });
 
     it('should return visible state with correct level on happy path', () => {
-        mockGroupNamesSubject.next({classification_markings: GROUP});
+        mockGroupNamesSubject.next({[CLASSIFICATIONS_GROUP_NAME]: GROUP});
         mockFieldsSubject.next({[GROUP]: [systemField]});
         mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [systemValue]});
 
@@ -118,7 +118,7 @@ describe('useClassificationBannerState', () => {
     });
 
     it('should re-derive when observable values change', () => {
-        mockGroupNamesSubject.next({classification_markings: GROUP});
+        mockGroupNamesSubject.next({[CLASSIFICATIONS_GROUP_NAME]: GROUP});
         mockFieldsSubject.next({[GROUP]: [systemField]});
         mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [systemValue]});
 
@@ -138,7 +138,7 @@ describe('useClassificationBannerState', () => {
     });
 
     it('should re-derive when observable fields change', () => {
-        mockGroupNamesSubject.next({classification_markings: GROUP});
+        mockGroupNamesSubject.next({[CLASSIFICATIONS_GROUP_NAME]: GROUP});
         mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [systemValue]});
 
         const {result} = renderHook(() => useClassificationBannerState(serverUrl));
@@ -156,7 +156,7 @@ describe('useClassificationBannerState', () => {
     });
 
     it('should return default state when option_id does not match any option', () => {
-        mockGroupNamesSubject.next({classification_markings: GROUP});
+        mockGroupNamesSubject.next({[CLASSIFICATIONS_GROUP_NAME]: GROUP});
         mockFieldsSubject.next({[GROUP]: [systemField]});
         const badValue = {...systemValue, value: 'non-existent-opt'};
         mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [badValue]});
@@ -205,7 +205,7 @@ describe('useClassificationBannerState', () => {
 
     it('should not bootstrap fetch when all data is present', () => {
         const {fetchClassificationBanner} = require('@actions/remote/classification');
-        mockGroupNamesSubject.next({classification_markings: GROUP});
+        mockGroupNamesSubject.next({[CLASSIFICATIONS_GROUP_NAME]: GROUP});
         mockFieldsSubject.next({[GROUP]: [systemField]});
         mockValuesSubject.next({[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: [systemValue]});
         fetchClassificationBanner.mockClear();

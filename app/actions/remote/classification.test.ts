@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {CLASSIFICATIONS_GROUP_NAME} from '@constants/classification';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -24,7 +25,7 @@ const serverUrl = 'classification.test.com';
 
 const systemField: PropertyField = {
     id: 'system-field-id',
-    group_id: 'classification_markings',
+    group_id: CLASSIFICATIONS_GROUP_NAME,
     name: 'system_classification',
     type: 'select',
     object_type: 'system',
@@ -45,7 +46,7 @@ const systemField: PropertyField = {
 
 const channelField: PropertyField = {
     id: 'channel-field-id',
-    group_id: 'classification_markings',
+    group_id: CLASSIFICATIONS_GROUP_NAME,
     name: 'channel_classification',
     type: 'select',
     object_type: 'channel',
@@ -67,7 +68,7 @@ const systemValue: PropertyValue<string> = {
     id: 'val-1',
     target_id: 'system',
     target_type: 'system',
-    group_id: 'classification_markings',
+    group_id: CLASSIFICATIONS_GROUP_NAME,
     field_id: 'system-field-id',
     value: 'opt-top-secret',
     create_at: 1000,
@@ -109,9 +110,9 @@ describe('fetchClassificationBanner', () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handleSystem({
             systems: [
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {classification_markings: [systemField]}},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {[CLASSIFICATIONS_GROUP_NAME]: [systemField]}},
                 {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: {system: [systemValue]}},
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: {classification_markings: 'classification_markings'}},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: {[CLASSIFICATIONS_GROUP_NAME]: CLASSIFICATIONS_GROUP_NAME}},
             ],
             prepareRecordsOnly: false,
         });
@@ -122,18 +123,18 @@ describe('fetchClassificationBanner', () => {
         const fields = await getPersistedPropertyFields(database);
         const values = await getPersistedPropertyValues(database);
         const groupNames = await getPersistedPropertyGroupNames(database);
-        expect(fields.classification_markings).toBeUndefined();
+        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toBeUndefined();
         expect(values.system).toBeUndefined();
-        expect(groupNames.classification_markings).toBeUndefined();
+        expect(groupNames[CLASSIFICATIONS_GROUP_NAME]).toBeUndefined();
     });
 
     it('should clear stale classification data when API returns zero fields', async () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handleSystem({
             systems: [
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {classification_markings: [systemField]}},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {[CLASSIFICATIONS_GROUP_NAME]: [systemField]}},
                 {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: {system: [systemValue]}},
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: {classification_markings: 'classification_markings'}},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: {[CLASSIFICATIONS_GROUP_NAME]: CLASSIFICATIONS_GROUP_NAME}},
             ],
             prepareRecordsOnly: false,
         });
@@ -147,9 +148,9 @@ describe('fetchClassificationBanner', () => {
         const fields = await getPersistedPropertyFields(database);
         const values = await getPersistedPropertyValues(database);
         const groupNames = await getPersistedPropertyGroupNames(database);
-        expect(fields.classification_markings).toBeUndefined();
+        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toBeUndefined();
         expect(values.system).toBeUndefined();
-        expect(groupNames.classification_markings).toBeUndefined();
+        expect(groupNames[CLASSIFICATIONS_GROUP_NAME]).toBeUndefined();
     });
 
     it('should persist fields and values to DB on happy path', async () => {
@@ -167,10 +168,10 @@ describe('fetchClassificationBanner', () => {
         const values = await getPersistedPropertyValues(database);
         const groupNames = await getPersistedPropertyGroupNames(database);
 
-        expect(fields.classification_markings).toHaveLength(2);
-        expect(fields.classification_markings).toEqual(expect.arrayContaining([systemField, channelField]));
+        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toHaveLength(2);
+        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toEqual(expect.arrayContaining([systemField, channelField]));
         expect(values.system).toEqual([systemValue]);
-        expect(groupNames.classification_markings).toBe('classification_markings');
+        expect(groupNames[CLASSIFICATIONS_GROUP_NAME]).toBe(CLASSIFICATIONS_GROUP_NAME);
     });
 
     it('should persist system field when channel field is missing', async () => {
@@ -184,7 +185,7 @@ describe('fetchClassificationBanner', () => {
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const fields = await getPersistedPropertyFields(database);
-        expect(fields.classification_markings).toEqual([systemField]);
+        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toEqual([systemField]);
     });
 
     it('should return early when no fields are returned by the API', async () => {
@@ -213,7 +214,7 @@ describe('fetchClassificationBanner', () => {
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const fields = await getPersistedPropertyFields(database);
-        expect(fields.classification_markings).toEqual([channelField]);
+        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toEqual([channelField]);
     });
 
     it('should return early when fields have mismatched group_ids', async () => {
@@ -255,7 +256,7 @@ describe('fetchClassificationBanner', () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handleSystem({
             systems: [
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {classification_markings: [channelField]}},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {[CLASSIFICATIONS_GROUP_NAME]: [channelField]}},
             ],
             prepareRecordsOnly: false,
         });
@@ -268,15 +269,15 @@ describe('fetchClassificationBanner', () => {
         await fetchClassificationBanner(serverUrl);
 
         const fields = await getPersistedPropertyFields(database);
-        expect(fields.classification_markings).toHaveLength(2);
-        expect(fields.classification_markings).toEqual(expect.arrayContaining([systemField, channelField]));
+        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toHaveLength(2);
+        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toEqual(expect.arrayContaining([systemField, channelField]));
     });
 
     it('should remove soft-deleted fields from DB even when they were previously persisted', async () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handleSystem({
             systems: [
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {classification_markings: [systemField, channelField]}},
+                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {[CLASSIFICATIONS_GROUP_NAME]: [systemField, channelField]}},
             ],
             prepareRecordsOnly: false,
         });
@@ -290,7 +291,7 @@ describe('fetchClassificationBanner', () => {
         await fetchClassificationBanner(serverUrl);
 
         const fields = await getPersistedPropertyFields(database);
-        expect(fields.classification_markings).toEqual([systemField]);
+        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toEqual([systemField]);
     });
 
     it('should merge with existing DB data on subsequent calls', async () => {
@@ -316,9 +317,9 @@ describe('fetchClassificationBanner', () => {
         const groupNames = await getPersistedPropertyGroupNames(database);
 
         expect(fields.existing_group).toEqual([{id: 'existing-field'}]);
-        expect(fields.classification_markings).toEqual([systemField]);
+        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toEqual([systemField]);
         expect(groupNames.existing).toBe('existing_group');
-        expect(groupNames.classification_markings).toBe('classification_markings');
+        expect(groupNames[CLASSIFICATIONS_GROUP_NAME]).toBe(CLASSIFICATIONS_GROUP_NAME);
     });
 });
 
@@ -329,7 +330,7 @@ describe('fetchChannelClassificationValue', () => {
         id: 'cv-1',
         target_id: channelId,
         target_type: 'channel',
-        group_id: 'classification_markings',
+        group_id: CLASSIFICATIONS_GROUP_NAME,
         field_id: 'channel-field-id',
         value: 'opt-secret',
         create_at: 1000,

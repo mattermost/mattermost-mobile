@@ -5,6 +5,7 @@ import {renderHook, act} from '@testing-library/react-native';
 import {BehaviorSubject} from 'rxjs';
 
 import * as classificationActions from '@actions/remote/classification';
+import {CLASSIFICATIONS_GROUP_NAME} from '@constants/classification';
 
 import {useChannelClassificationBanner} from './use_channel_classification_banner';
 
@@ -87,7 +88,7 @@ const channelPropertyValue: PropertyValue<string> = {
 };
 
 function seedObservables(...extraFields: PropertyField[]) {
-    mockGroupNamesSubject.next({classification_markings: groupId});
+    mockGroupNamesSubject.next({[CLASSIFICATIONS_GROUP_NAME]: groupId});
     mockFieldsSubject.next({[groupId]: [systemField, ...extraFields]});
 }
 
@@ -145,7 +146,7 @@ describe('useChannelClassificationBanner', () => {
     });
 
     it('should resolve banner even when channel field is absent', () => {
-        mockGroupNamesSubject.next({classification_markings: groupId});
+        mockGroupNamesSubject.next({[CLASSIFICATIONS_GROUP_NAME]: groupId});
         mockFieldsSubject.next({[groupId]: [systemField]});
         mockValuesSubject.next({[channelId]: [channelPropertyValue]});
 
