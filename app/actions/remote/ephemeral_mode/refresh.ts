@@ -8,7 +8,7 @@ import {getServerCredentials} from '@init/credentials';
 import WebsocketManager from '@managers/websocket_manager';
 import {getCurrentChannelId, getCurrentTeamId, getPushVerificationStatus, prepareCommonSystemValues} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
-import {logError, logInfo, logWarning} from '@utils/log';
+import {logError, logWarning} from '@utils/log';
 
 import {refetchCurrentUser} from '../user';
 
@@ -16,7 +16,6 @@ import {refetchCurrentUser} from '../user';
 export const applyPersistenceModeChange = async (serverUrl: string): Promise<{error?: unknown}> => {
     try {
         const credentials = await getServerCredentials(serverUrl);
-        logInfo('restartSession: credentials', credentials?.userId);
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         // Snapshot SYSTEM values that the WS reconnect won't restore on its own so the post-wipe
@@ -34,8 +33,6 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
         await WebsocketManager.invalidateClient(serverUrl);
         await wipeServerDatabaseWithRetry(serverUrl);
 
-        logInfo('restartSession: wipedServerData');
-
         wipeServerFiles(serverUrl);
 
         await refetchCurrentUser(serverUrl, undefined);
@@ -52,7 +49,6 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
         }
 
         if (credentials?.token) {
-            logInfo('restartSession: creating websocket client');
             await WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
             await WebsocketManager.initializeClient(serverUrl);
         }
@@ -60,7 +56,6 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
         // Touch lastActiveAt so withServerDatabase's subscribeActiveServers observer fires and
         // re-reads the newly-created database instance from the manager.
         await DatabaseManager.setActiveServerDatabase(serverUrl);
-        logInfo('applyPersistenceModeChange: complete', serverUrl);
         return {};
     } catch (error) {
         logError('applyPersistenceModeChange', serverUrl, getFullErrorMessage(error));

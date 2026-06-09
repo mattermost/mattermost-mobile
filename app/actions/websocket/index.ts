@@ -37,7 +37,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
-import {logDebug, logInfo} from '@utils/log';
+import {logDebug} from '@utils/log';
 
 export async function handleFirstConnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
     setExtraSessionProps(serverUrl, groupLabel);
@@ -64,14 +64,10 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
     try {
         const lastFullSync = await getLastFullSync(database);
-        logInfo('WS reconnect: lastFullSync', lastFullSync);
         const now = Date.now();
 
         const currentTeamId = await getCurrentTeamId(database);
         const currentChannelId = await getCurrentChannelId(database);
-
-        logInfo('WS reconnect: currentTeamId', currentTeamId);
-        logInfo('WS reconnect: currentChannelId', currentChannelId);
 
         setTeamLoading(serverUrl, true);
         const entryData = await entry(serverUrl, currentTeamId, currentChannelId, lastFullSync, groupLabel);
@@ -83,12 +79,9 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
         await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);
 
-        const dt = Date.now();
         if (models?.length) {
             await operator.batchRecords(models, 'doReconnect');
         }
-
-        logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
 
         await fetchPostDataIfNeeded(serverUrl, groupLabel);
 
@@ -136,8 +129,6 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
         const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
         const isThreadScreenMounted = mountedScreens.includes(Screens.THREAD);
         const tabletDevice = isTablet();
-
-        logInfo('fetchPostDataIfNeeded: SYSTEM currentChannelId', currentChannelId, 'channelScreenMounted', isChannelScreenMounted, 'tablet', tabletDevice, 'willFetchPosts', Boolean(currentChannelId && (isChannelScreenMounted || tabletDevice)));
 
         if (isCRTEnabled && isThreadScreenMounted) {
             // Fetch new posts in the thread only when CRT is enabled,

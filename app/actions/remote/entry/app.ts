@@ -29,7 +29,7 @@ export async function appEntry(serverUrl: string, since = 0) {
             await operator.batchRecords(removeLastUnreadChannelId, 'appEntry - removeLastUnreadChannelId');
         }
 
-        // during cold start while on zero persistence mode DB is empty ane we need to
+        // during cold start while on zero persistence mode DB is empty and we need to
         // seed the current user before WS connects
         const existingUserId = await getCurrentUserId(database);
         if (!existingUserId) {
