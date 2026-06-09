@@ -2,9 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {useLocalSearchParams, useNavigation} from 'expo-router';
-import {useEffect} from 'react';
+import {useCallback, useEffect} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
+import {Platform} from 'react-native';
 
+import NavigationButton from '@components/navigation_button';
 import NavigationHeaderTitle from '@components/navigation_header_title';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -31,6 +33,10 @@ export default function ThreadRoute() {
     const title = routeTitle || intl.formatMessage(threadMessages.thread);
     const subtitle = channelName ? intl.formatMessage(threadMessages.threadIn, {channelName}) : undefined;
 
+    const handleBack = useCallback(() => {
+        navigation.goBack();
+    }, [navigation]);
+
     useEffect(() => {
         navigation.setOptions({
             headerShown: true,
@@ -38,6 +44,15 @@ export default function ThreadRoute() {
             headerStyle: {
                 backgroundColor: theme.sidebarBg,
             },
+            headerLeft: () => (
+                <NavigationButton
+                    onPress={handleBack}
+                    iconName={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'})!}
+                    iconSize={24}
+                    color={theme.sidebarHeaderTextColor}
+                    testID='thread.navigation.back.button'
+                />
+            ),
             headerTitle: () => {
                 return (
                     <NavigationHeaderTitle
@@ -47,7 +62,7 @@ export default function ThreadRoute() {
                 );
             },
         });
-    }, [navigation, title, subtitle, theme.sidebarBg, theme.centerChannelColor]);
+    }, [handleBack, navigation, title, subtitle, theme.sidebarBg, theme.sidebarHeaderTextColor, theme.centerChannelColor]);
 
     return (
         <ThreadScreen

@@ -55,7 +55,11 @@ function setup() {
     if [[ -z "$SKIP_SETUP" ]]; then
         npm run clean || exit 1
         npm install --ignore-scripts || exit 1
-        
+
+        # postinstall.sh is skipped by --ignore-scripts; copy the font manually
+        cp "node_modules/@mattermost/compass-icons/font/compass-icons.ttf" "assets/fonts/" || exit 1
+        cp "node_modules/@mattermost/compass-icons/font/compass-icons.ttf" "android/app/src/main/assets/fonts/" || exit 1
+
         npx patch-package || exit 1
 
         node node_modules/\@sentry/cli/scripts/install.js || exit 1

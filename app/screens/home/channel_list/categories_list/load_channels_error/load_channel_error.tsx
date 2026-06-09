@@ -34,7 +34,7 @@ const LoadChannelsError = ({teamDisplayName, teamId}: Props) => {
     }, [serverUrl, teamId]);
 
     if (!teamId) {
-        <LoadTeamsError/>;
+        return <LoadTeamsError/>;
     }
     return (
         <LoadingError

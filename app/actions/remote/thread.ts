@@ -162,12 +162,15 @@ export const markThreadAsUnread = async (serverUrl: string, teamId: string, thre
 
         const data = await client.markThreadAsUnread('me', threadTeamId, threadId, postId);
 
-        // Update locally
+        // Update locally using response data so unread_replies is set immediately
+        // (without waiting for the THREAD_READ_CHANGED WS event)
         const post = await getPostById(database, postId);
         if (post) {
             await updateThread(serverUrl, threadId, {
                 last_viewed_at: post.createAt - 1,
                 viewed_at: post.createAt - 1,
+                unread_replies: data?.unread_replies ?? 1,
+                unread_mentions: data?.unread_mentions ?? 0,
             });
         }
 
