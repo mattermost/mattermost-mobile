@@ -5,6 +5,7 @@ import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephem
 import {cancelSessionNotification} from '@actions/local/session';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
+import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getCurrentChannelId, getCurrentTeamId, getPushVerificationStatus, prepareCommonSystemValues} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
@@ -31,6 +32,7 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
         }
 
         await WebsocketManager.invalidateClient(serverUrl);
+        EphemeralModeManager.removeServer(serverUrl);
         await wipeServerDatabaseWithRetry(serverUrl);
 
         wipeServerFiles(serverUrl);
@@ -56,6 +58,7 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
         // Touch lastActiveAt so withServerDatabase's subscribeActiveServers observer fires and
         // re-reads the newly-created database instance from the manager.
         await DatabaseManager.setActiveServerDatabase(serverUrl);
+        await EphemeralModeManager.addServer(serverUrl);
         return {};
     } catch (error) {
         logError('applyPersistenceModeChange', serverUrl, getFullErrorMessage(error));

@@ -99,7 +99,7 @@ class EphemeralModeManagerSingleton {
         return this.trackedServers.get(serverUrl)?.kind === 'zpm';
     };
 
-    private addServer = async (serverUrl: string) => {
+    public addServer = async (serverUrl: string) => {
         if (this.configSubscriptions[serverUrl]) {
             return;
         }

@@ -5,6 +5,7 @@ import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
 import {refetchCurrentUser} from '@actions/remote/user';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
+import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getCurrentChannelId, getCurrentTeamId, getPushVerificationStatus, prepareCommonSystemValues} from '@queries/servers/system';
 
@@ -22,6 +23,10 @@ jest.mock('@actions/remote/user', () => ({
 }));
 jest.mock('@init/credentials', () => ({
     getServerCredentials: jest.fn(),
+}));
+jest.mock('@managers/ephemeral_mode_manager', () => ({
+    __esModule: true,
+    default: {removeServer: jest.fn(), addServer: jest.fn()},
 }));
 jest.mock('@managers/websocket_manager', () => ({
     __esModule: true,
@@ -71,11 +76,13 @@ describe('applyPersistenceModeChange', () => {
         const result = await applyPersistenceModeChange(serverUrl);
 
         expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(serverUrl);
+        expect(EphemeralModeManager.removeServer).toHaveBeenCalledWith(serverUrl);
         expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverUrl);
         expect(refetchCurrentUser).toHaveBeenCalledWith(serverUrl, undefined);
         expect(WebsocketManager.createClient).toHaveBeenCalledWith(serverUrl, 'tok', 'preauth');
         expect(WebsocketManager.initializeClient).toHaveBeenCalledWith(serverUrl);
         expect(setActiveServerDatabaseSpy).toHaveBeenCalledWith(serverUrl);
+        expect(EphemeralModeManager.addServer).toHaveBeenCalledWith(serverUrl);
         expect(result).toEqual({});
     });
 
@@ -96,6 +103,7 @@ describe('applyPersistenceModeChange', () => {
         const result = await applyPersistenceModeChange(serverUrl);
 
         expect(setActiveServerDatabaseSpy).not.toHaveBeenCalled();
+        expect(EphemeralModeManager.addServer).not.toHaveBeenCalled();
         expect(result).toEqual({error: wipeError});
     });
 });
