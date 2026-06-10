@@ -1,11 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect, useRef, useState} from 'react';
-import {combineLatest} from 'rxjs';
-import {distinctUntilChanged, map} from 'rxjs/operators';
-
-import {fetchClassificationBanner} from '@actions/remote/classification';
 import {
     CLASSIFICATIONS_CHANNEL_FIELD_NAME,
     CLASSIFICATIONS_GROUP_NAME,
@@ -14,9 +9,6 @@ import {
     CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
     DISPLAY_BANNER_TOP,
 } from '@constants/classification';
-import DatabaseManager from '@database/manager';
-import {observePropertyFields, observePropertyGroupNames, observePropertyValues} from '@queries/servers/properties';
-import {logError} from '@utils/log';
 
 export type ClassificationBannerState = {
     visible: boolean;
@@ -24,12 +16,22 @@ export type ClassificationBannerState = {
     color: string;
 };
 
+export type ChannelClassificationBannerState = {
+    hasClassification: boolean;
+    classificationBanner: ChannelBannerInfo | undefined;
+};
+
 const hiddenState: ClassificationBannerState = {visible: false, levelName: '', color: ''};
+
+const noClassification: ChannelClassificationBannerState = {
+    hasClassification: false,
+    classificationBanner: undefined,
+};
 
 const isClassificationField = (f: PropertyField) =>
     f.name === CLASSIFICATIONS_SYSTEM_FIELD_NAME || f.name === CLASSIFICATIONS_CHANNEL_FIELD_NAME;
 
-function resolveGroupId(
+export function resolveGroupId(
     fieldsByGroup: Record<string, PropertyField[]>,
     groupNames: Record<string, string>,
 ): [string, PropertyField[]] {
@@ -47,7 +49,7 @@ function resolveGroupId(
     return ['', []];
 }
 
-function deriveState(
+export function deriveClassificationBannerState(
     fieldsByGroup: Record<string, PropertyField[]>,
     valuesByTarget: Record<string, Array<PropertyValue<string>>>,
     groupNames: Record<string, string>,
@@ -90,44 +92,42 @@ function deriveState(
     };
 }
 
-export function useClassificationBannerState(serverUrl: string): ClassificationBannerState {
-    const [state, setState] = useState(hiddenState);
-    const visibleRef = useRef(false);
+export function deriveChannelClassificationBanner(
+    fieldsByGroup: Record<string, PropertyField[]>,
+    valuesByTarget: Record<string, Array<PropertyValue<string>>>,
+    groupNames: Record<string, string>,
+    channelId: string,
+    nativeBannerText?: string,
+): ChannelClassificationBannerState {
+    const [, fields] = resolveGroupId(fieldsByGroup, groupNames);
 
-    useEffect(() => {
-        let database;
-        try {
-            ({database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
-        } catch {
-            return undefined;
-        }
+    const channelValues = channelId ? (valuesByTarget[channelId] ?? []) : [];
+    const channelValue = channelValues.length > 0 ? channelValues[0] : undefined;
 
-        const sub = combineLatest([
-            observePropertyFields(database),
-            observePropertyValues(database),
-            observePropertyGroupNames(database),
-        ]).pipe(
-            map(([fields, values, groupNames]) => deriveState(fields, values, groupNames)),
-            distinctUntilChanged((a, b) => a.visible === b.visible && a.levelName === b.levelName && a.color === b.color),
-        ).subscribe({
-            next: (derived) => {
-                visibleRef.current = derived.visible;
-                setState(derived);
-            },
-            error: (e) => logError('useClassificationBannerState', e),
-        });
+    if (!channelValue?.value || channelValue.delete_at !== 0) {
+        return noClassification;
+    }
 
-        return () => sub.unsubscribe();
-    }, [serverUrl]);
+    const classificationId = channelValue.value;
+    if (typeof classificationId !== 'string') {
+        return noClassification;
+    }
 
-    // visibleRef is updated synchronously by the subscription, so the guard
-    // sees the latest value even before React processes setState.
-    const {visible} = state;
-    useEffect(() => {
-        if (!visibleRef.current) {
-            fetchClassificationBanner(serverUrl);
-        }
-    }, [serverUrl, visible]);
+    const fieldWithOptions = fields.find((f) => (f.attrs?.options as PropertyFieldOption[] | undefined)?.length);
+    const options = (fieldWithOptions?.attrs?.options as PropertyFieldOption[]) ?? [];
+    const level = options.find((o) => o.id === classificationId);
+    if (!level) {
+        return noClassification;
+    }
 
-    return state;
+    const bannerText = nativeBannerText ?? `**${level.name}**`;
+
+    return {
+        hasClassification: true,
+        classificationBanner: {
+            enabled: true,
+            text: bannerText,
+            background_color: level.color,
+        },
+    };
 }

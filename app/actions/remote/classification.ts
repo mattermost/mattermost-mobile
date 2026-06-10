@@ -12,45 +12,18 @@ import {
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getPersistedPropertyFields, getPersistedPropertyGroupNames, getPersistedPropertyValues} from '@queries/servers/properties';
+import {clearClassificationData, getPersistedPropertyFields, getPersistedPropertyGroupNames, getPersistedPropertyValues} from '@queries/servers/properties';
 import {getConfigValue} from '@queries/servers/system';
 import {logDebug, logError} from '@utils/log';
 
-import type ServerDataOperator from '@database/operator/server_data_operator';
-import type {Database} from '@nozbe/watermelondb';
-
-async function clearClassificationData(database: Database, operator: ServerDataOperator) {
-    const [existingFields, existingValues, existingGroupNames] = await Promise.all([
-        getPersistedPropertyFields(database),
-        getPersistedPropertyValues(database),
-        getPersistedPropertyGroupNames(database),
-    ]);
-
-    const groupId = existingGroupNames[CLASSIFICATIONS_GROUP_NAME];
-    if (!groupId) {
-        return;
-    }
-
-    const {[groupId]: _, ...remainingFields} = existingFields;
-    const {[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: __, ...remainingValues} = existingValues;
-    const {[CLASSIFICATIONS_GROUP_NAME]: ___, ...remainingGroupNames} = existingGroupNames;
-
-    await operator.handleSystem({
-        systems: [
-            {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: remainingFields},
-            {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: remainingValues},
-            {id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: remainingGroupNames},
-        ],
-        prepareRecordsOnly: false,
-    });
-}
+import {forceLogoutIfNecessary} from './session';
 
 export async function fetchClassificationBanner(serverUrl: string): Promise<{error?: unknown}> {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const featureFlag = await getConfigValue(database, 'FeatureFlagClassificationMarkings');
         if (featureFlag !== 'true') {
-            await clearClassificationData(database, operator);
+            await clearClassificationData(operator);
             return {};
         }
 
@@ -65,7 +38,7 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
 
         if (allFields.length === 0) {
             logDebug('fetchClassificationBanner', 'No classification fields returned');
-            await clearClassificationData(database, operator);
+            await clearClassificationData(operator);
             return {};
         }
 
@@ -108,6 +81,7 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
         return {};
     } catch (error) {
         logError('fetchClassificationBanner', 'Failed to fetch classification banner data', error);
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 }
@@ -147,6 +121,7 @@ export async function fetchChannelClassificationValue(serverUrl: string, channel
         return {};
     } catch (error) {
         logError('fetchChannelClassificationValue', 'Failed to fetch channel classification value', {serverUrl, channelId}, error);
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 }
