@@ -27,6 +27,11 @@ on:
         required: false
         type: string
         default: "PR"
+      artifact_run_id:
+        description: "GitHub run ID of the workflow that uploaded ios-build-simulator-* (defaults to this run)"
+        required: false
+        type: string
+        default: ""
     outputs:
       STATUS:
         value: ${{ jobs.e2e-maestro-ios.outputs.STATUS || jobs.e2e-maestro-android.outputs.STATUS }}
@@ -50,6 +55,10 @@ env:
   TYPE: ${{ inputs.run-type }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
   AWS_REGION: "us-east-1"
+  # iOS .app artifact is uploaded by e2e-detox-pr.yml / e2e-maestro-pr.yml under
+  # ios-build-simulator-<run_id>. When this template is nested, that run_id is
+  # the parent's, not this workflow's.
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
 
 jobs:
   e2e-maestro-ios:
@@ -84,15 +93,19 @@ jobs:
 
       - name: Cache Maestro
         id: maestro-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.maestro
-          key: maestro-2.3.0
+          key: maestro-f3dd692588e86691dfe79889d1a6117ab7a94d50
 
       - name: Install Maestro CLI
         if: steps.maestro-cache.outputs.cache-hit != 'true'
         run: |
-          curl -fsSL "https://get.maestro.mobile.dev" | bash -s -- --version 2.3.0
+          MAESTRO_VERSION=$(jq -r .version maestro/maestro-version.json)
+          MAESTRO_COMMIT=$(jq -r .commit maestro/maestro-version.json)
+          echo "Installing Maestro ${MAESTRO_VERSION} (pinned to commit ${MAESTRO_COMMIT})"
+          export MAESTRO_VERSION
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
           MAESTRO_BIN="$HOME/.maestro/bin/maestro"
           if [ ! -f "$MAESTRO_BIN" ]; then
             echo "Error: Maestro binary not found at $MAESTRO_BIN"
@@ -107,7 +120,11 @@ jobs:
       - name: Download iOS Simulator Build
         uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
-          name: ios-build-simulator-${{ github.run_id }}
+          name: ios-build-simulator-${{ env.ARTIFACT_RUN_ID }}
+          # Reusable workflows have their own github.run_id; when Maestro is
+          # nested under e2e-detox-pr.yml the .app artifact lives on the caller run.
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           path: mobile-artifacts
 
       - name: Unzip iOS Simulator Build
@@ -481,15 +498,19 @@ jobs:
 
       - name: Cache Maestro
         id: maestro-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.maestro
-          key: maestro-2.3.0-linux
+          key: maestro-f3dd692588e86691dfe79889d1a6117ab7a94d50-linux
 
       - name: Install Maestro CLI
         if: steps.maestro-cache.outputs.cache-hit != 'true'
         run: |
-          curl -fsSL "https://get.maestro.mobile.dev" | bash -s -- --version 2.3.0
+          MAESTRO_VERSION=$(jq -r .version maestro/maestro-version.json)
+          MAESTRO_COMMIT=$(jq -r .commit maestro/maestro-version.json)
+          echo "Installing Maestro ${MAESTRO_VERSION} (pinned to commit ${MAESTRO_COMMIT})"
+          export MAESTRO_VERSION
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
           MAESTRO_BIN="$HOME/.maestro/bin/maestro"
           if [ ! -f "$MAESTRO_BIN" ]; then
             echo "Error: Maestro binary not found at $MAESTRO_BIN"
@@ -502,7 +523,7 @@ jobs:
         run: ~/.maestro/bin/maestro --version
 
       - name: ci/setup-java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: temurin
           java-version: "17"
@@ -510,7 +531,7 @@ jobs:
       # Same key as e2e-detox-pr.yml's build-android-apk + e2e-detox-release.yml,
       # so the maestro self-build shares the cache populated by detox runs.
       - name: Cache Gradle dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.gradle/caches/modules-2/
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
@@ -564,7 +585,7 @@ jobs:
 
       - name: Cache Android SDK components
         id: android-sdk-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             /usr/local/lib/android/sdk/platform-tools

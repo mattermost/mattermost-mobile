@@ -115,7 +115,6 @@ jobs:
           context: e2e/detox-ipad-tests
           description: Detox iPad tests for mattermost mobile app have started ...
           status: pending
-
   build-ios-simulator:
     if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
     runs-on: macos-26
@@ -466,7 +465,6 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/detox-ipad-tests
-          # See ios block above for full rule list.
           description: >-
             ${{ needs.run-ios-ipad-tests.result == 'skipped' && 'Build failed — iPad detox tests did not run'
               || needs.run-ios-ipad-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
@@ -476,6 +474,29 @@ jobs:
           status: ${{ (needs.run-ios-ipad-tests.result == 'skipped' && 'failure') || needs.run-ios-ipad-tests.outputs.STATUS || 'failure' }}
           target_url: ${{ needs.run-ios-ipad-tests.outputs.TARGET_URL }}
 
+  # Maestro orchestration lives in e2e-maestro-pr.yml so Detox and Maestro CI
+  # can evolve independently. artifact_run_id ties the iOS .app download to
+  # build-ios-simulator above (same github.run_id).
+  run-maestro:
+    name: Maestro E2E
+    needs:
+      - build-ios-simulator
+      - provision-servers
+    # build-ios-simulator is skipped for PLATFORM=android; Maestro Android still runs.
+    if: |
+      always() &&
+      needs.provision-servers.result == 'success' &&
+      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped')
+    uses: ./.github/workflows/e2e-maestro-pr.yml
+    with:
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      PLATFORM: ${{ inputs.PLATFORM }}
+      SITE_1_URL: ${{ inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      run_type: ${{ inputs.run_type || 'PR' }}
+      artifact_run_id: ${{ github.run_id }}
+    secrets: inherit
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR
     runs-on: ubuntu-22.04
@@ -483,11 +504,12 @@ jobs:
       - update-final-status-ios
       - update-final-status-android
       - update-final-status-ipad
+      - run-maestro
     # IMPORTANT: !cancelled() prevents label removal when the workflow is cancelled
     # (e.g. by concurrency cancel-in-progress). Without this, Matterwick sees the
     # label removed and deletes the test servers while the replacement run is still
     # using them.
-    if: always() && !cancelled()
+    if: always() && !cancelled() && inputs.pr_number != ''
     steps:
       - name: e2e/remove-label-from-pr
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0

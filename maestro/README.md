@@ -36,15 +36,24 @@ Does the test cross app boundaries (share sheet, deep link from another app)?
 
 ---
 
+## Authoring guidelines
+
+See **[GUIDELINES.md](./GUIDELINES.md)** for the flow header contract, comment style,
+Maestro platform rules, CLI version pin, CI layout, and the AI evaluation checklist.
+
+---
+
 ## Setup
 
 ### 1. Install Maestro CLI
 
+Version is pinned in [`maestro-version.json`](./maestro-version.json) (currently `2.3.0` at commit `f3dd692`).
+
 ```bash
-curl -fsSL "https://get.maestro.mobile.dev" | bash -s -- --version 2.3.0
-# Adds ~/.maestro/bin to PATH
+export MAESTRO_VERSION=$(jq -r .version maestro/maestro-version.json)
+curl -fsSL "https://get.maestro.mobile.dev" | bash
 export PATH="$PATH:$HOME/.maestro/bin"
-maestro --version  # should print 2.3.0
+maestro --version
 ```
 
 ### 2. Install Node dependencies (for seed/poll scripts)
@@ -187,16 +196,16 @@ DEVICE_A_UDID=<udid-a> DEVICE_B_UDID=<udid-b> \
 
 ## Sub-flow Conventions
 
-Every flow file **must** follow these rules:
+Every flow file **must** follow [GUIDELINES.md](./GUIDELINES.md). In short:
 
-1. **Use `utils/login.yml`** as the first sub-flow to authenticate.
-2. **Use `utils/navigate_to_channel.yml`** before any channel interaction.
-3. **Seed data before the flow, not inside it**: run `npx tsx maestro/fixtures/seed.ts` in the
-   shell before invoking Maestro. `utils/setup.yml` is a no-op placeholder — it cannot run
-   Node.js scripts from inside a Maestro flow.
-4. **Include Zephyr tags**: every flow must declare `tags: [MM-TXXXX]` at the top.
-5. **50-line lint rule**: no flow file may exceed 50 lines without a comment explaining what the block does.
+1. **Standard header block** — ticket, PRE-CONDITIONS, REQUIRED ENV VARS, ASSERTIONS, testIDs.
+2. **Use `utils/login.yml`** as the first sub-flow to authenticate.
+3. **Use `utils/navigate_to_channel.yml`** before any channel interaction.
+4. **Seed data before the flow, not inside it**: run `npx tsx maestro/fixtures/seed.ts` in the
+   shell before invoking Maestro.
+5. **Include Zephyr tags**: every flow must declare `tags: [MM-TXXXX]`.
 6. **Take a screenshot** at the end of each flow for artifact upload.
+7. **Comments describe behavior**, not Detox paths or app implementation details.
 
 ### Sub-flow Usage Example
 
@@ -236,10 +245,15 @@ appId: ${MAESTRO_APP_ID}
 
 ## CI Integration
 
-Maestro tests run via `.github/workflows/e2e-maestro-template.yml`, a reusable `workflow_call` template. They are triggered in two ways:
+| Workflow | Purpose |
+|---|---|
+| `e2e-maestro-pr.yml` | Maestro orchestration (status checks, platform jobs, final status) |
+| `e2e-maestro-template.yml` | Reusable runner (device setup, seed, `maestro test`, reports) |
+| `e2e-detox-pr.yml` | Detox + calls `e2e-maestro-pr.yml` with shared iOS build artifact |
 
-- **PR gate** (`e2e-detox-pr.yml`): Maestro runs alongside Detox when the `E2E Tests` label is added to a PR. It uses `SITE_2_URL` (a separate provisioned server) to avoid overloading the Detox test server.
-- **On-demand / nightly**: The template can also be called directly for scheduled or manual runs.
+- **PR gate**: Matterwick dispatches `e2e-detox-pr.yml`, which runs Detox and delegates Maestro to `e2e-maestro-pr.yml`. Maestro iOS uses `SITE_2_URL`; Android uses `SITE_3_URL`.
+- **Standalone Maestro**: `workflow_dispatch` on `e2e-maestro-pr.yml`.
+- **On-demand / nightly / release**: Other workflows call `e2e-maestro-template.yml` directly.
 
 Additional CI notes:
 

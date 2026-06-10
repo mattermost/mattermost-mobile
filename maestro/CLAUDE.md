@@ -1,8 +1,10 @@
 # Maestro Flow Authoring — Agent Operating Manual
 
-This file is the authoritative guide for AI agents working in the `maestro/` directory.
-For broader project context and Detox conventions see the repo-root `CLAUDE.md` and
-`detox/CLAUDE.md`.
+This file covers Mattermost-specific gotchas for AI agents in `maestro/`.
+**Start with [GUIDELINES.md](./GUIDELINES.md)** for the flow header contract, comment rules,
+CLI pin, CI layout, and the pre-PR evaluation checklist.
+
+For broader project context see the repo-root `CLAUDE.md` and `detox/CLAUDE.md`.
 
 ---
 
@@ -174,14 +176,9 @@ the iOS and Android sections of `e2e-maestro-template.yml`.
 
 ## Authoring checklist
 
-When you add a new flow:
+Use the full checklist in [GUIDELINES.md §6](./GUIDELINES.md#6-ai--tool-evaluation-checklist).
+Key Mattermost-specific items not covered there:
 
-- [ ] Place under `maestro/flows/<area>/<name>.yml`.
-- [ ] Header block with: ticket id (`# MM-TXXXX:`), brief, PRE-CONDITIONS, REQUIRED
-      ENV VARS, source-of-truth testID references.
-- [ ] `tags:` at least the ticket id.
-- [ ] `appId: ${MAESTRO_APP_ID}`.
-- [ ] `- runFlow: ../../utils/login.yml` first if the flow needs auth.
 - [ ] For toggle taps: use `.toggled.{true,false}.button` + `optional: true` pattern.
 - [ ] For modal-style screen exits on iOS: `launchApp:{stopApp:true,clearState:false}`,
       not `back`.
@@ -190,7 +187,6 @@ When you add a new flow:
 - [ ] If the flow needs server config beyond what the provisioner sets: tag uniquely,
       add `--exclude-tags` to the main run-list, add a dedicated patch-run-restore
       step in `e2e-maestro-template.yml`.
-- [ ] testIDs sourced via `grep -rn "testID=" app/` — never hardcoded by guessing.
 
 ---
 

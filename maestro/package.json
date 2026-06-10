@@ -8,7 +8,9 @@
     "dry-run": "maestro test --dry-run flows/"
   },
   "maestro": {
-    "version": "2.3.0"
+    "version": "2.3.0",
+    "commit": "f3dd692588e86691dfe79889d1a6117ab7a94d50",
+    "releaseTag": "cli-2.3.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
