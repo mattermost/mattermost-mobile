@@ -1,35 +1,37 @@
-# MM-T67856: Report a Problem opens the report form for the test user.
+# MM-T67856: Tapping Report a Problem leaves Settings and opens the report form.
 #
-# On the local Detox/Maestro server (no enterprise license applied), the
-# settings code in `app/screens/settings/report_problem/report_problem.tsx`
-# treats this as a free-edition install:
-#   skipReportAProblemScreen = (reportAProblemType === 'default' && isFreeEdition)
-# so tapping "Report a Problem" calls `tryOpenURL(getDefaultReportAProblemLink(false))`
-# and the OS opens an external browser (Chrome Custom Tab on Android,
-# SFSafariViewController on iOS). This is the *intended* user-facing behaviour
-# on unlicensed servers, which is why this flow lives in Maestro rather than
-# Detox — Detox would have to override `ReportAProblemType` via apiUpdateConfig
-# to force the in-app screen, which doesn't reflect how users hit this path.
+# PRE-CONDITIONS:
+#   - Logged-in test user (via utils/login.yml)
+#   - Unlicensed / free-edition server (default Matterwick provisioning)
 #
-# The original Detox spec at `detox/e2e/test/products/channels/account/attach_logs.e2e.ts`
-# is `describe.skip(...)`'d and points here.
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
 #
-# Sub-tests in the Detox spec that still need Maestro coverage when the
-# in-app screen path becomes reachable (licensed server config or future
-# fixture changes):
-#   - MM-T67856_1: toggle visible on Report a Problem screen
-#   - MM-T67856_2: enabling toggle surfaces "Attach app logs" in attachment menu
-#   - MM-T67856_3: disabling toggle hides "Attach app logs"
-#   - MM-T67856_4: toggle hidden when AllowDownloadLogs is disabled
-# Implementing those will require a seed step that uploads an enterprise
-# trial license and sets ReportAProblemType so the in-app screen mounts.
+# ASSERTIONS:
+#   - Tapping Report a Problem navigates away from the Settings list
+#   - User can return to Settings and see Report a Problem again
+#   - iOS: external browser sheet OR in-app report screen is shown, then dismissed
+#   - Android: external browser tab opens, Back returns to Settings
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.screen
+#   - account.settings.option
+#   - settings.report_problem.option
+#   - breadcrumb
+#   - report_problem.screen
+#
+# Related flows (in-app report screen path):
+#   - MM-T67856_1 attach_logs_toggle_visible.yml
+#   - MM-T67856_2 attach_logs_toggle_on_surfaces_option.yml
+#   - MM-T67856_3 attach_logs_toggle_off_hides_option.yml
+#   - MM-T67856_4 attach_logs_disabled_when_download_logs_off.yml
 tags:
   - MM-T67856
 appId: ${MAESTRO_APP_ID}
 ---
 - runFlow: ../../utils/login.yml
 
-# Open Account screen
 - tapOn:
     id: "tab_bar.account.tab"
 - extendedWaitUntil:
@@ -37,28 +39,18 @@ appId: ${MAESTRO_APP_ID}
       id: "account.screen"
     timeout: 10000
 
-# Open Settings — wait for a known child element so the screen is fully rendered.
-# The Report-a-Problem item is rendered via WatermelonDB observables for
-# AllowDownloadLogs / ReportAProblemType / Version / BuildNumber. On a fresh
-# iOS first-login the server config sync can lag, so the SettingItem appears
-# only after the observables emit. Allow up to 30s.
 - tapOn:
     id: "account.settings.option"
+# Report a Problem can take up to 30s to appear while server config syncs on first login.
 - extendedWaitUntil:
     visible:
       id: "settings.report_problem.option"
     timeout: 30000
 
-# Tap Report a Problem. On a free-edition server this calls tryOpenURL(...) and
-# the OS-level browser opens; on a licensed server with default config it
-# navigates to the in-app `report_problem.screen`. The flow asserts only that
-# the in-app option leaves the foreground — that is true in both cases.
 - tapOn:
     id: "settings.report_problem.option"
 
-# iOS: On free-edition servers, SFSafariViewController hosts the report form,
-# showing a breadcrumb back-to-app pill (iOS 26+) or Done button (older).
-# On Enterprise servers, the in-app report_problem.screen opens instead.
+# iOS: free-edition servers open an external browser; licensed servers show in-app screen.
 - runFlow:
     when:
       platform: iOS
@@ -82,8 +74,7 @@ appId: ${MAESTRO_APP_ID}
             - takeScreenshot: report-problem-in-app
             - back
 
-# Android: Chrome Custom Tab opens in foreground; the settings option leaves
-# the tree. Wait for that, screenshot, then press Back to return.
+# Android: Chrome Custom Tab opens; Settings option leaves the tree until Back is pressed.
 - runFlow:
     when:
       platform: Android
@@ -95,7 +86,6 @@ appId: ${MAESTRO_APP_ID}
       - takeScreenshot: report-problem-opened
       - pressKey: Back
 
-# Verify the Settings screen is visible again
 - extendedWaitUntil:
     visible:
       id: "settings.report_problem.option"

@@ -2,6 +2,8 @@
 
 This directory contains Maestro flows for the Mattermost mobile app. Follow these rules when writing or modifying flows.
 
+**Authoritative spec:** [GUIDELINES.md](./GUIDELINES.md) — flow header contract, comment style, Maestro rules, and the AI evaluation checklist. Read it before adding or editing any flow.
+
 ## Always Use testIDs — Never Coordinates
 
 **CRITICAL**: Maestro flows MUST use `id:` (testID) selectors. **Never use `point:` (percentage coordinates)** to tap elements. Coordinates break on different device sizes and make tests unmaintainable.
