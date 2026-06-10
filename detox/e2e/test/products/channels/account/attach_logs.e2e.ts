@@ -29,12 +29,6 @@ import {
 import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
-// Skipped in Detox because "Report a Problem" intentionally opens an external
-// browser/email client on a free-edition server (see
-// `app/screens/settings/report_problem/report_problem.tsx#skipReportAProblemScreen`).
-// Forcing the in-app screen by overriding ReportAProblemType is server-config
-// gymnastics that doesn't reflect how users actually exercise the feature.
-// Coverage lives in Maestro: `maestro/flows/account/attach_logs.yml`.
 describe('Account - Attach App Logs', () => {
     const serverOneDisplayName = 'Server 1';
     let testUser: any;
@@ -104,15 +98,17 @@ describe('Account - Attach App Logs', () => {
         const attachmentAction = element(by.id('channel.post_draft.quick_actions.attachment_action'));
         await attachmentAction.tap();
 
-        // * Wait for the attachment options bottom sheet to appear
-        const attachmentScreen = element(by.id('channel.post_draft.quick_actions.attachment_action.screen'));
-        await waitFor(attachmentScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        // * Wait for the attachment options bottom sheet to appear. The generic
+        // bottom sheet wrapper has no testID, so detect it via the always-present
+        // photo library item (same approach as channel_post_list.e2e.ts).
+        const photoLibraryOption = element(by.id('file_attachment.photo_library'));
+        await waitFor(photoLibraryOption).toExist().withTimeout(timeouts.TEN_SEC);
 
         // * Verify "Attach app logs" option is visible in the bottom sheet
         await expect(element(by.id('file_attachment.attach_logs'))).toExist();
 
         // # Close the attachment options bottom sheet
-        await attachmentScreen.swipe('down', 'fast', 0.5);
+        await photoLibraryOption.swipe('down', 'fast', 0.5);
 
         // # Go back to channel list
         await ChannelScreen.back();
@@ -137,30 +133,37 @@ describe('Account - Attach App Logs', () => {
         const attachmentAction = element(by.id('channel.post_draft.quick_actions.attachment_action'));
         await attachmentAction.tap();
 
-        // * Wait for the attachment options bottom sheet to appear
-        const attachmentScreen = element(by.id('channel.post_draft.quick_actions.attachment_action.screen'));
-        await waitFor(attachmentScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        // * Wait for the attachment options bottom sheet to appear (no wrapper
+        // testID — detect via the always-present photo library item)
+        const photoLibraryOption = element(by.id('file_attachment.photo_library'));
+        await waitFor(photoLibraryOption).toExist().withTimeout(timeouts.TEN_SEC);
 
         // * Verify "Attach app logs" option is NOT visible
         await expect(element(by.id('file_attachment.attach_logs'))).not.toExist();
 
         // * Verify other attachment options are still present
-        await expect(element(by.id('file_attachment.photo_library'))).toExist();
         await expect(element(by.id('file_attachment.attach_file'))).toExist();
 
         // # Close the attachment options bottom sheet
-        await attachmentScreen.swipe('down', 'fast', 0.5);
+        await photoLibraryOption.swipe('down', 'fast', 0.5);
 
         // # Go back to channel list
         await ChannelScreen.back();
     });
 
     it('MM-T67856_4 - should not show attach logs toggle when AllowDownloadLogs is disabled', async () => {
-        // # Disable AllowDownloadLogs and reload so the client re-fetches the
-        //   updated config on startup
+        // # Disable AllowDownloadLogs and switch ReportAProblemType to 'link'.
+        // With the provisioned 'default' type, disabling AllowDownloadLogs makes
+        // the app skip the in-app screen entirely and open an external mail client
+        // (report_problem.tsx#skipReportAProblemScreen), which Detox cannot assert
+        // on. The 'link' type keeps the in-app screen reachable.
         await System.apiUpdateConfig(siteOneUrl, {
             SupportSettings: {
                 AllowDownloadLogs: false,
+            },
+            ServiceSettings: {
+                ReportAProblemType: 'link',
+                ReportAProblemLink: 'https://mattermost.com',
             },
         });
         await device.reloadReactNative();
@@ -179,11 +182,14 @@ describe('Account - Attach App Logs', () => {
             await ReportProblemScreen.back();
             await SettingsScreen.close();
         } finally {
-            // # Restore AllowDownloadLogs for subsequent test suites even if
+            // # Restore the provisioned config for subsequent test suites even if
             //   an assertion or interaction above fails
             await System.apiUpdateConfig(siteOneUrl, {
                 SupportSettings: {
                     AllowDownloadLogs: true,
+                },
+                ServiceSettings: {
+                    ReportAProblemType: 'default',
                 },
             });
         }
