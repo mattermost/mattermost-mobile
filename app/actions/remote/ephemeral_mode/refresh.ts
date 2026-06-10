@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephemeral_mode/wipe';
-import {cancelSessionNotification} from '@actions/local/session';
+import {cancelSessionNotification, terminateSession} from '@actions/local/session';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
@@ -13,9 +13,12 @@ import {logError, logWarning} from '@utils/log';
 
 import {refetchCurrentUser} from '../user';
 
-// refetch so the UI doesn't strand on an empty store.
 export const applyPersistenceModeChange = async (serverUrl: string): Promise<{error?: unknown}> => {
+    let resumeServerTracking = true;
     try {
+        // untrack server during the transition
+        EphemeralModeManager.removeServer(serverUrl);
+
         const credentials = await getServerCredentials(serverUrl);
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
@@ -32,8 +35,10 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
         }
 
         await WebsocketManager.invalidateClient(serverUrl);
-        EphemeralModeManager.removeServer(serverUrl);
-        await wipeServerDatabaseWithRetry(serverUrl);
+        const {success} = await wipeServerDatabaseWithRetry(serverUrl);
+        if (!success) {
+            throw new Error('Failed to wipe server database after changing persistence mode');
+        }
 
         wipeServerFiles(serverUrl);
 
@@ -55,13 +60,29 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
             await WebsocketManager.initializeClient(serverUrl);
         }
 
-        // Touch lastActiveAt so withServerDatabase's subscribeActiveServers observer fires and
-        // re-reads the newly-created database instance from the manager.
-        await DatabaseManager.setActiveServerDatabase(serverUrl);
-        await EphemeralModeManager.addServer(serverUrl);
+        // Touch lastActiveAt so withServerDatabase re-reads the newly-created database instance.
+        // Only needed (and safe) for the active server
+        const activeServerUrl = await DatabaseManager.getActiveServerUrl();
+        if (activeServerUrl === serverUrl) {
+            await DatabaseManager.setActiveServerDatabase(serverUrl);
+        }
+
         return {};
     } catch (error) {
         logError('applyPersistenceModeChange', serverUrl, getFullErrorMessage(error));
+        const {error: logoutError} = await terminateSession(serverUrl, false);
+        if (logoutError) {
+            logError('applyPersistenceModeChange: terminateSession failed', serverUrl, logoutError);
+        } else {
+            // do not resume server tracking in case of session termination
+            resumeServerTracking = false;
+        }
+
         return {error};
+    } finally {
+        if (resumeServerTracking) {
+            // restart tracking; file cache was already wiped during the transition
+            await EphemeralModeManager.addServer(serverUrl, {cleanFileCache: false});
+        }
     }
 };

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
+import {terminateSession} from '@actions/local/session';
 import {refetchCurrentUser} from '@actions/remote/user';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
@@ -17,6 +18,7 @@ jest.mock('@actions/local/ephemeral_mode/wipe', () => ({
 }));
 jest.mock('@actions/local/session', () => ({
     cancelSessionNotification: jest.fn(),
+    terminateSession: jest.fn().mockResolvedValue({}),
 }));
 jest.mock('@actions/remote/user', () => ({
     refetchCurrentUser: jest.fn(),
@@ -43,14 +45,13 @@ jest.mock('@utils/log');
 describe('applyPersistenceModeChange', () => {
     const serverUrl = 'https://server.test';
     let setActiveServerDatabaseSpy: jest.SpyInstance;
-    const mockOperator = {
-        batchRecords: jest.fn().mockResolvedValue(undefined),
-    };
+    const mockOperator = {batchRecords: jest.fn().mockResolvedValue(undefined)};
 
     beforeEach(() => {
         jest.clearAllMocks();
         jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValue({success: true});
         setActiveServerDatabaseSpy = jest.spyOn(DatabaseManager, 'setActiveServerDatabase').mockResolvedValue(undefined);
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
         jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockReturnValue({
             database: {} as never,
             operator: mockOperator as never,
@@ -82,7 +83,8 @@ describe('applyPersistenceModeChange', () => {
         expect(WebsocketManager.createClient).toHaveBeenCalledWith(serverUrl, 'tok', 'preauth');
         expect(WebsocketManager.initializeClient).toHaveBeenCalledWith(serverUrl);
         expect(setActiveServerDatabaseSpy).toHaveBeenCalledWith(serverUrl);
-        expect(EphemeralModeManager.addServer).toHaveBeenCalledWith(serverUrl);
+        expect(terminateSession).not.toHaveBeenCalled();
+        expect(EphemeralModeManager.addServer).toHaveBeenCalledWith(serverUrl, {cleanFileCache: false});
         expect(result).toEqual({});
     });
 
@@ -91,19 +93,49 @@ describe('applyPersistenceModeChange', () => {
 
         await applyPersistenceModeChange(serverUrl);
 
-        expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(serverUrl);
         expect(WebsocketManager.createClient).not.toHaveBeenCalled();
         expect(WebsocketManager.initializeClient).not.toHaveBeenCalled();
+        expect(terminateSession).not.toHaveBeenCalled();
+        expect(EphemeralModeManager.addServer).toHaveBeenCalledWith(serverUrl, {cleanFileCache: false});
     });
 
-    it('returns the error and skips active-DB update when the wipe throws', async () => {
+    it('skips setActiveServerDatabase when the server is not active', async () => {
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue('https://other.test');
+
+        await applyPersistenceModeChange(serverUrl);
+
+        expect(setActiveServerDatabaseSpy).not.toHaveBeenCalled();
+    });
+
+    it('terminates the session when the wipe throws', async () => {
         const wipeError = new Error('disk full');
         jest.mocked(wipeServerDatabaseWithRetry).mockRejectedValue(wipeError);
 
         const result = await applyPersistenceModeChange(serverUrl);
 
-        expect(setActiveServerDatabaseSpy).not.toHaveBeenCalled();
+        expect(terminateSession).toHaveBeenCalledWith(serverUrl, false);
         expect(EphemeralModeManager.addServer).not.toHaveBeenCalled();
         expect(result).toEqual({error: wipeError});
+    });
+
+    it('terminates the session when the wipe exhausts all retries', async () => {
+        jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValue({success: false});
+
+        const result = await applyPersistenceModeChange(serverUrl);
+
+        expect(terminateSession).toHaveBeenCalledWith(serverUrl, false);
+        expect(EphemeralModeManager.addServer).not.toHaveBeenCalled();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('terminates the session when restoration fails after a successful wipe', async () => {
+        const fetchError = new Error('network error');
+        jest.mocked(refetchCurrentUser).mockRejectedValue(fetchError);
+
+        const result = await applyPersistenceModeChange(serverUrl);
+
+        expect(terminateSession).toHaveBeenCalledWith(serverUrl, false);
+        expect(EphemeralModeManager.addServer).not.toHaveBeenCalled();
+        expect(result).toEqual({error: fetchError});
     });
 });

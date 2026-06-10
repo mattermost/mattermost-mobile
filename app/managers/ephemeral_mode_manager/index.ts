@@ -99,14 +99,16 @@ class EphemeralModeManagerSingleton {
         return this.trackedServers.get(serverUrl)?.kind === 'zpm';
     };
 
-    public addServer = async (serverUrl: string) => {
+    public addServer = async (serverUrl: string, {cleanFileCache = true}: {cleanFileCache?: boolean} = {}) => {
         if (this.configSubscriptions[serverUrl]) {
             return;
         }
 
         const server = await getServer(serverUrl);
         if (server?.persistenceFlag === 'zero-persistence') {
-            await deleteFileCache(serverUrl);
+            if (cleanFileCache) {
+                await deleteFileCache(serverUrl);
+            }
             this.trackedServers.set(serverUrl, {kind: 'zpm'});
             this.ensureAppStateListener();
             return;
