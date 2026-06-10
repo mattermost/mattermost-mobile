@@ -140,3 +140,87 @@ if (fs.existsSync(fabricIdlingPath)) {
 } else {
     console.log('postinstall: FabricUIManagerIdlingResources.kt not found, skipping null-guard patch');
 }
+
+// Patch Detox's JavaTimersReflected to null-guard the reactHost/reactInstance
+// reflection chain — the same bug class as the FabricUIManagerIdlingResources
+// patch above, in the timers idling resource.
+//
+// Bug: `ReactHostImpl.reactInstance` is declared nullable in RN 0.83
+// (ReactHostImpl.kt:137 `private var reactInstance: ReactInstance? = null`)
+// and IS null during React-context startup/teardown windows. joor's
+// `Reflect.on(null)` falls back to `Object.class`, so the subsequent
+// `.field("javaTimerManager")` throws
+//   `org.joor.ReflectException: java.lang.NoSuchFieldException: javaTimerManager`
+// inside FabricTimersIdlingResource.checkIdle, which Detox surfaces as
+// "The app has crashed" via the periodic QueryStatusActionHandler sync poll.
+// Observed killing 6 tests in account_menu.e2e.ts on Android in CI run
+// 27273317261. The field names themselves are correct for RN 0.83 — only the
+// null target is the problem.
+//
+// Fix: treat a missing reactHost/reactInstance/timerManager as "no active
+// timers" — semantically correct because a not-yet-created or torn-down
+// instance cannot have timers pending.
+//
+// NOTE: like the patch above, this modifies .kt source in `node_modules/detox`
+// and only takes effect because gradle compiles Detox from source
+// (android/settings.gradle `include ':detox'`).
+const timersReflectedPath = path.join(
+    __dirname, '..', 'node_modules', 'detox',
+    'android', 'detox', 'src', 'full', 'java', 'com', 'wix', 'detox',
+    'reactnative', 'idlingresources', 'timers',
+    'JavaTimersReflected.kt',
+);
+
+function applyTimersReflectedPatch(kt) {
+    const patchedMarker = '// mattermost-mobile patch: null-guard reactInstance chain';
+    if (kt.includes(patchedMarker)) {
+        return {kt, msg: 'already applied (null-guard)'};
+    }
+
+    const originalCaller =
+        '        val timersManager = getTimersManager(reactContext)\n' +
+        '        val hasActiveTimersInRangeInstanceClass = timersManager::class\n';
+    const patchedCaller =
+        '        ' + patchedMarker + ':\n' +
+        '        // a null timers manager means the instance is starting up or tearing\n' +
+        '        // down, which trivially has no active timers.\n' +
+        '        val timersManager = getTimersManager(reactContext) ?: return false\n' +
+        '        val hasActiveTimersInRangeInstanceClass = timersManager::class\n';
+
+    const originalGetter =
+        '    private fun getTimersManager(reactContext: ReactContext): JavaTimerManager {\n';
+    const patchedGetter =
+        '    private fun getTimersManager(reactContext: ReactContext): JavaTimerManager? {\n';
+
+    const originalChain =
+        '        val reactHost = Reflect.on(reactContext).field(reactHostFieldName).get<Any>()\n' +
+        '        val reactInstance = Reflect.on(reactHost).field(reactInstanceFieldName).get<Any>()\n' +
+        '        return Reflect.on(reactInstance).field(javaTimerManagerFieldName).get() as JavaTimerManager\n';
+    const patchedChain =
+        '        val reactHost = Reflect.on(reactContext).field(reactHostFieldName).get<Any?>()\n' +
+        '            ?: return null\n' +
+        '        val reactInstance = Reflect.on(reactHost).field(reactInstanceFieldName).get<Any?>()\n' +
+        '            ?: return null\n' +
+        '        return Reflect.on(reactInstance).field(javaTimerManagerFieldName).get() as? JavaTimerManager\n';
+
+    if (!kt.includes(originalCaller) || !kt.includes(originalGetter) || !kt.includes(originalChain)) {
+        return {kt, msg: 'pattern not found (Detox source layout changed?), skipping'};
+    }
+
+    let out = kt;
+    out = out.replace(originalCaller, patchedCaller);
+    out = out.replace(originalGetter, patchedGetter);
+    out = out.replace(originalChain, patchedChain);
+    return {kt: out, msg: 'patched (null-guard)'};
+}
+
+if (fs.existsSync(timersReflectedPath)) {
+    const kt = fs.readFileSync(timersReflectedPath, 'utf8');
+    const {kt: patched, msg} = applyTimersReflectedPatch(kt);
+    if (patched !== kt) {
+        fs.writeFileSync(timersReflectedPath, patched, 'utf8');
+    }
+    console.log(`postinstall: JavaTimersReflected ${msg}`);
+} else {
+    console.log('postinstall: JavaTimersReflected.kt not found, skipping null-guard patch');
+}
