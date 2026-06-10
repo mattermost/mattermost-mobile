@@ -1,10 +1,15 @@
-# Manages the E2E test approval lifecycle on pull requests.
+# Auto-applies the `E2E/Run` label on every PR push so Matterwick provisions
+# servers and runs the Detox suite by default. Developers can opt out by
+# adding the `E2E/Override` label (e.g. for docs-only or script-only PRs
+# that don't touch app code).
 #
 # Flow:
-#   1. PR opened        → add "NEED-TO-RUN-E2E" label (signal: E2E tests needed)
-#   2. Reviewer removes "NEED-TO-RUN-E2E" → add "E2E/Run" (approval — triggers Matterwick)
-#   3. New push while "NEED-TO-RUN-E2E" present     → do nothing (still awaiting approval)
-#   4. New push while "NEED-TO-RUN-E2E" absent        → add "E2E/Run" (re-trigger after prior approval)
+#   - PR opened or new push:
+#       - If `E2E/Override` is present → skip (no E2E run)
+#       - Else if `E2E/Run` already present → skip (Matterwick already running)
+#       - Else → add `E2E/Run` (triggers Matterwick)
+#   - PR labeled with `E2E/Override` while `E2E/Run` is set → remove `E2E/Run`
+#     (and the cancel-on-label-removal workflow cancels any in-flight runs)
 #
 name: E2E label manager
 
@@ -13,69 +18,52 @@ on:
     types:
       - opened
       - synchronize
-      - unlabeled
+      - labeled
 
 jobs:
-  # Job 1: Add NEED-TO-RUN-E2E on PR open, or re-trigger E2E/Run on push after prior approval
-  manage-label:
+  ensure-e2e-run:
     if: github.event.action == 'opened' || github.event.action == 'synchronize'
     runs-on: ubuntu-22.04
     permissions:
       pull-requests: write
     steps:
-      - name: Manage E2E labels
+      - name: Add E2E/Run unless E2E/Override is present
         uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
         with:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const prNumber = context.payload.pull_request.number;
-            const action = context.payload.action;
 
             const {data: labels} = await github.rest.issues.listLabelsOnIssue({
               owner, repo, issue_number: prNumber,
             });
             const labelNames = labels.map(l => l.name);
-            const hasNeedToRun = labelNames.includes('NEED-TO-RUN-E2E');
-            const hasE2ERun = labelNames.includes('E2E/Run');
 
-            if (action === 'opened') {
-              if (!hasNeedToRun) {
-                core.info('PR opened — adding NEED-TO-RUN-E2E label');
-                await github.rest.issues.addLabels({
-                  owner, repo, issue_number: prNumber,
-                  labels: ['NEED-TO-RUN-E2E'],
-                });
-              } else {
-                core.info('PR opened — NEED-TO-RUN-E2E already present');
-              }
+            if (labelNames.includes('E2E/Override')) {
+              core.info(`PR #${prNumber} has E2E/Override label — skipping E2E/Run.`);
+              return;
+            }
+            if (labelNames.includes('E2E/Run')) {
+              core.info(`PR #${prNumber} already has E2E/Run — Matterwick will pick up; skipping.`);
               return;
             }
 
-            // synchronize (new push)
-            if (hasNeedToRun) {
-              core.info('New push but NEED-TO-RUN-E2E present — awaiting approval, skipping');
-              return;
-            }
-            if (hasE2ERun) {
-              core.info('New push after approval but E2E/Run already present — skipping');
-              return;
-            }
-
-            core.info('New push after prior approval — adding E2E/Run label');
+            core.info(`PR #${prNumber} ${context.payload.action} — adding E2E/Run label.`);
             await github.rest.issues.addLabels({
               owner, repo, issue_number: prNumber,
               labels: ['E2E/Run'],
             });
 
-  # Job 2: Convert NEED-TO-RUN-E2E removal into E2E/Run (reviewer approval)
-  approve-e2e:
-    if: github.event.action == 'unlabeled' && github.event.label.name == 'NEED-TO-RUN-E2E'
+  # When E2E/Override is added mid-flight, strip E2E/Run so the cancel-on-
+  # label-removal workflow tears down any in-progress runs.
+  honor-override:
+    if: github.event.action == 'labeled' && github.event.label.name == 'E2E/Override'
     runs-on: ubuntu-22.04
     permissions:
       pull-requests: write
     steps:
-      - name: Add E2E/Run label
+      - name: Remove E2E/Run when override is applied
         uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
         with:
           script: |
@@ -83,15 +71,15 @@ jobs:
             const repo = context.repo.repo;
             const prNumber = context.payload.pull_request.number;
 
-            core.info(`NEED-TO-RUN-E2E removed from PR #${prNumber} — adding E2E/Run label`);
-
-            await github.rest.issues.addLabels({
-              owner, repo, issue_number: prNumber,
-              labels: ['E2E/Run'],
-            });
-
-            await github.rest.issues.createComment({
-              owner, repo, issue_number: prNumber,
-              body: '✅ E2E tests triggered by reviewer approval (removed `NEED-TO-RUN-E2E` label). ' +
-                    'Matterwick will provision test servers and run the Detox suite.',
-            });
+            try {
+              await github.rest.issues.removeLabel({
+                owner, repo, issue_number: prNumber, name: 'E2E/Run',
+              });
+              core.info(`Removed E2E/Run from PR #${prNumber} (E2E/Override applied).`);
+            } catch (err) {
+              if (err.status === 404) {
+                core.info(`E2E/Run was not set on PR #${prNumber}; nothing to remove.`);
+                return;
+              }
+              throw err;
+            }
