@@ -20,6 +20,7 @@ import {
     observeCurrentChannelId, observeCurrentTeamId, observeCurrentUserId, observeGlobalThreadsTab,
     observePushVerificationStatus, observeConfig, observeConfigValue, observeMaxFileCount,
     observeIsCustomStatusExpirySupported, observeConfigBooleanValue, observeConfigIntValue,
+    canViewArchivedChannels, observeCanViewArchivedChannels,
     observeLicense, observeAllowedThemesKeys, observeOnlyUnreads,
     observeIsFreeEdition, observeIsMinimumLicenseTier, observeReportAProblemMetadata,
 } from './system';
@@ -725,6 +726,34 @@ describe('system observe functions', () => {
     it('observeConfigBooleanValue emits true when config is "true"', async () => {
         await operator.handleConfigs({configs: [{id: 'EnableCustomEmoji', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
         expect(await firstValueFrom(observeConfigBooleanValue(database, 'EnableCustomEmoji'))).toBe(true);
+    });
+
+    it('canViewArchivedChannels resolves true when ExperimentalViewArchivedChannels is absent', async () => {
+        expect(await canViewArchivedChannels(database)).toBe(true);
+    });
+
+    it('canViewArchivedChannels resolves true when ExperimentalViewArchivedChannels is "true"', async () => {
+        await operator.handleConfigs({configs: [{id: 'ExperimentalViewArchivedChannels', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
+        expect(await canViewArchivedChannels(database)).toBe(true);
+    });
+
+    it('canViewArchivedChannels resolves false when ExperimentalViewArchivedChannels is "false"', async () => {
+        await operator.handleConfigs({configs: [{id: 'ExperimentalViewArchivedChannels', value: 'false'}], configsToDelete: [], prepareRecordsOnly: false});
+        expect(await canViewArchivedChannels(database)).toBe(false);
+    });
+
+    it('observeCanViewArchivedChannels emits true when ExperimentalViewArchivedChannels is absent', async () => {
+        expect(await firstValueFrom(observeCanViewArchivedChannels(database))).toBe(true);
+    });
+
+    it('observeCanViewArchivedChannels emits true when ExperimentalViewArchivedChannels is "true"', async () => {
+        await operator.handleConfigs({configs: [{id: 'ExperimentalViewArchivedChannels', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
+        expect(await firstValueFrom(observeCanViewArchivedChannels(database))).toBe(true);
+    });
+
+    it('observeCanViewArchivedChannels emits false when ExperimentalViewArchivedChannels is "false"', async () => {
+        await operator.handleConfigs({configs: [{id: 'ExperimentalViewArchivedChannels', value: 'false'}], configsToDelete: [], prepareRecordsOnly: false});
+        expect(await firstValueFrom(observeCanViewArchivedChannels(database))).toBe(false);
     });
 
     it('observeConfigIntValue emits defaultValue when not set', async () => {

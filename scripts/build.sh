@@ -44,13 +44,6 @@ function installGemsAndPods() {
     npm run pod-install
 }
 
-function installGemsAndPodsM1() {
-    echo "Installing Gems"
-    npm run ios-gems-m1
-    echo "Getting Cocoapods dependencies"
-    npm run pod-install-m1
-}
-
 function setup() {
     if [[ -z "$SKIP_SETUP" ]]; then
         npm run clean || exit 1
@@ -65,11 +58,7 @@ function setup() {
         node node_modules/\@sentry/cli/scripts/install.js || exit 1
 
         if [[ "$1" == "ios"* ]]; then
-          if [[ $(uname -p) == 'arm' ]]; then
-            installGemsAndPodsM1 || exit 1
-          else
-            installGemsAndPods || exit 1
-          fi
+          installGemsAndPods || exit 1
         fi
 
         ASSETS=$(node scripts/generate-assets.js)

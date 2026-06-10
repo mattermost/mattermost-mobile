@@ -1,23 +1,13 @@
 #!/usr/bin/env bash
-
-function installPods() {
-    echo "Getting Cocoapods dependencies"
-    npm run pod-install
-}
-
-function installPodsM1() {
-    echo "Getting Cocoapods dependencies"
-    npm run pod-install-m1
-}
+set -euo pipefail
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  if [ "$INTUNE_ENABLED" = "1" ]; then
+  if [ "${INTUNE_ENABLED:-}" = "1" ]; then
     echo "🔐 INTUNE_ENABLED detected"
     npm run intune:init
-  elif [[ $(uname -p) == 'arm' ]]; then
-    installPodsM1
   else
-    installPods
+    echo "Getting Cocoapods dependencies"
+    npm run pod-install
   fi
 fi
 

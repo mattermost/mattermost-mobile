@@ -5,14 +5,14 @@ import {withObservables} from '@nozbe/watermelondb/react';
 import {combineLatestWith} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeConfigBooleanValue, observeCurrentChannelId} from '@queries/servers/system';
+import {observeCanViewArchivedChannels, observeCurrentChannelId} from '@queries/servers/system';
 
 import CategoryHeader from './header';
 
 import type CategoryModel from '@typings/database/models/servers/category';
 
 const enhanced = withObservables(['category'], ({category}: {category: CategoryModel}) => {
-    const canViewArchived = observeConfigBooleanValue(category.database, 'ExperimentalViewArchivedChannels', true);
+    const canViewArchived = observeCanViewArchivedChannels(category.database);
     const currentChannelId = observeCurrentChannelId(category.database);
 
     return {
