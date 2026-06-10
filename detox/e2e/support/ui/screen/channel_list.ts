@@ -8,7 +8,7 @@ import {
 } from '@support/ui/component';
 import {HomeScreen} from '@support/ui/screen';
 import {tapNativeBackButton, timeouts, wait, waitForElementToExist} from '@support/utils';
-import {waitFor} from 'detox';
+import {device, waitFor} from 'detox';
 
 const KNOWN_MODAL_CLOSE_BUTTON_IDS: readonly string[] = Object.freeze([
     'close.create_or_edit_channel.button',
@@ -315,7 +315,15 @@ class ChannelListScreen {
 
     open = async () => {
         // # Open channel list screen
-        await HomeScreen.channelListTab.tap();
+        // On iOS 26 the bottom tab bar items may not pass the 100% visibility
+        // threshold (gesture-bar chrome clips them). Wrap the tap with
+        // disableSynchronization to bypass Detox's hittability probe.
+        await device.disableSynchronization();
+        try {
+            await HomeScreen.channelListTab.tap();
+        } finally {
+            await device.enableSynchronization();
+        }
 
         return this.toBeVisible();
     };

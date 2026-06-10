@@ -640,7 +640,7 @@ describe('Channels - Channel Bookmarks', () => {
     // can't trigger virtual-item realization. Also blows past the 240s jest
     // timeout, which then cascades into the afterAll logout hook. Track
     // separately as a test-helper issue or app-side render investigation.
-    it.skip('MM-T5612_1 - should show scroll indicator when bookmarks exceed visible limit', async () => {
+    it('MM-T5612_1 - should show scroll indicator when bookmarks exceed visible limit', async () => {
         const channelHeaderBookmarksList = by.id('channel_header.bookmarks.list');
         const firstBookmarkMatcher = by.text('Scroll Bookmark 1');
         const lastBookmarkMatcher = by.text('Scroll Bookmark 12');

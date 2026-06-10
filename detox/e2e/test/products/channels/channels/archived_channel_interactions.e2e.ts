@@ -108,7 +108,7 @@ async function closeBrowseChannelsChannel() {
 // archived_channel_post_interactions.e2e.ts — `replaceText`/`typeText`
 // triggers a NoSuchFieldException crash on mMountItemDispatcher. iOS
 // passes all 4 tests. Track separately.
-(isAndroid() ? describe.skip : describe)('Channels - Archived Channel Interactions', () => {
+describe('Channels - Archived Channel Interactions', () => {
     const serverOneDisplayName = 'Server 1';
     let testTeam: any;
     let testUser: any;

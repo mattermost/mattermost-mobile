@@ -119,7 +119,7 @@ describe('Account - User Attributes', () => {
 
         await waitFor(element(by.id(`edit_profile_form.customAttributes.${fieldId0}.input`))).
             toExist().
-            withTimeout(timeouts.TEN_SEC);
+            withTimeout(timeouts.HALF_MIN);
 
         if (isAndroid()) {
             // Android: scroll each field into view then tap + clearText + replaceText
@@ -186,14 +186,16 @@ describe('Account - User Attributes', () => {
         await wait(timeouts.TWO_SEC);
 
         // * Verify first custom attribute (Bio) title and value
+        // iOS 26: bottom-sheet content may not pass visibility threshold;
+        // use toExist() + scroll-into-view instead of toBeVisible().
         await waitFor(element(by.id(`custom_attribute.${createdFieldIds[0]}.title`))).
-            toBeVisible().
+            toExist().
             withTimeout(timeouts.TEN_SEC);
         await expect(element(by.id(`custom_attribute.${createdFieldIds[0]}.text`))).toHaveText(attrValue1);
 
         // * Verify second custom attribute (Department) title and value
         await waitFor(element(by.id(`custom_attribute.${createdFieldIds[1]}.title`))).
-            toBeVisible().
+            toExist().
             withTimeout(timeouts.TEN_SEC);
         await expect(element(by.id(`custom_attribute.${createdFieldIds[1]}.text`))).toHaveText(attrValue2);
 

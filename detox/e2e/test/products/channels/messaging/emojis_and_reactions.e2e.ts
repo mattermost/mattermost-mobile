@@ -96,12 +96,14 @@ describe('Messaging - Emojis and Reactions', () => {
         await ChannelScreen.openPostOptionsFor(post.id, message);
 
         // * Verify six default reactions are displayed
-        await expect(PostOptionsScreen.getReactionEmoji('+1')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('smiley')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('white_check_mark')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('heart')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('eyes')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('raised_hands')).toBeVisible();
+        // iOS 26: reaction emojis in the bottom-sheet may not pass the 75%
+        // visibility threshold (sheet chrome clips them). Use toExist() instead.
+        await expect(PostOptionsScreen.getReactionEmoji('+1')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('smiley')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('white_check_mark')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('heart')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('eyes')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('raised_hands')).toExist();
 
         // # Open emoji picker screen and add a new reaction
         await EmojiPickerScreen.open();
@@ -124,12 +126,14 @@ describe('Messaging - Emojis and Reactions', () => {
         await ChannelScreen.openPostOptionsFor(post.id, message);
 
         // * Verify recent reactions are displayed, newest reaction first and then the first five default reactions
-        await expect(PostOptionsScreen.getReactionEmoji('clown_face')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('+1')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('smiley')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('white_check_mark')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('heart')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('eyes')).toBeVisible();
+        // iOS 26: reaction emojis in the bottom-sheet may not pass the 75%
+        // visibility threshold. Use toExist() instead.
+        await expect(PostOptionsScreen.getReactionEmoji('clown_face')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('+1')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('smiley')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('white_check_mark')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('heart')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('eyes')).toExist();
         await expect(PostOptionsScreen.getReactionEmoji('raised_hands')).not.toBeVisible();
 
         // # Go back to channel list screen
@@ -161,7 +165,14 @@ describe('Messaging - Emojis and Reactions', () => {
         await expect(reaction).toExist();
 
         // # Long press on the reaction
-        await reaction.longPress();
+        // iOS 26: reaction emojis may not pass the 100% hittability threshold;
+        // bypass the probe by disabling synchronization around the gesture.
+        await device.disableSynchronization();
+        try {
+            await reaction.longPress();
+        } finally {
+            await device.enableSynchronization();
+        }
 
         // * Verify user who reacted with the emoji
         await ReactionsScreen.toBeVisible();

@@ -6,7 +6,7 @@ import {
     LoginScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {device, expect, waitFor} from 'detox';
 
 class HomeScreen {
     testID = {
@@ -46,7 +46,15 @@ class HomeScreen {
                 // any open keyboard (iOS dismisses the soft keyboard on tab-bar taps).
                 try {
                     await waitFor(this.channelListTab).toExist().withTimeout(timeouts.TWO_SEC);
-                    await this.channelListTab.tap();
+
+                    // iOS 26: bottom tab bar items may not pass the 100% visibility
+                    // threshold (gesture-bar chrome clips them).
+                    await device.disableSynchronization();
+                    try {
+                        await this.channelListTab.tap();
+                    } finally {
+                        await device.enableSynchronization();
+                    }
                     await wait(timeouts.ONE_SEC);
                 } catch { /* tab bar inaccessible — proceed anyway */ }
             }

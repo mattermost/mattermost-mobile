@@ -35,7 +35,7 @@ import {expect} from 'detox';
 // Forcing the in-app screen by overriding ReportAProblemType is server-config
 // gymnastics that doesn't reflect how users actually exercise the feature.
 // Coverage lives in Maestro: `maestro/flows/account/attach_logs.yml`.
-describe.skip('Account - Attach App Logs', () => {
+describe('Account - Attach App Logs', () => {
     const serverOneDisplayName = 'Server 1';
     let testUser: any;
     let testChannel: any;

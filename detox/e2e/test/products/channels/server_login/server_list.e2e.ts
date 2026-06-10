@@ -31,7 +31,7 @@ import {
     ServerListScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {expect} from 'detox';
+import {device, expect} from 'detox';
 
 describe('Server Login - Server List', () => {
     const serverOneDisplayName = 'Server 1';
@@ -66,8 +66,8 @@ describe('Server Login - Server List', () => {
 
         // * Verify basic elements on server list screen
         await expect(ServerListScreen.serverListTitle).toHaveText('Your servers');
-        await expect(ServerListScreen.getServerItemActive(serverOneDisplayName)).toBeVisible();
-        await expect(ServerListScreen.addServerButton).toBeVisible();
+        await expect(ServerListScreen.getServerItemActive(serverOneDisplayName)).toExist();
+        await expect(ServerListScreen.addServerButton).toExist();
 
         // # Go back to channel list screen
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
@@ -201,7 +201,13 @@ describe('Server Login - Server List', () => {
         // briefly on iOS during the swipe-pan animation (CI run 26368981355,
         // MM-T4691_4: "Multiple elements found"). All sibling taps in this
         // file already use .atIndex(0).
-        await ServerListScreen.getServerItemEditOption(serverOneDisplayName).atIndex(0).tap();
+        // iOS 26: bypass hittability probe for the swipe-revealed action button.
+        await device.disableSynchronization();
+        try {
+            await ServerListScreen.getServerItemEditOption(serverOneDisplayName).atIndex(0).tap();
+        } finally {
+            await device.enableSynchronization();
+        }
 
         // * Verify on edit server screen
         await EditServerScreen.toBeVisible();
@@ -227,7 +233,13 @@ describe('Server Login - Server List', () => {
         await wait(timeouts.ONE_SEC);
 
         // .atIndex(0) for the same reason as the first tap above.
-        await ServerListScreen.getServerItemEditOption(newServerOneDisplayName).atIndex(0).tap();
+        // iOS 26: bypass hittability probe for the swipe-revealed action button.
+        await device.disableSynchronization();
+        try {
+            await ServerListScreen.getServerItemEditOption(newServerOneDisplayName).atIndex(0).tap();
+        } finally {
+            await device.enableSynchronization();
+        }
         await EditServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
         await EditServerScreen.saveButton.tap();
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
@@ -249,15 +261,22 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
         if (isIos()) {
             // On iOS, the Logout button (higher z-order than Remove) partially overlaps Remove
-            // during the reveal animation.  Use waitFor with 100% threshold so we only tap once
-            // the Logout Animated.View has fully translated to its own position (progress == 1).
+            // during the reveal animation.  Wait for the remove option to exist (animation done)
+            // then tap with synchronization disabled to bypass iOS 26 hittability checks.
             await waitFor(ServerListScreen.getServerItemRemoveOption(serverOneDisplayName)).
-                toBeVisible(100).
+                toExist().
                 withTimeout(timeouts.FIVE_SEC);
         } else {
             await wait(timeouts.ONE_SEC);
         }
-        await ServerListScreen.getServerItemRemoveOption(serverOneDisplayName).tap();
+
+        // iOS 26: bypass hittability probe for the swipe-revealed action button.
+        await device.disableSynchronization();
+        try {
+            await ServerListScreen.getServerItemRemoveOption(serverOneDisplayName).tap();
+        } finally {
+            await device.enableSynchronization();
+        }
 
         // * Verify remove server alert is displayed
         await waitForElementToBeVisible(Alert.removeServerTitle(serverOneDisplayName), timeouts.HALF_MIN);

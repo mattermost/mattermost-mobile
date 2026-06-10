@@ -38,7 +38,7 @@ import {expect} from 'detox';
 //   2. Splitting setup into smaller chunks with explicit waits between
 //      admin-only API calls and UI interactions.
 // Track separately.
-describe.skip('Channels - Unarchive Channel', () => {
+describe('Channels - Unarchive Channel', () => {
     const serverOneDisplayName = 'Server 1';
 
     beforeAll(async () => {

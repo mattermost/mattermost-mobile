@@ -50,7 +50,7 @@ import {expect} from 'detox';
 //      intermittently, blocking the whole spec.
 // Track separately. When the saved-messages observable bug is fixed app-side
 // and the test server hang root cause is found, un-skip and verify.
-describe.skip('Search - Search Message Post Actions', () => {
+describe('Search - Search Message Post Actions', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;

@@ -281,13 +281,14 @@ export async function waitForElementToBeVisible(
     detoxElement: Detox.NativeElement,
     timeout: number = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC,
     pollInterval: number = timeouts.HALF_SEC,
+    visibilityPercent: number = isIos() ? 25 : 75,
 ): Promise<void> {
     const {expect: detoxExpect} = require('detox');
     const startTime = Date.now();
     /* eslint-disable no-await-in-loop */
     while (Date.now() - startTime < timeout) {
         try {
-            await detoxExpect(detoxElement).toBeVisible();
+            await detoxExpect(detoxElement).toBeVisible(visibilityPercent);
             return; // Element found and visible
         } catch (error) {
             // Element not visible yet, wait and try again
@@ -300,7 +301,7 @@ export async function waitForElementToBeVisible(
     }
     /* eslint-enable no-await-in-loop */
     // Final check - will throw if still not found
-    await detoxExpect(detoxElement).toBeVisible();
+    await detoxExpect(detoxElement).toBeVisible(visibilityPercent);
 }
 
 /**

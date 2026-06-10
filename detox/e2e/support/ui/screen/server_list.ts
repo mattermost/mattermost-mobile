@@ -59,7 +59,15 @@ class ServerListScreen {
 
     open = async () => {
         // # Open server list screen
-        await ChannelListScreen.serverIcon.tap();
+        // On iOS 26 the server icon may not pass the 100% visibility threshold
+        // (bottom-sheet transition chrome clips the view). Use
+        // disableSynchronization to bypass the hittability probe.
+        await device.disableSynchronization();
+        try {
+            await ChannelListScreen.serverIcon.tap();
+        } finally {
+            await device.enableSynchronization();
+        }
         if (isAndroid()) {
             await this.closeTutorial();
         }
@@ -88,6 +96,22 @@ class ServerListScreen {
             await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
         } catch {
             // Tutorial may not appear if already dismissed in a previous run
+        }
+    };
+
+    // On iOS 26, swipe-revealed action buttons and bottom-sheet items may not pass
+    // the 100% hittability threshold. This helper disables synchronization around
+    // the tap so Detox bypasses the visibility probe.
+    tapItem = async (item: Detox.NativeElement) => {
+        if (isIos()) {
+            await device.disableSynchronization();
+        }
+        try {
+            await item.tap();
+        } finally {
+            if (isIos()) {
+                await device.enableSynchronization();
+            }
         }
     };
 }

@@ -24,8 +24,11 @@ class EmojiPickerScreen {
     clearButton = SearchBar.getClearButton(this.testID.emojiPickerScreenPrefix);
 
     toBeVisible = async () => {
+        // On iOS 26, the search input can be partially obscured by the bottom-sheet
+        // chrome (dim overlay or gesture barrier reports < 100% visibility), so
+        // toExist() is more reliable than toBeVisible().
         await waitFor(this.searchInput).toExist().withTimeout(timeouts.TEN_SEC);
-        if (!isAndroid()) {
+        if (isAndroid()) {
             await waitFor(this.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
         }
 
@@ -50,7 +53,15 @@ class EmojiPickerScreen {
             // Swipe down on the search input — it's at the top of the sheet
             // content, and dragging it down dismisses the bottom-sheet
             // identically to dragging the sheet container.
-            await this.searchInput.swipe('down');
+            //
+            // On iOS 26 the search input may not pass the visibility threshold,
+            // so disable synchronization around the swipe to bypass hittability.
+            await device.disableSynchronization();
+            try {
+                await this.searchInput.swipe('down');
+            } finally {
+                await device.enableSynchronization();
+            }
         } else {
             // First pressBack may dismiss the soft keyboard if it is still open
             // (e.g. after search interactions). A second pressBack is then needed

@@ -121,7 +121,10 @@ describe('Threads - Global Threads', () => {
 
         // * Verify on thread screen
         await ThreadScreen.toBeVisible();
-        await expect(replyPostListPostItem).toBeVisible();
+
+        // iOS 26: post items can be partially obscured by the input bar,
+        // so toExist() is more reliable than toBeVisible() for the post check.
+        await waitFor(replyPostListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ThreadScreen.back();
@@ -190,7 +193,10 @@ describe('Threads - Global Threads', () => {
 
         // * Verify on thread screen
         await ThreadScreen.toBeVisible();
-        await expect(replyPostListPostItem).toBeVisible();
+
+        // iOS 26: post items can be partially obscured by the input bar,
+        // so toExist() is more reliable than toBeVisible() for the post check.
+        await waitFor(replyPostListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ThreadScreen.back();

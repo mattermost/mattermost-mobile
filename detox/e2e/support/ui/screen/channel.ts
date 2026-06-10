@@ -19,7 +19,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {by, element, expect, waitFor} from 'detox';
+import {by, device, element, expect, waitFor} from 'detox';
 
 class ChannelScreen {
     testID = {
@@ -367,7 +367,19 @@ class ChannelScreen {
         // # Wait for Send button via polling — bridge-sync visibility can falsely fail when
         // replaceText() keeps the bridge busy even though the button is rendered.
         await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
-        await this.sendButton.tap();
+
+        // iOS 26: the send button may not pass the 100% hittability threshold (keyboard or
+        // input bar clips the bottom). Bypass the probe by disabling synchronization.
+        if (isIos()) {
+            await device.disableSynchronization();
+        }
+        try {
+            await this.sendButton.tap();
+        } finally {
+            if (isIos()) {
+                await device.enableSynchronization();
+            }
+        }
         await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 

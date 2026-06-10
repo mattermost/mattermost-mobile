@@ -242,7 +242,7 @@ describe('Search - Pinned Messages', () => {
     // (`querySavedPostsPreferences(...value='true').observeWithColumns(['name'])`)
     // does not re-emit when a matching preference row is destroyed.
     // Track separately as an app-side observable bug.
-    it.skip('MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen', async () => {
+    it('MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);

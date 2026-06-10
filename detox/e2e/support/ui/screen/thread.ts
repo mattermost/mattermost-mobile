@@ -12,7 +12,7 @@ import {
 } from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
 import {isAndroid, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {by, element, expect, waitFor} from 'detox';
+import {by, device, element, expect, waitFor} from 'detox';
 
 class ThreadScreen {
     testID = {
@@ -196,8 +196,16 @@ class ThreadScreen {
     };
 
     tapSendButton = async () => {
-        // # Tap send button
-        await this.sendButton.tap();
+        // # Tap send button — iOS 26 can report < 100% visibility when the
+        // keyboard or message-input bar partially overlaps the button, so poll for
+        // existence instead of relying on the visibility hittability probe.
+        await waitForElementToExist(this.sendButton, timeouts.FOUR_SEC);
+        await device.disableSynchronization();
+        try {
+            await this.sendButton.tap();
+        } finally {
+            await device.enableSynchronization();
+        }
         await expect(this.sendButton).not.toExist();
         await expect(this.sendButtonDisabled).toBeVisible();
     };

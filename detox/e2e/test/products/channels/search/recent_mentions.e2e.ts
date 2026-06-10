@@ -160,7 +160,7 @@ describe('Search - Recent Mentions', () => {
     // EphemeralStore.addRecentlyUnsavedSavedPost fires, and the post-options
     // observable reflects "Save" — but the list stays stale until the screen
     // remounts (app close/reopen). Track separately as an app-side bug.
-    it.skip('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
+    it('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
@@ -241,7 +241,7 @@ describe('Search - Recent Mentions', () => {
     // (Originally must-run-last because it edits/replies-to/deletes the
     // testUser-owned mention. With the test skipped that ordering constraint
     // no longer matters, but the comment is preserved for context.)
-    it.skip('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
+    it('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
