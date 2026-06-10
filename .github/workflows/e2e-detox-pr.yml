@@ -85,7 +85,7 @@ jobs:
     if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
     runs-on: ubuntu-22.04
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -356,7 +356,7 @@ jobs:
     with:
       run-type: ${{ inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_2_URL }}
+      MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
       ios_device_name: "iPad Pro 13-inch (M5)"
       ios_device_os_name: "iOS 26.2"
       search_path: "detox/e2e/test/products/channels/ipad"
@@ -370,7 +370,7 @@ jobs:
     needs:
       - run-ios-ipad-tests
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:

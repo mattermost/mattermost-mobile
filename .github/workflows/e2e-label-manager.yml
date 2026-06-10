@@ -15,15 +15,13 @@ on:
       - synchronize
       - unlabeled
 
-permissions:
-  issues: write
-  pull-requests: write
-
 jobs:
   # Job 1: Add NEED-TO-RUN-E2E on PR open, or re-trigger E2E/Run on push after prior approval
   manage-label:
     if: github.event.action == 'opened' || github.event.action == 'synchronize'
     runs-on: ubuntu-22.04
+    permissions:
+      pull-requests: write
     steps:
       - name: Manage E2E labels
         uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
@@ -74,6 +72,8 @@ jobs:
   approve-e2e:
     if: github.event.action == 'unlabeled' && github.event.label.name == 'NEED-TO-RUN-E2E'
     runs-on: ubuntu-22.04
+    permissions:
+      pull-requests: write
     steps:
       - name: Add E2E/Run label
         uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1

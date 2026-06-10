@@ -258,7 +258,7 @@ jobs:
         run: |
           for attempt in 1 2 3; do
             echo "SDK install attempt $attempt..."
-            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-35" "system-images;android-35;google_apis;x86_64"; then
+            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${{ inputs.android_api_level }}" "system-images;android-${{ inputs.android_api_level }};google_apis;x86_64"; then
               echo "SDK install succeeded on attempt $attempt"
               break
             fi
@@ -280,7 +280,7 @@ jobs:
         with:
           path: |
             ~/.android/avd
-          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-api-35
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-api-${{ inputs.android_api_level }}
           restore-keys: |
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
