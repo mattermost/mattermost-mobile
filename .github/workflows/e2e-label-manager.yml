@@ -1,15 +1,23 @@
-# Auto-applies the `E2E/Run` label on every PR push so Matterwick provisions
-# servers and runs the Detox suite by default. Developers can opt out by
-# adding the `E2E/Override` label (e.g. for docs-only or script-only PRs
-# that don't touch app code).
+# Manages the E2E label lifecycle on pull requests.
 #
-# Flow:
-#   - PR opened or new push:
-#       - If `E2E/Override` is present → skip (no E2E run)
-#       - Else if `E2E/Run` already present → skip (Matterwick already running)
-#       - Else → add `E2E/Run` (triggers Matterwick)
-#   - PR labeled with `E2E/Override` while `E2E/Run` is set → remove `E2E/Run`
-#     (and the cancel-on-label-removal workflow cancels any in-flight runs)
+# Three jobs, each gated by event type:
+#
+#   1. ensure-e2e-run (opened / synchronize):
+#      Adds E2E/Run unless E2E/Override is present (opt-out for docs-only PRs).
+#
+#   2. honor-override (E2E/Override labeled):
+#      Removes E2E/Run so any in-flight test runs are cancelled (see cancel-e2e-runs).
+#
+#   3. cancel-e2e-runs (E2E/Run* unlabeled):
+#      Cancels in-progress E2E workflow runs for the PR's head SHA.
+#      Also fires on the benign post-test cleanup that strips labels at the end
+#      of a normal run — by then no runs are in-progress, so the loop is a no-op.
+#
+# Fork PRs are skipped on all three jobs via the same-repo guard:
+#   github.event.pull_request.head.repo.full_name == github.repository
+# Fork PR contexts only get a read-only GITHUB_TOKEN, so addLabels /
+# removeLabel / gh-run-cancel would all 403. Skipping cleanly avoids
+# the failed-run noise. Mandatory E2E for fork PRs is enforced separately.
 #
 name: E2E label manager
 
@@ -19,10 +27,14 @@ on:
       - opened
       - synchronize
       - labeled
+      - unlabeled
 
 jobs:
+  # ── Add E2E/Run on PR open / push ──────────────────────────────────────────
   ensure-e2e-run:
-    if: github.event.action == 'opened' || github.event.action == 'synchronize'
+    if: >-
+      (github.event.action == 'opened' || github.event.action == 'synchronize')
+      && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-22.04
     permissions:
       pull-requests: write
@@ -55,10 +67,12 @@ jobs:
               labels: ['E2E/Run'],
             });
 
-  # When E2E/Override is added mid-flight, strip E2E/Run so the cancel-on-
-  # label-removal workflow tears down any in-progress runs.
+  # ── Strip E2E/Run when E2E/Override is applied ─────────────────────────────
   honor-override:
-    if: github.event.action == 'labeled' && github.event.label.name == 'E2E/Override'
+    if: >-
+      github.event.action == 'labeled'
+      && github.event.label.name == 'E2E/Override'
+      && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-22.04
     permissions:
       pull-requests: write
@@ -83,3 +97,42 @@ jobs:
               }
               throw err;
             }
+
+  # ── Cancel in-progress E2E runs when E2E/Run* label is removed ─────────────
+  cancel-e2e-runs:
+    if: >-
+      github.event.action == 'unlabeled'
+      && (github.event.label.name == 'E2E/Run'
+          || github.event.label.name == 'E2E/Run-iOS'
+          || github.event.label.name == 'E2E/Run-Android')
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-22.04
+    permissions:
+      actions: write
+    steps:
+      - name: Cancel in-progress E2E workflow runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REMOVED_LABEL: ${{ github.event.label.name }}
+        run: |
+          echo "Label \"$REMOVED_LABEL\" removed from PR #$PR_NUMBER (sha: $HEAD_SHA)"
+          cancelled=0
+          for status in in_progress queued waiting; do
+            ids=$(gh run list \
+              --workflow "e2e-detox-pr.yml" \
+              --status "$status" \
+              --json databaseId,headSha \
+              --jq ".[] | select(.headSha==\"$HEAD_SHA\") | .databaseId")
+            for id in $ids; do
+              echo "Cancelling run $id (status: $status)"
+              if gh run cancel "$id"; then
+                cancelled=$((cancelled + 1))
+              else
+                echo "::warning::Failed to cancel run $id"
+              fi
+            done
+          done
+          echo "Cancelled $cancelled E2E workflow run(s) for PR #$PR_NUMBER"
