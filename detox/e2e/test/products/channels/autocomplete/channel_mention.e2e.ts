@@ -25,7 +25,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Autocomplete - Channel Mention', () => {
     const serverOneDisplayName = 'Server 1';
@@ -212,14 +212,12 @@ describe('Autocomplete - Channel Mention', () => {
         await ChannelScreen.postInput.typeText(testChannel.name);
         await channelMentionAutocomplete.tap();
 
-        // * Verify channel mention list disappears
-        // After selecting a channel mention, the autocomplete dismissal is driven
-        // by a React state update; on iOS 26 CI the assertion can race the update
-        // (see MM-T4879_5 which uses the same settle-then-assert pattern after
-        // typing a trailing space). Brief settle keeps this deterministic without
-        // a timeout bump.
-        await wait(timeouts.ONE_SEC);
-        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
+        // * Verify channel mention list disappears.
+        // The dismissal is driven by a React state update after tap, so use
+        // waitFor(...).not.toExist() instead of a fixed sleep — it exits as soon
+        // as the list unmounts, and gives the update time to land on slower CI
+        // runners (iOS 26 / macos-15) without a hard wait.
+        await waitFor(Autocomplete.sectionChannelMentionList).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Clear the input (which now contains the inserted channel mention text),
         // then re-activate channel mention list via the tilde quick action.

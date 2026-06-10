@@ -63,15 +63,10 @@ describe('Messaging - Markdown Code', () => {
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
 
-        // Scroll the post list to dismiss the keyboard and bring the code block fully
-        // into view. 300px is enough to clear the soft keyboard + message input bar so
-        // the block passes the 50% visibility threshold.
-        await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
-
-        // Use toBeVisible(50): multi-line code blocks can be 50–74% visible when the
-        // bottom is clipped by the message input bar.
-        // toExist() confirms the code block rendered correctly; toBeVisible(50) is fragile
-        // when the message input bar clips a short block below the 50% threshold.
+        // toExist() only checks the element is in the view hierarchy, so we don't
+        // need to scroll it into view. Earlier versions used toBeVisible(50)
+        // which required clearing the soft keyboard via scroll, but the manual
+        // scroll fails on iOS 26 when the FlatList is already at the boundary.
         await expect(postListPostItemCodeBlock).toExist();
 
         // # Go back to channel list screen
@@ -90,11 +85,8 @@ describe('Messaging - Markdown Code', () => {
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
 
-        // Scroll the post list to dismiss the keyboard before the visibility check.
-        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
-
-        // toExist() confirms the code block rendered correctly; toBeVisible(50) is fragile
-        // when the message input bar clips a short block below the 50% threshold.
+        // toExist() doesn't require the element to be on-screen, so no manual
+        // scroll is needed. See MM-T4895_1 above for the reasoning.
         await expect(postListPostItemCodeBlock).toExist();
 
         // # Go back to channel list screen
