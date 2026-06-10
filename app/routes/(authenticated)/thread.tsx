@@ -12,7 +12,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import ThreadScreen from '@screens/thread';
 
-
 const threadMessages = defineMessages({
     thread: {
         id: 'thread.header.thread',

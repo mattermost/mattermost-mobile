@@ -189,6 +189,7 @@ describe('preferences', () => {
 
         const result = await deleteSavedPost(serverUrl, post1.id);
         expect(result.error).toBeDefined();
+
         // EphemeralStore.addRecentlyUnsavedSavedPost must NOT be called on failure
         expect(EphemeralStore.addRecentlyUnsavedSavedPost).not.toHaveBeenCalled();
         expect(prefModel.prepareDestroyPermanently).not.toHaveBeenCalled();
