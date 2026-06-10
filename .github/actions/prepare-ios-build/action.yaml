@@ -3,7 +3,7 @@ description: Action to prepare environment for ios build
 
 inputs:
   intune-enabled:
-    description: 'Enable Intune MAM features (requires Xcode 26.1+)'
+    description: 'Enable Intune MAM features (requires Xcode 26.2+)'
     required: false
     default: 'false'
   intune-ssh-private-key:
@@ -16,17 +16,17 @@ runs:
     - name: ci/setup-xcode
       uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
       with:
-        xcode-version: '26.1'
+        xcode-version: '26.2'
 
     - name: ci/ensure-ios-platform-installed
-      # The macos-26 runner image ships Xcode 26.1.1 with the iOS SDK headers
-      # but does not always pre-download the matching iOS 26.1 platform
+      # The macos-26 runner image ships Xcode 26.2 with the iOS SDK headers
+      # but does not always pre-download the matching iOS 26.2 platform
       # runtime. Without it, xcodebuild fails the build with:
-      #   "Ineligible destinations ... error:iOS 26.1 is not installed."
+      #   "Ineligible destinations ... error:iOS 26.2 is not installed."
       #
       # The runner may have other iOS runtimes installed (e.g. iOS 18.6,
-      # iOS 26.0). Those are USELESS for an Xcode 26.1 build — we must
-      # check for iOS 26.1 SPECIFICALLY, not "any iOS runtime", or we'll
+      # iOS 26.0). Those are USELESS for an Xcode 26.2 build — we must
+      # check for iOS 26.2 SPECIFICALLY, not "any iOS runtime", or we'll
       # skip the download and the build will then fail with the error
       # above. (Previous version of this check used `grep "iOS [0-9]+\.[0-9]+ "`
       # which matched any version and caused PR 9754 to fail; see
@@ -36,7 +36,7 @@ runs:
       # ci/setup-xcode step above.
       shell: bash
       env:
-        REQUIRED_IOS_RUNTIME: "26.1"
+        REQUIRED_IOS_RUNTIME: "26.2"
       run: |
         # Wait up to 60s for CoreSimulator service to come up so the queries
         # below are reliable. Fresh macos-26 runners can lag past job start.
@@ -47,8 +47,8 @@ runs:
         done
 
         # No-op only when the EXACT required iOS runtime is already installed.
-        # `iOS 26.1 ` with trailing space distinguishes "iOS 26.1" from
-        # "iOS 26.10" or "iOS 26.1.x" (none currently exist, but defensive).
+        # `iOS 26.2 ` with trailing space distinguishes "iOS 26.2" from
+        # "iOS 26.20" or "iOS 26.2.x" (none currently exist, but defensive).
         if xcrun simctl list runtimes 2>/dev/null | grep -qE "iOS ${REQUIRED_IOS_RUNTIME}( |$)"; then
           echo "iOS ${REQUIRED_IOS_RUNTIME} Simulator runtime already installed; skipping -downloadPlatform."
           exit 0
