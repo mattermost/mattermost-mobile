@@ -74,18 +74,88 @@ if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
     process.exit(1);
 }
 
-// Plugins to install after licensing.
-// Each entry has an id and an optional url for direct download (used when Marketplace doesn't have it).
+// Plugins to install after licensing. URLs are resolved at provision time
+// from the GitHub `releases/latest` endpoint so we don't drift behind upstream
+// pin bumps. fallbackVersion is the last-known-good if the GitHub API call
+// fails (rate limit, outage). The installPlugin function below also falls
+// back to the server's Marketplace if the URL install errors out, so this is
+// defense-in-depth.
+//
+// Asset naming convention (consistent across mattermost/mattermost-plugin-*):
+//   <repo>/releases/download/v<ver>/mattermost-plugin-<name>-v<ver>-linux-amd64.tar.gz
 const REQUIRED_PLUGINS = [
     {
         id: 'mattermost-ai',
-        url: 'https://github.com/mattermost/mattermost-plugin-agents/releases/download/v1.14.0/mattermost-plugin-agents-v1.14.0-linux-amd64.tar.gz',
+        repo: 'mattermost/mattermost-plugin-agents',
+        assetName: 'mattermost-plugin-agents',
+        fallbackVersion: '1.14.0',
     },
     {
         id: 'com.mattermost.calls',
-        url: 'https://github.com/mattermost/mattermost-plugin-calls/releases/download/v1.11.5/mattermost-plugin-calls-v1.11.5-linux-amd64.tar.gz',
+        repo: 'mattermost/mattermost-plugin-calls',
+        assetName: 'mattermost-plugin-calls',
+        fallbackVersion: '1.11.5',
     },
 ];
+
+// Fetch the latest release tag for a GitHub repo. Strips the 'v' prefix so the
+// caller can interpolate cleanly into both the tag path (`v${ver}`) and the
+// asset filename (`-v${ver}-`). Authenticates with GITHUB_TOKEN if present
+// (bumps GitHub's 60 req/hr unauthenticated limit to 5000 req/hr — CI runners
+// share IPs and can blow through 60 quickly).
+function fetchLatestVersion(repo) {
+    return new Promise((resolve, reject) => {
+        const req = https.request({
+            hostname: 'api.github.com',
+            port: 443,
+            path: `/repos/${repo}/releases/latest`,
+            method: 'GET',
+            headers: {
+                'User-Agent': 'mattermost-mobile-provisioner',
+                Accept: 'application/vnd.github+json',
+                ...(process.env.GITHUB_TOKEN ? {Authorization: `Bearer ${process.env.GITHUB_TOKEN}`} : {}),
+            },
+        }, (res) => {
+            let data = '';
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+            res.on('end', () => {
+                if (res.statusCode >= 400) {
+                    reject(new Error(`GitHub API ${res.statusCode}: ${data.slice(0, 200)}`));
+                    return;
+                }
+                try {
+                    const parsed = JSON.parse(data);
+                    if (!parsed.tag_name) {
+                        reject(new Error(`GitHub API response missing tag_name: ${data.slice(0, 200)}`));
+                        return;
+                    }
+                    const tag = parsed.tag_name;
+                    resolve(tag.startsWith('v') ? tag.substring(1) : tag);
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        });
+        req.on('error', reject);
+        req.end();
+    });
+}
+
+// Resolve the latest version from GitHub, falling back to the pinned
+// last-known-good if the API call fails. Returns a fully-built download URL.
+async function resolvePluginUrl(plugin) {
+    let version;
+    try {
+        version = await fetchLatestVersion(plugin.repo);
+        console.log(`[provision] ${plugin.repo}: latest=v${version}`);
+    } catch (err) {
+        version = plugin.fallbackVersion;
+        console.warn(`[provision] ${plugin.repo}: GitHub API lookup failed (${err.message}); falling back to v${version}.`);
+    }
+    return `https://github.com/${plugin.repo}/releases/download/v${version}/${plugin.assetName}-v${version}-linux-amd64.tar.gz`;
+}
 
 function request(method, urlPath, body, token) {
     return new Promise((resolve, reject) => {
@@ -297,7 +367,10 @@ async function main() {
     await configureTestServer(token);
 
     for (const plugin of REQUIRED_PLUGINS) {
-        await installPlugin(token, plugin); // eslint-disable-line no-await-in-loop
+        // eslint-disable-next-line no-await-in-loop
+        const url = await resolvePluginUrl(plugin);
+        // eslint-disable-next-line no-await-in-loop
+        await installPlugin(token, {id: plugin.id, url});
     }
 
     console.log('[provision] Server provisioning complete.');

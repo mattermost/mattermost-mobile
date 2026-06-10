@@ -36,11 +36,15 @@ const prepackagedPlugins = new Set([
 ]);
 
 /**
- * Get the latest release version from GitHub releases
+ * Get the latest release version from GitHub releases.
+ * On API failure (rate limit / outage / private repo), falls back to the
+ * caller-supplied last-known-good version so CI can keep moving instead of
+ * failing the entire provisioning step on a transient GitHub blip.
  * @param {string} repo - GitHub repository in format 'owner/repo'
+ * @param {string} fallback - version to return if the GitHub API call fails
  * @return {Promise<string>} returns latest version string without 'v' prefix
  */
-export const apiGetLatestPluginVersion = async (repo: string): Promise<string> => {
+export const apiGetLatestPluginVersion = async (repo: string, fallback = '0.10.3'): Promise<string> => {
     try {
         const response = await client.get(`https://api.github.com/repos/${repo}/releases/latest`);
         const tagName = response.data.tag_name;
@@ -48,20 +52,33 @@ export const apiGetLatestPluginVersion = async (repo: string): Promise<string> =
         // Remove 'v' prefix if present (e.g., 'v0.10.2' -> '0.10.2')
         return tagName.startsWith('v') ? tagName.substring(1) : tagName;
     } catch (err) {
-        // Fallback to hardcoded version if API fails
-        return '0.10.3';
+        return fallback;
     }
 };
 
-// Agents Plugin Constants
+// Agents Plugin Constants — version resolved at call-time via GitHub releases.
+// fallbackVersion is the last-known-good if the GitHub API is unavailable.
 export const AgentsPlugin = {
     id: 'mattermost-ai',
+    repo: 'mattermost/mattermost-plugin-agents',
+    fallbackVersion: '1.14.0',
+
+    async getLatestDownloadUrl() {
+        const v = await apiGetLatestPluginVersion(this.repo, this.fallbackVersion);
+        return `https://github.com/${this.repo}/releases/download/v${v}/mattermost-plugin-agents-v${v}-linux-amd64.tar.gz`;
+    },
 } as const;
 
-// Calls Plugin Constants
+// Calls Plugin Constants — version resolved at call-time via GitHub releases.
 export const CallsPlugin = {
     id: 'com.mattermost.calls',
-    url: 'https://github.com/mattermost/mattermost-plugin-calls/releases/download/v1.5.0/com.mattermost.calls-1.5.0.tar.gz',
+    repo: 'mattermost/mattermost-plugin-calls',
+    fallbackVersion: '1.11.5',
+
+    async getLatestDownloadUrl() {
+        const v = await apiGetLatestPluginVersion(this.repo, this.fallbackVersion);
+        return `https://github.com/${this.repo}/releases/download/v${v}/mattermost-plugin-calls-v${v}-linux-amd64.tar.gz`;
+    },
 } as const;
 
 // Demo Plugin Constants
