@@ -30,8 +30,34 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
+
+// Polls /posts/{id}/reactions until the (userId, emoji) presence matches
+// `shouldExist`. A reaction tap on the device is network-async — the server
+// state catches up shortly after, so a single GET right after the tap races.
+const expectReactorWithRetry = async (
+    postId: string,
+    emojiName: string,
+    userId: string,
+    shouldExist: boolean,
+) => {
+    for (let attempt = 0; attempt < 10; attempt++) {
+        // eslint-disable-next-line no-await-in-loop
+        const {reactions} = await Post.apiGetReactionsForPost(siteOneUrl, postId);
+        const has = (reactions || []).some(
+            (r: {user_id: string; emoji_name: string}) => r.user_id === userId && r.emoji_name === emojiName,
+        );
+        if (has === shouldExist) {
+            return;
+        }
+        // eslint-disable-next-line no-await-in-loop
+        await wait(timeouts.HALF_SEC);
+    }
+    throw new Error(
+        `Expected user ${userId} ${shouldExist ? 'to have' : 'NOT to have'} reacted with :${emojiName}: on post ${postId} within 5s, but ${shouldExist ? 'reaction missing' : 'reaction still present'}.`,
+    );
+};
 
 describe('Messaging - Emojis and Reactions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -254,6 +280,12 @@ describe('Messaging - Emojis and Reactions', () => {
             await waitFor(reactionEmoji).toExist().withTimeout(timeouts.TEN_SEC);
             await expect(reactionEmoji).toExist();
 
+            // * Verify via API that the test user's +1 reaction is recorded
+            // (UI count is rendered through AnimatedNumbers without a stable
+            // testID; assert against the source of truth instead so the test
+            // would actually fail if the tap were a no-op).
+            await expectReactorWithRetry(post.id, '+1', testUser.id, true);
+
             // # Tap the reaction again to remove the current user's reaction
             await reactionEmoji.tap();
 
@@ -263,6 +295,10 @@ describe('Messaging - Emojis and Reactions', () => {
             await device.enableSynchronization();
         }
         await expect(reactionEmoji).toExist();
+
+        // * Verify via API that the test user's reaction is removed while the other user's remains
+        await expectReactorWithRetry(post.id, '+1', testUser.id, false);
+        await expectReactorWithRetry(post.id, '+1', otherUser.id, true);
 
         // # Go back to channel list screen
         await ChannelScreen.back();

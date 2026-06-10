@@ -61,9 +61,19 @@ runs:
         for attempt in 1 2 3; do
           echo "xcodebuild -downloadPlatform iOS (attempt $attempt/3)..."
           if xcodebuild -downloadPlatform iOS; then
-            echo "Download succeeded. Installed iOS runtimes after download:"
+            echo "Download command succeeded. Installed iOS runtimes:"
             xcrun simctl list runtimes 2>/dev/null | grep -E "^iOS " || echo "(none)"
-            exit 0
+            # xcodebuild -downloadPlatform iOS can exit 0 while installing a
+            # different iOS major (it follows Xcode's bundled SDK, which
+            # occasionally lags). Re-run the exact REQUIRED_IOS_RUNTIME check
+            # so we fail loudly here instead of in later steps with the
+            # opaque "Ineligible destinations" error.
+            if xcrun simctl list runtimes 2>/dev/null | grep -qE "iOS ${REQUIRED_IOS_RUNTIME}( |$)"; then
+              echo "iOS ${REQUIRED_IOS_RUNTIME} runtime now installed."
+              exit 0
+            fi
+            echo "::error::xcodebuild -downloadPlatform iOS succeeded but iOS ${REQUIRED_IOS_RUNTIME} is still not present."
+            exit 1
           fi
           echo "Attempt $attempt failed; retrying in 30s..."
           sleep 30
