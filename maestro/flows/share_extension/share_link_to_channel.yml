@@ -1,4 +1,21 @@
-# MM-T2874: Share a link to a Mattermost channel via the share extension
+# MM-T2874: User can share a link to a Mattermost channel via the share extension.
+#
+# PRE-CONDITIONS:
+#   - Logged-in test user with access to test channel
+#   - iOS: Safari with example.com loaded; Android: Chrome with example.com loaded
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#
+# ASSERTIONS:
+#   - Link shared via system share sheet opens Mattermost share extension
+#   - Posted link appears in the target channel
+#
+# testIDs:
+#   - share_extension.channel.option
+#   - channel_item.${TEST_CHANNEL_NAME}
+#   - share_extension.post.button
+#   - channel.post_list.post
 tags:
   - MM-T2874
 appId: ${MAESTRO_APP_ID}

@@ -1,4 +1,21 @@
-# MM-T2863: Share text to a Mattermost channel via the share extension
+# MM-T2863: User can share text to a Mattermost channel via the share extension.
+#
+# PRE-CONDITIONS:
+#   - Logged-in test user with access to test channel
+#   - iOS: Safari with example.com loaded; Android: Chrome with example.com loaded
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#
+# ASSERTIONS:
+#   - Text selected and shared via system share sheet to Mattermost
+#   - Posted content appears in the target channel
+#
+# testIDs:
+#   - share_extension.channel.option
+#   - channel_item.${TEST_CHANNEL_NAME}
+#   - share_extension.post.button
+#   - channel.post_list.post
 tags:
   - MM-T2863
 appId: ${MAESTRO_APP_ID}

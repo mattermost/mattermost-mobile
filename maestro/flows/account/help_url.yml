@@ -1,10 +1,22 @@
-# MM-T3260: Tapping Help in Settings opens the help URL in a browser
-# iOS 26+: SFSafariViewController uses a "breadcrumb" back-to-app button (resource-id: breadcrumb,
-#   accessibilityText: "Return to <AppName>"). Older iOS used a "Done" button top-left.
-# Android: opens Chrome Custom Tab (cross-process); dismissed with Back key.
-# Note: assert on settings.help.option (child element) rather than the root screen id
-# because Maestro 2.x on Android does not match partial resource-id regexes against
-# the SettingContainer's SafeAreaView testID ("settings.screen").
+# MM-T3260: Tapping Help in Settings opens the help URL in a browser.
+#
+# PRE-CONDITIONS:
+#   - Logged-in test user (via utils/login.yml)
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
+#
+# ASSERTIONS:
+#   - Help opens an external browser or in-app browser sheet
+#   - iOS: breadcrumb or Done dismisses back to Settings with Help visible again
+#   - Android: Back from Chrome Custom Tab returns to Settings with Help visible again
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.screen
+#   - account.settings.option
+#   - settings.help.option
+#   - breadcrumb
 tags:
   - MM-T3260
 appId: ${MAESTRO_APP_ID}

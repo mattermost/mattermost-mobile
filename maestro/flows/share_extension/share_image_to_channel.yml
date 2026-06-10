@@ -1,4 +1,21 @@
-# MM-T2862: Share an image to a Mattermost channel via the share extension
+# MM-T2862: User can share an image to a Mattermost channel via the share extension.
+#
+# PRE-CONDITIONS:
+#   - Logged-in test user with access to test channel
+#   - Photos app has at least one image (simulator library)
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#
+# ASSERTIONS:
+#   - Image shared from Photos reaches Mattermost share extension
+#   - User selects channel and posts; image appears in channel post list
+#
+# testIDs:
+#   - share_extension.channel.option
+#   - channel_item.${TEST_CHANNEL_NAME}
+#   - share_extension.post.button
+#   - channel.post_list.post
 tags:
   - MM-T2862
 appId: ${MAESTRO_APP_ID}

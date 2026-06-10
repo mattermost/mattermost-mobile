@@ -1,27 +1,29 @@
-# MM-T5611: Tapping a link bookmark opens the URL in an external browser
+# MM-T5611: Tapping a link bookmark opens the URL in an external browser.
 #
-# This test was originally a Detox test (channel_bookmarks.e2e.ts MM-T5611_1) but had
-# to be moved to Maestro because tapping a link bookmark calls Linking.openURL(), which
-# opens Safari.app (iOS) or a Chrome Custom Tab (Android). Detox is scoped to the main
-# app process and cannot interact with an external browser or an in-app
-# SFSafariViewController overlay. Maestro drives automation at the OS accessibility
-# layer and can see elements in both the app and any browser overlay.
+# PRE-CONDITIONS:
+#   - Channel bookmarks enabled on server
+#   - Logged-in user in test channel
 #
-# Flow:
-#   1. Login and navigate to the test channel
-#   2. Open channel info → add a link bookmark (https://mattermost.com)
-#   3. Save and close channel info
-#   4. Verify the bookmark bar is visible in the channel header
-#   5. Tap the bookmark — browser opens
-#   6. Screenshot the browser as evidence; dismiss it
-#   7. Verify the channel screen is back
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
 #
-# Requires env vars:
-#   SITE_1_URL          — server URL (e.g. http://localhost:8065)
-#   TEST_USER_EMAIL     — test user email
-#   TEST_USER_PASSWORD  — test user password
-#   TEST_CHANNEL_NAME   — name of a channel with no posts (bookmark bar will be empty)
-#   MAESTRO_APP_ID      — app bundle ID (default: com.mattermost.rnbeta)
+# ASSERTIONS:
+#   - Link bookmark can be created from channel info
+#   - Bookmark appears in channel header bar after closing channel info
+#   - Tapping bookmark opens external browser; dismissing returns to channel
+#
+# testIDs:
+#   - channel_header.channel_quick_actions.button
+#   - channel.quick_actions.channel_info.action
+#   - channel_info.screen
+#   - channel_info.add_bookmark.button
+#   - channel_bookmark.type.link
+#   - channel_bookmark.screen
+#   - channel_bookmark_add.link.input
+#   - channel_bookmark_add.title.input
+#   - channel_bookmark.edit.save_button
+#   - close.channel_info.button
+#   - channel_header.bookmarks.list
 tags:
   - MM-T5611
 appId: ${MAESTRO_APP_ID}

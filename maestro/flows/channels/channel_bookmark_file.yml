@@ -1,25 +1,27 @@
-# MM-T5603: Add a file bookmark via channel info
+# MM-T5603: User can add a file bookmark via channel info and the native file picker.
 #
-# Covers the "Attach a file" path in the channel bookmark flow, which opens the
-# native iOS document picker (Files app). Detox cannot automate system pickers;
-# Maestro can because it drives automation at the OS accessibility layer.
+# PRE-CONDITIONS:
+#   - Channel bookmarks enabled on server (default Matterwick provisioning)
+#   - test_bookmark.png staged on device before run (CI copies fixture to picker-visible storage)
+#   - Logged-in user in test channel
 #
-# PRE-CONDITION: A test file must be placed in the app's Documents folder:
-# For Android emulator:
-#   adb push detox/e2e/support/fixtures/image.png /sdcard/Download/test_bookmark.png
-# For iOS simulator (places file in the local file provider — no UIFileSharingEnabled needed):
-#   UDID=$(xcrun simctl list devices booted -j | python3 -c "import sys,json; d=json.load(sys.stdin); print(list(d['devices'].values())[-1][0]['udid'])")
-#   LOCAL_STORAGE=$(find ~/Library/Developer/CoreSimulator/Devices/$UDID/data/Containers/Shared/AppGroup \
-#     -name ".com.apple.mobile_container_manager.metadata.plist" \
-#     -exec grep -l "FileProvider.LocalStorage" {} \; | xargs -I{} dirname {} | head -1)
-#   cp detox/e2e/support/fixtures/image.png "$LOCAL_STORAGE/File Provider Storage/test_bookmark.png"
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
 #
-# This places the file directly in "On My iPhone" in the document picker.
-# The iOS document picker opens to "Recents". We navigate Browse > On My iPhone
-# to find the file placed in the local file provider storage.
+# ASSERTIONS:
+#   - File bookmark type can be selected from channel info
+#   - Native document picker selects test_bookmark.png
+#   - Saved bookmark appears in channel info bookmarks list
 #
-# Requires env vars: SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
-# Set MAESTRO_APP_ID to com.mattermost.rnbeta (default) or your app bundle ID.
+# testIDs:
+#   - channel_header.channel_quick_actions.button
+#   - channel.quick_actions.channel_info.action
+#   - channel_info.screen
+#   - channel_info.add_bookmark.button
+#   - channel_bookmark.type.file
+#   - channel_bookmark.screen
+#   - channel_bookmark.edit.save_button
+#   - channel_info.bookmarks.list
 tags:
   - MM-T5603
 appId: ${MAESTRO_APP_ID}

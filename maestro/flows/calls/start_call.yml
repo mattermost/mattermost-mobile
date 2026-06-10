@@ -1,18 +1,24 @@
-# MM-T4829: Start a call in a channel
+# MM-T4829: User can start a call from channel quick actions and see the call screen.
 #
-# Verifies that a user can start a call from the channel quick actions menu and
-# that the call screen appears with the user shown as the active participant.
+# PRE-CONDITIONS:
+#   - Calls plugin enabled on test channel (maestro/fixtures/calls_seed.ts)
+#   - Logged-in user in the test channel
 #
-# PRE-CONDITION: Run the calls seed script to create test data:
-#   tsx --tsconfig detox/tsconfig.json maestro/fixtures/calls_seed.ts
-#   source .maestro-test-env.sh
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
 #
-# Required env vars:
-#   SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
-#   MAESTRO_APP_ID (defaults to com.mattermost.rnbeta if not set)
+# ASSERTIONS:
+#   - Start/Join Call action is available in quick actions
+#   - Call screen appears with current-call bar and participant list
+#   - User can leave the call and return to the channel
 #
-# NOTE: The Calls plugin (com.mattermost.calls) must be installed and enabled
-# on the server before running this flow. calls_seed.ts handles this automatically.
+# testIDs:
+#   - channel_header.channel_quick_actions.button
+#   - channel_info.channel_actions.join_start_call.action
+#   - calls.current_call_bar
+#   - mute-unmute
+#   - users-list
+#   - leave
 tags:
   - MM-T4829
 appId: ${MAESTRO_APP_ID}

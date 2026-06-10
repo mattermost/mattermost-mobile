@@ -5,7 +5,8 @@
   "scripts": {
     "test:ios": "maestro test --platform ios flows/",
     "test:android": "maestro test --platform android flows/",
-    "dry-run": "maestro test --dry-run flows/"
+    "dry-run": "maestro test --dry-run flows/",
+    "validate-headers": "bash scripts/validate-flow-headers.sh"
   },
   "maestro": {
     "version": "2.3.0",

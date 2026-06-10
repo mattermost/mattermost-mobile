@@ -1,57 +1,24 @@
-# MM-T67856_4: When the server's `AllowDownloadLogs` is false, the in-app
-# Report a Problem screen is NOT reachable from settings — `Settings > Report
-# a Problem` instead silently triggers an email-via-mail-client (see
-# `skipReportAProblemScreen` branch in
-# app/screens/settings/report_problem/report_problem.tsx:40-43), so the
-# "Show an option to attach app logs" toggle is never rendered for the user.
+# MM-T67856_4: With AllowDownloadLogs disabled, Report a Problem skips the in-app screen.
 #
-# Server-side gate logic (with trial license active so isFreeEdition=false):
-#   skipReportAProblemScreen = (ReportAProblemType==='default' && !AllowDownloadLogs)
-#   => true when AllowDownloadLogs is false.
+# PRE-CONDITIONS:
+#   - Server SupportSettings.AllowDownloadLogs=false (patched in CI before this flow runs)
+#   - Logged-in test user on a licensed server
+#   - CI restores AllowDownloadLogs=true after this flow (exclude-tag + dedicated step)
 #
-# Note: the full gate at report_problem.tsx:40-43 also activates when
-# `(ReportAProblemType === 'email' && !AllowDownloadLogs)`. We don't touch
-# the email branch in this flow because the test config keeps
-# ReportAProblemType at 'default' — but a future test that flips type=email
-# would short-circuit the same way and could share this fixture.
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD, SITE_1_URL, ADMIN_TOKEN
 #
-# PRE-CONDITION:
-#   Flip AllowDownloadLogs to false on the server BEFORE running this flow.
-#   This is NOT done by the default seed/provisioner (which leaves the
-#   server default `true`), so set it explicitly as part of the test
-#   bring-up. Two options:
+# ASSERTIONS:
+#   - Tapping Report a Problem does not open the in-app report screen
+#   - Attach-app-logs toggle is never shown (screen is bypassed)
+#   - Mail composer or share sheet may appear and is dismissed via Back
 #
-#   (a) One-liner (run before `maestro test`).  Note: AllowDownloadLogs
-#       lives under SupportSettings, not ServiceSettings:
-#       curl -sS -X PUT \
-#         -H "Authorization: Bearer $ADMIN_TOKEN" \
-#         -H "Content-Type: application/json" \
-#         -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
-#         "$SITE_1_URL/api/v4/config/patch" > /dev/null
-#
-#   (b) Add the patch as a `runScript` step at the top of this flow once
-#       the maestro-flows runner supports it (Maestro v1.36+ adds script
-#       steps; current pinned version is v1.42 per .github/workflows/setup).
-#
-#   Cleanup (run AFTER this flow so other flows see the default again):
-#       curl -sS -X PUT \
-#         -H "Authorization: Bearer $ADMIN_TOKEN" \
-#         -H "Content-Type: application/json" \
-#         -d '{"SupportSettings":{"AllowDownloadLogs":true}}' \
-#         "$SITE_1_URL/api/v4/config/patch" > /dev/null
-#
-# Flow:
-#   1. Login.
-#   2. Account > Settings > tap Report a Problem.
-#   3. The in-app Report a Problem screen must NOT appear (skipped to email).
-#      The toggle is "hidden" by virtue of the screen not existing for users
-#      on this server config.
-#   4. The mail composer or share-sheet may appear on the device — Maestro
-#      dismisses it by sending the OS Back action.
-#
-# Source-of-truth references:
-#   - logic gate: app/screens/settings/report_problem/report_problem.tsx:40-43
-#   - in-app screen id (must NOT appear here): report_problem.screen
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.settings.option
+#   - settings.report_problem.option
+#   - report_problem.screen
+#   - report_problem.enable_log_attachments
 tags:
   - MM-T67856_4
 appId: ${MAESTRO_APP_ID}

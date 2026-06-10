@@ -1,21 +1,26 @@
-# MM-T67856_3: Disabling the "Attach app logs" toggle removes the
-# "Attach app logs" entry from the channel post-draft's attachment menu.
+# MM-T67856_3: Disabling the attach-app-logs toggle hides the option from the attachment menu.
 #
-# PRE-CONDITIONS (same as MM-T67856_1):
-#   - Trial license active, ReportAProblemType=default, AllowDownloadLogs=true.
-#   - Each flow runs with clearState → toggle starts disabled (false).
-#   - Tap twice (off→on→off) for definitive off end-state.
+# PRE-CONDITIONS:
+#   - Same server config as MM-T67856_1 (in-app Report a Problem path)
+#   - Flow sets toggle to a definitive off state before checking the attachment menu
 #
-# Flow:
-#   1. Login.
-#   2. Account > Settings > Report a Problem.
-#   3. Tap toggle switch twice — definitive "off" end-state.
-#   4. Relaunch app (iOS 26.3 back-nav workaround) → navigate to channel.
-#   5. Tap attachment quick action.
-#   6. Assert `file_attachment.attach_logs` is NOT visible.
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
 #
-# All testIDs are source-verified — see attach_logs_toggle_on_surfaces_option.yml
-# for the full `channel.post_draft.quick_actions.attachment_action` derivation.
+# ASSERTIONS:
+#   - After disabling the toggle, attachment menu does not show "Attach app logs"
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.settings.option
+#   - settings.report_problem.option
+#   - report_problem.enable_log_attachments
+#   - report_problem.enable_log_attachments.toggled.true.button
+#   - report_problem.enable_log_attachments.toggled.false.button
+#   - tab_bar.home.tab
+#   - channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}
+#   - channel.post_draft.quick_actions.attachment_action
+#   - file_attachment.attach_logs
 tags:
   - MM-T67856_3
 appId: ${MAESTRO_APP_ID}

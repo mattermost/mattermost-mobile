@@ -1,15 +1,26 @@
-# MM-T1325: App displays times using the correct timezone
-# Strategy: set simulator timezone via simctl before running this flow, then verify
-#   the timezone display settings screen reflects it.
-# NOTE: Uses launchApp with stopApp=true (full native restart picks up new timezone).
+# MM-T1325: Timezone display settings reflect the device timezone after app restart.
 #
-# PRE-REQUISITE: Set the simulator timezone BEFORE running this flow:
-#   xcrun simctl spawn booted launchctl setenv TZ America/New_York
-# TEARDOWN: Reset after the flow:
-#   xcrun simctl spawn booted launchctl unsetenv TZ
+# PRE-CONDITIONS:
+#   - Simulator/emulator timezone set to America/New_York before flow (CI pre-step)
+#   - App launched with stopApp so native TZ is picked up at startup
 #
-# In CI (e2e-maestro-template.yml) the pre/post steps handle this.
-# Locally, run maestro/scripts/run_timezone_test.sh which wraps this flow.
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
+#   - SIMULATOR_TIMEZONE (flow env block, default America/New_York)
+#
+# ASSERTIONS:
+#   - Timezone settings screen shows automatic timezone option
+#   - Region label displays "New York" for America/New_York
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.screen
+#   - account.settings.option
+#   - settings.display.option
+#   - display_settings.screen
+#   - display_settings.timezone.option
+#   - timezone_display_settings.screen
+#   - timezone_display_settings.automatic.option
 tags:
   - MM-T1325
 appId: ${MAESTRO_APP_ID}

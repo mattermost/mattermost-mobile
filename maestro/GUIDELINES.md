@@ -203,15 +203,17 @@ Before opening a PR, verify every changed flow against this list:
 - [ ] No `optional: true` on non-toggle, non-system-dialog taps
 - [ ] Flow ends with `takeScreenshot`
 - [ ] Non-default server config uses exclude-tag + dedicated CI step
-- [ ] `maestro test --dry-run <flow>` passes locally
+- [ ] `npm run validate-headers` passes locally
 
-### Automated dry-run (local)
+### Automated header validation (local + CI)
 
 ```bash
 cd maestro
-npm install
-maestro test --dry-run flows/account/attach_logs.yml
+npm run validate-headers
 ```
+
+CI runs the same script in `e2e-detox-pr.yml` (`validate-maestro-flow-headers` job)
+before `run-maestro` is invoked.
 
 ---
 

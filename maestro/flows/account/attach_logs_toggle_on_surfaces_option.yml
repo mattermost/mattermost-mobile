@@ -1,31 +1,26 @@
-# MM-T67856_2: Enabling the "Attach app logs" toggle on the Report a Problem
-# screen surfaces an "Attach app logs" item in the channel post-draft's
-# attachment menu.
+# MM-T67856_2: Enabling the attach-app-logs toggle surfaces the option in the post attachment menu.
 #
 # PRE-CONDITIONS:
-#   - Trial license active, ReportAProblemType=default, AllowDownloadLogs=true
-#     (same as MM-T67856_1; see attach_logs_toggle_visible.yml).
-#   - The toggle persists locally per user, so this flow assumes a fresh
-#     session where the toggle starts disabled.
+#   - Same server config as MM-T67856_1 (in-app Report a Problem path)
+#   - Toggle may start on or off — flow enables it idempotently
 #
-# Flow:
-#   1. Login.
-#   2. Account > Settings > Report a Problem.
-#   3. Tap the toggle to enable it.
-#   4. Back out to the channel.
-#   5. Tap the attachment quick action in the post draft.
-#   6. Assert `file_attachment.attach_logs` is visible in the attachment menu.
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
 #
-# Source-of-truth testIDs (all source-verified):
-#   - report_problem.enable_log_attachments  -> app/screens/report_a_problem/report_problem.tsx:192
-#   - file_attachment.attach_logs            -> app/screens/attachment_options/attachment_options.tsx:212
-#   - channel.post_draft.quick_actions.attachment_action — derived chain:
-#       CHANNEL_POST_DRAFT_TESTID = 'channel.post_draft'
-#         (app/screens/channel/channel_content.tsx:26, applied at line 67)
-#       -> DraftInput: quickActionsTestID = `${testID}.quick_actions`
-#         (app/components/post_draft/draft_input/draft_input.tsx:182)
-#       -> QuickActions: attachmentActionTestID = `${testID}.attachment_action`
-#         (app/components/post_draft/quick_actions/quick_actions.tsx:85)
+# ASSERTIONS:
+#   - Enabling the toggle on Report a Problem saves successfully
+#   - After returning to a channel, attachment menu shows "Attach app logs"
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.settings.option
+#   - settings.report_problem.option
+#   - report_problem.enable_log_attachments.toggled.false.button
+#   - report_problem.enable_log_attachments.toggled.true.button
+#   - tab_bar.home.tab
+#   - channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}
+#   - channel.post_draft.quick_actions.attachment_action
+#   - file_attachment.attach_logs
 tags:
   - MM-T67856_2
 appId: ${MAESTRO_APP_ID}

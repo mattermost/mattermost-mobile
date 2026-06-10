@@ -1,10 +1,21 @@
-# MM-T4831 (Device B): User B sees the JoinCallBanner and joins the active call
+# MM-T4831: Device B sees the join banner and joins User A's active call (multi-device).
 #
-# Run AFTER Device A has posted the sync message (polled by run_calls_two_device.sh).
+# PRE-CONDITIONS:
+#   - Device A has started a call (device_a_start_call.yml completed)
+#   - User B logged in on Device B in the same channel
 #
-# Required env vars:
-#   SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
-#   MAESTRO_APP_ID
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#
+# ASSERTIONS:
+#   - Join call banner appears in channel
+#   - Tapping Join opens call screen with mute control and participant list
+#
+# testIDs:
+#   - calls.join_call_banner.join
+#   - calls.current_call_bar
+#   - mute-unmute
+#   - users-list
 tags:
   - MM-T4831
 appId: ${MAESTRO_APP_ID}

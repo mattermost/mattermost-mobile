@@ -1,11 +1,21 @@
+# MM-T5603: Sub-flow — iOS document picker navigation for file bookmark (parent flow).
+#
+# PRE-CONDITIONS:
+#   - Invoked from channel_bookmark_file.yml after File bookmark type is selected
+#   - test_bookmark.png in simulator File Provider Local Storage (CI staging step)
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID
+#
+# ASSERTIONS:
+#   - Picker navigates Recents → Browse → On My iPhone → test_bookmark.png
+#
+# testIDs:
+#   - (system Files UI — text selectors: Recents, Browse, On My iPhone, test_bookmark.png)
+tags:
+  - MM-T5603
 appId: ${MAESTRO_APP_ID}
 ---
-# iOS document picker navigation: Recents -> Browse -> On My iPhone -> file
-# The file must be placed in the local file provider storage before the test:
-#   LOCAL_STORAGE=$(find ~/Library/Developer/CoreSimulator/Devices/$UDID/data/Containers/Shared/AppGroup \
-#     -name ".com.apple.mobile_container_manager.metadata.plist" \
-#     -exec grep -l "FileProvider.LocalStorage" {} \; | xargs -I{} dirname {} | head -1)
-#   cp detox/e2e/support/fixtures/image.png "$LOCAL_STORAGE/File Provider Storage/test_bookmark.png"
 - extendedWaitUntil:
     visible:
       text: "Recents"

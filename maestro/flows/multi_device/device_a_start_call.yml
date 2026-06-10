@@ -1,16 +1,23 @@
-# MM-T4830 (Device A): User A starts a call; Device B should see the join banner
+# MM-T4830: Device A starts a call so Device B can see the join banner (multi-device).
 #
-# Run with Device A:
-#   maestro --device $DEVICE_A_UDID test this file \
-#     --env TEST_USER_EMAIL=$USER_A_EMAIL \
-#     --env TEST_USER_PASSWORD=$USER_A_PASSWORD \
-#     --env ... (see run_calls_two_device.sh)
+# PRE-CONDITIONS:
+#   - Two devices orchestrated via maestro/scripts/run_calls_two_device.sh
+#   - Calls plugin enabled; User A logged in on Device A
 #
-# Required env vars:
-#   SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
-#   SYNC_TOKEN — written to the channel so Device B knows the call is active
-#   TEST_CHANNEL_ID, ADMIN_TOKEN — used by poll_for_message to gate Device B start
-#   MAESTRO_APP_ID
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#   - SYNC_TOKEN, TEST_CHANNEL_ID, ADMIN_TOKEN (orchestration / API polling)
+#
+# ASSERTIONS:
+#   - User A starts call from channel quick actions
+#   - Sync message posted so Device B flow can proceed
+#   - Call screen visible on Device A
+#
+# testIDs:
+#   - channel_header.channel_quick_actions.button
+#   - channel_info.channel_actions.join_start_call.action
+#   - calls.current_call_bar
+#   - mute-unmute
 tags:
   - MM-T4830
 appId: ${MAESTRO_APP_ID}

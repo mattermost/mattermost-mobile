@@ -1,7 +1,24 @@
-# MM-T1411: Call UI - permission dialog, initiate call, verify call screen
-# NOTE: Audio/video stream quality is manually tested; this flow covers UI only
-# Requires a channel with the Calls plugin enabled on the server
-# TODO: install Calls plugin (com.mattermost.calls) on the test server before running this flow
+# MM-T1411: Starting a call shows the permission dialog and call screen UI.
+#
+# PRE-CONDITIONS:
+#   - Calls plugin installed and enabled on the test channel (calls_seed.ts / provisioner)
+#   - Logged-in user in the test channel
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#
+# ASSERTIONS:
+#   - Start/Join Call action appears in channel quick actions
+#   - Microphone permission dialog handled (first run)
+#   - Call screen shows with mute control and participant list
+#
+# testIDs:
+#   - channel_header.channel_quick_actions.button
+#   - channel_info.channel_actions.join_start_call.action
+#   - calls.current_call_bar
+#   - mute-unmute
+#   - users-list
+#   - leave
 tags:
   - MM-T1411
 appId: ${MAESTRO_APP_ID}

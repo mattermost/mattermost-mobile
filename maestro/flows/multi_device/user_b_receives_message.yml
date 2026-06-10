@@ -1,7 +1,18 @@
-# MM-T3056 (Device B): User B should see the message sent by User A
-# Run after user_a_sends_message.yml completes (poll API for sync)
-# Requires: TEST_USER_EMAIL, TEST_USER_PASSWORD, SITE_1_URL, SYNC_TOKEN,
-#           CHANNEL_NAME, TEST_CHANNEL_ID, ADMIN_TOKEN
+# MM-T3056: Device B receives the message sent by Device A (multi-device).
+#
+# PRE-CONDITIONS:
+#   - user_a_sends_message.yml completed on Device A
+#   - User B logged in on Device B; API poll waits for server delivery
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#   - SYNC_TOKEN, TEST_CHANNEL_ID, ADMIN_TOKEN
+#
+# ASSERTIONS:
+#   - Message with SYNC_TOKEN is visible on Device B's channel screen
+#
+# testIDs:
+#   - channel message text containing SYNC_TOKEN (assertVisible by text)
 tags:
   - MM-T3056
 appId: ${MAESTRO_APP_ID}

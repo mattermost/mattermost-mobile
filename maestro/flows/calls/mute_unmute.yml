@@ -1,17 +1,22 @@
-# MM-T4832: Mute and unmute microphone during a call
+# MM-T4832: User can mute and unmute the microphone during an active call.
 #
-# Verifies that a user can toggle their microphone mute state during an active
-# call and that the button label updates to reflect the new state.
+# PRE-CONDITIONS:
+#   - Calls plugin enabled on test channel (maestro/fixtures/calls_seed.ts)
+#   - Active call started during the flow
 #
-# PRE-CONDITION: Run the calls seed script to create test data:
-#   tsx maestro/fixtures/calls_seed.ts
-#   source .maestro-test-env.sh
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
 #
-# Required env vars:
-#   SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
-#   MAESTRO_APP_ID
+# ASSERTIONS:
+#   - Mute button toggles microphone state during the call
+#   - Unmute restores the prior mute-button label/state
 #
-# NOTE: The Calls plugin (com.mattermost.calls) must be installed and enabled.
+# testIDs:
+#   - channel_header.channel_quick_actions.button
+#   - channel_info.channel_actions.join_start_call.action
+#   - calls.current_call_bar
+#   - mute-unmute
+#   - leave
 tags:
   - MM-T4832
 appId: ${MAESTRO_APP_ID}

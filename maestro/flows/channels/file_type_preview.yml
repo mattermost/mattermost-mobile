@@ -1,26 +1,23 @@
-# MM-T3244: Preview different file types
+# MM-T3244: Channel posts preview image, video, audio, PDF, and zip attachments correctly.
 #
-# Verifies that each Mattermost attachment category renders correctly and that the
-# in-app preview opens for the types that have one:
+# PRE-CONDITIONS:
+#   - seed_file_preview.js run to post file attachments and set file-id env vars
+#   - Logged-in user in the seeded test channel
 #
-#   IMAGE  (image/png)       → gallery viewer opens on tap (gallery.header.close.button)
-#   VIDEO  (video/mp4)       → gallery video player opens on tap (same gallery header)
-#   AUDIO  (audio/mpeg)      → inline AudioFile player renders (no tap needed)
-#   PDF    (application/pdf) → DocumentFile card visible; tap opens system/in-app viewer
-#   ZIP    (application/zip) → generic file card renders (no preview — not a known doc type)
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#   - IMAGE_FILE_ID, VIDEO_FILE_ID, AUDIO_FILE_ID, PDF_FILE_ID, ZIP_FILE_ID
 #
-# PRE-CONDITION: Run the seed script to create test data and write env vars:
+# ASSERTIONS:
+#   - Image and video open gallery preview with close control
+#   - Audio renders inline player without tap
+#   - PDF opens viewer on tap; zip shows generic file card only
 #
-#   node maestro/fixtures/seed_file_preview.js
-#   source .maestro-test-env.sh
-#
-# Then run this flow with all required --env flags (see seed script output for the
-# exact command).
-#
-# Required env vars:
-#   SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
-#   IMAGE_FILE_ID, VIDEO_FILE_ID, AUDIO_FILE_ID, PDF_FILE_ID, ZIP_FILE_ID
-#   MAESTRO_APP_ID (defaults to com.mattermost.rnbeta if not set)
+# testIDs:
+#   - scroll-to-end-view
+#   - gallery.header.close.button
+#   - navigation.header.back
+#   - channel.post_draft.post.input
 tags:
   - MM-T3244
 appId: ${MAESTRO_APP_ID}

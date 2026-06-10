@@ -1,6 +1,19 @@
-# MM-T3055 (Device A): User A sends a message; Device B should receive it
-# Run with: maestro --device $DEVICE_A_UDID test this file
-# Requires: TEST_USER_EMAIL, TEST_USER_PASSWORD, SITE_1_URL, SYNC_TOKEN, CHANNEL_NAME
+# MM-T3055: Device A sends a sync message for Device B to receive (multi-device).
+#
+# PRE-CONDITIONS:
+#   - Two devices orchestrated via maestro/scripts/run_two_device.sh
+#   - User A logged in on Device A in the test channel
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#   - SYNC_TOKEN (unique token embedded in message text)
+#
+# ASSERTIONS:
+#   - Message containing SYNC_TOKEN is sent and visible on Device A
+#
+# testIDs:
+#   - channel.post_draft.post.input
+#   - channel.post_draft.send_action.send.button
 tags:
   - MM-T3055
 appId: ${MAESTRO_APP_ID}
