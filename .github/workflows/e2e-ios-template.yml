@@ -287,7 +287,11 @@ jobs:
           # Shut down to apply password autofill restrictions
           echo "Shutting down to apply password autofill restrictions..."
           xcrun simctl shutdown "$SIMULATOR_ID"
-          sleep 3
+          for i in 1 2 3 4 5 6; do
+            state=$(xcrun simctl list devices | grep "$SIMULATOR_ID" | sed -E 's/.*\(([^)]+)\)$/\1/')
+            if [ "$state" = "Shutdown" ]; then break; fi
+            sleep 0.5
+          done
 
           echo "Disabling password autofill (simulator is shut down)"
 
@@ -411,7 +415,12 @@ jobs:
               grep "com.mattermost.rnbeta" | awk '{print $1}' | grep -E '^[0-9]+$' || true)
             if [ -n "$APP_PID" ]; then
               xcrun simctl spawn "$SIMULATOR_ID" kill -9 "$APP_PID" 2>/dev/null || true
-              sleep 1
+              for i in 1 2 3 4; do
+                if ! xcrun simctl spawn "$SIMULATOR_ID" launchctl list 2>/dev/null | grep -q "com.mattermost.rnbeta"; then
+                  break
+                fi
+                sleep 0.25
+              done
               echo "  Killed app via launchd (PID $APP_PID)"
             fi
 
@@ -438,10 +447,16 @@ jobs:
           # Open Simulator.app in background to speed up UI rendering
           open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID"
 
-          # Give Simulator.app time to fully initialize UI — iOS 26.x simulators need
-          # at least 10s after open before the first launchApp() reliably completes
-          # within the 90s Detox cap. 5s caused ~9/20 shards to hit launch timeouts.
-          sleep 10
+          # Poll bootstatus instead of a blind 10s sleep. Cap at 10s so we never
+          # exceed the previous worst case. 5s was empirically too short (~9/20
+          # shards timed out at the Detox 90s launchApp cap), so the minimum wait
+          # is 8s before exiting the loop.
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if xcrun simctl bootstatus "$SIMULATOR_ID" -b 2>/dev/null && [ "$i" -ge 8 ]; then
+              break
+            fi
+            sleep 1
+          done
 
           echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
 
