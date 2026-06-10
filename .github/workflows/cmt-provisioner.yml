@@ -3,32 +3,31 @@ name: CMT Provisioner
 # Lightweight trigger workflow for Compatibility Matrix Testing (CMT).
 #
 # Matterwick listens for this workflow's workflow_run:requested event, then provisions one
-# Mattermost cloud instance per version in its hardcoded CMT version set (Matterwick's
-# CMTServerVersions config / CMTVersions, e.g. the active ESR plus the current feature
-# release) and dispatches compatibility-matrix-testing.yml with the CMT_MATRIX input.
-# When compatibility-matrix-testing.yml completes, Matterwick destroys the provisioned
-# instances (cleanup is keyed off the completed workflow_run, matched by commit SHA).
+# Mattermost cloud instance per version in its CMT version set (auto-derived from Mattermost
+# releases, with `CMTServerVersions` in matterwick config as a manual override) and dispatches
+# compatibility-matrix-testing.yml with the CMT_MATRIX input. When that test workflow completes,
+# Matterwick destroys the provisioned instances (cleanup is keyed off the completed workflow_run,
+# matched by commit SHA).
 #
-# The server-version set lives in Matterwick config (managed via gitops), so this workflow
-# takes no inputs. Run it manually from the Actions tab, or let it fire automatically when a
-# release branch is cut (below).
+# Triggers: an RC tag cut (e.g. `v2.41.0-rc.1`), or a manual run from the Actions tab. The tag
+# glob filters out GA tags (`v2.41.0`) and any non-RC pre-release tags. Matterwick is the
+# authoritative gate: its `shouldTriggerCMT` also requires the head_branch to be either a manual
+# dispatch or an RC tag / release branch, so an off-pattern tag that somehow slips past the glob
+# is still rejected.
 #
-# Mobile runs CMT only on the release branch *cut* (not on subsequent pushes — that wiring is a
-# later change). `create` is the only creation-specific GitHub trigger and cannot be filtered by
-# ref name here, so it fires for every branch/tag creation; the job `if` below skips non-release
-# creations, and Matterwick is the authoritative gate (it only provisions when head_branch is a
-# release-v* branch or the run was a manual workflow_dispatch).
-#
-# NOTE (intentional duplicate coverage): a release-v* cut/push also triggers Matterwick's normal
-# release E2E flow (whole suite against the single latest server). CMT mobile additionally runs
-# the SMOKE suite against its multi-version matrix (one runner per version, iOS + Android), whose
-# set includes the latest server — so the latest server gets smoke-tested by CMT in addition to
-# the normal release suite. This is expected and accepted.
+# NOTE (intentional duplicate coverage): the matching `release-*` branch on which the RC tag is
+# cut also gets a normal release E2E run (whole suite, latest server) on push events. CMT runs
+# the SMOKE suite across the multi-version matrix at the RC moment, whose set includes the latest
+# server — so the latest server is exercised by both flows. Expected and accepted.
 
 on:
-  # Release branch cut only (creation). Subsequent pushes do not re-run CMT for mobile.
-  create:
-  # Manual runs from the Actions tab.
+  # RC tag cut. The glob matches the desktop/mobile RC tag convention `vX.Y.Z-rc.N` and excludes
+  # GA tags / nightly tags. (Tag globs are fnmatch-style; matterwick re-validates with a strict
+  # regex.)
+  push:
+    tags:
+      - "v*-rc*"
+  # Manual runs from the Actions tab (any ref).
   workflow_dispatch: {}
 
 # This workflow does not use GITHUB_TOKEN. Its only purpose is to emit a workflow_run event
@@ -38,14 +37,10 @@ permissions: {}
 
 jobs:
   signal:
-    # `create` fires for every branch and tag; only act on release-v* branch creations (manual
-    # dispatch always runs). This skips the runner for unrelated creations; note that the
-    # workflow_run webhook still reaches Matterwick, which independently gates on the branch.
-    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release-v'))
     runs-on: ubuntu-22.04
     steps:
       - name: Signal Matterwick to provision CMT servers
         run: |
-          echo "CMT trigger started."
+          echo "CMT trigger started for ref: ${GITHUB_REF}"
           echo "Matterwick provisions one server per configured version and then"
           echo "dispatches compatibility-matrix-testing.yml automatically."
