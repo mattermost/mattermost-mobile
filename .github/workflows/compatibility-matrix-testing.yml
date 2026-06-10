@@ -204,7 +204,7 @@ jobs:
             echo "status=failure" >> $GITHUB_OUTPUT
           fi
 
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:

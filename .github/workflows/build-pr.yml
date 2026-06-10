@@ -13,7 +13,11 @@ env:
 jobs:
   test:
     runs-on: ubuntu-22.04
-    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || github.event.label.name == 'Build App for Android' }}
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (github.event.label.name == 'Build Apps for PR' ||
+      github.event.label.name == 'Build App for iOS' ||
+      github.event.label.name == 'Build App for Android')
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
