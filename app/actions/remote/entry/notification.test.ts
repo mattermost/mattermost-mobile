@@ -51,7 +51,7 @@ describe('Performance metrics are set correctly', () => {
             console.log(`POST ${url} not registered in the mock`);
             return {status: 404, ok: false};
         });
-        mockedNavigationStore.waitUntilScreenHasLoaded.mockImplementation(() => Promise.resolve());
+        mockedNavigationStore.waitUntilScreenIsTop.mockImplementation(() => Promise.resolve());
 
         // There are no problems when running the tests for this file alone without this line
         // but for some reason, when running several tests together, it fails if we don't add this.

@@ -241,15 +241,17 @@ const AgentChat = ({bots}: Props) => {
                         />
                     )}
                 >
-                    <PostDraft
-                        channelId={channelId}
-                        testID={AGENT_CHAT_TESTID}
-                        containerHeight={containerHeight}
-                        isChannelScreen={false}
-                        location={Screens.AGENT_CHAT}
-                        onPostCreated={handlePostCreated}
-                        portalName={PORTAL_NAME}
-                    />
+                    {channelId ? (
+                        <PostDraft
+                            channelId={channelId}
+                            testID={AGENT_CHAT_TESTID}
+                            containerHeight={containerHeight}
+                            isChannelScreen={false}
+                            location={Screens.AGENT_CHAT}
+                            onPostCreated={handlePostCreated}
+                            portalName={PORTAL_NAME}
+                        />
+                    ) : null}
                 </KeyboardAwarePostDraftContainer>
                 <PortalHost name={PORTAL_NAME}/>
             </KeyboardStateProvider>

@@ -18,7 +18,7 @@ import {getCurrentCall} from '@calls/state';
 import {Events, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
-import {getConfig, getCurrentChannelId, getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
+import {canViewArchivedChannels, getCurrentChannelId, getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -447,9 +447,8 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
         }
 
         const currentChannel = await getCurrentChannel(database);
-        const config = await getConfig(database);
 
-        if (config?.ExperimentalViewArchivedChannels !== 'true') {
+        if (!(await canViewArchivedChannels(database))) {
             if (currentChannel && currentChannel.id === channelId) {
                 await handleKickFromChannel(serverUrl, channelId, Events.CHANNEL_ARCHIVED);
             }
