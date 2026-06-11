@@ -10,9 +10,7 @@ import {getLoadingTeamChannelsSubject} from '@store/team_load_store';
 import useDidMount from './did_mount';
 
 export const useTeamsLoading = (serverUrl: string) => {
-    // const subject = getLoadingTeamChannelsSubject(serverUrl);
-    // const [loading, setLoading] = useState(subject.getValue() !== 0);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(() => getLoadingTeamChannelsSubject(serverUrl).getValue() !== 0);
     useDidMount(() => {
         const sub = getLoadingTeamChannelsSubject(serverUrl).pipe(
             switchMap((v) => of$(v !== 0)),

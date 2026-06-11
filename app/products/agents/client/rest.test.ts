@@ -86,4 +86,14 @@ describe('ClientAgents', () => {
             );
         });
     });
+
+    describe('getConversation', () => {
+        it('should make correct API call', async () => {
+            await client.getConversation('conv-123');
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/mattermost-ai/conversations/conv-123',
+                {method: 'get'},
+            );
+        });
+    });
 });

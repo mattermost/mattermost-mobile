@@ -42,6 +42,12 @@ export function toSeconds({days, hours, minutes, seconds}: {days?: number; hours
 
 export function getReadableTimestamp(timestamp: number, timeZone: string, isMilitaryTime: boolean, currentUserLocale: string): string {
     const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) {
+        // Guard: callers (e.g. scheduled-message "Send on …" label) may pass an undefined/NaN
+        // timestamp during reschedule transitions. Returning '' avoids rendering the literal
+        // string "Invalid Date" in the UI (surfaced as MM-T5720 on the Drafts > Scheduled tab).
+        return '';
+    }
     const now = new Date();
     const isCurrentYear = date.getFullYear() === now.getFullYear();
 

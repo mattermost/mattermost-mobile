@@ -14,7 +14,7 @@ import {isBetaApp} from '@utils/general';
 import {logError, logWarning} from './log';
 
 import type {Database} from '@nozbe/watermelondb';
-import type {Breadcrumb, ErrorEvent} from '@sentry/types';
+import type {Breadcrumb, ErrorEvent} from '@sentry/core';
 
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
@@ -53,9 +53,6 @@ export function initializeSentry() {
         ...mmConfig,
         ...sentryOptions,
         enableCaptureFailedRequests: false,
-        integrations: [
-            Sentry.reactNativeExpoIntegration(),
-        ],
         beforeSend: (event: ErrorEvent) => {
             if (isBetaApp || (event?.level && eventFilter.includes(event.level))) {
                 return event;

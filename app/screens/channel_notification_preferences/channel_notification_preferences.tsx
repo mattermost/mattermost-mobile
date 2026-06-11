@@ -87,11 +87,15 @@ const ChannelNotificationPreferences = ({
 
             updateChannelNotifyProps(serverUrl, channelId, props);
         }
-        navigateBack();
     }, [defaultLevel, channelId, isCRTEnabled, notifyAbout, notifyLevel, notifyThreadReplies, serverUrl, threadReplies]);
 
+    const saveAndNavigateBack = useCallback(() => {
+        save();
+        navigateBack();
+    }, [save]);
+
     useBackNavigation(save);
-    useAndroidHardwareBackHandler(Screens.CHANNEL_NOTIFICATION_PREFERENCES, save);
+    useAndroidHardwareBackHandler(Screens.CHANNEL_NOTIFICATION_PREFERENCES, saveAndNavigateBack);
 
     const showThreadReplies = isCRTEnabled && (
         !hasGMasDMFeature ||

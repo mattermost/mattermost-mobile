@@ -63,58 +63,60 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
     const {database} = operator;
 
-    const lastFullSync = await getLastFullSync(database);
-    const now = Date.now();
+    try {
+        const lastFullSync = await getLastFullSync(database);
+        const now = Date.now();
 
-    const currentTeamId = await getCurrentTeamId(database);
-    const currentChannelId = await getCurrentChannelId(database);
+        const currentTeamId = await getCurrentTeamId(database);
+        const currentChannelId = await getCurrentChannelId(database);
 
-    setTeamLoading(serverUrl, true);
-    const entryData = await entry(serverUrl, currentTeamId, currentChannelId, lastFullSync, groupLabel);
-    if ('error' in entryData) {
+        setTeamLoading(serverUrl, true);
+        const entryData = await entry(serverUrl, currentTeamId, currentChannelId, lastFullSync, groupLabel);
+        if ('error' in entryData) {
+            return entryData.error;
+        }
+        const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted} = entryData;
+
+        await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);
+
+        const dt = Date.now();
+        if (models?.length) {
+            await operator.batchRecords(models, 'doReconnect');
+        }
+
+        logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
+
+        await fetchPostDataIfNeeded(serverUrl, groupLabel);
+
+        const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
+        const license = await getLicense(database);
+        const config = await getConfig(database);
+
+        handlePlaybookReconnect(serverUrl);
+        handleAgentsReconnect(serverUrl);
+
+        if (isSupportedServerCalls(config?.Version)) {
+            loadConfigAndCalls(serverUrl, currentUserId, groupLabel);
+        }
+
+        checkIsAgentsPluginEnabled(serverUrl);
+        fetchClassificationBanner(serverUrl);
+
+        await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
+
+        await setLastFullSync(operator, now);
+
+        openAllUnreadChannels(serverUrl, groupLabel);
+
+        dataRetentionCleanup(serverUrl);
+
+        expiredBoRPostCleanup(serverUrl);
+
+        AppsManager.refreshAppBindings(serverUrl, groupLabel);
+        return undefined;
+    } finally {
         setTeamLoading(serverUrl, false);
-        return entryData.error;
     }
-    const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted} = entryData;
-
-    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);
-
-    const dt = Date.now();
-    if (models?.length) {
-        await operator.batchRecords(models, 'doReconnect');
-    }
-
-    logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
-
-    await fetchPostDataIfNeeded(serverUrl, groupLabel);
-
-    const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
-    const license = await getLicense(database);
-    const config = await getConfig(database);
-
-    handlePlaybookReconnect(serverUrl);
-    handleAgentsReconnect(serverUrl);
-
-    if (isSupportedServerCalls(config?.Version)) {
-        loadConfigAndCalls(serverUrl, currentUserId, groupLabel);
-    }
-
-    checkIsAgentsPluginEnabled(serverUrl);
-    fetchClassificationBanner(serverUrl);
-
-    await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
-
-    await setLastFullSync(operator, now);
-    setTeamLoading(serverUrl, false);
-
-    openAllUnreadChannels(serverUrl, groupLabel);
-
-    dataRetentionCleanup(serverUrl);
-
-    expiredBoRPostCleanup(serverUrl);
-
-    AppsManager.refreshAppBindings(serverUrl, groupLabel);
-    return undefined;
 }
 
 async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGroupLabel) {

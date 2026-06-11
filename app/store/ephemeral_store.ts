@@ -9,6 +9,7 @@ import {getDefaultThemeByAppearance} from '@context/theme';
 import {toMilliseconds} from '@utils/datetime';
 
 const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
+const TIME_TO_CLEAR_RECENTLY_UNSAVED_SAVED_POSTS = toMilliseconds({minutes: 2});
 
 class EphemeralStoreSingleton {
     private themeSubject = new BehaviorSubject<Theme>(getDefaultThemeByAppearance());
@@ -24,6 +25,9 @@ class EphemeralStoreSingleton {
 
     private websocketEditingPost: {[serverUrl: string]: {[id: string]: {post: Post; timeout: NodeJS.Timeout} | undefined} | undefined} = {};
     private websocketRemovingPost: {[serverUrl: string]: Set<string> | undefined} = {};
+    private recentlyUnsavedSavedPosts: {[serverUrl: string]: {[postId: string]: NodeJS.Timeout} | undefined} = {};
+    private recentlyUnsavedSavedPostsState: {[serverUrl: string]: BehaviorSubject<Set<string>> | undefined} = {};
+    private recentlyUnsavedSavedPostSubjects: {[serverUrl: string]: {[postId: string]: BehaviorSubject<boolean>} | undefined} = {};
 
     // As of today, the server sends a duplicated event to add the user to the team.
     // If we do not handle this, this ends up showing some errors in the database, apart
@@ -154,6 +158,101 @@ class EphemeralStoreSingleton {
         }
 
         return undefined;
+    };
+
+    getRecentlyUnsavedSavedPostSubject = (serverUrl: string, postId: string) => {
+        if (!this.recentlyUnsavedSavedPostSubjects[serverUrl]) {
+            this.recentlyUnsavedSavedPostSubjects[serverUrl] = {};
+        }
+
+        const serverSubjects = this.recentlyUnsavedSavedPostSubjects[serverUrl]!;
+        if (!serverSubjects[postId]) {
+            serverSubjects[postId] = new BehaviorSubject(false);
+        }
+
+        return serverSubjects[postId]!;
+    };
+
+    observeRecentlyUnsavedSavedPost = (serverUrl: string, postId: string) => {
+        return this.getRecentlyUnsavedSavedPostSubject(serverUrl, postId).asObservable();
+    };
+
+    getRecentlyUnsavedSavedPostsSubject = (serverUrl: string) => {
+        if (!this.recentlyUnsavedSavedPostsState[serverUrl]) {
+            this.recentlyUnsavedSavedPostsState[serverUrl] = new BehaviorSubject(new Set());
+        }
+
+        return this.recentlyUnsavedSavedPostsState[serverUrl]!;
+    };
+
+    observeRecentlyUnsavedSavedPosts = (serverUrl: string) => {
+        return this.getRecentlyUnsavedSavedPostsSubject(serverUrl).asObservable();
+    };
+
+    addRecentlyUnsavedSavedPost = (serverUrl: string, postId: string) => {
+        if (!this.recentlyUnsavedSavedPosts[serverUrl]) {
+            this.recentlyUnsavedSavedPosts[serverUrl] = {};
+        }
+
+        const serverPosts = this.recentlyUnsavedSavedPosts[serverUrl]!;
+        const subject = this.getRecentlyUnsavedSavedPostSubject(serverUrl, postId);
+        const stateSubject = this.getRecentlyUnsavedSavedPostsSubject(serverUrl);
+        const existingTimeout = serverPosts[postId];
+        if (existingTimeout) {
+            clearTimeout(existingTimeout);
+        }
+
+        subject.next(true);
+        stateSubject.next(new Set([...stateSubject.value, postId]));
+        serverPosts[postId] = setTimeout(() => {
+            subject.next(false);
+            const nextState = new Set(stateSubject.value);
+            nextState.delete(postId);
+            stateSubject.next(nextState);
+            this.removeRecentlyUnsavedSavedPostSubject(serverUrl, postId);
+            delete serverPosts[postId];
+            if (!Object.keys(serverPosts).length) {
+                delete this.recentlyUnsavedSavedPosts[serverUrl];
+            }
+        }, TIME_TO_CLEAR_RECENTLY_UNSAVED_SAVED_POSTS);
+    };
+
+    private removeRecentlyUnsavedSavedPostSubject = (serverUrl: string, postId: string) => {
+        const serverSubjects = this.recentlyUnsavedSavedPostSubjects[serverUrl];
+        if (!serverSubjects?.[postId]) {
+            return;
+        }
+
+        serverSubjects[postId]!.complete();
+        delete serverSubjects[postId];
+        if (!Object.keys(serverSubjects).length) {
+            delete this.recentlyUnsavedSavedPostSubjects[serverUrl];
+        }
+    };
+
+    clearRecentlyUnsavedSavedPost = (serverUrl: string, postId: string) => {
+        this.recentlyUnsavedSavedPostSubjects[serverUrl]?.[postId]?.next(false);
+        const stateSubject = this.recentlyUnsavedSavedPostsState[serverUrl];
+        if (stateSubject?.value.has(postId)) {
+            const nextState = new Set(stateSubject.value);
+            nextState.delete(postId);
+            stateSubject.next(nextState);
+        }
+
+        const timeout = this.recentlyUnsavedSavedPosts[serverUrl]?.[postId];
+        if (timeout) {
+            clearTimeout(timeout);
+            delete this.recentlyUnsavedSavedPosts[serverUrl]![postId];
+            if (!Object.keys(this.recentlyUnsavedSavedPosts[serverUrl]!).length) {
+                delete this.recentlyUnsavedSavedPosts[serverUrl];
+            }
+        }
+
+        this.removeRecentlyUnsavedSavedPostSubject(serverUrl, postId);
+    };
+
+    isRecentlyUnsavedSavedPost = (serverUrl: string, postId: string) => {
+        return Boolean(this.recentlyUnsavedSavedPosts[serverUrl]?.[postId]);
     };
 
     // Ephemeral control when (un)archiving a channel locally
