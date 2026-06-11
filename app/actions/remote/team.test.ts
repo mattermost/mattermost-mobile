@@ -460,7 +460,14 @@ describe('remote team actions', () => {
             expect(result.teams.length).toBeGreaterThan(0);
         });
 
-        it('updateCanJoinTeams - handle not found database', async () => {
+        it('updateCanJoinTeams - returns error when no network client exists for the server', async () => {
+            // The suite-wide beforeAll stubs NetworkManager.getClient to always
+            // return mockClient. Restore the real implementation here so the
+            // missing-client path actually throws.
+            jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce((url: string) => {
+                throw new Error(`${url} client not found`);
+            });
+
             const result = await updateCanJoinTeams('foo') as {error: unknown};
             expect(result?.error).toBeDefined();
         });
