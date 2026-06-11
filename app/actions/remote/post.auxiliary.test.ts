@@ -37,7 +37,7 @@ describe('post.auxilary', () => {
     });
 
     afterEach(async () => {
-        DatabaseManager.destroyServerDatabase('baseHandler.test.com');
+        await DatabaseManager.destroyServerDatabase('baseHandler.test.com');
     });
 
     it('should batch record once for multiple posts', async () => {
