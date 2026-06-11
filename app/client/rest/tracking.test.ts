@@ -7,6 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import LocalConfig from '@assets/config.json';
 import {Events} from '@constants';
 import NetworkPerformanceManager from '@managers/network_performance_manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import test_helper from '@test/test_helper';
 
 import * as ClientConstants from './constants';
@@ -72,6 +73,13 @@ jest.mock('@managers/network_performance_manager', () => ({
     },
 }));
 
+jest.mock('@managers/session_attributes_manager', () => ({
+    __esModule: true,
+    default: {
+        getOutboundHeader: jest.fn(),
+    },
+}));
+
 describe('ClientTracking', () => {
     const mockedNPM = jest.mocked(NetworkPerformanceManager);
     const apiClientMock = {
@@ -127,6 +135,24 @@ describe('ClientTracking', () => {
         const headers = client.getRequestHeaders('POST');
         expect(headers[ClientConstants.HEADER_AUTH]).toBe(`${ClientConstants.HEADER_BEARER} testToken`);
         expect(headers[ClientConstants.HEADER_X_CSRF_TOKEN]).toBe('csrfToken');
+    });
+
+    it('should include session attributes header when the manager has an outbound header', async () => {
+        jest.mocked(SessionAttributesManager.getOutboundHeader).mockResolvedValue('encoded-payload');
+        client.setClientCredentials('testToken');
+
+        const headers = await client.prepareRequestHeaders('GET');
+
+        expect(headers[ClientConstants.HEADER_X_MM_SESSION_ATTRIBUTES]).toBe('encoded-payload');
+    });
+
+    it('should omit session attributes header when the manager has nothing to deliver', async () => {
+        jest.mocked(SessionAttributesManager.getOutboundHeader).mockResolvedValue(undefined);
+        client.setClientCredentials('testToken');
+
+        const headers = await client.prepareRequestHeaders('GET');
+
+        expect(headers[ClientConstants.HEADER_X_MM_SESSION_ATTRIBUTES]).toBeUndefined();
     });
 
     it('should initialize and track group data', () => {
@@ -200,7 +226,7 @@ describe('ClientTracking', () => {
         expect(require('@utils/log').logInfo).toHaveBeenCalled();
     });
 
-    it('should build request options', () => {
+    it('should build request options', async () => {
         const options = {
             body: {key: 'value'},
             method: 'POST',
@@ -209,7 +235,7 @@ describe('ClientTracking', () => {
             headers: {custom: 'header'},
         };
 
-        const result = client.buildRequestOptions(options);
+        const result = await client.buildRequestOptions(options);
         expect(result.headers?.custom).toBe('header');
         expect(result.retryPolicyConfiguration?.retryLimit).toBe(0);
         expect(result.timeoutInterval).toBe(5000);

@@ -8,6 +8,7 @@ import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
 import {deleteCustomProfileAttributesByFieldId} from '@queries/servers/custom_profile';
@@ -25,6 +26,7 @@ import {
     handleCustomProfileAttributesValuesUpdatedEvent,
     handleCustomProfileAttributesFieldUpdatedEvent,
     handleCustomProfileAttributesFieldDeletedEvent,
+    handleSessionAttributesPropertyFieldEvent,
 } from './users';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -35,6 +37,12 @@ jest.mock('@actions/remote/user');
 jest.mock('@database/manager');
 jest.mock('@helpers/api/preference');
 jest.mock('@managers/websocket_manager');
+jest.mock('@managers/session_attributes_manager', () => ({
+    __esModule: true,
+    default: {
+        refreshManifest: jest.fn().mockResolvedValue(undefined),
+    },
+}));
 jest.mock('@queries/servers/channel');
 jest.mock('@queries/servers/custom_profile');
 jest.mock('@queries/servers/preference');
@@ -530,6 +538,32 @@ describe('WebSocket Users Actions', () => {
 
             expect(logUtils.logError).toHaveBeenCalled();
             expect(deleteCustomProfileAttributesByFieldId).toHaveBeenCalled();
+        });
+    });
+
+    describe('handleSessionAttributesPropertyFieldEvent', () => {
+        it('should invalidate manifest for session object type', async () => {
+            await handleSessionAttributesPropertyFieldEvent(serverUrl, {
+                data: {object_type: 'session'},
+            } as WebSocketMessage);
+
+            expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);
+        });
+
+        it('should not refresh manifest when object_type is omitted', async () => {
+            await handleSessionAttributesPropertyFieldEvent(serverUrl, {
+                data: {},
+            } as WebSocketMessage);
+
+            expect(SessionAttributesManager.refreshManifest).not.toHaveBeenCalled();
+        });
+
+        it('should ignore non-session object types', async () => {
+            await handleSessionAttributesPropertyFieldEvent(serverUrl, {
+                data: {object_type: 'channel'},
+            } as WebSocketMessage);
+
+            expect(SessionAttributesManager.refreshManifest).not.toHaveBeenCalled();
         });
     });
 });

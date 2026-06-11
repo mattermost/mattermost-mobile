@@ -16,6 +16,7 @@ import {determineRouteFromLaunchProps} from '@init/launch';
 import IntuneManager from '@managers/intune_manager';
 import OfflinePersistenceManager from '@managers/offline_persistence_manager';
 import SecurityManager from '@managers/security_manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {queryGlobalValue} from '@queries/app/global';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
 import EphemeralStore from '@store/ephemeral_store';
@@ -135,6 +136,7 @@ export class SessionManagerSingleton {
             await terminateSession(serverUrl, removeServer);
             SecurityManager.removeServer(serverUrl);
             OfflinePersistenceManager.removeServer(serverUrl);
+            SessionAttributesManager.removeServer(serverUrl);
 
             if (activeServerUrl === serverUrl) {
                 let displayName = '';
@@ -175,6 +177,7 @@ export class SessionManagerSingleton {
             await terminateSession(serverUrl, false);
             SecurityManager.removeServer(serverUrl);
             OfflinePersistenceManager.removeServer(serverUrl);
+            SessionAttributesManager.removeServer(serverUrl);
             await IntuneManager.unenrollServer(serverUrl, true);
 
             const activeServerUrl = await DatabaseManager.getActiveServerUrl();

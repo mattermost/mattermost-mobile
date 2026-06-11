@@ -34,7 +34,7 @@ class DraftEditPostUploadManagerSingleton {
         AppState.addEventListener('change', this.onAppStateChange);
     }
 
-    public prepareUpload = (
+    public prepareUpload = async (
         serverUrl: string,
         file: FileInfo,
         channelId: string,
@@ -69,12 +69,18 @@ class DraftEditPostUploadManagerSingleton {
             this.handleError(message, file.clientId!, errorName);
         };
 
-        const {error, cancel} = uploadFile(serverUrl, file, channelId, onProgress, onComplete, onError, skipBytes);
+        const {error, cancel} = await uploadFile(serverUrl, file, channelId, onProgress, onComplete, onError, skipBytes);
         if (error) {
             this.handleError(getFullErrorMessage(error), file.clientId!);
             return;
         }
-        this.handlers[file.clientId!].cancel = cancel;
+
+        // The upload may have been cancelled while we awaited the headers/upload start.
+        if (this.handlers[file.clientId!]) {
+            this.handlers[file.clientId!].cancel = cancel;
+        } else {
+            cancel?.();
+        }
     };
 
     public cancel = (clientId: string) => {

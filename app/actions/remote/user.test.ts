@@ -59,6 +59,7 @@ const user2 = {id: 'userid2', username: 'user2', email: 'user2@mattermost.com', 
 
 const mockClient = {
     getRequestHeaders: jest.fn(() => ({})),
+    prepareRequestHeaders: jest.fn(async () => ({})),
     getMe: jest.fn(() => ({id: 'userid1', username: 'user1', email: 'user1@mattermost.com', roles: ''})),
     getStatus: jest.fn((id: string) => ({user_id: id === 'me' ? 'userid1' : id, status: 'online'})),
     getProfilesInChannel: jest.fn(() => ([user1, user2])),

@@ -19,7 +19,7 @@ export interface ClientFilesMix {
         onError: (response: ClientResponseError) => void,
         skipBytes?: number,
         isBookmark?: boolean,
-    ) => () => void;
+    ) => Promise<() => void>;
     searchFiles: (teamId: string, terms: string, isOrSearch: boolean) => Promise<FileSearchRequest>;
     searchFilesWithParams: (teamId: string, FileSearchParams: FileSearchParams) => Promise<FileSearchRequest>;
 }
@@ -59,7 +59,7 @@ const ClientFiles = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    uploadAttachment = (
+    uploadAttachment = async (
         file: FileInfo | ExtractedFileInfo,
         channelId: string,
         onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void,
@@ -72,6 +72,7 @@ const ClientFiles = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         if (isBookmark) {
             url = `${url}?bookmark=true`;
         }
+        const headers = await this.prepareRequestHeaders('POST');
         const options: UploadRequestOptions = {
             skipBytes,
             method: 'POST',
@@ -81,7 +82,7 @@ const ClientFiles = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
                 },
             },
             timeoutInterval: toMilliseconds({minutes: 3}),
-            headers: this.getRequestHeaders('POST'),
+            headers,
         };
         if (!file.localPath) {
             throw new Error('file does not have local path defined');

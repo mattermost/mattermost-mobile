@@ -7,8 +7,10 @@ import {deletePostsForChannelsWithAutotranslation, updateChannelsDisplayName} fr
 import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {General, Events, Preferences} from '@constants';
+import {SESSION_ATTRIBUTES_OBJECT_TYPE} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
@@ -203,5 +205,18 @@ export async function handleCustomProfileAttributesFieldDeletedEvent(serverUrl: 
         }
     } catch (error) {
         logError('Error getting the operator for the custom profile field deleted event', error);
+    }
+}
+
+export function handleSessionAttributesPropertyFieldEvent(serverUrl: string, msg: WebSocketMessage) {
+    try {
+        const data = msg.data as {object_type?: string};
+        if (data.object_type !== SESSION_ATTRIBUTES_OBJECT_TYPE) {
+            return;
+        }
+
+        SessionAttributesManager.refreshManifest(serverUrl);
+    } catch (error) {
+        logError('Error handling session attributes property field event', error);
     }
 }

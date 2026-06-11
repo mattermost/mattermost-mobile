@@ -20,6 +20,7 @@ import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
@@ -63,6 +64,8 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
     const {database} = operator;
 
     try {
+        await SessionAttributesManager.refreshManifest(serverUrl);
+
         const lastFullSync = await getLastFullSync(database);
         const now = Date.now();
 

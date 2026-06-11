@@ -39,6 +39,7 @@ export interface ClientUsersMix {
     getDefaultProfilePictureUrl: (userId: string) => string;
     autocompleteUsers: (name: string, teamId: string, channelId?: string, options?: Record<string, any>) => Promise<{users: UserProfile[]; out_of_channel?: UserProfile[]; agents?: UserProfile[]}>;
     getSessions: (userId: string) => Promise<Session[]>;
+    getSessionAttributesManifest: () => Promise<SAField[]>;
     checkUserMfa: (loginId: string) => Promise<{mfa_required: boolean}>;
     setExtraSessionProps: (deviceId: string, notificationsEnabled: boolean, version: string | null, groupLabel?: RequestGroupLabel) => Promise<{}>;
     searchUsers: (term: string, options: SearchUserOptions) => Promise<UserProfile[]>;
@@ -367,6 +368,13 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
                 method: 'get',
                 headers: {'Cache-Control': 'no-store'},
             },
+        );
+    };
+
+    getSessionAttributesManifest = async () => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/sessions/attributes/manifest`,
+            {method: 'get'},
         );
     };
 
