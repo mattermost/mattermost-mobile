@@ -54,7 +54,7 @@ class SessionAttributesManagerSingleton {
                 isSending: false,
             });
         } catch (error) {
-            logDebug('[SessionAttributesManager.fetchManifest]', getFullErrorMessage(error));
+            logDebug('[SessionAttributesManager.refreshManifest]', getFullErrorMessage(error));
             this.servers.delete(serverUrl);
         }
     };
