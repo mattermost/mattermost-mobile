@@ -208,14 +208,14 @@ export async function handleCustomProfileAttributesFieldDeletedEvent(serverUrl: 
     }
 }
 
-export function handleSessionAttributesPropertyFieldEvent(serverUrl: string, msg: WebSocketMessage) {
+export async function handleSessionAttributesPropertyFieldEvent(serverUrl: string, msg: WebSocketMessage) {
     try {
         const data = msg.data as {object_type?: string};
         if (data.object_type !== SESSION_ATTRIBUTES_OBJECT_TYPE) {
             return;
         }
 
-        SessionAttributesManager.refreshManifest(serverUrl);
+        await SessionAttributesManager.refreshManifest(serverUrl);
     } catch (error) {
         logError('Error handling session attributes property field event', error);
     }
