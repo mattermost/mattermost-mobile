@@ -60,11 +60,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         outerContainer: {
             flex: 1,
             flexDirection: 'row',
-            paddingHorizontal: 15,
             overflow: 'hidden',
         },
         purpose: {
-            marginTop: 7,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             ...typography('Body', 100, 'Regular'),
         },

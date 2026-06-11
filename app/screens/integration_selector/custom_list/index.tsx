@@ -57,6 +57,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
+        contentContainer: {
+            gap: 8,
+        },
     };
 });
 
@@ -118,6 +121,7 @@ function CustomList({
     return (
         <KeyboardAvoidingView style={style.flex}>
             <FlatList
+                contentContainerStyle={style.contentContainer}
                 data={data}
                 keyboardShouldPersistTaps='always'
                 keyboardDismissMode='on-drag'

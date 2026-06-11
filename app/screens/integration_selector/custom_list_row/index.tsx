@@ -24,7 +24,6 @@ export type Props = {
 const style = StyleSheet.create({
     container: {
         flexDirection: 'row',
-        height: 65,
         flex: 1,
         alignItems: 'center',
     },

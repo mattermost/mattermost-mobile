@@ -217,6 +217,7 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
             <ClippedScrollContent
                 maxHeight={maxHeightPx}
                 onExpand={handleExpandBoundedContent}
+                containerPadding={block.border ? style.containerBorder.padding : 0}
                 testID='mm_blocks.container.bounded'
             >
                 {blockItems}

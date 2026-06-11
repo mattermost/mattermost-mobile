@@ -47,7 +47,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.75),
         },
         textSmall: {
-            ...typography('Body', 75),
+            ...typography('Body', 100),
         },
         divider: {
             borderBottomWidth: 1,
@@ -120,7 +120,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         collapsibleHeader: {
             flexDirection: 'row',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             width: '100%',
             paddingVertical: 8,
             paddingHorizontal: 10,
@@ -130,6 +130,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
         },
         collapsibleChevron: {
+            marginTop: 4,
             flexShrink: 0,
             color: changeOpacity(theme.centerChannelColor, 0.56),
         },
@@ -150,7 +151,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         message: {
             color: theme.centerChannelColor,
-            ...typography('Body', 100),
+            ...typography('Body', 200),
         },
     };
 });

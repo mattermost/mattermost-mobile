@@ -16,6 +16,7 @@ type ClippedScrollContentProps = {
     children: ReactNode;
     maxHeight: number;
     onExpand: () => void;
+    containerPadding: number;
     testID?: string;
 };
 
@@ -49,16 +50,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             }),
         },
         moreBelow: {
-            bottom: 0,
             height: 20,
             position: 'absolute',
-            left: 0,
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
         },
     };
 });
 
-const ClippedScrollContent = ({children, maxHeight, onExpand, testID}: ClippedScrollContentProps) => {
+const ClippedScrollContent = ({
+    children,
+    maxHeight,
+    onExpand,
+    testID,
+    containerPadding,
+}: ClippedScrollContentProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const [containerWidth, setContainerWidth] = useState(0);
@@ -88,10 +93,14 @@ const ClippedScrollContent = ({children, maxHeight, onExpand, testID}: ClippedSc
                     changeOpacity(theme.centerChannelColor, 0.0),
                     changeOpacity(theme.centerChannelColor, 0.1),
                 ]}
-                style={[styles.moreBelow, {width: containerWidth || '100%'}]}
+                style={[styles.moreBelow, {
+                    bottom: -containerPadding,
+                    left: -containerPadding,
+                    right: -containerPadding,
+                }]}
             />
         );
-    }, [containerWidth, isOverflowing, styles.moreBelow, theme.centerChannelColor]);
+    }, [containerPadding, isOverflowing, styles.moreBelow, theme.centerChannelColor]);
 
     const expandButton = useMemo(() => {
         let expandButtonOffset = containerWidth - 20;

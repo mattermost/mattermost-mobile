@@ -27,6 +27,7 @@ describe('ClippedScrollContent', () => {
                 <ClippedScrollContent
                     maxHeight={maxHeight}
                     onExpand={onExpand}
+                    containerPadding={0}
                     testID='clipped.content'
                 >
                     <Text>{textContent}</Text>

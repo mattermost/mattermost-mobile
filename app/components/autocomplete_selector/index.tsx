@@ -19,11 +19,12 @@ import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getChannelById} from '@queries/servers/channel';
 import {getUserById, observeTeammateNameDisplay} from '@queries/servers/user';
-import {navigateToScreen, navigateToSettingsScreen} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import SettingsStore from '@store/settings_store';
 import {logDebug} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
+import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -65,6 +66,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         paddingVertical: 7,
         height: 40,
     };
+    const baseText = {
+        ...typography('Body', 200),
+        color: theme.centerChannelColor,
+    };
 
     return {
         container: {
@@ -81,16 +86,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         dropdownPlaceholder: {
             top: 3,
             marginLeft: 5,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...baseText,
         },
         dropdownSelected: {
             top: 3,
             marginLeft: 5,
-            color: theme.centerChannelColor,
+            ...baseText,
         },
         icon: {
             position: 'absolute',
-            top: 13,
+            top: 10,
             right: 12,
         },
         disabled: {
@@ -213,13 +218,8 @@ function AutoCompleteSelector({
     const goToSelectorScreen = usePreventDoubleTap(useCallback((() => {
         SettingsStore.setIntegrationsSelectCallback(handleSelect);
         SettingsStore.setIntegrationsDynamicOptionsCallback(getDynamicOptions);
-        const passProps = {dataSource, options, selected, title, isMultiselect};
-        if (location === Screens.COMPONENT_LIBRARY) {
-            navigateToSettingsScreen(Screens.INTEGRATION_SELECTOR, passProps);
-            return;
-        }
-        navigateToScreen(Screens.INTEGRATION_SELECTOR, passProps);
-    }), [handleSelect, getDynamicOptions, dataSource, options, selected, title, isMultiselect, location]));
+        navigateToScreen(Screens.INTEGRATION_SELECTOR, {dataSource, options, selected, title, isMultiselect});
+    }), [handleSelect, getDynamicOptions, dataSource, options, selected, title, isMultiselect]));
 
     // Handle the text for the default value.
     useEffect(() => {
@@ -266,6 +266,7 @@ function AutoCompleteSelector({
                     </Text>
                     <CompassIcon
                         name='chevron-down'
+                        size={20}
                         color={changeOpacity(theme.centerChannelColor, 0.5)}
                         style={style.icon}
                     />
