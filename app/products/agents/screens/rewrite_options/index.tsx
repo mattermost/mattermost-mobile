@@ -24,7 +24,7 @@ import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {logWarning} from '@utils/log';
+import {logError, logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -261,7 +261,11 @@ const RewriteOptions = ({
     const handleOpenAgentSelector = useCallback(() => {
         const onSelectAgent = (agent: Agent) => {
             setSelectedAgent(agent);
-            saveSelectedAgent(serverUrl, agent.id);
+            saveSelectedAgent(serverUrl, agent.id).then(({error}) => {
+                if (error) {
+                    logError('Failed to persist agent selection', error);
+                }
+            });
         };
         CallbackStore.setCallback(onSelectAgent);
         navigateToScreen(Screens.AGENTS_SELECTOR, {agents, selectedAgentId: selectedAgent?.id || ''});

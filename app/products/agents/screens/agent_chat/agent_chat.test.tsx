@@ -59,7 +59,7 @@ jest.mock('@agents/actions/remote/bots', () => ({
 }));
 
 jest.mock('@agents/actions/remote/preference', () => ({
-    saveSelectedAgent: jest.fn(),
+    saveSelectedAgent: jest.fn(() => Promise.resolve({})),
 }));
 
 jest.mock('@actions/remote/channel', () => ({
@@ -208,7 +208,7 @@ describe('AgentChat', () => {
         await act(async () => {});
     });
 
-    it('does not persist a selection while auto-resolving the initial bot', async () => {
+    it('should not persist a selection while auto-resolving the initial bot', async () => {
         const {getByTestId} = renderWithEverything(
             <AgentChat
                 bots={[mockBot, mockBot2]}
@@ -227,7 +227,7 @@ describe('AgentChat', () => {
         await act(async () => {});
     });
 
-    it('persists the preference when a bot is explicitly selected', async () => {
+    it('should persist the preference when a bot is explicitly selected', async () => {
         const {getByTestId} = renderWithEverything(
             <AgentChat
                 bots={[mockBot, mockBot2]}

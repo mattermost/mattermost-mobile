@@ -20,7 +20,7 @@ export const saveSelectedAgent = async (serverUrl: string, agentId: string) => {
             name: Preferences.SELECTED_AGENT,
             value: agentId,
         };
-        return savePreference(serverUrl, [pref]);
+        return await savePreference(serverUrl, [pref]);
     } catch (error) {
         return {error};
     }

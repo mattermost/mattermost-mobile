@@ -319,31 +319,31 @@ describe('resolveSelectedAgent', () => {
     const a3 = {id: 'a3'};
     const agents = [a1, a2, a3];
 
-    it('returns null for an empty list', () => {
+    it('should return null for an empty list', () => {
         expect(resolveSelectedAgent([], 'a1')).toBeNull();
     });
 
-    it('returns the saved preference when it is still available', () => {
+    it('should return the saved preference when it is still available', () => {
         expect(resolveSelectedAgent(agents, 'a3')).toBe(a3);
     });
 
-    it('falls back to the system default when the saved preference is missing', () => {
+    it('should fall back to the system default when the saved preference is missing', () => {
         expect(resolveSelectedAgent(agents, 'unknown')).toBe(a2);
     });
 
-    it('falls back to the system default when no preference is provided', () => {
+    it('should fall back to the system default when no preference is provided', () => {
         expect(resolveSelectedAgent(agents, undefined)).toBe(a2);
         expect(resolveSelectedAgent(agents, '')).toBe(a2);
         expect(resolveSelectedAgent(agents, null)).toBe(a2);
     });
 
-    it('falls back to the first agent when there is no default and no valid preference', () => {
+    it('should fall back to the first agent when there is no default and no valid preference', () => {
         const noDefault = [a1, a3];
         expect(resolveSelectedAgent(noDefault, undefined)).toBe(a1);
         expect(resolveSelectedAgent(noDefault, 'nope')).toBe(a1);
     });
 
-    it('prefers the saved preference over the system default', () => {
+    it('should prefer the saved preference over the system default', () => {
         expect(resolveSelectedAgent(agents, 'a1')).toBe(a1);
     });
 });

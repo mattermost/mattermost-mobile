@@ -32,6 +32,7 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet, dismissBottomSheet, navigateBack} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {logError} from '@utils/log';
 
 import AgentChatContent from './agent_chat_content';
 import AgentChatHeader from './header';
@@ -171,7 +172,11 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
 
     const handleBotSelect = useCallback((bot: AiBotModel) => {
         setSelectedBot(bot);
-        saveSelectedAgent(serverUrl, bot.id);
+        saveSelectedAgent(serverUrl, bot.id).then(({error: saveError}) => {
+            if (saveError) {
+                logError('Failed to persist agent selection', saveError);
+            }
+        });
         dismissBottomSheet();
     }, [serverUrl]);
 

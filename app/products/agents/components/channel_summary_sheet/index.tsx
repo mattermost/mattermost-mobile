@@ -24,6 +24,7 @@ import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {dismissBottomSheet} from '@screens/navigation';
 import {getErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -212,7 +213,11 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
     const handleAgentSelect = useCallback((agent: Agent) => {
         setSelectedAgent(agent);
         setShowAgentSelector(false);
-        saveSelectedAgent(serverUrl, agent.id);
+        saveSelectedAgent(serverUrl, agent.id).then(({error}) => {
+            if (error) {
+                logError('Failed to persist agent selection', error);
+            }
+        });
     }, [serverUrl]);
 
     const handleCustomPromptSubmit = useCallback(async () => {
