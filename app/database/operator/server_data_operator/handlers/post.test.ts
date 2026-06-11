@@ -27,6 +27,7 @@ Q.sortBy = jest.fn().mockImplementation((field) => {
 });
 
 jest.mock('@utils/log', () => ({
+    logDebug: jest.fn(),
     logWarning: jest.fn(),
 }));
 describe('*** Operator: Post Handlers tests ***', () => {
