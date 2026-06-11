@@ -52,25 +52,37 @@ describe('Agents - Channel Summary', () => {
         // # Wait for WebSocket to connect and agents status to be fetched
         await wait(timeouts.FOUR_SEC);
 
-        // # On Android, verify the Ask Agents UI element actually appears in quick actions.
-        // The API check above confirms the plugin is installed, but on Android the quick
-        // actions sheet may not expose the element when the plugin is not fully configured.
-        // Open quick actions, probe for the element, then close the sheet before tests run.
-        if (isAndroid()) {
-            await ChannelListScreen.toBeVisible();
-            await ChannelScreen.open(channelsCategory, testChannel.name);
-            await wait(timeouts.ONE_SEC);
-            await ChannelScreen.channelQuickActionsButton.tap();
-            try {
-                await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-            } catch {
-                // eslint-disable-next-line no-console
-                console.warn('Ask Agents quick action not visible on Android — skipping suite');
-                agentsEnabled = false;
-            }
-            await device.pressBack();
-            await ChannelScreen.back();
+        // # Verify the Ask Agents UI element actually appears in quick actions.
+        // The API check above confirms the plugin is installed, but the quick
+        // actions sheet only exposes the element when the plugin is fully
+        // configured (agents/status available). Probe on BOTH platforms and
+        // soft-skip when hidden — previously iOS skipped the probe and its two
+        // tests failed outright (runs 27302480506, 27342307081) while Android
+        // soft-skipped the identical condition.
+        await ChannelListScreen.toBeVisible();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await wait(timeouts.ONE_SEC);
+        await ChannelScreen.channelQuickActionsButton.tap();
+        try {
+            await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        } catch {
+            // eslint-disable-next-line no-console
+            console.warn('Ask Agents quick action not visible — skipping suite');
+            agentsEnabled = false;
         }
+        if (isAndroid()) {
+            await device.pressBack();
+        } else {
+            // iOS: dismiss the quick-actions bottom sheet by swiping down on an
+            // always-present sheet row (favorite/unfavorite is first in the sheet)
+            try {
+                await element(by.id(ChannelScreen.testID.favoriteQuickAction)).swipe('down', 'fast', 0.5);
+            } catch {
+                await element(by.id(ChannelScreen.testID.unfavoriteQuickAction)).swipe('down', 'fast', 0.5);
+            }
+            await wait(timeouts.ONE_SEC);
+        }
+        await ChannelScreen.back();
     });
 
     beforeEach(async () => {

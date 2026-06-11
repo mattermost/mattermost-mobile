@@ -206,6 +206,33 @@ describe('Channels - Channel Bookmarks', () => {
                     await wait(timeouts.ONE_SEC);
                 }
             }
+        } else {
+            // iOS safety net: a mid-test failure can leave the Add-bookmark modal,
+            // options sheet, or channel info open — the tab bar is unreachable
+            // behind them, stranding every following test (CI run 27342307081:
+            // MM-T5602_1's failure cascaded into 8 sibling failures). Dismiss the
+            // known layers top-down, best-effort, until the channel list shows.
+            const dismissals = [
+                () => ChannelBookmarkScreen.close(),
+                () => ChannelInfoScreen.close(),
+                () => ChannelScreen.back(),
+            ];
+            for (const dismiss of dismissals) {
+                try {
+                    // eslint-disable-next-line no-await-in-loop
+                    await waitFor(element(by.id('channel_list.screen'))).
+                        toExist().
+                        withTimeout(timeouts.ONE_SEC);
+                    break; // Channel list reached — recovery done
+                } catch {
+                    try {
+                        // eslint-disable-next-line no-await-in-loop
+                        await dismiss();
+                    } catch {
+                        // Layer not present — try the next one
+                    }
+                }
+            }
         }
         try {
             await HomeScreen.channelListTab.tap();
@@ -269,12 +296,10 @@ describe('Channels - Channel Bookmarks', () => {
 
         // # Enter a valid URL and submit
         const linkInput = ChannelBookmarkScreen.getLinkInput();
-        let bookmarkTitle = '';
         await ChannelBookmarkScreen.runUnsynchronized(async () => {
             await linkInput.tap();
             await linkInput.typeText('https://mattermost.com');
-            bookmarkTitle =
-                await ChannelBookmarkScreen.waitForAutofilledTitle('Mattermost');
+            await ChannelBookmarkScreen.waitForAutofilledTitle('Mattermost');
             await waitFor(ChannelBookmarkScreen.saveButton).
                 toBeVisible().
                 withTimeout(timeouts.TEN_SEC);
@@ -282,11 +307,23 @@ describe('Channels - Channel Bookmarks', () => {
         });
         await wait(timeouts.TWO_SEC);
 
-        // * Verify the bookmark modal closed and the bookmark is visible in channel info
+        // * Verify the bookmark modal closed and the bookmark is visible in channel info.
+        // Assert by the bookmark's stable testID (fetched via API) instead of matching
+        // the full OG title text — the title comes from live mattermost.com and its
+        // exact wording changing breaks a by.text matcher (CI run 27342307081).
         await expect(ChannelBookmarkScreen.channelBookmarkScreen).not.toExist();
-        await waitFor(element(by.text(bookmarkTitle)).atIndex(0)).
-            toExist().
-            withTimeout(timeouts.TEN_SEC);
+        const {bookmarks: t5602Bookmarks} = await ChannelBookmark.apiGetChannelBookmarks(siteOneUrl, channelT5602.id);
+        const t5602BookmarkId = t5602Bookmarks?.[0]?.id;
+        if (!t5602BookmarkId) {
+            throw new Error('Bookmark was not created on the server after save');
+        }
+        await waitFor(
+            element(
+                by.
+                    id(`channel_bookmark.${t5602BookmarkId}`).
+                    withAncestor(by.id('channel_info.bookmarks.list')),
+            ),
+        ).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Close channel info and go back to channel list
         await ChannelInfoScreen.close();

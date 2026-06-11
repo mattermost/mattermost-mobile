@@ -159,11 +159,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // SKIPPED — Same archive-observable bug as archive_channel_from_settings
-    // MM-T4932_1. The test depends on `channel.post_draft.archived` rendering,
-    // which the `channelIsArchived` observable can't trigger because
-    // `setChannelDeleteAt`'s `prepareUpdate + batchRecords` doesn't fire
-    // WatermelonDB subscribers. Track as an app-side bug.
     it('MM-T5725_1 - should not be able to add, edit, or delete bookmarks in an archived channel', async () => {
         // # Navigate to the channel.
         // Extra wait after openChannel: on Android, device.reloadReactNative() in T5615_1 can
@@ -204,6 +199,12 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelInfoScreen.openChannelSettings();
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
+
+        // # Close channel info — after archiving, the app lands back on channel
+        // info, not the channel screen (run 27302480506 testFnFailure.png shows
+        // channel info open at failure), so the archived draft footer sits behind
+        // the modal and can never pass a visibility check from here.
+        await ChannelInfoScreen.close();
 
         // * Verify channel is archived (draft area shows archived state).
         // Poll because the archive WS event must propagate through the DB observable

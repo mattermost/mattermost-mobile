@@ -153,15 +153,9 @@ describe('Account - Attach App Logs', () => {
 
     it('MM-T67856_4 - should not show attach logs toggle when AllowDownloadLogs is disabled', async () => {
         // # Disable AllowDownloadLogs and switch ReportAProblemType to 'link'.
-        // With the provisioned 'default' type, disabling AllowDownloadLogs makes
-        // the app skip the in-app screen entirely and open an external mail client
-        // (report_problem.tsx#skipReportAProblemScreen), which Detox cannot assert
-        // on. The 'link' type keeps the in-app screen reachable.
         await System.apiUpdateConfig(siteOneUrl, {
             SupportSettings: {
                 AllowDownloadLogs: false,
-            },
-            ServiceSettings: {
                 ReportAProblemType: 'link',
                 ReportAProblemLink: 'https://mattermost.com',
             },
@@ -187,8 +181,6 @@ describe('Account - Attach App Logs', () => {
             await System.apiUpdateConfig(siteOneUrl, {
                 SupportSettings: {
                     AllowDownloadLogs: true,
-                },
-                ServiceSettings: {
                     ReportAProblemType: 'default',
                 },
             });

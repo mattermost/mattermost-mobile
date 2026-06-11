@@ -1,23 +1,22 @@
 # Manages the E2E label lifecycle on pull requests.
 #
-# Three jobs, each gated by event type:
+# Three steps in a single job, each gated by event type:
 #
-#   1. ensure-e2e-run (opened / synchronize):
+#   1. Add E2E/Run (opened / synchronize):
 #      Adds E2E/Run unless E2E/Override is present (opt-out for docs-only PRs).
 #
-#   2. honor-override (E2E/Override labeled):
-#      Removes E2E/Run so any in-flight test runs are cancelled (see cancel-e2e-runs).
+#   2. Honor E2E/Override (labeled E2E/Override):
+#      Removes E2E/Run so in-flight test runs are cancelled (see step 3).
 #
-#   3. cancel-e2e-runs (E2E/Run* unlabeled):
+#   3. Cancel in-progress E2E runs (E2E/Run* unlabeled):
 #      Cancels in-progress E2E workflow runs for the PR's head SHA.
 #      Also fires on the benign post-test cleanup that strips labels at the end
 #      of a normal run — by then no runs are in-progress, so the loop is a no-op.
 #
-# Fork PRs are skipped on all three jobs via the same-repo guard:
-#   github.event.pull_request.head.repo.full_name == github.repository
-# Fork PR contexts only get a read-only GITHUB_TOKEN, so addLabels /
-# removeLabel / gh-run-cancel would all 403. Skipping cleanly avoids
-# the failed-run noise. Mandatory E2E for fork PRs is enforced separately.
+# Fork PR guard (github.event.pull_request.head.repo.full_name == github.repository)
+# is applied per-step. Fork PR contexts only get a read-only GITHUB_TOKEN, so
+# addLabels / removeLabel / gh-run-cancel would all 403. Mandatory E2E for fork
+# PRs is enforced separately.
 #
 name: E2E label manager
 
@@ -30,16 +29,18 @@ on:
       - unlabeled
 
 jobs:
-  # ── Add E2E/Run on PR open / push ──────────────────────────────────────────
-  ensure-e2e-run:
-    if: >-
-      (github.event.action == 'opened' || github.event.action == 'synchronize')
-      && github.event.pull_request.head.repo.full_name == github.repository
+  e2e-label-manager:
     runs-on: ubuntu-22.04
     permissions:
       pull-requests: write
+      actions: write
     steps:
-      - name: Add E2E/Run unless E2E/Override is present
+
+      # ── Step 1: Add E2E/Run on PR open / push ─────────────────────────────
+      - name: Add E2E/Run
+        if: >-
+          (github.event.action == 'opened' || github.event.action == 'synchronize')
+          && github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
         with:
           script: |
@@ -67,17 +68,12 @@ jobs:
               labels: ['E2E/Run'],
             });
 
-  # ── Strip E2E/Run when E2E/Override is applied ─────────────────────────────
-  honor-override:
-    if: >-
-      github.event.action == 'labeled'
-      && github.event.label.name == 'E2E/Override'
-      && github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-22.04
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Remove E2E/Run when override is applied
+      # ── Step 2: Strip E2E/Run when E2E/Override is applied ─────────────────
+      - name: Honor E2E/Override
+        if: >-
+          github.event.action == 'labeled'
+          && github.event.label.name == 'E2E/Override'
+          && github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
         with:
           script: |
@@ -98,19 +94,14 @@ jobs:
               throw err;
             }
 
-  # ── Cancel in-progress E2E runs when E2E/Run* label is removed ─────────────
-  cancel-e2e-runs:
-    if: >-
-      github.event.action == 'unlabeled'
-      && (github.event.label.name == 'E2E/Run'
-          || github.event.label.name == 'E2E/Run-iOS'
-          || github.event.label.name == 'E2E/Run-Android')
-      && github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-22.04
-    permissions:
-      actions: write
-    steps:
-      - name: Cancel in-progress E2E workflow runs
+      # ── Step 3: Cancel in-progress E2E runs when E2E/Run* label is removed ─
+      - name: Cancel in-progress E2E runs
+        if: >-
+          github.event.action == 'unlabeled'
+          && (github.event.label.name == 'E2E/Run'
+              || github.event.label.name == 'E2E/Run-iOS'
+              || github.event.label.name == 'E2E/Run-Android')
+          && github.event.pull_request.head.repo.full_name == github.repository
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}

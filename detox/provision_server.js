@@ -314,12 +314,16 @@ async function configureTestServer(token) {
         },
     };
 
-    // Required by maestro/flows/account/attach_logs_*.yml: keep the in-app
-    // Report a Problem screen reachable (not redirected to email/browser) and
-    // make the log-attachment toggle visible. These match server defaults but
-    // set explicitly so a previously-toggled-off config can't break the flow.
-    config.ServiceSettings.ReportAProblemType = 'default';
-    config.ServiceSettings.AllowDownloadLogs = true;
+    // Required by maestro/flows/account/attach_logs_*.yml and the detox
+    // attach_logs spec: keep the in-app Report a Problem screen reachable (not
+    // redirected to email/browser) and make the log-attachment toggle visible.
+    // NOTE: these live under SupportSettings — they were previously written to
+    // ServiceSettings, which the server silently ignores, leaving the real
+    // ReportAProblemType unset and sending the app to an external mail client
+    // (MM-T67856_4 failing on both platforms in runs 27302480506/27342307081).
+    config.SupportSettings = config.SupportSettings || {};
+    config.SupportSettings.ReportAProblemType = 'default';
+    config.SupportSettings.AllowDownloadLogs = true;
 
     console.log('[provision] Updating plugin uploads, Marketplace, disabling rate limiting, and removing user caps...');
     const updateRes = await request('PUT', '/api/v4/config', config, token);

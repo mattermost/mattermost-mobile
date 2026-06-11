@@ -158,16 +158,29 @@ class ChannelScreen {
 
     dismissScheduledPostTooltip = async () => {
         // Try to close scheduled post tooltip if it exists (try both regular and admin account versions).
+        // After tapping, VERIFY the tooltip is gone and re-tap once if not: on iOS
+        // the tooltip can still be animating in when the first tap lands, so the
+        // tap misses and the tooltip stays, blocking every later interaction
+        // (run 27342307081: agents tool_calls suite stranded behind the tooltip).
+        const tapAndVerify = async (closeButton: Detox.NativeElement) => {
+            await closeButton.tap();
+            await wait(timeouts.HALF_SEC);
+            try {
+                await waitFor(closeButton).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+            } catch {
+                await closeButton.tap();
+                await wait(timeouts.HALF_SEC);
+            }
+        };
+
         try {
             await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-            await this.scheduledPostTooltipCloseButton.tap();
-            await wait(timeouts.HALF_SEC);
+            await tapAndVerify(this.scheduledPostTooltipCloseButton);
         } catch {
             // Try admin account version
             try {
                 await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-                await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
-                await wait(timeouts.HALF_SEC);
+                await tapAndVerify(this.scheduledPostTooltipCloseButtonAdminAccount);
             } catch {
                 // Tooltip not visible, continue
             }
