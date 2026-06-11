@@ -197,14 +197,10 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
         await wait(timeouts.ONE_SEC);
 
-        // .atIndex(0): the Swipeable's revealed Edit option can render twice
-        // briefly on iOS during the swipe-pan animation (CI run 26368981355,
-        // MM-T4691_4: "Multiple elements found"). All sibling taps in this
-        // file already use .atIndex(0).
         // iOS 26: bypass hittability probe for the swipe-revealed action button.
         await device.disableSynchronization();
         try {
-            await ServerListScreen.getServerItemEditOption(serverOneDisplayName).atIndex(0).tap();
+            await ServerListScreen.getServerItemEditOption(serverOneDisplayName).tap();
         } finally {
             await device.enableSynchronization();
         }
@@ -236,7 +232,7 @@ describe('Server Login - Server List', () => {
         // iOS 26: bypass hittability probe for the swipe-revealed action button.
         await device.disableSynchronization();
         try {
-            await ServerListScreen.getServerItemEditOption(newServerOneDisplayName).atIndex(0).tap();
+            await ServerListScreen.getServerItemEditOption(newServerOneDisplayName).tap();
         } finally {
             await device.enableSynchronization();
         }

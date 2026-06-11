@@ -50,6 +50,14 @@ import {expect, waitFor} from 'detox';
  * 5. Re-enables synchronization
  */
 async function tapChannelAndWaitForArchivedChannelScreen(channelItem: Detox.NativeElement) {
+    // Dismiss the keyboard left up by searchInput.replaceText(). The Browse Channels
+    // FlatList does not set keyboardShouldPersistTaps, so on iOS the first tap is
+    // consumed dismissing the keyboard and never reaches the channel row (CI run
+    // 27302480506: tap dispatched, keyboard dismissed at the same instant, no
+    // onSelectChannel side effects — channel.screen never appeared). Same pattern
+    // as smoke_test/channels.e2e.ts.
+    await BrowseChannelsScreen.searchInput.tapReturnKey();
+
     if (isIos()) {
         await device.disableSynchronization();
     }

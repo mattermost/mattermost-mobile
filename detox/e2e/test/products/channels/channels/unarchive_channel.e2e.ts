@@ -21,9 +21,10 @@ import {
     ChannelSettingsScreen,
 } from '@support/ui/screen';
 import {getAdminAccount, getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
 
-// SKIPPED — beforeAll hangs deterministically (2/2 runs, 4-min JS-thread
+// NOTE (stale skip rationale kept for history — suite is currently ENABLED and
+// beforeAll passes on CI; failures in run 27302480506 were in the test bodies):
+// Previously skipped — beforeAll hung deterministically (2/2 runs, 4-min JS-thread
 // busy-loop on `LooperIdlingResource-mqt_v_js`, then 240s jest timeout).
 // Root cause: this spec logs in as ADMIN (required to set
 // `ExperimentalViewArchivedChannels`), and the admin session triggers a
@@ -125,8 +126,14 @@ describe('Channels - Unarchive Channel', () => {
         await ChannelSettingsScreen.unarchivePublicChannel({confirm: true});
         await wait(timeouts.FOUR_SEC);
 
+        // # As with archiving, channel settings closes after unarchiving but the
+        // channel info modal remains on top of the channel screen (CI run
+        // 27302480506: failure screenshot shows Channel Info still open while the
+        // test asserts postDraft). Close it to reach the channel screen.
+        await ChannelInfoScreen.close();
+
         // * Verify channel is now active — post draft (not archived view) is visible
-        await expect(ChannelScreen.postDraft).toBeVisible();
+        await waitForElementToBeVisible(ChannelScreen.postDraft, timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -159,9 +166,13 @@ describe('Channels - Unarchive Channel', () => {
         await ChannelSettingsScreen.unarchivePrivateChannel({confirm: true});
         await wait(timeouts.FOUR_SEC);
 
+        // # Channel info modal remains after unarchiving (same as MM-T4944_1);
+        // close it to reach the channel screen.
+        await ChannelInfoScreen.close();
+
         // * Verify channel is now active — post draft is visible
         await ChannelScreen.toBeVisible();
-        await expect(ChannelScreen.postDraft).toBeVisible();
+        await waitForElementToBeVisible(ChannelScreen.postDraft, timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();

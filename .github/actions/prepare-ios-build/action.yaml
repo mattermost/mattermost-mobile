@@ -13,31 +13,48 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: ci/setup-xcode
-      uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
-      with:
-        xcode-version: '26.1'
+    - name: ci/select-xcode-26
+      shell: bash
+      run: |
+        CURRENT_SDK=$(xcrun --sdk iphonesimulator --show-sdk-version 2>/dev/null || echo "0")
+        CURRENT_MAJOR="${CURRENT_SDK%%.*}"
+        echo "Default Xcode SDK version: ${CURRENT_SDK}"
+
+        if [ "$CURRENT_MAJOR" -ge 26 ]; then
+          echo "Default Xcode ($CURRENT_SDK) meets 26.x requirement; nothing to do."
+          exit 0
+        fi
+
+        # Find the highest pre-installed Xcode 26+ app.
+        XCODE_26=$(ls -d /Applications/Xcode_2[6-9]*.app 2>/dev/null | sort -V | tail -1)
+        if [ -z "$XCODE_26" ]; then
+          echo "::error::No Xcode 26+ found pre-installed on this runner and default is $CURRENT_SDK."
+          exit 1
+        fi
+
+        echo "Switching Xcode from default ($CURRENT_SDK) to ${XCODE_26##*/}"
+        sudo xcode-select -s "$XCODE_26"
+        NEW_SDK=$(xcrun --sdk iphonesimulator --show-sdk-version)
+        echo "Now using Xcode SDK version: ${NEW_SDK}"
 
     - name: ci/ensure-ios-platform-installed
-      # The macos-26 runner image ships Xcode 26.1.1 with the iOS SDK headers
-      # but does not always pre-download the matching iOS 26.1 platform
-      # runtime. Without it, xcodebuild fails the build with:
-      #   "Ineligible destinations ... error:iOS 26.1 is not installed."
+      # The macos-26 runner image ships Xcode with iOS SDK headers but
+      # does not always pre-download the matching iOS Simulator runtime.
+      # Without it, xcodebuild fails with:
+      #   "Ineligible destinations ... error:iOS X.Y is not installed."
       #
-      # The runner may have other iOS runtimes installed (e.g. iOS 18.6,
-      # iOS 26.0). Those are USELESS for an Xcode 26.1 build — we must
-      # check for iOS 26.1 SPECIFICALLY, not "any iOS runtime", or we'll
-      # skip the download and the build will then fail with the error
-      # above. (Previous version of this check used `grep "iOS [0-9]+\.[0-9]+ "`
-      # which matched any version and caused PR 9754 to fail; see
-      # run 26493331673 job 78015672474.)
-      #
-      # Keep version in sync with the `xcode-version:` input on the
-      # ci/setup-xcode step above.
+      # We derive the required iOS version dynamically from the active
+      # Xcode (via xcrun --show-sdk-version) instead of hardcoding it,
+      # so this stays in sync whether the runner default changes or
+      # someone sets DEVELOPER_DIR / xcode-select.
       shell: bash
-      env:
-        REQUIRED_IOS_RUNTIME: "26.1"
       run: |
+        # Derive the required iOS Simulator runtime version from the active
+        # Xcode.  This keeps the check in sync with whatever Xcode is
+        # selected (default, xcode-select, or DEVELOPER_DIR).
+        REQUIRED_IOS_RUNTIME=$(xcrun --sdk iphonesimulator --show-sdk-version)
+        echo "Active Xcode expects iOS Simulator runtime: ${REQUIRED_IOS_RUNTIME}"
+
         # Wait up to 60s for CoreSimulator service to come up so the queries
         # below are reliable. Fresh macos-26 runners can lag past job start.
         for waited in 0 5 10 15 20 30 45 60; do
@@ -47,8 +64,7 @@ runs:
         done
 
         # No-op only when the EXACT required iOS runtime is already installed.
-        # `iOS 26.1 ` with trailing space distinguishes "iOS 26.1" from
-        # "iOS 26.10" or "iOS 26.1.x" (none currently exist, but defensive).
+        # Trailing space in pattern distinguishes "iOS X.Y" from "iOS X.YZ".
         if xcrun simctl list runtimes 2>/dev/null | grep -qE "iOS ${REQUIRED_IOS_RUNTIME}( |$)"; then
           echo "iOS ${REQUIRED_IOS_RUNTIME} Simulator runtime already installed; skipping -downloadPlatform."
           exit 0
@@ -65,9 +81,9 @@ runs:
             xcrun simctl list runtimes 2>/dev/null | grep -E "^iOS " || echo "(none)"
             # xcodebuild -downloadPlatform iOS can exit 0 while installing a
             # different iOS major (it follows Xcode's bundled SDK, which
-            # occasionally lags). Re-run the exact REQUIRED_IOS_RUNTIME check
-            # so we fail loudly here instead of in later steps with the
-            # opaque "Ineligible destinations" error.
+            # occasionally lags). Re-run the exact version check so we fail
+            # loudly here instead of in later steps with the opaque
+            # "Ineligible destinations" error.
             if xcrun simctl list runtimes 2>/dev/null | grep -qE "iOS ${REQUIRED_IOS_RUNTIME}( |$)"; then
               echo "iOS ${REQUIRED_IOS_RUNTIME} runtime now installed."
               exit 0

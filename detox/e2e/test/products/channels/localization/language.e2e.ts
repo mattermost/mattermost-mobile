@@ -14,6 +14,7 @@ import {
 } from '@support/test_config';
 import {
     AccountScreen,
+    ChannelListScreen,
     DisplaySettingsScreen,
     HomeScreen,
     LoginScreen,
@@ -43,6 +44,11 @@ describe('Localization', () => {
         // # Restore the user's locale to English so subsequent tests are not affected
         await User.apiPatchUser(siteOneUrl, testUser.id, {locale: 'en'});
         await HomeScreen.logout();
+    });
+
+    beforeEach(async () => {
+        // * Verify on channel list screen
+        await ChannelListScreen.toBeVisible();
     });
 
     // Flaky: Language change timing unreliable on CI runners
@@ -83,6 +89,9 @@ describe('Localization', () => {
         // # Navigate back
         await DisplaySettingsScreen.back();
         await SettingsScreen.close();
+
+        // # Go back to channel list screen
+        await ChannelListScreen.toBeVisible();
     });
 
     // Flaky: Language change timing unreliable on CI runners
@@ -107,5 +116,8 @@ describe('Localization', () => {
 
         // * Verify text update — "頻道" is Traditional Chinese for "Channels"
         await expect(element(by.text('頻道'))).toBeVisible();
+
+        // # Go back to channel list screen
+        await ChannelListScreen.toBeVisible();
     });
 });

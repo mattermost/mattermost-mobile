@@ -35,20 +35,24 @@ class ServerListScreen {
         return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.server_icon`));
     };
 
+    // Option getters use atIndex(0): the server list bottom sheet can be mounted
+    // more than once in the hierarchy across tests (the same dual-mount ambiguity
+    // the server item getters already handle with atIndex(0) at call sites),
+    // which makes a bare matcher fail with "multiple elements found".
     getServerItemEditOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.edit.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.edit.option`)).atIndex(0);
     };
 
     getServerItemRemoveOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.remove.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.remove.option`)).atIndex(0);
     };
 
     getServerItemLoginOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.login.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.login.option`)).atIndex(0);
     };
 
     getServerItemLogoutOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.logout.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.logout.option`)).atIndex(0);
     };
 
     toBeVisible = async () => {

@@ -57,7 +57,12 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
         hour: 'numeric',
         minute: '2-digit',
         hour12: !isMilitaryTime,
-        timeZone: timeZone as string,
+
+        // Omit timeZone when empty (users without a reported automatic timezone):
+        // an empty string is an invalid IANA name — V8 throws a RangeError and
+        // iOS Hermes renders the literal string "Invalid Date" for a valid date
+        // (MM-T5720 "Send on Invalid Date").
+        ...(timeZone ? {timeZone} : {}),
         ...(isCurrentYear ? {} : {year: 'numeric'}),
     };
 

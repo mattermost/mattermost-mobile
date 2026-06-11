@@ -285,6 +285,35 @@ async function configureTestServer(token) {
     };
     config.ServiceSettings.EnableChannelBookmarks = true;
 
+    // Required by detox agents tests (channel_summary, tool_calls_in_channels):
+    // the Ask Agents quick action and /api/v4/agents/status availability require
+    // the agents plugin to have at least one configured bot. The service points
+    // at a mock upstream — tests never invoke a real LLM (tool-call posts are
+    // seeded directly via the REST API). Shape mirrors the plugin's own e2e
+    // fixture (mattermost-plugin-agents e2e/helpers/plugincontainer.ts).
+    config.PluginSettings.Plugins['mattermost-ai'] = {
+        ...(config.PluginSettings.Plugins['mattermost-ai'] || {}),
+        config: {
+            services: [{
+                id: 'mock-service',
+                name: 'Mock Service',
+                type: 'openaicompatible',
+                apiKey: 'mock',
+                apiURL: 'http://localhost:9099',
+                defaultModel: 'gpt-mock',
+                useResponsesAPI: false,
+            }],
+            bots: [{
+                id: 'e2emockbot',
+                name: 'mock',
+                displayName: 'Mock Bot',
+                customInstructions: '',
+                serviceID: 'mock-service',
+            }],
+            defaultBotName: 'mock',
+        },
+    };
+
     // Required by maestro/flows/account/attach_logs_*.yml: keep the in-app
     // Report a Problem screen reachable (not redirected to email/browser) and
     // make the log-attachment toggle visible. These match server defaults but

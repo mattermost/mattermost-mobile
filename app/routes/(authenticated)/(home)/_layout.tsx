@@ -19,6 +19,12 @@ export default function TabLayout() {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
+    // freezeOnBlur must stay OFF for these tabs: their screens are driven by
+    // WatermelonDB withObservables subscriptions, and react-freeze suspension
+    // permanently drops setState updates that arrive while a tab is blurred —
+    // the tab then renders stale data even after refocusing (verified by unit
+    // test; surfaced as the saved/pinned/recent-mentions e2e failures where
+    // Saved Messages kept showing its mount-time list).
     return (
         <Tabs
             screenOptions={{
@@ -50,7 +56,7 @@ export default function TabLayout() {
                     title: 'Search',
                     href: null,
                     tabBarButtonTestID: 'tab_bar.search.tab',
-                    freezeOnBlur: true,
+                    freezeOnBlur: false,
                 }}
             />
             <Tabs.Screen
@@ -59,7 +65,7 @@ export default function TabLayout() {
                     title: 'Mentions',
                     href: null,
                     tabBarButtonTestID: 'tab_bar.mentions.tab',
-                    freezeOnBlur: true,
+                    freezeOnBlur: false,
                 }}
             />
             <Tabs.Screen
@@ -68,7 +74,7 @@ export default function TabLayout() {
                     title: 'Saved',
                     href: null,
                     tabBarButtonTestID: 'tab_bar.saved_messages.tab',
-                    freezeOnBlur: true,
+                    freezeOnBlur: false,
                 }}
             />
             <Tabs.Screen
@@ -77,7 +83,7 @@ export default function TabLayout() {
                     title: 'Account',
                     href: null,
                     tabBarButtonTestID: 'tab_bar.account.tab',
-                    freezeOnBlur: true,
+                    freezeOnBlur: false,
                 }}
             />
         </Tabs>
