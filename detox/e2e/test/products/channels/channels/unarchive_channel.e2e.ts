@@ -87,6 +87,10 @@ describe('Channels - Unarchive Channel', () => {
     });
 
     afterAll(async () => {
+        await System.apiUpdateConfig(siteTwoUrl, {
+            TeamSettings: {ExperimentalViewArchivedChannels: false},
+        });
+
         // # Log out
         await HomeScreen.logout();
     });

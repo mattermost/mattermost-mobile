@@ -86,29 +86,31 @@ describe('Channels - Channel Bookmarks', () => {
             await device.disableSynchronization();
         }
 
-        await element(by.id('channel_list.flat_list')).scrollTo('top');
+        try {
+            await element(by.id('channel_list.flat_list')).scrollTo('top');
 
-        if (isIos()) {
-            try {
+            if (isIos()) {
+                try {
+                    await waitFor(displayNameEl).
+                        toBeVisible().
+                        whileElement(by.id('channel_list.flat_list')).
+                        scroll(100, 'down', 0.5, 0.3);
+                } catch {
+                    // Fall through to tap() — element may be at the bottom edge with < 75%
+                    // visibility but a hittable center point.
+                }
+            } else {
                 await waitFor(displayNameEl).
                     toBeVisible().
                     whileElement(by.id('channel_list.flat_list')).
-                    scroll(100, 'down', 0.5, 0.3);
-            } catch {
-                // Fall through to tap() — element may be at the bottom edge with < 75%
-                // visibility but a hittable center point.
+                    scroll(100, 'down');
             }
-        } else {
-            await waitFor(displayNameEl).
-                toBeVisible().
-                whileElement(by.id('channel_list.flat_list')).
-                scroll(100, 'down');
-        }
 
-        await displayNameEl.tap();
-
-        if (isIos()) {
-            await device.enableSynchronization();
+            await displayNameEl.tap();
+        } finally {
+            if (isIos()) {
+                await device.enableSynchronization();
+            }
         }
 
         await ChannelScreen.dismissScheduledPostTooltip();
@@ -669,14 +671,6 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // SKIPPED — Detox's `scrollInDirectionStaleAtEdge` can't find the 12th
-    // bookmark in the channel-header horizontal bookmark bar. The test seeds
-    // 12 bookmarks via API but the bar doesn't scroll to reveal them via
-    // Detox's synthetic scroll. App-side likely renders only the visible
-    // window (FlatList virtualization), and Detox's edge-detection scroll
-    // can't trigger virtual-item realization. Also blows past the 240s jest
-    // timeout, which then cascades into the afterAll logout hook. Track
-    // separately as a test-helper issue or app-side render investigation.
     it('MM-T5612_1 - should show scroll indicator when bookmarks exceed visible limit', async () => {
         const channelHeaderBookmarksList = by.id('channel_header.bookmarks.list');
         const firstBookmarkMatcher = by.text('Scroll Bookmark 1');

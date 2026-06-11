@@ -52,6 +52,8 @@ describe('Account - Settings - Notification Settings', () => {
     });
 
     afterAll(async () => {
+        await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalEnableAutomaticReplies: false}});
+
         // # Log out
         await NotificationSettingsScreen.back();
         await SettingsScreen.close();

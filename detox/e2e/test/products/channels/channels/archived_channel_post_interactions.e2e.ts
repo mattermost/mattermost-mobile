@@ -139,14 +139,12 @@ async function closeBrowseChannelsChannel() {
     }
 }
 
-// Android: skipped entirely. Detox's FabricUIManagerIdlingResources throws
-// `NoSuchFieldException: mMountItemDispatcher` whenever any text input
-// receives `replaceText`/`typeText` (keyboard activation triggers idle
-// polling, which reflects on a Fabric field stripped/renamed by R8 at
-// build time on API 35). All tests in this spec involve text entry, so the
-// per-test conditional skip wasn't enough. iOS passes all 4 tests reliably.
+// Android: skipped entirely — `replaceText`/`typeText` triggers a
+// NoSuchFieldException crash on mMountItemDispatcher (Detox 20.47.0 /
+// Fabric / R8 on API 35). All tests involve text entry, so per-test
+// guards aren't sufficient. iOS passes all 4 tests reliably.
 // Track separately as a Detox-Android patch-package task.
-describe('Channels - Archived Channel Post Interactions', () => {
+(isAndroid() ? describe.skip : describe)('Channels - Archived Channel Post Interactions', () => {
     const serverOneDisplayName = 'Server 1';
     let testTeam: any;
     let testUser: any;
@@ -180,6 +178,10 @@ describe('Channels - Archived Channel Post Interactions', () => {
     });
 
     afterAll(async () => {
+        await System.apiUpdateConfig(siteOneUrl, {
+            TeamSettings: {ExperimentalViewArchivedChannels: false},
+        });
+
         // # Log out
         await HomeScreen.logout();
     });

@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {TouchableOpacity} from 'react-native';
+import {Pressable} from 'react-native';
 
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
@@ -110,10 +110,10 @@ const ProfileImagePicker = ({
     }, [canRemovePicture, onRemoveProfileImage, pictureUtils, styles.title]));
 
     return (
-        <TouchableOpacity
+        <Pressable
             onPress={showFileAttachmentOptions}
             hitSlop={hitSlop}
-            style={styles.touchable}
+            style={({pressed}) => [styles.touchable, pressed && {opacity: 0.72}]}
             testID={`edit_profile.${user.id}.profile_picture.picker`}
         >
             <CompassIcon
@@ -121,8 +121,7 @@ const ProfileImagePicker = ({
                 size={24}
                 color={changeOpacity(theme.centerChannelColor, 0.6)}
             />
-        </TouchableOpacity>
-
+        </Pressable>
     );
 };
 

@@ -90,7 +90,7 @@ export default function InputQuickAction({
                 } else if (inputType === 'tilde') {
                     return `${v}~`;
                 }
-                return '/';
+                return `${v}/`;
             });
         }
         focusWithEmojiDismiss();

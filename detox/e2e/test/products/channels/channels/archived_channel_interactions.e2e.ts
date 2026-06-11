@@ -115,11 +115,11 @@ async function closeBrowseChannelsChannel() {
     }
 }
 
-// Android: skipped entirely. Same Detox <-> Fabric incompatibility as
-// archived_channel_post_interactions.e2e.ts — `replaceText`/`typeText`
-// triggers a NoSuchFieldException crash on mMountItemDispatcher. iOS
-// passes all 4 tests. Track separately.
-describe('Channels - Archived Channel Interactions', () => {
+// Android: skipped entirely — `replaceText`/`typeText` triggers a
+// NoSuchFieldException crash on mMountItemDispatcher (Detox 20.47.0 /
+// Fabric / R8 on API 35). iOS passes all 4 tests reliably.
+// Track separately as a Detox-Android patch-package task.
+(isAndroid() ? describe.skip : describe)('Channels - Archived Channel Interactions', () => {
     const serverOneDisplayName = 'Server 1';
     let testTeam: any;
     let testUser: any;
@@ -150,6 +150,10 @@ describe('Channels - Archived Channel Interactions', () => {
     });
 
     afterAll(async () => {
+        await System.apiUpdateConfig(siteOneUrl, {
+            TeamSettings: {ExperimentalViewArchivedChannels: false},
+        });
+
         // # Log out
         await HomeScreen.logout();
     });

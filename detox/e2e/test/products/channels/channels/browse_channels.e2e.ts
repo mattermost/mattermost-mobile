@@ -169,7 +169,7 @@ describe('Channels - Browse Channels', () => {
     it('MM-T4729_5 - should be able to browse an archived channel', async () => {
         // # Enable archived channel visibility on the server, then reload so the app
         // picks up the new config (the ChannelDropdown only renders when this is true)
-        await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {ExperimentalViewArchivedChannels: true}});
+        await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalViewArchivedChannels: true}});
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
 
@@ -208,7 +208,7 @@ describe('Channels - Browse Channels', () => {
 
         // # Go back to channel list screen and restore server config
         await BrowseChannelsScreen.close();
-        await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {ExperimentalViewArchivedChannels: false}});
+        await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalViewArchivedChannels: false}});
     });
 
     it('MM-T4729_6 - should not be able to browse a joined public channel', async () => {
