@@ -9,24 +9,38 @@ name: CMT Provisioner
 # Matterwick destroys the provisioned instances (cleanup is keyed off the completed workflow_run,
 # matched by commit SHA).
 #
-# Triggers: an RC tag cut (e.g. `v2.41.0-rc.1`), or a manual run from the Actions tab. The tag
-# glob filters out GA tags (`v2.41.0`) and any non-RC pre-release tags. Matterwick is the
-# authoritative gate: its `shouldTriggerCMT` also requires the head_branch to be either a manual
-# dispatch or an RC tag / release branch, so an off-pattern tag that somehow slips past the glob
-# is still rejected.
+# Triggers:
+#   - RC tag cut (desktop convention, e.g. `v6.2.0-rc.1`): the `v*-rc*` tag glob. Kept on
+#     mobile too as a future-proof no-op — mobile currently doesn't cut RC tags, but if that
+#     ever changes the trigger works without any further edits.
+#   - Mobile release-build branch push (`build-release-NNN`, 3+ digit build number, e.g.
+#     `build-release-786`, `build-release-1100`). The "Mattermost Mobile Release" external
+#     workflow creates this branch when a release build is dispatched to TestFlight / Play
+#     Store, so it's the natural "RC cut" event on mobile. Platform-specific variants like
+#     `build-release-ios-NNN` / `-sim-NNN` / `-android-NNN` are intentionally excluded by the
+#     leading-digit glob (and re-checked by matterwick's strict regex).
+#   - Manual run from the Actions tab (`workflow_dispatch`, any ref).
 #
-# NOTE (intentional duplicate coverage): the matching `release-*` branch on which the RC tag is
-# cut also gets a normal release E2E run (whole suite, latest server) on push events. CMT runs
-# the SMOKE suite across the multi-version matrix at the RC moment, whose set includes the latest
-# server — so the latest server is exercised by both flows. Expected and accepted.
+# Matterwick is the authoritative gate: its `shouldTriggerCMT` requires the head_branch to be
+# a manual dispatch, an RC tag, a release branch (`release-*`), or a build-release branch
+# matching `^build-release-\d{3,}$`. Anything that slips past the GitHub-side globs is still
+# rejected there.
+#
+# NOTE (intentional duplicate coverage): the matching `release-*` branch on which the RC tag /
+# build-release branch is cut also gets a normal release E2E run (whole suite, latest server)
+# on push events. CMT runs the SMOKE suite across the multi-version matrix at the RC moment,
+# whose set includes the latest server — so the latest server is exercised by both flows.
+# Expected and accepted.
 
 on:
-  # RC tag cut. The glob matches the desktop/mobile RC tag convention `vX.Y.Z-rc.N` and excludes
-  # GA tags / nightly tags. (Tag globs are fnmatch-style; matterwick re-validates with a strict
-  # regex.)
   push:
+    # Desktop RC tag cut (`vX.Y.Z-rc.N`); no-op on mobile today.
     tags:
       - "v*-rc*"
+    # Mobile release-build branch (3+ digit build number). The leading [0-9][0-9][0-9]
+    # excludes platform-specific variants like `build-release-ios-NNN`.
+    branches:
+      - "build-release-[0-9][0-9][0-9]*"
   # Manual runs from the Actions tab (any ref).
   workflow_dispatch: {}
 
