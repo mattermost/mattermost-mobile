@@ -56,7 +56,10 @@ async function tapChannelAndWaitForArchivedChannelScreen(channelItem: Detox.Nati
     // 27302480506: tap dispatched, keyboard dismissed at the same instant, no
     // onSelectChannel side effects — channel.screen never appeared). Same pattern
     // as smoke_test/channels.e2e.ts.
-    await BrowseChannelsScreen.searchInput.tapReturnKey();
+    // Guarded: on Android tapReturnKey submits the search, filtering results away.
+    if (isIos()) {
+        await BrowseChannelsScreen.searchInput.tapReturnKey();
+    }
 
     if (isIos()) {
         await device.disableSynchronization();
