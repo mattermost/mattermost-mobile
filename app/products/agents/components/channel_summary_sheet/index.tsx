@@ -2,14 +2,18 @@
 // See LICENSE.txt for license information.
 
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React, {useCallback, useEffect, useState} from 'react';
 import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
 import {Alert, Pressable, Text, View} from 'react-native';
 
 import {fetchAgents} from '@agents/actions/remote/agents';
 import {requestChannelSummary} from '@agents/actions/remote/channel_summary';
+import {saveSelectedAgent} from '@agents/actions/remote/preference';
 import {type Agent} from '@agents/client/rest';
 import {AGENT_ANALYSIS_SUMMARY} from '@agents/constants';
+import {observeSelectedAgentId} from '@agents/queries/agents';
+import {resolveSelectedAgent} from '@agents/utils';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
@@ -25,6 +29,8 @@ import {typography} from '@utils/typography';
 
 import AgentSelectorPanel from './agent_selector_panel';
 import DateRangePicker from './date_range_picker';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 type SummaryOptionId = 'unreads' | '7d' | '14d' | 'custom';
 
@@ -51,6 +57,7 @@ const SUMMARY_OPTIONS: SummaryOption[] = [
 
 type Props = {
     channelId: string;
+    selectedAgentId: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -105,7 +112,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelSummarySheet = ({channelId}: Props) => {
+const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -119,19 +126,25 @@ const ChannelSummarySheet = ({channelId}: Props) => {
     const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
     const [loadingAgents, setLoadingAgents] = useState(true);
 
-    // Fetch agents on mount and set default to first agent
+    // Fetch agents on mount.
     useEffect(() => {
         const loadAgents = async () => {
             setLoadingAgents(true);
             const result = await fetchAgents(serverUrl);
             if (result.data && result.data.length > 0) {
                 setAgents(result.data);
-                setSelectedAgent(result.data[0]);
             }
             setLoadingAgents(false);
         };
         loadAgents();
     }, [serverUrl]);
+
+    // Auto-resolve the selected agent (saved pref -> default -> first) without persisting.
+    useEffect(() => {
+        if (agents.length > 0) {
+            setSelectedAgent((current) => current ?? resolveSelectedAgent(agents, selectedAgentId));
+        }
+    }, [agents, selectedAgentId]);
 
     const handleOptionPress = useCallback(async (optionId: string | boolean) => {
         if (submitting) {
@@ -199,7 +212,8 @@ const ChannelSummarySheet = ({channelId}: Props) => {
     const handleAgentSelect = useCallback((agent: Agent) => {
         setSelectedAgent(agent);
         setShowAgentSelector(false);
-    }, []);
+        saveSelectedAgent(serverUrl, agent.id);
+    }, [serverUrl]);
 
     const handleCustomPromptSubmit = useCallback(async () => {
         if (!customPrompt.trim() || !selectedAgent) {
@@ -383,4 +397,8 @@ const ChannelSummarySheet = ({channelId}: Props) => {
     );
 };
 
-export default ChannelSummarySheet;
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
+    selectedAgentId: observeSelectedAgentId(database),
+}));
+
+export default withDatabase(enhanced(ChannelSummarySheet));

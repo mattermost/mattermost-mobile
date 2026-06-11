@@ -1,12 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Alert, Keyboard, TextInput, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {saveSelectedAgent} from '@agents/actions/remote/preference';
 import {useAgents, useRewrite} from '@agents/hooks';
+import {observeSelectedAgentId} from '@agents/queries/agents';
+import {resolveSelectedAgent} from '@agents/utils';
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -25,6 +29,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {Agent, RewriteAction} from '@agents/types';
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 const messages = defineMessages({
     errorTitle: {
@@ -86,6 +91,7 @@ export type updateValueFn = (value: string | ((prevValue: string) => string)) =>
 type Props = {
     originalMessage: string;
     updateValue?: updateValueFn;
+    selectedAgentId: string;
 };
 
 const CUSTOM_PROMPT_INPUT_HEIGHT = 64;
@@ -142,6 +148,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const RewriteOptions = ({
     originalMessage,
     updateValue,
+    selectedAgentId,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -155,12 +162,12 @@ const RewriteOptions = ({
     const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
     const textInputRef = useRef<TextInput>(null);
 
-    // Set default agent when agents list changes
+    // Auto-resolve the selected agent (saved pref -> default -> first) without persisting.
     useEffect(() => {
         if (agents.length > 0) {
-            setSelectedAgent((current) => current || agents[0]);
+            setSelectedAgent((current) => current ?? resolveSelectedAgent(agents, selectedAgentId));
         }
-    }, [agents]);
+    }, [agents, selectedAgentId]);
 
     useDidMount(() => {
         return () => {
@@ -254,10 +261,11 @@ const RewriteOptions = ({
     const handleOpenAgentSelector = useCallback(() => {
         const onSelectAgent = (agent: Agent) => {
             setSelectedAgent(agent);
+            saveSelectedAgent(serverUrl, agent.id);
         };
         CallbackStore.setCallback(onSelectAgent);
         navigateToScreen(Screens.AGENTS_SELECTOR, {agents, selectedAgentId: selectedAgent?.id || ''});
-    }, [agents, selectedAgent]);
+    }, [agents, selectedAgent, serverUrl]);
 
     const snapPoints = useMemo(() => {
         const paddingBottom = 10;
@@ -341,4 +349,8 @@ const RewriteOptions = ({
     );
 };
 
-export default RewriteOptions;
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
+    selectedAgentId: observeSelectedAgentId(database),
+}));
+
+export default withDatabase(enhanced(RewriteOptions));

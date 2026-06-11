@@ -13,8 +13,10 @@ import {buildAbsoluteUrl} from '@actions/remote/file';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {buildProfileImageUrl} from '@actions/remote/user';
 import {fetchAIBots} from '@agents/actions/remote/bots';
+import {saveSelectedAgent} from '@agents/actions/remote/preference';
 import BotSelectorItem from '@agents/screens/agent_chat/bot_selector_item';
 import {goToAgentThreadsList} from '@agents/screens/navigation';
+import {resolveSelectedAgent} from '@agents/utils';
 import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_draft_container';
 import PostDraft from '@components/post_draft';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -38,6 +40,7 @@ import type AiBotModel from '@agents/types/database/models/ai_bot';
 
 type Props = {
     bots: AiBotModel[];
+    selectedAgentId: string;
 };
 
 const styles = StyleSheet.create({
@@ -53,7 +56,7 @@ const AGENT_CHAT_INPUT_NATIVE_ID = `${AGENT_CHAT_TESTID}.post.input`;
 
 const PORTAL_NAME = 'agent_chat_autocomplete';
 
-const AgentChat = ({bots}: Props) => {
+const AgentChat = ({bots, selectedAgentId}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -80,12 +83,12 @@ const AgentChat = ({bots}: Props) => {
         return ['left', 'right', 'bottom'];
     }, [isTablet]);
 
-    // Auto-select first bot when bots are loaded from database
+    // Auto-resolve the selected bot (saved pref -> default -> first) without persisting.
     useEffect(() => {
         if (bots.length > 0 && !selectedBot) {
-            setSelectedBot(bots[0]);
+            setSelectedBot(resolveSelectedAgent(bots, selectedAgentId));
         }
-    }, [bots, selectedBot]);
+    }, [bots, selectedBot, selectedAgentId]);
 
     // Refresh bots from network on mount
     useEffect(() => {
@@ -168,8 +171,9 @@ const AgentChat = ({bots}: Props) => {
 
     const handleBotSelect = useCallback((bot: AiBotModel) => {
         setSelectedBot(bot);
+        saveSelectedAgent(serverUrl, bot.id);
         dismissBottomSheet();
-    }, []);
+    }, [serverUrl]);
 
     const handleBotSelectorPress = usePreventDoubleTap(useCallback(() => {
         if (bots.length <= 1) {
