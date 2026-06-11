@@ -1158,7 +1158,6 @@ describe('*** Operator: merge chunks ***', () => {
 describe('*** Operator: merge chunks — new chunk entirely above existing chunks (MM-66467 root cause) ***', () => {
     const {mergePostInChannelChunks} = exportedForTest;
     let database: Database;
-    let operator: ServerDataOperator;
     const databaseName = 'baseHandler.test.com';
     const channelId = 'merge-above';
 
@@ -1166,7 +1165,6 @@ describe('*** Operator: merge chunks — new chunk entirely above existing chunk
         await DatabaseManager.init([databaseName]);
         const serverDatabase = DatabaseManager.serverDatabases[databaseName]!;
         database = serverDatabase.database;
-        operator = serverDatabase.operator;
     });
 
     afterEach(async () => {
@@ -1179,13 +1177,16 @@ describe('*** Operator: merge chunks — new chunk entirely above existing chunk
         // The early-exit `if (chunk.latest < newChunk.earliest) break` fires on the existing
         // chunk (100 < 200) and the merge does nothing — leaving the orphan intact.
         const newChunk = await transformPostsInChannelRecord({
-            action: OperationType.CREATE, database,
+            action: OperationType.CREATE,
+            database,
             value: {record: undefined, raw: {channel_id: channelId, earliest: 200, latest: 200}},
         });
         const existingChunk = await transformPostsInChannelRecord({
-            action: OperationType.CREATE, database,
+            action: OperationType.CREATE,
+            database,
             value: {record: undefined, raw: {channel_id: channelId, earliest: 0, latest: 100}},
         });
+
         // Sorted by latest DESC as the real code does
         const chunks: PostsInChannelModel[] = [newChunk, existingChunk];
 
@@ -1201,17 +1202,21 @@ describe('*** Operator: merge chunks — new chunk entirely above existing chunk
     it('should merge when new chunk is above multiple existing chunks', async () => {
         // New chunk [500, 500] with existing [0, 100] and [200, 300] — all below.
         const newChunk = await transformPostsInChannelRecord({
-            action: OperationType.CREATE, database,
+            action: OperationType.CREATE,
+            database,
             value: {record: undefined, raw: {channel_id: channelId, earliest: 500, latest: 500}},
         });
         const existing1 = await transformPostsInChannelRecord({
-            action: OperationType.CREATE, database,
+            action: OperationType.CREATE,
+            database,
             value: {record: undefined, raw: {channel_id: channelId, earliest: 200, latest: 300}},
         });
         const existing2 = await transformPostsInChannelRecord({
-            action: OperationType.CREATE, database,
+            action: OperationType.CREATE,
+            database,
             value: {record: undefined, raw: {channel_id: channelId, earliest: 0, latest: 100}},
         });
+
         // Sorted by latest DESC
         const chunks: PostsInChannelModel[] = [newChunk, existing1, existing2];
 
