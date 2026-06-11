@@ -10,6 +10,7 @@ import {fetchPostsForChannel} from '@actions/remote/post';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {navigateBack} from '@screens/navigation';
 import {logError} from '@utils/log';
 
 const messages = defineMessages({
@@ -54,6 +55,9 @@ const ResetChannelPosts = ({channelId}: Props) => {
         } catch (error) {
             logError('Failed to reset channel posts', error);
         }
+
+        // Dismiss Channel Info so the user lands back on the (now-repopulated) channel.
+        await navigateBack();
     }, [serverUrl, channelId]);
 
     const onPress = usePreventDoubleTap(useCallback(() => {
