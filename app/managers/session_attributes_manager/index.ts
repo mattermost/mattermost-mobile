@@ -71,31 +71,33 @@ class SessionAttributesManagerSingleton {
 
         state.isSending = true;
 
-        const now = Date.now();
-        const fieldsToSend = state.manifest.filter((field) => {
-            const lastSentAt = state.lastSentAt.get(field.name);
-            if (!lastSentAt || field.ttl_seconds === 0) {
-                return true;
+        try {
+            const now = Date.now();
+            const fieldsToSend = state.manifest.filter((field) => {
+                const lastSentAt = state.lastSentAt.get(field.name);
+                if (!lastSentAt || field.ttl_seconds === 0) {
+                    return true;
+                }
+                return (now - lastSentAt) >= field.ttl_seconds * 1000;
+            });
+
+            const payload: Record<string, string> = {};
+            await Promise.all(fieldsToSend.map(async (field) => {
+                const value = await this.collectAttribute(field.name, serverUrl);
+                if (value) {
+                    payload[field.name] = value;
+                }
+                state.lastSentAt.set(field.name, now);
+            }));
+
+            if (!Object.keys(payload).length) {
+                return undefined;
             }
-            return (now - lastSentAt) >= field.ttl_seconds * 1000;
-        });
 
-        const payload: Record<string, string> = {};
-        await Promise.all(fieldsToSend.map(async (field) => {
-            const value = await this.collectAttribute(field.name, serverUrl);
-            if (value) {
-                payload[field.name] = value;
-            }
-            state.lastSentAt.set(field.name, now);
-        }));
-
-        state.isSending = false;
-
-        if (!Object.keys(payload).length) {
-            return undefined;
+            return base64.encode(JSON.stringify(payload));
+        } finally {
+            state.isSending = false;
         }
-
-        return base64.encode(JSON.stringify(payload));
     };
 
     private collectAttribute = async (name: string, serverUrl: string): Promise<string> => {
