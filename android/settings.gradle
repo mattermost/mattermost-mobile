@@ -38,4 +38,39 @@ expoAutolinking.useExpoVersionCatalog()
 include ':app'
 include ':watermelondb-jsi'
 project(':watermelondb-jsi').projectDir = new File(rootProject.projectDir, '../node_modules/@nozbe/watermelondb/native/android-jsi')
+
+// Build Detox's Android library from source instead of consuming the
+// prebuilt AAR at `node_modules/detox/Detox-android/com/wix/detox/<v>/detox-<v>.aar`.
+//
+// Why: the prebuilt AAR contains
+// `com.wix.detox.reactnative.idlingresources.uimodule.fabric.FabricUIManagerIdlingResources`
+// with `getMountItemDispatcher()` declared as non-nullable `Any`. It calls
+// `UIManagerHelper.getUIManager(...)` which returns `UIManager?` and passes
+// the result directly to `Reflect.on(...)`. RN 0.83 returns null during brief
+// React-context teardown / screen-replace windows; joor's `Reflect.on(null)`
+// falls back to `Object.class`, then `.field("mMountItemDispatcher")` throws
+// `NoSuchFieldException` — which Detox surfaces as an `AppWillTerminateWithError`
+// via the periodic `QueryStatusActionHandler` sync poll. The crash terminates
+// whatever test is in flight at that moment (varying victims observed:
+// MM-T868_1, MM-T1697, Teams - Invite suite across CI runs).
+//
+// detox/scripts/postinstall.js patches the .kt source in node_modules to
+// null-guard the lookup. That patch only takes effect if gradle compiles
+// Detox from source — hence this `include`.
+//
+// To revert (back to prebuilt AAR), remove the block below; gradle will
+// resolve `com.wix:detox:+` from the maven repo declared at
+// android/build.gradle:37-39.
+//
+// Guarded on the directory's existence because non-detox builds (notably
+// the maestro Android job in .github/workflows/e2e-maestro-template.yml,
+// which runs `./gradlew :app:assembleRelease` without installing detox's
+// node_modules) would otherwise fail with
+// "Configuring project ':detox' without an existing directory is not allowed".
+def detoxAndroidSrc = new File(rootProject.projectDir, '../detox/node_modules/detox/android/detox')
+if (detoxAndroidSrc.isDirectory()) {
+    include ':detox'
+    project(':detox').projectDir = detoxAndroidSrc
+}
+
 includeBuild(expoAutolinking.reactNativeGradlePlugin)

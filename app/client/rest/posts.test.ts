@@ -288,6 +288,18 @@ describe('ClientPosts', () => {
         );
     });
 
+    test('doPostActionWithQuery', async () => {
+        const postId = 'post_id';
+        const actionId = 'action_id';
+        const query = {row: '12', col: 'A'};
+        await client.doPostActionWithQuery(postId, actionId, query);
+
+        expect(client.doFetch).toHaveBeenCalledWith(
+            `${client.getPostRoute(postId)}/actions/${encodeURIComponent(actionId)}`,
+            {method: 'post', body: {query}},
+        );
+    });
+
     test('acknowledgePost', async () => {
         const postId = 'post_id';
         const userId = 'user_id';

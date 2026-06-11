@@ -8,6 +8,7 @@ import {cancelSessionNotification, findSession} from '@actions/local/session';
 import {doPing} from '@actions/remote/general';
 import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {HTTP_UNAUTHORIZED} from '@constants/network';
 import DatabaseManager from '@database/manager';
 import IntuneManager from '@managers/intune_manager';
 import NetworkManager from '@managers/network_manager';
@@ -30,8 +31,6 @@ import {loginEntry} from './entry';
 
 import type {Client} from '@client/rest';
 import type {LoginArgs} from '@typings/database/database';
-
-const HTTP_UNAUTHORIZED = 401;
 
 const logoutMessages = defineMessages({
     title: {

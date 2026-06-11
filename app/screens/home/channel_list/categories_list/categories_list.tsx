@@ -1,19 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, FlatList, useWindowDimensions} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
+import {handleTeamChange} from '@actions/remote/team';
 import AgentsButton from '@agents/components/agents_button';
 import DraftsButton from '@components/drafts_buttton';
+import Loading from '@components/loading';
 import ThreadsButton from '@components/threads_button';
 import {Events, Screens} from '@constants';
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
 import {useIsTablet} from '@hooks/device';
+import {useTeamsLoading} from '@hooks/teams_loading';
 import PlaybooksButton from '@playbooks/components/playbooks_button';
+import {getDefaultTeamId} from '@queries/servers/team';
+import {logDebug} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Categories from './categories';
@@ -71,8 +78,35 @@ const CategoriesList = ({
     const styles = getStyleSheet(theme);
     const {width} = useWindowDimensions();
     const isTablet = useIsTablet();
+    const serverUrl = useServerUrl();
+    const isTeamLoading = useTeamsLoading(serverUrl);
     const tabletWidth = useSharedValue(isTablet ? getTabletWidth(moreThanOneTeam) : 0);
     const [activeScreen, setActiveScreen] = useState<ScreenType>(isTablet && lastChannelId ? lastChannelId : Screens.CHANNEL);
+
+    const healedRef = useRef(false);
+    useEffect(() => {
+        if (hasChannels) {
+            healedRef.current = false; // reset on recovery
+            return;
+        }
+        if (isTeamLoading || healedRef.current) {
+            return;
+        }
+        healedRef.current = true;
+        (async () => {
+            try {
+                const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                const defaultTeamId = await getDefaultTeamId(database);
+                if (defaultTeamId) {
+                    logDebug('CategoriesList: self-healing missing currentTeamId', {serverUrl, defaultTeamId});
+                    await handleTeamChange(serverUrl, defaultTeamId);
+                }
+            } catch (e) {
+                logDebug('CategoriesList: self-heal failed', e);
+                healedRef.current = false; // allow another attempt
+            }
+        })();
+    }, [hasChannels, isTeamLoading, serverUrl]);
 
     useEffect(() => {
         if (isTablet) {
@@ -162,6 +196,14 @@ const CategoriesList = ({
 
     const content = useMemo(() => {
         if (!hasChannels) {
+            if (isTeamLoading) {
+                return (
+                    <Loading
+                        containerStyle={styles.flex}
+                        themeColor='sidebarText'
+                    />
+                );
+            }
             return (<LoadChannelsError/>);
         }
 
@@ -186,7 +228,7 @@ const CategoriesList = ({
                 />
             </SafeAreaView>
         );
-    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isTablet, playbooksButtonComponent, styles.flex, threadButtonComponent]);
+    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isTablet, isTeamLoading, playbooksButtonComponent, styles.flex, threadButtonComponent]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>

@@ -172,9 +172,14 @@ const Server = ({
             return false;
         });
 
-        PushNotifications.registerIfNeeded();
+        const registerTimeout = setTimeout(() => {
+            PushNotifications.registerIfNeeded();
+        }, 500);
 
-        return () => backHandler.remove();
+        return () => {
+            backHandler.remove();
+            clearTimeout(registerTimeout);
+        };
     });
 
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
@@ -338,7 +343,17 @@ const Server = ({
             return;
         }
 
-        canReceiveNotifications(headRequest.url, result.canReceiveNotifications as string, intl);
+        // NOTE: canReceiveNotifications is deferred until AFTER displayLogin (below).
+        // Calling it here presents a UIAlertController on the server screen while
+        // the connect flow continues in parallel; on iOS 26.x the subsequent
+        // Navigation.push to LoginScreen races with the still-visible alert and
+        // occasionally loses the push, leaving the user stranded on the server
+        // screen. Capturing the verification token here and firing the alert
+        // post-navigation eliminates the race — the alert then renders over the
+        // login screen, which is non-blocking because the RN-Navigation transition
+        // has already completed.
+        const pushProxyVerification = result.canReceiveNotifications as string;
+
         const data = await fetchConfigAndLicense(headRequest.url, true);
         if (data.error) {
             setButtonDisabled(true);
@@ -386,6 +401,24 @@ const Server = ({
         }
 
         displayLogin(headRequest.url, data.config!, data.license!);
+
+        // Fire the push-proxy verification alert AFTER the RNN transition to
+        // LoginScreen has FULLY settled. We use setTimeout (not
+        // InteractionManager.runAfterInteractions) because RN-Navigation's
+        // Navigation.push is a native-side operation that is NOT tracked by the
+        // JS-side InteractionManager — runAfterInteractions would fire immediately
+        // (before the native push completes) and the UIAlertController would still
+        // present on the server screen.
+        //
+        // This prevents the iOS 26.x race where a UIAlertController presented on
+        // the server screen blocks or drops the subsequent Navigation.push,
+        // leaving the user stranded on the server screen. Acknowledgement
+        // persistence (via the Okay button callback in handleAlertResponse) is
+        // unaffected — the alert still targets the same serverUrl, it just
+        // renders on the login screen instead of the server screen.
+        setTimeout(() => {
+            canReceiveNotifications(headRequest.url, pushProxyVerification, intl);
+        }, 1000);
     };
 
     return (

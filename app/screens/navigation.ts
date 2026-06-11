@@ -28,7 +28,7 @@ export function updateParams(props: Record<string, any>) {
 }
 
 // Helper to build Expo Router path from screen constant
-function getExpoRouterPath(screen: AvailableScreens, props?: any): string | undefined {
+export function getExpoRouterPath(screen: AvailableScreens, props?: any): string | undefined {
     if (UNAUTHENTICATED_SCREENS.has(screen)) {
         if (props?.isModal) {
             return `/(modals)/(add-server)/${screen}`;
@@ -117,11 +117,16 @@ export function bottomSheet(renderContent: () => React.ReactNode, snapPoints: Ar
 }
 
 export async function dismissBottomSheet() {
-    if (!NavigationStore.isScreenInStack(Screens.BOTTOM_SHEET)) {
+    const hasRegularSheet = NavigationStore.isScreenInStack(Screens.BOTTOM_SHEET);
+    const hasGenericSheet = NavigationStore.isScreenInStack(Screens.GENERIC_BOTTOM_SHEET);
+    if (!hasRegularSheet && !hasGenericSheet) {
         return;
     }
     DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
-    await NavigationStore.waitUntilScreensIsRemoved(Screens.BOTTOM_SHEET);
+
+    // Prefer the regular BOTTOM_SHEET when present (historical contract); fall back to
+    // GENERIC_BOTTOM_SHEET so callers using the generic variant aren't silently ignored.
+    await NavigationStore.waitUntilScreensIsRemoved(hasRegularSheet ? Screens.BOTTOM_SHEET : Screens.GENERIC_BOTTOM_SHEET);
     BottomSheetStore.reset();
     await new Promise((resolve) => setTimeout(resolve, 250));
 }
@@ -132,31 +137,38 @@ export async function dismissBottomSheet() {
 export async function navigateToRoot() {
     if (router) {
         router.dismissTo(getExpoRouterPath(Screens.CHANNEL_LIST)!);
+
+        if (router.canDismiss()) {
+            router.dismissAll();
+        }
+
         await new Promise((resolve) => setTimeout(resolve, 250));
     }
 }
 
 export async function dismissAllRoutesAndPopToScreen(screenId: AvailableScreens, passProps = {}) {
     try {
-        if (router) {
-            const route = getExpoRouterPath(screenId);
+        if (!router) {
+            return;
+        }
+        const route = getExpoRouterPath(screenId);
+        if (!route) {
+            return;
+        }
 
-            if (!route) {
-                return;
-            }
-
-            const params = propsToParams(passProps);
-
-            if (NavigationStore.isScreenInStack(screenId)) {
-                // Screen is in stack - pop back to it across all navigator boundaries
-                router.dismissTo(route);
-                router.setParams(params);
-                await new Promise((resolve) => setTimeout(resolve, 250));
-            } else {
-                // Screen not in stack - reset to root then push target
-                await navigateToRoot();
-                navigateToScreen(screenId, passProps);
-            }
+        if (NavigationStore.isScreenInStack(screenId)) {
+            // dismissTo only resolves divergence at the outermost navigator level
+            // it finds. With our nesting (root Stack -> (authenticated) Stack), one
+            // call only peels outer routes (modals, bottom sheets). A second call
+            // then operates on the inner stack and pops down to the target.
+            router.dismissTo(route);
+            router.dismissTo(route);
+            router.setParams(propsToParams(passProps));
+            await new Promise((resolve) => setTimeout(resolve, 250));
+        } else {
+            // Screen not in stack - reset to root then push target
+            await navigateToRoot();
+            navigateToScreen(screenId, passProps);
         }
     } catch (e) {
         logError('dismissAllRoutesAndPopToScreen: Expo Router navigation failed', e);

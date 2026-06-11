@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BoardViewModel} from '@boards/database/models';
 import {Database, Q} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import logger from '@nozbe/watermelondb/utils/common/logger';
@@ -16,7 +17,7 @@ import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
 import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, CustomProfileFieldModel, CustomProfileAttributeModel, DraftModel, FileModel,
     GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
-    PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
+    PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, PropertyFieldModel, PropertyValueModel, ReactionModel, RoleModel,
     ScheduledPostModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
     ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel, ConfigModel,
 } from '@database/models/server';
@@ -53,9 +54,9 @@ class DatabaseManagerSingleton {
             AiBotModel, AiThreadModel,
             CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel, ChannelInfoModel, ChannelMembershipModel, ConfigModel, CustomEmojiModel, CustomProfileFieldModel, CustomProfileAttributeModel, DraftModel, FileModel,
             GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
-            PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
+            PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, PropertyFieldModel, PropertyValueModel, ReactionModel, RoleModel,
             ScheduledPostModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-            ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
+            ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel, BoardViewModel,
             PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel,
         ];
 
@@ -68,6 +69,7 @@ class DatabaseManagerSingleton {
     * @returns {Promise<void>}
     */
     public init = async (serverUrls: string[]): Promise<void> => {
+        logDebug('DatabaseManager: Initializing');
         await this.createAppDatabase();
         const buildNumber = nativeBuildVersion;
         const versionNumber = nativeApplicationVersion;
@@ -368,17 +370,43 @@ class DatabaseManagerSingleton {
     };
 
     /**
+    * wipeServerData: Removes the *.db file from the App-Group directory for iOS or the files directory on Android,
+    * and drops the in-memory WatermelonDB client. The 'servers' row is left untouched so the wiped server
+    * keeps its place in the active-server selection (used by Mobile Ephemeral Mode purge).
+    * @param  {string} serverUrl
+    * @returns {Promise<void>}
+    */
+    public wipeServerData = async (serverUrl: string): Promise<void> => {
+        const server = await getServer(serverUrl);
+        if (!server) {
+            return;
+        }
+        delete this.serverDatabases[serverUrl];
+        await this.deleteServerDatabaseFiles(serverUrl);
+        const db = await this.createServerDatabase({
+            config: {
+                dbName: serverUrl,
+                displayName: server.displayName,
+                serverUrl,
+            },
+        });
+        if (!db) {
+            throw new Error(`wipeServerData: failed to re-create database for ${serverUrl}`);
+        }
+    };
+
+    /**
     * deleteServerDatabase: Removes the *.db file from the App-Group directory for iOS or the files directory on Android.
     * Also, it sets the last_active_at to '0' entry in the 'servers' table from the APP database
     * @param  {string} serverUrl
-    * @returns {Promise<boolean>}
+    * @returns {Promise<void>}
     */
     public deleteServerDatabase = async (serverUrl: string): Promise<void> => {
         const database = this.appDatabase?.database;
         if (database) {
             const server = await getServer(serverUrl);
             if (server) {
-                database.write(async () => {
+                await database.write(async () => {
                     await server.update((record) => {
                         record.lastActiveAt = 0;
                         record.identifier = '';
@@ -386,7 +414,7 @@ class DatabaseManagerSingleton {
                 });
 
                 delete this.serverDatabases[serverUrl];
-                this.deleteServerDatabaseFiles(serverUrl);
+                await this.deleteServerDatabaseFiles(serverUrl);
             }
         }
     };
@@ -395,7 +423,7 @@ class DatabaseManagerSingleton {
     * destroyServerDatabase: Removes the *.db file from the App-Group directory for iOS or the files directory on Android.
     * Also, removes the entry in the 'servers' table from the APP database
     * @param  {string} serverUrl
-    * @returns {Promise<boolean>}
+    * @returns {Promise<void>}
     */
     public destroyServerDatabase = async (serverUrl: string): Promise<void> => {
         const database = this.appDatabase?.database;

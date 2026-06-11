@@ -12,7 +12,6 @@ import {Events} from '@constants';
 import {isEdgeToEdge} from '@constants/device';
 import {useKeyboardState} from '@context/keyboard_state';
 import useDidMount from '@hooks/did_mount';
-import {DEFAULT_POST_INPUT_HEIGHT} from '@hooks/use_keyboard_state_context';
 import {dismissKeyboard} from '@utils/keyboard';
 
 // Use KeyboardGestureArea on iOS and Android 35+ (with edge-to-edge)
@@ -182,7 +181,6 @@ export const KeyboardAwarePostDraftContainer = ({
     return (
         <Wrapper
             {...wrapperProps}
-            offset={DEFAULT_POST_INPUT_HEIGHT} // KeyboardGestureArea has a bug on iOS that changing the offset causes the input to translate, see: https://github.com/kirillzyusko/react-native-keyboard-controller/issues/1365
             enableSwipeToDismiss={false} // this applies only to Android
         >
             <View style={styles.gestureArea}>

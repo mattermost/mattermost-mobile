@@ -66,7 +66,7 @@ function SavedMessages({
     const theme = useTheme();
     const serverUrl = useServerUrl();
 
-    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [currentTimezone, posts]);
+    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false), [currentTimezone, posts]);
 
     useDidMount(() => {
         fetchPinnedPosts(serverUrl, channelId).finally(() => {

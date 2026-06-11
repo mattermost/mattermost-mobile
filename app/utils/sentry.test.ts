@@ -108,9 +108,6 @@ describe('initializeSentry function', () => {
             sampleRate: 1.0,
             attachStacktrace: true, // Adjust based on your actual logic
             enableCaptureFailedRequests: false,
-            integrations: [
-                {name: 'expo-router'},
-            ],
             beforeSend: expect.any(Function),
         });
 
