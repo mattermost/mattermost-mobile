@@ -5,7 +5,7 @@
 import {Database, Q} from '@nozbe/watermelondb';
 
 import {ActionType} from '@constants';
-import {OperationType} from '@constants/database';
+import {MM_TABLES, OperationType} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {buildDraftKey} from '@database/operator/server_data_operator/comparators';
 import {transformDraftRecord, transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
@@ -1151,5 +1151,88 @@ describe('*** Operator: merge chunks ***', () => {
             expect(chunk._preparedState).toBe('create');
         }
         await operator.batchRecords(result, 'test');
+    });
+});
+
+describe('*** Operator: deleted post must not create an empty PostsInChannel interval (MM-66467) ***', () => {
+    let database: Database;
+    let operator: ServerDataOperator;
+    const databaseName = 'baseHandler.test.com';
+    const channelId = 'mm66467channel';
+
+    beforeEach(async () => {
+        await DatabaseManager.init([databaseName]);
+        const serverDatabase = DatabaseManager.serverDatabases[databaseName]!;
+        database = serverDatabase.database;
+        operator = serverDatabase.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(databaseName);
+    });
+
+    const makePost = (over: Partial<Post>): Post => ({
+        id: 'p',
+        channel_id: channelId,
+        create_at: 1000,
+        update_at: 1000,
+        edit_at: 0,
+        delete_at: 0,
+        is_pinned: false,
+        is_following: false,
+        user_id: 'user1',
+        root_id: '',
+        original_id: '',
+        message: 'message',
+        type: '',
+        props: {},
+        hashtags: '',
+        pending_post_id: '',
+        reply_count: 0,
+        last_reply_at: 0,
+        participants: null,
+        metadata: {},
+        ...over,
+    } as Post);
+
+    const intervalsForChannel = async () =>
+        (await database.get(MM_TABLES.SERVER.POSTS_IN_CHANNEL).
+            query(Q.where('channel_id', channelId)).fetch()) as PostsInChannelModel[];
+
+    it('does not create a separate empty interval from a deleted post received via RECEIVED_IN_CHANNEL', async () => {
+        // Seed an existing interval [1000, 1000] from a live root post.
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: ['live-post-id'],
+            posts: [makePost({id: 'live-post-id', create_at: 1000, update_at: 1000})],
+        });
+
+        const seeded = await intervalsForChannel();
+        expect(seeded.length).toBe(1);
+        expect(seeded[0].earliest).toBe(1000);
+        expect(seeded[0].latest).toBe(1000);
+
+        // Receive a DELETED root post whose create_at (5000) is newer than the interval.
+        // The server returns deleted posts in `order` (no DeleteAt filter), and the deferred
+        // unread-channel fetch stores them as RECEIVED_IN_CHANNEL. The deleted post is not
+        // persisted, but the interval must NOT be built from it (that produced the bug:
+        // a zero-row [5000, 5000] orphan that becomes postsInChannel[0] and blanks the channel).
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: ['deleted-post-id'],
+            posts: [makePost({id: 'deleted-post-id', create_at: 5000, update_at: 6000, delete_at: 6000})],
+        });
+
+        // The deleted post is not persisted...
+        const deletedRow = await database.get(MM_TABLES.SERVER.POST).
+            query(Q.where('id', 'deleted-post-id')).fetch();
+        expect(deletedRow.length).toBe(0);
+
+        // ...and crucially no empty orphan interval was created. The only interval must remain
+        // the real [1000, 1000] one, so the channel keeps rendering its history.
+        const after = await intervalsForChannel();
+        expect(after.length).toBe(1);
+        expect(after[0].earliest).toBe(1000);
+        expect(after[0].latest).toBe(1000);
     });
 });
