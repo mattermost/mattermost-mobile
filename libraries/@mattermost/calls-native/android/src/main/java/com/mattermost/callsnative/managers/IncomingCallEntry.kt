@@ -23,8 +23,6 @@ private const val RING_TIMEOUT_MS = 45_000L
 
 /**
  * Entry point for incoming calls invoked by the host app's FCM receiver.
- * RN may not be running yet, so the call coroutine is tied to a process-wide
- * scope rather than the React module's.
  */
 object IncomingCallEntry {
     private const val TAG = "MMCalls/IncomingCallEntry"
@@ -168,6 +166,7 @@ object IncomingCallEntry {
     }
 
     private fun bootReactNative(context: Context) {
+        if (CallsBridge.isJSReady()) return
         try {
             val intent = android.content.Intent(context.applicationContext, MMCallsBootTaskService::class.java)
             com.facebook.react.HeadlessJsTaskService.acquireWakeLockNow(context.applicationContext)

@@ -47,6 +47,14 @@ object CallsBridge {
         }
     }
 
+    // True when RN is running AND our JS listeners are attached. Callers
+    // use this to skip booting a headless task when the live runtime is
+    // already prepared to receive events.
+    fun isJSReady(): Boolean {
+        val ctx = reactContext ?: return false
+        return jsReady.get() && ctx.hasActiveReactInstance()
+    }
+
     internal fun attachReactContext(ctx: ReactApplicationContext) {
         reactContext = ctx
     }

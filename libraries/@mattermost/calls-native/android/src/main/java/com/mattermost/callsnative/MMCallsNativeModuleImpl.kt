@@ -153,10 +153,7 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
         val id = uuid.orEmpty()
         val signal = reasonOf(reason)
         // No live call is expected on a duplicate teardown — resolve silently.
-        if (!CallRegistry.disconnect(id, signal)) {
-            promise?.resolve(null)
-            return
-        }
+        CallRegistry.disconnect(id, signal)
         promise?.resolve(null)
     }
 

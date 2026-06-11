@@ -19,35 +19,42 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import java.util.Locale
-import androidx.core.graphics.drawable.toDrawable
-import com.mattermost.callsnative.utils.CallPermissions
+import com.mattermost.callsnative.R
 import com.mattermost.callsnative.managers.CallRegistry
 import com.mattermost.callsnative.managers.CallSurfaceCoordinator
 import com.mattermost.callsnative.managers.CallsBridge
-import com.mattermost.callsnative.utils.HostAppIcons
 import com.mattermost.callsnative.services.MMCallsForegroundService
+import com.mattermost.callsnative.utils.CallPermissions
+import com.mattermost.callsnative.utils.HostAppIcons
 import com.mattermost.callsnative.utils.TurboLogger
-import com.mattermost.callsnative.R
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import java.util.Locale
 
 /**
- * Single-Activity, state-driven incoming/active call surface. Lifecycle:
- *
- *   Incoming → Answering → Connecting → Connected → Ended
- *
+ * Single-Activity, state-driven incoming/active call surface.
+ * Lifecycle: Incoming → Answering → Connecting → Connected → Ended.
  */
 class CallActivity : ComponentActivity() {
 
+    // region ── State ──────────────────────────────────────────────────
+
     private var uuid: String = ""
-    private var heartbeat: ObjectAnimator? = null
-    private var rotation: ObjectAnimator? = null
     private var endingDown: Boolean = false
     private var answerGateInFlight: Boolean = false
+    private var connectedAtElapsedRealtime: Long = 0L
+
+    private var heartbeat: ObjectAnimator? = null
+    private var rotation: ObjectAnimator? = null
+    private var observeJob: kotlinx.coroutines.Job? = null
+
+    // endregion
+
+    // region ── Views ──────────────────────────────────────────────────
 
     private lateinit var root: ConstraintLayout
     private lateinit var statusIcon: ImageView
@@ -68,22 +75,33 @@ class CallActivity : ComponentActivity() {
     private lateinit var muteLabel: TextView
     private lateinit var hangupButton: View
 
-    // Gates the answer flow on RECORD_AUDIO / BLUETOOTH_CONNECT runtime
-    // permissions. JS-side react-native-permissions can't request from a
-    // headless context, so we prompt here before emitting CallAnswered.
+    // endregion
+
+    // region ── Activity result + timer ────────────────────────────────
+
+    // Gates the answer flow on RECORD_AUDIO / BLUETOOTH_CONNECT. JS-side
+    // react-native-permissions can't request from a headless context.
     private lateinit var permissionLauncher: androidx.activity.result.ActivityResultLauncher<Array<String>>
 
-    private var connectedAtElapsedRealtime: Long = 0L
     private val timerTicker = object : Runnable {
         override fun run() {
             if (connectedAtElapsedRealtime == 0L) return
             val elapsed = (SystemClock.elapsedRealtime() - connectedAtElapsedRealtime) / 1000L
-            val mm = elapsed / 60
+            val hh = elapsed / 3600
+            val mm = (elapsed % 3600) / 60
             val ss = elapsed % 60
-            statusLabel.text = String.format(Locale.ENGLISH, "%02d:%02d", mm, ss)
+            statusLabel.text = if (hh > 0) {
+                String.format(Locale.ENGLISH, "%d:%02d:%02d", hh, mm, ss)
+            } else {
+                String.format(Locale.ENGLISH, "%02d:%02d", mm, ss)
+            }
             statusLabel.postDelayed(this, 1000L)
         }
     }
+
+    // endregion
+
+    // region ── Lifecycle ──────────────────────────────────────────────
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,8 +124,7 @@ class CallActivity : ComponentActivity() {
             return
         }
 
-        // Registered before STARTED — the Activity Result contract requires
-        // the launcher to exist before any caller could invoke it.
+        // Activity Result contract requires the launcher to exist before STARTED.
         permissionLauncher = registerForActivityResult(
             androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions(),
         ) { results ->
@@ -125,7 +142,6 @@ class CallActivity : ComponentActivity() {
         clipAvatarToCircle()
         wireClicks()
         startHeartbeat()
-
         observeCallState()
 
         if (intent?.getBooleanExtra(EXTRA_AUTO_ANSWER, false) == true) {
@@ -151,10 +167,16 @@ class CallActivity : ComponentActivity() {
         super.onDestroy()
     }
 
+    // endregion
+
+    // region ── Setup ──────────────────────────────────────────────────
+
     private fun bindViews() {
         root = findViewById(R.id.root)
         statusIcon = findViewById(R.id.status_icon)
         statusLabel = findViewById(R.id.status_label)
+        // app:tint can silently no-op when the inflated view isn't an
+        // AppCompatImageView; set explicitly to be safe across themes.
         androidx.core.widget.ImageViewCompat.setImageTintList(
             statusIcon,
             android.content.res.ColorStateList.valueOf(
@@ -230,15 +252,9 @@ class CallActivity : ComponentActivity() {
         avatar.isFocusable = true
     }
 
-    private fun onAvatarTapped() {
-        // No-op while ringing or locked.
-        val handle = CallRegistry.get(uuid) ?: return
-        if (!handle.answered) return
-        if (CallSurfaceCoordinator.isKeyguardLocked()) return
-        CallSurfaceCoordinator.launchMainActivity()
-    }
+    // endregion
 
-    private var observeJob: kotlinx.coroutines.Job? = null
+    // region ── State observation & rendering ──────────────────────────
 
     private fun observeCallState(playEnterAnimation: Boolean = true) {
         val handle = CallRegistry.get(uuid)
@@ -261,24 +277,6 @@ class CallActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    private fun swapToCall(newUuid: String) {
-        avatar.cameraDistance = 8000f * resources.displayMetrics.density
-        callerName.animate().alpha(0f).setDuration(180L).start()
-        avatarRingStatic.animate().alpha(0f).setDuration(180L).start()
-        avatarRingRotating.animate().alpha(0f).setDuration(180L).start()
-
-        avatar.animate().rotationY(90f).setDuration(180L).withEndAction {
-            uuid = newUuid
-            avatarRingStatic.alpha = 1f
-            avatarRingRotating.alpha = 0f
-            observeCallState(playEnterAnimation = false)
-            avatar.rotationY = -90f
-            avatar.animate().rotationY(0f).setDuration(180L).start()
-            callerName.animate().alpha(1f).setDuration(180L).start()
-            avatarRingRotating.animate().alpha(1f).setDuration(180L).start()
-        }.start()
     }
 
     private fun bindSnapshot(snap: CallRegistry.CallSnapshot) {
@@ -349,7 +347,7 @@ class CallActivity : ComponentActivity() {
         statusIcon.clearColorFilter()
         if (connectedAtElapsedRealtime == 0L) {
             connectedAtElapsedRealtime = SystemClock.elapsedRealtime()
-            crossfadeStatusLabelText("00:00")
+            crossfadeStatusLabelToTimer()
             statusLabel.post(timerTicker)
         }
 
@@ -377,6 +375,10 @@ class CallActivity : ComponentActivity() {
         )
     }
 
+    // endregion
+
+    // region ── Animations ─────────────────────────────────────────────
+
     private fun runIncomingEnterAnimation() {
         avatar.alpha = 0f
         avatar.scaleX = 0.95f
@@ -393,6 +395,26 @@ class CallActivity : ComponentActivity() {
         incomingActions.alpha = 0f
         incomingActions.translationY = translateStart
         incomingActions.animate().alpha(1f).translationY(0f).setDuration(250L).start()
+    }
+
+    // Mid-session swap to another live call (e.g. answered second incoming
+    // while the first was still around). Y-axis page-flip on the avatar.
+    private fun swapToCall(newUuid: String) {
+        avatar.cameraDistance = 8000f * resources.displayMetrics.density
+        callerName.animate().alpha(0f).setDuration(180L).start()
+        avatarRingStatic.animate().alpha(0f).setDuration(180L).start()
+        avatarRingRotating.animate().alpha(0f).setDuration(180L).start()
+
+        avatar.animate().rotationY(90f).setDuration(180L).withEndAction {
+            uuid = newUuid
+            avatarRingStatic.alpha = 1f
+            avatarRingRotating.alpha = 0f
+            observeCallState(playEnterAnimation = false)
+            avatar.rotationY = -90f
+            avatar.animate().rotationY(0f).setDuration(180L).start()
+            callerName.animate().alpha(1f).setDuration(180L).start()
+            avatarRingRotating.animate().alpha(1f).setDuration(180L).start()
+        }.start()
     }
 
     private fun startHeartbeat() {
@@ -448,9 +470,10 @@ class CallActivity : ComponentActivity() {
         }.start()
     }
 
-    private fun crossfadeStatusLabelText(text: String) {
+    @SuppressLint("SetTextI18n")
+    private fun crossfadeStatusLabelToTimer() {
         statusLabel.animate().alpha(0f).setDuration(75L).withEndAction {
-            statusLabel.text = text
+            statusLabel.text = "00:00"
             statusLabel.animate().alpha(1f).setDuration(75L).start()
         }.start()
     }
@@ -458,6 +481,18 @@ class CallActivity : ComponentActivity() {
     private fun stopAnimations() {
         stopHeartbeat()
         stopRotation()
+    }
+
+    // endregion
+
+    // region ── User actions ───────────────────────────────────────────
+
+    private fun onAvatarTapped() {
+        // No-op while ringing or locked.
+        val handle = CallRegistry.get(uuid) ?: return
+        if (!handle.answered) return
+        if (CallSurfaceCoordinator.isKeyguardLocked()) return
+        CallSurfaceCoordinator.launchMainActivity()
     }
 
     private fun onAnswerTapped() {
@@ -532,6 +567,10 @@ class CallActivity : ComponentActivity() {
         runEndingTransition(null)
     }
 
+    // endregion
+
+    // region ── Teardown ───────────────────────────────────────────────
+
     private fun runEndingTransition(reason: CallRegistry.Reason?) {
         if (endingDown) return
         endingDown = true
@@ -563,6 +602,8 @@ class CallActivity : ComponentActivity() {
             })
             .start()
     }
+
+    // endregion
 
     companion object {
         private const val TAG = "MMCalls/CallActivity"

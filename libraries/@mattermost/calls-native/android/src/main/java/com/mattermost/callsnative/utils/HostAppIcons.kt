@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 
 /**
- * Resolves host-app drawable resources by name.
+ * Resolves host-app resources by name.
  */
 @SuppressLint("DiscouragedApi")
 internal object HostAppIcons {

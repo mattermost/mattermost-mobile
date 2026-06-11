@@ -140,8 +140,7 @@ class MMCallsForegroundService : Service() {
         // Secondary call just got answered → it owns the audio focus now,
         // swap it in as primary immediately. The old primary remains visible
         // (re-posted as a standalone notification) until JS tears it down via
-        // leaveCall; this avoids the "stale primary visible alongside the
-        // call you just answered" window.
+        // leaveCall.
         val isSecondaryAnswered = !isRinging &&
             primaryUuid != null && uuid != primaryUuid &&
             CallRegistry.isAnswered(uuid)
@@ -213,12 +212,7 @@ class MMCallsForegroundService : Service() {
             return
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-        } else {
-            @Suppress("DEPRECATION")
-            stopForeground(true)
-        }
+        stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
