@@ -34,6 +34,22 @@ const messages = defineMessages({
         id: 'channel_info.reset_posts.confirm.button',
         defaultMessage: 'Reset',
     },
+    deleteFailedTitle: {
+        id: 'channel_info.reset_posts.delete_failed.title',
+        defaultMessage: "Couldn't reset messages",
+    },
+    deleteFailedBody: {
+        id: 'channel_info.reset_posts.delete_failed.body',
+        defaultMessage: 'Something went wrong while clearing the cached messages. Please try again.',
+    },
+    fetchFailedTitle: {
+        id: 'channel_info.reset_posts.fetch_failed.title',
+        defaultMessage: "Couldn't download messages",
+    },
+    fetchFailedBody: {
+        id: 'channel_info.reset_posts.fetch_failed.body',
+        defaultMessage: 'The cached messages were cleared but they could not be downloaded again. Check that you have an active internet connection and try again.',
+    },
 });
 
 type Props = {
@@ -45,20 +61,32 @@ const ResetChannelPosts = ({channelId}: Props) => {
     const serverUrl = useServerUrl();
 
     const doReset = useCallback(async () => {
-        try {
-            // Clears the channel's local posts + PostsInChannel intervals and resets
-            // lastFetchedAt, then re-fetches from the server (a clean page-0 fetch that
-            // excludes deleted posts). This recovers a channel left blank by an empty/orphaned
-            // interval, regardless of how it got into that state.
-            await deletePostsForChannel(serverUrl, channelId);
-            await fetchPostsForChannel(serverUrl, channelId);
-        } catch (error) {
-            logError('Failed to reset channel posts', error);
+        // Clear the channel's local posts + PostsInChannel intervals and reset lastFetchedAt.
+        const {error: deleteError} = await deletePostsForChannel(serverUrl, channelId);
+        if (deleteError) {
+            logError('Failed to delete posts while resetting channel', deleteError);
+            Alert.alert(
+                intl.formatMessage(messages.deleteFailedTitle),
+                intl.formatMessage(messages.deleteFailedBody),
+            );
+            return;
         }
 
-        // Dismiss Channel Info so the user lands back on the (now-repopulated) channel.
+        // Re-fetch a clean page from the server (excludes deleted posts).
+        const {error: fetchError} = await fetchPostsForChannel(serverUrl, channelId);
+        if (fetchError) {
+            logError('Failed to fetch posts after resetting channel', fetchError);
+            Alert.alert(
+                intl.formatMessage(messages.fetchFailedTitle),
+                intl.formatMessage(messages.fetchFailedBody),
+            );
+            return;
+        }
+
+        // Both succeeded: dismiss Channel Info so the user lands back on the
+        // (now-repopulated) channel.
         await navigateBack();
-    }, [serverUrl, channelId]);
+    }, [serverUrl, channelId, intl]);
 
     const onPress = usePreventDoubleTap(useCallback(() => {
         Alert.alert(
