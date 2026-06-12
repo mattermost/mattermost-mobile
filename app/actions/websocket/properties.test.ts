@@ -12,11 +12,6 @@ import type {PropertyFieldModel, PropertyValueModel} from '@database/models/serv
 
 const {PROPERTY_FIELD, PROPERTY_VALUE} = MM_TABLES.SERVER;
 
-jest.mock('@utils/log', () => ({
-    logDebug: jest.fn(),
-    logError: jest.fn(),
-}));
-
 const serverUrl = 'ws-properties.test.com';
 const groupId = 'test_group';
 

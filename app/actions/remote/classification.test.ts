@@ -15,12 +15,6 @@ import type {PropertyFieldModel, PropertyValueModel} from '@database/models/serv
 
 const {PROPERTY_FIELD, PROPERTY_VALUE} = MM_TABLES.SERVER;
 
-jest.mock('@utils/log', () => ({
-    logDebug: jest.fn(),
-    logError: jest.fn(),
-    logWarning: jest.fn(),
-}));
-
 jest.mock('@queries/servers/system', () => ({
     getConfigValue: jest.fn(),
 }));
