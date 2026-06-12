@@ -73,7 +73,7 @@ describe('applyPersistenceModeChange', () => {
         jest.restoreAllMocks();
     });
 
-    it('wipes the server DB and files, re-seeds user state, and creates a WS client', async () => {
+    it('should wipe the server DB and files, re-seed user state, and create a WS client', async () => {
         const result = await applyPersistenceModeChange(serverUrl);
 
         expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(serverUrl);
@@ -88,7 +88,7 @@ describe('applyPersistenceModeChange', () => {
         expect(result).toEqual({});
     });
 
-    it('skips WS client creation when there are no stored credentials', async () => {
+    it('should skip WS client creation when there are no stored credentials', async () => {
         jest.mocked(getServerCredentials).mockResolvedValue(null);
 
         await applyPersistenceModeChange(serverUrl);
@@ -99,7 +99,7 @@ describe('applyPersistenceModeChange', () => {
         expect(EphemeralModeManager.addServer).toHaveBeenCalledWith(serverUrl, {cleanFileCache: false});
     });
 
-    it('skips setActiveServerDatabase when the server is not active', async () => {
+    it('should skip setActiveServerDatabase when the server is not active', async () => {
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue('https://other.test');
 
         await applyPersistenceModeChange(serverUrl);
@@ -107,7 +107,7 @@ describe('applyPersistenceModeChange', () => {
         expect(setActiveServerDatabaseSpy).not.toHaveBeenCalled();
     });
 
-    it('terminates the session when the wipe throws', async () => {
+    it('should terminate the session when the wipe throws', async () => {
         const wipeError = new Error('disk full');
         jest.mocked(wipeServerDatabaseWithRetry).mockRejectedValue(wipeError);
 
@@ -118,7 +118,7 @@ describe('applyPersistenceModeChange', () => {
         expect(result).toEqual({error: wipeError});
     });
 
-    it('terminates the session when the wipe exhausts all retries', async () => {
+    it('should terminate the session when the wipe exhausts all retries', async () => {
         jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValue({success: false});
 
         const result = await applyPersistenceModeChange(serverUrl);
@@ -128,7 +128,7 @@ describe('applyPersistenceModeChange', () => {
         expect(result.error).toBeTruthy();
     });
 
-    it('terminates the session when restoration fails after a successful wipe', async () => {
+    it('should terminate the session when restoration fails after a successful wipe', async () => {
         const fetchError = new Error('network error');
         jest.mocked(refetchCurrentUser).mockRejectedValue(fetchError);
 

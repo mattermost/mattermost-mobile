@@ -156,7 +156,7 @@ describe('WebSocket System Actions', () => {
             expect(updateDmGmDisplayName).toHaveBeenCalledWith(serverUrl);
         });
 
-        it('reconciles the persistence flag against the new config so a live MEM-cleanup change clears zero-persistence', async () => {
+        it('should reconcile the persistence flag against the new config so a live MEM-cleanup change clears zero-persistence', async () => {
             const mockConfig = {
                 MobileEphemeralModeEnabled: 'true',
                 MobileEphemeralModeAutoCacheCleanupDays: '5',

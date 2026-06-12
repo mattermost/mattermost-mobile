@@ -10,6 +10,8 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getConfig, getCurrentTeamId, getLicense} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 
 export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
@@ -52,7 +54,10 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
         // the `database` reference captured above.
         const needsModeChange = await reconcilePersistenceFlag(serverUrl, config);
         if (needsModeChange) {
-            await applyPersistenceModeChange(serverUrl);
+            const {error: modeChangeError} = await applyPersistenceModeChange(serverUrl);
+            if (modeChangeError) {
+                logError('handleConfigChangedEvent', getFullErrorMessage(modeChangeError));
+            }
         }
     } catch {
         // do nothing

@@ -74,7 +74,13 @@ export const reconcilePersistenceFlag = async (serverUrl: string, config: Client
         return false;
     }
     const crossesZeroPersistence = server.persistenceFlag === 'zero-persistence' || nextFlag === 'zero-persistence';
-    await DatabaseManager.updatePersistenceFlag(serverUrl, nextFlag);
-    return crossesZeroPersistence;
+    try {
+        await DatabaseManager.updatePersistenceFlag(serverUrl, nextFlag);
+        return crossesZeroPersistence;
+    } catch (error) {
+        // database cannot be updated, log error & return false so it will be retried on next config fetch
+        logError('reconcilePersistenceFlag', getFullErrorMessage(error));
+        return false;
+    }
 };
 

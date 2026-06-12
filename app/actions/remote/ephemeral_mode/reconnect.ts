@@ -12,6 +12,8 @@ import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
 import {setCurrentUserId} from '@queries/servers/system';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 
 type Result = {error?: unknown};
 
@@ -33,7 +35,10 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
             return {error: fetchError};
         }
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        await setCurrentUserId(operator, user.id);
+        const {error: setUserError} = await setCurrentUserId(operator, user.id);
+        if (setUserError) {
+            return {error: setUserError};
+        }
 
         const {error: loginError} = await loginEntry({serverUrl});
         if (loginError) {
@@ -50,6 +55,7 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
         router.replace({pathname: launchRoute.route, params: launchRoute.params});
         return {};
     } catch (error) {
+        logError('reconnectErasedServer', serverUrl, getFullErrorMessage(error));
         return {error};
     }
 };

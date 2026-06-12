@@ -8,6 +8,8 @@ import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getCurrentUserId, prepareCommonSystemValues} from '@queries/servers/system';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 
 import {verifyPushProxy} from './common';
 
@@ -34,6 +36,10 @@ export async function appEntry(serverUrl: string, since = 0) {
         const existingUserId = await getCurrentUserId(database);
         if (!existingUserId) {
             await refetchCurrentUser(serverUrl, undefined);
+            const seededUserId = await getCurrentUserId(database);
+            if (!seededUserId) {
+                throw new Error('appEntry: failed to seed current user');
+            }
         }
 
         WebsocketManager.openAll('Cold Start');
@@ -45,6 +51,7 @@ export async function appEntry(serverUrl: string, since = 0) {
 
         return {};
     } catch (error) {
+        logError('appEntry', serverUrl, getFullErrorMessage(error));
         return {error};
     }
 }

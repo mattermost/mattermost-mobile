@@ -100,7 +100,10 @@ export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false
             await storeConfigAndLicense(serverUrl, config, license);
             const needsModeChange = await reconcilePersistenceFlag(serverUrl, config);
             if (needsModeChange) {
-                await applyPersistenceModeChange(serverUrl);
+                const {error: modeChangeError} = await applyPersistenceModeChange(serverUrl);
+                if (modeChangeError) {
+                    throw new Error('cannot apply persistence mode change');
+                }
             }
         }
 
