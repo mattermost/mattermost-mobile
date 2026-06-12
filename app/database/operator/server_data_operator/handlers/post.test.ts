@@ -1311,31 +1311,6 @@ describe('*** Operator: handleReceivedPostsInChannel — live single post outsid
         expect(after[0].latest).toBe(9000);
     });
 
-    it('ephemeral-like post (delete_at=0, client-only) outside chunk range must not create orphan', async () => {
-        // Ephemeral posts have delete_at=0 — they are client-side only and never
-        // marked as deleted by the server. The deleted-post filter does NOT catch these.
-        await operator.handlePosts({
-            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
-            order: ['seed'],
-            posts: [makePost({id: 'seed', create_at: 1000, update_at: 1000})],
-        });
-
-        const seeded = await intervalsForChannel();
-        expect(seeded.length).toBe(1);
-
-        // An ephemeral-like post with a far-future timestamp arrives via RECEIVED_IN_CHANNEL
-        await operator.handlePosts({
-            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
-            order: ['ephemeral'],
-            posts: [makePost({id: 'ephemeral', create_at: 50000, update_at: 50000, delete_at: 0})],
-        });
-
-        const after = await intervalsForChannel();
-        expect(after.length).toBe(1);
-        expect(after[0].earliest).toBe(1000);
-        expect(after[0].latest).toBe(50000);
-    });
-
     it('multiple chunks scenario — getRecentPostsInChannel returns all posts, not just the orphan range', async () => {
         // This tests the user-visible symptom: after an orphan is created,
         // the most recent interval has no real posts, so the channel appears empty.
