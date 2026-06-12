@@ -19,6 +19,10 @@ const {SERVER: {PROPERTY_FIELD, PROPERTY_VALUE}} = MM_TABLES;
 
 const CLASSIFICATION_FIELD_NAMES = [CLASSIFICATIONS_SYSTEM_FIELD_NAME, CLASSIFICATIONS_CHANNEL_FIELD_NAME];
 
+export const getPropertyFieldsByNames = (database: Database, names: string[]) => {
+    return database.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('name', Q.oneOf(names))).fetch();
+};
+
 // --- Reactive observables (used by hooks for real-time UI updates) ---
 
 export const observeClassificationFields = (database: Database) => {

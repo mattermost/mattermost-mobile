@@ -15,74 +15,42 @@ import type ServerDataOperatorBase from '.';
 import type {PropertyFieldModel, PropertyValueModel} from '@database/models/server';
 import type Model from '@nozbe/watermelondb/Model';
 import type {
-    HandleDeletePropertyFieldArgs,
-    HandleDeletePropertyFieldsByNameArgs,
     HandlePropertyFieldsArgs,
-    HandlePropertyFieldsByGroupIdArgs,
     HandlePropertyValuesArgs,
-    HandlePropertyValuesByTargetIdArgs,
 } from '@typings/database/database';
 
 const {PROPERTY_FIELD, PROPERTY_VALUE} = MM_TABLES.SERVER;
 
 export interface PropertiesHandlerMix {
-    handlePropertyFields: ({fields, prepareRecordsOnly}: HandlePropertyFieldsArgs) => Promise<Model[]>;
-    handlePropertyValues: ({values, prepareRecordsOnly}: HandlePropertyValuesArgs) => Promise<Model[]>;
-    handlePropertyFieldsByGroupId: ({groupId, fields, prepareRecordsOnly}: HandlePropertyFieldsByGroupIdArgs) => Promise<Model[]>;
-    handlePropertyValuesByTargetId: ({targetId, values, prepareRecordsOnly}: HandlePropertyValuesByTargetIdArgs) => Promise<Model[]>;
-    handleDeletePropertyField: ({fieldId, prepareRecordsOnly}: HandleDeletePropertyFieldArgs) => Promise<Model[]>;
-    handleDeletePropertyFieldsByName: ({names, prepareRecordsOnly}: HandleDeletePropertyFieldsByNameArgs) => Promise<Model[]>;
+    handlePropertyFields: (args: HandlePropertyFieldsArgs) => Promise<Model[]>;
+    handlePropertyValues: (args: HandlePropertyValuesArgs) => Promise<Model[]>;
 }
 
 const PropertiesHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
-     * handlePropertyFields: Handler responsible for the Create/Update operations on the PropertyField table.
+     * handlePropertyFields: Syncs the PropertyField table from a list of fields. Each field's
+     * `delete_at` decides whether it is upserted (0) or deleted (non-zero); deleting a field also
+     * removes its property values. When `groupId` is provided the list is treated as the
+     * authoritative set for that group, so stored fields missing from it are pruned as well.
      */
-    handlePropertyFields = async ({fields, prepareRecordsOnly = true}: HandlePropertyFieldsArgs): Promise<Model[]> => {
-        if (!fields?.length) {
+    handlePropertyFields = async ({fields = [], groupId, prepareRecordsOnly = true}: HandlePropertyFieldsArgs): Promise<Model[]> => {
+        if (!fields.length && !groupId) {
             logWarning('An empty or undefined "fields" array has been passed to the handlePropertyFields method');
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: fields, key: 'id'});
-
-        return this.handleRecords({
-            fieldName: 'id',
-            transformer: transformPropertyFieldRecord,
-            createOrUpdateRawValues,
-            tableName: PROPERTY_FIELD,
-            prepareRecordsOnly,
-        }, 'handlePropertyFields');
-    };
-
-    /**
-     * handlePropertyValues: Handler responsible for the Create/Update operations on the PropertyValue table.
-     */
-    handlePropertyValues = async ({values, prepareRecordsOnly = true}: HandlePropertyValuesArgs): Promise<Model[]> => {
-        if (!values?.length) {
-            logWarning('An empty or undefined "values" array has been passed to the handlePropertyValues method');
-            return [];
-        }
-
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: values, key: 'id'});
-
-        return this.handleRecords({
-            fieldName: 'id',
-            transformer: transformPropertyValueRecord,
-            createOrUpdateRawValues,
-            tableName: PROPERTY_VALUE,
-            prepareRecordsOnly,
-        }, 'handlePropertyValues');
-    };
-
-    /**
-     * handlePropertyFieldsByGroupId: Delete-aware sync for the PropertyField table scoped by group_id.
-     * Upserts the active fields provided and removes any field in the group that is no longer present
-     * (or has been soft-deleted). Fields belonging to other groups are left untouched.
-     */
-    handlePropertyFieldsByGroupId = async ({groupId, fields, prepareRecordsOnly = true}: HandlePropertyFieldsByGroupIdArgs): Promise<Model[]> => {
         const activeFields = fields.filter((f) => f.delete_at === 0);
         const activeIds = new Set(activeFields.map((f) => f.id));
+        const deleteIds = new Set(fields.filter((f) => f.delete_at !== 0).map((f) => f.id));
+
+        if (groupId) {
+            const existing = await this.database.collections.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('group_id', groupId)).fetch();
+            for (const record of existing) {
+                if (!activeIds.has(record.id)) {
+                    deleteIds.add(record.id);
+                }
+            }
+        }
 
         const models: Model[] = [];
 
@@ -93,32 +61,53 @@ const PropertiesHandler = <TBase extends Constructor<ServerDataOperatorBase>>(su
                 createOrUpdateRawValues: getUniqueRawsBy({raws: activeFields, key: 'id'}),
                 tableName: PROPERTY_FIELD,
                 prepareRecordsOnly: true,
-            }, 'handlePropertyFieldsByGroupId');
+            }, 'handlePropertyFields');
             models.push(...upserts);
         }
 
-        const existing = await this.database.collections.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('group_id', groupId)).fetch();
-        for (const record of existing) {
-            if (!activeIds.has(record.id)) {
-                models.push(record.prepareDestroyPermanently());
-            }
+        if (deleteIds.size) {
+            const ids = [...deleteIds];
+            const [fieldsToDelete, valuesToDelete] = await Promise.all([
+                this.database.collections.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('id', Q.oneOf(ids))).fetch(),
+                this.database.collections.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('field_id', Q.oneOf(ids))).fetch(),
+            ]);
+            models.push(
+                ...fieldsToDelete.map((f) => f.prepareDestroyPermanently()),
+                ...valuesToDelete.map((v) => v.prepareDestroyPermanently()),
+            );
         }
 
         if (models.length && !prepareRecordsOnly) {
-            await this.batchRecords(models, 'handlePropertyFieldsByGroupId');
+            await this.batchRecords(models, 'handlePropertyFields');
         }
 
         return models;
     };
 
     /**
-     * handlePropertyValuesByTargetId: Delete-aware sync for the PropertyValue table scoped by target_id.
-     * Upserts the active values provided and removes any value for that target that is no longer present
-     * (or has been soft-deleted). Values for other targets are left untouched.
+     * handlePropertyValues: Syncs the PropertyValue table from a list of values. Each value's
+     * `delete_at` decides whether it is upserted (0) or deleted (non-zero). When `targetId` is
+     * provided the list is treated as the authoritative set for that target, so stored values
+     * missing from it are pruned as well.
      */
-    handlePropertyValuesByTargetId = async ({targetId, values, prepareRecordsOnly = true}: HandlePropertyValuesByTargetIdArgs): Promise<Model[]> => {
+    handlePropertyValues = async ({values = [], targetId, prepareRecordsOnly = true}: HandlePropertyValuesArgs): Promise<Model[]> => {
+        if (!values.length && !targetId) {
+            logWarning('An empty or undefined "values" array has been passed to the handlePropertyValues method');
+            return [];
+        }
+
         const activeValues = values.filter((v) => v.delete_at === 0);
         const activeIds = new Set(activeValues.map((v) => v.id));
+        const deleteIds = new Set(values.filter((v) => v.delete_at !== 0).map((v) => v.id));
+
+        if (targetId) {
+            const existing = await this.database.collections.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('target_id', targetId)).fetch();
+            for (const record of existing) {
+                if (!activeIds.has(record.id)) {
+                    deleteIds.add(record.id);
+                }
+            }
+        }
 
         const models: Model[] = [];
 
@@ -129,69 +118,17 @@ const PropertiesHandler = <TBase extends Constructor<ServerDataOperatorBase>>(su
                 createOrUpdateRawValues: getUniqueRawsBy({raws: activeValues, key: 'id'}),
                 tableName: PROPERTY_VALUE,
                 prepareRecordsOnly: true,
-            }, 'handlePropertyValuesByTargetId');
+            }, 'handlePropertyValues');
             models.push(...upserts);
         }
 
-        const existing = await this.database.collections.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('target_id', targetId)).fetch();
-        for (const record of existing) {
-            if (!activeIds.has(record.id)) {
-                models.push(record.prepareDestroyPermanently());
-            }
+        if (deleteIds.size) {
+            const valuesToDelete = await this.database.collections.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('id', Q.oneOf([...deleteIds]))).fetch();
+            models.push(...valuesToDelete.map((v) => v.prepareDestroyPermanently()));
         }
 
         if (models.length && !prepareRecordsOnly) {
-            await this.batchRecords(models, 'handlePropertyValuesByTargetId');
-        }
-
-        return models;
-    };
-
-    /**
-     * handleDeletePropertyField: Delete a single property field (and any values that belong to it) by id.
-     * No-op when the field is not stored locally.
-     */
-    handleDeletePropertyField = async ({fieldId, prepareRecordsOnly = true}: HandleDeletePropertyFieldArgs): Promise<Model[]> => {
-        let field: PropertyFieldModel;
-        try {
-            field = await this.database.collections.get<PropertyFieldModel>(PROPERTY_FIELD).find(fieldId);
-        } catch {
-            return [];
-        }
-
-        const values = await field.propertyValues.fetch();
-        const models: Model[] = [
-            field.prepareDestroyPermanently(),
-            ...values.map((v) => v.prepareDestroyPermanently()),
-        ];
-
-        if (models.length && !prepareRecordsOnly) {
-            await this.batchRecords(models, 'handleDeletePropertyField');
-        }
-
-        return models;
-    };
-
-    /**
-     * handleDeletePropertyFieldsByName: Delete every property field matching the provided names (and their
-     * values). Used to clear locally stored fields when there is no group_id available to scope by.
-     */
-    handleDeletePropertyFieldsByName = async ({names, prepareRecordsOnly = true}: HandleDeletePropertyFieldsByNameArgs): Promise<Model[]> => {
-        const fields = await this.database.collections.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('name', Q.oneOf(names))).fetch();
-        if (!fields.length) {
-            return [];
-        }
-
-        const fieldIds = fields.map((f) => f.id);
-        const values = await this.database.collections.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('field_id', Q.oneOf(fieldIds))).fetch();
-
-        const models: Model[] = [
-            ...fields.map((f) => f.prepareDestroyPermanently()),
-            ...values.map((v) => v.prepareDestroyPermanently()),
-        ];
-
-        if (models.length && !prepareRecordsOnly) {
-            await this.batchRecords(models, 'handleDeletePropertyFieldsByName');
+            await this.batchRecords(models, 'handlePropertyValues');
         }
 
         return models;

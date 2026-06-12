@@ -5,10 +5,6 @@ import {Q} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {
-    transformPropertyFieldRecord,
-    transformPropertyValueRecord,
-} from '@database/operator/server_data_operator/transformers/properties';
 
 import type {PropertyFieldModel, PropertyValueModel} from '@database/models/server';
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -61,96 +57,6 @@ describe('*** Operator: Properties Handlers tests ***', () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
-    describe('=> handlePropertyFields', () => {
-        it('should delegate to handleRecords with the property field transformer', async () => {
-            expect.assertions(2);
-
-            const spy = jest.spyOn(operator, 'handleRecords');
-            const fields: PropertyField[] = [{
-                id: 'field1',
-                group_id: 'group1',
-                name: 'Status',
-                type: 'select',
-                object_type: 'card',
-                target_id: 'channel1',
-                target_type: 'channel',
-                protected: false,
-                create_at: 1,
-                update_at: 1,
-                delete_at: 0,
-                created_by: 'user1',
-                updated_by: 'user1',
-            }];
-
-            await operator.handlePropertyFields({fields, prepareRecordsOnly: false});
-
-            expect(spy).toHaveBeenCalledTimes(1);
-            expect(spy).toHaveBeenCalledWith({
-                fieldName: 'id',
-                createOrUpdateRawValues: fields,
-                tableName: PROPERTY_FIELD,
-                prepareRecordsOnly: false,
-                transformer: transformPropertyFieldRecord,
-            }, 'handlePropertyFields');
-        });
-
-        it('should return [] without calling handleRecords when fields is empty', async () => {
-            expect.assertions(2);
-
-            const spy = jest.spyOn(operator, 'handleRecords');
-            const result = await operator.handlePropertyFields({fields: [], prepareRecordsOnly: false});
-
-            expect(result).toEqual([]);
-            expect(spy).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('=> handlePropertyValues', () => {
-        it('should delegate to handleRecords with the property value transformer and prepareRecordsOnly: true', async () => {
-            expect.assertions(2);
-
-            const originalHandleRecords = operator.handleRecords;
-            operator.handleRecords = jest.fn().mockResolvedValue([]);
-
-            const values: PropertyValue[] = [{
-                id: 'value1',
-                field_id: 'field1',
-                target_id: 'post1',
-                target_type: 'post',
-                group_id: 'group1',
-                value: 'Done',
-                create_at: 1,
-                update_at: 1,
-                delete_at: 0,
-                created_by: 'user1',
-                updated_by: 'user1',
-            }];
-
-            await operator.handlePropertyValues({values, prepareRecordsOnly: true});
-
-            expect(operator.handleRecords).toHaveBeenCalledTimes(1);
-            expect(operator.handleRecords).toHaveBeenCalledWith({
-                fieldName: 'id',
-                createOrUpdateRawValues: values,
-                tableName: PROPERTY_VALUE,
-                prepareRecordsOnly: true,
-                transformer: transformPropertyValueRecord,
-            }, 'handlePropertyValues');
-
-            operator.handleRecords = originalHandleRecords;
-        });
-
-        it('should return [] without calling handleRecords when values is empty', async () => {
-            expect.assertions(2);
-
-            const spy = jest.spyOn(operator, 'handleRecords');
-            const result = await operator.handlePropertyValues({values: [], prepareRecordsOnly: false});
-
-            expect(result).toEqual([]);
-            expect(spy).not.toHaveBeenCalled();
-        });
-    });
-
     const fetchFields = (groupId?: string) => {
         const collection = operator.database.get<PropertyFieldModel>(PROPERTY_FIELD);
         return (groupId ? collection.query(Q.where('group_id', groupId)) : collection.query()).fetch();
@@ -161,7 +67,71 @@ describe('*** Operator: Properties Handlers tests ***', () => {
         return (targetId ? collection.query(Q.where('target_id', targetId)) : collection.query()).fetch();
     };
 
-    describe('=> handlePropertyFieldsByGroupId', () => {
+    describe('=> handlePropertyFields (upsert & per-record delete)', () => {
+        it('should upsert active fields', async () => {
+            await operator.handlePropertyFields({fields: [makeField({id: 'f1'}), makeField({id: 'f2'})], prepareRecordsOnly: false});
+
+            const ids = (await fetchFields()).map((f) => f.id).sort();
+            expect(ids).toEqual(['f1', 'f2']);
+        });
+
+        it('should return [] without writing when no fields and no groupId are passed', async () => {
+            const spy = jest.spyOn(operator, 'handleRecords');
+            const result = await operator.handlePropertyFields({fields: [], prepareRecordsOnly: false});
+
+            expect(result).toEqual([]);
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('should delete soft-deleted fields and cascade to their values', async () => {
+            await operator.handlePropertyFields({fields: [makeField({id: 'gone'}), makeField({id: 'kept'})], prepareRecordsOnly: false});
+            await operator.handlePropertyValues({values: [
+                makeValue({id: 'gv', field_id: 'gone'}),
+                makeValue({id: 'kv', field_id: 'kept'}),
+            ],
+            prepareRecordsOnly: false});
+
+            await operator.handlePropertyFields({fields: [makeField({id: 'gone', delete_at: 5000})], prepareRecordsOnly: false});
+
+            const fieldIds = (await fetchFields()).map((f) => f.id);
+            expect(fieldIds).toEqual(['kept']);
+            const valueIds = (await fetchValues()).map((v) => v.id);
+            expect(valueIds).toEqual(['kv']);
+        });
+
+        it('should be a no-op when the soft-deleted field is not stored', async () => {
+            const models = await operator.handlePropertyFields({fields: [makeField({id: 'missing', delete_at: 5000})], prepareRecordsOnly: false});
+            expect(models).toEqual([]);
+        });
+    });
+
+    describe('=> handlePropertyValues (upsert & per-record delete)', () => {
+        it('should upsert active values', async () => {
+            await operator.handlePropertyValues({values: [makeValue({id: 'v1'}), makeValue({id: 'v2'})], prepareRecordsOnly: false});
+
+            const ids = (await fetchValues()).map((v) => v.id).sort();
+            expect(ids).toEqual(['v1', 'v2']);
+        });
+
+        it('should return [] without writing when no values and no targetId are passed', async () => {
+            const spy = jest.spyOn(operator, 'handleRecords');
+            const result = await operator.handlePropertyValues({values: [], prepareRecordsOnly: false});
+
+            expect(result).toEqual([]);
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('should delete soft-deleted values', async () => {
+            await operator.handlePropertyValues({values: [makeValue({id: 'gone'}), makeValue({id: 'kept'})], prepareRecordsOnly: false});
+
+            await operator.handlePropertyValues({values: [makeValue({id: 'gone', delete_at: 5000})], prepareRecordsOnly: false});
+
+            const ids = (await fetchValues()).map((v) => v.id);
+            expect(ids).toEqual(['kept']);
+        });
+    });
+
+    describe('=> handlePropertyFields (group sync)', () => {
         it('should upsert active fields and delete stale fields scoped to the group', async () => {
             await operator.handlePropertyFields({fields: [
                 makeField({id: 'keep'}),
@@ -169,7 +139,7 @@ describe('*** Operator: Properties Handlers tests ***', () => {
             ],
             prepareRecordsOnly: false});
 
-            await operator.handlePropertyFieldsByGroupId({
+            await operator.handlePropertyFields({
                 groupId: 'group1',
                 fields: [makeField({id: 'keep'}), makeField({id: 'new'})],
                 prepareRecordsOnly: false,
@@ -182,7 +152,7 @@ describe('*** Operator: Properties Handlers tests ***', () => {
         it('should treat soft-deleted incoming fields as deletions', async () => {
             await operator.handlePropertyFields({fields: [makeField({id: 'gone'})], prepareRecordsOnly: false});
 
-            await operator.handlePropertyFieldsByGroupId({
+            await operator.handlePropertyFields({
                 groupId: 'group1',
                 fields: [makeField({id: 'gone', delete_at: 5000})],
                 prepareRecordsOnly: false,
@@ -198,7 +168,7 @@ describe('*** Operator: Properties Handlers tests ***', () => {
             ],
             prepareRecordsOnly: false});
 
-            await operator.handlePropertyFieldsByGroupId({
+            await operator.handlePropertyFields({
                 groupId: 'group1',
                 fields: [],
                 prepareRecordsOnly: false,
@@ -211,7 +181,7 @@ describe('*** Operator: Properties Handlers tests ***', () => {
         it('should not write to the database when prepareRecordsOnly is true', async () => {
             await operator.handlePropertyFields({fields: [makeField({id: 'stale'})], prepareRecordsOnly: false});
 
-            const models = await operator.handlePropertyFieldsByGroupId({
+            const models = await operator.handlePropertyFields({
                 groupId: 'group1',
                 fields: [makeField({id: 'new'})],
                 prepareRecordsOnly: true,
@@ -223,7 +193,7 @@ describe('*** Operator: Properties Handlers tests ***', () => {
         });
     });
 
-    describe('=> handlePropertyValuesByTargetId', () => {
+    describe('=> handlePropertyValues (target sync)', () => {
         it('should upsert active values and delete stale values scoped to the target', async () => {
             await operator.handlePropertyValues({values: [
                 makeValue({id: 'keep', target_id: 'target1'}),
@@ -231,7 +201,7 @@ describe('*** Operator: Properties Handlers tests ***', () => {
             ],
             prepareRecordsOnly: false});
 
-            await operator.handlePropertyValuesByTargetId({
+            await operator.handlePropertyValues({
                 targetId: 'target1',
                 values: [makeValue({id: 'keep', target_id: 'target1'}), makeValue({id: 'new', target_id: 'target1'})],
                 prepareRecordsOnly: false,
@@ -248,7 +218,7 @@ describe('*** Operator: Properties Handlers tests ***', () => {
             ],
             prepareRecordsOnly: false});
 
-            await operator.handlePropertyValuesByTargetId({
+            await operator.handlePropertyValues({
                 targetId: 'target1',
                 values: [],
                 prepareRecordsOnly: false,
@@ -261,7 +231,7 @@ describe('*** Operator: Properties Handlers tests ***', () => {
         it('should not write to the database when prepareRecordsOnly is true', async () => {
             await operator.handlePropertyValues({values: [makeValue({id: 'stale', target_id: 'target1'})], prepareRecordsOnly: false});
 
-            const models = await operator.handlePropertyValuesByTargetId({
+            const models = await operator.handlePropertyValues({
                 targetId: 'target1',
                 values: [makeValue({id: 'new', target_id: 'target1'})],
                 prepareRecordsOnly: true,
@@ -273,56 +243,4 @@ describe('*** Operator: Properties Handlers tests ***', () => {
         });
     });
 
-    describe('=> handleDeletePropertyField', () => {
-        it('should delete the field and its values by id', async () => {
-            await operator.handlePropertyFields({fields: [makeField({id: 'field1'})], prepareRecordsOnly: false});
-            await operator.handlePropertyValues({values: [
-                makeValue({id: 'v1', field_id: 'field1'}),
-                makeValue({id: 'v2', field_id: 'other'}),
-            ],
-            prepareRecordsOnly: false});
-
-            await operator.handleDeletePropertyField({fieldId: 'field1', prepareRecordsOnly: false});
-
-            expect(await fetchFields()).toHaveLength(0);
-            const valueIds = (await fetchValues()).map((v) => v.id);
-            expect(valueIds).toEqual(['v2']);
-        });
-
-        it('should be a no-op when the field does not exist', async () => {
-            const models = await operator.handleDeletePropertyField({fieldId: 'missing', prepareRecordsOnly: false});
-            expect(models).toEqual([]);
-        });
-    });
-
-    describe('=> handleDeletePropertyFieldsByName', () => {
-        it('should delete fields matching the names and their values', async () => {
-            await operator.handlePropertyFields({fields: [
-                makeField({id: 'sys', name: 'system_classification'}),
-                makeField({id: 'chan', name: 'channel_classification'}),
-                makeField({id: 'other', name: 'some_other_field'}),
-            ],
-            prepareRecordsOnly: false});
-            await operator.handlePropertyValues({values: [
-                makeValue({id: 'sv', field_id: 'sys'}),
-                makeValue({id: 'ov', field_id: 'other'}),
-            ],
-            prepareRecordsOnly: false});
-
-            await operator.handleDeletePropertyFieldsByName({
-                names: ['system_classification', 'channel_classification'],
-                prepareRecordsOnly: false,
-            });
-
-            const fieldIds = (await fetchFields()).map((f) => f.id);
-            expect(fieldIds).toEqual(['other']);
-            const valueIds = (await fetchValues()).map((v) => v.id);
-            expect(valueIds).toEqual(['ov']);
-        });
-
-        it('should be a no-op when no fields match', async () => {
-            const models = await operator.handleDeletePropertyFieldsByName({names: ['nope'], prepareRecordsOnly: false});
-            expect(models).toEqual([]);
-        });
-    });
 });

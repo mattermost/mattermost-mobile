@@ -35,7 +35,7 @@ export async function handlePropertyFieldDeleted(serverUrl: string, msg: WebSock
 
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        await operator.handleDeletePropertyField({fieldId: data.field_id, prepareRecordsOnly: false});
+        await operator.handlePropertyFields({fields: [{id: data.field_id, delete_at: Date.now()} as PropertyField], prepareRecordsOnly: false});
     } catch (error) {
         logError('handlePropertyFieldDeleted', error);
     }
