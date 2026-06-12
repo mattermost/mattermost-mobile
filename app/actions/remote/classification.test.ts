@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {CLASSIFICATIONS_GROUP_NAME} from '@constants/classification';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {CLASSIFICATIONS_GROUP_NAME, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID} from '@constants/classification';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getPersistedPropertyFields, getPersistedPropertyGroupNames, getPersistedPropertyValues} from '@queries/servers/properties';
+import {queryPropertyFieldsByGroupId, queryPropertyValuesByTargetId} from '@queries/servers/properties';
 import {getConfigValue} from '@queries/servers/system';
 
 import {fetchClassificationBanner, fetchChannelClassificationValue} from './classification';
+
+import type {Database} from '@nozbe/watermelondb';
 
 jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
@@ -31,7 +32,6 @@ const systemField: PropertyField = {
     object_type: 'system',
     target_type: 'system',
     target_id: '',
-    linked_field_id: 'template-field-id',
     delete_at: 0,
     create_at: 1000,
     update_at: 1000,
@@ -52,7 +52,6 @@ const channelField: PropertyField = {
     object_type: 'channel',
     target_type: 'system',
     target_id: '',
-    linked_field_id: 'template-field-id',
     delete_at: 0,
     create_at: 1000,
     update_at: 1000,
@@ -82,6 +81,16 @@ const mockClient = {
     getPropertyValues: jest.fn(),
 };
 
+const getStoredFields = async (database: Database) => {
+    const records = await queryPropertyFieldsByGroupId(database, CLASSIFICATIONS_GROUP_NAME).fetch();
+    return records.map((r) => r.id).sort();
+};
+
+const getStoredValues = async (database: Database, targetId: string) => {
+    const records = await queryPropertyValuesByTargetId(database, targetId).fetch();
+    return records;
+};
+
 beforeAll(() => {
     // @ts-expect-error mock client
     NetworkManager.getClient = () => mockClient;
@@ -108,36 +117,20 @@ describe('fetchClassificationBanner', () => {
 
     it('should clear stale classification data when feature flag is turned off', async () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        await operator.handleSystem({
-            systems: [
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {[CLASSIFICATIONS_GROUP_NAME]: [systemField]}},
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: {system: [systemValue]}},
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: {[CLASSIFICATIONS_GROUP_NAME]: CLASSIFICATIONS_GROUP_NAME}},
-            ],
-            prepareRecordsOnly: false,
-        });
+        await operator.handlePropertyFields({fields: [systemField], prepareRecordsOnly: false});
+        await operator.handlePropertyValues({values: [systemValue], prepareRecordsOnly: false});
 
         mockedGetConfigValue.mockResolvedValueOnce('false');
         await fetchClassificationBanner(serverUrl);
 
-        const fields = await getPersistedPropertyFields(database);
-        const values = await getPersistedPropertyValues(database);
-        const groupNames = await getPersistedPropertyGroupNames(database);
-        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toBeUndefined();
-        expect(values.system).toBeUndefined();
-        expect(groupNames[CLASSIFICATIONS_GROUP_NAME]).toBeUndefined();
+        expect(await getStoredFields(database)).toHaveLength(0);
+        expect(await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID)).toHaveLength(0);
     });
 
     it('should clear stale classification data when API returns zero fields', async () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        await operator.handleSystem({
-            systems: [
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {[CLASSIFICATIONS_GROUP_NAME]: [systemField]}},
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: {system: [systemValue]}},
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: {[CLASSIFICATIONS_GROUP_NAME]: CLASSIFICATIONS_GROUP_NAME}},
-            ],
-            prepareRecordsOnly: false,
-        });
+        await operator.handlePropertyFields({fields: [systemField], prepareRecordsOnly: false});
+        await operator.handlePropertyValues({values: [systemValue], prepareRecordsOnly: false});
 
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
@@ -145,12 +138,8 @@ describe('fetchClassificationBanner', () => {
 
         await fetchClassificationBanner(serverUrl);
 
-        const fields = await getPersistedPropertyFields(database);
-        const values = await getPersistedPropertyValues(database);
-        const groupNames = await getPersistedPropertyGroupNames(database);
-        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toBeUndefined();
-        expect(values.system).toBeUndefined();
-        expect(groupNames[CLASSIFICATIONS_GROUP_NAME]).toBeUndefined();
+        expect(await getStoredFields(database)).toHaveLength(0);
+        expect(await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID)).toHaveLength(0);
     });
 
     it('should persist fields and values to DB on happy path', async () => {
@@ -164,14 +153,10 @@ describe('fetchClassificationBanner', () => {
         expect(result).toEqual({});
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const fields = await getPersistedPropertyFields(database);
-        const values = await getPersistedPropertyValues(database);
-        const groupNames = await getPersistedPropertyGroupNames(database);
-
-        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toHaveLength(2);
-        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toEqual(expect.arrayContaining([systemField, channelField]));
-        expect(values.system).toEqual([systemValue]);
-        expect(groupNames[CLASSIFICATIONS_GROUP_NAME]).toBe(CLASSIFICATIONS_GROUP_NAME);
+        expect(await getStoredFields(database)).toEqual(['channel-field-id', 'system-field-id']);
+        const values = await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID);
+        expect(values).toHaveLength(1);
+        expect(values[0].value).toBe('opt-top-secret');
     });
 
     it('should persist system field when channel field is missing', async () => {
@@ -184,8 +169,7 @@ describe('fetchClassificationBanner', () => {
         expect(result).toEqual({});
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const fields = await getPersistedPropertyFields(database);
-        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toEqual([systemField]);
+        expect(await getStoredFields(database)).toEqual(['system-field-id']);
     });
 
     it('should return early when no fields are returned by the API', async () => {
@@ -198,8 +182,7 @@ describe('fetchClassificationBanner', () => {
         expect(result).toEqual({});
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const fields = await getPersistedPropertyFields(database);
-        expect(Object.keys(fields)).toHaveLength(0);
+        expect(await getStoredFields(database)).toHaveLength(0);
     });
 
     it('should exclude soft-deleted fields from the stored set', async () => {
@@ -213,8 +196,7 @@ describe('fetchClassificationBanner', () => {
         expect(result).toEqual({});
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const fields = await getPersistedPropertyFields(database);
-        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toEqual([channelField]);
+        expect(await getStoredFields(database)).toEqual(['channel-field-id']);
     });
 
     it('should return early when fields have mismatched group_ids', async () => {
@@ -227,8 +209,7 @@ describe('fetchClassificationBanner', () => {
         expect(result).toEqual({});
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const fields = await getPersistedPropertyFields(database);
-        expect(Object.keys(fields)).toHaveLength(0);
+        expect(await getStoredFields(database)).toHaveLength(0);
     });
 
     it('should return error when network client throws', async () => {
@@ -248,18 +229,12 @@ describe('fetchClassificationBanner', () => {
         await fetchClassificationBanner(serverUrl);
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const fields = await getPersistedPropertyFields(database);
-        expect(Object.keys(fields)).toHaveLength(0);
+        expect(await getStoredFields(database)).toHaveLength(0);
     });
 
-    it('should preserve WS-received channel field when API only returns system fields', async () => {
+    it('should remove a previously persisted field the API no longer returns', async () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        await operator.handleSystem({
-            systems: [
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {[CLASSIFICATIONS_GROUP_NAME]: [channelField]}},
-            ],
-            prepareRecordsOnly: false,
-        });
+        await operator.handlePropertyFields({fields: [systemField, channelField], prepareRecordsOnly: false});
 
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
@@ -268,19 +243,12 @@ describe('fetchClassificationBanner', () => {
 
         await fetchClassificationBanner(serverUrl);
 
-        const fields = await getPersistedPropertyFields(database);
-        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toHaveLength(2);
-        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toEqual(expect.arrayContaining([systemField, channelField]));
+        expect(await getStoredFields(database)).toEqual(['system-field-id']);
     });
 
     it('should remove soft-deleted fields from DB even when they were previously persisted', async () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        await operator.handleSystem({
-            systems: [
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {[CLASSIFICATIONS_GROUP_NAME]: [systemField, channelField]}},
-            ],
-            prepareRecordsOnly: false,
-        });
+        await operator.handlePropertyFields({fields: [systemField, channelField], prepareRecordsOnly: false});
 
         const deletedChannel = {...channelField, delete_at: 5000};
         mockedGetConfigValue.mockResolvedValueOnce('true');
@@ -290,20 +258,13 @@ describe('fetchClassificationBanner', () => {
 
         await fetchClassificationBanner(serverUrl);
 
-        const fields = await getPersistedPropertyFields(database);
-        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toEqual([systemField]);
+        expect(await getStoredFields(database)).toEqual(['system-field-id']);
     });
 
-    it('should merge with existing DB data on subsequent calls', async () => {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        await operator.handleSystem({
-            systems: [
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: {existing_group: [{id: 'existing-field'}]}},
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: {}},
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: {existing: 'existing_group'}},
-            ],
-            prepareRecordsOnly: false,
-        });
+    it('should leave fields from other groups untouched', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const otherGroupField = {...systemField, id: 'other-field', group_id: 'other_group', name: 'some_field'};
+        await operator.handlePropertyFields({fields: [otherGroupField], prepareRecordsOnly: false});
 
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
@@ -312,14 +273,9 @@ describe('fetchClassificationBanner', () => {
 
         await fetchClassificationBanner(serverUrl);
 
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const fields = await getPersistedPropertyFields(database);
-        const groupNames = await getPersistedPropertyGroupNames(database);
-
-        expect(fields.existing_group).toEqual([{id: 'existing-field'}]);
-        expect(fields[CLASSIFICATIONS_GROUP_NAME]).toEqual([systemField]);
-        expect(groupNames.existing).toBe('existing_group');
-        expect(groupNames[CLASSIFICATIONS_GROUP_NAME]).toBe(CLASSIFICATIONS_GROUP_NAME);
+        expect(await getStoredFields(database)).toEqual(['system-field-id']);
+        const otherGroup = await queryPropertyFieldsByGroupId(database, 'other_group').fetch();
+        expect(otherGroup.map((f) => f.id)).toEqual(['other-field']);
     });
 });
 
@@ -355,25 +311,22 @@ describe('fetchChannelClassificationValue', () => {
         expect(result).toEqual({});
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const values = await getPersistedPropertyValues(database);
-        expect(values[channelId]).toEqual([channelValue]);
+        const values = await getStoredValues(database, channelId);
+        expect(values).toHaveLength(1);
+        expect(values[0].value).toBe('opt-secret');
     });
 
-    it('should return early when API returns no values', async () => {
+    it('should clear existing channel values when API returns none', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyValues({values: [channelValue], prepareRecordsOnly: false});
+
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyValues.mockResolvedValueOnce([]);
 
         const result = await fetchChannelClassificationValue(serverUrl, channelId);
         expect(result).toEqual({});
-    });
 
-    it('should return early when group_id is empty', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
-        const noGroupValue = {...channelValue, group_id: ''};
-        mockClient.getPropertyValues.mockResolvedValueOnce([noGroupValue]);
-
-        const result = await fetchChannelClassificationValue(serverUrl, channelId);
-        expect(result).toEqual({});
+        expect(await getStoredValues(database, channelId)).toHaveLength(0);
     });
 
     it('should return error when network client throws', async () => {
@@ -385,23 +338,16 @@ describe('fetchChannelClassificationValue', () => {
         expect(result).toEqual({error: networkError});
     });
 
-    it('should merge with existing DB values on subsequent calls', async () => {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        await operator.handleSystem({
-            systems: [
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: {system: [systemValue]}},
-            ],
-            prepareRecordsOnly: false,
-        });
+    it('should isolate values across different targets', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyValues({values: [systemValue], prepareRecordsOnly: false});
 
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]);
 
         await fetchChannelClassificationValue(serverUrl, channelId);
 
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const values = await getPersistedPropertyValues(database);
-        expect(values.system).toEqual([systemValue]);
-        expect(values[channelId]).toEqual([channelValue]);
+        expect(await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID)).toHaveLength(1);
+        expect(await getStoredValues(database, channelId)).toHaveLength(1);
     });
 });

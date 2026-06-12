@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {
-    CLASSIFICATIONS_CHANNEL_FIELD_NAME,
-    CLASSIFICATIONS_GROUP_NAME,
     CLASSIFICATIONS_SYSTEM_FIELD_NAME,
     CLASSIFICATIONS_SYSTEM_OBJECT_TYPE,
-    CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
     DISPLAY_BANNER_TOP,
 } from '@constants/classification';
+
+import type {PropertyFieldModel, PropertyValueModel} from '@database/models/server';
 
 export type ClassificationBannerState = {
     visible: boolean;
@@ -21,6 +20,13 @@ export type ChannelClassificationBannerState = {
     classificationBanner: ChannelBannerInfo | undefined;
 };
 
+// Minimal structural shapes that both the WatermelonDB models and the query
+// observers satisfy. Selection (group/field/value/delete_at) is handled by the
+// scoped queries in @queries/servers/properties; these helpers only map the
+// selected records to a banner view model.
+type ClassificationField = Pick<PropertyFieldModel, 'id' | 'name' | 'objectType' | 'attrs'>;
+type ClassificationValue = Pick<PropertyValueModel, 'fieldId' | 'value'>;
+
 const hiddenState: ClassificationBannerState = {visible: false, levelName: '', color: ''};
 
 const noClassification: ChannelClassificationBannerState = {
@@ -28,42 +34,13 @@ const noClassification: ChannelClassificationBannerState = {
     classificationBanner: undefined,
 };
 
-const isClassificationField = (f: PropertyField) =>
-    f.name === CLASSIFICATIONS_SYSTEM_FIELD_NAME || f.name === CLASSIFICATIONS_CHANNEL_FIELD_NAME;
-
-export function resolveGroupId(
-    fieldsByGroup: Record<string, PropertyField[]>,
-    groupNames: Record<string, string>,
-): [string, PropertyField[]] {
-    const mappedId = groupNames[CLASSIFICATIONS_GROUP_NAME] ?? '';
-    if (mappedId) {
-        return [mappedId, fieldsByGroup[mappedId] ?? []];
-    }
-
-    for (const [gid, gfields] of Object.entries(fieldsByGroup)) {
-        if (gfields.some(isClassificationField)) {
-            return [gid, gfields];
-        }
-    }
-
-    return ['', []];
-}
-
 export function deriveClassificationBannerState(
-    fieldsByGroup: Record<string, PropertyField[]>,
-    valuesByTarget: Record<string, Array<PropertyValue<string>>>,
-    groupNames: Record<string, string>,
+    fields: ClassificationField[],
+    systemValues: ClassificationValue[],
 ): ClassificationBannerState {
-    const [groupId, fields] = resolveGroupId(fieldsByGroup, groupNames);
-    if (!groupId) {
-        return hiddenState;
-    }
-
     const systemField = fields.find(
-        (f) => f.object_type === CLASSIFICATIONS_SYSTEM_OBJECT_TYPE &&
-               f.name === CLASSIFICATIONS_SYSTEM_FIELD_NAME &&
-               f.linked_field_id &&
-               f.delete_at === 0,
+        (f) => f.objectType === CLASSIFICATIONS_SYSTEM_OBJECT_TYPE &&
+               f.name === CLASSIFICATIONS_SYSTEM_FIELD_NAME,
     );
 
     if (!systemField) {
@@ -75,14 +52,13 @@ export function deriveClassificationBannerState(
         return hiddenState;
     }
 
-    const values = valuesByTarget[CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID] ?? [];
-    const systemValue = values.find((v) => v.field_id === systemField.id && v.delete_at === 0);
-    const optionId = systemValue?.value ?? '';
+    const systemValue = systemValues.find((v) => v.fieldId === systemField.id);
+    const optionId = (systemValue?.value as string | undefined) ?? '';
     if (!optionId) {
         return hiddenState;
     }
 
-    const options = (systemField.attrs?.options as PropertyFieldOption[]) ?? [];
+    const options = (systemField.attrs?.options as PropertyFieldOption[] | undefined) ?? [];
     const levelOption = options.find((o) => o.id === optionId);
 
     return {
@@ -93,28 +69,18 @@ export function deriveClassificationBannerState(
 }
 
 export function deriveChannelClassificationBanner(
-    fieldsByGroup: Record<string, PropertyField[]>,
-    valuesByTarget: Record<string, Array<PropertyValue<string>>>,
-    groupNames: Record<string, string>,
-    channelId: string,
+    fields: ClassificationField[],
+    channelValues: ClassificationValue[],
     nativeBannerText?: string,
 ): ChannelClassificationBannerState {
-    const [, fields] = resolveGroupId(fieldsByGroup, groupNames);
-
-    const channelValues = channelId ? (valuesByTarget[channelId] ?? []) : [];
     const channelValue = channelValues.length > 0 ? channelValues[0] : undefined;
-
-    if (!channelValue?.value || channelValue.delete_at !== 0) {
-        return noClassification;
-    }
-
-    const classificationId = channelValue.value;
-    if (typeof classificationId !== 'string') {
+    const classificationId = channelValue?.value;
+    if (typeof classificationId !== 'string' || !classificationId) {
         return noClassification;
     }
 
     const fieldWithOptions = fields.find((f) => (f.attrs?.options as PropertyFieldOption[] | undefined)?.length);
-    const options = (fieldWithOptions?.attrs?.options as PropertyFieldOption[]) ?? [];
+    const options = (fieldWithOptions?.attrs?.options as PropertyFieldOption[] | undefined) ?? [];
     const level = options.find((o) => o.id === classificationId);
     if (!level) {
         return noClassification;

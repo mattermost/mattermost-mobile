@@ -2,6 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {
+    clearClassificationData,
+    syncPropertyFieldsByGroupId,
+    syncPropertyValuesByTargetId,
+} from '@actions/local/properties';
+import {
     CLASSIFICATIONS_CHANNEL_OBJECT_TYPE,
     CLASSIFICATIONS_FIELD_TARGET_ID,
     CLASSIFICATIONS_FIELD_TARGET_TYPE,
@@ -9,10 +14,8 @@ import {
     CLASSIFICATIONS_SYSTEM_OBJECT_TYPE,
     CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
 } from '@constants/classification';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {clearClassificationData, getPersistedPropertyFields, getPersistedPropertyGroupNames, getPersistedPropertyValues} from '@queries/servers/properties';
 import {getConfigValue} from '@queries/servers/system';
 import {logDebug, logError} from '@utils/log';
 
@@ -20,10 +23,10 @@ import {forceLogoutIfNecessary} from './session';
 
 export async function fetchClassificationBanner(serverUrl: string): Promise<{error?: unknown}> {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const featureFlag = await getConfigValue(database, 'FeatureFlagClassificationMarkings');
         if (featureFlag !== 'true') {
-            await clearClassificationData(operator);
+            await clearClassificationData(serverUrl);
             return {};
         }
 
@@ -38,45 +41,20 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
 
         if (allFields.length === 0) {
             logDebug('fetchClassificationBanner', 'No classification fields returned');
-            await clearClassificationData(operator);
+            await clearClassificationData(serverUrl);
             return {};
         }
 
         const groupId = allFields[0].group_id;
         if (!groupId || allFields.some((f) => f.group_id !== groupId)) {
-            logError('fetchClassificationBanner', 'Unexpected classification fields', {allFields});
+            logError('fetchClassificationBanner', 'Unexpected classification fields');
             return {};
         }
 
         const values = await client.getSystemPropertyValues<string>(CLASSIFICATIONS_GROUP_NAME);
 
-        const [existingFields, existingValues, existingGroupNames] = await Promise.all([
-            getPersistedPropertyFields(database),
-            getPersistedPropertyValues(database),
-            getPersistedPropertyGroupNames(database),
-        ]);
-
-        const existingGroupFields = existingFields[groupId] ?? [];
-        const fieldMap = new Map(existingGroupFields.map((f) => [f.id, f]));
-        for (const field of allFields) {
-            if (field.delete_at > 0) {
-                fieldMap.delete(field.id);
-            } else {
-                fieldMap.set(field.id, field);
-            }
-        }
-        const mergedFields = {...existingFields, [groupId]: [...fieldMap.values()]};
-        const mergedGroupNames = {...existingGroupNames, [CLASSIFICATIONS_GROUP_NAME]: groupId};
-        const mergedValues = values.length > 0 ? {...existingValues, [CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID]: values} : existingValues;
-
-        await operator.handleSystem({
-            systems: [
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_FIELDS, value: mergedFields},
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: mergedValues},
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_GROUP_NAMES, value: mergedGroupNames},
-            ],
-            prepareRecordsOnly: false,
-        });
+        await syncPropertyFieldsByGroupId(serverUrl, groupId, allFields);
+        await syncPropertyValuesByTargetId(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, values);
 
         return {};
     } catch (error) {
@@ -88,7 +66,7 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
 
 export async function fetchChannelClassificationValue(serverUrl: string, channelId: string): Promise<{error?: unknown}> {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const featureFlag = await getConfigValue(database, 'FeatureFlagClassificationMarkings');
         if (featureFlag !== 'true') {
             return {};
@@ -97,30 +75,11 @@ export async function fetchChannelClassificationValue(serverUrl: string, channel
         const client = NetworkManager.getClient(serverUrl);
         const values = await client.getPropertyValues<string>(CLASSIFICATIONS_GROUP_NAME, CLASSIFICATIONS_CHANNEL_OBJECT_TYPE, channelId);
 
-        if (values.length === 0) {
-            logDebug('fetchChannelClassificationValue', 'No values returned for channel', {channelId});
-            return {};
-        }
-
-        const groupId = values[0].group_id;
-        if (!groupId) {
-            logDebug('fetchChannelClassificationValue', 'Empty group_id in channel value', {channelId});
-            return {};
-        }
-
-        const existingValues = await getPersistedPropertyValues(database);
-        const mergedValues = {...existingValues, [channelId]: values};
-
-        await operator.handleSystem({
-            systems: [
-                {id: SYSTEM_IDENTIFIERS.PROPERTY_VALUES, value: mergedValues},
-            ],
-            prepareRecordsOnly: false,
-        });
+        await syncPropertyValuesByTargetId(serverUrl, channelId, values);
 
         return {};
     } catch (error) {
-        logError('fetchChannelClassificationValue', 'Failed to fetch channel classification value', {serverUrl, channelId}, error);
+        logError('fetchChannelClassificationValue', 'Failed to fetch channel classification value', error);
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
