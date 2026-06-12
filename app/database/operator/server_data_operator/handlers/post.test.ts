@@ -1155,6 +1155,195 @@ describe('*** Operator: merge chunks ***', () => {
     });
 });
 
+describe('*** Operator: merge chunks — new chunk entirely above existing chunks (MM-66467 root cause) ***', () => {
+    const {mergePostInChannelChunks} = exportedForTest;
+    let database: Database;
+    const databaseName = 'baseHandler.test.com';
+    const channelId = 'merge-above';
+
+    beforeEach(async () => {
+        await DatabaseManager.init([databaseName]);
+        const serverDatabase = DatabaseManager.serverDatabases[databaseName]!;
+        database = serverDatabase.database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(databaseName);
+    });
+
+    it('should merge when new chunk is entirely above all existing chunks', async () => {
+        // This is the core merge bug: a new chunk [200, 200] sits entirely above [0, 100].
+        // Chunks are sorted by latest DESC, so the list is [newChunk(200), existing(100)].
+        // The early-exit `if (chunk.latest < newChunk.earliest) break` fires on the existing
+        // chunk (100 < 200) and the merge does nothing — leaving the orphan intact.
+        const newChunk = await transformPostsInChannelRecord({
+            action: OperationType.CREATE,
+            database,
+            value: {record: undefined, raw: {channel_id: channelId, earliest: 200, latest: 200}},
+        });
+        const existingChunk = await transformPostsInChannelRecord({
+            action: OperationType.CREATE,
+            database,
+            value: {record: undefined, raw: {channel_id: channelId, earliest: 0, latest: 100}},
+        });
+
+        // Sorted by latest DESC as the real code does
+        const chunks: PostsInChannelModel[] = [newChunk, existingChunk];
+
+        const result = await mergePostInChannelChunks(newChunk, chunks);
+
+        // The merge SHOULD fuse the two chunks: newChunk absorbs existing → [0, 200]
+        expect(result.length).toBeGreaterThan(0);
+        expect(newChunk.earliest).toBe(0);
+        expect(newChunk.latest).toBe(200);
+        expect(existingChunk._preparedState).toBe('destroyPermanently');
+    });
+
+    it('should merge when new chunk is above multiple existing chunks', async () => {
+        // New chunk [500, 500] with existing [0, 100] and [200, 300] — all below.
+        const newChunk = await transformPostsInChannelRecord({
+            action: OperationType.CREATE,
+            database,
+            value: {record: undefined, raw: {channel_id: channelId, earliest: 500, latest: 500}},
+        });
+        const existing1 = await transformPostsInChannelRecord({
+            action: OperationType.CREATE,
+            database,
+            value: {record: undefined, raw: {channel_id: channelId, earliest: 200, latest: 300}},
+        });
+        const existing2 = await transformPostsInChannelRecord({
+            action: OperationType.CREATE,
+            database,
+            value: {record: undefined, raw: {channel_id: channelId, earliest: 0, latest: 100}},
+        });
+
+        // Sorted by latest DESC
+        const chunks: PostsInChannelModel[] = [newChunk, existing1, existing2];
+
+        const result = await mergePostInChannelChunks(newChunk, chunks);
+
+        // Should consolidate everything into [0, 500]
+        expect(result.length).toBeGreaterThan(0);
+        expect(newChunk.earliest).toBe(0);
+        expect(newChunk.latest).toBe(500);
+    });
+});
+
+describe('*** Operator: handleReceivedPostsInChannel — live single post outside chunk range (MM-66467 root cause) ***', () => {
+    let database: Database;
+    let operator: ServerDataOperator;
+    const databaseName = 'baseHandler.test.com';
+    const channelId = 'orphan-live';
+
+    beforeEach(async () => {
+        await DatabaseManager.init([databaseName]);
+        const serverDatabase = DatabaseManager.serverDatabases[databaseName]!;
+        database = serverDatabase.database;
+        operator = serverDatabase.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(databaseName);
+    });
+
+    const makePost = (over: Partial<Post>): Post => ({
+        id: 'p',
+        channel_id: channelId,
+        create_at: 1000,
+        update_at: 1000,
+        edit_at: 0,
+        delete_at: 0,
+        is_pinned: false,
+        is_following: false,
+        user_id: 'user1',
+        root_id: '',
+        original_id: '',
+        message: 'message',
+        type: '',
+        props: {},
+        hashtags: '',
+        pending_post_id: '',
+        reply_count: 0,
+        last_reply_at: 0,
+        participants: null,
+        metadata: {},
+        ...over,
+    } as Post);
+
+    const intervalsForChannel = async () =>
+        (await database.get(MM_TABLES.SERVER.POSTS_IN_CHANNEL).
+            query(Q.where('channel_id', channelId), Q.sortBy('latest', Q.desc)).fetch()) as PostsInChannelModel[];
+
+    it('single live post with create_at beyond existing chunk must not create an orphan interval', async () => {
+        // Seed: channel has posts and a chunk covering [1000, 5000]
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: ['seed1', 'seed2'],
+            posts: [
+                makePost({id: 'seed1', create_at: 1000, update_at: 1000}),
+                makePost({id: 'seed2', create_at: 5000, update_at: 5000}),
+            ],
+        });
+
+        const seeded = await intervalsForChannel();
+        expect(seeded.length).toBe(1);
+        expect(seeded[0].earliest).toBe(1000);
+        expect(seeded[0].latest).toBe(5000);
+
+        // A single LIVE post arrives via RECEIVED_IN_CHANNEL with create_at=9000,
+        // well beyond the existing chunk's latest of 5000. The overlap check fails
+        // (9000 is not between 1000-5000), so no targetChunk is found. The current
+        // code creates a new [9000, 9000] interval that becomes postsInChannel[0],
+        // and the merge function's early-exit bug prevents consolidation.
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: ['distant-post'],
+            posts: [makePost({id: 'distant-post', create_at: 9000, update_at: 9000})],
+        });
+
+        const after = await intervalsForChannel();
+
+        // There MUST be exactly 1 interval covering [1000, 9000].
+        // If there are 2 intervals, the orphan bug is present: the UI will only
+        // query posts in the [9000, 9000] interval and the channel appears empty.
+        expect(after.length).toBe(1);
+        expect(after[0].earliest).toBe(1000);
+        expect(after[0].latest).toBe(9000);
+    });
+
+    it('multiple chunks scenario — getRecentPostsInChannel returns all posts, not just the orphan range', async () => {
+        // This tests the user-visible symptom: after an orphan is created,
+        // the most recent interval has no real posts, so the channel appears empty.
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: ['p1', 'p2', 'p3'],
+            posts: [
+                makePost({id: 'p1', create_at: 1000, update_at: 1000}),
+                makePost({id: 'p2', create_at: 2000, update_at: 2000}),
+                makePost({id: 'p3', create_at: 3000, update_at: 3000}),
+            ],
+        });
+
+        // Distant single post
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: ['distant'],
+            posts: [makePost({id: 'distant', create_at: 20000, update_at: 20000})],
+        });
+
+        // Query posts using the same logic as the UI: postsInChannel[0].earliest..latest
+        const chunks = await intervalsForChannel();
+        expect(chunks.length).toBe(1); // must be 1, not 2
+
+        // The interval must cover all posts
+        const allPosts = await database.get(MM_TABLES.SERVER.POST).query(
+            Q.where('channel_id', channelId),
+            Q.where('create_at', Q.between(chunks[0].earliest, chunks[0].latest)),
+        ).fetch();
+        expect(allPosts.length).toBe(4); // p1, p2, p3, distant — not just 'distant'
+    });
+});
+
 describe('*** Operator: deleted post must not create an empty PostsInChannel interval (MM-66467) ***', () => {
     let database: Database;
     let operator: ServerDataOperator;

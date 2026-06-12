@@ -68,9 +68,12 @@ const mergePostInChannelChunks = async (newChunk: PostsInChannelModel, existingC
     let newChunkUpdated = false;
     const result: PostsInChannelModel[] = [];
     for (const chunk of existingChunks) {
-        // Exit early if there is no possibility of any other intersection
+        // Skip chunks that are entirely below the new chunk — they cannot
+        // intersect, but chunks further in the list might (chunks are sorted
+        // by latest DESC, so a chunk above all existing ones would hit this
+        // on the very first iteration and abort prematurely with `break`).
         if (chunk.latest < newChunk.earliest) {
-            break;
+            continue;
         }
 
         // omit the current chunk
