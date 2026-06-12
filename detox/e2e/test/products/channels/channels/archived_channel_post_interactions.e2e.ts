@@ -139,12 +139,12 @@ async function closeBrowseChannelsChannel() {
     }
 }
 
-// Android: skipped entirely — `replaceText`/`typeText` triggers a
+// Android: known failing — `replaceText`/`typeText` triggers a
 // NoSuchFieldException crash on mMountItemDispatcher (Detox 20.47.0 /
-// Fabric / R8 on API 35). All tests involve text entry, so per-test
-// guards aren't sufficient. iOS passes all 4 tests reliably.
-// Track separately as a Detox-Android patch-package task.
-(isAndroid() ? describe.skip : describe)('Channels - Archived Channel Post Interactions', () => {
+// Fabric / R8 on API 35). All tests involve text entry. iOS passes all
+// 4 tests reliably. Suite is kept running on Android so failures stay
+// visible in CI reports.
+describe('Channels - Archived Channel Post Interactions', () => {
     const serverOneDisplayName = 'Server 1';
     let testTeam: any;
     let testUser: any;
