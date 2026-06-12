@@ -91,7 +91,6 @@ export default function RootLayout() {
         initializeApp();
 
         return () => {
-            // Cleanup on unmount
             cleanup();
         };
     });

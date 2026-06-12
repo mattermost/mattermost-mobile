@@ -172,10 +172,12 @@ const ChannelItem = ({
     ], [height, showActive, styles, isOnHome]);
 
     return (
-        <TouchableOpacity onPress={handleOnPress}>
+        <TouchableOpacity
+            onPress={handleOnPress}
+            testID={channelItemTestId}
+        >
             <View
                 style={containerStyle}
-                testID={channelItemTestId}
             >
                 <ChannelIcon
                     hasDraft={hasDraft}

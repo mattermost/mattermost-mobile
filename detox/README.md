@@ -40,8 +40,6 @@ in `detox/e2e/support/test_config.ts` will provide some default values for your 
 To build the Detox Android app, navigate to the `detox` folder and run:
 
 ```sh
-npm run e2e:android-inject-settings
-
 npm run e2e:android-build
 ```
 
@@ -68,6 +66,12 @@ npm run e2e:android-test
 
 npm run e2e:android-test <path to test file>
 ```
+
+Local runs now default to a lower-memory setup so they coexist better with other tools:
+- Detox uses `1` worker unless you set `DETOX_MAX_WORKERS`.
+- Detox caps Node heap at `4096MB` unless you already set `NODE_OPTIONS`.
+- Android Detox builds cap Gradle heap at `3072MB` and use at most `2` Gradle workers unless you override `MM_GRADLE_XMX_MB` or `MM_GRADLE_WORKERS_MAX`.
+- Android emulator RAM defaults to `3072MB` when created or refreshed; override with `MM_ANDROID_EMULATOR_RAM_MB`.
 
 ## iOS
 

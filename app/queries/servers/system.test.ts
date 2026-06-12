@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 
 import {
     getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getPushVerificationStatus,
-    getCommonSystemValues, getConfig, getConfigValue, getDisconnectedSince, getLastGlobalDataRetentionRun,
+    getCommonSystemValues, getConfig, getConfigValue, getConfigBooleanValue, getDisconnectedSince, getLastGlobalDataRetentionRun,
     getLastBoRPostCleanupRun, getGlobalDataRetentionPolicy, getGranularDataRetentionPolicies,
     getIsDataRetentionEnabled, getLicense, getRecentCustomStatuses, getExpandedLinks,
     getRecentReactions, getLastFullSync, setLastFullSync, resetLastFullSync,
@@ -20,6 +20,7 @@ import {
     observeCurrentChannelId, observeCurrentTeamId, observeCurrentUserId, observeGlobalThreadsTab,
     observePushVerificationStatus, observeConfig, observeConfigValue, observeMaxFileCount,
     observeIsCustomStatusExpirySupported, observeConfigBooleanValue, observeConfigIntValue,
+    canViewArchivedChannels, observeCanViewArchivedChannels,
     observeLicense, observeAllowedThemesKeys, observeOnlyUnreads,
     observeIsFreeEdition, observeIsMinimumLicenseTier, observeReportAProblemMetadata,
 } from './system';
@@ -364,6 +365,45 @@ describe('observeIsMinimumLicenseTier', () => {
     });
 });
 
+describe('getConfigBooleanValue', () => {
+    const serverUrl = 'getConfigBooleanValue.test.com';
+    let database: Database;
+    let operator: ServerDataOperator;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = serverDatabaseAndOperator.database;
+        operator = serverDatabaseAndOperator.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    const setConfig = (key: string, value: string) =>
+        operator.handleConfigs({configs: [{id: key, value}], prepareRecordsOnly: false, configsToDelete: []});
+
+    it('should return true when config value is "true"', async () => {
+        await setConfig('ExperimentalViewArchivedChannels', 'true');
+        expect(await getConfigBooleanValue(database, 'ExperimentalViewArchivedChannels')).toBe(true);
+    });
+
+    it('should return false when config value is "false"', async () => {
+        await setConfig('ExperimentalViewArchivedChannels', 'false');
+        expect(await getConfigBooleanValue(database, 'ExperimentalViewArchivedChannels')).toBe(false);
+    });
+
+    it('should return the defaultValue when the key is missing', async () => {
+        expect(await getConfigBooleanValue(database, 'ExperimentalViewArchivedChannels', true)).toBe(true);
+        expect(await getConfigBooleanValue(database, 'ExperimentalViewArchivedChannels', false)).toBe(false);
+    });
+
+    it('should default to false when key is missing and no defaultValue provided', async () => {
+        expect(await getConfigBooleanValue(database, 'ExperimentalViewArchivedChannels')).toBe(false);
+    });
+});
+
 describe('system query functions', () => {
     const serverUrl = 'system.query.test.com';
     let database: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['database'];
@@ -459,6 +499,21 @@ describe('system query functions', () => {
     it('getConfigValue returns value when key present', async () => {
         await operator.handleConfigs({configs: [{id: 'SiteName', value: 'Test'}], configsToDelete: [], prepareRecordsOnly: false});
         expect(await getConfigValue(database, 'SiteName')).toBe('Test');
+    });
+
+    it("getConfigBooleanValue returns true only for the string 'true'", async () => {
+        await operator.handleConfigs({configs: [{id: 'EnableCustomEmoji', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
+        expect(await getConfigBooleanValue(database, 'EnableCustomEmoji')).toBe(true);
+    });
+
+    it("getConfigBooleanValue returns false for a non-'true' string value", async () => {
+        await operator.handleConfigs({configs: [{id: 'EnableCustomEmoji', value: 'false'}], configsToDelete: [], prepareRecordsOnly: false});
+        expect(await getConfigBooleanValue(database, 'EnableCustomEmoji')).toBe(false);
+    });
+
+    it('getConfigBooleanValue returns the default value when the key is missing', async () => {
+        expect(await getConfigBooleanValue(database, 'EnableCustomEmoji')).toBe(false);
+        expect(await getConfigBooleanValue(database, 'EnableCustomEmoji', true)).toBe(true);
     });
 
     it('getLastGlobalDataRetentionRun returns undefined when not set', async () => {
@@ -671,6 +726,34 @@ describe('system observe functions', () => {
     it('observeConfigBooleanValue emits true when config is "true"', async () => {
         await operator.handleConfigs({configs: [{id: 'EnableCustomEmoji', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
         expect(await firstValueFrom(observeConfigBooleanValue(database, 'EnableCustomEmoji'))).toBe(true);
+    });
+
+    it('canViewArchivedChannels resolves true when ExperimentalViewArchivedChannels is absent', async () => {
+        expect(await canViewArchivedChannels(database)).toBe(true);
+    });
+
+    it('canViewArchivedChannels resolves true when ExperimentalViewArchivedChannels is "true"', async () => {
+        await operator.handleConfigs({configs: [{id: 'ExperimentalViewArchivedChannels', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
+        expect(await canViewArchivedChannels(database)).toBe(true);
+    });
+
+    it('canViewArchivedChannels resolves false when ExperimentalViewArchivedChannels is "false"', async () => {
+        await operator.handleConfigs({configs: [{id: 'ExperimentalViewArchivedChannels', value: 'false'}], configsToDelete: [], prepareRecordsOnly: false});
+        expect(await canViewArchivedChannels(database)).toBe(false);
+    });
+
+    it('observeCanViewArchivedChannels emits true when ExperimentalViewArchivedChannels is absent', async () => {
+        expect(await firstValueFrom(observeCanViewArchivedChannels(database))).toBe(true);
+    });
+
+    it('observeCanViewArchivedChannels emits true when ExperimentalViewArchivedChannels is "true"', async () => {
+        await operator.handleConfigs({configs: [{id: 'ExperimentalViewArchivedChannels', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
+        expect(await firstValueFrom(observeCanViewArchivedChannels(database))).toBe(true);
+    });
+
+    it('observeCanViewArchivedChannels emits false when ExperimentalViewArchivedChannels is "false"', async () => {
+        await operator.handleConfigs({configs: [{id: 'ExperimentalViewArchivedChannels', value: 'false'}], configsToDelete: [], prepareRecordsOnly: false});
+        expect(await firstValueFrom(observeCanViewArchivedChannels(database))).toBe(false);
     });
 
     it('observeConfigIntValue emits defaultValue when not set', async () => {

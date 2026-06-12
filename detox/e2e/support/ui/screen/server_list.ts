@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, isIos, timeouts, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 
 class ServerListScreen {
     testID = {
@@ -36,33 +35,46 @@ class ServerListScreen {
         return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.server_icon`));
     };
 
+    // Option getters use atIndex(0): the server list bottom sheet can be mounted
+    // more than once in the hierarchy across tests (the same dual-mount ambiguity
+    // the server item getters already handle with atIndex(0) at call sites),
+    // which makes a bare matcher fail with "multiple elements found".
     getServerItemEditOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.edit.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.edit.option`)).atIndex(0);
     };
 
     getServerItemRemoveOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.remove.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.remove.option`)).atIndex(0);
     };
 
     getServerItemLoginOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.login.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.login.option`)).atIndex(0);
     };
 
     getServerItemLogoutOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.logout.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.logout.option`)).atIndex(0);
     };
 
     toBeVisible = async () => {
-        if (isIos()) {
-            await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
-        }
+        await waitForElementToExist(this.serverListScreen, timeouts.HALF_MIN);
 
         return this.serverListScreen;
     };
 
     open = async () => {
         // # Open server list screen
-        await ChannelListScreen.serverIcon.tap();
+        // On iOS 26 the server icon may not pass the 100% visibility threshold
+        // (bottom-sheet transition chrome clips the view). Use
+        // disableSynchronization to bypass the hittability probe.
+        await device.disableSynchronization();
+        try {
+            await ChannelListScreen.serverIcon.tap();
+        } finally {
+            await device.enableSynchronization();
+        }
+        if (isAndroid()) {
+            await this.closeTutorial();
+        }
 
         return this.toBeVisible();
     };
@@ -73,20 +85,37 @@ class ServerListScreen {
         } else {
             await device.pressBack();
         }
-        await wait(timeouts.ONE_SEC);
-        await expect(this.serverListScreen).not.toBeVisible();
-        await wait(timeouts.ONE_SEC);
+        await waitForElementToNotExist(this.serverListScreen, timeouts.TEN_SEC);
     };
 
     closeTutorial = async () => {
+        try {
+            if (isIos()) {
+                await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
+                await this.tutorialSwipeLeft.tap();
+            } else {
+                await waitForElementToExist(this.tutorialSwipeLeft, timeouts.TEN_SEC);
+                await device.pressBack();
+            }
+            await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            // Tutorial may not appear if already dismissed in a previous run
+        }
+    };
+
+    // On iOS 26, swipe-revealed action buttons and bottom-sheet items may not pass
+    // the 100% hittability threshold. This helper disables synchronization around
+    // the tap so Detox bypasses the visibility probe.
+    tapItem = async (item: Detox.NativeElement) => {
         if (isIos()) {
-            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
-            await this.tutorialSwipeLeft.tap();
-            await expect(this.tutorialHighlight).not.toExist();
-        } else {
-            await wait(timeouts.ONE_SEC);
-            await device.pressBack();
-            await wait(timeouts.ONE_SEC);
+            await device.disableSynchronization();
+        }
+        try {
+            await item.tap();
+        } finally {
+            if (isIos()) {
+                await device.enableSynchronization();
+            }
         }
     };
 }

@@ -47,13 +47,13 @@ const CodeScreen = ({code, language, textStyle}: CodeScreenProps) => {
                 <NavigationButton
                     iconName='content-copy'
                     iconSize={24}
-                    color={theme.centerChannelColor}
+                    color={theme.sidebarHeaderTextColor}
                     onPress={copyToClipboard}
                     testID='copy-code'
                 />
             ),
         });
-    }, [copyToClipboard, navigation, theme.centerChannelColor]);
+    }, [copyToClipboard, navigation, theme.sidebarHeaderTextColor]);
 
     return (
         <View style={styles.flex}>

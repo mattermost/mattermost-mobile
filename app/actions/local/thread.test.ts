@@ -5,6 +5,7 @@ import {ActionType} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import Preferences from '@constants/preferences';
 import DatabaseManager from '@database/manager';
+import {getThreadById} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
@@ -20,6 +21,7 @@ import {
 } from './thread';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type ThreadModel from '@typings/database/models/servers/thread';
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -39,6 +41,7 @@ jest.mock('@store/navigation_store', () => {
         ...original,
         NavigationStore: {
             ...original.NavigationStore,
+            waitUntilScreenIsTop: jest.fn(() => Promise.resolve()),
             waitUntilScreenHasLoaded: jest.fn(() => Promise.resolve()),
             getScreensInStack: jest.fn(() => []),
             getRootRouteInfo: jest.fn(() => {
@@ -241,6 +244,56 @@ describe('createThreadFromNewPost', () => {
         expect(models?.length).toBe(2); // thread, thread participant
     });
 
+    it('should set is_following=true locally when the current user posts a reply (existing thread)', async () => {
+        await operator.handleUsers({users: [user], prepareRecordsOnly: false});
+        await operator.handleThreads({threads: [{...threads[0], is_following: false}], prepareRecordsOnly: false, teamId: team.id});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user.id, id: 'postid', create_at: 1, root_id: rootPost.id});
+
+        const {error} = await createThreadFromNewPost(serverUrl, post, false);
+        const savedThread = await operator.database.get<ThreadModel>('Thread').find(rootPost.id);
+
+        expect(error).toBeUndefined();
+        expect(savedThread.isFollowing).toBe(true);
+    });
+
+    it('should set is_following=true when thread record does not exist yet (only root post in DB)', async () => {
+        // Only store the root post — no Thread record — to exercise the else-branch in createThreadFromNewPost.
+        await operator.handleUsers({users: [user], prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [rootPost.id],
+            posts: [rootPost],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user.id, id: 'postid3', create_at: 3, root_id: rootPost.id, reply_count: 1});
+
+        const {error} = await createThreadFromNewPost(serverUrl, post, false);
+        const savedThread = await operator.database.get<ThreadModel>('Thread').find(rootPost.id);
+
+        expect(error).toBeUndefined();
+        expect(savedThread.isFollowing).toBe(true);
+    });
+
+    it('should update reply_count when creating thread from new reply post', async () => {
+        await operator.handleUsers({users: [user], prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [rootPost.id],
+            posts: [rootPost],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user.id, id: 'postid2', create_at: 2, root_id: rootPost.id, reply_count: 1});
+
+        const {error} = await createThreadFromNewPost(serverUrl, post, false);
+        const savedThread = await operator.database.get<ThreadModel>('Thread').find(rootPost.id);
+
+        expect(error).toBeUndefined();
+        expect(savedThread.replyCount).toBe(1);
+    });
+
     it('base case - no root post', async () => {
         await operator.handleUsers({users: [user2], prepareRecordsOnly: false});
         const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1});
@@ -249,6 +302,44 @@ describe('createThreadFromNewPost', () => {
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
         expect(models?.length).toBe(1); // thread
+    });
+
+    it('reply to a thread not yet in the DB but whose root post exists - creates the thread from the root post', async () => {
+        // No thread row exists, but the root post is already persisted. The reply should
+        // back-fill the thread from the root post and auto-follow it.
+        await operator.handleUsers({users: [user2], prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [rootPost.id],
+            posts: [rootPost],
+            prepareRecordsOnly: false,
+        });
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 2, root_id: rootPost.id, reply_count: 3});
+
+        const {models, error} = await createThreadFromNewPost(serverUrl, post);
+        expect(error).toBeUndefined();
+        expect(models).toBeDefined();
+        expect(models?.length).toBe(2); // thread (from root post), thread participant
+
+        const createdThread = await getThreadById(DatabaseManager.serverDatabases[serverUrl]!.database, rootPost.id);
+        expect(createdThread).toBeDefined();
+        expect(createdThread!.isFollowing).toBe(true);
+        expect(createdThread!.replyCount).toBe(3);
+    });
+
+    it('reply to a thread with neither thread nor root post in the DB - only adds the participant', async () => {
+        // Neither the thread nor its root post exist locally, so no thread can be created;
+        // only the participant association is recorded, without crashing.
+        await operator.handleUsers({users: [user2], prepareRecordsOnly: false});
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 2, root_id: 'missingrootid'});
+
+        const {models, error} = await createThreadFromNewPost(serverUrl, post);
+        expect(error).toBeUndefined();
+        expect(models).toBeDefined();
+        expect(models?.length).toBe(1); // thread participant only
+
+        const thread = await getThreadById(DatabaseManager.serverDatabases[serverUrl]!.database, 'missingrootid');
+        expect(thread).toBeUndefined();
     });
 });
 
@@ -283,6 +374,30 @@ describe('processReceivedThreads', () => {
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
         expect(models?.length).toBe(4); // post, thread, thread participant, thread in team
+    });
+
+    it('skips missing post/participants without crashing', async () => {
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+
+        // The server can return a thread entry without an embedded post or participants;
+        // the action must guard against those being undefined and still persist the thread.
+        const thread = [
+            {
+                id: rootPost.id,
+                reply_count: 0,
+                last_reply_at: 123,
+                last_viewed_at: 123,
+                is_following: true,
+                unread_replies: 0,
+                unread_mentions: 0,
+            },
+        ] as unknown as Thread[];
+
+        const {models, error} = await processReceivedThreads(serverUrl, thread, team.id);
+        expect(error).toBeUndefined();
+        expect(models).toBeDefined();
+        expect(models?.length).toBe(2); // thread, thread in team (no post, no participants)
     });
 });
 

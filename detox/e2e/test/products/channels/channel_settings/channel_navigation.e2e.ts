@@ -16,13 +16,14 @@ import {
     ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
+    ChannelSettingsScreen,
     FindChannelsScreen,
     LoginScreen,
     ServerScreen,
     HomeScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToNotExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Channels', () => {
     const serverOneDisplayName = 'Server 1';
@@ -46,6 +47,9 @@ describe('Channels', () => {
             displayName: `Archive Test ${getRandomId()}`,
             type: 'O',
         });
+        if (!archiveCh?.id) {
+            throw new Error('[beforeAll] Failed to create archive test channel');
+        }
         archiveChannel = archiveCh;
 
         await wait(timeouts.THREE_SEC);
@@ -126,27 +130,45 @@ describe('Channels', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
     });
 
+    // SKIPPED — Same archive-observable bug as
+    // archive_channel_from_settings.e2e.ts MM-T4932_1. The `channelIsArchived`
+    // observable in post_draft doesn't fire on `c.deleteAt` change written via
+    // `prepareUpdate + batchRecords`. Track separately as an app-side bug.
     it('MM-T3197 - RN apps Archive public or private channel', async () => {
         // # Navigate to the archive channel
         await ChannelScreen.open(channelsCategory, archiveChannel.name);
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
 
-        // # Scroll to bottom to reveal archive option
-        await ChannelInfoScreen.scrollView.scrollTo('bottom');
-        await wait(timeouts.ONE_SEC);
+        // # Open channel settings to access archive option
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
 
         // # Archive the channel
-        await ChannelInfoScreen.archivePublicChannel({confirm: true});
+        await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
-        // * Verify channel info screen is closed
-        await wait(timeouts.TWO_SEC);
-        await expect(ChannelInfoScreen.channelInfoScreen).not.toBeVisible();
+        // # Channel settings closes but channel info modal remains; dismiss it
+        // to reach the channel screen where the archived close-channel button renders.
+        await ChannelInfoScreen.close();
+
+        await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+        // # Navigate back from the archived channel to the channel list
+        await ChannelScreen.back();
 
         // * Verify we're back at channel list
         await ChannelListScreen.toBeVisible();
 
         // * Verify archived channel is not visible in the list
-        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, archiveChannel.name)).not.toBeVisible();
+        // On Android, waitFor().not.toBeVisible() blocks on bridge-idle before evaluating —
+        // after the back() navigation the bridge is still busy, causing the 10s budget to
+        // expire before the check runs. Use polling waitForElementToNotExist (bypasses
+        // bridge-idle) on Android; keep the standard waitFor for iOS.
+        const archivedChannelItem = ChannelListScreen.getChannelItemDisplayName(channelsCategory, archiveChannel.name);
+        if (isAndroid()) {
+            await waitForElementToNotExist(archivedChannelItem, timeouts.HALF_MIN);
+        } else {
+            await waitFor(archivedChannelItem).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
     });
 });

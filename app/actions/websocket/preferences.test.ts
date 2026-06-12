@@ -34,6 +34,7 @@ describe('WebSocket Preferences Actions', () => {
         jest.spyOn(operator, 'handlePreferences').mockResolvedValue([]);
 
         jest.mocked(EphemeralStore.isEnablingCRT).mockReturnValue(false);
+        jest.mocked(EphemeralStore.isRecentlyUnsavedSavedPost).mockReturnValue(false);
     });
 
     afterEach(async () => {
@@ -111,6 +112,23 @@ describe('WebSocket Preferences Actions', () => {
 
             expect(handleCRTToggled).toHaveBeenCalledWith(serverUrl);
         });
+
+        it('should skip a stale saved-post re-save coming from a local unsave', async () => {
+            // The single preference is a SAVED_POST/value='true' that the user just
+            // unsaved locally; the echoed websocket event must be filtered out so we
+            // don't re-add the post that was removed.
+            jest.mocked(EphemeralStore.isRecentlyUnsavedSavedPost).mockReturnValue(true);
+
+            const msg = {
+                data: {
+                    preference: JSON.stringify(mockPreference),
+                },
+            } as WebSocketMessage;
+
+            await handlePreferenceChangedEvent(serverUrl, msg);
+
+            expect(operator.handlePreferences).not.toHaveBeenCalled();
+        });
     });
 
     describe('handlePreferencesChangedEvent', () => {
@@ -155,6 +173,21 @@ describe('WebSocket Preferences Actions', () => {
             expect(fetchPostById).toHaveBeenCalledWith(serverUrl, 'post1', false);
         });
 
+        it('should ignore stale saved post preferences after a local unsave', async () => {
+            const msg = {
+                data: {
+                    preferences: JSON.stringify(mockPreferences),
+                },
+            } as WebSocketMessage;
+
+            jest.mocked(EphemeralStore.isRecentlyUnsavedSavedPost).mockReturnValue(true);
+
+            await handlePreferencesChangedEvent(serverUrl, msg);
+
+            expect(operator.handlePreferences).not.toHaveBeenCalled();
+            expect(fetchPostById).not.toHaveBeenCalled();
+        });
+
         it('should handle name format changes in bulk', async () => {
             const msg = {
                 data: {
@@ -168,6 +201,54 @@ describe('WebSocket Preferences Actions', () => {
             await handlePreferencesChangedEvent(serverUrl, msg);
 
             expect(updateDmGmDisplayName).toHaveBeenCalledWith(serverUrl);
+        });
+
+        it('should skip when the entire batch is stale saved-post re-saves', async () => {
+            jest.mocked(EphemeralStore.isRecentlyUnsavedSavedPost).mockReturnValue(true);
+
+            const msg = {
+                data: {
+                    preferences: JSON.stringify(mockPreferences),
+                },
+            } as WebSocketMessage;
+
+            await handlePreferencesChangedEvent(serverUrl, msg);
+
+            expect(operator.handlePreferences).not.toHaveBeenCalled();
+        });
+
+        it('should keep non-stale preferences and only drop the stale saved post', async () => {
+            const stalePost = {
+                category: Preferences.CATEGORIES.SAVED_POST,
+                name: 'stale-post',
+                user_id: 'user1',
+                value: 'true',
+            };
+            const otherPreference = {
+                category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
+                name: 'name_format',
+                user_id: 'user1',
+                value: 'full_name',
+            };
+
+            // Only the saved-post entry is in the recently-unsaved set.
+            jest.mocked(EphemeralStore.isRecentlyUnsavedSavedPost).mockImplementation((_, name) => name === 'stale-post');
+            jest.mocked(differsFromLocalNameFormat).mockResolvedValue(false);
+            jest.mocked(getHasCRTChanged).mockResolvedValue(false);
+            jest.mocked(getPostById).mockResolvedValue(undefined);
+
+            const msg = {
+                data: {
+                    preferences: JSON.stringify([stalePost, otherPreference]),
+                },
+            } as WebSocketMessage;
+
+            await handlePreferencesChangedEvent(serverUrl, msg);
+
+            expect(operator.handlePreferences).toHaveBeenCalledWith({
+                prepareRecordsOnly: false,
+                preferences: [otherPreference],
+            });
         });
     });
 

@@ -26,6 +26,7 @@ class ChannelDropdownMenuScreen {
 
     open = async () => {
         // # Open channel dropdown menu screen
+        await waitFor(BrowseChannelsScreen.channelDropdown).toExist().withTimeout(timeouts.TEN_SEC);
         await BrowseChannelsScreen.channelDropdown.tap();
 
         return this.toBeVisible();

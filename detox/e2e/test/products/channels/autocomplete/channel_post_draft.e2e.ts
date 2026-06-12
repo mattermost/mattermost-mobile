@@ -28,6 +28,19 @@ describe('Autocomplete - Channel Post Draft', () => {
     const channelsCategory = 'channels';
 
     beforeAll(async () => {
+        // Force a clean app process. Without this, when a prior spec in the
+        // same shard leaves the app in a wedged state (observed: at-mention
+        // / channel-mention specs running just before this one, sometimes
+        // with a failed logout that left tab_bar.account.tab unreachable),
+        // the next `ServerScreen.connectToServer` here hangs for the full
+        // 360s hook timeout with `Detox can't seem to connect to the test app(s)!`
+        // (run 26368981355, iOS shard 4 — all 8 tests in this spec failed
+        // at line 34 column 28 with the same disconnect error).
+        //
+        // launchApp({newInstance: true}) starts a fresh process; matches the
+        // existing pattern in message_draft.e2e.ts and ipad_post_message.e2e.ts.
+        await device.launchApp({newInstance: true});
+
         const {channel, user} = await Setup.apiInit(siteOneUrl);
 
         // # Log in to server
@@ -97,6 +110,53 @@ describe('Autocomplete - Channel Post Draft', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify slash suggestion list is displayed
+        await expect(Autocomplete.flatSlashSuggestionList).toExist();
+    });
+
+    // MM-T3392_1-4 cover the same autocomplete behaviors as MM-T4882_1-4 but are tracked
+    // under a separate Zephyr/Jira test cycle for historical regression coverage.
+    it('MM-T3392_1 - should render emoji suggestion component when typing : in post input', async () => {
+        // * Verify emoji suggestion list is not displayed
+        await expect(Autocomplete.flatEmojiSuggestionList).not.toExist();
+
+        // # Type ":" in post input to activate emoji suggestion autocomplete
+        await ChannelScreen.postInput.typeText(':sm');
+
+        // * Verify emoji suggestion autocomplete list is displayed
+        await expect(Autocomplete.flatEmojiSuggestionList).toExist();
+    });
+
+    it('MM-T3392_2 - should render at-mention component when typing @ in post input', async () => {
+        // * Verify at-mention list is not displayed
+        await expect(Autocomplete.sectionAtMentionList).not.toExist();
+
+        // # Type "@" in post input to activate at-mention autocomplete
+        await ChannelScreen.postInput.typeText('@');
+
+        // * Verify at-mention autocomplete list is displayed
+        await expect(Autocomplete.sectionAtMentionList).toExist();
+    });
+
+    it('MM-T3392_3 - should render channel mention component when typing ~ in post input', async () => {
+        // * Verify channel mention list is not displayed
+        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
+
+        // # Type "~" in post input to activate channel mention autocomplete
+        await ChannelScreen.postInput.typeText('~');
+
+        // * Verify channel mention autocomplete list is displayed
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
+    });
+
+    it('MM-T3392_4 - should render slash suggestion component when typing / in post input', async () => {
+        // * Verify slash suggestion list is not displayed
+        await expect(Autocomplete.flatSlashSuggestionList).not.toExist();
+
+        // # Type "/" in post input to activate slash suggestion autocomplete
+        await ChannelScreen.postInput.typeText('/');
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify slash suggestion autocomplete list is displayed
         await expect(Autocomplete.flatSlashSuggestionList).toExist();
     });
 });

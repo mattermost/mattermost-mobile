@@ -1,17 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See LICENSE.txt for license information.
-
 import React from 'react';
 import {
-    Pressable,
     type PressableAndroidRippleConfig,
     type StyleProp,
     StyleSheet,
     type ViewStyle,
 } from 'react-native';
+import {Pressable} from 'react-native-gesture-handler';
 
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import usePressableOpacityStyle from '@hooks/use_pressable_opacity';
@@ -22,6 +19,7 @@ type Props = {
     iconName: CompassIconName;
     onPress: () => void;
     style?: StyleProp<ViewStyle>;
+    testID?: string;
 }
 
 const baseStyle = StyleSheet.create({
@@ -35,7 +33,7 @@ const baseStyle = StyleSheet.create({
 
 const androidRippleConfig: PressableAndroidRippleConfig = {borderless: true, radius: 24, color: '#FFF'};
 
-const Action = ({disabled, iconName, onPress, style}: Props) => {
+const Action = ({disabled, iconName, onPress, style, testID}: Props) => {
     const pressableStyle = usePressableOpacityStyle([baseStyle.container, style]);
 
     return (
@@ -45,6 +43,7 @@ const Action = ({disabled, iconName, onPress, style}: Props) => {
             hitSlop={4}
             onPress={onPress}
             style={pressableStyle}
+            testID={testID}
         >
             <CompassIcon
                 color={changeOpacity('#fff', disabled ? 0.4 : 1)}

@@ -11,9 +11,9 @@ on:
         description: "The mattermost mobile version to test"
         required: true
 
-# Supersede an in-flight CMT run for the same ref (e.g. rapid release-branch pushes) so we don't
-# pay for overlapping multi-version matrices. Matterwick reaps the cancelled run's provisioned
-# servers on its workflow_run "completed" (cancelled) event, matched by commit SHA.
+# Supersede an in-flight CMT run for the same ref (e.g. rapid build-release-NNN pushes) so we
+# don't pay for overlapping multi-version matrices. Matterwick reaps the cancelled run's
+# provisioned servers on its workflow_run "completed" (cancelled) event, matched by commit SHA.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -27,7 +27,7 @@ jobs:
         run: echo '${{ inputs.CMT_MATRIX }}' > instance-details.json
 
       - name: cmt/upload-instance-details
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: instance-details.json
           path: instance-details.json
@@ -39,7 +39,7 @@ jobs:
       MOBILE_SHA: ${{ steps.repo.outputs.MOBILE_SHA }}
     steps:
       - name: cmt/checkout-mobile
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -81,7 +81,7 @@ jobs:
       - update-initial-status
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -96,55 +96,15 @@ jobs:
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip
 
-  # iOS: one job per server version. The latest version (matterwick marks it `latest: true`
-  # on the highest-semver entry) runs the whole detox suite at PR-default parallelism. Older
-  # versions run the smoke slice at parallelism 1 — a backward-compat sanity check.
-  #
-  # NOTE: job-level `if:` cannot access the matrix context per GitHub Actions docs, so we
-  # branch inside `with:` instead (where matrix IS in scope). When `matrix.server.latest` is
-  # truthy (only one entry has it), the whole-suite path/parallelism is selected; otherwise
-  # smoke. Entries from matterwick where the field is omitted (older versions, `omitempty`)
-  # are falsy and take the smoke branch.
-  detox-e2e:
-    name: mobile-cmt-ios${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
-    permissions:
-      contents: read
-      issues: write
-    uses: ./.github/workflows/e2e-ios-template.yml
-    needs:
-      - build-ios-simulator
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
-    secrets:
-      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
-      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
-      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
-      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
-    with:
-      run-type: "RELEASE"
-      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
-      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      tests-search-path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
-      parallelism: ${{ matrix.server.latest && 10 || 1 }}
-      testcase_failure_fatal: true
-
-  # Build the Android APK once; the per-version Android detox jobs below reuse it.
   build-android-apk:
     runs-on: ubuntu-latest-8-cores
     needs:
       - update-initial-status
-    permissions:
-      contents: read
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -152,11 +112,9 @@ jobs:
         run: docker system prune -af
 
       - name: Checkout Repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
-          # Don't leave the GITHUB_TOKEN on disk for the subsequent npm/Gradle build steps.
-          persist-credentials: false
 
       - name: Prepare Android Build
         uses: ./.github/actions/prepare-android-build
@@ -171,48 +129,73 @@ jobs:
           cd detox
           npm ci --prefer-offline --no-audit --no-fund
           npm install -g detox-cli
-          npm run e2e:android-inject-settings
           npm run e2e:android-build
 
       - name: Upload Android Build
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-build-files-${{ github.run_id }}
-          path: "android/app/build/**/*"
+          path: "android/app/build/outputs/apk/**/*.apk"
 
-  # Android: one job per server version. Same latest=full / older=smoke shape as iOS — see
-  # the detox-e2e job comment above for the why-not-if explanation.
-  detox-e2e-android:
+  # iOS phone: one matrix leg per server version. Matterwick marks the highest-semver entry with
+  # `latest: true`; that entry runs the whole detox suite at PR-default parallelism (full E2E on
+  # the version we're shipping). Older entries run the smoke slice at parallelism 1 (backward-
+  # compat sanity check). Job-level `if:` cannot access matrix context per GitHub Actions docs,
+  # so the latest-vs-smoke choice is made via expressions inside `with:` where matrix IS in scope.
+  detox-e2e:
+    name: mobile-cmt-ios${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
+    uses: ./.github/workflows/e2e-ios-template.yml
+    needs:
+      - build-ios-simulator
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
+    secrets: inherit
+    with:
+      run-type: "RELEASE"
+      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
+      parallelism: ${{ matrix.server.latest && '10' || '1' }}
+      testcase_failure_fatal: true
+
+  detox-ipad-e2e:
+    name: mobile-cmt-ipad-${{ matrix.server.version }}
+    uses: ./.github/workflows/e2e-ios-template.yml
+    needs:
+      - build-ios-simulator
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
+    secrets: inherit
+    with:
+      run-type: "RELEASE"
+      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      ios_device_name: "iPad Pro 13-inch (M5)"
+      ios_device_os_name: "iOS 26.2"
+      search_path: "detox/e2e/test/products/channels/ipad"
+      parallelism: "1"
+      detox_config: "ios.ipad.debug"
+
+  # Android: same latest=full / older=smoke shape as detox-e2e (iOS phone) — see that job's
+  # comment for the why-not-if explanation.
+  detox-android-e2e:
     name: mobile-cmt-android${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
-    permissions:
-      contents: read
-      issues: write
     uses: ./.github/workflows/e2e-android-template.yml
     needs:
       - build-android-apk
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
-    secrets:
-      MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
-      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
-      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
-      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
-      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
-      MM_MOBILE_STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
-      MM_MOBILE_STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
-      MM_MOBILE_STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+    secrets: inherit
     with:
       run-android-tests: true
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      tests-search-path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
-      parallelism: ${{ matrix.server.latest && 10 || 1 }}
+      search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
+      parallelism: ${{ matrix.server.latest && '10' || '1' }}
       testcase_failure_fatal: true
 
   update-final-status:
@@ -221,9 +204,22 @@ jobs:
     needs:
       - calculate-commit-hash
       - detox-e2e
-      - detox-e2e-android
+      - detox-android-e2e
+      - detox-ipad-e2e
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - name: Determine overall status
+        id: status
+        run: |
+          # Check if all jobs passed
+          if [[ "${{ needs.detox-e2e.result }}" == "success" && \
+                "${{ needs.detox-android-e2e.result }}" == "success" && \
+                "${{ needs.detox-ipad-e2e.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -231,15 +227,11 @@ jobs:
           commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
           context: e2e/compatibility-matrix-testing
           description: Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version
-          # detox-e2e / detox-e2e-android are matrix jobs over CMT_MATRIX; their .outputs are
-          # not aggregated across legs, so gate on the job result instead. testcase_failure_fatal
-          # makes any version leg with test failures fail its run, so .result is 'failure' if any
-          # iOS or Android version leg failed. (The latest=full / older=smoke split happens inside
-          # `with:` via expressions; from .result's perspective it's still one job per platform.)
-          status: ${{ (needs.detox-e2e.result == 'success' && needs.detox-e2e-android.result == 'success') && 'success' || 'failure' }}
+          status: ${{ steps.status.outputs.status }}
           target_url: ${{ needs.detox-e2e.outputs.TARGET_URL }}
 
       # Instance cleanup is handled by Matterwick: when this workflow completes, GitHub sends a
       # workflow_run "completed" event and Matterwick destroys the servers it provisioned for
-      # this run (matched by commit SHA). No in-workflow cleanup call is needed.
+      # this run (matched by commit SHA). No in-workflow cleanup call is needed; the prior
+      # /cleanup_e2e HTTP endpoint has been removed on the Matterwick side.
 

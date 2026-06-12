@@ -363,6 +363,17 @@ describe('navigation', () => {
             expect(NavigationStore.isScreenInStack).toHaveBeenCalledWith(Screens.BOTTOM_SHEET);
             expect(emitSpy).not.toHaveBeenCalled();
         });
+
+        it('should fall back to GENERIC_BOTTOM_SHEET when only the generic variant is in stack', async () => {
+            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+            const waitSpy = jest.spyOn(NavigationStore, 'waitUntilScreensIsRemoved').mockResolvedValue();
+            jest.spyOn(NavigationStore, 'isScreenInStack').mockImplementation((screen) => screen === Screens.GENERIC_BOTTOM_SHEET);
+
+            await dismissBottomSheet();
+
+            expect(emitSpy).toHaveBeenCalledWith(Events.CLOSE_BOTTOM_SHEET);
+            expect(waitSpy).toHaveBeenCalledWith(Screens.GENERIC_BOTTOM_SHEET);
+        });
     });
 
     describe('navigateToRoot', () => {

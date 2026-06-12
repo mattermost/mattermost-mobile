@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {NotificationSettingsScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 class PushNotificationSettingsScreen {
     testID = {
         pushNotificationSettingsScreen: 'push_notification_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'push_notification_settings.scroll_view',
         allNewMessagesOption: 'push_notification_settings.all_new_messages.option',
         allNewMessagesOptionSelected: 'push_notification_settings.all_new_messages.option.selected',
@@ -27,7 +27,17 @@ class PushNotificationSettingsScreen {
     };
 
     pushNotificationSettingsScreen = element(by.id(this.testID.pushNotificationSettingsScreen));
-    backButton = element(by.id(this.testID.backButton));
+
+    // expo-router native stack screen — the custom NavigationHeader's
+    // 'navigation.header.back' testID is not rendered here. iOS uses
+    // `accessibilityLabel="Back"`, Android uses the Toolbar's default
+    // navigation-icon contentDescription "Navigate up".
+    get backButton(): Detox.NativeElement {
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.label('Navigate up')).atIndex(0);
+    }
+
     scrollView = element(by.id(this.testID.scrollView));
     allNewMessagesOption = element(by.id(this.testID.allNewMessagesOption));
     allNewMessagesOptionSelected = element(by.id(this.testID.allNewMessagesOptionSelected));
@@ -58,8 +68,11 @@ class PushNotificationSettingsScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
-        await expect(this.pushNotificationSettingsScreen).not.toBeVisible();
+        // Use platform-native back chevron: Android via device.pressBack(),
+        // iOS via by.label('Back'). The custom NavigationHeader's testID
+        // does not exist on this screen (expo-router native stack).
+        await tapNativeBackButton();
+        await waitFor(this.pushNotificationSettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
     togglePushThreadsFollowingOptionOn = async () => {

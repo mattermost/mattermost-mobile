@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
-import Animated, {Easing, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {toggleCollapseCategory} from '@actions/local/category';
 import CompassIcon from '@components/compass_icon';
@@ -54,17 +54,10 @@ const CategoryHeader = ({category, hasChannels}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
-    const collapsed = useSharedValue(category.collapsed);
+    const rotate = useSharedValue(category.collapsed ? -90 : 0);
 
     // Action
     const toggleCollapse = useCallback(() => toggleCollapseCategory(serverUrl, category.id), [category.id, serverUrl]);
-
-    const rotate = useDerivedValue(() => {
-        return withTiming(collapsed.value ? -90 : 0, {
-            duration: 100,
-            easing: Easing.linear,
-        });
-    });
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
@@ -73,7 +66,11 @@ const CategoryHeader = ({category, hasChannels}: Props) => {
     });
 
     useEffect(() => {
-        collapsed.value = category.collapsed;
+        rotate.value = withTiming(category.collapsed ? -90 : 0, {
+            duration: 100,
+            easing: Easing.linear,
+        });
+        return () => cancelAnimation(rotate);
 
     // We only want to update the shared value when `category.collapsed` changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps

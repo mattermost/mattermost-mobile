@@ -12,6 +12,8 @@ import {apiUploadFile, getResponseFromError} from './common';
 // System
 // See https://api.mattermost.com/#tag/system
 //
+
+/* eslint-disable no-console */
 // Exported API function should have the following:
 // - documented using JSDoc
 // - meaningful description
@@ -20,14 +22,23 @@ import {apiUploadFile, getResponseFromError} from './common';
 // - return value defined by `@return`
 // ****************************************************************
 
-/* eslint-disable no-console */
-
 /**
  * Check system health.
  * @param {string} baseUrl - the base server URL
  */
 export const apiCheckSystemHealth = async (baseUrl: string): Promise<any> => {
-    const {data} = await apiPingServerStatus(baseUrl);
+    const result = await apiPingServerStatus(baseUrl);
+
+    // apiPingServerStatus returns {data} on success, {error, status} on failure.
+    // Guard against the error path so callers get a descriptive error, not a TypeError.
+    if (!result || result.error || !result.data) {
+        const detail = result?.error
+            ? JSON.stringify(result.error)
+            : 'No response from server';
+        throw new Error(`apiCheckSystemHealth: server at "${baseUrl}" is not healthy. ${detail}`);
+    }
+
+    const {data} = result;
     jestExpect(data.status).toEqual('OK');
     jestExpect(data.database_status).toEqual('OK');
     jestExpect(data.filestore_status).toEqual('OK');
@@ -103,21 +114,8 @@ export const apiGetConfig = async (baseUrl: string): Promise<any> => {
  */
 export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<any> => {
     try {
-        // Get current config first
-        const {config: currentConfig} = await apiGetConfig(baseUrl);
-
-        // Simple deep merge - replace matching properties
-        const mergedConfig = {...currentConfig};
-        Object.keys(newConfig).forEach((section) => {
-            if (typeof newConfig[section] === 'object' && newConfig[section] !== null) {
-                mergedConfig[section] = {...mergedConfig[section], ...newConfig[section]};
-            } else {
-                mergedConfig[section] = newConfig[section];
-            }
-        });
-
-        // Send the merged config
-        const response = await client.put(`${baseUrl}/api/v4/config`, mergedConfig);
+        // Use config/patch endpoint for partial updates — no need to GET+merge+PUT the full config
+        const response = await client.put(`${baseUrl}/api/v4/config/patch`, newConfig);
         return {config: response.data};
     } catch (err) {
         return getResponseFromError(err);
@@ -376,27 +374,61 @@ export const apiUploadLicense = async (baseUrl: string): Promise<any> => {
     return apiUploadFile('license', absFilePath, {url: `${baseUrl}/api/v4/license`, method: 'POST'});
 };
 
+// DISABLED: Do not request trial license in tests — tests should run with Free edition only.
+// Keeping code commented out as reference; remove this function if trial licensing is never needed.
+// /**
+//  * Request a trial Enterprise license from the Mattermost license server.
+//  * See https://api.mattermost.com/#operation/RequestTrialLicense
+//  * @param {string} baseUrl - the base server URL
+//  * @return {Object} returns response on success or {error, status} on error
+//  */
+// export const apiRequestTrialLicense = async (baseUrl: string): Promise<any> => {
+//     try {
+//         const response = await client.post(`${baseUrl}/api/v4/trial-license`, {
+//             users: 1000,
+//             terms_accepted: true,
+//             receive_emails_accepted: true,
+//             contact_name: 'E2E Test',
+//             contact_email: 'admin@example.mattermost.com',
+//             company_name: 'Mattermost E2E',
+//             company_country: 'US',
+//             company_size: 'ONE_TO_50',
+//         });
+//         return {data: response.data};
+//     } catch (err) {
+//         return getResponseFromError(err);
+//     }
+// };
+
 /**
  * Get client license.
- * If no license, try to upload if license file is available at "/support/fixtures/mattermost-license.txt".
- * @return {Object} returns {license} on success or upload when no license or get updated license.
+ * If no license, try to upload a license file first.
+ * Does NOT request trial license — tests run with Free edition features only.
+ * @param {string} baseUrl - the base server URL
+ * @return {Object} returns {license} on success or the unlicensed state
  */
 export const getClientLicense = async (baseUrl: string): Promise<any> => {
-    const {license} = await apiGetClientLicense(baseUrl);
-    if (license.IsLicensed === 'true') {
+    const licenseResponse = await apiGetClientLicense(baseUrl);
+    if (licenseResponse.error) {
+        return licenseResponse;
+    }
+
+    const {license} = licenseResponse;
+    if (license?.IsLicensed === 'true') {
         return {license};
     }
 
-    // Upload a license if server is currently not loaded with license
-    const response = await apiUploadLicense(baseUrl);
-    if (response.error) {
-        console.warn(response.error.message);
-        return {license};
+    // Try uploading a license file first (e.g. from fixtures)
+    const uploadResponse = await apiUploadLicense(baseUrl);
+    if (!uploadResponse.error) {
+        const out = await apiGetClientLicense(baseUrl);
+        if (out.license?.IsLicensed === 'true') {
+            return {license: out.license};
+        }
     }
 
-    // Get an updated client license
-    const out = await apiGetClientLicense(baseUrl);
-    return {license: out.license};
+    // Do not request trial license — tests should work with Free edition only
+    return {license};
 };
 
 export const System = {
@@ -413,6 +445,8 @@ export const System = {
     apiGetRemoteClusters,
     apiPatchConfig,
     apiPingServerStatus,
+
+    // apiRequestTrialLicense, // DISABLED: Do not request trial license in tests
     apiRequireLicense,
     apiRequireLicenseForFeature,
     apiRequireSMTPServer,

@@ -31,7 +31,8 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
 const observeCategoryChannels = (category: CategoryModel, myChannels: Observable<MyChannelModel[]>) => {
-    const channels = category.channels.observeWithColumns(['create_at', 'display_name']);
+    // observe delete_at to react to channel archive/unarchive
+    const channels = category.channels.observeWithColumns(['create_at', 'display_name', 'delete_at']);
     const manualSort = category.categoryChannelsBySortOrder.observeWithColumns(['sort_order']);
     return myChannels.pipe(
         switchMap((my) => combineLatest([of$(my), channels, manualSort])),

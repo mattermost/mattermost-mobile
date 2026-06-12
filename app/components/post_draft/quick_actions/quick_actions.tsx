@@ -74,10 +74,12 @@ export default function QuickActions({
     location,
 }: Props) {
     const atDisabled = value.endsWith('@');
+    const tildeDisabled = value.endsWith('~');
     const slashDisabled = value.length > 0;
     const showBoRAction = isBoREnabled && updatePostBoRStatus && location === Screens.CHANNEL;
 
     const atInputActionTestID = `${testID}.at_input_action`;
+    const tildeInputActionTestID = `${testID}.tilde_input_action`;
     const slashInputActionTestID = `${testID}.slash_input_action`;
     const emojiActionTestID = `${testID}.emoji_action`;
     const attachmentActionTestID = `${testID}.attachment_action`;
@@ -107,6 +109,13 @@ export default function QuickActions({
                 testID={atInputActionTestID}
                 disabled={atDisabled}
                 inputType='at'
+                updateValue={updateValue}
+                focus={focus}
+            />
+            <InputAction
+                testID={tildeInputActionTestID}
+                disabled={tildeDisabled}
+                inputType='tilde'
                 updateValue={updateValue}
                 focus={focus}
             />

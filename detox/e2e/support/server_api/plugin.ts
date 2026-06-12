@@ -36,11 +36,15 @@ const prepackagedPlugins = new Set([
 ]);
 
 /**
- * Get the latest release version from GitHub releases
+ * Get the latest release version from GitHub releases.
+ * On API failure (rate limit / outage / private repo), falls back to the
+ * caller-supplied last-known-good version so CI can keep moving instead of
+ * failing the entire provisioning step on a transient GitHub blip.
  * @param {string} repo - GitHub repository in format 'owner/repo'
+ * @param {string} fallback - version to return if the GitHub API call fails
  * @return {Promise<string>} returns latest version string without 'v' prefix
  */
-export const apiGetLatestPluginVersion = async (repo: string): Promise<string> => {
+export const apiGetLatestPluginVersion = async (repo: string, fallback = '0.10.3'): Promise<string> => {
     try {
         const response = await client.get(`https://api.github.com/repos/${repo}/releases/latest`);
         const tagName = response.data.tag_name;
@@ -48,19 +52,44 @@ export const apiGetLatestPluginVersion = async (repo: string): Promise<string> =
         // Remove 'v' prefix if present (e.g., 'v0.10.2' -> '0.10.2')
         return tagName.startsWith('v') ? tagName.substring(1) : tagName;
     } catch (err) {
-        // Fallback to hardcoded version if API fails
-        return '0.10.3';
+        return fallback;
     }
 };
+
+// Agents Plugin Constants — version resolved at call-time via GitHub releases.
+// fallbackVersion is the last-known-good if the GitHub API is unavailable.
+export const AgentsPlugin = {
+    id: 'mattermost-ai',
+    repo: 'mattermost/mattermost-plugin-agents',
+    fallbackVersion: '1.14.0',
+
+    async getLatestDownloadUrl() {
+        const v = await apiGetLatestPluginVersion(this.repo, this.fallbackVersion);
+        return `https://github.com/${this.repo}/releases/download/v${v}/mattermost-plugin-agents-v${v}-linux-amd64.tar.gz`;
+    },
+} as const;
+
+// Calls Plugin Constants — version resolved at call-time via GitHub releases.
+export const CallsPlugin = {
+    id: 'com.mattermost.calls',
+    repo: 'mattermost/mattermost-plugin-calls',
+    fallbackVersion: '1.11.5',
+
+    async getLatestDownloadUrl() {
+        const v = await apiGetLatestPluginVersion(this.repo, this.fallbackVersion);
+        return `https://github.com/${this.repo}/releases/download/v${v}/mattermost-plugin-calls-v${v}-linux-amd64.tar.gz`;
+    },
+} as const;
 
 // Demo Plugin Constants
 export const DemoPlugin = {
     id: 'com.mattermost.demo-plugin',
     repo: 'mattermost/mattermost-plugin-demo',
+    fallbackVersion: '0.11.1',
 
     // Get download URL for latest version (linux-amd64 for CI compatibility)
     async getLatestDownloadUrl() {
-        const latestVersion = await apiGetLatestPluginVersion(this.repo);
+        const latestVersion = await apiGetLatestPluginVersion(this.repo, this.fallbackVersion);
 
         // return `https://github.com/${this.repo}/releases/download/v${latestVersion}/mattermost-plugin-demo-v${latestVersion}.tar.gz`;
         return `https://github.com/${this.repo}/releases/download/v${latestVersion}/mattermost-plugin-demo-v${latestVersion}-linux-amd64.tar.gz`;
@@ -431,13 +460,72 @@ export const apiUploadAndEnablePlugin = async (options: {
     }
 };
 
+/**
+ * Install a plugin from the Marketplace.
+ * See https://api.mattermost.com/#operation/InstallMarketplacePlugin
+ * @param {string} baseUrl - the base server URL
+ * @param {string} pluginId - the plugin ID to install from Marketplace
+ * @return {Object} returns {plugin} on success or {error, status} on error
+ */
+export const apiInstallPluginFromMarketplace = async (baseUrl: string, pluginId: string): Promise<any> => {
+    try {
+        const response = await client.post(`${baseUrl}/api/v4/plugins/marketplace`, {id: pluginId});
+        return {plugin: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Ensure a plugin is installed and active, installing from Marketplace if needed.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} pluginId - the plugin ID
+ * @return {Object} returns {isInstalled, isActive} status
+ */
+export const apiEnsurePluginInstalled = async (baseUrl: string, pluginId: string): Promise<any> => {
+    // Check if already installed
+    const status = await apiGetPluginStatus(baseUrl, pluginId);
+    if (status.isActive) {
+        return status;
+    }
+
+    if (status.isInstalled && !status.isActive) {
+        // eslint-disable-next-line no-console
+        console.log(`[apiEnsurePluginInstalled] Plugin ${pluginId} installed but inactive, enabling...`);
+        await apiEnablePluginById(baseUrl, pluginId);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        return apiGetPluginStatus(baseUrl, pluginId);
+    }
+
+    // Not installed — try Marketplace
+    // eslint-disable-next-line no-console
+    console.log(`[apiEnsurePluginInstalled] Plugin ${pluginId} not installed, installing from Marketplace...`);
+    const installResult = await apiInstallPluginFromMarketplace(baseUrl, pluginId);
+    if (installResult.error) {
+        // eslint-disable-next-line no-console
+        console.warn(`[apiEnsurePluginInstalled] Marketplace install failed for ${pluginId}:`, installResult.error.message || installResult.error);
+        return {isInstalled: false, isActive: false};
+    }
+
+    // Enable after install
+    await apiEnablePluginById(baseUrl, pluginId);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const finalStatus = await apiGetPluginStatus(baseUrl, pluginId);
+    // eslint-disable-next-line no-console
+    console.log(`[apiEnsurePluginInstalled] Plugin ${pluginId}: installed=${finalStatus.isInstalled}, active=${finalStatus.isActive}`);
+    return finalStatus;
+};
+
 export const Plugin = {
     apiDisableNonPrepackagedPlugins,
     apiDisablePluginById,
     apiEnablePluginById,
+    apiEnsurePluginInstalled,
     apiGetAllPlugins,
     apiGetLatestPluginVersion,
     apiGetPluginStatus,
+    apiInstallPluginFromMarketplace,
     apiInstallPluginFromUrl,
     apiRemovePluginById,
     apiUploadPlugin,
