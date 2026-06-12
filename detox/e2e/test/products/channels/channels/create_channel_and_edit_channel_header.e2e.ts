@@ -75,8 +75,7 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await CreateOrEditChannelScreen.purposeInput.replaceText(purpose);
         await CreateOrEditChannelScreen.headerInput.replaceText(header);
         await CreateOrEditChannelScreen.createButton.tap();
-        await waitFor(ChannelScreen.scheduledPostTooltipCloseButton).toExist().withTimeout(timeouts.FOUR_SEC);
-        await ChannelScreen.scheduledPostTooltipCloseButton.tap();
+        await ChannelScreen.dismissScheduledPostTooltip();
 
         // * Verify on newly created public channel
         await ChannelScreen.toBeVisible();

@@ -271,6 +271,8 @@ const OptionItem = ({
         );
     }
 
+    const isTouchable = (Object.values(TouchableOptionTypes) as string[]).includes(type);
+
     const onPress = useCallback(() => {
         action?.(value || '');
     }, [value, action]);
@@ -309,7 +311,7 @@ const OptionItem = ({
 
     const component = (
         <View
-            testID={testID}
+            testID={isTouchable ? undefined : testID}
             style={containerStyle}
             onLayout={onLayout}
         >
@@ -351,9 +353,12 @@ const OptionItem = ({
             }
         </View>
     );
-    if ((Object.values(TouchableOptionTypes) as string[]).includes(type)) {
+    if (isTouchable) {
         return (
-            <TouchableOpacity onPress={onPress}>
+            <TouchableOpacity
+                onPress={onPress}
+                testID={testID}
+            >
                 {component}
             </TouchableOpacity>
         );

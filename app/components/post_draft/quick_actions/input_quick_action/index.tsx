@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useKeyboardState} from '@context/keyboard_state';
@@ -14,7 +14,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 type Props = {
     testID?: string;
     disabled?: boolean;
-    inputType: 'at' | 'slash';
+    inputType: 'at' | 'slash' | 'tilde';
     updateValue: React.Dispatch<React.SetStateAction<string>>;
     focus: () => void;
 }
@@ -63,6 +63,9 @@ export default function InputQuickAction({
 
                     newValue = v.slice(0, currentCursorPosition) + insertedText + v.slice(currentCursorPosition);
                     newCursorPosition = currentCursorPosition + insertedText.length;
+                } else if (inputType === 'tilde') {
+                    newValue = v.slice(0, currentCursorPosition) + '~' + v.slice(currentCursorPosition);
+                    newCursorPosition = currentCursorPosition + 1;
                 } else {
                     newValue = v.slice(0, currentCursorPosition) + '/' + v.slice(currentCursorPosition);
                     newCursorPosition = currentCursorPosition + 1;
@@ -84,8 +87,10 @@ export default function InputQuickAction({
                         return `${v} @`;
                     }
                     return `${v}@`;
+                } else if (inputType === 'tilde') {
+                    return `${v}~`;
                 }
-                return '/';
+                return `${v}/`;
             });
         }
         focusWithEmojiDismiss();
@@ -96,7 +101,14 @@ export default function InputQuickAction({
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const style = getStyleSheet(theme);
-    const iconName = inputType === 'at' ? inputType : 'slash-forward-box-outline';
+    let iconName: CompassIconName;
+    if (inputType === 'at') {
+        iconName = 'at';
+    } else if (inputType === 'tilde') {
+        iconName = 'product-channels';
+    } else {
+        iconName = 'slash-forward-box-outline';
+    }
     const iconColor = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
 
     return (

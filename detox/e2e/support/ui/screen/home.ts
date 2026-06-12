@@ -5,8 +5,8 @@ import {
     AccountScreen,
     LoginScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {device, expect, waitFor} from 'detox';
 
 class HomeScreen {
     testID = {
@@ -24,7 +24,8 @@ class HomeScreen {
     accountTab = element(by.id(this.testID.accountTab));
 
     toBeVisible = async () => {
-        await waitFor(this.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
+        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+        await waitFor(this.channelListTab).toExist().withTimeout(timeout);
 
         return this.channelListTab;
     };
@@ -38,6 +39,25 @@ class HomeScreen {
 
     logout = async (serverDisplayName: string | null = null) => {
         try {
+            if (isIos()) {
+                // On iOS, tests can end with keyboard open, autocomplete showing, or
+                // mid-channel — all of which make the account tab non-hittable.
+                // Tapping the home tab first navigates to channel list AND dismisses
+                // any open keyboard (iOS dismisses the soft keyboard on tab-bar taps).
+                try {
+                    await waitFor(this.channelListTab).toExist().withTimeout(timeouts.TWO_SEC);
+
+                    // iOS 26: bottom tab bar items may not pass the 100% visibility
+                    // threshold (gesture-bar chrome clips them).
+                    await device.disableSynchronization();
+                    try {
+                        await this.channelListTab.tap();
+                    } finally {
+                        await device.enableSynchronization();
+                    }
+                    await wait(timeouts.ONE_SEC);
+                } catch { /* tab bar inaccessible — proceed anyway */ }
+            }
             await AccountScreen.open();
             await AccountScreen.logout(serverDisplayName);
             await expect(this.channelListTab).not.toBeVisible();

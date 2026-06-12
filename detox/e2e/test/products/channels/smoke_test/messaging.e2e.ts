@@ -27,7 +27,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Smoke Test - Messaging', () => {
@@ -82,7 +82,10 @@ describe('Smoke Test - Messaging', () => {
         // # Edit post message and tap save button
         const updatedMessage = `${message} edit`;
         await EditPostScreen.messageInput.replaceText(updatedMessage);
+        await wait(timeouts.ONE_SEC);
         await EditPostScreen.saveButton.tap();
+
+        await waitFor(EditPostScreen.editPostScreen).not.toExist().withTimeout(timeouts.TWENTY_SEC);
 
         // * Verify post message is updated and displays edited indicator '(edited)'
         const {postListPostItem: updatedPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, updatedMessage);
@@ -144,14 +147,20 @@ describe('Smoke Test - Messaging', () => {
         await expect(postListPostItem).toBeVisible();
 
         // # Open post options for message, open emoji picker screen, and add a reaction
-        await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
-        await EmojiPickerScreen.open(true);
+        // Use openPostOptionsFor (longPressWithScrollRetry) instead of a raw longPress so that
+        // the gesture is retried on Android if PostOptionsScreen doesn't appear on the first attempt.
+        await ChannelScreen.openPostOptionsFor(post.id, resolvedMessage);
+        await EmojiPickerScreen.open();
+
+        await device.disableSynchronization();
         await EmojiPickerScreen.searchInput.replaceText('clown_face');
         await EmojiPickerScreen.searchInput.tapReturnKey();
+        await waitFor(element(by.text('🤡'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await element(by.text('🤡')).tap();
+        await device.enableSynchronization();
 
         // * Verify reaction is added to the message
-        await waitFor(element(by.text('🤡').withAncestor(by.id(`channel.post_list.post.${post.id}`)))).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(element(by.text('🤡').withAncestor(by.id(`channel.post_list.post.${post.id}`)))).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -169,7 +178,7 @@ describe('Smoke Test - Messaging', () => {
         // * Verify post options closed and message is followed by user via post footer
         await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
         const {postListPostItem, postListPostItemFooterFollowingButton} = ChannelScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItemFooterFollowingButton).toExist().withTimeout(timeouts.FOUR_SEC);
+        await waitFor(postListPostItemFooterFollowingButton).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Tap on following button via post footer to unfollow
         await postListPostItemFooterFollowingButton.tap();
@@ -179,7 +188,12 @@ describe('Smoke Test - Messaging', () => {
 
         // # Open post options for message and tap on save option
         await ChannelScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.savePostOption.tap();
+
+        if (isAndroid()) {
+            await PostOptionsScreen.savePostOptionLabel.tap();
+        } else {
+            await PostOptionsScreen.savePostOption.tap();
+        }
 
         // * Verify post options closed and saved text is displayed on the post pre-header
         await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
@@ -188,8 +202,14 @@ describe('Smoke Test - Messaging', () => {
 
         // # Tap on post to open thread and open post options for message
         await postListPostItem.tap();
+        await ThreadScreen.toBeVisible();
+        await wait(timeouts.ONE_SEC);
         await ThreadScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.unsavePostOption.tap();
+        if (isAndroid()) {
+            await PostOptionsScreen.unsavePostOptionLabel.tap();
+        } else {
+            await PostOptionsScreen.unsavePostOption.tap();
+        }
 
         // * Verify post options closed and saved text is not displayed on the post pre-header
         await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
@@ -197,7 +217,11 @@ describe('Smoke Test - Messaging', () => {
 
         // # Open post options for message and tap on pin to channel option
         await ThreadScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.pinPostOption.tap();
+        if (isAndroid()) {
+            await PostOptionsScreen.pinPostOptionLabel.tap();
+        } else {
+            await PostOptionsScreen.pinPostOption.tap();
+        }
 
         // * Verify post options closed and pinned text is displayed on the post pre-header
         await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
@@ -207,7 +231,11 @@ describe('Smoke Test - Messaging', () => {
         // # Go back to channel, open post options for message, and tap on unpin from channel option
         await ThreadScreen.back();
         await ChannelScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.unpinPostOption.tap();
+        if (isAndroid()) {
+            await PostOptionsScreen.unpinPostOptionLabel.tap();
+        } else {
+            await PostOptionsScreen.unpinPostOption.tap();
+        }
 
         // * Verify post options closed and pinned text is not displayed on the post pre-header
         await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);

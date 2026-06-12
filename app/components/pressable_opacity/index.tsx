@@ -11,9 +11,10 @@ type Props = {
     children: React.ReactNode;
     onPress: () => void;
     style?: StyleProp<ViewStyle>;
+    testID?: string;
 }
 
-export default function PressableOpacity({children, onPress, style}: Props) {
+export default function PressableOpacity({children, onPress, style, testID}: Props) {
     const cancelOpacity = useSharedValue(1);
 
     const cancelAnimatedStyle = useAnimatedStyle(() => {
@@ -36,6 +37,7 @@ export default function PressableOpacity({children, onPress, style}: Props) {
             onPressOut={cancelPressOut}
             onPress={onPress}
             style={[style]}
+            testID={testID}
         >
             <Animated.View style={cancelAnimatedStyle}>
                 {children}

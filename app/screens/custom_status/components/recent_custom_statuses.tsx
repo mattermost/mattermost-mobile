@@ -64,6 +64,7 @@ const RecentCustomStatuses = ({onHandleClear, onHandleSuggestionClick, recentCus
                             separator={index !== recentCustomStatuses.length - 1}
                             duration={status.duration}
                             expires_at={status.expires_at}
+                            testIdPrefix='custom_status.recent_custom_status_suggestion'
                         />
                     ))}
                 </View>
