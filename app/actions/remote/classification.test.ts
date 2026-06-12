@@ -14,6 +14,7 @@ import type {Database} from '@nozbe/watermelondb';
 jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
     logError: jest.fn(),
+    logWarning: jest.fn(),
 }));
 
 jest.mock('@queries/servers/system', () => ({

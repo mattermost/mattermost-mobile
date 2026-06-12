@@ -10,6 +10,7 @@ import {
     queryPropertyFieldsByGroupId,
     queryPropertyValuesByTargetId,
 } from '@queries/servers/properties';
+import {logError} from '@utils/log';
 
 import type {PropertyValueModel} from '@database/models/server';
 import type Model from '@nozbe/watermelondb/Model';
@@ -22,22 +23,29 @@ const {SERVER: {PROPERTY_VALUE}} = MM_TABLES;
  * soft-deleted). Scoped by group_id so fields belonging to other groups in the
  * same table are left untouched.
  */
-export async function syncPropertyFieldsByGroupId(serverUrl: string, groupId: string, fields: PropertyField[]) {
-    const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+export async function syncPropertyFieldsByGroupId(serverUrl: string, groupId: string, fields: PropertyField[], prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    const activeFields = fields.filter((f) => f.delete_at === 0);
-    const activeIds = new Set(activeFields.map((f) => f.id));
+        const activeFields = fields.filter((f) => f.delete_at === 0);
+        const activeIds = new Set(activeFields.map((f) => f.id));
 
-    const prepared = activeFields.length ? await operator.handlePropertyFields({fields: activeFields, prepareRecordsOnly: true}) : [];
+        const upserts = await operator.handlePropertyFields({fields: activeFields, prepareRecordsOnly: true});
 
-    const existing = await queryPropertyFieldsByGroupId(database, groupId).fetch();
-    const stale = existing.
-        filter((r) => !activeIds.has(r.id)).
-        map((r) => r.prepareDestroyPermanently());
+        const existing = await queryPropertyFieldsByGroupId(database, groupId).fetch();
+        const deletions = existing.
+            filter((r) => !activeIds.has(r.id)).
+            map((r) => r.prepareDestroyPermanently());
 
-    const batch = [...prepared, ...stale];
-    if (batch.length) {
-        await operator.batchRecords(batch, 'syncPropertyFieldsByGroupId');
+        const models: Model[] = [...upserts, ...deletions];
+        if (models.length && !prepareRecordsOnly) {
+            await operator.batchRecords(models, 'syncPropertyFieldsByGroupId');
+        }
+
+        return {models};
+    } catch (error) {
+        logError('syncPropertyFieldsByGroupId', error);
+        return {error};
     }
 }
 
@@ -47,22 +55,29 @@ export async function syncPropertyFieldsByGroupId(serverUrl: string, groupId: st
  * soft-deleted). Scoped by target_id so values for other targets are left
  * untouched.
  */
-export async function syncPropertyValuesByTargetId(serverUrl: string, targetId: string, values: Array<PropertyValue<string>>) {
-    const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+export async function syncPropertyValuesByTargetId(serverUrl: string, targetId: string, values: Array<PropertyValue<string>>, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    const activeValues = values.filter((v) => v.delete_at === 0);
-    const activeIds = new Set(activeValues.map((v) => v.id));
+        const activeValues = values.filter((v) => v.delete_at === 0);
+        const activeIds = new Set(activeValues.map((v) => v.id));
 
-    const prepared = activeValues.length ? await operator.handlePropertyValues({values: activeValues, prepareRecordsOnly: true}) : [];
+        const upserts = await operator.handlePropertyValues({values: activeValues, prepareRecordsOnly: true});
 
-    const existing = await queryPropertyValuesByTargetId(database, targetId).fetch();
-    const stale = existing.
-        filter((r) => !activeIds.has(r.id)).
-        map((r) => r.prepareDestroyPermanently());
+        const existing = await queryPropertyValuesByTargetId(database, targetId).fetch();
+        const deletions = existing.
+            filter((r) => !activeIds.has(r.id)).
+            map((r) => r.prepareDestroyPermanently());
 
-    const batch = [...prepared, ...stale];
-    if (batch.length) {
-        await operator.batchRecords(batch, 'syncPropertyValuesByTargetId');
+        const models: Model[] = [...upserts, ...deletions];
+        if (models.length && !prepareRecordsOnly) {
+            await operator.batchRecords(models, 'syncPropertyValuesByTargetId');
+        }
+
+        return {models};
+    } catch (error) {
+        logError('syncPropertyValuesByTargetId', error);
+        return {error};
     }
 }
 
@@ -70,20 +85,27 @@ export async function syncPropertyValuesByTargetId(serverUrl: string, targetId: 
  * Remove all locally stored classification fields and their values. Used when
  * the feature flag is disabled or the server reports no classification fields.
  */
-export async function clearClassificationData(serverUrl: string) {
-    const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+export async function clearClassificationData(serverUrl: string, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    const fields = await queryClassificationFields(database).fetch();
-    const fieldIds = fields.map((f) => f.id);
+        const fields = await queryClassificationFields(database).fetch();
+        const fieldIds = fields.map((f) => f.id);
 
-    const values = fieldIds.length ? await database.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('field_id', Q.oneOf(fieldIds))).fetch() : [];
+        const values = fieldIds.length ? await database.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('field_id', Q.oneOf(fieldIds))).fetch() : [];
 
-    const batch: Model[] = [
-        ...fields.map((f) => f.prepareDestroyPermanently()),
-        ...values.map((v) => v.prepareDestroyPermanently()),
-    ];
+        const models: Model[] = [
+            ...fields.map((f) => f.prepareDestroyPermanently()),
+            ...values.map((v) => v.prepareDestroyPermanently()),
+        ];
 
-    if (batch.length) {
-        await operator.batchRecords(batch, 'clearClassificationData');
+        if (models.length && !prepareRecordsOnly) {
+            await operator.batchRecords(models, 'clearClassificationData');
+        }
+
+        return {models};
+    } catch (error) {
+        logError('clearClassificationData', error);
+        return {error};
     }
 }
