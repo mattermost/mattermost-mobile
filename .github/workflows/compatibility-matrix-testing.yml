@@ -101,11 +101,17 @@ jobs:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip
 
-  # iOS smoke run, one job per server version (reuses the single simulator build above).
+  # iOS: one job per server version. The latest version (matterwick marks it `latest: true`
+  # on the highest-semver entry) runs the whole detox suite at PR-default parallelism. Older
+  # versions run the smoke slice at parallelism 1 — a backward-compat sanity check.
+  #
+  # NOTE: job-level `if:` cannot access the matrix context per GitHub Actions docs, so we
+  # branch inside `with:` instead (where matrix IS in scope). When `matrix.server.latest` is
+  # truthy (only one entry has it), the whole-suite path/parallelism is selected; otherwise
+  # smoke. Entries from matterwick where the field is omitted (older versions, `omitempty`)
+  # are falsy and take the smoke branch.
   detox-e2e:
-    name: mobile-cmt-ios-${{ matrix.server.version }}
-    # Least-privilege token for the reusable workflow: checkout (read) + the PR-comment
-    # report step (issues:write). No pull-requests:* needed for issues.createComment.
+    name: mobile-cmt-ios${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
     permissions:
       contents: read
       issues: write
@@ -115,8 +121,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
-    # Pass only the secrets the iOS template uses, instead of secrets: inherit (which would
-    # expose every repository secret to the reusable workflow).
     secrets:
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
@@ -130,10 +134,8 @@ jobs:
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      # CMT provisions one server per version, so run the single-server smoke suite only.
-      tests-search-path: "detox/e2e/test/products/channels/smoke_test"
-      parallelism: 1
-      # Make test failures fail the run so the rollup gate below reflects real results.
+      tests-search-path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
+      parallelism: ${{ matrix.server.latest && 10 || 1 }}
       testcase_failure_fatal: true
 
   # Build the Android APK once; the per-version Android detox jobs below reuse it.
@@ -178,11 +180,10 @@ jobs:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/**/*"
 
-  # Android smoke run, one job per server version (reuses the single APK build above).
+  # Android: one job per server version. Same latest=full / older=smoke shape as iOS — see
+  # the detox-e2e job comment above for the why-not-if explanation.
   detox-e2e-android:
-    name: mobile-cmt-android-${{ matrix.server.version }}
-    # Least-privilege token for the reusable workflow: checkout (read) + the PR-comment
-    # report step (issues:write). No pull-requests:* needed for issues.createComment.
+    name: mobile-cmt-android${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
     permissions:
       contents: read
       issues: write
@@ -192,8 +193,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
-    # Pass only the secrets the Android template uses, instead of secrets: inherit (which would
-    # expose every repository secret to the reusable workflow).
     secrets:
       MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
@@ -212,10 +211,8 @@ jobs:
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      # CMT provisions one server per version, so run the single-server smoke suite only.
-      tests-search-path: "detox/e2e/test/products/channels/smoke_test"
-      parallelism: 1
-      # Make test failures fail the run so the rollup gate below reflects real results.
+      tests-search-path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
+      parallelism: ${{ matrix.server.latest && 10 || 1 }}
       testcase_failure_fatal: true
 
   update-final-status:
@@ -237,7 +234,8 @@ jobs:
           # detox-e2e / detox-e2e-android are matrix jobs over CMT_MATRIX; their .outputs are
           # not aggregated across legs, so gate on the job result instead. testcase_failure_fatal
           # makes any version leg with test failures fail its run, so .result is 'failure' if any
-          # iOS or Android version leg failed.
+          # iOS or Android version leg failed. (The latest=full / older=smoke split happens inside
+          # `with:` via expressions; from .result's perspective it's still one job per platform.)
           status: ${{ (needs.detox-e2e.result == 'success' && needs.detox-e2e-android.result == 'success') && 'success' || 'failure' }}
           target_url: ${{ needs.detox-e2e.outputs.TARGET_URL }}
 
