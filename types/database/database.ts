@@ -324,6 +324,24 @@ export type HandlePropertyValuesArgs = PrepareOnly & {
   values?: PropertyValue[];
 };
 
+export type HandlePropertyFieldsByGroupIdArgs = PrepareOnly & {
+  groupId: string;
+  fields: PropertyField[];
+};
+
+export type HandlePropertyValuesByTargetIdArgs = PrepareOnly & {
+  targetId: string;
+  values: Array<PropertyValue<string>>;
+};
+
+export type HandleDeletePropertyFieldArgs = PrepareOnly & {
+  fieldId: string;
+};
+
+export type HandleDeletePropertyFieldsByNameArgs = PrepareOnly & {
+  names: string[];
+};
+
 export type LoginArgs = {
   config: Partial<ClientConfig>;
   ldapOnly?: boolean;

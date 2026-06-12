@@ -1,12 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q, type Database} from '@nozbe/watermelondb';
+
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {queryPropertyFieldsByGroupId, queryPropertyValuesByTargetId} from '@queries/servers/properties';
 
 import {handlePropertyFieldCreatedOrUpdated, handlePropertyFieldDeleted, handlePropertyValuesUpdated} from './properties';
 
-import type {Database} from '@nozbe/watermelondb';
+import type {PropertyFieldModel, PropertyValueModel} from '@database/models/server';
+
+const {PROPERTY_FIELD, PROPERTY_VALUE} = MM_TABLES.SERVER;
 
 jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
@@ -45,12 +49,12 @@ const makeValue = (fieldId: string, value: string, overrides?: Partial<PropertyV
 });
 
 const getStoredFields = async (database: Database) => {
-    const records = await queryPropertyFieldsByGroupId(database, groupId).fetch();
+    const records = await database.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('group_id', groupId)).fetch();
     return records;
 };
 
 const getStoredValues = async (database: Database, targetId: string) => {
-    const records = await queryPropertyValuesByTargetId(database, targetId).fetch();
+    const records = await database.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('target_id', targetId)).fetch();
     return records;
 };
 

@@ -7,12 +7,8 @@ import {CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID} from '@constants/classification'
 import DatabaseManager from '@database/manager';
 
 import {
-    getPropertyFieldById,
     observeChannelClassificationBanner,
     observeClassificationBannerState,
-    queryClassificationFields,
-    queryPropertyFieldsByGroupId,
-    queryPropertyValuesByTargetId,
 } from './properties';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -69,59 +65,6 @@ beforeEach(async () => {
 
 afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
-});
-
-describe('queryClassificationFields', () => {
-    it('should return only classification-named fields', async () => {
-        await seedFields([
-            makeField(),
-            makeField({id: 'cf-1', name: 'channel_classification', object_type: 'channel'}),
-            makeField({id: 'other-1', name: 'some_other_field', object_type: 'user'}),
-        ]);
-
-        const result = await queryClassificationFields(database).fetch();
-        const ids = result.map((f) => f.id).sort();
-        expect(ids).toEqual(['cf-1', 'sys-1']);
-    });
-});
-
-describe('queryPropertyFieldsByGroupId', () => {
-    it('should return only fields for the given group', async () => {
-        await seedFields([
-            makeField(),
-            makeField({id: 'other-group-field', group_id: 'other_group'}),
-        ]);
-
-        const result = await queryPropertyFieldsByGroupId(database, groupId).fetch();
-        expect(result).toHaveLength(1);
-        expect(result[0].id).toBe('sys-1');
-    });
-});
-
-describe('queryPropertyValuesByTargetId', () => {
-    it('should return only values for the given target', async () => {
-        await seedValues([
-            makeValue(),
-            makeValue({id: 'val-chan', target_id: 'channel-1'}),
-        ]);
-
-        const result = await queryPropertyValuesByTargetId(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID).fetch();
-        expect(result).toHaveLength(1);
-        expect(result[0].id).toBe('val-1');
-    });
-});
-
-describe('getPropertyFieldById', () => {
-    it('should return the field when it exists', async () => {
-        await seedFields([makeField()]);
-        const field = await getPropertyFieldById(database, 'sys-1');
-        expect(field?.id).toBe('sys-1');
-    });
-
-    it('should return undefined when the field does not exist', async () => {
-        const field = await getPropertyFieldById(database, 'missing');
-        expect(field).toBeUndefined();
-    });
 });
 
 describe('observeClassificationBannerState', () => {

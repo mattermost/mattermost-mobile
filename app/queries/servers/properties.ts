@@ -19,30 +19,6 @@ const {SERVER: {PROPERTY_FIELD, PROPERTY_VALUE}} = MM_TABLES;
 
 const CLASSIFICATION_FIELD_NAMES = [CLASSIFICATIONS_SYSTEM_FIELD_NAME, CLASSIFICATIONS_CHANNEL_FIELD_NAME];
 
-// --- Queries ---
-
-export const queryClassificationFields = (database: Database) => {
-    return database.get<PropertyFieldModel>(PROPERTY_FIELD).query(
-        Q.where('name', Q.oneOf(CLASSIFICATION_FIELD_NAMES)),
-    );
-};
-
-export const queryPropertyFieldsByGroupId = (database: Database, groupId: string) => {
-    return database.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('group_id', groupId));
-};
-
-export const queryPropertyValuesByTargetId = (database: Database, targetId: string) => {
-    return database.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('target_id', targetId));
-};
-
-export const getPropertyFieldById = async (database: Database, fieldId: string) => {
-    try {
-        return await database.get<PropertyFieldModel>(PROPERTY_FIELD).find(fieldId);
-    } catch {
-        return undefined;
-    }
-};
-
 // --- Reactive observables (used by hooks for real-time UI updates) ---
 
 export const observeClassificationFields = (database: Database) => {

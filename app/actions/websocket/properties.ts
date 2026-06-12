@@ -2,11 +2,8 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {getPropertyFieldById} from '@queries/servers/properties';
 import {safeParseJSON} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
-
-import type Model from '@nozbe/watermelondb/Model';
 
 export async function handlePropertyFieldCreatedOrUpdated(serverUrl: string, msg: WebSocketMessage) {
     const data = msg.data as {property_field?: string; object_type?: string};
@@ -37,19 +34,8 @@ export async function handlePropertyFieldDeleted(serverUrl: string, msg: WebSock
     }
 
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const field = await getPropertyFieldById(database, data.field_id);
-        if (!field) {
-            return;
-        }
-
-        const values = await field.propertyValues.fetch();
-        const batch: Model[] = [
-            field.prepareDestroyPermanently(),
-            ...values.map((v) => v.prepareDestroyPermanently()),
-        ];
-
-        await operator.batchRecords(batch, 'handlePropertyFieldDeleted');
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleDeletePropertyField({fieldId: data.field_id, prepareRecordsOnly: false});
     } catch (error) {
         logError('handlePropertyFieldDeleted', error);
     }

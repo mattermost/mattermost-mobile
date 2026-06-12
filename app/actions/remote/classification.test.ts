@@ -1,15 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q, type Database} from '@nozbe/watermelondb';
+
 import {CLASSIFICATIONS_GROUP_NAME, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID} from '@constants/classification';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {queryPropertyFieldsByGroupId, queryPropertyValuesByTargetId} from '@queries/servers/properties';
 import {getConfigValue} from '@queries/servers/system';
 
 import {fetchClassificationBanner, fetchChannelClassificationValue} from './classification';
 
-import type {Database} from '@nozbe/watermelondb';
+import type {PropertyFieldModel, PropertyValueModel} from '@database/models/server';
+
+const {PROPERTY_FIELD, PROPERTY_VALUE} = MM_TABLES.SERVER;
 
 jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
@@ -82,13 +86,16 @@ const mockClient = {
     getPropertyValues: jest.fn(),
 };
 
+const queryFieldsByGroup = (database: Database, groupId: string) =>
+    database.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('group_id', groupId)).fetch();
+
 const getStoredFields = async (database: Database) => {
-    const records = await queryPropertyFieldsByGroupId(database, CLASSIFICATIONS_GROUP_NAME).fetch();
+    const records = await queryFieldsByGroup(database, CLASSIFICATIONS_GROUP_NAME);
     return records.map((r) => r.id).sort();
 };
 
 const getStoredValues = async (database: Database, targetId: string) => {
-    const records = await queryPropertyValuesByTargetId(database, targetId).fetch();
+    const records = await database.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('target_id', targetId)).fetch();
     return records;
 };
 
@@ -275,7 +282,7 @@ describe('fetchClassificationBanner', () => {
         await fetchClassificationBanner(serverUrl);
 
         expect(await getStoredFields(database)).toEqual(['system-field-id']);
-        const otherGroup = await queryPropertyFieldsByGroupId(database, 'other_group').fetch();
+        const otherGroup = await queryFieldsByGroup(database, 'other_group');
         expect(otherGroup.map((f) => f.id)).toEqual(['other-field']);
     });
 });

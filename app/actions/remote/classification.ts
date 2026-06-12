@@ -2,15 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {
-    clearClassificationData,
-    syncPropertyFieldsByGroupId,
-    syncPropertyValuesByTargetId,
-} from '@actions/local/properties';
-import {
+    CLASSIFICATIONS_CHANNEL_FIELD_NAME,
     CLASSIFICATIONS_CHANNEL_OBJECT_TYPE,
     CLASSIFICATIONS_FIELD_TARGET_ID,
     CLASSIFICATIONS_FIELD_TARGET_TYPE,
     CLASSIFICATIONS_GROUP_NAME,
+    CLASSIFICATIONS_SYSTEM_FIELD_NAME,
     CLASSIFICATIONS_SYSTEM_OBJECT_TYPE,
     CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
 } from '@constants/classification';
@@ -21,12 +18,14 @@ import {logDebug, logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
+const CLASSIFICATION_FIELD_NAMES = [CLASSIFICATIONS_SYSTEM_FIELD_NAME, CLASSIFICATIONS_CHANNEL_FIELD_NAME];
+
 export async function fetchClassificationBanner(serverUrl: string): Promise<{error?: unknown}> {
     try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const featureFlag = await getConfigValue(database, 'FeatureFlagClassificationMarkings');
         if (featureFlag !== 'true') {
-            await clearClassificationData(serverUrl);
+            await operator.handleDeletePropertyFieldsByName({names: CLASSIFICATION_FIELD_NAMES, prepareRecordsOnly: false});
             return {};
         }
 
@@ -41,7 +40,7 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
 
         if (allFields.length === 0) {
             logDebug('fetchClassificationBanner', 'No classification fields returned');
-            await clearClassificationData(serverUrl);
+            await operator.handleDeletePropertyFieldsByName({names: CLASSIFICATION_FIELD_NAMES, prepareRecordsOnly: false});
             return {};
         }
 
@@ -53,8 +52,8 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
 
         const values = await client.getSystemPropertyValues<string>(CLASSIFICATIONS_GROUP_NAME);
 
-        await syncPropertyFieldsByGroupId(serverUrl, groupId, allFields);
-        await syncPropertyValuesByTargetId(serverUrl, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, values);
+        await operator.handlePropertyFieldsByGroupId({groupId, fields: allFields, prepareRecordsOnly: false});
+        await operator.handlePropertyValuesByTargetId({targetId: CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, values, prepareRecordsOnly: false});
 
         return {};
     } catch (error) {
@@ -66,7 +65,7 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
 
 export async function fetchChannelClassificationValue(serverUrl: string, channelId: string): Promise<{error?: unknown}> {
     try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const featureFlag = await getConfigValue(database, 'FeatureFlagClassificationMarkings');
         if (featureFlag !== 'true') {
             return {};
@@ -75,7 +74,7 @@ export async function fetchChannelClassificationValue(serverUrl: string, channel
         const client = NetworkManager.getClient(serverUrl);
         const values = await client.getPropertyValues<string>(CLASSIFICATIONS_GROUP_NAME, CLASSIFICATIONS_CHANNEL_OBJECT_TYPE, channelId);
 
-        await syncPropertyValuesByTargetId(serverUrl, channelId, values);
+        await operator.handlePropertyValuesByTargetId({targetId: channelId, values, prepareRecordsOnly: false});
 
         return {};
     } catch (error) {
