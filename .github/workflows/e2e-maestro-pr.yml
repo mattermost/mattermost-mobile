@@ -235,7 +235,7 @@ jobs:
       run-type: ${{ inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_2_URL || inputs.SITE_1_URL }}
-      artifact_run_id: ${{ env.ARTIFACT_RUN_ID }}
+      artifact_run_id: ${{ inputs.artifact_run_id || github.run_id }}
     secrets: inherit
 
   run-maestro-android:
@@ -254,7 +254,7 @@ jobs:
       run-type: ${{ inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_3_URL || inputs.SITE_1_URL }}
-      artifact_run_id: ${{ env.ARTIFACT_RUN_ID }}
+      artifact_run_id: ${{ inputs.artifact_run_id || github.run_id }}
     secrets: inherit
 
   update-final-status-maestro-ios:
