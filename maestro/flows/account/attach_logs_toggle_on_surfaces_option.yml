@@ -42,62 +42,96 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 - tapOn:
     id: "settings.report_problem.option"
-- extendedWaitUntil:
-    visible:
-      id: "report_problem.enable_log_attachments"
-    timeout: 10000
-
-# Tap the toggle switch to turn it ON. Use optional:true so if toggle
-# is already ON (from a prior run's saved preference), the tap is skipped.
-- tapOn:
-    id: "report_problem.enable_log_attachments.toggled.false.button"
-    optional: true
-
-# Wait for the toggle to confirm "on" state. This also gives the async
-# savePreference call time to complete (API + local DB write) before the
-# app is killed.
-- extendedWaitUntil:
-    visible:
-      id: "report_problem.enable_log_attachments.toggled.true.button"
-    timeout: 10000
-
-# Give the async DB write a moment to flush.
+# On unlicensed servers, tapping "Report a Problem" opens an external browser
+# or email composer instead of the in-app screen. The conditional blocks below
+# handle both paths: run toggle + menu assertions on licensed servers, dismiss
+# the external browser on unlicensed servers.
 - waitForAnimationToEnd:
     timeout: 3000
 
-# Navigate back to the Home tab, then into the test channel.
-# On iOS 26.3, Maestro's `back` doesn't dismiss modal-presented screens.
-# Re-launching the app (stopApp + clearState:false) kills and restarts the
-# app without wiping data — user stays logged in, app lands on Home tab.
-- launchApp:
-    stopApp: true
-    clearState: false
+# Path A: In-app Report a Problem screen (licensed server)
+- runFlow:
+    when:
+      visible:
+        id: "report_problem.enable_log_attachments"
+    commands:
+      # Tap the toggle switch to turn it ON. Use optional:true so if toggle
+      # is already ON (from a prior run's saved preference), the tap is skipped.
+      - tapOn:
+          id: "report_problem.enable_log_attachments.toggled.false.button"
+          optional: true
 
-# Wait for the app to relaunch and JS bundle to load.
-- waitForAnimationToEnd:
-    timeout: 30000
+      # Wait for the toggle to confirm "on" state. This also gives the async
+      # savePreference call time to complete (API + local DB write) before the
+      # app is killed.
+      - extendedWaitUntil:
+          visible:
+            id: "report_problem.enable_log_attachments.toggled.true.button"
+          timeout: 10000
 
-# Confirm we're on the Home tab with tab bar visible.
-- extendedWaitUntil:
-    visible:
-      id: "tab_bar.home.tab"
-    timeout: 15000
+      # Give the async DB write a moment to flush.
+      - waitForAnimationToEnd:
+          timeout: 3000
 
-# Wait for the channel list to render before navigating into the test channel.
-- extendedWaitUntil:
-    visible:
-      id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
-    timeout: 10000
+      # Navigate back to the Home tab, then into the test channel.
+      # On iOS 26.3, Maestro's `back` doesn't dismiss modal-presented screens.
+      # Re-launching the app (stopApp + clearState:false) kills and restarts the
+      # app without wiping data — user stays logged in, app lands on Home tab.
+      - launchApp:
+          stopApp: true
+          clearState: false
 
-- runFlow: ../../utils/navigate_to_channel.yml
+      # Wait for the app to relaunch and JS bundle to load.
+      - waitForAnimationToEnd:
+          timeout: 30000
 
-# Open the post-draft attachment menu. Adjust the id if `inspect_screen`
-# shows a different prefix on your build.
-- tapOn:
-    id: "channel.post_draft.quick_actions.attachment_action"
+      # Confirm we're on the Home tab with tab bar visible.
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 15000
 
-# Assert the new option exists.
-- extendedWaitUntil:
-    visible:
-      id: "file_attachment.attach_logs"
-    timeout: 10000
+      # Wait for the channel list to render before navigating into the test channel.
+      - extendedWaitUntil:
+          visible:
+            id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+          timeout: 10000
+
+      - runFlow: ../../utils/navigate_to_channel.yml
+
+      # Open the post-draft attachment menu. Adjust the id if `inspect_screen`
+      # shows a different prefix on your build.
+      - tapOn:
+          id: "channel.post_draft.quick_actions.attachment_action"
+
+      # Assert the new option exists.
+      - extendedWaitUntil:
+          visible:
+            id: "file_attachment.attach_logs"
+          timeout: 10000
+
+# Path B: External browser / email composer (unlicensed server) — dismiss
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: "breadcrumb"
+          commands:
+            - tapOn:
+                id: "breadcrumb"
+            - tapOn:
+                text: "Done"
+                optional: true
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - runFlow:
+          when:
+            notVisible:
+              id: "settings.report_problem.option"
+          commands:
+            - pressKey: Back

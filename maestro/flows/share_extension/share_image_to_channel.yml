@@ -47,7 +47,7 @@ appId: ${MAESTRO_APP_ID}
           notVisible:
             text: "Continue"
           timeout: 10000
-# iOS 26 Photos: "Select" button text IS accessible from the Library grid.
+# iOS 26: "Select" button text IS accessible from the Library grid.
 # Wait for it (not all simulator runs land directly on the grid).
 - extendedWaitUntil:
     visible:

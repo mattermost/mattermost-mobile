@@ -55,10 +55,11 @@ appId: ${MAESTRO_APP_ID}
 
 # Starting the call dismisses the bottom sheet and returns to the channel view.
 # Wait for the minimized CurrentCallBar to appear (confirms WebRTC is connected).
+# 40s: WebRTC connection can take longer on iOS 26 simulators or under CI load.
 - extendedWaitUntil:
     visible:
       id: "calls.current_call_bar"
-    timeout: 20000
+    timeout: 40000
 
 # Tap the CurrentCallBar to navigate to the full call screen.
 - tapOn:
@@ -119,10 +120,11 @@ appId: ${MAESTRO_APP_ID}
     optional: true
 
 # Wait for CurrentCallBar then navigate to full call screen.
+# 40s: WebRTC connection can take longer on iOS 26 simulators or under CI load.
 - extendedWaitUntil:
     visible:
       id: "calls.current_call_bar"
-    timeout: 20000
+    timeout: 40000
 - tapOn:
     id: "calls.current_call_bar"
 - extendedWaitUntil:

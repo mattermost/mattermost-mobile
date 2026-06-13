@@ -45,17 +45,18 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Continue"
           optional: true
-      # Tap the Safari Share button in the toolbar. If this tap lands, the
-      # iOS share sheet appears and "Mattermost Beta" is reachable directly.
+      # iOS 26: Safari Share button moved into the toolbar "More" menu.
+      # Tap "More" first, then "Share" in the popover.
       - tapOn:
-          id: "Share"
-          optional: true
-      # If the share sheet did NOT open (Share button missed or hidden by
+          text: "More"
+      - tapOn:
+          text: "Share"
+      # If the share sheet did NOT open (More/Share missed or hidden by
       # the page), fall back to long-pressing a word in the page.
       - runFlow:
           when:
             notVisible:
-              text: "Mattermost Beta"
+              text: "Mattermost"
           commands:
             - extendedWaitUntil:
                 visible:
@@ -70,7 +71,7 @@ appId: ${MAESTRO_APP_ID}
                 commands:
                   - tapOn:
                       text: "Share..."
-      # Tap "Mattermost Beta" in the share sheet
+      # Tap "Mattermost Beta" in the share sheet (iOS 26: app label unchanged).
       - extendedWaitUntil:
           visible:
             text: "Mattermost Beta"

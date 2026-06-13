@@ -318,13 +318,16 @@ jobs:
     name: Maestro E2E
     needs:
       - build-ios-simulator
+      - build-android-apk
       - provision-servers
       - validate-maestro-flow-headers
-    # build-ios-simulator is skipped for PLATFORM=android; Maestro Android still runs.
+    # build-ios-simulator / build-android-apk are skipped for PLATFORM=ios / PLATFORM=android
+    # respectively; Maestro still runs (the skipped platform's template job is also skipped).
     if: |
       always() &&
       needs.provision-servers.result == 'success' &&
-      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped')
+      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped') &&
+      (needs.build-android-apk.result == 'success' || needs.build-android-apk.result == 'skipped')
     uses: ./.github/workflows/e2e-maestro-pr.yml
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}

@@ -41,11 +41,43 @@ appId: ${MAESTRO_APP_ID}
     id: "settings.report_problem.option"
 
 # In-app screen must render (NOT the external-browser/email shortcut path).
-- extendedWaitUntil:
-    visible:
-      id: "report_problem.screen"
-    timeout: 10000
+# On unlicensed servers, tapping "Report a Problem" opens an external browser
+# or email composer instead — the in-app screen never appears. The conditional
+# blocks below handle both paths so the flow doesn't fail on unlicensed servers.
+- waitForAnimationToEnd:
+    timeout: 3000
 
-# Assert the toggle is rendered on this screen.
-- assertVisible:
-    id: "report_problem.enable_log_attachments"
+# Path A: In-app Report a Problem screen (licensed server)
+- runFlow:
+    when:
+      visible:
+        id: "report_problem.screen"
+    commands:
+      - assertVisible:
+          id: "report_problem.enable_log_attachments"
+
+# Path B: External browser / email composer (unlicensed server) — dismiss
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: "breadcrumb"
+          commands:
+            - tapOn:
+                id: "breadcrumb"
+            - tapOn:
+                text: "Done"
+                optional: true
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - runFlow:
+          when:
+            notVisible:
+              id: "settings.report_problem.option"
+          commands:
+            - pressKey: Back

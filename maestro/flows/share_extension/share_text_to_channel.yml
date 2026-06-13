@@ -50,16 +50,17 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Continue"
           optional: true
-      # iOS 26: try the Safari toolbar Share button first (more reliable
-      # across iOS versions than the long-press context menu).
+      # iOS 26: Safari Share button moved into the toolbar "More" menu.
+      # Tap "More" first, then "Share" in the popover.
       - tapOn:
-          id: "Share"
-          optional: true
+          text: "More"
+      - tapOn:
+          text: "Share"
       # If the share sheet did NOT open, fall back to long-press → "Share..."
       - runFlow:
           when:
             notVisible:
-              text: "Mattermost Beta"
+              text: "Mattermost"
           commands:
             - extendedWaitUntil:
                 visible:
@@ -76,7 +77,7 @@ appId: ${MAESTRO_APP_ID}
                   - tapOn:
                       text: "Share..."
             - takeScreenshot: after-tap-share
-      # Tap "Mattermost Beta" in the share sheet to open the share extension
+      # Tap "Mattermost Beta" in the share sheet to open the share extension.
       - extendedWaitUntil:
           visible:
             text: "Mattermost Beta"
