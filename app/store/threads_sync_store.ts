@@ -4,7 +4,7 @@
 import {BehaviorSubject, of} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
 
-import {UseInitialLoadEndpoint} from '@assets/config.json';
+import EphemeralStore from '@store/ephemeral_store';
 
 // Tracks whether threads have been fetched for a given (serverUrl, teamId) pair
 // during the current process lifetime. Each pair gets its own BehaviorSubject<boolean>
@@ -38,7 +38,7 @@ class ThreadsSyncStoreSingleton {
     }
 
     observeThreadsFetched(serverUrl: string, teamId: string) {
-        if (!UseInitialLoadEndpoint) {
+        if (!EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
             return of(true);
         }
         return this.getOrCreate(serverUrl, teamId).pipe(distinctUntilChanged());

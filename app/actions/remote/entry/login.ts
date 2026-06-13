@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {UseInitialLoadEndpoint} from '@assets/config.json';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import IntuneManager from '@managers/intune_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
+import EphemeralStore from '@store/ephemeral_store';
+import {isExperienceAPIEnabled} from '@utils/config';
 
 import {entry} from './common';
 
@@ -38,10 +39,12 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
 
         const credentials = await getServerCredentials(serverUrl);
         if (credentials?.token) {
+            EphemeralStore.setExperienceAPIEnabled(serverUrl, isExperienceAPIEnabled(clData.config));
+
             const intunePolicy = await IntuneManager.getPolicy(serverUrl);
             SecurityManager.addServer(serverUrl, clData.config, false, intunePolicy);
             WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
-            if (UseInitialLoadEndpoint) {
+            if (EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
                 await entry(serverUrl, undefined, undefined, undefined, clData.config, clData.license, 'Login');
             }
             await WebsocketManager.initializeClient(serverUrl, 'Login');

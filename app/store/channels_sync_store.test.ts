@@ -4,9 +4,7 @@
 import {firstValueFrom} from 'rxjs';
 import {take, toArray} from 'rxjs/operators';
 
-jest.mock('@assets/config.json', () => ({
-    UseInitialLoadEndpoint: true,
-}));
+jest.mock('@store/ephemeral_store');
 
 describe('ChannelsSyncStore', () => {
     let ChannelsSyncStore: typeof import('./channels_sync_store').default;
@@ -14,6 +12,8 @@ describe('ChannelsSyncStore', () => {
     beforeEach(() => {
         jest.resetModules();
         ChannelsSyncStore = require('./channels_sync_store').default;
+        const EphemeralStoreMock = require('./ephemeral_store').default;
+        EphemeralStoreMock.getExperienceAPIEnabled.mockReturnValue(true);
     });
 
     const serverUrl = 'https://server.test';
@@ -147,17 +147,14 @@ describe('ChannelsSyncStore', () => {
     });
 });
 
-describe('ChannelsSyncStore with UseInitialLoadEndpoint=false', () => {
+describe('ChannelsSyncStore with getExperienceAPIEnabled=false', () => {
     let ChannelsSyncStore: typeof import('./channels_sync_store').default;
 
     beforeEach(() => {
         jest.resetModules();
-        jest.doMock('@assets/config.json', () => ({UseInitialLoadEndpoint: false}));
         ChannelsSyncStore = require('./channels_sync_store').default;
-    });
-
-    afterEach(() => {
-        jest.dontMock('@assets/config.json');
+        const EphemeralStoreMock = require('./ephemeral_store').default;
+        EphemeralStoreMock.getExperienceAPIEnabled.mockReturnValue(false);
     });
 
     it('observeChannelsFetched should short-circuit to of(true) regardless of mark state', async () => {

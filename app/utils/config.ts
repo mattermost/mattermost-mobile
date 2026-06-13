@@ -10,3 +10,9 @@ export function hasReliableWebsocket(version?: string, reliableWebsocketsConfig?
 
     return reliableWebsocketsConfig === 'true';
 }
+
+// True when the server's FeatureFlagEnableExperienceAPI is the string "true".
+// Older servers omit the field — defaults to false.
+export function isExperienceAPIEnabled(config?: Pick<ClientConfig, 'FeatureFlagEnableExperienceAPI'>): boolean {
+    return config?.FeatureFlagEnableExperienceAPI === 'true';
+}

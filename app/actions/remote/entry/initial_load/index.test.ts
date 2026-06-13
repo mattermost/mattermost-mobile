@@ -61,6 +61,7 @@ const mockConfig = {
     Version: '9.0.0',
     CollapsedThreads: 'default_off',
     FeatureFlagCollapsedThreads: 'true',
+    FeatureFlagEnableExperienceAPI: 'true',
 } as unknown as ClientConfig;
 const mockLicense = {} as ClientLicense;
 

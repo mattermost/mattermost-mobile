@@ -4,9 +4,7 @@
 import {firstValueFrom} from 'rxjs';
 import {take, toArray} from 'rxjs/operators';
 
-jest.mock('@assets/config.json', () => ({
-    UseInitialLoadEndpoint: true,
-}));
+jest.mock('@store/ephemeral_store');
 
 describe('ThreadsSyncStore', () => {
     let ThreadsSyncStore: typeof import('./threads_sync_store').default;
@@ -14,6 +12,8 @@ describe('ThreadsSyncStore', () => {
     beforeEach(() => {
         jest.resetModules();
         ThreadsSyncStore = require('./threads_sync_store').default;
+        const EphemeralStoreMock = require('./ephemeral_store').default;
+        EphemeralStoreMock.getExperienceAPIEnabled.mockReturnValue(true);
     });
 
     const serverUrl = 'https://server.test';
@@ -147,13 +147,14 @@ describe('ThreadsSyncStore', () => {
     });
 });
 
-describe('ThreadsSyncStore with UseInitialLoadEndpoint=false', () => {
+describe('ThreadsSyncStore with getExperienceAPIEnabled=false', () => {
     let ThreadsSyncStore: typeof import('./threads_sync_store').default;
 
     beforeEach(() => {
         jest.resetModules();
-        jest.doMock('@assets/config.json', () => ({UseInitialLoadEndpoint: false}));
         ThreadsSyncStore = require('./threads_sync_store').default;
+        const EphemeralStoreMock = require('./ephemeral_store').default;
+        EphemeralStoreMock.getExperienceAPIEnabled.mockReturnValue(false);
     });
 
     afterEach(() => {

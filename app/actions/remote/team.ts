@@ -6,7 +6,6 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
 import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
-import {UseInitialLoadEndpoint} from '@assets/config.json';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -554,7 +553,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     let channelId = '';
     DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
 
-    if (UseInitialLoadEndpoint) {
+    if (EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
         // Fetch channels + members + sidebar for this team before completing the switch
         // so the channel list is populated when the screen appears.
         const isCRTEnabled = await getIsCRTEnabled(database);
