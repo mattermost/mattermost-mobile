@@ -21,6 +21,9 @@ class EphemeralStoreSingleton {
     private pushProxyVerification: {[serverUrl: string]: string | undefined} = {};
     private canJoinOtherTeams: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
 
+    // Per-server cache of FeatureFlagEnableExperienceAPI. Absent → false.
+    private experienceAPIEnabled: {[serverUrl: string]: boolean} = {};
+
     private loadingMessagesForChannel: {[serverUrl: string]: Set<string>} = {};
 
     private websocketEditingPost: {[serverUrl: string]: {[id: string]: {post: Post; timeout: NodeJS.Timeout} | undefined} | undefined} = {};
@@ -373,6 +376,18 @@ class EphemeralStoreSingleton {
 
     setCanJoinOtherTeams = (serverUrl: string, value: boolean) => {
         this.getCanJoinOtherTeamsSubject(serverUrl).next(value);
+    };
+
+    getExperienceAPIEnabled = (serverUrl: string): boolean => {
+        return this.experienceAPIEnabled[serverUrl] ?? false;
+    };
+
+    setExperienceAPIEnabled = (serverUrl: string, value: boolean) => {
+        this.experienceAPIEnabled[serverUrl] = value;
+    };
+
+    clearExperienceAPIEnabled = (serverUrl: string) => {
+        delete this.experienceAPIEnabled[serverUrl];
     };
 
     setNotificationTapped = (value: boolean) => {

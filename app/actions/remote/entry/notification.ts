@@ -12,7 +12,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {queryThemePreferences} from '@queries/servers/preference';
-import {getCurrentTeamId} from '@queries/servers/system';
+import {getConfigValue, getCurrentTeamId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
@@ -41,6 +41,12 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     PerformanceMetricsManager.startTimeToInteraction();
 
     const {database} = operator;
+
+    // Seed the experience-API flag from the DB-cached config so downstream
+    // gates (blob helpers, doReconnect, etc.) reflect the last-known server
+    // state. Subsequent WS reconnect will refresh config if it changed.
+    const dbValue = await getConfigValue(database, 'FeatureFlagEnableExperienceAPI');
+    EphemeralStore.setExperienceAPIEnabled(serverUrl, dbValue === 'true');
 
     const currentTeamId = await getCurrentTeamId(database);
     const currentServerUrl = await DatabaseManager.getActiveServerUrl();

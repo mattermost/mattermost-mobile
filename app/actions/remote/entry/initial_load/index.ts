@@ -18,6 +18,7 @@ import {getLastInitialLoad} from '@queries/servers/system';
 import {getTeamById, prepareDeleteTeam, queryTeamsById, removeTeamsFromTeamHistory} from '@queries/servers/team';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
+import {isExperienceAPIEnabled} from '@utils/config';
 import {logDebug, logError} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
@@ -68,6 +69,14 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
 
         if (confResp.error) {
             return {error: confResp.error};
+        }
+
+        // Fresh config is the source of truth. If the operator turned the experience
+        // API off while the client thought it was on, flip the EphemeralStore flag
+        // and redirect to the legacy entryRest path.
+        if (!isExperienceAPIEnabled(confResp.config)) {
+            EphemeralStore.setExperienceAPIEnabled(serverUrl, false);
+            return {error: 'no environment api enabled'};
         }
 
         // initial_load always returns full preferences (no UpdateAt filtering).

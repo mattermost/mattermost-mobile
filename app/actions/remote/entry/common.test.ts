@@ -45,9 +45,6 @@ jest.mock('@queries/servers/system', () => {
 });
 jest.mock('react-native-permissions');
 jest.mock('expo-application');
-jest.mock('@assets/config', () => ({
-    UseInitialLoadEndpoint: false,
-}));
 
 describe('actions/remote/entry/common', () => {
     const serverUrl = 'https://server.example.com';

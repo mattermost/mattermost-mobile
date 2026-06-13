@@ -31,6 +31,5 @@
     "CustomRequestHeaders": {},
     "CollectNetworkMetrics": false,
     "EnablePostListPerformance": false,
-    "EnableObservableProfiling": false,
-    "UseInitialLoadEndpoint": false
+    "EnableObservableProfiling": false
 }

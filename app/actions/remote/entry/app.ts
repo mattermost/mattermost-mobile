@@ -3,11 +3,11 @@
 
 import {setLastServerVersionCheck} from '@actions/local/systems';
 import {fetchAgents} from '@agents/actions/remote/agents';
-import {UseInitialLoadEndpoint} from '@assets/config.json';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {getCurrentChannelId, getCurrentTeamId, prepareCommonSystemValues} from '@queries/servers/system';
+import {getConfigValue, getCurrentChannelId, getCurrentTeamId, prepareCommonSystemValues} from '@queries/servers/system';
+import EphemeralStore from '@store/ephemeral_store';
 import {logError} from '@utils/log';
 
 import {entry, verifyPushProxy} from './common';
@@ -36,7 +36,15 @@ export async function appEntry(serverUrl: string, since = 0) {
         const currentTeamId = await getCurrentTeamId(database);
         const currentChannelId = await getCurrentChannelId(database);
 
-        if (UseInitialLoadEndpoint) {
+        // Seed the experience-API flag from the DB-cached config so the gate below
+        // reflects the last-known server state. entry() will re-confirm and
+        // self-correct if the live server config disagrees.
+        const dbValue = await getConfigValue(database, 'FeatureFlagEnableExperienceAPI');
+        EphemeralStore.setExperienceAPIEnabled(serverUrl, dbValue === 'true');
+
+        // When the experience API is on, fetch data upfront via entry(). When off,
+        // skip — doReconnect will run the legacy entryRest path after WS connects.
+        if (EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
             await entry(serverUrl, currentTeamId, currentChannelId, undefined, undefined, undefined, 'Cold Start');
         }
 
